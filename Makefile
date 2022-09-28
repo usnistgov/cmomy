@@ -198,7 +198,7 @@ docs-nist-pages:
 # distribution
 ################################################################################
 
-.PHONY: pypi-build pypi-release pypi-test-release pypi-dist
+.PHONY: pypi-build pypi-release pypi-testrelease pypi-dist
 pypi-build:
 	tox -e pypi-build
 
@@ -206,8 +206,8 @@ pypi-release:
 	tox -e pypi-release
 
 
-pypi-test-release:
-	tox -e pypi-test-release
+pypi-testrelease:
+	tox -e pypi-testrelease
 
 pypi-dist:
 	pypi-build
