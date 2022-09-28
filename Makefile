@@ -166,7 +166,7 @@ version: version-scm version-import
 create-docs-nist-pages:
 	mkdir -p docs-nist-pages ; \
 	cd docs-nist-pages ; \
-	echo git clone git@github.com:{{ cookiecutter.github_username }}/{{ cookiecutter.project_slug }} html ;\
+	echo git clone git@github.com:usnistgov/cmomy.git html ;\
 	echo "To push, use the following" ; \
 	echo "cd docs-nist-pages/html" ; \
 	echo "" ; \
@@ -198,7 +198,7 @@ docs-nist-pages:
 # distribution
 ################################################################################
 
-.PHONY: pypi-build pypi-release pypi-test-release pypi-dist
+.PHONY: pypi-build pypi-release pypi-testrelease pypi-dist
 pypi-build:
 	tox -e pypi-build
 
@@ -206,8 +206,8 @@ pypi-release:
 	tox -e pypi-release
 
 
-pypi-test-release:
-	tox -e pypi-test-release
+pypi-testrelease:
+	tox -e pypi-testrelease
 
 pypi-dist:
 	pypi-build

@@ -445,7 +445,9 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                 dims = tuple(f"dim_{i}" for i in range(self.val_ndim))
             elif isinstance(dims, str):
                 dims = (dims,)
-            dims = tuple(dims)  # type: ignore
+            else:
+                # try to convert to tuple
+                dims = tuple(dims)  # type: ignore
 
             if len(dims) == self.ndim:
                 dims_output = dims  # type: ignore
@@ -453,11 +455,15 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
             elif len(dims) == self.val_ndim:
                 if mom_dims is None:
                     mom_dims = tuple(f"mom_{i}" for i in range(self.mom_ndim))
-                elif isinstance(mom_dims, Hashable):
+                elif isinstance(mom_dims, str):
                     mom_dims = (mom_dims,)
-                mom_dims = tuple(mom_dims)
+                else:
+                    # try to convert to tuple
+                    mom_dims = tuple(mom_dims)
 
-                assert len(mom_dims) == self.mom_ndim
+                assert (
+                    len(mom_dims) == self.mom_ndim
+                ), f"mom_dims={mom_dims} has wrong length?"
 
                 dims_output = dims + mom_dims
 
