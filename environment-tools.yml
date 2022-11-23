@@ -1,23 +1,24 @@
+---
 dependencies:
   # development
-  - isort
-  - black
-  - blackdoc
-  - flake8
+  # - isort
+  # - black
+  # - blackdoc
+  # - flake8
   # flake8 addons
-  - flake8-docstrings
+  # - flake8-docstrings
   # testing
-  - pytest
-  - pytest-cov
-  - pytest-xdist
-  - tox-conda
+    - pytest
+    - pytest-cov
+    - pytest-xdist
+  # - tox-conda
   # specials
-  - pre-commit
+  # - pre-commit
   # repl
-  - ipython
-  - ipykernel
+    - ipython
+    - ipykernel
   # build
-  - setuptools-scm
+    - setuptools-scm
   # - setuptools
   # - setuptools_scm_git_archive
   # - build
@@ -27,27 +28,27 @@ dependencies:
   # - anaconda-client
   # - greyskull
   # doc stuff
-  - sphinx
-  - sphinx_rtd_theme
+  # - sphinx
+  # - sphinx_rtd_theme
   # - recommonmark # if want markdown
-  - nbsphinx # if want notebooks
+  # - nbsphinx # if want notebooks
   # spell checking?
-  - sphinxcontrib-spelling
+  # - sphinxcontrib-spelling
   # lsp stuff
-  - autoflake
-  - pyls-mypy
-  - pyls-black
-  - pyls-isort
+  # - autoflake
+  # - pyls-mypy
+  # - pyls-black
+  # - pyls-isort
   ## annotations
-  - mypy
-  - pytest-mypy
+  # - mypy
+  # - pytest-mypy
   # Monkeytype?
-  - MonkeyType
-  - pip
-  - pip:
-      - mypy-extensions
-      - pytest-monkeytype
-      - flake8-mypy
-      - pytest-accept
-      # spelling
-      - pyenchant
+  # - MonkeyType
+    - pip
+    - pip:
+  #     - mypy-extensions
+  #     - pytest-monkeytype
+  #     - flake8-mypy
+          - pytest-accept
+  #     # spelling
+  #     - pyenchant

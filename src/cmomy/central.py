@@ -741,6 +741,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
         >>> for xx, yy, ww in zip(x, y, w):
         ...     _ = da.push_val(x=(xx, yy), w=ww, broadcast=True)
+        ...
 
         >>> da
         <CentralMoments(val_shape=(2,), mom=(2, 2))>

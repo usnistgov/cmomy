@@ -64,7 +64,8 @@ def _select_axis_dim(
     elif axis is not None:
         if isinstance(axis, str):
             warn(
-                f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}"
+                f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}",
+                DeprecationWarning,
             )
             dim = axis
             axis = dims.index(dim)
@@ -123,7 +124,7 @@ def _xcentral_moments(
     else:
         w = xr.DataArray(w).broadcast_like(x)
 
-    axis, dim = _select_axis_dim(dims=x.dims, axis=axis, dim=dim, default_axis=0)
+        axis, dim = _select_axis_dim(dims=x.dims, axis=axis, dim=dim, default_axis=0)
 
     wsum = w.sum(dim=dim)
     wsum_inv = 1.0 / wsum
@@ -1126,8 +1127,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     @docfiller_shared
     def reduce(
         self: T_CentralMoments,
-        axis: int | str | None = None,
         dim: Hashable | None = None,
+        axis: int | str | None = None,
         **kws,
     ) -> T_CentralMoments:
         """
@@ -1166,8 +1167,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     def block(
         self,
         block_size: int,
-        axis: int | str | None = None,
         dim: Hashable | None = None,
+        axis: int | str | None = None,
         coords_policy: Literal["first", "last", None] = "first",
         **kws,
     ) -> "xCentralMoments":

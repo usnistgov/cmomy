@@ -44,7 +44,7 @@ def test_create(other):
     t.push_vals(
         x=scramble_xr(other.x_xr),
         w=scramble_xr(other.w_xr),
-        axis="rec",
+        dim="rec",
         broadcast=other.broadcast,
     )
     xtest(other.data_test_xr, t.values)
@@ -59,7 +59,7 @@ def test_from_vals(other):
     t = xcentral.xCentralMoments.from_vals(
         x=scramble_xr(other.x_xr),
         w=scramble_xr(other.w_xr),
-        axis="rec",
+        dim="rec",
         mom=other.mom,
         broadcast=other.broadcast,
     )
@@ -92,7 +92,7 @@ def test_push_vals_mult(other):
     t.zero()
     for ww, xx in zip(other.W_xr, other.X_xr):
         t.push_vals(
-            x=scramble_xr(xx), w=scramble_xr(ww), axis="rec", broadcast=other.broadcast
+            x=scramble_xr(xx), w=scramble_xr(ww), dim="rec", broadcast=other.broadcast
         )
     xtest(other.data_test_xr, t.values)
 
@@ -107,7 +107,7 @@ def test_combine(other):
 def test_from_datas(other):
     datas = xr.concat([s.values for s in other.S_xr], dim="rec")
     datas = scramble_xr(datas).transpose(*(...,) + other.s_xr.mom_dims)
-    t = other.cls_xr.from_datas(datas, mom=other.mom, axis="rec")
+    t = other.cls_xr.from_datas(datas, mom=other.mom, dim="rec")
     xtest(other.data_test_xr, t.values)
 
 
@@ -117,7 +117,7 @@ def test_push_datas(other):
     datas = scramble_xr(datas).transpose(*(...,) + other.s_xr.mom_dims)
 
     t = other.s_xr.zeros_like()
-    t.push_datas(datas, axis="rec")
+    t.push_datas(datas, dim="rec")
     xtest(other.data_test_xr, t.values)
 
 
@@ -209,7 +209,7 @@ def test_resample_and_reduce(other):
             t0 = other.s.resample_and_reduce(indices=idx, axis=axis)
 
             dim = "dim_{}".format(axis)
-            t1 = other.s_xr.resample_and_reduce(indices=idx, axis=dim, rep_dim="hello")
+            t1 = other.s_xr.resample_and_reduce(indices=idx, dim=dim, rep_dim="hello")
 
             np.testing.assert_allclose(t0.data, t1.data)
 
@@ -231,5 +231,5 @@ def test_resample_and_reduce(other):
             # assert tx.dims == ('hello', ) + other.s_xr.values.dims
 
             # reduce
-            tx = tx.reduce(dim)
+            tx = tx.reduce(dim=dim)
             xtest(t1.values, tx.values)

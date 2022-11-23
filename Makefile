@@ -79,9 +79,6 @@ init: .git pre-commit-init ## run git-init pre-commit
 .PHONY: conda-env conda-dev conda-all mamba-env mamba-dev mamba-all activate
 
 
-# environment-dev.yml: environment.yml environment-tools.yml
-# 	conda-merge environment.yml environment-tools.yml > environment-dev.yml
-
 environment-dev.yml: environment.yml environment-tools.yml
 	conda-merge environment.yml environment-tools.yml > environment-dev.yml
 
@@ -94,16 +91,16 @@ environment-dev.yml: environment.yml environment-tools.yml
 
 # conda-all: conda-env conda-dev ## conda create development env
 
-mamba-env: ## mamba create base env
+mamba-env: environment.yml ## mamba create base env
 	mamba env create -f environment.yml
 
-mamba-dev: ## mamba update development dependencies
+mamba-dev: environment-dev.yml ## mamba update development dependencies
 	mamba env create -f environment-dev.yml
 
-mamba-env-update:
+mamba-env-update: environment.yml
 	mamba env update -f environment.yml
 
-mamba-dev-update:
+mamba-dev-update: environment-dev.yml
 	mamba env update -f environment-dev.yml
 
 
@@ -155,18 +152,18 @@ version: version-scm version-import
 ################################################################################
 # Docs
 ################################################################################
-.PHONY: docs serverdocs doc-spelling
-docs: ## generate Sphinx HTML documentation, including API docs
-	rm -fr docs/generated
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
+# .PHONY: docs serverdocs doc-spelling
+# docs: ## generate Sphinx HTML documentation, including API docs
+# 	rm -fr docs/generated
+# 	$(MAKE) -C docs clean
+# 	$(MAKE) -C docs html
+# 	$(BROWSER) docs/_build/html/index.html
 
-servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+# servedocs: docs ## compile the docs watching for changes
+# 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
-docs-spelling:
-	sphinx-build -b spelling docs docs/_build
+# docs-spelling:
+# 	sphinx-build -b spelling docs docs/_build
 
 
 
@@ -181,22 +178,24 @@ TOX=CONDA_EXE=mamba tox $(tox_posargs)
 test-all: ## run tests on every Python version with tox
 	$(TOX) -- $(posargs)
 
-
 ## docs
-.PHONY: docs-build docs-release docs-nist-pages
+.PHONY: docs-build docs-release docs-clean docs-spelling docs-nist-pages
 posargs=
-docs-build:
+docs-build: ## build docs in isolation
 	$(TOX) -e docs-build -- $(posargs)
-docs-release:
+docs-release: ## release docs.  use posargs=... to override stuff
 	$(TOX) -e docs-release -- $(posargs)
-
-docs-nist-pages:
+docs-clean: ## clean docs
+	rm -rf docs/_build/*
+	rm -rf docs/generated/*
+docs-spelling:
+	$(TOX) -e docs-spelling -- $(posargs)
+docs-nist-pages: ## do both build and releas
 	$(TOX) -e docs-build,docs-release -- $(posargs)
 
 
 ## distribution
 .PHONY: dist-pypi-build dist-pypi-testrelease dist-pypi-release dist-conda-recipe dist-conda-build test-dist-pypi test-dist-conda
-
 
 dist-pypi-build: ## build dist, can pass posargs=... and tox_posargs=...
 	$(TOX) -e $@ -- $(posargs)
