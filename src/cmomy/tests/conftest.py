@@ -97,7 +97,7 @@ def _get_comom(w, x, y, moments, axis=0, broadcast=True):
     return out
 
 
-class Data(object):
+class Data:
     """wrapper around stuff for generic testing."""
 
     # _count = 0

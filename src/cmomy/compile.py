@@ -1,6 +1,5 @@
 """Set of routines to call most cases to pre-compile numba functions."""
 
-from __future__ import absolute_import
 
 import numpy as np
 

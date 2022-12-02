@@ -1,7 +1,7 @@
 """routines to convert central (co)moments to raw (co)moments."""
 from __future__ import annotations
 
-from typing import Any, Callable, Sequence, Tuple
+from typing import Any, Callable, Sequence
 
 import numpy as np
 from numpy import ndarray
@@ -223,7 +223,7 @@ def to_raw_moments(
 
 def to_raw_comoments(
     x: ndarray,
-    axis: Tuple[int, int] = (-2, -1),
+    axis: tuple[int, int] = (-2, -1),
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
@@ -269,7 +269,7 @@ def to_central_moments(
 
 def to_central_comoments(
     x: ndarray,
-    axis: Tuple[int, int] = (-2, -1),
+    axis: tuple[int, int] = (-2, -1),
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,

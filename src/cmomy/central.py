@@ -1,18 +1,7 @@
 """Central moments/comoments routines."""
 from __future__ import annotations
 
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Hashable,
-    Literal,
-    Mapping,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    cast,
-)
+from typing import TYPE_CHECKING, Any, Hashable, Literal, Mapping, Sequence, cast
 
 import numpy as np
 import xarray as xr
@@ -93,15 +82,15 @@ def _central_moments(
 
 
 def _central_comoments(
-    vals: Tuple[np.ndarray, np.ndarray],
+    vals: tuple[np.ndarray, np.ndarray],
     mom: Moments,
-    w: Optional[np.ndarray] = None,
+    w: np.ndarray | None = None,
     axis: int = 0,
     last: bool = True,
     broadcast: bool = False,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: Optional[np.ndarray] = None,
+    out: np.ndarray | None = None,
 ) -> np.ndarray:
     """Calculate central co-mom (covariance, etc) along axis."""
 
@@ -182,7 +171,7 @@ def _central_comoments(
 
 @docfiller_shared
 def central_moments(
-    x: np.ndarray | Tuple[np.ndarray, np.ndarray],
+    x: np.ndarray | tuple[np.ndarray, np.ndarray],
     mom: Moments,
     w: np.ndarray | None = None,
     axis: int = 0,
@@ -390,7 +379,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         coords: Mapping | None = None,
         name: Hashable | None = None,
         indexes: Any = None,
-        mom_dims: Hashable | Tuple[Hashable, Hashable] | None = None,
+        mom_dims: Hashable | tuple[Hashable, Hashable] | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
     ) -> xr.DataArray:
@@ -488,7 +477,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         coords: Mapping | None = None,
         name: Hashable | None = None,
         indexes: Any = None,
-        mom_dims: Hashable | Tuple[Hashable, Hashable] | None = None,
+        mom_dims: Hashable | tuple[Hashable, Hashable] | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
     ) -> xCentralMoments:
@@ -561,12 +550,12 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     def _verify_value(
         self,
         x: np.ndarray | float,
-        target: np.ndarray | Tuple[int, ...] | str | None = None,
+        target: np.ndarray | tuple[int, ...] | str | None = None,
         axis: int | None = None,
         dim: Hashable | None = None,  # included here for consistency
         broadcast: bool = False,
         expand: bool = False,
-        shape_flat: Tuple[int, ...] | None = None,
+        shape_flat: tuple[int, ...] | None = None,
         other: np.ndarray | None = None,
         **kwargs,
     ):  # type: ignore
@@ -721,7 +710,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     def push_val(
         self: T_CentralMoments,
-        x: float | np.ndarray | Tuple[float, float] | Tuple[np.ndarray, np.ndarray],
+        x: float | np.ndarray | tuple[float, float] | tuple[np.ndarray, np.ndarray],
         w: np.ndarray | float | None = None,
         broadcast: bool = False,
     ) -> T_CentralMoments:
@@ -782,7 +771,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     def push_vals(
         self: T_CentralMoments,
-        x: np.ndarray | Tuple[np.ndarray, np.ndarray],
+        x: np.ndarray | tuple[np.ndarray, np.ndarray],
         w: np.ndarray | None = None,
         axis: int = 0,
         broadcast: bool = False,
@@ -847,7 +836,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     @docfiller_shared
     def reshape(
         self: T_CentralMoments,
-        shape: Tuple[int, ...],
+        shape: tuple[int, ...],
         copy: bool = True,
         copy_kws: Mapping | None = None,
         **kws,
@@ -924,8 +913,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     @docfiller_shared
     def moveaxis(
         self: T_CentralMoments,
-        source: int | Tuple[int, ...],
-        destination: int | Tuple[int, ...],
+        source: int | tuple[int, ...],
+        destination: int | tuple[int, ...],
         copy: bool = True,
         copy_kws: Mapping | None = None,
         **kws,
@@ -969,7 +958,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         """
         self._raise_if_scalar()
 
-        def _internal_check_val(v) -> Tuple[int, ...]:
+        def _internal_check_val(v) -> tuple[int, ...]:
             if isinstance(v, int):
                 v = (v,)
             else:
@@ -997,11 +986,11 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     ###########################################################################
     @classmethod
     def zeros(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         mom_ndim: int | None = None,
-        shape: Tuple[int, ...] | None = None,
+        shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         zeros_kws: Mapping | None = None,
         **kws,
@@ -1041,11 +1030,11 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_data(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         data: np.ndarray,
         mom_ndim: int | None = None,
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         copy: bool = True,
         copy_kws: Mapping | None = None,
         verify: bool = True,
@@ -1096,12 +1085,12 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_datas(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         datas: np.ndarray,
         mom_ndim: int | None = None,
         axis: int = 0,
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         verify: bool = True,
         check_shape: bool = True,
@@ -1150,13 +1139,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_vals(
-        cls: Type[T_CentralMoments],
-        x: np.ndarray | Tuple[np.ndarray, np.ndarray],
+        cls: type[T_CentralMoments],
+        x: np.ndarray | tuple[np.ndarray, np.ndarray],
         w: np.ndarray | None = None,
         axis: int = 0,
         dim: Hashable | None = None,
         mom: Moments = 2,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
         **kws,
@@ -1192,8 +1181,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_resample_vals(
-        cls: Type[T_CentralMoments],
-        x: np.ndarray | Tuple[np.ndarray, np.ndarray],
+        cls: type[T_CentralMoments],
+        x: np.ndarray | tuple[np.ndarray, np.ndarray],
         freq: np.ndarray | None = None,
         indices: np.ndarray | None = None,
         nrep: int | None = None,
@@ -1206,7 +1195,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         resample_kws: Mapping | None = None,
         full_output: bool = False,
         **kws,
-    ) -> T_CentralMoments | Tuple[T_CentralMoments, np.ndarray]:
+    ) -> T_CentralMoments | tuple[T_CentralMoments, np.ndarray]:
         """
         Returns
         -------
@@ -1289,11 +1278,11 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_raw(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         raw: np.ndarray,
         mom_ndim: int | None = None,
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
         **kws,
@@ -1370,12 +1359,12 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_raws(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         raws: np.ndarray,
         mom_ndim: int | None = None,
         mom: Moments | None = None,
         axis: int = 0,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
         **kws,
@@ -1474,12 +1463,12 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_stat(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         a: ArrayLike | float,
         v: np.ndarray | float = 0.0,
         w: np.ndarray | float | None = None,
         mom: Moments = 2,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         order: ArrayOrder | None = None,
         **kws,
@@ -1501,14 +1490,14 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_stats(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         a: np.ndarray,
         v: np.ndarray,
         w: np.ndarray | float | None = None,
         axis: int = 0,
         dim=None,
         mom: Moments = 2,
-        val_shape: Tuple[int, ...] = None,
+        val_shape: tuple[int, ...] = None,
         dtype: DTypeLike | None = None,
         order: ArrayOrder | None = None,
         **kws,
