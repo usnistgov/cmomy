@@ -79,9 +79,6 @@ init: .git pre-commit-init ## run git-init pre-commit
 .PHONY: conda-env conda-dev conda-all mamba-env mamba-dev mamba-all activate
 
 
-# environment-dev.yml: environment.yml environment-tools.yml
-# 	conda-merge environment.yml environment-tools.yml > environment-dev.yml
-
 environment-dev.yml: environment.yml environment-tools.yml
 	conda-merge environment.yml environment-tools.yml > environment-dev.yml
 
@@ -94,16 +91,16 @@ environment-dev.yml: environment.yml environment-tools.yml
 
 # conda-all: conda-env conda-dev ## conda create development env
 
-mamba-env: ## mamba create base env
+mamba-env: environment.yml ## mamba create base env
 	mamba env create -f environment.yml
 
-mamba-dev: ## mamba update development dependencies
+mamba-dev: environment-dev.yml ## mamba update development dependencies
 	mamba env create -f environment-dev.yml
 
-mamba-env-update:
+mamba-env-update: environment.yml
 	mamba env update -f environment.yml
 
-mamba-dev-update:
+mamba-dev-update: environment-dev.yml
 	mamba env update -f environment-dev.yml
 
 
@@ -135,16 +132,11 @@ test: ## run tests quickly with the default Python
 test-gen_examples:
 	pytest -x -v --accept
 
-test-all: ## run tests on every Python version with tox
-	tox -- -x -v
-
-
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source cmomy -m pytest
 	coverage report -m
 	coverage html
 	$(BROWSER) htmlcov/index.html
-
 
 
 .PHONY: version-scm version-import version
@@ -160,74 +152,82 @@ version: version-scm version-import
 ################################################################################
 # Docs
 ################################################################################
+# .PHONY: docs serverdocs doc-spelling
+# docs: ## generate Sphinx HTML documentation, including API docs
+# 	rm -fr docs/generated
+# 	$(MAKE) -C docs clean
+# 	$(MAKE) -C docs html
+# 	$(BROWSER) docs/_build/html/index.html
 
-.PHONY: create-docs-nist-pages
-# create docs-nist-pages directory with empty branch
-create-docs-nist-pages:
-	mkdir -p docs-nist-pages ; \
-	cd docs-nist-pages ; \
-	echo git clone git@github.com:usnistgov/cmomy.git html ;\
-	echo "To push, use the following" ; \
-	echo "cd docs-nist-pages/html" ; \
-	echo "" ; \
-	echo git checkout --orphan nist-pages ; \
-	echo git reset --hard ; \
-	echo git commit --allow-empty -m "Initializing gh-pages branch" ; \
-	echo git push origin nist-pages ; \
-	echo git checkout master ; \
+# servedocs: docs ## compile the docs watching for changes
+# 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+
+# docs-spelling:
+# 	sphinx-build -b spelling docs docs/_build
 
 
-.PHONY: docs serverdocs doc-spelling docs-nist-pages
-docs: ## generate Sphinx HTML documentation, including API docs
-	rm -fr docs/generated
-	$(MAKE) -C docs clean
-	$(MAKE) -C docs html
-	$(BROWSER) docs/_build/html/index.html
 
-servedocs: docs ## compile the docs watching for changes
-	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
+###############################################################################
+# TOX
+###############################################################################
+tox_posargs?=-v
+TOX=CONDA_EXE=mamba tox $(tox_posargs)
 
+## testing
+.PHONY: test-all
+test-all: ## run tests on every Python version with tox
+	$(TOX) -- $(posargs)
+
+## docs
+.PHONY: docs-build docs-release docs-clean docs-spelling docs-nist-pages
+posargs=
+docs-build: ## build docs in isolation
+	$(TOX) -e docs-build -- $(posargs)
+docs-release: ## release docs.  use posargs=... to override stuff
+	$(TOX) -e docs-release -- $(posargs)
+docs-clean: ## clean docs
+	rm -rf docs/_build/*
+	rm -rf docs/generated/*
 docs-spelling:
-	sphinx-build -b spelling docs docs/_build
-
-docs-nist-pages:
-	tox -e docs
-
-
-################################################################################
-# distribution
-################################################################################
-
-.PHONY: pypi-build pypi-release pypi-testrelease pypi-dist
-pypi-build:
-	tox -e pypi-build
-
-pypi-release:
-	tox -e pypi-release
+	$(TOX) -e docs-spelling -- $(posargs)
+docs-nist-pages: ## do both build and releas
+	$(TOX) -e docs-build,docs-release -- $(posargs)
 
 
-pypi-testrelease:
-	tox -e pypi-testrelease
+## distribution
+.PHONY: dist-pypi-build dist-pypi-testrelease dist-pypi-release dist-conda-recipe dist-conda-build test-dist-pypi test-dist-conda
 
-pypi-dist:
-	pypi-build
-	pypi-release
+dist-pypi-build: ## build dist, can pass posargs=... and tox_posargs=...
+	$(TOX) -e $@ -- $(posargs)
 
-.PHONY: conda-grayksull conda-build conda-release conda-dist
+dist-pypi-testrelease: ## test release on testpypi. can pass posargs=... and tox_posargs=...
+	$(TOX) -e $@ -- $(posargs)
 
-conda-grayskull:
-	tox -e grayskull
+dist-pypi-release: ## release to pypi, can pass posargs=...
+	$(TOX) -e $@ -- $(posargs)
 
-conda-build:
-	tox -e conda-build
+dist-conda-recipe: ## build conda recipe can pass posargs=...
+	$(TOX) -e $@ -- $(posargs)
 
-conda-release:
-	echo 'prefix upload with .tox/conda-dist/'
+dist-conda-build: ## build conda recipe can pass posargs=...
+	$(TOX) -e $@ -- $(pasargs)
 
-conda-dist:
-	conda-grayskull
-	conda-build
-	conda-release
+
+## test distribution
+.PHONY: test-dist-pypi-remote test-dist-conda-remote test-dist-pypi-local test-dist-conda-local
+
+py?=39
+test-dist-pypi-remote: ## test pypi install, can run as `make test-dist-pypi-remote py=39` to run test-dist-pypi-local-py39
+	$(TOX) -e $@-py$(py) -- $(posargs)
+
+test-dist-conda-remote: ## test conda install, can run as `make test-dist-conda-remote py=39` to run test-dist-conda-local-py39
+	$(TOX) -e $@-py$(py) -- $(poasargs)
+
+test-dist-pypi-local: ## test pypi install, can run as `make test-dist-pypi-local py=39` to run test-dist-pypi-local-py39
+	$(TOX) -e $@-py$(py) -- $(posargs)
+
+test-dist-conda-local: ## test conda install, can run as `make test-dist-conda-local py=39` to run test-dist-conda-local-py39
+	$(TOX) -e $@-py$(py) -- $(poasargs)
 
 
 ################################################################################

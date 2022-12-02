@@ -1,10 +1,11 @@
+---
 name: cmomy-env
 channels:
-  - conda-forge
+    - conda-forge
 dependencies:
-  - python=3.8
-  - numpy
-  - numba
-  - xarray
-  - typing-extensions
-  - custom-inherit
+    - python>=3.8,<3.11
+    - numpy
+    - numba
+    - xarray
+    - typing-extensions
+    - custom-inherit

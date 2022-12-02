@@ -191,7 +191,7 @@ def resample_data(
     if axis != 0:
         data = np.moveaxis(data, axis, 0)
 
-    shape: Tuple[int, ...] = data.shape[1 : -len(mom)]
+    shape: tuple[int, ...] = data.shape[1 : -len(mom)]
     mom_shape = tuple(x + 1 for x in mom)
 
     assert data.shape == (ndat,) + shape + mom_shape
@@ -205,7 +205,7 @@ def resample_data(
         # make sure out is in correct order
         out = np.asarray(out, dtype=dtype, order="C")
 
-    meta_reshape: Tuple[()] | Tuple[int]
+    meta_reshape: tuple[()] | tuple[int]
     if shape == ():
         meta_reshape = ()
     else:

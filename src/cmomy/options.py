@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Callable, Dict
+from typing import Callable
 
 # Useful if doing any command line editing of doc string stuff
 
@@ -42,10 +42,10 @@ _VALIDATORS = {
     FASTMATH: _isbool,
 }
 
-_SETTERS: Dict[str, Callable] = {}
+_SETTERS: dict[str, Callable] = {}
 
 
-class set_options(object):
+class set_options:
     """Set options for xarray in a controlled context.
 
     Currently supported options:

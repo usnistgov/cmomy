@@ -554,7 +554,7 @@ pusher_cov_vector = Pusher(
 )
 
 
-def factory_pushers(cov: bool = False, vec: bool = False) -> "Pusher":
+def factory_pushers(cov: bool = False, vec: bool = False) -> Pusher:
     """Factory method to get pusher functions."""  # noqa D401
     if cov:
         if vec:

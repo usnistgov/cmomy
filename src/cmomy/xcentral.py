@@ -6,15 +6,10 @@ from __future__ import annotations
 
 from typing import (  # TYPE_CHECKING,
     Any,
-    Dict,
     Hashable,
     Literal,
     Mapping,
-    Optional,
     Sequence,
-    Tuple,
-    Type,
-    Union,
     cast,
     no_type_check,
 )
@@ -35,12 +30,12 @@ from .utils import _shape_reduce
 
 # * Utilities
 def _select_axis_dim(
-    dims: Tuple[Hashable, ...],
+    dims: tuple[Hashable, ...],
     axis: int | str | None = None,
     dim: Hashable | None = None,
     default_axis: int | None = None,
     default_dim: Hashable | None = None,
-) -> Tuple[int, Hashable]:
+) -> tuple[int, Hashable]:
     """Produce axis/dim from input."""
 
     if axis is None and dim is None:
@@ -64,7 +59,8 @@ def _select_axis_dim(
     elif axis is not None:
         if isinstance(axis, str):
             warn(
-                f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}"
+                f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}",
+                DeprecationWarning,
             )
             dim = axis
             axis = dims.index(dim)
@@ -123,7 +119,7 @@ def _xcentral_moments(
     else:
         w = xr.DataArray(w).broadcast_like(x)
 
-    axis, dim = _select_axis_dim(dims=x.dims, axis=axis, dim=dim, default_axis=0)
+        axis, dim = _select_axis_dim(dims=x.dims, axis=axis, dim=dim, default_axis=0)
 
     wsum = w.sum(dim=dim)
     wsum_inv = 1.0 / wsum
@@ -144,14 +140,14 @@ def _xcentral_moments(
 
 @no_type_check
 def _xcentral_comoments(
-    vals: Tuple[xr.DataArray, xr.DataArray],
+    vals: tuple[xr.DataArray, xr.DataArray],
     mom: Moments,
     w: xr.DataArray | None = None,
     axis: int | str | None = None,
     dim: Hashable | None = None,
     last: bool = True,
     broadcast: bool = False,
-    mom_dims: Tuple[Hashable, Hashable] | None = None,
+    mom_dims: tuple[Hashable, Hashable] | None = None,
 ):
     """Calculate central co-mom (covariance, etc) along axis."""
 
@@ -214,7 +210,7 @@ def _xcentral_comoments(
 
 @docfiller_shared
 def xcentral_moments(
-    x: xr.DataArray | Tuple[xr.DataArray, xr.DataArray],
+    x: xr.DataArray | tuple[xr.DataArray, xr.DataArray],
     mom: Moments,
     w: xr.DataArray | None = None,
     axis: int | None = None,
@@ -326,7 +322,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         return self._xdata.attrs
 
     @property
-    def dims(self) -> Tuple[Hashable, ...]:
+    def dims(self) -> tuple[Hashable, ...]:
         """Dimensions of values."""
         return self._xdata.dims
 
@@ -351,12 +347,12 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         return self._xdata.sizes
 
     @property
-    def val_dims(self) -> Tuple[Hashable, ...]:
+    def val_dims(self) -> tuple[Hashable, ...]:
         """Names of value dimensions."""
         return self.dims[: -self.mom_ndim]
 
     @property
-    def mom_dims(self) -> Tuple[Hashable, ...]:
+    def mom_dims(self) -> tuple[Hashable, ...]:
         """Names of moment dimensions."""
         return self.dims[-self.mom_ndim :]
 
@@ -473,7 +469,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _check_mom: bool = True,
         _kws: Mapping | None = None,
         **dimensions_kwargs,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """Stack dimensions.
 
         Returns
@@ -557,7 +553,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _verify=False,
         _check_mom=True,
         _kws=None,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """Unstack dimensions.
 
         Returns
@@ -595,7 +591,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _check_mom=True,
         _kws=None,
         **indexers_kws,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """Select subset of data.
 
         Returns
@@ -685,7 +681,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _check_mom=True,
         _kws: None = None,
         **indexers_kws,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """Select subset of data by position.
 
         Returns
@@ -722,7 +718,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _check_mom=True,
         _kws=None,
         **kws,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """
         Transpose dimensions of data.
 
@@ -780,16 +776,16 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     @docfiller_shared
     def from_centralmoments(
         cls,
-        obj: "CentralMoments",
+        obj: CentralMoments,
         dims: Hashable | Sequence[Hashable] | None = None,
         attrs: Mapping | None = None,
         coords: Mapping | None = None,
         name: Hashable | None = None,
         indexes: Any = None,
-        mom_dims: Hashable | Tuple[Hashable, Hashable] | None = None,
+        mom_dims: Hashable | tuple[Hashable, Hashable] | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """
         Create and xCentralMoments object from CentralMoments.
 
@@ -848,16 +844,19 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     @no_type_check
     def _xverify_value(
         self,
-        x: Union[xr.DataArray, float],
+        x: xr.DataArray | float,
         target: xr.DataArray | str | None = None,
         dim: Hashable | None = None,
         axis: int | str | None = None,
         broadcast: bool = False,
         expand: bool = False,
-        shape_flat: Optional[Any] = None,
-    ) -> Union[
-        Tuple[np.ndarray, xr.DataArray], np.ndarray, Tuple[float, xr.DataArray], float
-    ]:
+        shape_flat: Any | None = None,
+    ) -> (
+        tuple[np.ndarray, xr.DataArray]
+        | np.ndarray
+        | tuple[float, xr.DataArray]
+        | float
+    ):
 
         if isinstance(target, str):
 
@@ -961,7 +960,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         dim: Hashable | None = None,
         broadcast: bool = False,
         expand: bool = False,
-        shape_flat: Tuple[int, ...] | None = None,
+        shape_flat: tuple[int, ...] | None = None,
     ) -> Any:
         if isinstance(x, xr.DataArray) or isinstance(target, xr.DataArray):
 
@@ -1004,7 +1003,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         resample_kws: Mapping | None = None,
         full_output: bool = False,
         **kws,
-    ) -> "xCentralMoments" | Tuple["xCentralMoments", np.ndarray]:
+    ) -> xCentralMoments | tuple[xCentralMoments, np.ndarray]:
         """
 
         Parameters
@@ -1118,16 +1117,14 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         if isinstance(axis, str):
             raise ValueError("shouldnt get string axis here")
         else:
-            return super(xCentralMoments, self)._wrap_axis(
-                axis=axis, default=default, ndim=ndim
-            )
+            return super()._wrap_axis(axis=axis, default=default, ndim=ndim)
 
     @no_type_check
     @docfiller_shared
     def reduce(
         self: T_CentralMoments,
-        axis: int | str | None = None,
         dim: Hashable | None = None,
+        axis: int | str | None = None,
         **kws,
     ) -> T_CentralMoments:
         """
@@ -1166,11 +1163,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     def block(
         self,
         block_size: int,
-        axis: int | str | None = None,
         dim: Hashable | None = None,
+        axis: int | str | None = None,
         coords_policy: Literal["first", "last", None] = "first",
         **kws,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """
         Parameters
         ----------
@@ -1266,14 +1263,14 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     @classmethod
     @docfiller_shared
     def zeros(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         mom_ndim: int | None = None,
-        shape: Tuple[int, ...] | None = None,
+        shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         zeros_kws: Mapping | None = None,
-        dims: Tuple[Hashable, ...] | None = None,
+        dims: tuple[Hashable, ...] | None = None,
         coords: Mapping | None = None,
         attrs: Mapping | None = None,
         name: Hashable | None = None,
@@ -1338,7 +1335,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         data: np.ndarray | xr.DataArray,
         mom: Moments | None = None,
         mom_ndim: int | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         copy: bool = True,
         copy_kws: Mapping | None = None,
@@ -1432,7 +1429,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         mom_ndim: int | None = None,
         axis: int | str | None = None,
         dim: Hashable | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         verify: bool = True,
         check_shape: bool = True,
@@ -1444,7 +1441,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         name: Hashable | None = None,
         mom_dims: MomDims | None = None,
         **kws,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """
 
         Parameters
@@ -1527,7 +1524,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         raw: np.ndarray | xr.DataArray,
         mom: Moments | None = None,
         mom_ndim: int | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
         dims: Dims | None = None,
@@ -1537,7 +1534,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         name: Hashable | None = None,
         mom_dims: MomDims | None = None,
         **kws,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """
         Create object from raw moment data.
 
@@ -1614,7 +1611,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         mom_ndim: int | None = None,
         axis: int | str | None = None,
         dim: Hashable | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
         dims: Dims | None = None,
@@ -1681,15 +1678,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     def from_vals(
         cls,
         x: np.ndarray
-        | Tuple[np.ndarray, np.ndarray]
+        | tuple[np.ndarray, np.ndarray]
         | xr.DataArray
-        | Tuple[xr.DataArray, xr.DataArray]
-        | Tuple[xr.DataArray, np.ndarray],
+        | tuple[xr.DataArray, xr.DataArray]
+        | tuple[xr.DataArray, np.ndarray],
         w: float | np.ndarray | xr.Datarray | None = None,
         axis: str | int | None = None,
         dim: Hashable | None = None,
         mom: Moments | None = 2,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
         dims: Dims | None = None,
@@ -1700,7 +1697,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         **kws,
-    ) -> "xCentralMoments":
+    ) -> xCentralMoments:
         """
 
         Parameters
@@ -1790,9 +1787,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     def from_resample_vals(
         cls,
         x: np.ndarray
-        | Tuple[np.ndarray, np.ndarray]
+        | tuple[np.ndarray, np.ndarray]
         | xr.DataArray
-        | Tuple[xr.DataArray, xr.DataArray],
+        | tuple[xr.DataArray, xr.DataArray],
         freq=None,
         indices=None,
         nrep=None,
@@ -2037,7 +2034,7 @@ def _attributes_from_xr(
     dim: Hashable | None = None,
     mom_dims: MomDims | None = None,
     **kws,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     if isinstance(da, xr.DataArray):
         if dim is not None:
             # reduce along this dim
@@ -2056,7 +2053,7 @@ def _check_xr_input(
     axis: int | str | None = None,
     dim: Hashable | None = None,
     mom_dims: MomDims | None = None,
-    _kws_in: Optional[Dict[Any, Any]] = None,
+    _kws_in: dict[Any, Any] | None = None,
     **kws,
 ) -> Any:
     if isinstance(x, xr.DataArray):
@@ -2086,7 +2083,7 @@ def _optional_wrap_data(
     data: xr.DataArray | np.ndarray,
     mom_ndim: int,
     template: Any = None,
-    dims: Tuple[Hashable, ...] | None = None,
+    dims: tuple[Hashable, ...] | None = None,
     coords: Mapping | None = None,
     name: Hashable | None = None,
     attrs: Mapping | None = None,

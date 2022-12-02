@@ -8,11 +8,9 @@ from typing import (
     Any,
     Callable,
     Generic,
-    List,
     Literal,
     Mapping,
     Tuple,
-    Type,
     Union,
     cast,
     no_type_check,
@@ -108,7 +106,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         pass
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         """self.data.shape."""
         return self.data.shape
 
@@ -133,19 +131,19 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return self._mom_ndim
 
     @property
-    def mom_shape(self) -> Tuple[int] | Tuple[int, int]:
+    def mom_shape(self) -> tuple[int] | tuple[int, int]:
         """Shape of moments part."""
         return cast(
             Union[Tuple[int], Tuple[int, int]], self.data.shape[-self.mom_ndim :]
         )
 
     @property
-    def mom(self) -> Tuple[int] | Tuple[int, int]:
+    def mom(self) -> tuple[int] | tuple[int, int]:
         """Number of moments."""  # noqa D401
         return tuple(x - 1 for x in self.mom_shape)  # type: ignore
 
     @property
-    def val_shape(self) -> Tuple[int, ...]:
+    def val_shape(self) -> tuple[int, ...]:
         """Shape of values dimensions.
 
         That is shape less moments dimensions.
@@ -158,7 +156,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return len(self.val_shape)
 
     @property
-    def val_shape_flat(self) -> Tuple[int, ...]:
+    def val_shape_flat(self) -> tuple[int, ...]:
         """Shape of values part flattened."""
         if self.val_shape == ():
             return ()
@@ -166,22 +164,22 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             return (np.prod(self.val_shape),)
 
     @property
-    def shape_flat(self) -> Tuple[int, ...]:
+    def shape_flat(self) -> tuple[int, ...]:
         """Shape of flattened data."""
         return self.val_shape_flat + self.mom_shape
 
     @property
-    def mom_shape_var(self) -> Tuple[int, ...]:
+    def mom_shape_var(self) -> tuple[int, ...]:
         """Shape of moment part of variance."""
         return tuple(x - 1 for x in self.mom)
 
     @property
-    def shape_var(self) -> Tuple[int, ...]:
+    def shape_var(self) -> tuple[int, ...]:
         """Total variance shape."""
         return self.val_shape + self.mom_shape_var
 
     @property
-    def shape_flat_var(self) -> Tuple[int, ...]:
+    def shape_flat_var(self) -> tuple[int, ...]:
         """Shape of flat variance."""
         return self.val_shape_flat + self.mom_shape_var
 
@@ -296,7 +294,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             return index
 
     @gcached(prop=False)
-    def _single_index(self, val) -> Tuple[List[int], ...]:
+    def _single_index(self, val) -> tuple[list[int], ...]:
         # index with things like data[..., 1,0] data[..., 0,1]
         # index = (...,[1,0],[0,1])
         dims = len(self.mom)
@@ -764,7 +762,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         resample_kws: Mapping | None = None,
         full_output: bool = False,
         **kws,
-    ) -> T_CentralMoments | Tuple[T_CentralMoments, np.ndarray]:
+    ) -> T_CentralMoments | tuple[T_CentralMoments, np.ndarray]:
         """
         Bootstrap resample and reduce.
 
@@ -1018,8 +1016,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @classmethod
     @no_type_check
     def _check_mom(
-        cls, moments: Moments, mom_ndim: int, shape: Tuple[int, ...] | None = None
-    ) -> Tuple[int] | Tuple[int, int]:  # type: ignore
+        cls, moments: Moments, mom_ndim: int, shape: tuple[int, ...] | None = None
+    ) -> tuple[int] | tuple[int, int]:  # type: ignore
         """Check moments for correct shape.
 
         If moments is None, infer from
@@ -1052,7 +1050,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @staticmethod
     def _datas_axis_to_first(
         datas, axis: int, mom_ndim: int, **kws
-    ) -> Tuple[np.ndarray, int]:
+    ) -> tuple[np.ndarray, int]:
         """Move axis to first first position."""
         # NOTE: removinvg this. should be handles elsewhere
         # datas = np.asarray(datas)
@@ -1104,10 +1102,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     @docfiller_shared
     def zeros(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
-        shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
+        shape: tuple[int, ...] | None = None,
         mom_ndim: int | None = None,
         dtype: DTypeLike | None = None,
         zeros_kws: Mapping | None = None,
@@ -1146,11 +1144,11 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     @docfiller_shared
     def from_data(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         data: Any,
         mom_ndim: int | None = None,
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         copy: bool = True,
         copy_kws: Mapping | None = None,
         verify: bool = True,
@@ -1183,12 +1181,12 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     @docfiller_shared
     def from_datas(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         datas: Any,
         mom_ndim: int | None = None,
         axis: int | None = 0,
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         verify: bool = True,
         check_shape: bool = True,
@@ -1222,12 +1220,12 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     @docfiller_shared
     def from_vals(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         x,
         w=None,
         axis: int | None = 0,
         mom: Moments = 2,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
         **kws,
@@ -1259,7 +1257,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     @docfiller_shared
     def from_resample_vals(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         x,
         freq: np.ndarray | None = None,
         indices: np.ndarray | None = None,
@@ -1320,11 +1318,11 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     @docfiller_shared
     def from_raw(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         raw,
         mom_ndim: int | None = None,
         mom: Moments | None = None,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
         **kws,
@@ -1367,12 +1365,12 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     @docfiller_shared
     def from_raws(
-        cls: Type[T_CentralMoments],
+        cls: type[T_CentralMoments],
         raws,
         mom_ndim: int | None = None,
         mom: Moments | None = None,
         axis: int = 0,
-        val_shape: Tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
         **kws,

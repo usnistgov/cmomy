@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Sequence, Tuple
+from typing import Sequence
 
 import numpy as np
 from numba import njit
@@ -50,7 +50,7 @@ def factory_binomial(order: int, dtype: DTypeLike = float):
 
 def _shape_insert_axis(
     shape: Sequence[int], axis: int | None, new_size: int
-) -> Tuple[int, ...]:
+) -> tuple[int, ...]:
     """Get new shape, given shape, with size put in position axis."""
     if axis is None:
         raise ValueError("must specify integre axis")
@@ -60,7 +60,7 @@ def _shape_insert_axis(
     return shape[:axis] + (new_size,) + shape[axis:]
 
 
-def _shape_reduce(shape: Tuple[int, ...], axis: int) -> Tuple[int, ...]:
+def _shape_reduce(shape: tuple[int, ...], axis: int) -> tuple[int, ...]:
     """Give shape shape after reducing along axis."""
     shape_list = list(shape)
     shape_list.pop(axis)
@@ -69,7 +69,7 @@ def _shape_reduce(shape: Tuple[int, ...], axis: int) -> Tuple[int, ...]:
 
 def _axis_expand_broadcast(
     x: ArrayLike,
-    shape: Tuple[int, ...],
+    shape: tuple[int, ...],
     axis: int | None,
     verify: bool = True,
     expand: bool = True,

@@ -97,7 +97,7 @@ def _get_comom(w, x, y, moments, axis=0, broadcast=True):
     return out
 
 
-class Data(object):
+class Data:
     """wrapper around stuff for generic testing."""
 
     # _count = 0
@@ -402,7 +402,7 @@ class Data(object):
     @gcached()
     def data_test_xr(self):
         return xcentral.xcentral_moments(
-            x=self.x_xr, mom=self.mom, axis="rec", w=self.w_xr, broadcast=self.broadcast
+            x=self.x_xr, mom=self.mom, dim="rec", w=self.w_xr, broadcast=self.broadcast
         )
 
     @gcached()
