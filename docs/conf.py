@@ -319,7 +319,7 @@ def linkcode_resolve(domain, info):
 
     fn = os.path.relpath(fn, start=os.path.dirname(cmomy.__file__))
 
-    return f"https://github.com/usnistgov/cmomy/blob/master/cmomy/{fn}{linespec}"
+    return f"https://github.com/usnistgov/cmomy/blob/master/src/cmomy/{fn}{linespec}"
 
 
 # only set spelling stuff if installed:
