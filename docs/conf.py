@@ -49,6 +49,8 @@ extensions = [
     # "sphinx.ext.viewcode",
     # view source code on github
     "sphinx.ext.linkcode",
+    # RTD dark
+    # "sphinx_rtd_dark_mode"
 ]
 
 # defined stuff, from xarray
@@ -57,7 +59,7 @@ nbsphinx_prolog = """
 {% set docname = env.doc2path(env.docname, base=None) %}
 
 
-You can view this notebook `on Github <https://github.com/usnistgov/cmomy/blob/master/doc/{{ docname }}>`_.
+You can view this notebook `on Github <https://github.com/usnistgov/cmomy/blob/master/docs/{{ docname }}>`_.
 """
 
 
@@ -209,7 +211,20 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 # html_theme = 'alabaster'
-html_theme = "sphinx_rtd_theme"
+# html_theme = "sphinx_rtd_theme"
+html_theme = "nature"
+
+html_css_files = [
+    "https://pages.nist.gov/nist-header-footer/css/nist-combined.css",
+    "https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css",
+]
+
+html_js_files = [
+    "https://code.jquery.com/jquery-3.6.2.min.js",
+    "https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js",
+    "https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js",
+    "leave_notice.js",
+]
 
 
 # Theme options are theme-specific and customize the look and feel of a
