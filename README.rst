@@ -1,11 +1,12 @@
-=====
-cmomy
-=====
+.. _Numba: https://numba.pydata.org/
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`wpk-nist-gov/cookiecutter-pypackage`: https://github.com/wpk-nist-gov/cookiecutter-pypackage
+.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 
-Central (co)moment calculation/manipulation
+=========================================================
+`cmomy`: Central (co)moments calculation and manipulation
+=========================================================
 
-
-* Free software: NIST license
 
 Overview
 --------
@@ -14,40 +15,30 @@ Behind the scenes, ``cmomy`` makes use of Numba_ to rapidly calculate moments.  
 be found `here <https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance>`_.
 
 
-
 Features
 --------
 
 * Fast calculation of central moments and central co-moments with weights
 * Support for scalar or vector inputs
 * numpy and xarray api's
-
-
-Links
------
-
-* `Github <https://github.com/usnistgov/cmomy>`__
-* `Documentation <https://pages.nist.gov/cmomy/index.html>`__
+* bootstrap resampling
 
 
 
-Installation
-------------
+Quick start
+-----------
 Use one of the following
 
 .. code:: bash
 
           pip install cmomy
 
+or
+
 .. code:: bash
 
           conda install -c wpk-nist cmomy
 
-
-Basic Usage
------------
-
-For a quick introduction to the usage of ``cmomy``, please see the `basic usage <https://github.com/usnistgov/cmomy/blob/master/docs/notebooks/usage_notebook.ipynb>`__
 
 
 Note on caching
@@ -74,12 +65,24 @@ cases. The first time you run the tests, it will take a while (about 1.5
 min on my machine). However, subsequent runs will be much faster (about
 3 seconds on my machine).
 
+
+.. stop_docs
+
+Basic Usage
+-----------
+
+For a quick introduction to the usage of ``cmomy``, please see the `basic usage <https://github.com/usnistgov/cmomy/blob/master/docs/notebooks/usage_notebook.ipynb>`__
+
+
+Links
+-----
+
+* `Github <https://github.com/usnistgov/cmomy>`__
+* `Documentation <https://pages.nist.gov/cmomy/index.html>`__
+
+
+
 Credits
 -------
 
 This package was created with Cookiecutter_ and the `wpk-nist-gov/cookiecutter-pypackage`_ Project template forked from `audreyr/cookiecutter-pypackage`_.
-
-.. _Numba: https://numba.pydata.org/
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`wpk-nist-gov/cookiecutter-pypackage`: https://github.com/wpk-nist-gov/cookiecutter-pypackage
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage

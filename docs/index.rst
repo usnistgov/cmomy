@@ -1,11 +1,12 @@
-Welcome to cmomy's documentation!
-======================================
+
+.. include:: ../README.rst
+   :end-before: .. stop_docs
 
 .. toctree::
    :maxdepth: 1
    :caption: Contents:
 
-   readme
+
    installation
    notebooks/motivation
    notebooks/usage_notebook
