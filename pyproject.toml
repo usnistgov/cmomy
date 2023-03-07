@@ -1,11 +1,107 @@
 [build-system]
 requires = [
-    "setuptools>=42",
-    "wheel",
+    "setuptools>=61.2",
     "setuptools_scm[toml]>=3.4",
     "setuptools_scm_git_archive",
 ]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "cmomy"
+authors = [{name = "William P. Krekelberg", email = "wpk@nist.gov"}]
+license = {text = "NIST license"}
+description = "Central (co)moment calculation/manipulation"
+# if using markdown
+keywords = ["cmomy"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "License :: Public Domain",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering",
+]
+dynamic = ["readme", "version"]
+requires-python = ">=3.8,<3.11"
+dependencies = [
+    "numpy >= 1.20,<1.24",
+    "numba >= 0.50",
+    "xarray >= 0.16",
+    "typing-extensions",
+    "custom-inherit",
+]
+
+[project.urls]
+homepage = "https://github.com/wpk-nist-gov/cmomy"
+documentation = "https://pages.nist.gov/cmomy/"
+
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+zip-safe = true # if using mypy, must be False
+include-package-data = true
+license-files = ["LICENSE"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+namespaces = false
+
+[tool.setuptools.dynamic]
+readme = {file = ["README.md", "HISTORY.md", "LICENSE"], content-type = "text/markdown"}
+
+
+# pyproject.toml
 [tool.setuptools_scm]
-fallback_version = "999"
+
+[tool.aliases]
+test = "pytest"
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+testpaths = ["src/cmomy/tests", "src/cmomy"]
+# testpaths = cmomy/tests
+# [tool:docformatter]
+# recursive = true
+# in-place = true
+
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+force_to_top = ["true"]
+default_section = "THIRDPARTY"
+known_first_party = ["cmomy"]
+
+
+[tool.mypy]
+exclude = "properties|asv_bench|doc"
+files = ["."]
+show_error_codes = true
+warn_return_any = true
+warn_unused_configs = true
+# plugins = numpy.typing.mypy_plugin
+# Most of the numerical computing stack doesn't have type annotations yet.
+
+[[tool.mypy.overrides]]
+module = [
+       "numpy.*",
+       "bottleneck.*",
+       "dask.*",
+       "netCDF.*",
+       "pandas.*",
+       "pytest.*",
+       "scipy.*",
+       "setuptools",
+       "numba.*",
+       ]
+ignore_missing_imports = true
+
+# version spanning code is hard to type annotate (and most of this module will
+# be going away soon anyways)
+exclude = """
+.eggs
+doc
+docs"""
