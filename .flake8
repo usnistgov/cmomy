@@ -1,0 +1,13 @@
+[flake8]
+docstring-convention = numpy
+ignore =
+    E203 # whitespace before ':' - doesn't work well with black
+    E402 # module level import not at top of file
+    E501 # line too long - let black worry about that
+    E731 # do not assign a lambda expression, use a def
+    W503 # line break before binary operator
+    D202 # allow black line after docstring
+    D105
+    D205
+    D400
+    D401
