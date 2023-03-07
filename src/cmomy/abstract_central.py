@@ -953,6 +953,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self: T_CentralMoments,
         b: T_CentralMoments,
     ) -> T_CentralMoments:  # noqa D105
+        """Self adder"""
         self._check_other(b)
         # self.push_data(b.data)
         # return self

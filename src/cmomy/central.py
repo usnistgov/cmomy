@@ -1,4 +1,7 @@
-"""Central moments/comoments routines."""
+"""
+Central moments/comoments routines from :class:`np.ndarray` objects
+-------------------------------------------------------------------
+"""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Hashable, Literal, Mapping, Sequence, cast

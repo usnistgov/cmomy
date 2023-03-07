@@ -1,4 +1,25 @@
-"""Routine to perform resampling."""
+"""
+Routine to perform resampling
+=============================
+
+
+"""
+
+
+# .. automodule:: cmomy.resample
+#     :members:
+
+# .. autosummary::
+#     :toctree: generated/
+
+#     freq_to_indices
+#     indices_to_freq
+#     randsamp_freq
+#     resample_data
+#     resample_vals
+#     bootstrap_confidence_interval
+#     xbootstrap_confidence_interval
+
 from __future__ import annotations
 
 from typing import Hashable, Literal, Sequence, Tuple, cast
@@ -11,7 +32,7 @@ from ._resample import factory_resample_data, factory_resample_vals
 from ._typing import ArrayOrder, Moments, XvalStrict
 from .utils import _axis_expand_broadcast, myjit
 
-###############################################################################
+##############################################################################
 # resampling
 ###############################################################################
 

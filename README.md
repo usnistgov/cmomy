@@ -1,3 +1,23 @@
+[![PyPI version](https://badge.fury.io/py/cmomy.svg)](https://badge.fury.io/py/cmomy)
+[![Code style: black][black-badge]][black-link]
+<!-- [![PyPi][pypi-badge]][pypi-link] -->
+[![Conda (channel only)](https://img.shields.io/conda/vn/wpk-nist/cmomy)](https://anaconda.org/wpk-nist/cmomy)
+
+
+<!-- [github-ci]: https://github.com/executablebooks/MyST-Parser/workflows/continuous-integration/badge.svg?branch=master -->
+<!-- [github-link]: https://github.com/executablebooks/MyST-Parser -->
+<!-- [codecov-badge]: https://codecov.io/gh/executablebooks/MyST-Parser/branch/master/graph/badge.svg -->
+<!-- [codecov-link]: https://codecov.io/gh/executablebooks/MyST-Parser -->
+<!-- [rtd-badge]: https://readthedocs.org/projects/myst-parser/badge/?version=latest -->
+<!-- [rtd-link]: https://myst-parser.readthedocs.io/en/latest/?badge=latest -->
+[black-badge]: https://img.shields.io/badge/code%20style-black-000000.svg
+[black-link]: https://github.com/ambv/black
+[pypi-badge]: https://img.shields.io/pypi/v/cmomy
+[pypi-link]: https://pypi.org/project/cmomy
+<!-- [conda-badge]: https://anaconda.org/conda-forge/myst-parser/badges/version.svg -->
+<!-- [conda-link]: https://anaconda.org/conda-forge/myst-parser -->
+<!-- [install-badge]: https://img.shields.io/pypi/dw/myst-parser?label=pypi%20installs -->
+<!-- [install-link]: https://pypistats.org/packages/myst-parser -->
 # cmomy
 
 A Python package to calculate and manipulate Central (co)moments. The main features of ``cmomy`` are as follows:
@@ -20,12 +40,19 @@ be found
 [here](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance).
 
 
+## Features
+* Fast calculation of central moments and central co-moments with weights
+* Support for scalar or vector inputs
+* numpy and xarray api's
+* bootstrap resampling
+
+
 ## Status
 
 This package is actively used by the author.  Please feel free to create a pull request for wanted features and suggestions!
 
 
-## Installation
+## Quick start
 
 Use one of the following
 
@@ -38,6 +65,9 @@ or
 ``` bash
 conda install -c wpk-nist cmomy
 ```
+
+
+<!-- end-docs -->
 
 ## Note on caching
 

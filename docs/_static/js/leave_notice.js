@@ -14,6 +14,8 @@ $(document).ready(function(){
   });
   // Add leaveNotice to external A elements
   $('a.external').leaveNotice({
-    siteName: 'pages.nist.gov',
+      siteName: 'pages.nist.gov',
+      timeOut: 2000,
+      overlayAlpha: 0.1,
   });
 });

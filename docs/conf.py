@@ -40,7 +40,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
-    "nbsphinx",
+    # "nbsphinx",
     ## easier external links
     # "sphinx.ext.extlinks",
     ## view source code on created page
@@ -53,7 +53,31 @@ extensions = [
     # "sphinxext.rediraffe",
     ## pretty things up?
     # "sphinx_design"
+    ## myst stuff
+    "myst_nb",
 ]
+
+# -- myst stuff ---------------------------------------------------------
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+    "deflist",
+    # "html_admonition",
+    "html_image",
+    "colon_fence",
+    # "smartquotes",
+    # "replacements",
+    # "linkify",
+    # "substitution",
+]
+
+myst_url_schemes = ("http", "https", "mailto")
+
+nb_execution_mode = "cache"
+
+# set the kernel name
+nb_kernel_rgx_aliases = {"cmomy.*": "python3", "conda.*": "python3"}
+
 # -- nbsphinx -----------------------------------------------------------
 
 # defined stuff, from xarray
@@ -66,12 +90,17 @@ You can view this notebook `on Github <https://github.com/usnistgov/cmomy/blob/m
 """
 
 # The kernelname to use.
-nbsphinx_kernel_name = "python3"
+
+# nbsphinx_kernel_name = "python3"
 
 # -- autodocs/summary ---------------------------------------------------
 
-# autosummary_generate = True
 autosummary_generate = True
+# autosummary_generate = False
+autodoc_member_order = "bysource"
+
+
+# autosummary_generate_overwrite = False
 
 autoclass_content = "both"  # include both class docstring and __init__
 autodoc_default_flags = [
@@ -81,6 +110,12 @@ autodoc_default_flags = [
     "private-members",
     "show-inheritance",
 ]
+
+
+# autodoc_default_options = {
+#     'inherited-members': None,
+# }
+
 
 autodoc_typehints = "none"
 
@@ -157,7 +192,12 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+# source_suffix = {
+#     '.rst': 'restructuredtext',
+#     '.ipynb': 'myst-nb',
+#     '.myst': 'myst-nb',
+#     '.md': 'myst-nb',
+# }
 
 # The master toctree document.
 master_doc = "index"
@@ -212,6 +252,8 @@ todo_include_todos = False
 # html_theme = "sphinx_rtd_theme"
 # html_theme = "nature"
 # html_theme = 'sphinx_material'
+# html_theme = 'furo'
+
 html_theme = "sphinx_book_theme"
 
 
@@ -219,22 +261,21 @@ html_context = {
     "github_user": "usnistgov",
     "github_repo": "cmomy",
     "github_version": "master",
-    "doc_path": "doc",
+    "doc_path": "docs",
 }
 
 html_theme_options = dict(
     # analytics_id=''  this is configured in rtfd.io
     # canonical_url="",
     repository_url="https://github.com/usnistgov/cmomy",
-    repository_branch="master",
-    path_to_docs="doc",
-    use_edit_page_button=True,
+    repository_branch=html_context["github_version"],
+    path_to_docs=html_context["doc_path"],
+    # use_edit_page_button=True,
     use_repository_button=True,
     use_issues_button=True,
     home_page_in_toc=True,
-    extra_navbar="",
-    navbar_footer_text="",
-    extra_footer="",
+    show_toc_level=2,
+    show_navbar_depth=2,
 )
 
 
