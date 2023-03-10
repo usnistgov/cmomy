@@ -59,7 +59,7 @@ Ready to contribute? Here's how to set up `cmomy` for local development.
     $ git clone git@github.com:your_name_here/cmomy.git
     ```
 
-03. Install dependecies.  There are useful commands in the makefile, that depend on
+03. Install dependencies.  There are useful commands in the makefile, that depend on
     `pre-commit` and `conda-merge`.  These can be installed with `pip`, `pipx`, or `conda/mamba`.
 
 04. Initiate pre-commit with:
@@ -171,7 +171,7 @@ $ make dist-conda-[recipe, build]
 
 where `recipe` makes the conda recipy (using grayskull), and `build` makes the distro.  This can be manually added to a channel.
 
-To test the created distrobutions, you can use one of:
+To test the created distributions, you can use one of:
 
 ```
 $ make test-dist-[pypi, conda]-[local,remote] py=[38, 39, 310]

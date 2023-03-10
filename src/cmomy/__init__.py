@@ -1,8 +1,4 @@
 """
-#############
-API reference
-#############
-
 
 .. currentmodule:: cmomy
 

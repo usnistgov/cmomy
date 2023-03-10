@@ -1,7 +1,6 @@
-```{highlight} shell
-```
-
 # Installation
+
+
 
 ## Stable release
 
@@ -28,7 +27,7 @@ $ git clone {repo}
 Once you have a copy of the source, you can install it with:
 
 ```console
-# You may want a seperate virtual environment.  You can create a conda env with
+# You may want a separate virtual environment.  You can create a conda env with
 $ conda env create -n {env-name} -f environment-dev.yml
 $ conda activate {env-name}
 

@@ -101,7 +101,6 @@ def _xcentral_moments(
     last: bool = True,
     mom_dims: MomDims | None = None,
 ):  # -> xr.DataArray:
-
     x = vals
     assert isinstance(x, xr.DataArray)
 
@@ -284,7 +283,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         return super().__new__(cls, data=data, mom_ndim=mom_ndim)
 
     def __init__(self, data: xr.DataArray, mom_ndim: Literal[1, 2] = 1) -> None:
-
         if not isinstance(data, xr.DataArray):
             raise ValueError(
                 "data must be a xarray.DataArray. "
@@ -310,7 +308,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         if any(m <= 0 for m in self.mom):
             raise ValueError("moments must be positive")
 
-    # ** xarray attriburtes
+    # ** xarray attributes
     @property
     def values(self):
         """Underlying data."""
@@ -827,7 +825,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         template=None,
         **kwargs,
     ):
-
         method = getattr(CentralMoments, _method_name)
 
         return method(*args, **kwargs).to_xcentralmoments(
@@ -857,9 +854,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         | tuple[float, xr.DataArray]
         | float
     ):
-
         if isinstance(target, str):
-
             # if dim is not None:
             #     if isinstance(dim, int):
             #         dim = x.dims[dim]
@@ -963,7 +958,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         shape_flat: tuple[int, ...] | None = None,
     ) -> Any:
         if isinstance(x, xr.DataArray) or isinstance(target, xr.DataArray):
-
             return self._xverify_value(
                 x,
                 target=target,
@@ -1115,7 +1109,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         self, axis: int | str, default: int = 0, ndim: None = None, **kws
     ) -> int:
         if isinstance(axis, str):
-            raise ValueError("shouldnt get string axis here")
+            raise ValueError("shouldn't get string axis here")
         else:
             return super()._wrap_axis(axis=axis, default=default, ndim=ndim)
 
@@ -1583,7 +1577,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             )
 
         else:
-
             new = cls._wrap_centralmoments_method(
                 "from_raw",
                 raw=raw,
@@ -1642,7 +1635,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         """
 
         if isinstance(raws, xr.DataArray):
-
             return cls.from_raw(
                 raw=raws,
                 mom=mom,
@@ -1758,7 +1750,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             ).push_vals(x=x, dim=dim, w=w, broadcast=broadcast)
 
         else:
-
             new = cls._wrap_centralmoments_method(
                 "from_vals",
                 dim=dim,
@@ -2130,7 +2121,7 @@ def _optional_wrap_data(
 
             dims_total = dims + mom_dims
         else:
-            raise ValueError("bad dims {}, moment_dims {}".format(dims, mom_dims))
+            raise ValueError(f"bad dims {dims}, moment_dims {mom_dims}")
 
         # xarray object
         data = xr.DataArray(

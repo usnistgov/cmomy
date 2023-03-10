@@ -62,18 +62,48 @@ myst_enable_extensions = [
     "dollarmath",
     "amsmath",
     "deflist",
-    # "html_admonition",
+    "fieldlist",
+    "html_admonition",
     "html_image",
     "colon_fence",
-    # "smartquotes",
-    # "replacements",
+    "smartquotes",
+    "replacements",
     # "linkify",
-    # "substitution",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+    # "attrs_inline",
+    # "attrs_block",
 ]
+
+
+myst_heading_anchors = 2
+myst_footnote_transition = True
+myst_dmath_double_inline = True
+myst_enable_checkboxes = True
+myst_substitutions = {
+    "role": "[role](#syntax/roles)",
+    "directive": "[directive](#syntax/directives)",
+}
+# myst_enable_extensions = [
+#     "dollarmath",
+#     "amsmath",
+#     "deflist",
+#     # "html_admonition",
+#     "html_image",
+#     "colon_fence",
+#     # "smartquotes",
+#     # "replacements",
+#     # "linkify",
+#     # "substitution",
+#     "attrs_inline",
+#     "attrs_block",
+# ]
 
 myst_url_schemes = ("http", "https", "mailto")
 
 nb_execution_mode = "cache"
+# nb_execution_mode = "auto"
 
 # set the kernel name
 nb_kernel_rgx_aliases = {"cmomy.*": "python3", "conda.*": "python3"}
@@ -274,7 +304,7 @@ html_theme_options = dict(
     use_repository_button=True,
     use_issues_button=True,
     home_page_in_toc=True,
-    show_toc_level=2,
+    show_toc_level=6,
     show_navbar_depth=2,
 )
 

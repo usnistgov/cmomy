@@ -4,9 +4,10 @@
 
 ```{toctree}
 :caption: 'Contents:'
-:maxdepth: 3
+:maxdepth: 5
 
-
+example
+test
 installation
 notebooks/motivation
 notebooks/usage_notebook

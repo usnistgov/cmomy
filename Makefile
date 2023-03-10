@@ -67,6 +67,17 @@ pre-commit-run: ## run pre-commit
 pre-commit-run-all: ## run pre-commit on all files
 	pre-commit run --all-files
 
+pre-commit-manual: ## run pre-commit manual flags
+	pre-commit run --hook-stage manual
+
+pre-commit-lint-extra: ## run all linting
+	pre-commit run --all-files --hook-stage manual isort
+	pre-commit run --all-files --hook-stage manual flake8
+	pre-commit run --all-files --hook-stage manual pyupgrade
+
+pre-commit-code-spell: ## run codespell
+	pre-commit run --all-files codespell
+
 .git: ## init git
 	git init
 
@@ -192,7 +203,11 @@ docs-spelling:
 	$(TOX) -e docs-spelling -- $(posargs)
 docs-nist-pages: ## do both build and releas
 	$(TOX) -e docs-build,docs-release -- $(posargs)
+docs-open: ## open the build
+	open docs/_build/html/index.html
 
+docs-live: ## use autobuild for docs
+	$(TOX) -e docs-live -- $(posargs)
 
 ## distribution
 .PHONY: dist-pypi-build dist-pypi-testrelease dist-pypi-release dist-conda-recipe dist-conda-build test-dist-pypi test-dist-conda
@@ -211,7 +226,6 @@ dist-conda-recipe: ## build conda recipe can pass posargs=...
 
 dist-conda-build: ## build conda recipe can pass posargs=...
 	$(TOX) -e $@ -- $(pasargs)
-
 
 ## test distribution
 .PHONY: test-dist-pypi-remote test-dist-conda-remote test-dist-pypi-local test-dist-conda-local

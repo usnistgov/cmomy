@@ -33,7 +33,6 @@ def axis(shape):
 
 @my_fixture()
 def xy(shape, mom_tuple):
-
     x = np.random.rand(*shape)
 
     if len(mom_tuple) == 2:
@@ -58,7 +57,6 @@ def test_CS(dc, dcx):
 
 
 def test_from_data(dc, dcx):
-
     mom_ndim = dc.mom_ndim
 
     t = cmomy.CentralMoments.from_data(dc.data, mom_ndim=mom_ndim)
@@ -76,7 +74,6 @@ def test_from_data(dc, dcx):
 
 
 def test_from_datas(dc, dcx):
-
     mom_ndim = dc.mom_ndim
 
     for axis in range(dc.val_ndim):
@@ -97,7 +94,6 @@ def test_from_datas(dc, dcx):
 
 
 def test_from_raw(dc, dcx):
-
     mom_ndim = dc.mom_ndim
 
     t = cmomy.CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim)
@@ -115,7 +111,6 @@ def test_from_raws(dc, dcx):
     mom_ndim = dc.mom_ndim
 
     for axis in range(dc.val_ndim):
-
         # first test from raws
         raws = dc.to_raw()
         t = cmomy.CentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
@@ -140,7 +135,6 @@ def test_from_vals(xy, shape, mom):
         xy_xr = xr.DataArray(xy, dims=dims)
 
     for axis in range(len(shape)):
-
         t = cmomy.xCentralMoments.from_vals(xy, axis=axis, mom=mom)
 
         # dims of output
@@ -155,7 +149,6 @@ def test_from_vals(xy, shape, mom):
 
 
 def test_from_resample_vals(xy, shape, mom):
-
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
     if isinstance(xy, tuple):
         xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)
@@ -163,7 +156,6 @@ def test_from_resample_vals(xy, shape, mom):
         xy_xr = xr.DataArray(xy, dims=dims)
 
     for axis in range(len(shape)):
-
         t, freq = cmomy.xCentralMoments.from_resample_vals(
             xy, nrep=10, full_output=True, axis=axis, mom=mom
         )
@@ -182,9 +174,7 @@ def test_from_resample_vals(xy, shape, mom):
 
 
 def test_resample_and_reduce(dc, dcx):
-
     for axis in range(dc.val_ndim):
-
         t, freq = dc.resample_and_reduce(nrep=10, full_output=True, axis=axis)
 
         o = dcx.resample_and_reduce(freq=freq, dim=dcx.dims[axis])
