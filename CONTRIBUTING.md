@@ -84,8 +84,8 @@ Ready to contribute? Here's how to set up `cmomy` for local development.
     Alternatively, to create a different named env, use:
 
     ```
-    $ make environment-dev.yml
-    $ conda/mamba env create -n {env-name} -f environment-dev.yml
+    $ make environment-dev.yaml
+    $ conda/mamba env create -n {env-name} -f environment-dev.yaml
     $ conda activate {env-name}
     ```
 
