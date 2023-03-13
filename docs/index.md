@@ -6,8 +6,7 @@
 :caption: 'Contents:'
 :maxdepth: 5
 
-example
-test
+<!-- example -->
 installation
 notebooks/motivation
 notebooks/usage_notebook

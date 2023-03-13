@@ -15,11 +15,7 @@ from . import convert
 from ._docstrings import docfiller_shared
 from ._typing import ArrayOrder, Moments, T_CentralMoments
 from .resample import randsamp_freq, resample_vals
-from .utils import (
-    _axis_expand_broadcast,  # _cached_ones,; _my_broadcast,
-    _shape_insert_axis,
-    _shape_reduce,
-)
+from .utils import _axis_expand_broadcast, _shape_insert_axis, _shape_reduce
 
 if TYPE_CHECKING:
     from .xcentral import xCentralMoments

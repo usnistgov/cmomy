@@ -75,8 +75,8 @@ pre-commit-lint-extra: ## run all linting
 	pre-commit run --all-files --hook-stage manual flake8
 	pre-commit run --all-files --hook-stage manual pyupgrade
 
-pre-commit-code-spell: ## run codespell
-	pre-commit run --all-files codespell
+pre-commit-codespell: ## run codespell
+	pre-commit run --all-files --hook-stage manual codespell
 
 .git: ## init git
 	git init

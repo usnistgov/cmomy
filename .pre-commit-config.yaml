@@ -49,6 +49,7 @@ repos:
       - id: codespell
         types_or: [python, rst, markdown, cython, c]
         additional_dependencies: [tomli]
+        args: [-I, docs/spelling_wordlist.txt]
         stages: [manual]
   # this should be run before flake8 to
   # this should be run externally
