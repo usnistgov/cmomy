@@ -53,7 +53,7 @@ clean-test: ## remove test and coverage artifacts
 ################################################################################
 # utilities
 ################################################################################
-.PHONY: lint pre-commit-init pre-commit-run pre-commit-run-all init
+.PHONY: lint pre-commit-init pre-commit-run pre-commit-run-all pre-commit-lint-extra pre-commit-codespell init
 
 lint: ## check style with flake8
 	flake8 cmomy tests
@@ -75,7 +75,7 @@ pre-commit-lint-extra: ## run all linting
 	pre-commit run --all-files --hook-stage manual flake8
 	pre-commit run --all-files --hook-stage manual pyupgrade
 
-pre-commit-codespell: ## run codespell
+pre-commit-codespell: ## run codespell. Note that this imports allowed words from docs/spelling_wordlist.txt
 	pre-commit run --all-files --hook-stage manual codespell
 
 .git: ## init git
@@ -204,7 +204,7 @@ docs-spelling:
 docs-nist-pages: ## do both build and releas
 	$(TOX) -e docs-build,docs-release -- $(posargs)
 docs-open: ## open the build
-	open docs/_build/html/index.html
+	$(BROWSER) docs/_build/html/index.html
 
 docs-live: ## use autobuild for docs
 	$(TOX) -e docs-live -- $(posargs)
