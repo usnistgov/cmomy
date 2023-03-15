@@ -41,7 +41,6 @@ def mom_ndim(request):
     ],
 )
 def test_Central(data, mom_ndim, copy, verify, copy_order, same_data, c_contig):
-
     # no copy no verify should yield same thing this
     c = cmomy.CentralMoments.from_data(
         data,
@@ -64,7 +63,6 @@ def test_Central(data, mom_ndim, copy, verify, copy_order, same_data, c_contig):
     ],
 )
 def test_xCentral(data, mom_ndim, copy, verify, copy_order, same_data, c_contig):
-
     # no copy no verify should yield same thing this
     c = cmomy.xCentralMoments.from_data(
         data,
@@ -90,7 +88,6 @@ def test_xCentral(data, mom_ndim, copy, verify, copy_order, same_data, c_contig)
 def test_xCentral_xdata(
     xdata, mom_ndim, copy, verify, copy_order, same_data, c_contig, same_xdata
 ):
-
     # no copy no verify should yield same thing this
     c = cmomy.xCentralMoments.from_data(
         xdata,

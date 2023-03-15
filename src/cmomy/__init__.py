@@ -1,4 +1,40 @@
-"""Public api for cmomy."""
+"""
+
+.. currentmodule:: cmomy
+
+
+Central (co)moments object creation
+===================================
+
+From :class:`numpy.ndarray`
+----------------------------
+.. autosummary::
+    :toctree: generated/
+
+    central_moments
+    CentralMoments
+
+
+From :class:`xarray.DataArray`
+------------------------------
+.. autosummary::
+    :toctree: generated/
+
+    xcentral_moments
+    xCentralMoments
+
+
+Utility modules
+===============
+
+.. autosummary::
+    :toctree: generated/
+
+    resample
+    convert
+
+
+"""
 
 from .central import CentralMoments, central_moments
 from .resample import (

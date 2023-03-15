@@ -59,6 +59,7 @@ def jitter(parallel):
 
 #     return resample
 
+
 ######################################################################
 # resample data
 # mom/scalar

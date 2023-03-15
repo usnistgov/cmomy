@@ -1,4 +1,25 @@
-"""Routine to perform resampling."""
+"""
+Routine to perform resampling
+=============================
+
+
+"""
+
+
+# .. automodule:: cmomy.resample
+#     :members:
+
+# .. autosummary::
+#     :toctree: generated/
+
+#     freq_to_indices
+#     indices_to_freq
+#     randsamp_freq
+#     resample_data
+#     resample_vals
+#     bootstrap_confidence_interval
+#     xbootstrap_confidence_interval
+
 from __future__ import annotations
 
 from typing import Hashable, Literal, Sequence, Tuple, cast
@@ -11,7 +32,7 @@ from ._resample import factory_resample_data, factory_resample_vals
 from ._typing import ArrayOrder, Moments, XvalStrict
 from .utils import _axis_expand_broadcast, myjit
 
-###############################################################################
+##############################################################################
 # resampling
 ###############################################################################
 
@@ -48,7 +69,6 @@ def freq_to_indices(freq):
     indices_all = []
 
     for f in freq:
-
         indices = np.concatenate([np.repeat(i, count) for i, count in enumerate(f)])
 
         indices_all.append(indices)
@@ -110,11 +130,11 @@ def randsamp_freq(
         if check:
             if nrep is not None:
                 if x.shape[0] != nrep:
-                    raise ValueError("{} has wrong nrep".format(name))
+                    raise ValueError(f"{name} has wrong nrep")
 
             assert size is not None
             if x.shape[1] != size:
-                raise ValueError("{} has wrong size".format(name))
+                raise ValueError(f"{name} has wrong size")
         return x
 
     if freq is not None:
@@ -436,7 +456,7 @@ def xbootstrap_confidence_interval(
         bootstrap_dim = "bootstrap"
 
     if bootstrap_dim in template.dims:
-        bootstrap_dim = "{}_{}".format(dim, bootstrap_dim)
+        bootstrap_dim = f"{dim}_{bootstrap_dim}"
     dims = (bootstrap_dim,) + template.dims
 
     if bootstrap_coords is None:

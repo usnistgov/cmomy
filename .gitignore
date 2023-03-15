@@ -109,3 +109,4 @@ pyrightconfig.json
 .autoenv_leave.zsh
 /docs/generated/
 /monkeytype.sqlite3
+/dist-conda/

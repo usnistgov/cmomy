@@ -53,7 +53,7 @@ clean-test: ## remove test and coverage artifacts
 ################################################################################
 # utilities
 ################################################################################
-.PHONY: lint pre-commit-init pre-commit-run pre-commit-run-all init
+.PHONY: lint pre-commit-init pre-commit-run pre-commit-run-all pre-commit-lint-extra pre-commit-codespell init
 
 lint: ## check style with flake8
 	flake8 cmomy tests
@@ -67,6 +67,17 @@ pre-commit-run: ## run pre-commit
 pre-commit-run-all: ## run pre-commit on all files
 	pre-commit run --all-files
 
+pre-commit-manual: ## run pre-commit manual flags
+	pre-commit run --hook-stage manual
+
+pre-commit-lint-extra: ## run all linting
+	pre-commit run --all-files --hook-stage manual isort
+	pre-commit run --all-files --hook-stage manual flake8
+	pre-commit run --all-files --hook-stage manual pyupgrade
+
+pre-commit-codespell: ## run codespell. Note that this imports allowed words from docs/spelling_wordlist.txt
+	pre-commit run --all-files --hook-stage manual codespell
+
 .git: ## init git
 	git init
 
@@ -79,29 +90,29 @@ init: .git pre-commit-init ## run git-init pre-commit
 .PHONY: conda-env conda-dev conda-all mamba-env mamba-dev mamba-all activate
 
 
-environment-dev.yml: environment.yml environment-tools.yml
-	conda-merge environment.yml environment-tools.yml > environment-dev.yml
+environment-dev.yaml: environment.yaml environment-tools.yaml
+	conda-merge environment.yaml environment-tools.yaml > environment-dev.yaml
 
 
 # conda-env: ## conda create base env
-# 	conda env create -f environment.yml
+# 	conda env create -f environment.yaml
 
 # conda-dev: ## conda update development dependencies
-# 	conda env update -n cmomy-env -f environment-dev.yml
+# 	conda env update -n cmomy-env -f environment-dev.yaml
 
 # conda-all: conda-env conda-dev ## conda create development env
 
-mamba-env: environment.yml ## mamba create base env
-	mamba env create -f environment.yml
+mamba-env: environment.yaml ## mamba create base env
+	mamba env create -f environment.yaml
 
-mamba-dev: environment-dev.yml ## mamba update development dependencies
-	mamba env create -f environment-dev.yml
+mamba-dev: environment-dev.yaml ## mamba update development dependencies
+	mamba env create -f environment-dev.yaml
 
-mamba-env-update: environment.yml
-	mamba env update -f environment.yml
+mamba-env-update: environment.yaml
+	mamba env update -f environment.yaml
 
-mamba-dev-update: environment-dev.yml
-	mamba env update -f environment-dev.yml
+mamba-dev-update: environment-dev.yaml
+	mamba env update -f environment-dev.yaml
 
 
 activate: ## activate base env
@@ -192,7 +203,11 @@ docs-spelling:
 	$(TOX) -e docs-spelling -- $(posargs)
 docs-nist-pages: ## do both build and releas
 	$(TOX) -e docs-build,docs-release -- $(posargs)
+docs-open: ## open the build
+	$(BROWSER) docs/_build/html/index.html
 
+docs-live: ## use autobuild for docs
+	$(TOX) -e docs-live -- $(posargs)
 
 ## distribution
 .PHONY: dist-pypi-build dist-pypi-testrelease dist-pypi-release dist-conda-recipe dist-conda-build test-dist-pypi test-dist-conda
@@ -211,7 +226,6 @@ dist-conda-recipe: ## build conda recipe can pass posargs=...
 
 dist-conda-build: ## build conda recipe can pass posargs=...
 	$(TOX) -e $@ -- $(pasargs)
-
 
 ## test distribution
 .PHONY: test-dist-pypi-remote test-dist-conda-remote test-dist-pypi-local test-dist-conda-local

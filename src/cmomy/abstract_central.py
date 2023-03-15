@@ -24,6 +24,7 @@ from numpy.typing import ArrayLike, DTypeLike
 
 from . import convert
 from ._docstrings import docfiller_shared
+from ._formatting import repr_html
 from ._typing import Moments, T_Array, T_CentralMoments
 from .cached_decorators import gcached
 from .options import DOC_SUB
@@ -51,7 +52,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         data[..., i, j] = \begin{cases}
             \text{weight} & i = j = 0 \\
             \langle x \rangle & i = 1, j = 0 \\
-            \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j) \rangle & i + j > 0
+            \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j)
+            \rangle & i + j > 0
         \end{cases}
 
     Parameters
@@ -79,7 +81,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return super().__new__(cls)  # , data=data, mom_ndim=mom_ndim)
 
     def __init__(self, data: T_Array, mom_ndim: Literal[1, 2] = 1) -> None:
-
         self._data = cast(np.ndarray, data)
         self._data_flat = self._data
 
@@ -93,7 +94,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         By convention data has the following meaning for the moments indexes
 
         * `data[...,i=0,j=0]`, weights
-        * `data[...,i=1,j=0]]`, if only one moment index is one and all others zero, then this is the average value of the variable with unit index.
+        * `data[...,i=1,j=0]]`, if only one moment index is one and all others zero,
+        then this is the average value of the variable with unit index.
         * all other cases, the central moments `<(x0-<x0>)**i0 * (x1 - <x1>)**i1 * ...>`
 
         """
@@ -194,6 +196,9 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         name = self.__class__.__name__
         s = f"<{name}(val_shape={self.val_shape}, mom={self.mom})>\n"
         return s + repr(self.values)
+
+    def _repr_html_(self):
+        return repr_html(self)
 
     def __array__(self, dtype: DTypeLike | None = None) -> np.ndarray:
         """Used by np.array(self)."""  # noqa D401
@@ -676,24 +681,29 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kwargs,
     ) -> T_CentralMoments:
         """
-        Apply `func_or_method` to underlying data and wrap results in `xCentralMoments` object.
+        Apply `func_or_method` to underlying data and wrap results in
+        `xCentralMoments` object.
 
-        This is useful for calling any not implemented methods on ndarray or DataArray data.
+        This is useful for calling any not implemented methods on ndarray or
+        DataArray data.
 
         Parameters
         ----------
         func_or_method : str or callable
-            If callable, then apply ``values = func_or_method(self.values, *args, **kwargs)``.
-            If string is passed, then ``values = getattr(self.values, func_or_method)(*args, **kwargs)``.
+            If callable, then apply ``values = func_or_method(self.values,
+            *args, **kwargs)``. If string is passed, then ``values =
+            getattr(self.values, func_or_method)(*args, **kwargs)``.
         _order : bool, default = True
             If True, reorder the data such that ``mom_dims`` are last.
         _copy : bool, default = False
             If True, copy the resulting data.  Otherwise, try to use a view.
             This is passed as ``copy=_copy`` to :meth:`from_data`.
         _verify: bool, default=False
-            If True, ensure underlying data is contiguous.  Passed as ``verify=_verify`` to :meth:`from_data`
+            If True, ensure underlying data is contiguous. Passed as
+            ``verify=_verify`` to :meth:`from_data`
         _check_mom: bool, default = True
-            If True, check the resulting object has the same moment shape as the current object.
+            If True, check the resulting object has the same moment shape as the
+            current object.
         _kws : Mapping, optional
             Extra arguments to :meth:`from_data`.
         *args
@@ -704,12 +714,14 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         Returns
         -------
         output : xCentralMoments
-            New :class:`xCentralMoments` object after `func_or_method` is applies to `self.values`
+            New :class:`xCentralMoments` object after `func_or_method` is
+            applies to `self.values`
 
 
         Notes
         -----
-        Use leading underscore for `_order`, `_copy` to avoid name possible name clashes.
+        Use leading underscore for `_order`, `_copy` to avoid name possible name
+        clashes.
 
 
         See Also
@@ -782,7 +794,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         Returns
         -------
         output : instance of calling class
-            Note that new object will have val_shape = (nrep,) + val_shape[:axis] + val_shape[axis+1:]
+            Note that new object will have val_shape = (nrep,) +
+            val_shape[:axis] + val_shape[axis+1:]
 
         See Also
         --------
@@ -953,6 +966,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self: T_CentralMoments,
         b: T_CentralMoments,
     ) -> T_CentralMoments:  # noqa D105
+        """Self adder"""
         self._check_other(b)
         # self.push_data(b.data)
         # return self
@@ -1028,7 +1042,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             if shape is not None:
                 if mom_ndim is None:
                     raise ValueError(
-                        "must speficy either moments or shape and mom_ndim"
+                        "must specify either moments or shape and mom_ndim"
                     )
                 moments = tuple(x - 1 for x in shape[-mom_ndim:])
             else:

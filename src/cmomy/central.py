@@ -1,4 +1,7 @@
-"""Central moments/comoments routines."""
+"""
+Central moments/comoments routines from :class:`np.ndarray` objects
+-------------------------------------------------------------------
+"""
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Hashable, Literal, Mapping, Sequence, cast
@@ -12,8 +15,7 @@ from . import convert
 from ._docstrings import docfiller_shared
 from ._typing import ArrayOrder, Moments, T_CentralMoments
 from .resample import randsamp_freq, resample_vals
-from .utils import _axis_expand_broadcast  # _cached_ones,; _my_broadcast,
-from .utils import _shape_insert_axis, _shape_reduce
+from .utils import _axis_expand_broadcast, _shape_insert_axis, _shape_reduce
 
 if TYPE_CHECKING:
     from .xcentral import xCentralMoments
@@ -567,7 +569,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         target : tuple or array
             If tuple, this is the target shape to be used to Make target.
             If array, this is the target array
-        Optinal target that has already been rolled.  If this is passed, and
+        Optional target that has already been rolled.  If this is passed, and
         x will be broadcast/expanded, can expand to this shape without the need
         to reorder,
         """

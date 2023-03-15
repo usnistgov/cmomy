@@ -279,7 +279,6 @@ class Data:
                 raw = np.moveaxis(raw, 0, -1)
 
             else:
-
                 raw = np.zeros_like(self.data_test)
                 for i in range(self.mom[0] + 1):
                     for j in range(self.mom[1] + 1):
