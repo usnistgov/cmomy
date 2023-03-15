@@ -30,6 +30,7 @@ clean: clean-build clean-pyc clean-test ## remove all build, test, coverage and 
 
 clean-build: ## remove build artifacts
 	rm -fr build/
+	rm -fr docs/_build/
 	rm -fr dist/
 	rm -fr .eggs/
 	find . -name '*.egg-info' -exec rm -fr {} +
@@ -83,37 +84,25 @@ pre-commit-codespell: ## run codespell. Note that this imports allowed words fro
 
 init: .git pre-commit-init ## run git-init pre-commit
 
-
 ################################################################################
 # virtual env
 ################################################################################
-.PHONY: conda-env conda-dev conda-all mamba-env mamba-dev mamba-all activate
-
+.PHONY: mamba-env mamba-dev mamba-env-update mamba-dev-update activate
 
 environment-dev.yaml: environment.yaml environment-tools.yaml
 	conda-merge environment.yaml environment-tools.yaml > environment-dev.yaml
 
-
-# conda-env: ## conda create base env
-# 	conda env create -f environment.yaml
-
-# conda-dev: ## conda update development dependencies
-# 	conda env update -n cmomy-env -f environment-dev.yaml
-
-# conda-all: conda-env conda-dev ## conda create development env
-
-mamba-env: environment.yaml ## mamba create base env
+mamba-env: environment.yaml
 	mamba env create -f environment.yaml
 
-mamba-dev: environment-dev.yaml ## mamba update development dependencies
+mamba-dev: environment-dev.yaml
 	mamba env create -f environment-dev.yaml
 
 mamba-env-update: environment.yaml
-	mamba env update -f environment.yaml
+	mamba env update -f environment.yml
 
 mamba-dev-update: environment-dev.yaml
-	mamba env update -f environment-dev.yaml
-
+	mamba env update -f environment-dev.yml
 
 activate: ## activate base env
 	conda activate cmomy-env
@@ -127,7 +116,7 @@ user-venv: ## create .venv file with name of conda env
 	echo cmomy-env > .venv
 
 user-autoenv-zsh: ## create .autoenv.zsh files
-	echo conda activate cmomy-env > .autoenv.zsh
+	echo conda activate $$(cat .venv) > .autoenv.zsh
 	echo conda deactivate > .autoenv_leave.zsh
 
 user-all: user-venv user-autoenv-zsh ## runs user scripts
@@ -136,12 +125,9 @@ user-all: user-venv user-autoenv-zsh ## runs user scripts
 ################################################################################
 # Testing
 ################################################################################
-.PHONY: test test-all coverage
+.PHONY: test coverage
 test: ## run tests quickly with the default Python
 	pytest -x -v
-
-test-gen_examples:
-	pytest -x -v --accept
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source cmomy -m pytest
@@ -150,6 +136,9 @@ coverage: ## check code coverage quickly with the default Python
 	$(BROWSER) htmlcov/index.html
 
 
+################################################################################
+# versioning
+################################################################################
 .PHONY: version-scm version-import version
 version-scm: ## check version of package
 	python -m setuptools_scm
@@ -160,25 +149,8 @@ version-import: ## check version from python import
 version: version-scm version-import
 
 
+
 ################################################################################
-# Docs
-################################################################################
-# .PHONY: docs serverdocs doc-spelling
-# docs: ## generate Sphinx HTML documentation, including API docs
-# 	rm -fr docs/generated
-# 	$(MAKE) -C docs clean
-# 	$(MAKE) -C docs html
-# 	$(BROWSER) docs/_build/html/index.html
-
-# servedocs: docs ## compile the docs watching for changes
-# 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
-
-# docs-spelling:
-# 	sphinx-build -b spelling docs docs/_build
-
-
-
-###############################################################################
 # TOX
 ###############################################################################
 tox_posargs?=-v
@@ -189,8 +161,9 @@ TOX=CONDA_EXE=mamba tox $(tox_posargs)
 test-all: ## run tests on every Python version with tox
 	$(TOX) -- $(posargs)
 
+
 ## docs
-.PHONY: docs-build docs-release docs-clean docs-spelling docs-nist-pages
+.PHONY: docs-build docs-release docs-clean docs-spelling docs-nist-pages docs-open docs-live
 posargs=
 docs-build: ## build docs in isolation
 	$(TOX) -e docs-build -- $(posargs)
@@ -205,12 +178,12 @@ docs-nist-pages: ## do both build and releas
 	$(TOX) -e docs-build,docs-release -- $(posargs)
 docs-open: ## open the build
 	$(BROWSER) docs/_build/html/index.html
-
 docs-live: ## use autobuild for docs
 	$(TOX) -e docs-live -- $(posargs)
 
 ## distribution
-.PHONY: dist-pypi-build dist-pypi-testrelease dist-pypi-release dist-conda-recipe dist-conda-build test-dist-pypi test-dist-conda
+.PHONY: dist-pypi-build dist-pypi-testrelease dist-pypi-release dist-conda-recipe dist-conda-build
+
 
 dist-pypi-build: ## build dist, can pass posargs=... and tox_posargs=...
 	$(TOX) -e $@ -- $(posargs)
@@ -227,10 +200,11 @@ dist-conda-recipe: ## build conda recipe can pass posargs=...
 dist-conda-build: ## build conda recipe can pass posargs=...
 	$(TOX) -e $@ -- $(pasargs)
 
+
 ## test distribution
 .PHONY: test-dist-pypi-remote test-dist-conda-remote test-dist-pypi-local test-dist-conda-local
 
-py?=39
+py?=310
 test-dist-pypi-remote: ## test pypi install, can run as `make test-dist-pypi-remote py=39` to run test-dist-pypi-local-py39
 	$(TOX) -e $@-py$(py) -- $(posargs)
 
@@ -244,12 +218,19 @@ test-dist-conda-local: ## test conda install, can run as `make test-dist-conda-l
 	$(TOX) -e $@-py$(py) -- $(poasargs)
 
 
+## list all options
+.PHONY: tox-list
+
+tox-list:
+	$(TOX) -a
+
+
 ################################################################################
 # installation
 ################################################################################
 .PHONY: install install-dev
 install: ## install the package to the active Python's site-packages (run clean?)
-	pip install .
+	pip install . --no-deps
 
 install-dev: ## install development version (run clean?)
 	pip install -e . --no-deps

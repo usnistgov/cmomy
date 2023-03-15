@@ -6,12 +6,15 @@ requires = [
 ]
 build-backend = "setuptools.build_meta"
 
+
+
 [project]
 name = "cmomy"
 authors = [{name = "William P. Krekelberg", email = "wpk@nist.gov"}]
 license = {text = "NIST license"}
 description = "Central (co)moment calculation/manipulation"
 # if using markdown
+# long_description_content_type = text/markdown
 keywords = ["cmomy"]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
@@ -54,8 +57,9 @@ namespaces = false
 readme = {file = ["README.md", "HISTORY.md", "LICENSE"], content-type = "text/markdown"}
 
 
-# pyproject.toml
 [tool.setuptools_scm]
+fallback_version = "999"
+
 
 [tool.aliases]
 test = "pytest"
@@ -169,6 +173,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
 
+[tool.cruft]
 
 
 [tool.mypy]

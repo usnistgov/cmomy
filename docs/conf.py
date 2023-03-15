@@ -108,31 +108,25 @@ nb_execution_mode = "cache"
 # set the kernel name
 nb_kernel_rgx_aliases = {"cmomy.*": "python3", "conda.*": "python3"}
 
-# -- nbsphinx -----------------------------------------------------------
+# - top level variables --------------------------------------------------------
+# set github_username variable to be subbed later.
+# this makes it easy to switch from wpk -> usnistgov later
+github_username = "usnistgov"
 
-# defined stuff, from xarray
-nbsphinx_prolog = """
+html_context = {
+    "github_user": "usnistgov",
+    "github_repo": "cmomy",
+    "github_version": "master",
+    "doc_path": "doc",
+}
 
-{% set docname = env.doc2path(env.docname, base=None) %}
 
-
-You can view this notebook `on Github <https://github.com/usnistgov/cmomy/blob/master/docs/{{ docname }}>`_.
-"""
-
-# The kernelname to use.
-
-# nbsphinx_kernel_name = "python3"
-
-# -- autodocs/summary ---------------------------------------------------
-
+# -- python3 ---------------------------------------------------------------
 autosummary_generate = True
 # autosummary_generate = False
 autodoc_member_order = "bysource"
 
-
-# autosummary_generate_overwrite = False
-
-autoclass_content = "both"  # include both class docstring and __init__
+# autoclass_content = "both"  # include both class docstring and __init__
 autodoc_default_flags = [
     # Make sure that any autodoc declarations show the right members
     "members",
@@ -140,20 +134,14 @@ autodoc_default_flags = [
     "private-members",
     "show-inheritance",
 ]
-
-
-# autodoc_default_options = {
-#     'inherited-members': None,
-# }
-
-
 autodoc_typehints = "none"
 
+# -- napolean ------------------------------------------------------------------
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
 napoleon_use_param = False
-napoleon_use_rtype = False
+napoleon_use_rtype = True
 napoleon_preprocess_types = True
 napoleon_type_aliases = {
     # general terms
@@ -165,6 +153,7 @@ napoleon_type_aliases = {
     "path-like": ":term:`path-like <path-like object>`",
     "mapping": ":term:`mapping`",
     "hashable": ":term:`hashable`",
+    "file-like": ":term:`file-like <file-like object>`",
     # special terms
     # "same type as caller": "*same type as caller*",  # does not work, yet
     # "same type as values": "*same type as values*",  # does not work, yet
@@ -211,9 +200,6 @@ napoleon_type_aliases = {
     "pd.NaT": "~pandas.NaT",
 }
 
-numpydoc_class_members_toctree = True
-numpydoc_show_class_members = False
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -222,18 +208,14 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-# source_suffix = {
-#     '.rst': 'restructuredtext',
-#     '.ipynb': 'myst-nb',
-#     '.myst': 'myst-nb',
-#     '.md': 'myst-nb',
-# }
+source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "index"
 
 # General information about the project.
 project = "cmomy"
+copyright = "2023, William P. Krekelberg"
 author = "William P. Krekelberg"
 
 # The version info for the project you're documenting, acts as replacement
@@ -260,7 +242,7 @@ release = "*latest*"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = "en"
+language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -273,26 +255,16 @@ pygments_style = "sphinx"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
-# html_theme = "sphinx_rtd_theme"
-# html_theme = "nature"
-# html_theme = 'sphinx_material'
-# html_theme = 'furo'
+
 
 html_theme = "sphinx_book_theme"
 
-
-html_context = {
-    "github_user": "usnistgov",
-    "github_repo": "cmomy",
-    "github_version": "master",
-    "doc_path": "docs",
-}
 
 html_theme_options = dict(
     # analytics_id=''  this is configured in rtfd.io
@@ -311,8 +283,8 @@ html_theme_options = dict(
 
 # handle nist css/js from here.
 html_css_files = [
-    "https://pages.nist.gov/nist-header-footer/css/nist-combined.css",
     # "css/nist-combined.css",
+    "https://pages.nist.gov/nist-header-footer/css/nist-combined.css",
     "https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css",
 ]
 
@@ -328,16 +300,6 @@ html_js_files = [
         {"async": "async", "id": "_fed_au_ua_tag", "type": "text/javascript"},
     ),
 ]
-
-
-# <script async type="text/javascript" id="_fed_an_ua_tag" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c">
-# </script>
-# Theme options are theme-specific and customize the look and feel of a
-# theme further.  For a list of options available for each theme, see the
-# documentation.
-#
-# html_theme_options = {"logo_only": True}
-
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -477,7 +439,9 @@ def linkcode_resolve(domain, info):
 
     fn = os.path.relpath(fn, start=os.path.dirname(cmomy.__file__))
 
-    return f"https://github.com/usnistgov/cmomy/blob/master/src/cmomy/{fn}{linespec}"
+    return (
+        f"https://github.com/{github_username}/cmomy/blob/master/cmomy/{fn}{linespec}"
+    )
 
 
 # only set spelling stuff if installed:

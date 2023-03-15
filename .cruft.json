@@ -1,40 +1,41 @@
 {
-    "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-    "commit": "6d382e1f5b4f3f8b821403813b7e9bb051c8ec29",
-    "checkout": "feature/markdown",
-    "skip": [
-        "src/**/__init__.py",
-        "README.md",
-        "HISTORY.md",
-        "AUTHORS.md",
-        "environment*.yaml",
-        "docs/api.md"
-    ],
-    "context": {
-        "cookiecutter": {
-            "full_name": "William P. Krekelberg",
-            "email": "wpk@nist.gov",
-            "github_username": "usnistgov",
-            "pypi_username": "wpk-nist",
-            "conda_channel": "wpk-nist",
-            "project_name": "cmomy",
-            "project_slug": "cmomy",
-            "_copy_without_render": [
-                "*.html",
-                "docs/_templates/*.rst",
-                "docs/_templates/autosummary/*.rst"
-            ],
-            "project_short_description": "Central (co)moment calculation/manipulation",
-            "version": "0.0.1",
-            "use_pytest": "y",
-            "use_pypi_deployment_with_travis": "n",
-            "command_line_interface": "No command-line interface",
-            "create_author_file": "y",
-            "open_source_license": "NIST license",
-            "sphinx_auto": "autosummary",
-            "sphinx_theme": "sphinx_book_theme",
-            "_template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git"
-        }
-    },
-    "directory": null
+  "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
+  "commit": "a20e34a5c54a304d31c2f5f4873b02740420e2f4",
+  "checkout": "feature/markdown",
+  "skip": [
+    "*/__init__.py",
+    "README.md",
+    "HISTORY.md",
+    "AUTHORS.md",
+    "environment.yaml",
+    "environmanet-tools.yaml",
+    "docs/api.md"
+  ],
+  "context": {
+    "cookiecutter": {
+      "full_name": "William P. Krekelberg",
+      "email": "wpk@nist.gov",
+      "github_username": "usnistgov",
+      "pypi_username": "wpk-nist",
+      "conda_channel": "wpk-nist",
+      "project_name": "cmomy",
+      "project_slug": "cmomy",
+      "_copy_without_render": [
+        "*.html",
+        "docs/_templates/*.rst",
+        "docs/_templates/autosummary/*.rst"
+      ],
+      "project_short_description": "Central (co)moment calculation/manipulation",
+      "version": "0.0.1",
+      "use_pytest": "y",
+      "use_pypi_deployment_with_travis": "n",
+      "command_line_interface": "No command-line interface",
+      "create_author_file": "y",
+      "open_source_license": "NIST license",
+      "sphinx_auto": "autosummary",
+      "sphinx_theme": "sphinx_book_theme",
+      "_template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git"
+    }
+  },
+  "directory": null
 }
