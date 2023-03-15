@@ -1,32 +1,39 @@
 {
-  "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-  "commit": "349d81c528891a325033891bf1769febf7ab7970",
-  "checkout": "feature/markdown",
-  "context": {
-    "cookiecutter": {
-      "full_name": "William P. Krekelberg",
-      "email": "wpk@nist.gov",
-      "github_username": "usnistgov",
-      "pypi_username": "wpk-nist",
-      "conda_channel": "wpk-nist",
-      "project_name": "cmomy",
-      "project_slug": "cmomy",
-      "_copy_without_render": [
-        "*.html",
-        "docs/_templates/*.rst",
-        "docs/_templates/autosummary/*.rst"
-      ],
-      "project_short_description": "Central (co)moment calculation/manipulation",
-      "version": "0.0.1",
-      "use_pytest": "y",
-      "use_pypi_deployment_with_travis": "n",
-      "command_line_interface": "No command-line interface",
-      "create_author_file": "y",
-      "open_source_license": "NIST license",
-      "sphinx_auto": "autosummary",
-      "sphinx_theme": "sphinx_book_theme",
-      "_template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git"
-    }
-  },
-  "directory": null
+    "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
+    "commit": "349d81c528891a325033891bf1769febf7ab7970",
+    "checkout": "feature/markdown",
+    "skip": [
+        "src/**/__init__.py",
+        "README.md",
+        "HISTORY.md",
+        "AUTHORS.md",
+        "environment*.yaml"
+    ],
+    "context": {
+        "cookiecutter": {
+            "full_name": "William P. Krekelberg",
+            "email": "wpk@nist.gov",
+            "github_username": "usnistgov",
+            "pypi_username": "wpk-nist",
+            "conda_channel": "wpk-nist",
+            "project_name": "cmomy",
+            "project_slug": "cmomy",
+            "_copy_without_render": [
+                "*.html",
+                "docs/_templates/*.rst",
+                "docs/_templates/autosummary/*.rst"
+            ],
+            "project_short_description": "Central (co)moment calculation/manipulation",
+            "version": "0.0.1",
+            "use_pytest": "y",
+            "use_pypi_deployment_with_travis": "n",
+            "command_line_interface": "No command-line interface",
+            "create_author_file": "y",
+            "open_source_license": "NIST license",
+            "sphinx_auto": "autosummary",
+            "sphinx_theme": "sphinx_book_theme",
+            "_template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git"
+        }
+    },
+    "directory": null
 }
