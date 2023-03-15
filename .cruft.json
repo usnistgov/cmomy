@@ -3,13 +3,15 @@
   "commit": "5817cad45e7564b272cbff855f87a3535554085b",
   "checkout": "feature/markdown",
   "skip": [
-    "*/__init__.py",
+    "src/cmomy/__init__.py",
     "README.md",
     "HISTORY.md",
     "AUTHORS.md",
     "environment.yaml",
-    "environmanet-tools.yaml",
-    "docs/api.md"
+    "environment-tools.yaml",
+      "docs/api.md",
+      "docs/index.md",
+      "docs/spelling_wordlist.txt"
   ],
   "context": {
     "cookiecutter": {
