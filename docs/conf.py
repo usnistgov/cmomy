@@ -117,9 +117,8 @@ html_context = {
     "github_user": "usnistgov",
     "github_repo": "cmomy",
     "github_version": "master",
-    "doc_path": "doc",
+    "doc_path": "docs",
 }
-
 
 # -- python3 ---------------------------------------------------------------
 autosummary_generate = True
@@ -208,7 +207,11 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
+    ".myst": "myst-nb",
+}
 
 # The master toctree document.
 master_doc = "index"
@@ -262,9 +265,7 @@ todo_include_todos = False
 # a list of builtin themes.
 #
 
-
 html_theme = "sphinx_book_theme"
-
 
 html_theme_options = dict(
     # analytics_id=''  this is configured in rtfd.io
@@ -279,8 +280,6 @@ html_theme_options = dict(
     show_toc_level=6,
     show_navbar_depth=2,
 )
-
-
 # handle nist css/js from here.
 html_css_files = [
     # "css/nist-combined.css",
@@ -350,7 +349,13 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "cmomy.tex", "cmomy Documentation", "William P. Krekelberg", "manual"),
+    (
+        master_doc,
+        "cmomy.tex",
+        "cmomy Documentation",
+        "William P. Krekelberg",
+        "manual",
+    ),
 ]
 
 
@@ -358,7 +363,15 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "cmomy", "cmomy Documentation", [author], 1)]
+man_pages = [
+    (
+        master_doc,
+        "cmomy",
+        "cmomy Documentation",
+        [author],
+        1,
+    ),
+]
 
 
 # -- Options for Texinfo output ----------------------------------------

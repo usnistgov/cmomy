@@ -7,7 +7,6 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 
-
 [project]
 name = "cmomy"
 authors = [{name = "William P. Krekelberg", email = "wpk@nist.gov"}]
@@ -39,9 +38,8 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "https://github.com/wpk-nist-gov/cmomy"
+homepage = "https://github.com/usnistgov/cmomy"
 documentation = "https://pages.nist.gov/cmomy/"
-
 
 [tool.setuptools]
 package-dir = {"" = "src"}
@@ -56,10 +54,8 @@ namespaces = false
 [tool.setuptools.dynamic]
 readme = {file = ["README.md", "HISTORY.md", "LICENSE"], content-type = "text/markdown"}
 
-
 [tool.setuptools_scm]
 fallback_version = "999"
-
 
 [tool.aliases]
 test = "pytest"
