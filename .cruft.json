@@ -6,7 +6,7 @@
     "cookiecutter": {
       "full_name": "William P. Krekelberg",
       "email": "wpk@nist.gov",
-      "github_username": "wpk-nist-gov",
+      "github_username": "usnistgov",
       "pypi_username": "wpk-nist",
       "conda_channel": "wpk-nist",
       "project_name": "cmomy",
