@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-  "commit": "5817cad45e7564b272cbff855f87a3535554085b",
+  "commit": "79ff5721e0ac4fc4ddab4d5a506a7f3e89e4d305",
   "checkout": "feature/markdown",
   "skip": [
     "src/cmomy/__init__.py",
@@ -9,9 +9,9 @@
     "AUTHORS.md",
     "environment.yaml",
     "environment-tools.yaml",
-      "docs/api.md",
-      "docs/index.md",
-      "docs/spelling_wordlist.txt"
+    "docs/api.md",
+    "docs/index.md",
+    "docs/spelling_wordlist.txt"
   ],
   "context": {
     "cookiecutter": {
