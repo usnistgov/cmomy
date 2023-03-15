@@ -1,13 +1,14 @@
 {
     "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-    "commit": "349d81c528891a325033891bf1769febf7ab7970",
+    "commit": "6d382e1f5b4f3f8b821403813b7e9bb051c8ec29",
     "checkout": "feature/markdown",
     "skip": [
         "src/**/__init__.py",
         "README.md",
         "HISTORY.md",
         "AUTHORS.md",
-        "environment*.yaml"
+        "environment*.yaml",
+        "docs/api.md"
     ],
     "context": {
         "cookiecutter": {
