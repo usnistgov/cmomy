@@ -8,7 +8,6 @@
     "HISTORY.md",
     "AUTHORS.md",
     "environment.yaml",
-    "environment-tools.yaml",
     "docs/api.md",
     "docs/index.md",
     "docs/spelling_wordlist.txt"
@@ -36,6 +35,7 @@
       "open_source_license": "NIST license",
       "sphinx_auto": "autosummary",
       "sphinx_theme": "sphinx_book_theme",
+    "sphinx_use_autodocsumm": "y",
       "_template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git"
     }
   },
