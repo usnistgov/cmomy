@@ -1,4 +1,7 @@
-"""routines to convert central (co)moments to raw (co)moments."""
+"""
+Routines to convert central (co)moments to raw (co)moments. (:mod:`cmomy.convert`)
+==================================================================================
+"""
 from __future__ import annotations
 
 from typing import Any, Callable, Sequence

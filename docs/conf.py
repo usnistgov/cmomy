@@ -35,6 +35,7 @@ import cmomy
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "autodocsumm",
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",

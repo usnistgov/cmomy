@@ -1,6 +1,39 @@
 # API Reference
 
 
+## Top level API
+:::{eval-rst}
+
+.. currentmodule:: cmomy
+
+.. autosummary::
+    :toctree: generated/
+
+    CentralMoments
+    xCentralMoments
+
+    central_moments
+    xcentral_moments
+:::
+
+
+## Modules
+:::{eval-rst}
+
+.. autosummary::
+    :toctree: generated/
+    :template: autodocsumm/module-inherit.rst
+
+    cmomy.resample
+    cmomy.convert
+:::
+
+<!-- ```{eval-rst} -->
+<!-- .. currentmodule:: cmomy -->
+
+<!-- .. automodule:: cmomy -->
+
+<!-- ``` -->
 
 <!-- ```{eval-rst} -->
 <!-- .. currentmodule:: cmomy -->
@@ -18,12 +51,6 @@
 <!-- ``` -->
 
 
-```{eval-rst}
-.. currentmodule:: cmomy
-
-.. automodule:: cmomy
-
-```
 
 <!-- ## Central moments arrays -->
 
