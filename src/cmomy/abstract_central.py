@@ -1,3 +1,4 @@
+# type: ignore
 """Base class for central moments calculations."""
 
 
@@ -62,6 +63,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         Moment collection array.
     mom_ndim : {1, 2}
         Number of dimensions for moment part of `data`.
+
         * 1 : central moments of single variable
         * 2 : central comoments of two variables
 
@@ -249,7 +251,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        output : same as object
+        output : object
+            Same type as calling class.
             Object with same attributes as caller, but with data set to zero.
 
         See Also
@@ -269,7 +272,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        output : same as object
+        output : object
+            Same type as calling class.
             Object with same attributes as caller, but with new underlying data.
 
 
@@ -415,7 +419,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        self : same as object
+        self : object
+            Same type as calling class.
             Same object as caller with data filled with `values`
         """
         self._data.fill(value)
@@ -426,7 +431,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        self : same as object
+        self : object
+            Same type as calling class.
             Same object with data filled with zeros.
 
         See Also
@@ -693,15 +699,15 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             If callable, then apply ``values = func_or_method(self.values,
             *args, **kwargs)``. If string is passed, then ``values =
             getattr(self.values, func_or_method)(*args, **kwargs)``.
-        _order : bool, default = True
+        _order : bool, default=True
             If True, reorder the data such that ``mom_dims`` are last.
-        _copy : bool, default = False
+        _copy : bool, default=False
             If True, copy the resulting data.  Otherwise, try to use a view.
             This is passed as ``copy=_copy`` to :meth:`from_data`.
         _verify: bool, default=False
             If True, ensure underlying data is contiguous. Passed as
             ``verify=_verify`` to :meth:`from_data`
-        _check_mom: bool, default = True
+        _check_mom: bool, default=True
             If True, check the resulting object has the same moment shape as the
             current object.
         _kws : Mapping, optional
@@ -793,7 +799,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        output : instance of calling class
+        output : object
+            Instance of calling class
             Note that new object will have val_shape = (nrep,) +
             val_shape[:axis] + val_shape[axis+1:]
 
@@ -846,7 +853,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        output : instance of calling class
+        output : object
+            Instance of calling class
             The new object will have shape
             `(nrep, ndat, ...) + self.shape[:axis] + self.shape[axis+1:]`
 
@@ -915,7 +923,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        output : new instance of calling class
+        output : object
+            New instance of calling class
             Shape of output will be
             `(nblock,) + self.shape[:axis] + self.shape[axis+1:]`.
 
@@ -1187,7 +1196,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        out : caller class instance
+        out : object
+            Same type as calling class.
 
         """
 
@@ -1315,7 +1325,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        out : instance of calling class
+        out : object
+            Instance of calling class
         freq : ndarray, optional
             If `full_output` is True, also return `freq` array
 

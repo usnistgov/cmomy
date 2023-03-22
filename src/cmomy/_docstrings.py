@@ -48,7 +48,7 @@ _shared_docs = {
     """,
     "mom":
     """
-    mom : int or (int, int)
+    mom : int or tuple of int
         Order or moments.  If integer or length one tuple, then moments are for
         a single variable.  If length 2 tuple, then comoments of two variables
     """,
@@ -110,8 +110,8 @@ _shared_docs = {
     """,
     "pushed":
     """
-    pushed : same as object
-        Same as object, with new data pushed onto `self.data`
+    pushed : object
+        Same type as calling class with new data pushed onto `self.data`.
     """,
     "resample_kws":
     """

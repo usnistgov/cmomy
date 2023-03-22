@@ -1,4 +1,5 @@
 # Type: ignore
+
 """Thin wrapper around central routines with xarray support."""
 
 
@@ -222,7 +223,7 @@ def xcentral_moments(
 
     Parameters
     ----------
-    x : xarray.DataArray or tuple of xarray.Datarray
+    x : DataArray or tuple of DataArray
         input data
     {mom}
     w : array-like, optional
@@ -240,7 +241,7 @@ def xcentral_moments(
 
     Returns
     -------
-    output : xr.DataArray of moments
+    output : DataArray
         array of shape shape + (mom,) or (mom,) + shape depending on
         value of `last`, where `shape` is the shape of `x` with axis removed,
         i.e., shape=x.shape[:axis] + x.shape[axis+1:]. Assuming `last is True`,
@@ -273,7 +274,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
     Notes
     -----
-    Most methods are wrapped to accept xarray.DataArray object.
+    Most methods are wrapped to accept :class:`xarray.DataArray` object.
     """
 
     __slots__ = "_xdata"
@@ -728,7 +729,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         See Also
         --------
         pipe
-        DataArray.transpose
         xarray.DataArray.transpose
         """
         # make sure dims are last
@@ -1440,8 +1440,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         Parameters
         ----------
-        datas : ndarray or xr.DataArray
-            If pass in an xr.DataArray, use it's attributes in new object.
+        datas : ndarray or DataArray
+            If pass in a DataArray, use it's attributes in new object.
             If ndarray, use `dim`, `attrs`, etc, to wrap resulting data.
         {dim}
         {xr_params}
@@ -1454,7 +1454,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         Notes
         -----
-        If pass in :class:`DataArray`, then dims, etc, are ignored.
+        If pass in :class:`xarray.DataArray`, then dims, etc, are ignored.
         Note that here, `dims` does not include the dimension reduced over.
         The dimensions are applied after the fact.
 
@@ -1694,7 +1694,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         Parameters
         ----------
-        x : array, tuple of arrays, DataArray, or tuple of DataArray
+        x : array, tuple of array, DataArray, or tuple of DataArray
             For moments, `x=x0`.  For comoments, `x=(x0, x1)`.
             If pass DataArray, inherit attributes from `x0`.  If pass
             ndarray, use `dims`, `attrs`, etc to wrap final result
@@ -1805,7 +1805,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         """
         Parameters
         ----------
-        x : array, tuple of arrays, DataArray, or tuple of DataArray
+        x : array, tuple of array, DataArray, or tuple of DataArray
             For moments, `x=x0`.  For comoments, `x=(x0, x1)`.
             If pass DataArray, inherit attributes from `x0`.  If pass
             ndarray, use `dims`, `attrs`, etc to wrap final result

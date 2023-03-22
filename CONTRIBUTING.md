@@ -1,6 +1,3 @@
-```{highlight} shell
-```
-
 # Contributing
 
 Contributions are welcome, and they are greatly appreciated! Every little bit
@@ -12,7 +9,7 @@ You can contribute in many ways:
 
 ### Report Bugs
 
-Report bugs at <https://github.com/wpk-nist-gov/cmomy/issues>.
+Report bugs at <https://github.com/usnistgov/cmomy/issues>.
 
 If you are reporting a bug, please include:
 
@@ -38,7 +35,7 @@ articles, and such.
 
 ### Submit Feedback
 
-The best way to send feedback is to file an issue at <https://github.com/wpk-nist-gov/cmomy/issues>.
+The best way to send feedback is to file an issue at <https://github.com/usnistgov/cmomy/issues>.
 
 If you are proposing a feature:
 
@@ -49,69 +46,117 @@ If you are proposing a feature:
 
 ## Get Started!
 
+
+### Environment setup
+
+[pipx]: https://github.com/pypa/pipx
+[condax]: https://github.com/mariusvniekerk/condax
+[mamba]: https://github.com/mamba-org/mamba
+[conda-fast-setup]: https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community
+[pre-commit]: https://pre-commit.com/
+[tox]: https://tox.wiki/en/latest/
+[tox-conda]: https://github.com/tox-dev/tox-conda
+[cruft]: https://github.com/cruft/cruft
+[conda-merge]: https://github.com/amitbeka/conda-merge
+[git-flow]: https://github.com/nvie/gitflow
+
+This project uses a host of tools to (hopefully) make development easier.  We recommend installing some of these tools system wide.  For this, we recommend using
+either [pipx] or [condax].  We mostly use conda/condax, but the choice is yours.  For conda, we recommend actually using [mamba]. Alternatively, you can setup `conda` to use the faster `mamba` solver.
+See [here][conda-fast-setup] for details.
+
+Additional dependencies are:
+
+* [pre-commit]
+* [tox] and [tox-conda]
+* [cruft]
+* [conda-merge]
+
+These are setup using the following:
+
+```bash
+condax install pre-commit
+condax install tox
+condax inject tox tox-conda
+condax install cruft
+condax install conda-merge
+```
+
+
+### Getting the repo
+
 Ready to contribute? Here's how to set up `cmomy` for local development.
 
-01. Fork the `cmomy` repo on GitHub.
+1. Fork the `cmomy` repo on GitHub.
 
-02. Clone your fork locally:
+2. Clone your fork locally:
 
-    ```
-    $ git clone git@github.com:your_name_here/cmomy.git
-    ```
-
-03. Install dependencies.  There are useful commands in the makefile, that depend on
-    `pre-commit` and `conda-merge`.  These can be installed with `pip`, `pipx`, or `conda/mamba`.
-
-04. Initiate pre-commit with:
-
-    ```
-    $ pre-commit install
+    ```bash
+    git clone git@github.com:your_name_here/cmomy.git
     ```
 
-    To update the recipe, use:
+3. Create development environment.  Using the makefile will install a development version using mamba.
 
-    ```
-    $ pre-commit autoupdate
-    ```
-
-05. Create virtual env:
-
-    ```
-    $ make mamba-dev
-    $ conda activate cmomy-env
+    ```bash
+    make mamba-dev
     ```
 
-    Alternatively, to create a different named env, use:
+4. Initiate pre-commit with:
 
-    ```
-    $ make environment-dev.yaml
-    $ conda/mamba env create -n {env-name} -f environment-dev.yaml
-    $ conda activate {env-name}
+    ```bash
+    pre-commit init
     ```
 
-06. Install editable package:
+    To update the recipe, periodically run:
 
+    ```bash
+    pre-commit autoupdate
     ```
-    $ pip install -e . --no-deps
+
+5. Install editable package:
+
+    ```bash
+    pip install -e . --no-deps
+    ```
+
+    or
+
+    ```bash
+    make install-dev
     ```
 
 07. Create a branch for local development:
 
-    ```
-    $ git checkout -b name-of-your-bugfix-or-feature
-    ```
-
-    Now you can make your changes locally.  Alternatively, we recommend using git flow.
-
-08. When you're done making changes, check that your changes pass flake8 and the
-    tests, including testing other Python versions with tox:
-
-    ```
-    $ pre-commit run [--all-files]
-    $ pytest
+    ```bash
+    git checkout -b name-of-your-bugfix-or-feature
     ```
 
-    To get flake8 and tox, just pip install them into your virtualenv.
+    Now you can make your changes locally.  Alternatively, we recommend using [git-flow].
+
+08. When you're done making changes, check that your changes pass the pre-commit checks:
+    tests.
+
+    ```bash
+    pre-commit run [--all-files]
+    ```
+
+    To run tests, use:
+
+    ```bash
+    pytest
+    ```
+
+    To test against multiple python versions, use tox:
+
+    ```bash
+    tox
+    ```
+
+    or using the makefile:
+
+    ```bash
+    make test-all
+    ```
+
 
 09. Commit your changes and push your branch to GitHub:
 
@@ -123,6 +168,24 @@ Ready to contribute? Here's how to set up `cmomy` for local development.
 
 10. Submit a pull request through the GitHub website.
 
+
+### Dependency managment
+
+Dependencies need to be placed in a few locations, which depend on the nature of the dependency.
+
+* Package dependency: `environment.yaml` and `dependencies` section of `pyproject.toml`
+* Documentation dependency: `environment/docs-extras.yaml` and `test` section of `pyproject.toml`
+* Development dependency: `environment/dev-extras.yaml` and `dev` section of `pyproject.toml`
+
+Note that total yaml files are build using [conda-merge].  For example, `environment.yaml` is combined with `environment/docs-extras.yaml` to produce `environment/docs.yaml`.  This is automated in the `Makefile`.  You can also run, after doing any updates,
+
+```bash
+make environment-files
+```
+
+which will rebuild all the needed yaml files.
+
+
 ## Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
@@ -132,6 +195,32 @@ Before you submit a pull request, check that it meets these guidelines:
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
 3. The pull request should work for Python 3.8, 3.9, 3.10.
+
+## Building the docs
+
+We use [tox] to isolate the documentaion build.  Useful commands are as follows.
+
+* Build the docs:
+
+    ```bash
+    tox -e docs-build
+    ```
+
+* Spellcheck the docs:
+
+    ```bash
+    tox -e docs-spelling
+    ```
+
+* Create a relese of the docs:
+
+    ```bash
+    tox -e docs-release
+    ```
+
+    After this, the docs can be pushed to the correct branch for distribution.
+
+* Live documentation updates using
 
 ## Using tox
 
@@ -169,7 +258,7 @@ To build the conda distribution, use:
 $ make dist-conda-[recipe, build]
 ```
 
-where `recipe` makes the conda recipy (using grayskull), and `build` makes the distro.  This can be manually added to a channel.
+where `recipe` makes the conda recipe (using grayskull), and `build` makes the distro.  This can be manually added to a channel.
 
 To test the created distributions, you can use one of:
 

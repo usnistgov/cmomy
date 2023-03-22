@@ -99,8 +99,8 @@ def _central_comoments(
     if isinstance(mom, int):
         mom = (mom,) * 2
 
-    mom = tuple(mom)
     assert len(mom) == 2
+    mom = tuple(mom)  # type: ignore
 
     # change x to tuple of inputs
     assert isinstance(vals, tuple) and len(vals) == 2
@@ -386,7 +386,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         copy: bool = False,
     ) -> xr.DataArray:
         """
-        Create a :class:`DataArray` representation of underlying data.
+        Create a :class:`xarray.DataArray` representation of underlying data.
 
         Parameters
         ----------
@@ -484,7 +484,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         copy: bool = False,
     ) -> xCentralMoments:
         """
-        Create an DataArray representation of underlying data.
+        Create an :class:`xarray.DataArray` representation of underlying data.
 
         Parameters
         ----------

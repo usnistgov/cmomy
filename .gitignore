@@ -8,11 +8,11 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-docs-nist-pages/
 env/
 build/
 develop-eggs/
 dist/
+dist-conda/
 downloads/
 eggs/
 .eggs/
