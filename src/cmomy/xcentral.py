@@ -1,4 +1,5 @@
 # Type: ignore
+
 """Thin wrapper around central routines with xarray support."""
 
 
@@ -101,7 +102,6 @@ def _xcentral_moments(
     last: bool = True,
     mom_dims: MomDims | None = None,
 ):  # -> xr.DataArray:
-
     x = vals
     assert isinstance(x, xr.DataArray)
 
@@ -223,7 +223,7 @@ def xcentral_moments(
 
     Parameters
     ----------
-    x : xarray.DataArray or tuple of xarray.Datarray
+    x : DataArray or tuple of DataArray
         input data
     {mom}
     w : array-like, optional
@@ -241,7 +241,7 @@ def xcentral_moments(
 
     Returns
     -------
-    output : xr.DataArray of moments
+    output : DataArray
         array of shape shape + (mom,) or (mom,) + shape depending on
         value of `last`, where `shape` is the shape of `x` with axis removed,
         i.e., shape=x.shape[:axis] + x.shape[axis+1:]. Assuming `last is True`,
@@ -274,7 +274,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
     Notes
     -----
-    Most methods are wrapped to accept xarray.DataArray object.
+    Most methods are wrapped to accept :class:`xarray.DataArray` object.
     """
 
     __slots__ = "_xdata"
@@ -284,7 +284,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         return super().__new__(cls, data=data, mom_ndim=mom_ndim)
 
     def __init__(self, data: xr.DataArray, mom_ndim: Literal[1, 2] = 1) -> None:
-
         if not isinstance(data, xr.DataArray):
             raise ValueError(
                 "data must be a xarray.DataArray. "
@@ -310,7 +309,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         if any(m <= 0 for m in self.mom):
             raise ValueError("moments must be positive")
 
-    # ** xarray attriburtes
+    # ** xarray attributes
     @property
     def values(self):
         """Underlying data."""
@@ -730,7 +729,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         See Also
         --------
         pipe
-        DataArray.transpose
         xarray.DataArray.transpose
         """
         # make sure dims are last
@@ -827,7 +825,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         template=None,
         **kwargs,
     ):
-
         method = getattr(CentralMoments, _method_name)
 
         return method(*args, **kwargs).to_xcentralmoments(
@@ -857,9 +854,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         | tuple[float, xr.DataArray]
         | float
     ):
-
         if isinstance(target, str):
-
             # if dim is not None:
             #     if isinstance(dim, int):
             #         dim = x.dims[dim]
@@ -963,7 +958,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         shape_flat: tuple[int, ...] | None = None,
     ) -> Any:
         if isinstance(x, xr.DataArray) or isinstance(target, xr.DataArray):
-
             return self._xverify_value(
                 x,
                 target=target,
@@ -1115,7 +1109,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         self, axis: int | str, default: int = 0, ndim: None = None, **kws
     ) -> int:
         if isinstance(axis, str):
-            raise ValueError("shouldnt get string axis here")
+            raise ValueError("shouldn't get string axis here")
         else:
             return super()._wrap_axis(axis=axis, default=default, ndim=ndim)
 
@@ -1446,8 +1440,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         Parameters
         ----------
-        datas : ndarray or xr.DataArray
-            If pass in an xr.DataArray, use it's attributes in new object.
+        datas : ndarray or DataArray
+            If pass in a DataArray, use it's attributes in new object.
             If ndarray, use `dim`, `attrs`, etc, to wrap resulting data.
         {dim}
         {xr_params}
@@ -1460,7 +1454,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         Notes
         -----
-        If pass in :class:`DataArray`, then dims, etc, are ignored.
+        If pass in :class:`xarray.DataArray`, then dims, etc, are ignored.
         Note that here, `dims` does not include the dimension reduced over.
         The dimensions are applied after the fact.
 
@@ -1583,7 +1577,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             )
 
         else:
-
             new = cls._wrap_centralmoments_method(
                 "from_raw",
                 raw=raw,
@@ -1642,7 +1635,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         """
 
         if isinstance(raws, xr.DataArray):
-
             return cls.from_raw(
                 raw=raws,
                 mom=mom,
@@ -1702,7 +1694,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         Parameters
         ----------
-        x : array, tuple of arrays, DataArray, or tuple of DataArray
+        x : array, tuple of array, DataArray, or tuple of DataArray
             For moments, `x=x0`.  For comoments, `x=(x0, x1)`.
             If pass DataArray, inherit attributes from `x0`.  If pass
             ndarray, use `dims`, `attrs`, etc to wrap final result
@@ -1758,7 +1750,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             ).push_vals(x=x, dim=dim, w=w, broadcast=broadcast)
 
         else:
-
             new = cls._wrap_centralmoments_method(
                 "from_vals",
                 dim=dim,
@@ -1814,7 +1805,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         """
         Parameters
         ----------
-        x : array, tuple of arrays, DataArray, or tuple of DataArray
+        x : array, tuple of array, DataArray, or tuple of DataArray
             For moments, `x=x0`.  For comoments, `x=(x0, x1)`.
             If pass DataArray, inherit attributes from `x0`.  If pass
             ndarray, use `dims`, `attrs`, etc to wrap final result
@@ -2130,7 +2121,7 @@ def _optional_wrap_data(
 
             dims_total = dims + mom_dims
         else:
-            raise ValueError("bad dims {}, moment_dims {}".format(dims, mom_dims))
+            raise ValueError(f"bad dims {dims}, moment_dims {mom_dims}")
 
         # xarray object
         data = xr.DataArray(

@@ -42,7 +42,7 @@ def cached(key=None):
                # _cache with the key: 'keyname'
                size = 10.0
 
-            #no aguments implies give cache function name
+            #no arguments implies give cache function name
             @property
             @cached()
             def myprop(self):
@@ -104,7 +104,7 @@ def cached_func(key=None):
                return long_calc(self,val)
                # if already executed result in _cache[('keyname',) + args]
 
-            #no aguments implies give cache function name
+            #no arguments implies give cache function name
             @property
             @cached()
             def myprop(self):

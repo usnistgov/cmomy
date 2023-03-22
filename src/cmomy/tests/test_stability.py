@@ -11,7 +11,6 @@ from cmomy.utils import factory_binomial
 
 
 def algo(vals, mom, norm=True):
-
     order = mom
     M = np.zeros((order + 1,), dtype=float)
 
@@ -43,7 +42,6 @@ def algo(vals, mom, norm=True):
 
 
 def algo2(vals, mom):
-
     dx = vals - vals.mean(axis=0)
 
     out = np.empty((mom + 1,), dtype=float)

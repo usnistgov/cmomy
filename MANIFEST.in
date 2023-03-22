@@ -1,11 +1,17 @@
-include AUTHORS.rst
-include CONTRIBUTING.rst
-include HISTORY.rst
+include AUTHORS.md
+include CONTRIBUTING.md
+include HISTORY.md
 include LICENSE
-include README.rst
+include README.md
 
-recursive-include tests *
-recursive-exclude * __pycache__
-recursive-exclude * *.py[co]
+
+
+recursive-include tests *.py
+
+global-exclude *.py[co]
+prune */*.egg-info
+prune */*mypy_cache
+prune */*ipynb_checkpoints
+prune */__pycache__
 
 recursive-include docs *.rst conf.py Makefile make.bat *.jpg *.png *.gif

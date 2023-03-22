@@ -198,9 +198,7 @@ def test_resample_and_reduce(other):
     ndim = len(other.val_shape)
 
     if ndim > 0:
-
         for axis in range(ndim):
-
             ndat = other.val_shape[axis]
             nrep = 10
 
@@ -208,7 +206,7 @@ def test_resample_and_reduce(other):
 
             t0 = other.s.resample_and_reduce(indices=idx, axis=axis)
 
-            dim = "dim_{}".format(axis)
+            dim = f"dim_{axis}"
             t1 = other.s_xr.resample_and_reduce(indices=idx, dim=dim, rep_dim="hello")
 
             np.testing.assert_allclose(t0.data, t1.data)

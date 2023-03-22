@@ -10,7 +10,6 @@ from cmomy.resample import (  # , xbootstrap_confidence_interval
 
 @pytest.mark.parametrize("nrep, ndat", [(100, 50)])
 def test_freq_indices(nrep, ndat):
-
     indices = np.random.choice(10, (20, 10), replace=True)
 
     freq0 = resample.indices_to_freq(indices)
@@ -77,7 +76,6 @@ def test_resample_data(other, parallel):
 
     if len(other.val_shape) > 0:
         for axis in range(other.s.val_ndim):
-
             data = other.data_test
 
             ndat = data.shape[axis]

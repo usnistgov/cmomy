@@ -1,11 +1,15 @@
-"""Public api for cmomy."""
+"""
+Top level API (:mod:`cmomy`)
+============================
+"""
 
 from .central import CentralMoments, central_moments
-from .resample import (
-    bootstrap_confidence_interval,
-    randsamp_freq,
-    xbootstrap_confidence_interval,
-)
+
+# from .resample import (
+#     bootstrap_confidence_interval,
+#     randsamp_freq,
+#     xbootstrap_confidence_interval,
+# )
 from .xcentral import xcentral_moments, xCentralMoments
 
 # updated versioning scheme
@@ -31,8 +35,8 @@ __all__ = [
     "central_moments",
     "xCentralMoments",
     "xcentral_moments",
-    "bootstrap_confidence_interval",
-    "randsamp_freq",
-    "xbootstrap_confidence_interval",
+    # "bootstrap_confidence_interval",
+    # "randsamp_freq",
+    # "xbootstrap_confidence_interval",
     "__version__",
 ]

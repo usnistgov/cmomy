@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 
 if TYPE_CHECKING:
-    from .abstract_central import CentralMomentsABC
+    from .abstract_central import CentralMomentsABC  # type: ignore
 
 
 Moments = Union[int, Tuple[int], Tuple[int, int]]

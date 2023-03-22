@@ -201,9 +201,7 @@ def test_reduce(other):
 def test_reshape(other):
     ndim = len(other.val_shape)
     if ndim > 0:
-
         for axis in range(ndim):
-
             new_shape = list(other.s.val_shape)
             new_shape = tuple(new_shape[:axis] + [1, -1] + new_shape[axis + 1 :])
 
@@ -219,7 +217,6 @@ def test_moveaxis(other):
     ndim = len(other.val_shape)
     if ndim > 1:
         for axis in range(1, ndim):
-
             # move axis to 0
 
             t = other.s.moveaxis(axis, 0)

@@ -35,39 +35,102 @@ import cmomy
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    # "sphinx_automodapi.automodapi",
+    "autodocsumm",
     "sphinx.ext.intersphinx",
-    # "sphinx.ext.extlinks",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
-    "nbsphinx",
-    # "sphinx_autosummary_accessors",
-    # "scanpydoc.rtd_github_links",
-    # view source code on created page
+    # "nbsphinx",
+    ## easier external links
+    # "sphinx.ext.extlinks",
+    ## view source code on created page
     # "sphinx.ext.viewcode",
-    # view source code on github
+    ## view source code on github
     "sphinx.ext.linkcode",
+    ## add copy button
+    "sphinx_copybutton",
+    ## redirect stuff?
+    # "sphinxext.rediraffe",
+    ## pretty things up?
+    # "sphinx_design"
+    ## myst stuff
+    "myst_nb",
 ]
 
-# defined stuff, from xarray
-nbsphinx_prolog = """
+nitpicky = True
 
-{% set docname = env.doc2path(env.docname, base=None) %}
+# -- myst stuff ---------------------------------------------------------
+myst_enable_extensions = [
+    "dollarmath",
+    "amsmath",
+    "deflist",
+    "fieldlist",
+    "html_admonition",
+    "html_image",
+    "colon_fence",
+    "smartquotes",
+    "replacements",
+    # "linkify",
+    "strikethrough",
+    "substitution",
+    "tasklist",
+    # "attrs_inline",
+    # "attrs_block",
+]
 
 
-You can view this notebook `on Github <https://github.com/usnistgov/cmomy/blob/master/doc/{{ docname }}>`_.
-"""
+myst_heading_anchors = 2
+myst_footnote_transition = True
+myst_dmath_double_inline = True
+myst_enable_checkboxes = True
+myst_substitutions = {
+    "role": "[role](#syntax/roles)",
+    "directive": "[directive](#syntax/directives)",
+}
+# myst_enable_extensions = [
+#     "dollarmath",
+#     "amsmath",
+#     "deflist",
+#     # "html_admonition",
+#     "html_image",
+#     "colon_fence",
+#     # "smartquotes",
+#     # "replacements",
+#     # "linkify",
+#     # "substitution",
+#     "attrs_inline",
+#     "attrs_block",
+# ]
 
+myst_url_schemes = ("http", "https", "mailto")
 
-# The kernelname to use.
-nbsphinx_kernel_name = "python3"
+nb_execution_mode = "cache"
+# nb_execution_mode = "auto"
 
-# autosummary_generate = True
+# set the kernel name
+nb_kernel_rgx_aliases = {"cmomy.*": "python3", "conda.*": "python3"}
+
+nb_execution_allow_errors = True
+
+# - top level variables --------------------------------------------------------
+# set github_username variable to be subbed later.
+# this makes it easy to switch from wpk -> usnistgov later
+github_username = "usnistgov"
+
+html_context = {
+    "github_user": "usnistgov",
+    "github_repo": "cmomy",
+    "github_version": "master",
+    "doc_path": "docs",
+}
+
+# -- python3 ---------------------------------------------------------------
 autosummary_generate = True
+# autosummary_generate = False
+autodoc_member_order = "bysource"
 
-autoclass_content = "both"  # include both class docstring and __init__
+# autoclass_content = "both"  # include both class docstring and __init__
 autodoc_default_flags = [
     # Make sure that any autodoc declarations show the right members
     "members",
@@ -75,22 +138,14 @@ autodoc_default_flags = [
     "private-members",
     "show-inheritance",
 ]
-# # for scanpydoc's jinja filter
-# project_dir = pathlib.Path(__file__).parent.parent
-html_context = {
-    "github_user": "usnistgov",
-    "github_repo": "cmomy",
-    "github_version": "master",
-    "doc_path": "doc",
-}
-
 autodoc_typehints = "none"
 
+# -- napolean ------------------------------------------------------------------
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
 napoleon_use_param = False
-napoleon_use_rtype = False
+napoleon_use_rtype = True
 napoleon_preprocess_types = True
 napoleon_type_aliases = {
     # general terms
@@ -102,6 +157,7 @@ napoleon_type_aliases = {
     "path-like": ":term:`path-like <path-like object>`",
     "mapping": ":term:`mapping`",
     "hashable": ":term:`hashable`",
+    "file-like": ":term:`file-like <file-like object>`",
     # special terms
     # "same type as caller": "*same type as caller*",  # does not work, yet
     # "same type as values": "*same type as values*",  # does not work, yet
@@ -148,9 +204,6 @@ napoleon_type_aliases = {
     "pd.NaT": "~pandas.NaT",
 }
 
-numpydoc_class_members_toctree = True
-numpydoc_show_class_members = False
-
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -159,13 +212,18 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".ipynb": "myst-nb",
+    ".myst": "myst-nb",
+}
 
 # The master toctree document.
 master_doc = "index"
 
 # General information about the project.
 project = "cmomy"
+copyright = "2023, William P. Krekelberg"
 author = "William P. Krekelberg"
 
 # The version info for the project you're documenting, acts as replacement
@@ -185,12 +243,16 @@ except ImportError:
     # The full version, including alpha/beta/rc tags.
     release = cmomy.__version__
 
+# if always want to print "latest"
+# release = "latest"
+# version = "latest"
+
 # The language for content autogenerated by Sphinx. Refer to documentation
 # for a list of supported languages.
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = "en"
+language = None
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -203,21 +265,47 @@ pygments_style = "sphinx"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
 
+
 # -- Options for HTML output -------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
-html_theme = "sphinx_rtd_theme"
 
+html_theme = "sphinx_book_theme"
 
-# Theme options are theme-specific and customize the look and feel of a
-# theme further.  For a list of options available for each theme, see the
-# documentation.
-#
-# html_theme_options = {"logo_only": True}
+html_theme_options = dict(
+    # analytics_id=''  this is configured in rtfd.io
+    # canonical_url="",
+    repository_url="https://github.com/usnistgov/cmomy",
+    repository_branch=html_context["github_version"],
+    path_to_docs=html_context["doc_path"],
+    # use_edit_page_button=True,
+    use_repository_button=True,
+    use_issues_button=True,
+    home_page_in_toc=True,
+    show_toc_level=6,
+    show_navbar_depth=2,
+)
+# handle nist css/js from here.
+html_css_files = [
+    # "css/nist-combined.css",
+    "https://pages.nist.gov/nist-header-footer/css/nist-combined.css",
+    "https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css",
+]
 
+html_js_files = [
+    "https://code.jquery.com/jquery-3.6.2.min.js",
+    "https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js",
+    # "js/nist-header-footer.js",
+    "https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js",
+    "js/leave_notice.js",
+    # google stuff:
+    (
+        "https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c",
+        {"async": "async", "id": "_fed_au_ua_tag", "type": "text/javascript"},
+    ),
+]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -241,39 +329,91 @@ today_fmt = "%Y-%m-%d"
 html_last_updated_fmt = today_fmt
 
 
-# code_url = f"https://github.com/usnistgov/cmomy/blob/develop/cmomy/"
-# def linkcode_resolve(domain, info):
-#     # Non-linkable objects from the starter kit in the tutorial.
-#     assert domain == "py", "expected only Python objects"
+# -- Options for HTMLHelp output ---------------------------------------
 
-#     import importlib, inspect
+# Output file base name for HTML help builder.
+htmlhelp_basename = "cmomydoc"
 
-#     mod = importlib.import_module(info["module"])
-#     if "." in info["fullname"]:
-#         objname, attrname = info["fullname"].split(".")
-#         obj = getattr(mod, objname)
-#         try:
-#             # object is a method of a class
-#             obj = getattr(obj, attrname)
-#         except AttributeError:
-#             # object is an attribute of a class
-#             return None
-#     else:
-#         obj = getattr(mod, info["fullname"])
 
-#     try:
-#         file = inspect.getsourcefile(obj)
-#         lines = inspect.getsourcelines(obj)
-#     except TypeError:
-#         # e.g. object is a typing.Union
-#         return None
-#     file = os.path.relpath(file, os.path.abspath(".."))
-#     # if not file.startswith("src/websockets"):
-#     #     # e.g. object is a typing.NewType
-#     #     return None
-#     start, end = lines[1], lines[1] + len(lines[0]) - 1
+# -- Options for LaTeX output ------------------------------------------
 
-#     return f"{code_url}/{file}#L{start}-L{end}"
+latex_elements = {
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    # 'papersize': 'letterpaper',
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    # 'pointsize': '10pt',
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
+}
+
+# Grouping the document tree into LaTeX files. List of tuples
+# (source start file, target name, title, author, documentclass
+# [howto, manual, or own class]).
+latex_documents = [
+    (
+        master_doc,
+        "cmomy.tex",
+        "cmomy Documentation",
+        "William P. Krekelberg",
+        "manual",
+    ),
+]
+
+
+# -- Options for manual page output ------------------------------------
+
+# One entry per manual page. List of tuples
+# (source start file, name, description, authors, manual section).
+man_pages = [
+    (
+        master_doc,
+        "cmomy",
+        "cmomy Documentation",
+        [author],
+        1,
+    ),
+]
+
+
+# -- Options for Texinfo output ----------------------------------------
+
+# Grouping the document tree into Texinfo files. List of tuples
+# (source start file, target name, title, author,
+#  dir menu entry, description, category)
+texinfo_documents = [
+    (
+        master_doc,
+        "cmomy",
+        "cmomy Documentation",
+        author,
+        "cmomy",
+        "One line description of project.",
+        "Miscellaneous",
+    ),
+]
+
+# -- user defined stuff ------------------------------------------------
+
+# Example configuration for intersphinx: refer to the Python standard library.
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3/", None),
+    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
+    "numpy": ("https://numpy.org/doc/stable", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "numba": ("https://numba.pydata.org/numba-doc/latest", None),
+    # "matplotlib": ("https://matplotlib.org", None),
+    "matplotlib": ("https://matplotlib.org/stable/", None),
+    "dask": ("https://docs.dask.org/en/latest", None),
+    "cftime": ("https://unidata.github.io/cftime", None),
+    "sparse": ("https://sparse.pydata.org/en/latest/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
+}
 
 
 # based on numpy doc/source/conf.py
@@ -319,7 +459,7 @@ def linkcode_resolve(domain, info):
 
     fn = os.path.relpath(fn, start=os.path.dirname(cmomy.__file__))
 
-    return f"https://github.com/usnistgov/cmomy/blob/master/src/cmomy/{fn}{linespec}"
+    return f"https://github.com/{github_username}/cmomy/blob/{html_context['github_version']}/src/cmomy/{fn}{linespec}"
 
 
 # only set spelling stuff if installed:
@@ -331,130 +471,3 @@ try:
 
 except ImportError:
     pass
-
-
-# -- Options for HTMLHelp output ---------------------------------------
-
-# Output file base name for HTML help builder.
-htmlhelp_basename = "cmomydoc"
-
-
-# -- Options for LaTeX output ------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
-}
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto, manual, or own class]).
-latex_documents = [
-    (master_doc, "cmomy.tex", "cmomy Documentation", "William P. Krekelberg", "manual"),
-]
-
-
-# -- Options for manual page output ------------------------------------
-
-# One entry per manual page. List of tuples
-# (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "cmomy", "cmomy Documentation", [author], 1)]
-
-
-# -- Options for Texinfo output ----------------------------------------
-
-# Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
-#  dir menu entry, description, category)
-texinfo_documents = [
-    (
-        master_doc,
-        "cmomy",
-        "cmomy Documentation",
-        author,
-        "cmomy",
-        "One line description of project.",
-        "Miscellaneous",
-    ),
-]
-
-
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {
-    "python": ("https://docs.python.org/3/", None),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
-    "numpy": ("https://numpy.org/doc/stable", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-    "numba": ("https://numba.pydata.org/numba-doc/latest", None),
-    # "matplotlib": ("https://matplotlib.org", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-    "dask": ("https://docs.dask.org/en/latest", None),
-    "cftime": ("https://unidata.github.io/cftime", None),
-    "sparse": ("https://sparse.pydata.org/en/latest/", None),
-    "xarray": ("https://docs.xarray.dev/en/stable/", None),
-}
-
-# think jinja stuff
-# def escape_underscores(string):
-#     return string.replace("_", r"\_")
-
-
-# def setup(app):
-#     DEFAULT_FILTERS["escape_underscores"] = escape_underscores
-
-
-# based on numpy doc/source/conf.py
-# def linkcode_resolve(domain, info):
-#     """
-#     Determine the URL corresponding to Python object
-#     """
-#     import inspect
-
-
-#     if domain != "py":
-#         return None
-
-#     modname = info["module"]
-#     fullname = info["fullname"]
-
-#     submod = sys.modules.get(modname)
-#     if submod is None:
-#         return None
-
-#     obj = submod
-#     for part in fullname.split("."):
-#         try:
-#             obj = getattr(obj, part)
-#         except AttributeError:
-#             return None
-
-#     try:
-#         fn = inspect.getsourcefile(inspect.unwrap(obj))
-#     except TypeError:
-#         fn = None
-#     if not fn:
-#         return None
-
-#     try:
-#         source, lineno = inspect.getsourcelines(obj)
-#     except OSError:
-#         lineno = None
-
-#     if lineno:
-#         linespec = f"#L{lineno}-L{lineno + len(source) - 1}"
-#     else:
-#         linespec = ""
-
-#     fn = os.path.relpath(fn, start=os.path.dirname(cmomy.__file__))
-
-#     return f"https://github.com/usnistgov/cmomy/blob/develop/cmomy/{fn}{linespec}"

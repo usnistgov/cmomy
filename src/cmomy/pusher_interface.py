@@ -1,4 +1,4 @@
-"""Interface to numba push fuctions."""
+"""Interface to numba push functions."""
 
 from __future__ import annotations
 
@@ -71,7 +71,6 @@ def verify_value(
 
     if expand:
         if x.ndim == 1 and x.ndim != len(shape) and len(x) == shape[axis]:
-
             reshape = [1] * len(shape)
             reshape[axis] = -1
             x = x.reshape(*reshape)

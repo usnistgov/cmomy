@@ -21,7 +21,6 @@ class DataContainer:
             return self.x
 
     def result_expected(self, axis, mom, broadcast=None, cov=None):
-
         if cov is None:
             cov = isinstance(mom, tuple) and len(mom) == 2
 
