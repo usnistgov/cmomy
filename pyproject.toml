@@ -41,6 +41,13 @@ dependencies = [
 homepage = "https://github.com/usnistgov/cmomy"
 documentation = "https://pages.nist.gov/cmomy/"
 
+[project.optional-dependencies]
+test = [
+    "pytest",
+]
+# dev = []
+# docs = []
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 zip-safe = true # if using mypy, must be False
@@ -50,6 +57,13 @@ license-files = ["LICENSE"]
 [tool.setuptools.packages.find]
 where = ["src"]
 namespaces = false
+
+# To add package data
+[tool.setuptools.package-data]
+cmomy = [
+    "py.typed"
+]
+
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md", "HISTORY.md", "LICENSE"], content-type = "text/markdown"}
@@ -61,18 +75,12 @@ fallback_version = "999"
 test = "pytest"
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules"
-testpaths = ["src/cmomy/tests", "src/cmomy"]
-# testpaths = cmomy/tests
-# [tool:docformatter]
-# recursive = true
-# in-place = true
+addopts = "--verbose"
+testpaths = ["tests"]
 
 [tool.isort]
 profile = "black"
 skip_gitignore = true
-force_to_top = ["true"]
-default_section = "THIRDPARTY"
 known_first_party = ["cmomy"]
 
 
@@ -164,6 +172,8 @@ per-file-ignores = {}
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
+[tool.ruff.isort]
+known-first-party = ["cmomy"]
 
 [tool.ruff.mccabe]
 # Unlike Flake8, default to a complexity level of 10.
@@ -173,32 +183,28 @@ max-complexity = 10
 
 
 [tool.mypy]
-exclude = "properties|asv_bench|doc"
-files = ["."]
+files = ["src/cmomy"]
 show_error_codes = true
+warn_unused_ignores = true
 warn_return_any = true
 warn_unused_configs = true
-# plugins = numpy.typing.mypy_plugin
-# Most of the numerical computing stack doesn't have type annotations yet.
+exclude = [
+    ".eggs",
+    ".tox",
+    "doc",
+    "docs",
+]
 
 [[tool.mypy.overrides]]
+ignore_missing_imports = true
 module = [
        "numpy.*",
-       "bottleneck.*",
-       "dask.*",
-       "netCDF.*",
        "pandas.*",
        "pytest.*",
        "scipy.*",
        "setuptools",
-       "numba.*",
-       ]
-ignore_missing_imports = true
-
-# version spanning code is hard to type annotate (and most of this module will
-# be going away soon anyways)
-exclude = [
-    ".eggs",
-    "doc",
-    "docs",
 ]
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = []

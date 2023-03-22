@@ -98,10 +98,12 @@ def randsamp_freq(
     ----------
     size : int, optional
         data dimension size
-    freq : array-like, shape=(nrep, size), optional
-        if passed, use this frequency array.
+    freq : array-like,  optional
+        `shape=(nrep, size)`.
+        If passed, use this frequency array.
         overrides size
-    indices : array-like, shape=(nrep, size), optional
+    indices : array-like, , optional
+        `shape=(nrep, size)`.
         if passed and `freq` is `None`, construct frequency
         array from this indices array
 
@@ -120,7 +122,8 @@ def randsamp_freq(
 
     Returns
     -------
-    output : frequency table
+    output : ndarray
+        Frequency table.
         if not transpose: output.shape == (nrep, size)
         if transpose, output.shape = (size, nrep)
     """
@@ -182,8 +185,10 @@ def resample_data(
         axis to reduce along
     parallel : bool
         option to run jitted pusher in parallel.
-    dtype, order : options to np.asarray
-    out : optional output
+    dtype, order : object
+        options to :func:`numpy.asarray`
+    out : ndarray, optional
+      optional output array.
 
     Returns
     -------
@@ -229,7 +234,7 @@ def resample_data(
     if shape == ():
         meta_reshape = ()
     else:
-        meta_reshape = (np.prod(shape),)
+        meta_reshape = (np.prod(shape),)  # type: ignore
 
     data_reshape = (ndat,) + meta_reshape + mom_shape
     out_reshape = (nrep,) + meta_reshape + mom_shape
@@ -379,9 +384,10 @@ def bootstrap_confidence_interval(
         Depending on `style` first dimension will be
         (note val is either stats_val or median):
 
-    * None: [val, low, high]
-    * delta:  [val, val-low, high - val]
-    * pm : [val, (high - low) / 2]
+        * None: [val, low, high]
+        * delta:  [val, val-low, high - val]
+        * pm : [val, (high - low) / 2]
+
     """
 
     if stats_val is None:
@@ -446,9 +452,9 @@ def xbootstrap_confidence_interval(
     """
 
     if dim is not None:
-        axis = x.get_axis_num(dim)  # type: ignore
+        axis = x.get_axis_num(dim)
     else:
-        dim = x.dims[axis]  # type: ignore
+        dim = x.dims[axis]
 
     template = x.isel(indexers={dim: 0})
 

@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-  "commit": "1b888f8c62021debaedc8adb7d07f30ca4fa97b6",
+  "commit": "a56f6e80fd47652786faa0d0bea3b6cfb079d40e",
   "checkout": "feature/markdown",
   "skip": [
     "src/cmomy/__init__.py",
@@ -34,8 +34,8 @@
       "create_author_file": "y",
       "open_source_license": "NIST license",
       "sphinx_auto": "autosummary",
+      "sphinx_use_autodocsumm": "y",
       "sphinx_theme": "sphinx_book_theme",
-    "sphinx_use_autodocsumm": "y",
       "_template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git"
     }
   },

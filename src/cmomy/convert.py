@@ -1,10 +1,11 @@
+# type: ignore
 """
 Routines to convert central (co)moments to raw (co)moments. (:mod:`cmomy.convert`)
 ==================================================================================
 """
 from __future__ import annotations
 
-from typing import Any, Callable, Sequence
+from typing import Any, Callable, Sequence, no_type_check
 
 import numpy as np
 from numpy import ndarray
@@ -150,6 +151,7 @@ def _raw_to_central_comoments(raw, central):
                     central[v, n, m] = tmp
 
 
+@no_type_check
 def _convert_moments(
     data: ArrayLike,
     axis: int | Sequence[int],
