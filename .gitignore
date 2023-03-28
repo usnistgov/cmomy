@@ -110,3 +110,4 @@ pyrightconfig.json
 /docs/generated/
 /monkeytype.sqlite3
 /dist-conda/
+/docs/reference/generated/
