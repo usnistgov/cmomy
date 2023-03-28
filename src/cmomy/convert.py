@@ -11,6 +11,7 @@ import numpy as np
 from numpy import ndarray
 from numpy.typing import ArrayLike, DTypeLike
 
+from ._docstrings import DocFiller
 from ._typing import ArrayOrder
 from .options import OPTIONS
 from .utils import factory_binomial, myjit
@@ -18,84 +19,82 @@ from .utils import factory_binomial, myjit
 _bfac = factory_binomial(OPTIONS["nmax"])
 
 
-# _shared_docs = """
-# Parameters
-# ----------
-# x_cmom | x : ndarray
-#     Central moments array.  The expected structure is:
+_shared_docs = r"""
+Parameters
+----------
+x_cmom | x : ndarray
+    Central moments array.  The expected structure is:
 
-#     * x[..., 0] : weight
-#     * x[..., 1] : mean
-#     * x[..., k] : kth central moment
+    * ``x[..., 0]`` : weight
+    * ``x[..., 1]`` : mean
+    * ``x[..., k]`` : kth central moment
 
-# x_cocmom | x : ndarray
-#     Central comoments array.  The expected structure is:
+x_cocmom | x : ndarray
+    Central comoments array.  The expected structure is:
 
-#     * x[..., 0, 0] : weight
-#     * x[..., 1, 0] : mean of `a`
-#     * x[....,0, 1] : mean of `b`
-#     * x[..., i, j] : :math:`\langle (\delta a)^i (\delta b)^j \rangle`,
-#       where `a` and `b` are the variables being considered.
+    * ``x[..., 0, 0]`` : weight
+    * ``x[..., 1, 0]`` : mean of `a`
+    * ``x[....,0, 1]`` : mean of `b`
+    * ``x[..., i, j]``: :math:`\langle (\delta a)^i (\delta b)^j \rangle`,
+      where `a` and `b` are the variables being considered.
 
-# x_rmom | x : ndarray
-#     Raw moments array.  The expected structure is:
+x_rmom | x : ndarray
+    Raw moments array.  The expected structure is:
 
-#     * x[..., 0] : weight
-#     * x[..., k] : kth moment :math:`\langle a^k \rangle`
+    * ``x[..., 0]`` : weight
+    * ``x[..., k]`` : kth moment :math:`\langle a^k \rangle`
 
-# x_cormom | x : ndarray
-#     Raw comoments array.  The expected structure is:
+x_cormom | x : ndarray
+    Raw comoments array.  The expected structure is:
 
-#     * x[..., 0, 0] : weight
-#     * x[..., i, j] : :math:`\langle a^i b^j \rangle`,
-#       where `a` and `b` are the variables being considered.
+    * ``x[..., 0, 0]``: weight
+    * ``x[..., i, j]`` : :math:`\langle a^i b^j \rangle`,
+      where `a` and `b` are the variables being considered.
 
 
-# out_cmom | out : ndarray
-#     Central moments array.  The expected structure is:
+out_cmom | out : ndarray
+    Central moments array.  The expected structure is:
 
-#     * out[..., 0] : weight
-#     * out[..., 1] : mean
-#     * out[..., k] : kth central moment
+    * ``out[..., 0]`` : weight
+    * ``out[..., 1]`` : mean
+    * ``out[..., k]`` : kth central moment
 
-# out_cocmom | out : ndarray
-#     Central comoments array.  The expected structure is:
+out_cocmom | out : ndarray
+    Central comoments array.  The expected structure is:
 
-#     * out[..., 0, 0] : weight
-#     * out[..., 1, 0] : mean of `a`
-#     * out[....,0, 1] : mean of `b`
-#     * out[..., i, j] : :math:`\langle (\delta a)^i (\delta b)^j \rangle`,
-#       where `a` and `b` are the variables being considered.
+    * ``out[..., 0, 0]`` : weight
+    * ``out[..., 1, 0]`` : mean of `a`
+    * ``out[....,0, 1]`` : mean of `b`
+    * ``out[..., i, j]`` : :math:`\langle (\delta a)^i (\delta b)^j \rangle`,
+      where `a` and `b` are the variables being considered.
 
-# out_rmom | out : ndarray
-#     Raw moments array.  The expected structure is:
+out_rmom | out : ndarray
+    Raw moments array.  The expected structure is:
 
-#     * out[..., 0] : weight
-#     * out[..., k] : kth moment :math:`\langle a^k \rangle`
+    * ``out[..., 0]`` : weight
+    * ``out[..., k]`` : kth moment :math:`\langle a^k \rangle`
 
-# out_cormom | out : ndarray
-#     Raw comoments array.  The expected structure is:
+out_cormom | out : ndarray
+    Raw comoments array.  The expected structure is:
 
-#     * out[..., 0, 0] : weight
-#     * out[..., i, j] : :math:`\langle a^i b^j \rangle`,
-#       where `a` and `b` are the variables being considered.
+    * ``out[..., 0, 0]`` : weight
+    * ``out[..., i, j]`` : :math:`\langle a^i b^j \rangle`,
+      where `a` and `b` are the variables being considered.
 
-# axis_mom | axis : int, default=-1
-#     Axis location of moments in ``x``.
-# axis_comom | axis : tuple of int, default=(-2, -1)
-#     Axis locations of moments in comoments array ``x``
-# order : str, optional
-#     Optional ordering ('c', 'f', etc) to apply to output.
-# dtype : str, optional
-#     Optional :mod:`numpy` data type to apply to output.
-# out : ndarray, optional
-#     Optional numpy output array.  Should have same shape as ``x``.
+axis_mom | axis : int, default=-1
+    Axis location of moments in ``x``.
+axis_comom | axis : tuple of int, default=``(-2,-1)``
+    Axis locations of moments in comoments array ``x``
+order : str, optional
+    Optional ordering ('c', 'f', etc) to apply to output.
+dtype : str, optional
+    Optional :mod:`numpy` data type to apply to output.
+out : ndarray, optional
+    Optional numpy output array.  Should have same shape as ``x``.
 
-# """
+"""
 
-# docfiller_shared = DocFiller.from_docstring(
-#     _shared_docs, combine_keys='parameters'
-# )()
+docfiller_shared = DocFiller.from_docstring(_shared_docs, combine_keys="parameters")()
 
 
 @myjit
@@ -284,6 +283,7 @@ def _convert_moments(
     return out_r.reshape(shape)
 
 
+@docfiller_shared
 def to_raw_moments(
     x: ndarray,
     axis: int = -1,
@@ -291,7 +291,21 @@ def to_raw_moments(
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
 ) -> ndarray:
-    """Convert central moments to raw moments."""
+    r"""
+    Convert central moments to raw moments.
+
+    Parameters
+    ----------
+    {x_cmom}
+    {axis_mom}
+    {dtype}
+    {order}
+    {out}
+
+    Returns
+    -------
+    {out_rmom}
+    """
     if axis is None:
         axis = -1
 
@@ -306,6 +320,7 @@ def to_raw_moments(
     )
 
 
+@docfiller_shared
 def to_raw_comoments(
     x: ndarray,
     axis: tuple[int, int] = (-2, -1),
@@ -313,7 +328,21 @@ def to_raw_comoments(
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
 ) -> ndarray:
-    """Convert central moments to raw moments."""
+    r"""
+    Convert central moments to raw moments.
+
+    Parameters
+    ----------
+    {x_cocmom}
+    {axis_comom}
+    {dtype}
+    {order}
+    {out}
+
+    Returns
+    -------
+    {out_cormom}
+    """
 
     if axis is None:
         axis = (-2, -1)
@@ -329,6 +358,7 @@ def to_raw_comoments(
     )
 
 
+@docfiller_shared
 def to_central_moments(
     x: ndarray,
     axis: int = -1,
@@ -336,7 +366,21 @@ def to_central_moments(
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
 ) -> ndarray:
-    """Convert central moments to raw moments."""
+    r"""
+    Convert central moments to raw moments.
+
+    Parameters
+    ----------
+    {x_rmom}
+    {axis_mom}
+    {dtype}
+    {order}
+    {out}
+
+    Returns
+    -------
+    {out_cmom}
+    """
 
     if axis is None:
         axis = -1
@@ -352,6 +396,7 @@ def to_central_moments(
     )
 
 
+@docfiller_shared
 def to_central_comoments(
     x: ndarray,
     axis: tuple[int, int] = (-2, -1),
@@ -359,7 +404,21 @@ def to_central_comoments(
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
 ) -> ndarray:
-    """Convert raw comoments to central comoments."""
+    r"""
+    Convert raw comoments to central comoments.
+
+    Parameters
+    ----------
+    {x_cormom}
+    {axis_comom}
+    {dtype}
+    {order}
+    {out}
+
+    Returns
+    -------
+    {out_cocmom}
+    """
 
     if axis is None:
         axis = (-2, -1)
