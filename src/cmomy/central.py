@@ -1,6 +1,6 @@
 """
 Central moments/comoments routines from :class:`np.ndarray` objects
--------------------------------------------------------------------
+-------------------------------------------------------------------.
 """
 from __future__ import annotations
 
@@ -183,7 +183,8 @@ def central_moments(
     out: np.ndarray | None = None,
     broadcast: bool = False,
 ) -> np.ndarray:
-    """Calculate central moments or comoments along axis.
+    """
+    Calculate central moments or comoments along axis.
 
     Parameters
     ----------
@@ -304,7 +305,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @property
     def values(self) -> np.ndarray:
-        """Accesses for self.data"""
+        """Accesses for self.data."""
         return self._data
 
     ###########################################################################
@@ -561,7 +562,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         other: np.ndarray | None = None,
         **kwargs,
     ):  # type: ignore
-        """Verify input values.
+        """
+        Verify input values.
 
         Parameters
         ----------
@@ -1645,7 +1647,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         order: ArrayOrder | None = None,
         **kws,
     ) -> T_CentralMoments:
-        """Create object from several statistics.
+        """
+        Create object from several statistics.
 
         Weights, averages, variances/covariances along
         axis.

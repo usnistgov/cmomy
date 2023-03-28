@@ -23,7 +23,8 @@ def verify_value(
     shape_flat=None,
     first=True,
 ):
-    """Given an array `x` verify that it conforms to a target shape.
+    """
+    Given an array `x` verify that it conforms to a target shape.
 
     Parameters
     ----------

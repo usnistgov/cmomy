@@ -43,7 +43,8 @@ def _get_metaclass():
 
 
 class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
-    r"""Wrapper to calculate central moments.
+    r"""
+    Wrapper to calculate central moments.
 
     Base data has the form
 
@@ -90,7 +91,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @property
     def data(self) -> np.ndarray:
-        """Accessor to numpy array underlying data.
+        """
+        Accessor to numpy array underlying data.
 
         By convention data has the following meaning for the moments indexes
 
@@ -126,7 +128,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @property
     def mom_ndim(self) -> Literal[1, 2]:
-        """Length of moments.
+        """
+        Length of moments.
 
         if `mom_ndim` == 1, then single variable
         moments if `mom_ndim` == 2, then co-moments.
@@ -147,7 +150,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @property
     def val_shape(self) -> tuple[int, ...]:
-        """Shape of values dimensions.
+        """
+        Shape of values dimensions.
 
         That is shape less moments dimensions.
         """
@@ -246,7 +250,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         pass
 
     def zeros_like(self: T_CentralMoments) -> T_CentralMoments:
-        """Create new empty object like self.
+        """
+        Create new empty object like self.
 
         Returns
         -------
@@ -262,7 +267,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return self.new_like()
 
     def copy(self: T_CentralMoments, **copy_kws) -> T_CentralMoments:
-        """Create a new object with copy of data.
+        """
+        Create a new object with copy of data.
 
         Parameters
         ----------
@@ -339,7 +345,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return cast(T_Array, x)
 
     def cmom(self) -> T_Array:
-        r"""Central moments.
+        r"""
+        Central moments.
 
         Strict central moments of the form
 
@@ -389,7 +396,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return self._wrap_like(out)
 
     def rmom(self) -> T_Array:
-        r"""Raw moments.
+        r"""
+        Raw moments.
 
         .. math::
             \text{rmom[..., n, m]} = \langle x^n y^m \rangle
@@ -409,7 +417,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # ** pushing routines
     ###########################################################################
     def fill(self: T_CentralMoments, value: Any = 0) -> T_CentralMoments:
-        """Fill data with value.
+        """
+        Fill data with value.
 
         Parameters
         ----------
@@ -426,7 +435,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return self
 
     def zero(self: T_CentralMoments) -> T_CentralMoments:
-        """Zero out underlying data.
+        """
+        Zero out underlying data.
 
         Returns
         -------
@@ -834,7 +844,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self: T_CentralMoments,
         b: T_CentralMoments,
     ) -> T_CentralMoments:  # noqa D105
-        """Self adder"""
+        """Self adder."""
         self._check_other(b)
         # self.push_data(b.data)
         # return self
@@ -900,7 +910,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     def _check_mom(
         cls, moments: Moments, mom_ndim: int, shape: tuple[int, ...] | None = None
     ) -> tuple[int] | tuple[int, int]:  # type: ignore
-        """Check moments for correct shape.
+        """
+        Check moments for correct shape.
 
         If moments is None, infer from
         shape[-mom_ndim:] if integer, convert to tuple.

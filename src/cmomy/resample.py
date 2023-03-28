@@ -1,6 +1,6 @@
 """
 Routine to perform resampling (:mod:`cmomy.resample`)
-=====================================================
+=====================================================.
 
 
 """
@@ -39,7 +39,7 @@ from .utils import _axis_expand_broadcast, myjit
 
 @myjit
 def numba_random_seed(seed):
-    """Set the random seed for numba functions"""
+    """Set the random seed for numba functions."""
     np.random.seed(seed)
 
 
@@ -92,7 +92,8 @@ def randsamp_freq(
     freq: ArrayLike | None = None,
     check: bool = False,
 ) -> np.ndarray:
-    """Produce a random sample for bootstrapping.
+    """
+    Produce a random sample for bootstrapping.
 
     Parameters
     ----------
@@ -170,7 +171,8 @@ def resample_data(
     parallel: bool = True,
     out: np.ndarray | None = None,
 ) -> np.ndarray:
-    """Resample data according to frequency table.
+    """
+    Resample data according to frequency table.
 
     Parameters
     ----------
@@ -355,7 +357,8 @@ def bootstrap_confidence_interval(
     style: Literal[None, "delta", "pm"] = None,
     **kws,
 ) -> np.ndarray:
-    """Calculate the error bounds.
+    """
+    Calculate the error bounds.
 
     Parameters
     ----------
@@ -436,7 +439,8 @@ def xbootstrap_confidence_interval(
     bootstrap_coords: Sequence | None = None,
     **kws,
 ):
-    """Bootstrap xarray object.
+    """
+    Bootstrap xarray object.
 
     Parameters
     ----------

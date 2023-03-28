@@ -1,3 +1,4 @@
+# flake8: noqa
 """Classes/routines to fill common documentation."""
 from __future__ import annotations
 

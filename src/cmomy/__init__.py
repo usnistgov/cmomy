@@ -1,6 +1,6 @@
 """
 Top level API (:mod:`cmomy`)
-============================
+============================.
 """
 
 from .central import CentralMoments, central_moments

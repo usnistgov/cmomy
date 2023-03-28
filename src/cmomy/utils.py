@@ -78,7 +78,8 @@ def _axis_expand_broadcast(
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
 ) -> np.ndarray:
-    """Broadcast x to shape.
+    """
+    Broadcast x to shape.
 
     If x is 1d, and shape is n-d, but len(x) is same as shape[axis],
     broadcast x across all dimensions
