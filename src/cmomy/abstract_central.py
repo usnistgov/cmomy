@@ -719,7 +719,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         Returns
         -------
         output : :class:`cmomy.xCentralMoments`
-            New :class:`xCentralMoments` object after `func_or_method` is
+            New :class:`cmomy.xCentralMoments` object after `func_or_method` is
             applies to `self.values`
 
 
