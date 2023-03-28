@@ -18,6 +18,86 @@ from .utils import factory_binomial, myjit
 _bfac = factory_binomial(OPTIONS["nmax"])
 
 
+# _shared_docs = """
+# Parameters
+# ----------
+# x_cmom | x : ndarray
+#     Central moments array.  The expected structure is:
+
+#     * x[..., 0] : weight
+#     * x[..., 1] : mean
+#     * x[..., k] : kth central moment
+
+# x_cocmom | x : ndarray
+#     Central comoments array.  The expected structure is:
+
+#     * x[..., 0, 0] : weight
+#     * x[..., 1, 0] : mean of `a`
+#     * x[....,0, 1] : mean of `b`
+#     * x[..., i, j] : :math:`\langle (\delta a)^i (\delta b)^j \rangle`,
+#       where `a` and `b` are the variables being considered.
+
+# x_rmom | x : ndarray
+#     Raw moments array.  The expected structure is:
+
+#     * x[..., 0] : weight
+#     * x[..., k] : kth moment :math:`\langle a^k \rangle`
+
+# x_cormom | x : ndarray
+#     Raw comoments array.  The expected structure is:
+
+#     * x[..., 0, 0] : weight
+#     * x[..., i, j] : :math:`\langle a^i b^j \rangle`,
+#       where `a` and `b` are the variables being considered.
+
+
+# out_cmom | out : ndarray
+#     Central moments array.  The expected structure is:
+
+#     * out[..., 0] : weight
+#     * out[..., 1] : mean
+#     * out[..., k] : kth central moment
+
+# out_cocmom | out : ndarray
+#     Central comoments array.  The expected structure is:
+
+#     * out[..., 0, 0] : weight
+#     * out[..., 1, 0] : mean of `a`
+#     * out[....,0, 1] : mean of `b`
+#     * out[..., i, j] : :math:`\langle (\delta a)^i (\delta b)^j \rangle`,
+#       where `a` and `b` are the variables being considered.
+
+# out_rmom | out : ndarray
+#     Raw moments array.  The expected structure is:
+
+#     * out[..., 0] : weight
+#     * out[..., k] : kth moment :math:`\langle a^k \rangle`
+
+# out_cormom | out : ndarray
+#     Raw comoments array.  The expected structure is:
+
+#     * out[..., 0, 0] : weight
+#     * out[..., i, j] : :math:`\langle a^i b^j \rangle`,
+#       where `a` and `b` are the variables being considered.
+
+# axis_mom | axis : int, default=-1
+#     Axis location of moments in ``x``.
+# axis_comom | axis : tuple of int, default=(-2, -1)
+#     Axis locations of moments in comoments array ``x``
+# order : str, optional
+#     Optional ordering ('c', 'f', etc) to apply to output.
+# dtype : str, optional
+#     Optional :mod:`numpy` data type to apply to output.
+# out : ndarray, optional
+#     Optional numpy output array.  Should have same shape as ``x``.
+
+# """
+
+# docfiller_shared = DocFiller.from_docstring(
+#     _shared_docs, combine_keys='parameters'
+# )()
+
+
 @myjit
 def _central_to_raw_moments(central, raw):
     nv = central.shape[0]

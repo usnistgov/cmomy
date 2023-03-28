@@ -30,7 +30,6 @@ from ._typing import Moments, T_Array, T_CentralMoments
 from .cached_decorators import gcached
 from .options import DOC_SUB
 from .pushers import factory_pushers
-from .resample import randsamp_freq, resample_data
 
 # * TODO Main
 # TODO: Total rework is called for to handle typing correctly.
@@ -51,7 +50,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     .. math::
 
         data[..., i, j] = \begin{cases}
-            \text{weight} & i = j = 0 \\
+             \text{weight} & i = j = 0 \\
             \langle x \rangle & i = 1, j = 0 \\
             \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j)
             \rangle & i + j > 0
@@ -59,7 +58,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     Parameters
     ----------
-    data : xr.DataArray / np.ndarray
+    data : DataArray or ndarray
         Moment collection array.
     mom_ndim : {1, 2}
         Number of dimensions for moment part of `data`.
@@ -97,7 +96,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         * `data[...,i=0,j=0]`, weights
         * `data[...,i=1,j=0]]`, if only one moment index is one and all others zero,
-        then this is the average value of the variable with unit index.
+          then this is the average value of the variable with unit index.
         * all other cases, the central moments `<(x0-<x0>)**i0 * (x1 - <x1>)**i1 * ...>`
 
         """
@@ -688,10 +687,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     ) -> T_CentralMoments:
         """
         Apply `func_or_method` to underlying data and wrap results in
-        `xCentralMoments` object.
+        class:`cmomy.xCentralMoments` object.
 
-        This is useful for calling any not implemented methods on ndarray or
-        DataArray data.
+        This is useful for calling any not implemented methods on :class:`numpy.ndarray` or
+        :class:`xarray.DataArray` data.
 
         Parameters
         ----------
@@ -719,7 +718,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        output : xCentralMoments
+        output : :class:`cmomy.xCentralMoments`
             New :class:`xCentralMoments` object after `func_or_method` is
             applies to `self.values`
 
@@ -769,67 +768,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             raise ValueError(message)
 
     # * Universal reducers
-    @docfiller_shared
-    def resample_and_reduce(
-        self: T_CentralMoments,
-        freq: np.ndarray | None = None,
-        indices: np.ndarray | None = None,
-        nrep: None = None,
-        axis: int | None = None,
-        parallel: bool = True,
-        resample_kws: Mapping | None = None,
-        full_output: bool = False,
-        **kws,
-    ) -> T_CentralMoments | tuple[T_CentralMoments, np.ndarray]:
-        """
-        Bootstrap resample and reduce.
-
-        Parameters
-        ----------
-        {freq}
-        {indices}
-        {nrep}
-        {axis}
-        parallel : bool, default=True
-            flags to `numba.njit`
-        {resample_kws}
-        {full_output}
-        **kws
-            Extra key-word arguments to :meth:`from_data`
-
-        Returns
-        -------
-        output : object
-            Instance of calling class
-            Note that new object will have val_shape = (nrep,) +
-            val_shape[:axis] + val_shape[axis+1:]
-
-        See Also
-        --------
-        :meth:`resample`
-        :meth:`reduce`
-        ~resample.randsamp_freq
-        ~resample.freq_to_indices
-        ~resample.indices_to_freq
-        ~resample.resample_data
-        """
-        self._raise_if_scalar()
-        axis = self._wrap_axis(axis, **kws)
-        if resample_kws is None:
-            resample_kws = {}
-
-        freq = randsamp_freq(
-            nrep=nrep, indices=indices, freq=freq, size=self.val_shape[axis], check=True
-        )
-        data = resample_data(
-            self.data, freq, mom=self.mom, axis=axis, parallel=parallel, **resample_kws
-        )
-        out = type(self).from_data(data, mom_ndim=self.mom_ndim, copy=False, **kws)
-
-        if full_output:
-            return out, freq
-        else:
-            return out
 
     @docfiller_shared
     def resample(
@@ -882,85 +820,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             verify=True,
             **kws,
         )
-
-    @docfiller_shared
-    def reduce(
-        self: T_CentralMoments, axis: int | None = None, **kws
-    ) -> T_CentralMoments:
-        """
-        Create new object reduce along axis.
-
-        Parameters
-        ----------
-        {axis}
-        **kws
-            Extra parameters to :meth:`from_data`
-
-        """
-        self._raise_if_scalar()
-        axis = self._wrap_axis(axis, **kws)
-        return type(self).from_datas(
-            self.values, mom_ndim=self.mom_ndim, axis=axis, **kws
-        )
-
-    @docfiller_shared
-    def block(
-        self: T_CentralMoments,
-        block_size: int | None = None,
-        axis: int | None = None,
-        **kws,
-    ) -> T_CentralMoments:
-        """
-        Block average reduction.
-
-        Parameters
-        ----------
-        block_size : int
-            number of consecutive records to combine
-        {axis}
-        **kws
-            Extra key word arguments to :meth:`from_datas` method
-
-        Returns
-        -------
-        output : object
-            New instance of calling class
-            Shape of output will be
-            `(nblock,) + self.shape[:axis] + self.shape[axis+1:]`.
-
-        Notes
-        -----
-        The block averaged `axis` will be moved to the front of the output data.
-
-        See Also
-        --------
-        reshape
-        moveaxis
-        reduce
-        """
-
-        self._raise_if_scalar()
-
-        axis = self._wrap_axis(axis, **kws)
-        data = self.data
-
-        # move axis to first
-        if axis != 0:
-            data = np.moveaxis(data, axis, 0)
-
-        n = data.shape[0]
-
-        if block_size is None:
-            block_size = n
-            nblock = 1
-
-        else:
-            nblock = n // block_size
-
-        datas = data[: (nblock * block_size), ...].reshape(
-            (nblock, block_size) + data.shape[1:]
-        )
-        return type(self).from_datas(datas=datas, mom_ndim=self.mom_ndim, axis=1, **kws)
 
     ###########################################################################
     # ** Operators
@@ -1237,7 +1096,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         See Also
         --------
-        CentralMoments.from_data
+        cmomy.CentralMoments.from_data
         """
 
     @classmethod
@@ -1333,10 +1192,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         See Also
         --------
-        ~resample.resample_vals
-        ~resample.randsamp_freq
-        ~resample.freq_to_indices
-        ~resample.indices_to_freq
+        cmomy.resample.resample_vals
+        cmomy.resample.randsamp_freq
+        cmomy.resample.freq_to_indices
+        cmomy.resample.indices_to_freq
         """
 
     @classmethod
@@ -1375,8 +1234,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         --------
         to_raw
         rmom
-        ~convert.to_central_moments
-        ~convert.to_central_comoments
+        ~cmomy.convert.to_central_moments
+        ~cmomy.convert.to_central_comoments
 
         Notes
         -----
@@ -1422,8 +1281,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         --------
         from_raw
         from_datas
-        ~convert.to_central_moments
-        ~convert.to_central_comoments
+        ~cmomy.convert.to_central_moments  : convert raw to central moments
+        ~cmomy.convert.to_central_comoments : convert raw to central comoments
 
         Notes
         -----

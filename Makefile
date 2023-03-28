@@ -184,6 +184,7 @@ docs-build: ## build docs in isolation
 docs-clean: ## clean docs
 	rm -rf docs/_build/*
 	rm -rf docs/generated/*
+	rm -rf docs/reference/generated/*
 docs-clean-build: docs-clean docs-build ## clean and build
 docs-release: ## release docs.  use posargs=... to override stuff
 	$(TOX) -e $@ -- $(posargs)

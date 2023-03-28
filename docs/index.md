@@ -4,13 +4,12 @@
 
 ```{toctree}
 :caption: 'Contents:'
-:maxdepth: 5
+:maxdepth: 4
 
-<!-- example -->
 installation
 notebooks/motivation
 notebooks/usage_notebook
-api
+reference/index
 license
 contributing
 authors

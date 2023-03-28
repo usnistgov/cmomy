@@ -14,7 +14,7 @@ from numpy.typing import ArrayLike, DTypeLike
 from . import convert
 from ._docstrings import docfiller_shared
 from ._typing import ArrayOrder, Moments, T_CentralMoments
-from .resample import randsamp_freq, resample_vals
+from .resample import randsamp_freq, resample_data, resample_vals
 from .utils import _axis_expand_broadcast, _shape_insert_axis, _shape_reduce
 
 if TYPE_CHECKING:
@@ -835,6 +835,147 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     ###########################################################################
     # SECTION: Manipulation
     ###########################################################################
+    @docfiller_shared
+    def resample_and_reduce(
+        self: T_CentralMoments,
+        freq: np.ndarray | None = None,
+        indices: np.ndarray | None = None,
+        nrep: None = None,
+        axis: int | None = None,
+        parallel: bool = True,
+        resample_kws: Mapping | None = None,
+        full_output: bool = False,
+        **kws,
+    ) -> T_CentralMoments | tuple[T_CentralMoments, np.ndarray]:
+        """
+        Bootstrap resample and reduce.
+
+        Parameters
+        ----------
+        {freq}
+        {indices}
+        {nrep}
+        {axis}
+        parallel : bool, default=True
+            flags to `numba.njit`
+        {resample_kws}
+        {full_output}
+        **kws
+            Extra key-word arguments to :meth:`from_data`
+
+        Returns
+        -------
+        output : object
+            Instance of calling class
+            Note that new object will have val_shape = (nrep,) +
+            val_shape[:axis] + val_shape[axis+1:]
+
+        See Also
+        --------
+        resample
+        reduce
+        ~cmomy.resample.randsamp_freq : random frequency sample
+        ~cmomy.resample.freq_to_indices : convert frequency sample to index sample
+        ~cmomy.resample.indices_to_freq : convert index sample to frequency sample
+        ~cmomy.resample.resample_data : method to perform resampling
+        """
+        self._raise_if_scalar()
+        axis = self._wrap_axis(axis, **kws)
+        if resample_kws is None:
+            resample_kws = {}
+
+        freq = randsamp_freq(
+            nrep=nrep, indices=indices, freq=freq, size=self.val_shape[axis], check=True
+        )
+        data = resample_data(
+            self.data, freq, mom=self.mom, axis=axis, parallel=parallel, **resample_kws
+        )
+        out = type(self).from_data(data, mom_ndim=self.mom_ndim, copy=False, **kws)
+
+        if full_output:
+            return out, freq
+        else:
+            return out
+
+    @docfiller_shared
+    def reduce(
+        self: T_CentralMoments, axis: int | None = None, **kws
+    ) -> T_CentralMoments:
+        """
+        Create new object reduce along axis.
+
+        Parameters
+        ----------
+        {axis}
+        **kws
+            Extra parameters to :meth:`from_data`
+
+        """
+        self._raise_if_scalar()
+        axis = self._wrap_axis(axis, **kws)
+        return type(self).from_datas(
+            self.values, mom_ndim=self.mom_ndim, axis=axis, **kws
+        )
+
+    @docfiller_shared
+    def block(
+        self: T_CentralMoments,
+        block_size: int | None = None,
+        axis: int | None = None,
+        **kws,
+    ) -> T_CentralMoments:
+        """
+        Block average reduction.
+
+        Parameters
+        ----------
+        block_size : int
+            number of consecutive records to combine
+        {axis}
+        **kws
+            Extra key word arguments to :meth:`from_datas` method
+
+        Returns
+        -------
+        output : object
+            New instance of calling class
+            Shape of output will be
+            `(nblock,) + self.shape[:axis] + self.shape[axis+1:]`.
+
+        Notes
+        -----
+        The block averaged `axis` will be moved to the front of the output data.
+
+        See Also
+        --------
+        reshape
+        `moveaxis
+        :meth:`reduce`
+        """
+
+        self._raise_if_scalar()
+
+        axis = self._wrap_axis(axis, **kws)
+        data = self.data
+
+        # move axis to first
+        if axis != 0:
+            data = np.moveaxis(data, axis, 0)
+
+        n = data.shape[0]
+
+        if block_size is None:
+            block_size = n
+            nblock = 1
+
+        else:
+            nblock = n // block_size
+
+        datas = data[: (nblock * block_size), ...].reshape(
+            (nblock, block_size) + data.shape[1:]
+        )
+        return type(self).from_datas(datas=datas, mom_ndim=self.mom_ndim, axis=1, **kws)
+
     @docfiller_shared
     def reshape(
         self: T_CentralMoments,
