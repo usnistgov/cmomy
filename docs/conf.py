@@ -17,7 +17,6 @@
 # relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 #
-"""Config for documentation."""
 import os
 import sys
 
@@ -40,6 +39,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx.ext.autosectionlabel",
     "IPython.sphinxext.ipython_directive",
     "IPython.sphinxext.ipython_console_highlighting",
     # "nbsphinx",
@@ -60,6 +60,7 @@ extensions = [
 ]
 
 nitpicky = True
+autosectionlabel_prefix_document = True
 
 # -- myst stuff ---------------------------------------------------------
 myst_enable_extensions = [
@@ -419,7 +420,9 @@ intersphinx_mapping = {
 
 # based on numpy doc/source/conf.py
 def linkcode_resolve(domain, info):
-    """Determine the URL corresponding to Python object."""
+    """
+    Determine the URL corresponding to Python object
+    """
     import inspect
 
     if domain != "py":
