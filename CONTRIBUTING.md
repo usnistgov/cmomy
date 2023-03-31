@@ -169,7 +169,7 @@ Ready to contribute? Here's how to set up `cmomy` for local development.
 10. Submit a pull request through the GitHub website.
 
 
-### Dependency managment
+### Dependency management
 
 Dependencies need to be placed in a few locations, which depend on the nature of the dependency.
 
@@ -198,7 +198,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 ## Building the docs
 
-We use [tox] to isolate the documentaion build.  Useful commands are as follows.
+We use [tox] to isolate the documentation build.  Useful commands are as follows.
 
 * Build the docs:
 
@@ -212,7 +212,7 @@ We use [tox] to isolate the documentaion build.  Useful commands are as follows.
     tox -e docs-spelling
     ```
 
-* Create a relese of the docs:
+* Create a release of the docs:
 
     ```bash
     tox -e docs-release
