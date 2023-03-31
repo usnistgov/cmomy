@@ -167,6 +167,7 @@ ignore = [
     "D205",
     "D400",
     # bad things happend with periods and having headers in module docstring
+    "D400",
     "D401",
     "D415",
     "D102",
@@ -177,9 +178,6 @@ ignore = [
     "D107",
     "D203",
     "D212",
-    # this leads to errors with placing titles in module
-    # docstrings
-    "D400",
 ]
 
 per-file-ignores = {}
