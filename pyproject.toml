@@ -48,30 +48,17 @@ test = [
 # dev = []
 # docs = []
 
-[tool.setuptools]
-zip-safe = true # if using mypy, must be False
-include-package-data = true
-license-files = ["LICENSE"]
-
-[tool.setuptools.packages.find]
-namespaces = true
-where = ["src"]
-
+## Defer this to setup.cfg
+## Will transition when everything works (grayskull in particular)
+## and will remove setup.py
 # [tool.setuptools]
-# package-dir = {"" = "src"}
 # zip-safe = true # if using mypy, must be False
 # include-package-data = true
 # license-files = ["LICENSE"]
 
 # [tool.setuptools.packages.find]
+# namespaces = true
 # where = ["src"]
-# namespaces = false
-
-# # To add package data
-# [tool.setuptools.package-data]
-# cmomy = [
-#     "py.typed"
-# ]
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md", "HISTORY.md", "LICENSE"], content-type = "text/markdown"}
