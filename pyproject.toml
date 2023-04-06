@@ -93,6 +93,8 @@ select = [
   "I",
   # pyupgrade
   "UP",
+  # pydocstyle
+  "D",
   # # flake8-2020
   # "YTT",
   # # flake8-bugbear
