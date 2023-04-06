@@ -2,7 +2,6 @@
 requires = [
     "setuptools>=61.2",
     "setuptools_scm[toml]>=7.0",
-    "setuptools_scm_git_archive",
 ]
 build-backend = "setuptools.build_meta"
 
