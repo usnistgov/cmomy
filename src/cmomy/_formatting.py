@@ -1,6 +1,4 @@
-"""
-pretty formatting for notebook
-"""
+"""pretty formatting for notebook."""
 
 from functools import partial
 
@@ -9,6 +7,7 @@ from xarray.core import formatting_html as fm
 
 
 def tuple_to_str(x):
+    """Convert tuple to a string."""
     if len(x) == 0:
         return "*empty*"
 
@@ -30,6 +29,7 @@ cmomy_section = partial(
 
 
 def numpy_section(x):
+    """Create numpy array section."""
     # "unique" id to expand/collapse the section
     data_id = "section-" + str(fm.uuid.uuid4())
     collapsed = (
@@ -55,6 +55,7 @@ def numpy_section(x):
 
 
 def repr_html(x):
+    """Create html output."""
     # build the cmomy header
     obj_type = type(x).__name__
 

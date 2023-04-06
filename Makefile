@@ -143,7 +143,7 @@ environment/test.yaml: environment.yaml environment/test-extras.yaml ## build te
 
 .PHONY: environment-files
 
-environment-files: environment/dev.yaml environment/docs.yaml environment/test.yaml ## rebuild all environ
+environment-files: environment/dev.yaml environment/docs.yaml environment/test.yaml ## rebuild all environment files
 
 
 ################################################################################
@@ -152,16 +152,16 @@ environment-files: environment/dev.yaml environment/docs.yaml environment/test.y
 .PHONY: mamba-env mamba-dev mamba-env-update mamba-dev-update
 
 mamba-env: environment.yaml ## create base environment
-	mamba env create -f environment.yaml
+	mamba env create -f $<
 
 mamba-env-update: environment.yaml ## update base environment
-	mamba env update -f environment.yml
+	mamba env update -f $<
 
 mamba-dev: environment/dev.yaml ## create development environment
-	mamba env create -f environment-dev.yaml
+	mamba env create -f $<
 
 mamba-dev-update: environment/dev.yaml ## update development environment
-	mamba env update -f environment-dev.yml
+	mamba env update -f $<
 
 ################################################################################
 # TOX
@@ -177,13 +177,14 @@ test-all: environment/test.yaml ## run tests on every Python version with tox
 
 
 ## docs
-.PHONY: docs-build docs-release docs-clean docs-spelling docs-nist-pages docs-open docs-live docs-clean-build
+.PHONY: docs-build docs-release docs-clean docs-spelling docs-nist-pages docs-open docs-live docs-clean-build docs-linkcheck
 posargs=
 docs-build: ## build docs in isolation
 	$(TOX) -e $@ -- $(posargs)
 docs-clean: ## clean docs
 	rm -rf docs/_build/*
 	rm -rf docs/generated/*
+	rm -rf docs/reference/generated/*
 docs-clean-build: docs-clean docs-build ## clean and build
 docs-release: ## release docs.  use posargs=... to override stuff
 	$(TOX) -e $@ -- $(posargs)
@@ -195,6 +196,9 @@ docs-live: ## use autobuild for docs
 	$(TOX) -e $@ -- $(posargs)
 docs-open: ## open the build
 	$(BROWSER) docs/_build/html/index.html
+docs-linkcheck: ## check links
+	$(TOX) -e docs-build -- linkcheck
+
 docs-build docs-release docs-clean docs-spelling docs-nist-pages docs-live: environment/docs.yaml
 
 

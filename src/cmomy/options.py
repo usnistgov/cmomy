@@ -46,7 +46,8 @@ _SETTERS: dict[str, Callable] = {}
 
 
 class set_options:
-    """Set options for xarray in a controlled context.
+    """
+    Set options for xarray in a controlled context.
 
     Currently supported options:
 

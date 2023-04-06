@@ -29,7 +29,7 @@ The sources for cmomy can be downloaded from the [Github repo].
 You can either clone the public repository:
 
 ```console
-$ git clone git://github.com/usnistgov/cmomy
+$ git clone git://github.com/usnistgov/cmomy.git
 ```
 
 Once you have a copy of the source, you can install it with:
@@ -38,7 +38,7 @@ Once you have a copy of the source, you can install it with:
 $ pip install .
 ```
 
-To install dependecies with conda/mamba, use:
+To install dependencies with conda/mamba, use:
 
 ```
 .. code-block:: console

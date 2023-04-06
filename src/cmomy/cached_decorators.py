@@ -21,7 +21,8 @@ def gcached(key=None, prop=True):
 
 
 def cached(key=None):
-    """Cache property in a class.
+    """
+    Cache property in a class.
 
     Requires the Class to have a cache dict called ``_cache``.
 
@@ -152,7 +153,8 @@ def cached_func(key=None):
 
 
 def cached_clear(*keys):
-    """Clear class cache.
+    """
+    Clear class cache.
 
     Parameters
     ----------

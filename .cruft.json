@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-  "commit": "a56f6e80fd47652786faa0d0bea3b6cfb079d40e",
+  "commit": "97415610c45d54830d08e10079b92cea6e2f5a76",
   "checkout": "feature/markdown",
   "skip": [
     "src/cmomy/__init__.py",
@@ -8,6 +8,9 @@
     "HISTORY.md",
     "AUTHORS.md",
     "environment.yaml",
+      "environment/dev-extras.yaml",
+      "environment/docs-extras.yaml",
+      ".gitignore",
     "docs/api.md",
     "docs/index.md",
     "docs/spelling_wordlist.txt"
@@ -24,7 +27,8 @@
       "_copy_without_render": [
         "*.html",
         "docs/_templates/*.rst",
-        "docs/_templates/autosummary/*.rst"
+        "docs/_templates/autosummary/*.rst",
+        "docs/_templates/autodocsumm/*.rst"
       ],
       "project_short_description": "Central (co)moment calculation/manipulation",
       "version": "0.0.1",

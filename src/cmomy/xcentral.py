@@ -219,7 +219,8 @@ def xcentral_moments(
     mom_dims: MomDims | None = None,
     broadcast: bool = False,
 ) -> xr.DataArray:
-    """Calculate central mom along axis.
+    """
+    Calculate central mom along axis.
 
     Parameters
     ----------
@@ -264,7 +265,8 @@ def xcentral_moments(
 
 # * xCentralMoments
 class xCentralMoments(CentralMomentsABC[xr.DataArray]):
-    """Wrap cmomy.CentralMoments with xarray.
+    """
+    Wrap cmomy.CentralMoments with xarray.
 
     Parameters
     ----------
@@ -469,7 +471,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _kws: Mapping | None = None,
         **dimensions_kwargs,
     ) -> xCentralMoments:
-        """Stack dimensions.
+        """
+        Stack dimensions.
 
         Returns
         -------
@@ -553,7 +556,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _check_mom=True,
         _kws=None,
     ) -> xCentralMoments:
-        """Unstack dimensions.
+        """
+        Unstack dimensions.
 
         Returns
         -------
@@ -591,7 +595,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _kws=None,
         **indexers_kws,
     ) -> xCentralMoments:
-        """Select subset of data.
+        """
+        Select subset of data.
 
         Returns
         -------
@@ -681,7 +686,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         _kws: None = None,
         **indexers_kws,
     ) -> xCentralMoments:
-        """Select subset of data by position.
+        """
+        Select subset of data by position.
 
         Returns
         -------
@@ -759,7 +765,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
     @gcached()
     def centralmoments_view(self):
-        """Create CentralMoments view.
+        """
+        Create CentralMoments view.
 
         This object has the same underlying data as `self`, but no
         DataArray attributes.  Useful for some function calls.
