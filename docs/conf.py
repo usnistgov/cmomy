@@ -124,7 +124,7 @@ github_username = "usnistgov"
 html_context = {
     "github_user": "usnistgov",
     "github_repo": "cmomy",
-    "github_version": "master",
+    "github_version": "main",
     "doc_path": "docs",
 }
 
@@ -280,7 +280,7 @@ html_theme = "sphinx_book_theme"
 html_theme_options = dict(
     # analytics_id=''  this is configured in rtfd.io
     # canonical_url="",
-    repository_url="https://github.com/usnistgov/cmomy",
+    repository_url=f"https://github.com/{github_username}/cmomy",
     repository_branch=html_context["github_version"],
     path_to_docs=html_context["doc_path"],
     # use_edit_page_button=True,
@@ -423,23 +423,26 @@ intersphinx_mapping = {
 def linkcode_resolve(domain, info):
     """Determine the URL corresponding to Python object"""
     import inspect
+    from operator import attrgetter
 
     if domain != "py":
         return None
 
-    modname = info["module"]
-    fullname = info["fullname"]
+    parent_name, *sub_parts = info["module"].split(".")
+    parent_mod = sys.modules.get(parent_name)
 
-    submod = sys.modules.get(modname)
-    if submod is None:
+    try:
+        if len(sub_parts) > 0:
+            sub_name = ".".join(sub_parts)
+            obj = attrgetter(sub_name)(parent_mod)
+        else:
+            obj = parent_mod
+
+        # get fullname
+        obj = attrgetter(info["fullname"])(obj)
+
+    except AttributeError:
         return None
-
-    obj = submod
-    for part in fullname.split("."):
-        try:
-            obj = getattr(obj, part)
-        except AttributeError:
-            return None
 
     try:
         fn = inspect.getsourcefile(inspect.unwrap(obj))

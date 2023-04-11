@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-  "commit": "ef59705bd8a854b4d62ae0a12228e2a755b7e01f",
+  "commit": "7c5c3d44cc741bea4a0c8cd99b0786b730053129",
   "checkout": "feature/markdown",
   "skip": [
     "src/cmomy/__init__.py",
