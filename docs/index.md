@@ -6,8 +6,7 @@
 :maxdepth: 2
 
 installation
-notebooks/motivation
-notebooks/usage_notebook
+examples/index
 reference/index
 license
 contributing
