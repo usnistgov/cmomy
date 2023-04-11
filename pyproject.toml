@@ -58,6 +58,8 @@ test = [
 # [tool.setuptools.packages.find]
 # namespaces = true
 # where = ["src"]
+## include = []
+## exclude = []
 
 [tool.setuptools.dynamic]
 readme = {file = ["README.md", "HISTORY.md", "LICENSE"], content-type = "text/markdown"}
@@ -93,6 +95,8 @@ select = [
   "I",
   # pyupgrade
   "UP",
+  # pydocstyle
+  "D",
   # # flake8-2020
   # "YTT",
   # # flake8-bugbear

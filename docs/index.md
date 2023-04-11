@@ -3,8 +3,7 @@
 ```
 
 ```{toctree}
-:caption: 'Contents:'
-:maxdepth: 4
+:maxdepth: 2
 
 installation
 notebooks/motivation
@@ -14,13 +13,8 @@ license
 contributing
 authors
 history
+navigation
 ```
 
 <!-- notebooks/motivation -->
 <!-- notebooks/usage_notebook -->
-
-# Indices and tables
-
-- {ref}`genindex`
-- {ref}`modindex`
-- {ref}`search`
