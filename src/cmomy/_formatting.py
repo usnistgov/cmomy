@@ -5,6 +5,13 @@ from functools import partial
 from xarray.core import formatting as ff
 from xarray.core import formatting_html as fm
 
+if hasattr(ff, "short_array_repr"):
+    short_numpy_repr = ff.short_array_repr
+elif hasattr(ff, "short_numpy_repr"):
+    short_numpy_repr = ff.short_numpy_repr
+else:
+    short_numpy_rerp = repr
+
 
 def tuple_to_str(x):
     """Convert tuple to a string."""
@@ -40,7 +47,7 @@ def numpy_section(x):
     preview = fm.escape(ff.format_array_flat(x, max_width=70))
 
     # short data repr
-    text = fm.escape(ff.short_numpy_repr(x))
+    text = fm.escape(short_numpy_repr(x))
     data_repr = f"<pre>{text}</pre>"
     data_icon = fm._icon("icon-database")
 
