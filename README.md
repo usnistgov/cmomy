@@ -1,5 +1,15 @@
-[![Repo][repo-badge]][repo-link]
-[![Docs][docs-badge]][docs-link]
+# cmomy
+
+A Python package to calculate and manipulate Central (co)moments. The main
+features of `cmomy` are as follows:
+
+- [Numba][Numba] accelerated computation of central moments and co-moments
+- Routines to combine, and resample central moments.
+- Both [numpy][numpy] array-like and [xarray][xarray] DataArray interfaces to
+  Data.
+- Routines to convert between central and raw moments.
+
+[![Repo][repo-badge]][repo-link] [![Docs][docs-badge]][docs-link]
 [![PyPI license][license-badge]][license-link]
 [![PyPI version][pypi-badge]][pypi-link]
 [![Conda (channel only)][conda-badge]][conda-link]
@@ -27,48 +37,30 @@
 [license-badge]: https://img.shields.io/pypi/l/cmomy?color=informational
 [license-link]: https://github.com/usnistgov/cmomy/blob/master/LICENSE
 
-<!-- For more badges, see https://shields.io/category/other and https://naereen.github.io/badges/ -->
-<!-- [github-ci]: https://github.com/executablebooks/MyST-Parser/workflows/continuous-integration/badge.svg?branch=master -->
-<!-- [github-link]: https://github.com/executablebooks/MyST-Parser -->
-<!-- [codecov-badge]: https://codecov.io/gh/executablebooks/MyST-Parser/branch/master/graph/badge.svg -->
-<!-- [codecov-link]: https://codecov.io/gh/executablebooks/MyST-Parser -->
-<!-- [rtd-badge]: https://readthedocs.org/projects/myst-parser/badge/?version=latest -->
-<!-- [rtd-link]: https://myst-parser.readthedocs.io/en/latest/?badge=latest -->
-<!-- [pypi-badge]: https://img.shields.io/pypi/v/cmomy -->
-<!-- [conda-badge]: https://anaconda.org/conda-forge/myst-parser/badges/version.svg -->
-<!-- [conda-link]: https://anaconda.org/conda-forge/myst-parser -->
-<!-- [install-badge]: https://img.shields.io/pypi/dw/myst-parser?label=pypi%20installs -->
-<!-- [Install-link]: https://pypistats.org/packages/myst-parser -->
-
-# cmomy
-
-A Python package to calculate and manipulate Central (co)moments. The main features of `cmomy` are as follows:
-
--   [Numba][Numba] accelerated computation of central moments and co-moments
--   Routines to combine, and resample central moments.
--   Both [numpy][numpy] array-like and [xarray][xarray] DataArray interfaces to
-    Data.
--   Routines to convert between central and raw moments.
+<!-- For more badges see
+https://shields.io/category/other
+https://naereen.github.io/badges/
+-->
 
 ## Overview
 
-`cmomy` is an open source package to calculate central moments and
-co-moments in a numerical stable and direct way. Behind the scenes,
-`cmomy` makes use of [Numba][Numba] to rapidly
-calculate moments. A good introduction to the type of formulas used can
-be found
+`cmomy` is an open source package to calculate central moments and co-moments in
+a numerical stable and direct way. Behind the scenes, `cmomy` makes use of
+[Numba][Numba] to rapidly calculate moments. A good introduction to the type of
+formulas used can be found
 [here](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance).
 
 ## Features
 
--   Fast calculation of central moments and central co-moments with weights
--   Support for scalar or vector inputs
--   numpy and xarray api's
--   bootstrap resampling
+- Fast calculation of central moments and central co-moments with weights
+- Support for scalar or vector inputs
+- numpy and xarray api's
+- bootstrap resampling
 
 ## Status
 
-This package is actively used by the author. Please feel free to create a pull request for wanted features and suggestions!
+This package is actively used by the author. Please feel free to create a pull
+request for wanted features and suggestions!
 
 ## Quick start
 
@@ -130,14 +122,15 @@ Out[15]: array([1.    , 0.    , 0.0731, 0.0075])
 
 ## Note on caching
 
-This code makes extensive use of the numba python package. This uses a
-jit compiler to speed up vital code sections. This means that the first
-time a function called, it has to compile the underlying code. However,
-caching has been implemented. Therefore, the very first time you run a
-function, it may be slow. But all subsequent uses (including other
-sessions) will be already compiled.
+This code makes extensive use of the numba python package. This uses a jit
+compiler to speed up vital code sections. This means that the first time a
+function called, it has to compile the underlying code. However, caching has
+been implemented. Therefore, the very first time you run a function, it may be
+slow. But all subsequent uses (including other sessions) will be already
+compiled.
 
-A quick way to cache (most all) the [Numba][Numba] functions is to run the tests. This can be done with
+A quick way to cache (most all) the [Numba][Numba] functions is to run the
+tests. This can be done with
 
 ```bash
 conda/mamba/pip install pytest
@@ -157,7 +150,8 @@ This is free software. See [LICENSE][license-link].
 
 ## Related work
 
-This package is used extensively in the newest version of `thermoextrap`. See [here](https://github.com/usnistgov/thermo-extrap).
+This package is used extensively in the newest version of `thermoextrap`. See
+[here](https://github.com/usnistgov/thermo-extrap).
 
 ## Contact
 
