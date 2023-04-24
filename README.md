@@ -1,3 +1,37 @@
+<!-- markdownlint-disable MD041 -->
+
+[![Repo][repo-badge]][repo-link] [![Docs][docs-badge]][docs-link]
+[![PyPI license][license-badge]][license-link]
+[![PyPI version][pypi-badge]][pypi-link]
+[![Conda (channel only)][conda-badge]][conda-link]
+[![Code style: black][black-badge]][black-link]
+
+<!--
+  For more badges, see
+  https://shields.io/category/other
+  https://naereen.github.io/badges/
+  [pypi-badge]: https://badge.fury.io/py/cmomy
+-->
+
+[black-badge]: https://img.shields.io/badge/code%20style-black-000000.svg
+[black-link]: https://github.com/psf/black
+[pypi-badge]: https://img.shields.io/pypi/v/cmomy
+[pypi-link]: https://pypi.org/project/cmomy
+[docs-badge]: https://img.shields.io/badge/docs-sphinx-informational
+[docs-link]: https://pages.nist.gov/cmomy/
+[repo-badge]: https://img.shields.io/badge/--181717?logo=github&logoColor=ffffff
+[repo-link]: https://github.com/usnistgov/cmomy
+[conda-badge]: https://img.shields.io/conda/v/wpk-nist/cmomy
+[conda-link]: https://anaconda.org/wpk-nist/cmomy
+[license-badge]: https://img.shields.io/pypi/l/cmomy?color=informational
+[license-link]: https://github.com/usnistgov/cmomy/blob/main/LICENSE
+
+<!-- other links -->
+
+[numpy]: https://numpy.org
+[Numba]: https://numba.pydata.org/
+[xarray]: https://docs.xarray.dev/en/stable/
+
 # cmomy
 
 A Python package to calculate and manipulate Central (co)moments. The main
@@ -8,39 +42,6 @@ features of `cmomy` are as follows:
 - Both [numpy][numpy] array-like and [xarray][xarray] DataArray interfaces to
   Data.
 - Routines to convert between central and raw moments.
-
-[![Repo][repo-badge]][repo-link] [![Docs][docs-badge]][docs-link]
-[![PyPI license][license-badge]][license-link]
-[![PyPI version][pypi-badge]][pypi-link]
-[![Conda (channel only)][conda-badge]][conda-link]
-[![Code style: black][black-badge]][black-link]
-
-[black-badge]: https://img.shields.io/badge/code%20style-black-000000.svg
-[black-link]: https://github.com/ambv/black
-[pypi-badge]: https://img.shields.io/pypi/v/cmomy
-
-<!-- [pypi-badge]: https://badge.fury.io/py/cmomy.svg -->
-
-[pypi-link]: https://pypi.org/project/cmomy
-[docs-badge]: https://img.shields.io/badge/docs-sphinx-informational
-[docs-link]: https://pages.nist.gov/cmomy/
-[repo-badge]: https://img.shields.io/badge/--181717?logo=github&logoColor=ffffff
-[repo-link]: https://github.com/usnistgov/cmomy
-[conda-badge]: https://img.shields.io/conda/v/wpk-nist/cmomy
-[conda-link]: https://anaconda.org/wpk-nist/cmomy
-[numpy]: https://numpy.org
-[Numba]: https://numba.pydata.org/
-[xarray]: https://docs.xarray.dev/en/stable/
-
-<!-- Use total link so works from anywhere -->
-
-[license-badge]: https://img.shields.io/pypi/l/cmomy?color=informational
-[license-link]: https://github.com/usnistgov/cmomy/blob/master/LICENSE
-
-<!-- For more badges see
-https://shields.io/category/other
-https://naereen.github.io/badges/
--->
 
 ## Overview
 
