@@ -5,19 +5,21 @@ Routines to convert central (co)moments to raw (co)moments. (:mod:`cmomy.convert
 """
 from __future__ import annotations
 
-from typing import Any, Callable, Sequence, no_type_check
+from typing import TYPE_CHECKING, Any, Callable, Sequence, no_type_check
 
 import numpy as np
 from numpy import ndarray
-from numpy.typing import ArrayLike, DTypeLike
 
 from ._docstrings import DocFiller
-from ._typing import ArrayOrder
 from .options import OPTIONS
 from .utils import factory_binomial, myjit
 
 _bfac = factory_binomial(OPTIONS["nmax"])
 
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike, DTypeLike
+
+    from ._typing import ArrayOrder
 
 _shared_docs = r"""
 Parameters

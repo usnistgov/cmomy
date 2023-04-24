@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from typing import (
+    TYPE_CHECKING,
     Any,
     Callable,
     Generic,
@@ -18,10 +19,8 @@ from typing import (
 )
 
 import numpy as np
-import xarray as xr
 from custom_inherit import DocInheritMeta
 from numpy.core.numeric import normalize_axis_index  # type: ignore
-from numpy.typing import ArrayLike, DTypeLike
 
 from . import convert
 from ._docstrings import docfiller_shared
@@ -30,6 +29,10 @@ from ._typing import Moments, T_Array, T_CentralMoments
 from .cached_decorators import gcached
 from .options import DOC_SUB
 from .pushers import factory_pushers
+
+if TYPE_CHECKING:
+    import xarray as xr
+    from numpy.typing import ArrayLike, DTypeLike
 
 # * TODO Main
 # TODO: Total rework is called for to handle typing correctly.
@@ -108,7 +111,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     def values(self) -> T_Array:
         """Access underlying central moments array."""
-        pass
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -247,7 +249,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         from_data
 
         """
-        pass
 
     def zeros_like(self: T_CentralMoments) -> T_CentralMoments:
         """
@@ -1031,7 +1032,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         numpy.zeros
 
         """
-        pass
 
     @classmethod
     @abstractmethod
@@ -1254,7 +1254,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
 
         """
-        pass
 
     @classmethod
     @abstractmethod
@@ -1300,7 +1299,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         Weights are taken from ``raw[...,0, 0]``.
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
         """
-        pass
 
     # --------------------------------------------------
     # mom_ndim == 1 specific
