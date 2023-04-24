@@ -44,7 +44,7 @@ indices : array of int, optional
 nrep : int, optional
     Number of replicates.  Create `freq` with this many replicates.
     See :func:`~cmomy.resample.randsamp_freq`
-pushed : same as object
+pushed : object
     Same as object, with new data pushed onto `self.data`
 resample_kws : mapping
     Extra arguments to :func:`~cmomy.resample.resample_vals`

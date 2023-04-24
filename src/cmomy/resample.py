@@ -22,15 +22,18 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 
 from __future__ import annotations
 
-from typing import Hashable, Literal, Sequence, Tuple, cast
+from typing import TYPE_CHECKING, Hashable, Literal, Sequence, Tuple, cast
 
 import numpy as np
 import xarray as xr
-from numpy.typing import ArrayLike, DTypeLike
 
 from ._resample import factory_resample_data, factory_resample_vals
-from ._typing import ArrayOrder, Moments, XvalStrict
 from .utils import _axis_expand_broadcast, myjit
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike, DTypeLike
+
+    from ._typing import ArrayOrder, Moments, XvalStrict
 
 ##############################################################################
 # resampling

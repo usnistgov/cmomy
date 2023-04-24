@@ -2,16 +2,18 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import numpy as np
 from numba import njit
-from numpy.typing import ArrayLike, DTypeLike
-
-from ._typing import ArrayOrder
 
 # from .cached_decorators import gcached  # , cached_clear
 from .options import OPTIONS
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike, DTypeLike
+
+    from ._typing import ArrayOrder
 
 
 def myjit(func):

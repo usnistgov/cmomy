@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 from typing import (  # TYPE_CHECKING,
+    TYPE_CHECKING,
     Any,
     Hashable,
     Literal,
@@ -18,15 +19,18 @@ from warnings import warn
 
 import numpy as np
 import xarray as xr
-from numpy.typing import DTypeLike
 
 from . import convert
 from ._docstrings import docfiller_shared
-from ._typing import Dims, MomDims, Moments, T_CentralMoments
 from .abstract_central import CentralMomentsABC
 from .cached_decorators import gcached
 from .central import CentralMoments
 from .utils import _shape_reduce
+
+if TYPE_CHECKING:
+    from numpy.typing import DTypeLike
+
+    from ._typing import Dims, MomDims, Moments, T_CentralMoments
 
 
 # * Utilities

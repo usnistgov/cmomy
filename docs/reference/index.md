@@ -1,19 +1,17 @@
 # API reference
 
-
-:::{toctree}
+```{toctree}
 :maxdepth: 2
 :hidden:
 
 api-public
 api-modules
 api-baseclasses
-:::
-
+```
 
 ## Modules
 
-:::{eval-rst}
+```{eval-rst}
 
 .. autosummary::
 
@@ -21,4 +19,4 @@ api-baseclasses
     cmomy.resample
     cmomy.convert
 
-:::
+```

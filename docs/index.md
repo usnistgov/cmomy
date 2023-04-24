@@ -1,26 +1,18 @@
+<!-- markdownlint-disable MD041 -->
+
 ```{include} ../README.md
 :end-before: <!-- end-docs -->
 ```
 
 ```{toctree}
-:caption: 'Contents:'
-:maxdepth: 4
+:maxdepth: 2
 
 installation
-notebooks/motivation
-notebooks/usage_notebook
+examples/index
 reference/index
 license
 contributing
 authors
-history
+changelog
+navigation
 ```
-
-<!-- notebooks/motivation -->
-<!-- notebooks/usage_notebook -->
-
-# Indices and tables
-
-- {ref}`genindex`
-- {ref}`modindex`
-- {ref}`search`

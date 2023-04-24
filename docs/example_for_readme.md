@@ -6,10 +6,7 @@
 <!--   display_name: Python 3 -->
 <!--   name: python3 -->
 <!-- --- -->
-
-
 # Example usage
-
 
 ```{eval-rst}
 .. ipython:: python
@@ -50,15 +47,3 @@
     c.cmom()
 
 ```
-
-<!-- ```{code-cell} ipython3 -->
-<!-- b = 2 -->
-<!-- print('b value', b) -->
-<!-- ``` -->
-
-<!-- ```python -->
-<!-- import numpy as np -->
-
-<!-- for x in [1, 2, 3]: -->
-<!--     pass -->
-<!-- ``` -->
