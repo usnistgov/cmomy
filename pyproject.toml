@@ -68,7 +68,7 @@ fallback_version = "999"
 test = "pytest"
 
 [tool.pytest.ini_options]
-addopts = "--verbose"
+addopts = "--verbose --doctest-modules --ignore-glob=**/_docfiller/*.py"
 testpaths = ["tests"]
 
 [tool.isort]
