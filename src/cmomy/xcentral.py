@@ -19,11 +19,11 @@ from warnings import warn
 
 import numpy as np
 import xarray as xr
+from module_utilities import cached
 
 from . import convert
 from ._docstrings import docfiller_shared
 from .abstract_central import CentralMomentsABC
-from .cached_decorators import gcached
 from .central import CentralMoments
 from .utils import _shape_reduce
 
@@ -362,7 +362,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         return self.dims[-self.mom_ndim :]
 
     # ** top level creation/copy/new
-    @gcached()
+    @cached.prop
     def _template_val(self) -> xr.DataArray:
         """Template for values part of data."""
         return self._xdata[self._weight_index]
@@ -767,7 +767,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         """Create a CentralMoments object from xCentralMoments."""
         return CentralMoments(data=self.data, mom_ndim=self.mom_ndim)
 
-    @gcached()
+    @cached.prop
     def centralmoments_view(self):
         """
         Create CentralMoments view.

@@ -4,6 +4,7 @@ dependencies:
   - custom-inherit
   - ipykernel
   - ipython
+  - module-utilities
   - numba
   - numpy<1.24
   - pip

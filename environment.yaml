@@ -9,3 +9,4 @@ dependencies:
   - xarray
   - typing-extensions
   - custom-inherit
+  - module-utilities

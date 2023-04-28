@@ -3,6 +3,7 @@ channels:
 dependencies:
   - custom-inherit
   - ipython
+  - module-utilities
   - numba
   - numpy<1.24
   - pip

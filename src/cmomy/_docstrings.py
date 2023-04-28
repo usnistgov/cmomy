@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ._docfiller.docfiller import DocFiller
+from module_utilities.docfiller import DocFiller
 
 _docstring_cmomy = """\
 Parameters

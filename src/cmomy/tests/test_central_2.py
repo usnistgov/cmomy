@@ -1,10 +1,8 @@
 import numpy as np
 import pytest
-from numpy.core.multiarray import normalize_axis_index
 
 from cmomy import CentralMoments, central_moments
 from cmomy._testing import _get_cmom, _get_comom
-from cmomy.cached_decorators import gcached
 from cmomy.tests.conftest import Data
 
 

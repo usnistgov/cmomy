@@ -30,6 +30,7 @@ dependencies = [
     "xarray >= 0.16",
     "typing-extensions",
     "custom-inherit",
+    "module-utilities",
 ]
 
 [project.urls]

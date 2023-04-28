@@ -20,13 +20,13 @@ from typing import (
 
 import numpy as np
 from custom_inherit import DocInheritMeta
+from module_utilities import cached
 from numpy.core.numeric import normalize_axis_index  # type: ignore
 
 from . import convert
 from ._docstrings import docfiller_shared
 from ._formatting import repr_html
 from ._typing import Moments, T_Array, T_CentralMoments
-from .cached_decorators import gcached
 from .options import DOC_SUB
 from .pushers import factory_pushers
 
@@ -192,7 +192,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         """Shape of flat variance."""
         return self.val_shape_flat + self.mom_shape_var
 
-    @gcached()
+    @cached.prop
     def _push(self):
         vec = len(self.val_shape) > 0
         cov = self.mom_ndim == 2
@@ -300,7 +300,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # ** Access to underlying statistics
     ###########################################################################
 
-    @gcached()
+    @cached.prop
     def _weight_index(self):
         index = (0,) * len(self.mom)
         if self.val_ndim > 0:
@@ -308,7 +308,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         else:
             return index
 
-    @gcached(prop=False)
+    @cached.meth
     def _single_index(self, val) -> tuple[list[int], ...]:
         # index with things like data[..., 1,0] data[..., 0,1]
         # index = (...,[1,0],[0,1])

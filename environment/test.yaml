@@ -2,6 +2,7 @@ channels:
   - conda-forge
 dependencies:
   - custom-inherit
+  - module-utilities
   - numba
   - numpy<1.24
   - pytest
