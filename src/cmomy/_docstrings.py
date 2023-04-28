@@ -80,11 +80,11 @@ rec_dim : hashable, optional
     Name of dimension for 'records', i.e., multiple observations.
 """
 
-DOCFILLER_CMOMY = DocFiller.from_docstring(
+DOCFILLER_SHARED = DocFiller.from_docstring(
     _docstring_cmomy, combine_keys="parameters"
 ).assign_combined_key(
     "xr_params", ["dims", "attrs", "coords", "name", "indexes", "template"]
 )
 
 
-docfiller_shared = DOCFILLER_CMOMY()
+docfiller_shared = DOCFILLER_SHARED()
