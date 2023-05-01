@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any, Callable, Sequence, no_type_check
 import numpy as np
 from numpy import ndarray
 
-from ._docstrings import DocFiller
+from .docstrings import DocFiller
 from .options import OPTIONS
 from .utils import factory_binomial, myjit
 
@@ -96,7 +96,7 @@ out : ndarray, optional
 
 """
 
-docfiller_shared = DocFiller.from_docstring(_shared_docs, combine_keys="parameters")()
+docfiller_decorate = DocFiller.from_docstring(_shared_docs, combine_keys="parameters")()
 
 
 @myjit
@@ -285,7 +285,7 @@ def _convert_moments(
     return out_r.reshape(shape)
 
 
-@docfiller_shared
+@docfiller_decorate
 def to_raw_moments(
     x: ndarray,
     axis: int = -1,
@@ -322,7 +322,7 @@ def to_raw_moments(
     )
 
 
-@docfiller_shared
+@docfiller_decorate
 def to_raw_comoments(
     x: ndarray,
     axis: tuple[int, int] = (-2, -1),
@@ -360,7 +360,7 @@ def to_raw_comoments(
     )
 
 
-@docfiller_shared
+@docfiller_decorate
 def to_central_moments(
     x: ndarray,
     axis: int = -1,
@@ -398,7 +398,7 @@ def to_central_moments(
     )
 
 
-@docfiller_shared
+@docfiller_decorate
 def to_central_comoments(
     x: ndarray,
     axis: tuple[int, int] = (-2, -1),

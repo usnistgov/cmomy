@@ -22,9 +22,9 @@ import xarray as xr
 from module_utilities import cached
 
 from . import convert
-from ._docstrings import docfiller_shared
 from .abstract_central import CentralMomentsABC
 from .central import CentralMoments
+from .docstrings import docfiller_decorate
 from .utils import _shape_reduce
 
 if TYPE_CHECKING:
@@ -212,7 +212,7 @@ def _xcentral_comoments(
     return out
 
 
-@docfiller_shared
+@docfiller_decorate
 def xcentral_moments(
     x: xr.DataArray | tuple[xr.DataArray, xr.DataArray],
     mom: Moments,
@@ -782,7 +782,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         return self.to_centralmoments()
 
     @classmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_centralmoments(
         cls,
         obj: CentralMoments,
@@ -995,7 +995,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             )
 
     # ** Manipulation
-    @docfiller_shared
+    @docfiller_decorate
     def resample_and_reduce(
         self,
         freq: np.ndarray | None = None,
@@ -1125,7 +1125,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             return super()._wrap_axis(axis=axis, default=default, ndim=ndim)
 
     @no_type_check
-    @docfiller_shared
+    @docfiller_decorate
     def reduce(
         self: T_CentralMoments,
         dim: Hashable | None = None,
@@ -1164,7 +1164,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         )
 
     @no_type_check
-    @docfiller_shared
+    @docfiller_decorate
     def block(
         self,
         block_size: int,
@@ -1266,7 +1266,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     # ** Constructors
     @no_type_check
     @classmethod
-    @docfiller_shared
+    @docfiller_decorate
     def zeros(
         cls: type[T_CentralMoments],
         mom: Moments | None = None,
@@ -1334,7 +1334,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             ).zero()
 
     @classmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_data(
         cls,
         data: np.ndarray | xr.DataArray,
@@ -1426,7 +1426,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
     @classmethod
     @no_type_check
-    @docfiller_shared
+    @docfiller_decorate
     def from_datas(
         cls,
         datas: np.ndarray | xr.DataArray,
@@ -1523,7 +1523,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
     @no_type_check
     @classmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_raw(
         cls,
         raw: np.ndarray | xr.DataArray,
@@ -1677,7 +1677,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
     @no_type_check
     @classmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_vals(
         cls,
         x: np.ndarray
@@ -1785,7 +1785,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
     @no_type_check
     @classmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_resample_vals(
         cls,
         x: np.ndarray
