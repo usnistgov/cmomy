@@ -11,7 +11,7 @@ import xarray as xr
 from numpy.core.numeric import normalize_axis_index  # type: ignore
 
 from . import convert
-from ._docstrings import docfiller_shared
+from .docstrings import docfiller_decorate
 from .resample import randsamp_freq, resample_data, resample_vals
 from .utils import _axis_expand_broadcast, _shape_insert_axis, _shape_reduce
 
@@ -172,7 +172,7 @@ def _central_comoments(
     return out
 
 
-@docfiller_shared
+@docfiller_decorate
 def central_moments(
     x: np.ndarray | tuple[np.ndarray, np.ndarray],
     mom: Moments,
@@ -375,7 +375,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     ###########################################################################
     # SECTION: To/from xarray
     ###########################################################################
-    @docfiller_shared
+    @docfiller_decorate
     def to_xarray(
         self,
         dims: Hashable | Sequence[Hashable] | None = None,
@@ -473,7 +473,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
         return out
 
-    @docfiller_shared
+    @docfiller_decorate
     def to_xcentralmoments(
         self,
         dims: Hashable | Sequence[Hashable] | None = None,
@@ -838,7 +838,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     ###########################################################################
     # SECTION: Manipulation
     ###########################################################################
-    @docfiller_shared
+    @docfiller_decorate
     def resample_and_reduce(
         self: T_CentralMoments,
         freq: np.ndarray | None = None,
@@ -900,7 +900,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         else:
             return out
 
-    @docfiller_shared
+    @docfiller_decorate
     def reduce(
         self: T_CentralMoments, axis: int | None = None, **kws
     ) -> T_CentralMoments:
@@ -920,7 +920,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
             self.values, mom_ndim=self.mom_ndim, axis=axis, **kws
         )
 
-    @docfiller_shared
+    @docfiller_decorate
     def block(
         self: T_CentralMoments,
         block_size: int | None = None,
@@ -979,7 +979,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         )
         return type(self).from_datas(datas=datas, mom_ndim=self.mom_ndim, axis=1, **kws)
 
-    @docfiller_shared
+    @docfiller_decorate
     def reshape(
         self: T_CentralMoments,
         shape: tuple[int, ...],
@@ -1056,7 +1056,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
             **kws,
         )
 
-    @docfiller_shared
+    @docfiller_decorate
     def moveaxis(
         self: T_CentralMoments,
         source: int | tuple[int, ...],

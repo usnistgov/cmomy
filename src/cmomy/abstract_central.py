@@ -20,13 +20,13 @@ from typing import (
 
 import numpy as np
 from custom_inherit import DocInheritMeta
+from module_utilities import cached
 from numpy.core.numeric import normalize_axis_index  # type: ignore
 
 from . import convert
-from ._docstrings import docfiller_shared
 from ._formatting import repr_html
 from ._typing import Moments, T_Array, T_CentralMoments
-from .cached_decorators import gcached
+from .docstrings import docfiller_decorate
 from .options import DOC_SUB
 from .pushers import factory_pushers
 
@@ -192,7 +192,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         """Shape of flat variance."""
         return self.val_shape_flat + self.mom_shape_var
 
-    @gcached()
+    @cached.prop
     def _push(self):
         vec = len(self.val_shape) > 0
         cov = self.mom_ndim == 2
@@ -215,7 +215,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # ** top level creation/copy/new
     ###########################################################################
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def new_like(
         self: T_CentralMoments,
         *,
@@ -300,7 +300,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # ** Access to underlying statistics
     ###########################################################################
 
-    @gcached()
+    @cached.prop
     def _weight_index(self):
         index = (0,) * len(self.mom)
         if self.val_ndim > 0:
@@ -308,7 +308,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         else:
             return index
 
-    @gcached(prop=False)
+    @cached.meth
     def _single_index(self, val) -> tuple[list[int], ...]:
         # index with things like data[..., 1,0] data[..., 0,1]
         # index = (...,[1,0],[0,1])
@@ -556,7 +556,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             **kwargs,
         )[0]
 
-    @docfiller_shared
+    @docfiller_decorate
     def push_data(self: T_CentralMoments, data: Any) -> T_CentralMoments:
         """
         Push data object to moments.
@@ -574,7 +574,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self._push.data(self._data_flat, data)
         return self
 
-    @docfiller_shared
+    @docfiller_decorate
     def push_datas(
         self: T_CentralMoments,
         datas,
@@ -601,7 +601,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self._push.datas(self._data_flat, datas)
         return self
 
-    @docfiller_shared
+    @docfiller_decorate
     def push_val(
         self: T_CentralMoments, x, w=None, broadcast: bool = False, **kwargs
     ) -> T_CentralMoments:
@@ -640,7 +640,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self._push.val(self._data_flat, *((wr, xr) + yr))
         return self
 
-    @docfiller_shared
+    @docfiller_decorate
     def push_vals(
         self: T_CentralMoments,
         x,
@@ -780,7 +780,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     # * Universal reducers
 
-    @docfiller_shared
+    @docfiller_decorate
     def resample(
         self: T_CentralMoments,
         indices: np.ndarray,
@@ -994,7 +994,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # *** Core
     @classmethod
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def zeros(
         cls: type[T_CentralMoments],
         mom: Moments | None = None,
@@ -1035,7 +1035,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_data(
         cls: type[T_CentralMoments],
         data: Any,
@@ -1073,7 +1073,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_datas(
         cls: type[T_CentralMoments],
         datas: Any,
@@ -1112,7 +1112,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_vals(
         cls: type[T_CentralMoments],
         x,
@@ -1149,7 +1149,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_resample_vals(
         cls: type[T_CentralMoments],
         x,
@@ -1211,7 +1211,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_raw(
         cls: type[T_CentralMoments],
         raw,
@@ -1257,7 +1257,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_shared
+    @docfiller_decorate
     def from_raws(
         cls: type[T_CentralMoments],
         raws,

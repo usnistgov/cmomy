@@ -8,6 +8,28 @@ See the fragment files in [changelog.d](https://github.com/usnistgov/cmomy)
 
 <!-- scriv-insert-here -->
 
+## v0.4.0 — 2023-05-02
+
+### Added
+
+- Moved module `_docstrings_` to `docstrings`. This can be used by other
+  modules.
+
+### Changed
+
+- Update package layout
+- New linters via pre-commit
+- Development env now handled by tox
+
+- Now use `module-utilities` to handle caching and docfiller.
+
+[`v0.3.0...v0.4.0`](https://github.com/usnistgov/cmomy/compare/v0.3.0...v0.4.0)
+
+## v0.3.0 - 2023-04-24
+
+Full set of changes:
+[`v0.2.2...v0.3.0`](https://github.com/usnistgov/cmomy/compare/v0.2.2...v0.3.0)
+
 ## v0.2.2 - 2023-04-05
 
 Full set of changes:
