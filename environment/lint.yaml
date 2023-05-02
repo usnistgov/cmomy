@@ -2,7 +2,7 @@ channels:
   - conda-forge
 dependencies:
   - custom-inherit
-  - module-utilities
+  - module-utilities >= 0.1
   - mypy
   - numba
   - numpy<1.24
