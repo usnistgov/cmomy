@@ -1,10 +1,9 @@
 """Common docstrings."""
-
 from __future__ import annotations
 
-from ._docfiller.docfiller import DocFiller
+from module_utilities.docfiller import DocFiller
 
-_docstring_cmomy = """\
+_docstrings = """\
 Parameters
 ----------
 copy : bool, optional
@@ -80,11 +79,11 @@ rec_dim : hashable, optional
     Name of dimension for 'records', i.e., multiple observations.
 """
 
-DOCFILLER_CMOMY = DocFiller.from_docstring(
-    _docstring_cmomy, combine_keys="parameters"
+docfiller = DocFiller.from_docstring(
+    _docstrings, combine_keys="parameters"
 ).assign_combined_key(
     "xr_params", ["dims", "attrs", "coords", "name", "indexes", "template"]
 )
 
 
-docfiller_shared = DOCFILLER_CMOMY()
+docfiller_decorate = docfiller()

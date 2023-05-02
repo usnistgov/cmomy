@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Sequence
 import numpy as np
 from numba import njit
 
-# from .cached_decorators import gcached  # , cached_clear
 from .options import OPTIONS
 
 if TYPE_CHECKING:
