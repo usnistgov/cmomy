@@ -1,0 +1,23 @@
+test:
+  imports:
+    - cmomy
+  commands:
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://github.com/usnistgov/cmomy
+  summary: Central (co)moment calculation/manipulation
+  description: |
+    A Python package to calculate and manipulate Central (co)moments.
+    The main features of `cmomy` are 1) Fast calculation of central
+    moments and comoments with weights.  The speed comes from using
+    Numba.  2) Support for scalar and vector inputs. 3) Numpy and
+    xarray DataArray interface. 4) Resampling.
+  license: NIST-PD
+  license_file: LICENSE
+
+extra:
+  recipe-maintainers:
+    - wpk-nist-gov
