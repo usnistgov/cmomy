@@ -116,8 +116,11 @@ user-all: user-venv user-autoenv-zsh ## runs user scripts
 # Testing
 ################################################################################
 .PHONY: test coverage
-test: ## run tests quickly with the default Python
+test: ## run tests quickly with the development Python
 	pytest -x -v
+
+test-accept: ## run tests and accept doctest results.
+	DOCFILLER_SUB=False pytest -v --accept
 
 coverage: ## check code coverage quickly with the default Python
 	coverage run --source cmomy -m pytest

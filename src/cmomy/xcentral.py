@@ -495,24 +495,24 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da
         <xCentralMoments(val_shape=(2, 3), mom=(2,))>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)>
-        array([[[10.        ,  0.45494641,  0.04395725],
-                [10.        ,  0.60189056,  0.08491604],
-                [10.        ,  0.6049404 ,  0.09107171]],
+        array([[[10.    ,  0.4549,  0.044 ],
+                [10.    ,  0.6019,  0.0849],
+                [10.    ,  0.6049,  0.0911]],
         <BLANKLINE>
-               [[10.        ,  0.53720667,  0.05909394],
-                [10.        ,  0.42622908,  0.08434857],
-                [10.        ,  0.47326641,  0.05907737]]])
+               [[10.    ,  0.5372,  0.0591],
+                [10.    ,  0.4262,  0.0843],
+                [10.    ,  0.4733,  0.0591]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da_stack = da.stack(z=["dim_0", "dim_1"])
         >>> da_stack
         <xCentralMoments(val_shape=(6,), mom=(2,))>
         <xarray.DataArray (z: 6, mom_0: 3)>
-        array([[10.        ,  0.45494641,  0.04395725],
-               [10.        ,  0.60189056,  0.08491604],
-               [10.        ,  0.6049404 ,  0.09107171],
-               [10.        ,  0.53720667,  0.05909394],
-               [10.        ,  0.42622908,  0.08434857],
-               [10.        ,  0.47326641,  0.05907737]])
+        array([[10.    ,  0.4549,  0.044 ],
+               [10.    ,  0.6019,  0.0849],
+               [10.    ,  0.6049,  0.0911],
+               [10.    ,  0.5372,  0.0591],
+               [10.    ,  0.4262,  0.0843],
+               [10.    ,  0.4733,  0.0591]])
         Coordinates:
           * z        (z) object MultiIndex
           * dim_0    (z) int64 0 0 0 1 1 1
@@ -524,13 +524,13 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da_stack.unstack("z")
         <xCentralMoments(val_shape=(2, 3), mom=(2,))>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)>
-        array([[[10.        ,  0.45494641,  0.04395725],
-                [10.        ,  0.60189056,  0.08491604],
-                [10.        ,  0.6049404 ,  0.09107171]],
+        array([[[10.    ,  0.4549,  0.044 ],
+                [10.    ,  0.6019,  0.0849],
+                [10.    ,  0.6049,  0.0911]],
         <BLANKLINE>
-               [[10.        ,  0.53720667,  0.05909394],
-                [10.        ,  0.42622908,  0.08434857],
-                [10.        ,  0.47326641,  0.05907737]]])
+               [[10.    ,  0.5372,  0.0591],
+                [10.    ,  0.4262,  0.0843],
+                [10.    ,  0.4733,  0.0591]]])
         Coordinates:
           * dim_0    (dim_0) int64 0 1
           * dim_1    (dim_1) int64 0 1 2
@@ -620,9 +620,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(2,))>
         <xarray.DataArray (x: 3, mom_0: 3)>
-        array([[10.        ,  0.52101579,  0.0702866 ],
-               [10.        ,  0.62614181,  0.0701378 ],
-               [10.        ,  0.59620338,  0.08920102]])
+        array([[10.    ,  0.521 ,  0.0703],
+               [10.    ,  0.6261,  0.0701],
+               [10.    ,  0.5962,  0.0892]])
         Coordinates:
           * x        (x) <U1 'a' 'b' 'c'
         Dimensions without coordinates: mom_0
@@ -632,15 +632,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da.sel(x="a")
         <xCentralMoments(val_shape=(), mom=(2,))>
         <xarray.DataArray (mom_0: 3)>
-        array([10.        ,  0.52101579,  0.0702866 ])
+        array([10.    ,  0.521 ,  0.0703])
         Coordinates:
             x        <U1 'a'
         Dimensions without coordinates: mom_0
         >>> da.sel(x=["a", "c"])
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (x: 2, mom_0: 3)>
-        array([[10.        ,  0.52101579,  0.0702866 ],
-               [10.        ,  0.59620338,  0.08920102]])
+        array([[10.    ,  0.521 ,  0.0703],
+               [10.    ,  0.5962,  0.0892]])
         Coordinates:
           * x        (x) <U1 'a' 'c'
         Dimensions without coordinates: mom_0
@@ -651,15 +651,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da.isel(x=0)
         <xCentralMoments(val_shape=(), mom=(2,))>
         <xarray.DataArray (mom_0: 3)>
-        array([10.        ,  0.52101579,  0.0702866 ])
+        array([10.    ,  0.521 ,  0.0703])
         Coordinates:
             x        <U1 'a'
         Dimensions without coordinates: mom_0
         >>> da.isel(x=[0, 1])
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (x: 2, mom_0: 3)>
-        array([[10.        ,  0.52101579,  0.0702866 ],
-               [10.        ,  0.62614181,  0.0701378 ]])
+        array([[10.    ,  0.521 ,  0.0703],
+               [10.    ,  0.6261,  0.0701]])
         Coordinates:
           * x        (x) <U1 'a' 'b'
         Dimensions without coordinates: mom_0
@@ -1028,12 +1028,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(3,))>
         <xarray.DataArray (rec: 3, mom_0: 4)>
-        array([[ 1.00000000e+01,  5.21015794e-01,  7.02866020e-02,
-                -3.54939965e-03],
-               [ 1.00000000e+01,  6.26141809e-01,  7.01378030e-02,
-                -1.71013571e-02],
-               [ 1.00000000e+01,  5.96203382e-01,  8.92010192e-02,
-                -1.18855864e-02]])
+        array([[ 1.0000e+01,  5.2102e-01,  7.0287e-02, -3.5494e-03],
+               [ 1.0000e+01,  6.2614e-01,  7.0138e-02, -1.7101e-02],
+               [ 1.0000e+01,  5.9620e-01,  8.9201e-02, -1.1886e-02]])
         Dimensions without coordinates: rec, mom_0
 
         Note that for reproducible results, must set numba random
@@ -1047,16 +1044,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da_resamp
         <xCentralMoments(val_shape=(5,), mom=(3,))>
         <xarray.DataArray (rep: 5, mom_0: 4)>
-        array([[ 3.00000000e+01,  5.56057799e-01,  7.26928866e-02,
-                -7.99108811e-03],
-               [ 3.00000000e+01,  6.16162334e-01,  7.66913883e-02,
-                -1.57452364e-02],
-               [ 3.00000000e+01,  5.46078323e-01,  7.78476685e-02,
-                -5.34855722e-03],
-               [ 3.00000000e+01,  5.46078323e-01,  7.78476685e-02,
-                -5.34855722e-03],
-               [ 3.00000000e+01,  6.06182858e-01,  8.30457937e-02,
-                -1.40026707e-02]])
+        array([[ 3.0000e+01,  5.5606e-01,  7.2693e-02, -7.9911e-03],
+               [ 3.0000e+01,  6.1616e-01,  7.6691e-02, -1.5745e-02],
+               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
+               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
+               [ 3.0000e+01,  6.0618e-01,  8.3046e-02, -1.4003e-02]])
         Dimensions without coordinates: rep, mom_0
 
         Alternatively, we can resample and reduce
@@ -1066,16 +1058,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
         <xCentralMoments(val_shape=(5,), mom=(3,))>
         <xarray.DataArray (rep: 5, mom_0: 4)>
-        array([[ 3.00000000e+01,  5.56057799e-01,  7.26928866e-02,
-                -7.99108811e-03],
-               [ 3.00000000e+01,  6.16162334e-01,  7.66913883e-02,
-                -1.57452364e-02],
-               [ 3.00000000e+01,  5.46078323e-01,  7.78476685e-02,
-                -5.34855722e-03],
-               [ 3.00000000e+01,  5.46078323e-01,  7.78476685e-02,
-                -5.34855722e-03],
-               [ 3.00000000e+01,  6.06182858e-01,  8.30457937e-02,
-                -1.40026707e-02]])
+        array([[ 3.0000e+01,  5.5606e-01,  7.2693e-02, -7.9911e-03],
+               [ 3.0000e+01,  6.1616e-01,  7.6691e-02, -1.5745e-02],
+               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
+               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
+               [ 3.0000e+01,  6.0618e-01,  8.3046e-02, -1.4003e-02]])
         Dimensions without coordinates: rep, mom_0
 
         """
@@ -1150,9 +1137,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da.reduce(dim="dim_0")
         <xCentralMoments(val_shape=(3,), mom=(2,))>
         <xarray.DataArray (dim_1: 3, mom_0: 3)>
-        array([[20.        ,  0.49607654,  0.05321729],
-               [20.        ,  0.51405982,  0.09234654],
-               [20.        ,  0.53910341,  0.07940905]])
+        array([[20.    ,  0.4961,  0.0532],
+               [20.    ,  0.5141,  0.0923],
+               [20.    ,  0.5391,  0.0794]])
         Dimensions without coordinates: dim_1, mom_0
         """
 
@@ -1207,23 +1194,23 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> da
         <xCentralMoments(val_shape=(10,), mom=(2,))>
         <xarray.DataArray (dim_0: 10, mom_0: 3)>
-        array([[10.        ,  0.61576628,  0.03403099],
-               [10.        ,  0.54734337,  0.11588658],
-               [10.        ,  0.58025134,  0.08323286],
-               [10.        ,  0.5554397 ,  0.06081199],
-               [10.        ,  0.39102491,  0.04685508],
-               [10.        ,  0.40865395,  0.06723581],
-               [10.        ,  0.34813026,  0.08448183],
-               [10.        ,  0.46230401,  0.1100026 ],
-               [10.        ,  0.4443288 ,  0.06514668],
-               [10.        ,  0.37469578,  0.08223291]])
+        array([[10.    ,  0.6158,  0.034 ],
+               [10.    ,  0.5473,  0.1159],
+               [10.    ,  0.5803,  0.0832],
+               [10.    ,  0.5554,  0.0608],
+               [10.    ,  0.391 ,  0.0469],
+               [10.    ,  0.4087,  0.0672],
+               [10.    ,  0.3481,  0.0845],
+               [10.    ,  0.4623,  0.11  ],
+               [10.    ,  0.4443,  0.0651],
+               [10.    ,  0.3747,  0.0822]])
         Dimensions without coordinates: dim_0, mom_0
 
         >>> da.block(block_size=5, dim="dim_0")
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)>
-        array([[50.        ,  0.53796512,  0.07412868],
-               [50.        ,  0.40762256,  0.08361236]])
+        array([[50.    ,  0.538 ,  0.0741],
+               [50.    ,  0.4076,  0.0836]])
         Dimensions without coordinates: dim_0, mom_0
 
         This is equivalent to
@@ -1231,8 +1218,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         >>> xCentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1)
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)>
-        array([[50.        ,  0.53796512,  0.07412868],
-               [50.        ,  0.40762256,  0.08361236]])
+        array([[50.    ,  0.538 ,  0.0741],
+               [50.    ,  0.4076,  0.0836]])
         Dimensions without coordinates: dim_0, mom_0
 
         """

@@ -234,22 +234,22 @@ def central_moments(
 
     >>> moments = central_moments(x=x, mom=2)
     >>> print(moments)
-    [10.          0.61576628  0.03403099]
+    [10.      0.6158  0.034 ]
 
     Generate moments with weights
 
     >>> w = np.random.rand(10)
     >>> central_moments(x=x, w=w, mom=2)
-    array([5.47343366, 0.65419879, 0.0389794 ])
+    array([5.4734, 0.6542, 0.039 ])
 
 
     Generate co-moments
 
     >>> y = np.random.rand(10)
     >>> central_moments(x=(x, y), w=w, mom=(2, 2))
-    array([[ 5.47343366e+00,  6.94721195e-01,  5.13060985e-02],
-           [ 6.54198786e-01,  1.16001132e-02, -2.63166301e-03],
-           [ 3.89794046e-02, -3.36141683e-03,  2.30236918e-03]])
+    array([[ 5.4734e+00,  6.9472e-01,  5.1306e-02],
+           [ 6.5420e-01,  1.1600e-02, -2.6317e-03],
+           [ 3.8979e-02, -3.3614e-03,  2.3024e-03]])
 
     """
 
@@ -334,7 +334,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_vals(np.random.rand(10), mom=3, axis=0)
         >>> da
         <CentralMoments(val_shape=(), mom=(3,))>
-        array([1.00000000e+01, 6.15766283e-01, 3.40309867e-02, 3.81976735e-03])
+        array([1.0000e+01, 6.1577e-01, 3.4031e-02, 3.8198e-03])
 
         >>> da2 = da.new_like().zero()
         >>> da2
@@ -343,7 +343,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
         >>> da
         <CentralMoments(val_shape=(), mom=(3,))>
-        array([1.00000000e+01, 6.15766283e-01, 3.40309867e-02, 3.81976735e-03])
+        array([1.0000e+01, 6.1577e-01, 3.4031e-02, 3.8198e-03])
 
         """
 
@@ -406,28 +406,28 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_vals(np.random.rand(10, 1, 2), axis=0, mom=2)
         >>> da
         <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
 
         Default constructor
 
         >>> da.to_xarray()
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
 
         Setting attributes
 
         >>> da.to_xarray()
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da
         <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
 
         """
 
@@ -507,16 +507,16 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_vals(np.random.rand(10, 1, 2), axis=0, mom=2)
         >>> da
         <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
 
         Default constructor
 
         >>> da.to_xcentralmoments()
         <xCentralMoments(val_shape=(1, 2), mom=(2,))>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
 
         Setting attributes
@@ -524,13 +524,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da.to_xcentralmoments()
         <xCentralMoments(val_shape=(1, 2), mom=(2,))>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da
         <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.        ,  0.52056625,  0.08147257],
-                [10.        ,  0.6425434 ,  0.06334664]]])
+        array([[[10.    ,  0.5206,  0.0815],
+                [10.    ,  0.6425,  0.0633]]])
 
         """  # noqa: D409
         from .xcentral import xCentralMoments
@@ -663,18 +663,18 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_data(datas[0], mom_ndim=1)
         >>> da
         <CentralMoments(val_shape=(), mom=(2,))>
-        array([10.        ,  0.61576628,  0.03403099])
+        array([10.    ,  0.6158,  0.034 ])
 
 
         >>> da.push_data(datas[1])
         <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.        ,  0.58155482,  0.07612921])
+        array([20.    ,  0.5816,  0.0761])
 
 
         Which is equivalent to
         >>> CentralMoments.from_vals(xs.reshape(-1), mom=2)
         <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.        ,  0.58155482,  0.07612921])
+        array([20.    ,  0.5816,  0.0761])
 
         """
         data = self._check_data(data)
@@ -701,13 +701,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.zeros(mom=2)
         >>> da.push_datas(datas, axis=0)
         <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.        ,  0.58155482,  0.07612921])
+        array([20.    ,  0.5816,  0.0761])
 
 
         Which is equivalent to
         >>> CentralMoments.from_vals(xs.reshape(-1), mom=2)
         <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.        ,  0.58155482,  0.07612921])
+        array([20.    ,  0.5816,  0.0761])
         """
         datas = self._check_datas(datas, axis=axis, **kwargs)
         self._push.datas(self._data_flat, datas)
@@ -739,26 +739,26 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
         >>> da
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
-        array([[[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 4.50477700e-01, -1.54375666e-02,  7.57296738e-04],
-                [ 7.97586261e-02,  2.07156860e-04,  3.27773648e-03]],
+        array([[[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 4.5048e-01, -1.5438e-02,  7.5730e-04],
+                [ 7.9759e-02,  2.0716e-04,  3.2777e-03]],
         <BLANKLINE>
-               [[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 6.74378211e-01, -4.03657689e-02, -3.81631321e-04],
-                [ 6.41716062e-02,  9.64873805e-03,  6.37017023e-03]]])
+               [[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 6.7438e-01, -4.0366e-02, -3.8163e-04],
+                [ 6.4172e-02,  9.6487e-03,  6.3702e-03]]])
 
 
         Which is the same as
 
         >>> CentralMoments.from_vals(x=(x, y), w=w, mom=(2, 2), broadcast=True)
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
-        array([[[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 4.50477700e-01, -1.54375666e-02,  7.57296738e-04],
-                [ 7.97586261e-02,  2.07156860e-04,  3.27773648e-03]],
+        array([[[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 4.5048e-01, -1.5438e-02,  7.5730e-04],
+                [ 7.9759e-02,  2.0716e-04,  3.2777e-03]],
         <BLANKLINE>
-               [[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 6.74378211e-01, -4.03657689e-02, -3.81631321e-04],
-                [ 6.41716062e-02,  9.64873805e-03,  6.37017023e-03]]])
+               [[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 6.7438e-01, -4.0366e-02, -3.8163e-04],
+                [ 6.4172e-02,  9.6487e-03,  6.3702e-03]]])
 
         """
 
@@ -798,26 +798,26 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
         >>> da.push_vals(x=(x, y), w=w, broadcast=True)
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
-        array([[[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 4.50477700e-01, -1.54375666e-02,  7.57296738e-04],
-                [ 7.97586261e-02,  2.07156860e-04,  3.27773648e-03]],
+        array([[[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 4.5048e-01, -1.5438e-02,  7.5730e-04],
+                [ 7.9759e-02,  2.0716e-04,  3.2777e-03]],
         <BLANKLINE>
-               [[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 6.74378211e-01, -4.03657689e-02, -3.81631321e-04],
-                [ 6.41716062e-02,  9.64873805e-03,  6.37017023e-03]]])
+               [[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 6.7438e-01, -4.0366e-02, -3.8163e-04],
+                [ 6.4172e-02,  9.6487e-03,  6.3702e-03]]])
 
 
         Which is the same as
 
         >>> CentralMoments.from_vals(x=(x, y), w=w, mom=(2, 2), broadcast=True)
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
-        array([[[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 4.50477700e-01, -1.54375666e-02,  7.57296738e-04],
-                [ 7.97586261e-02,  2.07156860e-04,  3.27773648e-03]],
+        array([[[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 4.5048e-01, -1.5438e-02,  7.5730e-04],
+                [ 7.9759e-02,  2.0716e-04,  3.2777e-03]],
         <BLANKLINE>
-               [[ 5.55439698e+00,  6.07634023e-01,  5.96006381e-02],
-                [ 6.74378211e-01, -4.03657689e-02, -3.81631321e-04],
-                [ 6.41716062e-02,  9.64873805e-03,  6.37017023e-03]]])
+               [[ 5.5544e+00,  6.0763e-01,  5.9601e-02],
+                [ 6.7438e-01, -4.0366e-02, -3.8163e-04],
+                [ 6.4172e-02,  9.6487e-03,  6.3702e-03]]])
 
         """
         if self.mom_ndim == 1:
@@ -1015,13 +1015,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_vals(np.random.rand(10, 2, 3), mom=2)
         >>> da
         <CentralMoments(val_shape=(2, 3), mom=(2,))>
-        array([[[10.        ,  0.45494641,  0.04395725],
-                [10.        ,  0.60189056,  0.08491604],
-                [10.        ,  0.6049404 ,  0.09107171]],
+        array([[[10.    ,  0.4549,  0.044 ],
+                [10.    ,  0.6019,  0.0849],
+                [10.    ,  0.6049,  0.0911]],
         <BLANKLINE>
-               [[10.        ,  0.53720667,  0.05909394],
-                [10.        ,  0.42622908,  0.08434857],
-                [10.        ,  0.47326641,  0.05907737]]])
+               [[10.    ,  0.5372,  0.0591],
+                [10.    ,  0.4262,  0.0843],
+                [10.    ,  0.4733,  0.0591]]])
 
                [[10.        ,  0.53720667,  0.05909394],
                 [10.        ,  0.42622908,  0.08434857],
@@ -1029,12 +1029,12 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
         >>> da.reshape(shape=(-1,))
         <CentralMoments(val_shape=(6,), mom=(2,))>
-        array([[10.        ,  0.45494641,  0.04395725],
-               [10.        ,  0.60189056,  0.08491604],
-               [10.        ,  0.6049404 ,  0.09107171],
-               [10.        ,  0.53720667,  0.05909394],
-               [10.        ,  0.42622908,  0.08434857],
-               [10.        ,  0.47326641,  0.05907737]])
+        array([[10.    ,  0.4549,  0.044 ],
+               [10.    ,  0.6019,  0.0849],
+               [10.    ,  0.6049,  0.0911],
+               [10.    ,  0.5372,  0.0591],
+               [10.    ,  0.4262,  0.0843],
+               [10.    ,  0.4733,  0.0591]])
 
 
 
@@ -1090,16 +1090,16 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_vals(np.random.rand(10, 1, 2, 3), axis=0)
         >>> da.moveaxis((2, 1), (0, 2))
         <CentralMoments(val_shape=(3, 1, 2), mom=(2,))>
-        array([[[[10.        ,  0.45494641,  0.04395725],
-                 [10.        ,  0.53720667,  0.05909394]]],
+        array([[[[10.    ,  0.4549,  0.044 ],
+                 [10.    ,  0.5372,  0.0591]]],
         <BLANKLINE>
         <BLANKLINE>
-               [[[10.        ,  0.60189056,  0.08491604],
-                 [10.        ,  0.42622908,  0.08434857]]],
+               [[[10.    ,  0.6019,  0.0849],
+                 [10.    ,  0.4262,  0.0843]]],
         <BLANKLINE>
         <BLANKLINE>
-               [[[10.        ,  0.6049404 ,  0.09107171],
-                 [10.        ,  0.47326641,  0.05907737]]]])
+               [[[10.    ,  0.6049,  0.0911],
+                 [10.    ,  0.4733,  0.0591]]]])
 
         """
         self._raise_if_scalar()
@@ -1202,7 +1202,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_data(data=data, mom_ndim=1)
         >>> da
         <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.        ,  0.58155482,  0.07612921])
+        array([20.    ,  0.5816,  0.0761])
 
         """
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
@@ -1253,14 +1253,14 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> x = np.random.rand(10, 2)
         >>> datas = central_moments(x=x, mom=2, axis=0)
         >>> datas
-        array([[10.        ,  0.52056625,  0.08147257],
-               [10.        ,  0.6425434 ,  0.06334664]])
+        array([[10.    ,  0.5206,  0.0815],
+               [10.    ,  0.6425,  0.0633]])
 
         Reduce along a dimension
         >>> da = CentralMoments.from_datas(datas, axis=0, mom=2)
         >>> da
         <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.        ,  0.58155482,  0.07612921])
+        array([20.    ,  0.5816,  0.0761])
 
         """
 
@@ -1308,9 +1308,9 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_vals(x, axis=0, mom=2)
         >>> da
         <CentralMoments(val_shape=(3,), mom=(2,))>
-        array([[1.00000000e+02, 5.01679603e-01, 8.78720022e-02],
-               [1.00000000e+02, 4.86570021e-01, 8.52865420e-02],
-               [1.00000000e+02, 5.22257956e-01, 7.84813449e-02]])
+        array([[1.0000e+02, 5.0168e-01, 8.7872e-02],
+               [1.0000e+02, 4.8657e-01, 8.5287e-02],
+               [1.0000e+02, 5.2226e-01, 7.8481e-02]])
         """
 
         mom_ndim = cls._mom_ndim_from_mom(mom)
@@ -1361,9 +1361,9 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         ... )
         >>> da
         <CentralMoments(val_shape=(3,), mom=(2,))>
-        array([[10.        ,  0.5776884 ,  0.01741024],
-               [10.        ,  0.78718604,  0.03810531],
-               [10.        ,  0.56333822,  0.02592309]])
+        array([[10.    ,  0.5777,  0.0174],
+               [10.    ,  0.7872,  0.0381],
+               [10.    ,  0.5633,  0.0259]])
 
         Note that this is equivalent to (though in general faster than)
 
@@ -1373,9 +1373,9 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da = CentralMoments.from_vals(x_resamp, axis=1, mom=2)
         >>> da
         <CentralMoments(val_shape=(3,), mom=(2,))>
-        array([[10.        ,  0.5776884 ,  0.01741024],
-               [10.        ,  0.78718604,  0.03810531],
-               [10.        ,  0.56333822,  0.02592309]])
+        array([[10.    ,  0.5777,  0.0174],
+               [10.    ,  0.7872,  0.0381],
+               [10.    ,  0.5633,  0.0259]])
 
         """
 
@@ -1449,14 +1449,14 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> dx_raw.mean()
         0.6157662833145425
         >>> dx_raw.cmom()
-        array([1.        , 0.        , 0.03403099, 0.00381977, 0.00258793])
+        array([1.    , 0.    , 0.034 , 0.0038, 0.0026])
 
         Which is equivalent to creating raw moments from values
         >>> dx_cen = CentralMoments.from_vals(x, axis=0, mom=4)
         >>> dx_cen.mean()
         0.6157662833145425
         >>> dx_cen.cmom()
-        array([1.        , 0.        , 0.03403099, 0.00381977, 0.00258793])
+        array([1.    , 0.    , 0.034 , 0.0038, 0.0026])
 
 
         But note that calculating using from_raw can lead to
@@ -1468,14 +1468,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> dy_raw.mean() - 10000
         0.6157662833156792
         >>> dy_raw.cmom()  # note that these don't match dx_raw, which they should
-        array([ 1.00000000e+00,  0.00000000e+00,  3.40309463e-02,  4.77443448e-03,
-               -1.83500492e+01])
+        array([ 1.0000e+00,  0.0000e+00,  3.4031e-02,  4.7744e-03, -1.8350e+01])
 
         >>> dy_cen = CentralMoments.from_vals(y, axis=0, mom=4)
         >>> dy_cen.mean() - 10000
         0.6157662833156792
         >>> dy_cen.cmom()  # this matches above
-        array([1.        , 0.        , 0.03403099, 0.00381977, 0.00258793])
+        array([1.    , 0.    , 0.034 , 0.0038, 0.0026])
 
         """
 
@@ -1526,13 +1525,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> x = np.random.rand(10, 2)
         >>> raws = (x[..., None] ** np.arange(4)).mean(axis=0)
         >>> raws
-        array([[1.        , 0.52056625, 0.35246178, 0.25901614],
-               [1.        , 0.6425434 , 0.47620866, 0.37399554]])
+        array([[1.    , 0.5206, 0.3525, 0.259 ],
+               [1.    , 0.6425, 0.4762, 0.374 ]])
         >>> dx = CentralMoments.from_raws(raws, axis=0, mom_ndim=1)
         >>> dx.mean()
         0.5815548245225974
         >>> dx.cmom()
-        array([ 1.        ,  0.        ,  0.07612921, -0.01299943])
+        array([ 1.    ,  0.    ,  0.0761, -0.013 ])
 
         This is equivalent to
 
@@ -1540,7 +1539,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da.mean()
         0.5815548245225974
         >>> da.cmom()
-        array([ 1.        ,  0.        ,  0.07612921, -0.01299943])
+        array([ 1.    ,  0.    ,  0.0761, -0.013 ])
 
         """
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
