@@ -21,11 +21,13 @@
 [docs-link]: https://pages.nist.gov/cmomy/
 [repo-badge]: https://img.shields.io/badge/--181717?logo=github&logoColor=ffffff
 [repo-link]: https://github.com/usnistgov/cmomy
-[conda-badge]: https://img.shields.io/conda/v/wpk-nist/cmomy
-[conda-link]: https://anaconda.org/wpk-nist/cmomy
+[conda-badge]: https://img.shields.io/conda/vn/conda-forge/cmomy.svg
+[conda-link]: https://anaconda.org/conda-forge/cmomy
 [license-badge]: https://img.shields.io/pypi/l/cmomy?color=informational
 [license-link]: https://github.com/usnistgov/cmomy/blob/main/LICENSE
 
+<!-- [conda-badge]: https://img.shields.io/conda/v/wpk-nist/cmomy -->
+<!-- [conda-link]: https://anaconda.org/wpk-nist/cmomy -->
 <!-- other links -->
 
 [numpy]: https://numpy.org
@@ -74,7 +76,7 @@ pip install cmomy
 or
 
 ```bash
-conda install -c wpk-nist cmomy
+conda install -c conda-forge cmomy
 ```
 
 ## Example usage

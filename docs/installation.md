@@ -11,7 +11,7 @@ pip install cmomy
 or
 
 ```bash
-conda install -c wpk-nist cmomy
+conda install -c conda-forge cmomy
 ```
 
 This is the preferred method to install cmomy, as it will always install the
