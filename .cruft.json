@@ -14,7 +14,7 @@
       "email": "wpk@nist.gov",
       "github_username": "usnistgov",
       "pypi_username": "wpk-nist",
-      "conda_channel": "wpk-nist",
+      "conda_channel": "conda-forge",
       "project_name": "cmomy",
       "project_slug": "cmomy",
       "_copy_without_render": [
