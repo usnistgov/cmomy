@@ -119,7 +119,7 @@ user-all: user-venv user-autoenv-zsh ## runs user scripts
 test: ## run tests quickly with the development Python
 	pytest -x -v
 
-test-accept: ## run tests and accept doctest results.
+test-accept: ## run tests and accept doctest results. (using pytest-accept)
 	DOCFILLER_SUB=False pytest -v --accept
 
 coverage: ## check code coverage quickly with the default Python

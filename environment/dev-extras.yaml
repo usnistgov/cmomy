@@ -47,9 +47,9 @@ dependencies:
   - pip
   - pip:
       - pytest-accept
-      # - mypy-extensions
-      # - pytest-monkeytype
-      # - flake8-mypy
-      # - attr-utils
-      # spelling?
-      # - pyenchant
+  # - mypy-extensions
+  # - pytest-monkeytype
+  # - flake8-mypy
+  # - attr-utils
+  # spelling?
+  # - pyenchant
