@@ -27,7 +27,6 @@ repos:
         stages: [commit]
         additional_dependencies:
           - prettier-plugin-toml
-        exclude: ^docs/example_for_readme.md
   #** markdown
   - repo: https://github.com/DavidAnson/markdownlint-cli2
     rev: v0.6.0
@@ -58,7 +57,6 @@ repos:
     hooks:
       - id: nbqa-ruff
         additional_dependencies: [ruff]
-        exclude: examples/archived/
       - id: nbqa-black
         additional_dependencies: [black]
 

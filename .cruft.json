@@ -1,7 +1,7 @@
 {
   "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-  "commit": "a0209ae199aa6f953364fc929e50d41d58082173",
-  "checkout": "feature/markdown",
+  "commit": "95a4ddeb3c55c50d43b4e9dd18c7137b1dfdf4f2",
+  "checkout": "feature/nox",
   "skip": [
     "src/cmomy/__init__.py",
     "docs/examples/usage/demo.ipynb",
