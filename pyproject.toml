@@ -40,8 +40,6 @@ documentation = "https://pages.nist.gov/cmomy/"
 [project.optional-dependencies]
 test = ["pytest"]
 
-# dev = []
-# docs = []
 ## grayskull still messes some things up, but use scripts/recipe-append.sh for this
 [tool.setuptools]
 zip-safe = true # if using mypy, must be False
@@ -54,7 +52,6 @@ where = ["src"]
 
 ## include = []
 ## exclude = []
-##
 [tool.setuptools.dynamic]
 readme = { file = [
     "README.md",
