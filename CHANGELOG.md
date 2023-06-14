@@ -10,6 +10,20 @@ See the fragment files in [changelog.d](https://github.com/usnistgov/cmomy)
 
 <!-- scriv-insert-here -->
 
+## v0.5.0 — 2023-06-14
+
+### Added
+
+- Package now available on conda-forge
+
+- Bumped maximum python version to 3.11
+
+[`v0.4.1...v0.5.0`](https://github.com/usnistgov/cmomy/compare/v0.4.1...v0.5.0)
+
+### Changed
+
+- Testing now handled with nox.
+
 ## v0.4.0 — 2023-05-02
 
 ### Added
