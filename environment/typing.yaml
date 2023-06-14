@@ -15,6 +15,6 @@ dependencies:
   - module-utilities >= 0.1
   - mypy
   - pytest
-  - python-xdist
+  - pytest-xdist
   - pytest-cov
   - pytest-sugar

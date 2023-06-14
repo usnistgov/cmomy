@@ -4,6 +4,6 @@
 # Instead edit the corresponding pyproject.toml file.
 #
 pytest
-python-xdist
+pytest-xdist
 pytest-cov
 pytest-sugar

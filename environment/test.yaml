@@ -14,6 +14,6 @@ dependencies:
   - custom-inherit
   - module-utilities >= 0.1
   - pytest
-  - python-xdist
+  - pytest-xdist
   - pytest-cov
   - pytest-sugar

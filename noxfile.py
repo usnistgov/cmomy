@@ -74,8 +74,8 @@ def load_nox_config():
         for p in data["nox"]["python"]["paths"]:
             paths.extend(glob(os.path.expanduser(p)))
 
-        paths = ":".join(map(str, paths))
-        os.environ["PATH"] = paths + ":" + os.environ["PATH"]
+        paths_str = ":".join(map(str, paths))
+        os.environ["PATH"] = paths_str + ":" + os.environ["PATH"]
     except KeyError:
         pass
 
@@ -133,7 +133,7 @@ def run_annotated(**kwargs):
 
 LOCK_CLI = Annotated[bool, LOCK_OPT]
 RUN_CLI = Annotated[list[list[str]], RUN_OPT]
-TEST_OPTS_CLI = opts_annotated(help="extra arguments/flags to pytest")  # type: ignore
+TEST_OPTS_CLI = opts_annotated(help="extra arguments/flags to pytest")
 
 # CMD_CLI = Annotated[list[str], CMD_OPT]
 
@@ -198,7 +198,8 @@ def install_requirements(
             lockfile=f"./environment/lock/py{py}-{name}-conda-lock.yml",
             display_name=display_name,
             force_reinstall=force_reinstall,
-            install_package=install_package**kwargs,
+            install_package=install_package,
+            **kwargs,
         )
 
     elif style == "conda":
@@ -447,7 +448,7 @@ def test(
 
 
 @group.session(python=PYTHON_ALL_VERSIONS)  # type: ignore
-def test_pip(
+def test_venv(
     session: Session,
     test_no_pytest: bool = False,
     test_opts: TEST_OPTS_CLI = (),  # type: ignore
@@ -482,7 +483,7 @@ def test_pip(
         session.run("pytest", *opts)
 
 
-@group.session(python=PYTHON_DEFAULT_VERSION)
+@group.session(python=PYTHON_DEFAULT_VERSION)  # type: ignore
 def coverage(
     session: Session,
     coverage_cmd: cmd_annotated(  # type: ignore
@@ -716,7 +717,6 @@ def dist_conda(
                 session.run(
                     "cat", f"dist-conda/{PACKAGE_NAME}/meta.yaml", external=True
                 )
-
             elif command == "recipe-cat-full":
                 import tempfile
 
