@@ -20,12 +20,13 @@ classifiers = [
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering",
 ]
 dynamic = ["readme", "version"]
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8"
 dependencies = [
-    "numpy >= 1.20,<1.24",
+    "numpy >= 1.21",
     "numba >= 0.50",
     "xarray >= 0.16",
     "typing-extensions",
@@ -38,10 +39,73 @@ homepage = "https://github.com/usnistgov/cmomy"
 documentation = "https://pages.nist.gov/cmomy/"
 
 [project.optional-dependencies]
-test = ["pytest"]
+test = [
+    "pytest", #
+    "python-xdist",
+    "pytest-cov",
+    "pytest-sugar",
+]
+dev-extras = [
+    "pytest-accept", # p2c: -p
+    "setuptools-scm",
+    "ipython",
+    "ipykernel",
+]
+typing-extras = [
+    # "pytype; python_version < '3.11'",
+    "mypy",
+]
+typing = [
+    "cmomy[typing-extras]", #
+    "cmomy[test]",
+]
+nox = [
+    "nox",
+    "noxopt", # p2c: -p
+    "ruamel.yaml",
+]
+dev = [
+    "cmomy[test]", #
+    "cmomy[typing-extras]",
+    "cmomy[dev-extras]",
+]
+tools = [
+    "pre-commit", #
+    "cruft",
+    "scriv",
+]
+dev-complete = [
+    "cmomy[dev]", #
+    "cmomy[tools]",
+    "cmomy[nox]",
+]
+docs = [
+    "setuptools-scm", #
+    "ipython",
+    "pyenchant",
+    "ghp-import",
+    "sphinx",
+    "sphinx-copybutton",
+    "sphinxcontrib-spelling",
+    "sphinx-autobuild",
+    "myst-nb",
+    "sphinx-book-theme",
+    "autodocsumm",
+]
+# to be parsed with pyproject2conda with --no-base option
+dist-pypi = ["twine", "build"]
+dist-conda = [
+    "anaconda-client", #
+    "grayskull",
+    "conda-build",
+    "conda-verify",
+    "boa",
+    "setuptools-scm",
+]
 
-# dev = []
-# docs = []
+[tool.pyproject2conda]
+channels = ["conda-forge"]
+
 ## grayskull still messes some things up, but use scripts/recipe-append.sh for this
 [tool.setuptools]
 zip-safe = true # if using mypy, must be False
@@ -54,7 +118,6 @@ where = ["src"]
 
 ## include = []
 ## exclude = []
-##
 [tool.setuptools.dynamic]
 readme = { file = [
     "README.md",
@@ -69,8 +132,8 @@ fallback_version = "999"
 test = "pytest"
 
 [tool.pytest.ini_options]
-addopts = "--verbose --doctest-modules --ignore-glob=**/_docfiller/*.py"
-testpaths = ["tests"]
+addopts = "--doctest-modules --doctest-glob='*.md'"
+testpaths = ["README.md", "src", "tests"]
 
 [tool.isort]
 profile = "black"

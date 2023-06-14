@@ -9,7 +9,7 @@ from typing import Callable
 
 try:
     # Default to setting docs
-    DOC_SUB = os.getenv("CMOMY_DOC_SUB", "True").lower() not in ("0", "f", "false")
+    DOC_SUB = os.getenv("DOCFILLER_SUB", "True").lower() not in ("0", "f", "false")
 except KeyError:
     DOC_SUB = True
 

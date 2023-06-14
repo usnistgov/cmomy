@@ -13,6 +13,7 @@ dependencies:
   - typing-extensions
   - custom-inherit
   - module-utilities >= 0.1
+  - mypy
   - pytest
   - python-xdist
   - pytest-cov

@@ -21,8 +21,8 @@
 [docs-link]: https://pages.nist.gov/cmomy/
 [repo-badge]: https://img.shields.io/badge/--181717?logo=github&logoColor=ffffff
 [repo-link]: https://github.com/usnistgov/cmomy
-[conda-badge]: https://img.shields.io/conda/v/wpk-nist/cmomy
-[conda-link]: https://anaconda.org/wpk-nist/cmomy
+[conda-badge]: https://img.shields.io/conda/v/conda-forge/cmomy.svg
+[conda-link]: https://anaconda.org/conda-forge/cmomy
 [license-badge]: https://img.shields.io/pypi/l/cmomy?color=informational
 [license-link]: https://github.com/usnistgov/cmomy/blob/main/LICENSE
 
@@ -74,51 +74,48 @@ pip install cmomy
 or
 
 ```bash
-conda install -c wpk-nist cmomy
+conda install -c conda-forge cmomy
 ```
 
 ## Example usage
 
-```python
-import numpy as np
+```pycon
+>>> import numpy as np
+>>> import cmomy
 
-import cmomy
+>>> np.random.seed(0)
+>>> x = np.random.rand(100)
+>>> m = x.mean()
+>>> mom = np.array([((x - m) ** i).mean() for i in range(4)])
+>>> c = cmomy.CentralMoments.from_vals(x, mom=3)
 
-x = np.random.rand(100)
-
-m = x.mean()
-
-mom = np.array([((x - m)**i).mean() for i in range(4)])
-
-c = cmomy.CentralMoments.from_vals(x, mom=3)
-
-mom
-Out[7]: array([1.0000e+00, 4.1633e-17, 7.3123e-02, 7.4912e-03])
-
-c.cmom()
-Out[8]: array([1.    , 0.    , 0.0731, 0.0075])
+>>> np.testing.assert_allclose(c.cmom(), mom, atol=1e-8)
+>>> c.cmom()
+array([1.    , 0.    , 0.0831, 0.0016])
 
 # break up into chunks
-c = cmomy.CentralMoments.from_vals(x.reshape(-1, 2), mom=3)
+>>> c = cmomy.CentralMoments.from_vals(x.reshape(-1, 2), mom=3)
 
-c
-Out[10]:
+>>> c
 <CentralMoments(val_shape=(2,), mom=(3,))>
-array([[5.0000e+01, 5.1032e-01, 6.4334e-02, 4.0363e-03],
-       [5.0000e+01, 4.4598e-01, 7.9842e-02, 1.2443e-02]])
+array([[5.0000e+01, 5.0013e-01, 7.9827e-02, 2.1156e-03],
+       [5.0000e+01, 4.4546e-01, 8.4914e-02, 1.5954e-03]])
 
-c.reduce(axis=0).cmom()
-Out[11]: array([1.    , 0.    , 0.0731, 0.0075])
+# Reduce along an axis
+>>> c.reduce(axis=0).cmom()
+array([1.    , 0.    , 0.0831, 0.0016])
 
 # unequal chunks
-x0, x1, x2 = x[:20], x[20:60], x[60:]
+>>> x0, x1, x2 = x[:20], x[20:60], x[60:]
 
-cs = [cmomy.CentralMoments.from_vals(_, mom=3) for _ in (x0, x1, x2)]
+>>> cs = [cmomy.CentralMoments.from_vals(_, mom=3) for _ in (x0, x1, x2)]
 
-c = cs[0] + cs[1] + cs[2]
+>>> c = cs[0] + cs[1] + cs[2]
 
-c.cmom()
-Out[15]: array([1.    , 0.    , 0.0731, 0.0075])
+>>> np.testing.assert_allclose(c.cmom(), mom, atol=1e-8)
+>>> c.cmom()
+array([1.    , 0.    , 0.0831, 0.0016])
+
 ```
 
 ## Note on caching
