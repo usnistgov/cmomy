@@ -133,8 +133,9 @@ coverage: ## check code coverage quickly with the default Python
 # versioning
 ################################################################################
 .PHONY: version-scm version-import version
-version-scm: ## check version of package
-	-python -m setuptools_scm
+
+version-scm: ## check/update version of package with setuptools-scm
+	python -m setuptools_scm
 
 version-import: ## check version from python import
 	-python -c 'import cmomy; print(cmomy.__version__)'
