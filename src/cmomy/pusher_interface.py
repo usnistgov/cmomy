@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import numpy as np
+from ._lazy_imports import np
 
 # from .pushers import factory_pushers
 

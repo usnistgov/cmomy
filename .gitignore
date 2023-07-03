@@ -115,3 +115,4 @@ cruft.patch
 /tmp/
 /cmomy-feedstock*/
 /src/**/_version.py
+tuna-loadtime.log

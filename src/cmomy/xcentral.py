@@ -17,11 +17,10 @@ from typing import (  # TYPE_CHECKING,
 )
 from warnings import warn
 
-import numpy as np
-import xarray as xr
 from module_utilities import cached
 
 from . import convert
+from ._lazy_imports import np, xr
 from .abstract_central import CentralMomentsABC
 from .central import CentralMoments
 from .docstrings import docfiller_decorate

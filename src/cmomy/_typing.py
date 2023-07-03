@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Hashable, Literal, Tuple, TypeVar, Union
 
-import numpy as np
-import xarray as xr
+from ._lazy_imports import np, xr
 
 if TYPE_CHECKING:
     from .abstract_central import CentralMomentsABC  # type: ignore

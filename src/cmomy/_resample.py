@@ -4,6 +4,7 @@ from typing import Any, Callable, Dict, Hashable
 
 from numba import njit, prange
 
+from ._lazy_imports import np
 from .options import OPTIONS
 from .pushers import (
     _push_datas_scale,
@@ -15,9 +16,36 @@ from .pushers import (
     _push_vals_scale_cov_vec,
     _push_vals_scale_vec,
 )
+from .utils import myjit
 
-# from functools import lru_cache
-# import numpy as np
+# --- * Utilities ------------------------------------------------------------------------
+# put these here to avoid slow load up
+
+
+@myjit
+def _numba_random_seed(seed):
+    """Set the random seed for numba functions."""
+    np.random.seed(seed)
+
+
+@myjit
+def _randsamp_freq_out(freq):
+    nrep = freq.shape[0]
+    ndat = freq.shape[1]
+    for i in range(nrep):
+        for j in range(ndat):
+            index = np.random.randint(0, ndat)
+            freq[i, index] += 1
+
+
+@myjit
+def _randsamp_freq_indices(indices, freq):
+    assert freq.shape == indices.shape
+    nrep, ndat = freq.shape
+    for r in range(nrep):
+        for d in range(ndat):
+            idx = indices[r, d]
+            freq[r, idx] += 1
 
 
 def jitter(parallel):

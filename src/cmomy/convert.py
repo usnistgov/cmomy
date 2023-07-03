@@ -7,14 +7,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Callable, Sequence, no_type_check
 
-import numpy as np
-from numpy import ndarray
-
+from ._lazy_imports import np
 from .docstrings import DocFiller
-from .options import OPTIONS
-from .utils import factory_binomial, myjit
-
-_bfac = factory_binomial(OPTIONS["nmax"])
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
@@ -99,139 +93,6 @@ out : ndarray, optional
 docfiller_decorate = DocFiller.from_docstring(_shared_docs, combine_keys="parameters")()
 
 
-@myjit
-def _central_to_raw_moments(central, raw):
-    nv = central.shape[0]
-    order = central.shape[1] - 1
-
-    for v in range(nv):
-        ave = central[v, 1]
-
-        raw[v, 0] = central[v, 0]
-        raw[v, 1] = ave
-
-        for n in range(2, order + 1):
-            tmp = 0.0
-            ave_i = 1.0
-            for i in range(0, n - 1):
-                tmp += central[v, n - i] * ave_i * _bfac[n, i]
-                ave_i *= ave
-
-            # last two
-            # <dx> = 0 so skip i = n-1
-            # i = n
-            tmp += ave_i * ave
-            raw[v, n] = tmp
-
-
-@myjit
-def _raw_to_central_moments(raw, central):
-    nv = central.shape[0]
-    order = central.shape[1] - 1
-
-    for v in range(nv):
-        ave = raw[v, 1]
-
-        central[v, 0] = raw[v, 0]
-        central[v, 1] = ave
-
-        for n in range(2, order + 1):
-            tmp = 0.0
-            ave_i = 1.0
-            for i in range(0, n - 1):
-                tmp += raw[v, n - i] * ave_i * _bfac[n, i]
-                ave_i *= -ave
-
-            # last two
-            # right now, ave_i = (-ave)**(n-1)
-            # i = n-1
-            # ave * ave_i * n
-            # i = n
-            # 1 * (-ave) * ave_i
-            tmp += ave * ave_i * (n - 1)
-            central[v, n] = tmp
-
-
-# comoments
-@myjit
-def _central_to_raw_comoments(central, raw):
-    nv = central.shape[0]
-    order0 = central.shape[1] - 1
-    order1 = central.shape[2] - 1
-
-    for v in range(nv):
-        ave0 = central[v, 1, 0]
-        ave1 = central[v, 0, 1]
-
-        for n in range(0, order0 + 1):
-            for m in range(0, order1 + 1):
-                nm = n + m
-                if nm <= 1:
-                    raw[v, n, m] = central[v, n, m]
-                else:
-                    tmp = 0.0
-                    ave_i = 1.0
-                    for i in range(n + 1):
-                        ave_j = 1.0
-                        for j in range(m + 1):
-                            nm_ij = nm - (i + j)
-                            if nm_ij == 0:
-                                # both zero order
-                                tmp += ave_i * ave_j
-                            elif nm_ij == 1:
-                                # <dx**0 * dy**1> = 0
-                                pass
-                            else:
-                                tmp += (
-                                    central[v, n - i, m - j]
-                                    * ave_i
-                                    * ave_j
-                                    * _bfac[n, i]
-                                    * _bfac[m, j]
-                                )
-                            ave_j *= ave1
-                        ave_i *= ave0
-                    raw[v, n, m] = tmp
-
-
-@myjit
-def _raw_to_central_comoments(raw, central):
-    nv = central.shape[0]
-    order0 = central.shape[1] - 1
-    order1 = central.shape[2] - 1
-
-    for v in range(nv):
-        ave0 = raw[v, 1, 0]
-        ave1 = raw[v, 0, 1]
-
-        for n in range(0, order0 + 1):
-            for m in range(0, order1 + 1):
-                nm = n + m
-                if nm <= 1:
-                    central[v, n, m] = raw[v, n, m]
-                else:
-                    tmp = 0.0
-                    ave_i = 1.0
-                    for i in range(n + 1):
-                        ave_j = 1.0
-                        for j in range(m + 1):
-                            nm_ij = nm - (i + j)
-                            if nm_ij == 0:
-                                # both zero order
-                                tmp += ave_i * ave_j
-                            else:
-                                tmp += (
-                                    raw[v, n - i, m - j]
-                                    * ave_i
-                                    * ave_j
-                                    * _bfac[n, i]
-                                    * _bfac[m, j]
-                                )
-                            ave_j *= -ave1
-                        ave_i *= -ave0
-                    central[v, n, m] = tmp
-
-
 @no_type_check
 def _convert_moments(
     data: ArrayLike,
@@ -241,7 +102,7 @@ def _convert_moments(
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
-) -> ndarray:
+) -> np.ndarray:
     if isinstance(axis, int):
         axis = (axis,)
     if isinstance(target_axis, int):
@@ -287,12 +148,12 @@ def _convert_moments(
 
 @docfiller_decorate
 def to_raw_moments(
-    x: ndarray,
+    x: np.ndarray,
     axis: int = -1,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
-) -> ndarray:
+) -> np.ndarray:
     r"""
     Convert central moments to raw moments.
 
@@ -308,6 +169,8 @@ def to_raw_moments(
     -------
     {out_rmom}
     """
+    from ._convert import _central_to_raw_moments
+
     if axis is None:
         axis = -1
 
@@ -324,12 +187,12 @@ def to_raw_moments(
 
 @docfiller_decorate
 def to_raw_comoments(
-    x: ndarray,
+    x: np.ndarray,
     axis: tuple[int, int] = (-2, -1),
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
-) -> ndarray:
+) -> np.ndarray:
     r"""
     Convert central moments to raw moments.
 
@@ -345,6 +208,7 @@ def to_raw_comoments(
     -------
     {out_cormom}
     """
+    from ._convert import _central_to_raw_comoments
 
     if axis is None:
         axis = (-2, -1)
@@ -362,12 +226,12 @@ def to_raw_comoments(
 
 @docfiller_decorate
 def to_central_moments(
-    x: ndarray,
+    x: np.ndarray,
     axis: int = -1,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
-) -> ndarray:
+) -> np.ndarray:
     r"""
     Convert central moments to raw moments.
 
@@ -383,6 +247,7 @@ def to_central_moments(
     -------
     {out_cmom}
     """
+    from ._convert import _raw_to_central_moments
 
     if axis is None:
         axis = -1
@@ -400,12 +265,12 @@ def to_central_moments(
 
 @docfiller_decorate
 def to_central_comoments(
-    x: ndarray,
+    x: np.ndarray,
     axis: tuple[int, int] = (-2, -1),
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
     out: np.ndarray | None = None,
-) -> ndarray:
+) -> np.ndarray:
     r"""
     Convert raw comoments to central comoments.
 
@@ -421,6 +286,7 @@ def to_central_comoments(
     -------
     {out_cocmom}
     """
+    from ._convert import _raw_to_central_comoments
 
     if axis is None:
         axis = (-2, -1)

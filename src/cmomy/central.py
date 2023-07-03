@@ -6,11 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Hashable, Literal, Mapping, Sequence, cast
 
-import numpy as np
-import xarray as xr
-from numpy.core.numeric import normalize_axis_index  # type: ignore
-
 from . import convert
+from ._lazy_imports import np, xr
 from .docstrings import docfiller_decorate
 from .resample import randsamp_freq, resample_data, resample_vals
 from .utils import _axis_expand_broadcast, _shape_insert_axis, _shape_reduce
@@ -576,6 +573,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         x will be broadcast/expanded, can expand to this shape without the need
         to reorder,
         """
+        from numpy.core.numeric import normalize_axis_index  # type: ignore
 
         x = np.asarray(x, dtype=self.dtype)
 

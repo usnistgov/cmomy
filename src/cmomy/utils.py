@@ -4,9 +4,7 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, Sequence
 
-import numpy as np
-from numba import njit
-
+from ._lazy_imports import np
 from .options import OPTIONS
 
 if TYPE_CHECKING:
@@ -17,6 +15,8 @@ if TYPE_CHECKING:
 
 def myjit(func):
     """Jitter with option inline='always', fastmath=True."""
+    from numba import njit
+
     return njit(inline="always", fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"])(
         func
     )
@@ -30,8 +30,10 @@ def myjit(func):
 
 
 def _binom(n, k):
+    import math
+
     if n > k:
-        return np.math.factorial(n) / (np.math.factorial(k) * np.math.factorial(n - k))
+        return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
     elif n == k:
         return 1.0
     else:
