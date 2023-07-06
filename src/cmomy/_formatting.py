@@ -6,10 +6,10 @@ if TYPE_CHECKING:
     from xarray.core import formatting as ff
     from xarray.core import formatting_html as fm
 else:
-    from lazy_import import lazy_module
+    import lazy_loader as lazy
 
-    ff = lazy_module("xarray.core.formatting")
-    fm = lazy_module("xarray.core.formatting_html")
+    ff = lazy.load("xarray.core.formatting")
+    fm = lazy.load("xarray.core.formatting_html")
 
 
 def short_numpy_repr(*args, **kwargs):

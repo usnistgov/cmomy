@@ -5,9 +5,9 @@ if TYPE_CHECKING:
     import xarray as xr
 
 else:
-    from lazy_import import lazy_module
+    import lazy_loader as lazy
 
-    np = lazy_module("numpy")
-    xr = lazy_module("xarray")
+    np = lazy.load("numpy")
+    xr = lazy.load("xarray")
 
 __all__ = ["np", "xr"]
