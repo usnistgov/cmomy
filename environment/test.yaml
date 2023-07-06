@@ -13,6 +13,7 @@ dependencies:
   - typing-extensions
   - custom-inherit
   - module-utilities >= 0.1
+  - lazy_loader
   - pytest
   - pytest-xdist
   - pytest-cov

@@ -1,6 +1,6 @@
 """Common routings used in testing."""
 
-import numpy as np
+from ._lazy_imports import np
 
 
 # Dumb calculations

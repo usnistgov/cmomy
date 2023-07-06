@@ -13,7 +13,7 @@ dependencies:
   - typing-extensions
   - custom-inherit
   - module-utilities >= 0.1
-  - setuptools-scm
+  - lazy_loader
   - ipython
   - pyenchant
   - ghp-import

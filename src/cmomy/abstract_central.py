@@ -18,17 +18,15 @@ from typing import (
     no_type_check,
 )
 
-import numpy as np
 from custom_inherit import DocInheritMeta
 from module_utilities import cached
-from numpy.core.numeric import normalize_axis_index  # type: ignore
 
 from . import convert
 from ._formatting import repr_html
+from ._lazy_imports import np
 from ._typing import Moments, T_Array, T_CentralMoments
 from .docstrings import docfiller_decorate
 from .options import DOC_SUB
-from .pushers import factory_pushers
 
 if TYPE_CHECKING:
     import xarray as xr
@@ -194,6 +192,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @cached.prop
     def _push(self):
+        from .pushers import factory_pushers
+
         vec = len(self.val_shape) > 0
         cov = self.mom_ndim == 2
         return factory_pushers(cov=cov, vec=vec)
@@ -952,6 +952,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         # if axis < 0:
         #     axis += ndim
         # assert 0 <= axis < ndim
+        from numpy.core.numeric import normalize_axis_index  # type: ignore
+
         axis = normalize_axis_index(axis, datas.ndim - mom_ndim)
         if axis != 0:
             datas = np.moveaxis(datas, axis, 0)
@@ -961,6 +963,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self, axis: int | None, default: int = 0, ndim: int | None = None, **kws
     ) -> int:
         """Wrap axis to positive value and check."""
+        from numpy.core.numeric import normalize_axis_index  # type: ignore
+
         if axis is None:
             axis = default
         if ndim is None:

@@ -133,11 +133,12 @@ coverage: ## check code coverage quickly with the default Python
 # versioning
 ################################################################################
 .PHONY: version-scm version-import version
-version-scm: ## check version of package
+
+version-scm: ## check/update version of package with setuptools-scm
 	python -m setuptools_scm
 
 version-import: ## check version from python import
-	python -c 'import cmomy; print(cmomy.__version__)'
+	-python -c 'import cmomy; print(cmomy.__version__)'
 
 version: version-scm version-import
 
@@ -270,3 +271,10 @@ auto-changelog: ## autogenerate changelog and print to stdout
 
 commitizen-changelog:
 	cz changelog --unreleased-version unreleased --dry-run --incremental
+
+# tuna analyze load time:
+.PHONY: tuna-analyze
+tuna-import: ## Analyze load time for module
+	python -X importtime -c 'import cmomy' 2> tuna-loadtime.log
+	tuna tuna-loadtime.log
+	rm tuna-loadtime.log

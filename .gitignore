@@ -114,3 +114,5 @@ cruft.patch
 /dist-conda/
 /tmp/
 /cmomy-feedstock*/
+/src/**/_version.py
+tuna-loadtime.log
