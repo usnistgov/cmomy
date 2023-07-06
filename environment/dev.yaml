@@ -13,8 +13,9 @@ dependencies:
   - typing-extensions
   - custom-inherit
   - module-utilities >= 0.1
+  - lazy_loader
   - pytest
-  - python-xdist
+  - pytest-xdist
   - pytest-cov
   - pytest-sugar
   - mypy

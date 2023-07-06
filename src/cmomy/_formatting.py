@@ -1,16 +1,26 @@
 """pretty formatting for notebook."""
 
-from functools import partial
+from typing import TYPE_CHECKING
 
-from xarray.core import formatting as ff
-from xarray.core import formatting_html as fm
-
-if hasattr(ff, "short_array_repr"):
-    short_numpy_repr = ff.short_array_repr
-elif hasattr(ff, "short_numpy_repr"):
-    short_numpy_repr = ff.short_numpy_repr
+if TYPE_CHECKING:
+    from xarray.core import formatting as ff
+    from xarray.core import formatting_html as fm
 else:
-    short_numpy_rerp = repr
+    import lazy_loader as lazy
+
+    ff = lazy.load("xarray.core.formatting")
+    fm = lazy.load("xarray.core.formatting_html")
+
+
+def short_numpy_repr(*args, **kwargs):
+    if hasattr(ff, "short_array_repr"):
+        f = ff.short_array_repr
+    elif hasattr(ff, "short_numpy_repr"):
+        f = ff.short_numpy_repr
+    else:
+        f = repr
+
+    return f(*args, **kwargs)
 
 
 def tuple_to_str(x):
@@ -24,15 +34,6 @@ def tuple_to_str(x):
         out = f"({out})"
 
     return out
-
-
-cmomy_section = partial(
-    fm._mapping_section,
-    name="Info",
-    details_func=fm.summarize_attrs,
-    max_items_collapse=5,
-    expand_option_name="display_expand_attrs",
-)
 
 
 def numpy_section(x):
@@ -86,7 +87,15 @@ def repr_html(x):
         fm.format_dims(dims, {}),
     ]
 
-    sections = [cmomy_section(attrs)]
+    sections = [
+        fm._mapping_section(
+            mapping=attrs,
+            name="Info",
+            details_func=fm.summarize_attrs,
+            max_items_collapse=5,
+            expand_option_name="display_expand_attrs",
+        )
+    ]
 
     if hasattr(x.values, "_repr_html_"):
         sections += []

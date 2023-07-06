@@ -3,27 +3,26 @@ Top level API (:mod:`cmomy`)
 ============================
 """
 
-from .central import CentralMoments, central_moments
+from typing import TYPE_CHECKING
 
-# from .resample import (
-#     bootstrap_confidence_interval,
-#     randsamp_freq,
-#     xbootstrap_confidence_interval,
-# )
-from .xcentral import xcentral_moments, xCentralMoments
+if TYPE_CHECKING:
+    # Need this to play nice with IDE/pyright
+    from .central import CentralMoments, central_moments  # noqa: TCH004
+    from .xcentral import xcentral_moments, xCentralMoments  # noqa: TCH004
+else:
+    import lazy_loader as lazy
 
-# updated versioning scheme
+    __getattr__, __dir__, _ = lazy.attach(
+        __name__,
+        submod_attrs={
+            "central": ["CentralMoments", "central_moments"],
+            "xcentral": ["xCentralMoments", "xcentral_moments"],
+        },
+    )
+
 try:
-    from importlib.metadata import version as _version
-except ImportError:
-    # if the fallback library is missing, we are doomed.
-    from importlib_metadata import version as _version  # type: ignore[no-redef]
-
-try:
-    __version__ = _version("cmomy")
+    from ._version import __version__
 except Exception:
-    # Local copy or not installed with setuptools.
-    # Disable minimum version checks on downstream libraries.
     __version__ = "999"
 
 
@@ -35,8 +34,5 @@ __all__ = [
     "central_moments",
     "xCentralMoments",
     "xcentral_moments",
-    # "bootstrap_confidence_interval",
-    # "randsamp_freq",
-    # "xbootstrap_confidence_interval",
     "__version__",
 ]

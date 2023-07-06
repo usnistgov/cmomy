@@ -5,30 +5,12 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 
 """
 
-
-# .. automodule:: cmomy.resample
-#     :members:
-
-# .. autosummary::
-#     :toctree: generated/
-
-#     freq_to_indices
-#     indices_to_freq
-#     randsamp_freq
-#     resample_data
-#     resample_vals
-#     bootstrap_confidence_interval
-#     xbootstrap_confidence_interval
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Hashable, Literal, Sequence, Tuple, cast
 
-import numpy as np
-import xarray as xr
-
-from ._resample import factory_resample_data, factory_resample_vals
-from .utils import _axis_expand_broadcast, myjit
+from ._lazy_imports import np, xr
+from .utils import _axis_expand_broadcast
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
@@ -40,30 +22,11 @@ if TYPE_CHECKING:
 ###############################################################################
 
 
-@myjit
 def numba_random_seed(seed):
     """Set the random seed for numba functions."""
-    np.random.seed(seed)
+    from ._resample import _numba_random_seed
 
-
-@myjit
-def _randsamp_freq_out(freq):
-    nrep = freq.shape[0]
-    ndat = freq.shape[1]
-    for i in range(nrep):
-        for j in range(ndat):
-            index = np.random.randint(0, ndat)
-            freq[i, index] += 1
-
-
-@myjit
-def _randsamp_freq_indices(indices, freq):
-    assert freq.shape == indices.shape
-    nrep, ndat = freq.shape
-    for r in range(nrep):
-        for d in range(ndat):
-            idx = indices[r, d]
-            freq[r, idx] += 1
+    _numba_random_seed(seed)
 
 
 def freq_to_indices(freq):
@@ -73,7 +36,6 @@ def freq_to_indices(freq):
 
     for f in freq:
         indices = np.concatenate([np.repeat(i, count) for i, count in enumerate(f)])
-
         indices_all.append(indices)
 
     return np.array(indices_all)
@@ -81,6 +43,8 @@ def freq_to_indices(freq):
 
 def indices_to_freq(indices):
     """Convert indices to frequency array."""
+    from ._resample import _randsamp_freq_indices
+
     freq = np.zeros_like(indices)
     _randsamp_freq_indices(indices, freq)
 
@@ -131,6 +95,8 @@ def randsamp_freq(
         if not transpose: output.shape == (nrep, size)
         if transpose, output.shape = (size, nrep)
     """
+
+    from ._resample import _randsamp_freq_indices, _randsamp_freq_out
 
     def _array_check(x: ArrayLike, name="") -> np.ndarray:
         x = np.asarray(x, dtype=np.int64)
@@ -201,6 +167,7 @@ def resample_data(
         output shape is `(nrep,) + shape + mom`, where shape is
         the shape of data less axis, and mom is the shape of the resulting mom.
     """
+    from ._resample import factory_resample_data
 
     if isinstance(mom, int):
         mom = (mom,)
@@ -271,6 +238,7 @@ def resample_vals(
     out: np.ndarray | None = None,
 ) -> np.ndarray:
     """Resample data according to frequency table."""
+    from ._resample import factory_resample_vals
 
     if isinstance(mom, int):
         mom = (mom,) * 1
