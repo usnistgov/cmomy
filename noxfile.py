@@ -5,19 +5,18 @@ import shutil
 from dataclasses import replace  # noqa
 from pathlib import Path
 from textwrap import dedent
-from typing import Annotated, Any, Callable, Collection, TypeVar, cast
+from typing import Annotated, Any, Callable, Collection, TypeAlias, TypeVar, cast
 
 import nox
 from noxopt import NoxOpt, Option, Session
 
-from tools.noxtools import (
+from tools.noxtools import (  # session_install_package,
     combine_list_str,
     load_nox_config,
     open_webpage,
     prepend_flag,
     session_install_envs,
     session_install_envs_lock,
-    # session_install_package,
     session_install_pip,
     session_run_commands,
     sort_like,
@@ -59,13 +58,15 @@ CONFIG = load_nox_config()
 group = NoxOpt(auto_tag=True)
 
 F = TypeVar("F", bound=Callable[..., Any])
-C = Callable[[F], F]
+C: TypeAlias = Callable[[F], F]
 
-DEFAULT_SESSION = cast(C, group.session(**SESSION_DEFAULT_KWS))  # type: ignore
-ALL_SESSION = cast(C, group.session(**SESSION_ALL_KWS))  # type: ignore
 
-DEFAULT_SESSION_VENV = cast(C, group.session(python=PYTHON_DEFAULT_VERSION))  # type: ignore
-ALL_SESSION_VENV = cast(C, group.session(python=PYTHON_ALL_VERSIONS))  # type: ignore
+DEFAULT_SESSION = cast(C[F], group.session(**SESSION_DEFAULT_KWS))  # type: ignore
+ALL_SESSION = cast(C[F], group.session(**SESSION_ALL_KWS))  # type: ignore
+
+DEFAULT_SESSION_VENV = cast(C[F], group.session(python=PYTHON_DEFAULT_VERSION))  # type: ignore
+ALL_SESSION_VENV = cast(C[F], group.session(python=PYTHON_ALL_VERSIONS))  # type: ignore
+
 
 OPTS_OPT = Option(nargs="*", type=str)
 # SET_KERNEL_OPT = Option(type=bool, help="If True, try to set the kernel name")

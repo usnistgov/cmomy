@@ -833,8 +833,8 @@ def _get_file_hash(path: str | Path, buff_size=65536) -> str:
 # #     session.run(*args, external=external, **kws)
 
 
-## This should actually go in the noxfile.  Keeping here
-## incase want it again in the future.
+# # This should actually go in the noxfile.  Keeping here
+# # incase want it again in the future.
 # @group.session(python=PYTHON_DEFAULT_VERSION)
 # def conda_merge(
 #     session: Session,

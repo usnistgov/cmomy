@@ -4,18 +4,24 @@ Central moments/comoments routines from :class:`np.ndarray` objects
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Hashable, Literal, Mapping, Sequence, cast
+from typing import TYPE_CHECKING, Any, Hashable, Literal, Mapping, cast, overload
 
 from . import convert
 from ._lazy_imports import np, xr
-from .docstrings import docfiller_decorate
+from .abstract_central import CentralMomentsABC
+from .docstrings import docfiller_central as docfiller
+from .docstrings import (
+    factory_docfiller_from_parent,
+    factory_docfiller_inherit_from_parent,
+    factory_docinherit_from_parent,
+)
 from .resample import randsamp_freq, resample_data, resample_vals
 from .utils import _axis_expand_broadcast, _shape_insert_axis, _shape_reduce
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._typing import ArrayOrder, Moments, T_CentralMoments
+    from ._typing import ArrayOrder, Dims, Mom_NDim, MomDims, Moments, T_CentralMoments
     from .xcentral import xCentralMoments
 
 
@@ -83,7 +89,7 @@ def _central_moments(
 
 def _central_comoments(
     vals: tuple[np.ndarray, np.ndarray],
-    mom: Moments,
+    mom: int | tuple[int, int],
     w: np.ndarray | None = None,
     axis: int = 0,
     last: bool = True,
@@ -169,7 +175,7 @@ def _central_comoments(
     return out
 
 
-@docfiller_decorate
+@docfiller.decorate
 def central_moments(
     x: np.ndarray | tuple[np.ndarray, np.ndarray],
     mom: Moments,
@@ -186,7 +192,7 @@ def central_moments(
 
     Parameters
     ----------
-    vals : array-like or tuple of array-like
+    x : array-like or tuple of array-like
         if calculating moments, then this is the input array.
         if calculating comoments, then pass in tuple of values of form (x, y)
     {mom}
@@ -253,34 +259,50 @@ def central_moments(
     if isinstance(mom, int):
         mom = (mom,)
 
-    kws = dict(
-        vals=x, mom=mom, w=w, axis=axis, last=last, dtype=dtype, order=order, out=out
-    )
     if len(mom) == 1:
-        return _central_moments(**kws)  # type: ignore
+        return _central_moments(
+            vals=x,
+            mom=mom,
+            w=w,
+            axis=axis,
+            last=last,
+            dtype=dtype,
+            order=order,
+            out=out,
+        )
     else:
-        kws["broadcast"] = broadcast
-        return _central_comoments(**kws)  # type: ignore
-
-
-from .abstract_central import CentralMomentsABC
+        return _central_comoments(
+            vals=x,  # type: ignore
+            mom=mom,  # type: ignore
+            w=w,
+            axis=axis,
+            last=last,
+            dtype=dtype,
+            order=order,
+            broadcast=broadcast,
+            out=out,
+        )
 
 
 ###############################################################################
 # Classes
 ###############################################################################
-class CentralMoments(CentralMomentsABC[np.ndarray]):
-    """
-    Parameters
-    ----------
-    data : ndarray
-        Moments collection array.
-    """
 
-    def __new__(cls, data: np.ndarray, mom_ndim: Literal[1, 2] = 1):  # noqa: D102
-        return super().__new__(cls, data=data, mom_ndim=mom_ndim)
+docfiller_abc = factory_docfiller_from_parent(
+    docfiller=docfiller, cls=CentralMomentsABC
+)
+docinherit_abc = factory_docinherit_from_parent(cls=CentralMomentsABC)
+docfiller_inherit_abc = factory_docfiller_inherit_from_parent(
+    cls=CentralMomentsABC, docfiller=docfiller
+)
 
-    def __init__(self, data: np.ndarray, mom_ndim: Literal[1, 2] = 1) -> None:
+
+@docfiller(CentralMomentsABC)
+class CentralMoments(CentralMomentsABC[np.ndarray]):  # noqa: D101
+    # def __new__(cls, data: np.ndarray, mom_ndim: Literal[1, 2] = 1):  # noqa: D102
+    #     return super().__new__(cls, data=data, mom_ndim=mom_ndim)
+
+    def __init__(self, data: np.ndarray, mom_ndim: Mom_NDim = 1) -> None:
         if mom_ndim not in (1, 2):
             raise ValueError(
                 "mom_ndim must be either 1 (for central moments)"
@@ -309,6 +331,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     ###########################################################################
     # SECTION: top level creation/copy/new
     ###########################################################################
+    # @docfiller(CentralMomentsABC.new_like)
+    @docfiller_abc()
     def new_like(
         self: T_CentralMoments,
         data: np.ndarray | None = None,
@@ -320,11 +344,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         **kws,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        output : CentralMoments
-
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -372,15 +391,15 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     ###########################################################################
     # SECTION: To/from xarray
     ###########################################################################
-    @docfiller_decorate
+    @docfiller.decorate
     def to_xarray(
         self,
-        dims: Hashable | Sequence[Hashable] | None = None,
+        dims: Dims | None = None,
         attrs: Mapping | None = None,
         coords: Mapping | None = None,
         name: Hashable | None = None,
         indexes: Any = None,
-        mom_dims: Hashable | tuple[Hashable, Hashable] | None = None,
+        mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
     ) -> xr.DataArray:
@@ -440,7 +459,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                 dims = tuple(dims)  # type: ignore
 
             if len(dims) == self.ndim:
-                dims_output = dims  # type: ignore
+                dims_output = dims
 
             elif len(dims) == self.val_ndim:
                 if mom_dims is None:
@@ -449,7 +468,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                     mom_dims = (mom_dims,)
                 else:
                     # try to convert to tuple
-                    mom_dims = tuple(mom_dims)
+                    mom_dims = tuple(mom_dims)  # type: ignore
 
                 assert (
                     len(mom_dims) == self.mom_ndim
@@ -470,15 +489,15 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
         return out
 
-    @docfiller_decorate
+    @docfiller.decorate
     def to_xcentralmoments(
         self,
-        dims: Hashable | Sequence[Hashable] | None = None,
+        dims: Dims | None = None,
         attrs: Mapping | None = None,
         coords: Mapping | None = None,
         name: Hashable | None = None,
         indexes: Any = None,
-        mom_dims: Hashable | tuple[Hashable, Hashable] | None = None,
+        mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
     ) -> xCentralMoments:
@@ -550,16 +569,16 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     #  -> np.ndarray | float | Tuple[float|np.ndarray, None|float|np.ndarray] :
     def _verify_value(
         self,
-        x: np.ndarray | float,
+        x: float | np.ndarray,
         target: np.ndarray | tuple[int, ...] | str | None = None,
         axis: int | None = None,
         dim: Hashable | None = None,  # included here for consistency
         broadcast: bool = False,
         expand: bool = False,
-        shape_flat: tuple[int, ...] | None = None,
         other: np.ndarray | None = None,
+        shape_flat: tuple[int, ...] | None = None,
         **kwargs,
-    ):  # type: ignore
+    ):
         """
         Verify input values.
 
@@ -581,7 +600,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
             if target == "val":
                 target_shape = self.val_shape
             elif target == "vals":
-                target_shape = _shape_insert_axis(self.val_shape, axis, x.shape[axis])  # type: ignore
+                assert axis is not None
+                target_shape = _shape_insert_axis(self.val_shape, axis, x.shape[axis])
             elif target == "data":
                 target_shape = self.shape
             elif target == "datas":
@@ -589,12 +609,15 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                 axis = normalize_axis_index(axis, self.val_ndim + 1)
                 # if axis < 0:
                 #     axis += self.ndim - self.mom_ndim
-                target_shape = _shape_insert_axis(self.shape, axis, x.shape[axis])  # type: ignore
+                assert axis is not None
+                target_shape = _shape_insert_axis(self.shape, axis, x.shape[axis])
             elif target == "var":
                 target_shape = self.shape_var
             elif target == "vars":
-                assert other is not None
-                target_shape = _shape_insert_axis(self.shape_var, axis, other.shape[axis])  # type: ignore
+                assert other is not None and axis is not None
+                target_shape = _shape_insert_axis(
+                    self.shape_var, axis, other.shape[axis]
+                )
             else:
                 raise ValueError(f"unknown string target name {target}")
 
@@ -631,7 +654,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         if axis is not None:
             if axis != 0:
                 x = np.moveaxis(x, axis, 0)
-            nrec = (x.shape[0],)  # type: ignore
+            nrec = (x.shape[0],)
         else:
             nrec = ()  # type: ignore
 
@@ -646,13 +669,9 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         else:
             return x, target_output
 
+    @docfiller_inherit_abc()
     def push_data(self: T_CentralMoments, data: np.ndarray) -> T_CentralMoments:
         """
-        Returns
-        -------
-        pushed : CentralMoments
-            Same object as caller, with updated data
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -670,27 +689,22 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
 
         Which is equivalent to
+
         >>> CentralMoments.from_vals(xs.reshape(-1), mom=2)
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5816,  0.0761])
 
         """
-        data = self._check_data(data)
-        self._push.data(self._data_flat, data)
-        return self
+        return super().push_data(data=data)
 
+    @docfiller_inherit_abc()
     def push_datas(
         self: T_CentralMoments,
         datas: np.ndarray,
-        axis: int = 0,
+        axis: int | None = 0,
         **kwargs,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        pushed : CentralMoments
-            Same object as caller, with updated data
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -703,26 +717,22 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
 
         Which is equivalent to
+
         >>> CentralMoments.from_vals(xs.reshape(-1), mom=2)
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5816,  0.0761])
         """
-        datas = self._check_datas(datas, axis=axis, **kwargs)
-        self._push.datas(self._data_flat, datas)
-        return self
+        return super().push_datas(datas=datas, axis=axis or 0, **kwargs)
 
+    @docfiller_inherit_abc()
     def push_val(
         self: T_CentralMoments,
         x: float | np.ndarray | tuple[float, float] | tuple[np.ndarray, np.ndarray],
         w: np.ndarray | float | None = None,
         broadcast: bool = False,
+        **kwargs,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        pushed : CentralMoments
-            Same object as caller, with updated data
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -759,33 +769,18 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                 [ 6.4172e-02,  9.6487e-03,  6.3702e-03]]])
 
         """
+        return super().push_val(x=x, w=w, broadcast=broadcast, **kwargs)
 
-        if self.mom_ndim == 1:
-            ys = ()
-        else:
-            assert isinstance(x, tuple) and len(x) == self.mom_ndim
-            x, *ys = x  # type: ignore
-
-        xr, target = self._check_val(x, "val")  # type: ignore
-        yr = tuple(self._check_val(y, target=target, broadcast=broadcast) for y in ys)  # type: ignore
-        wr = self._check_weight(w, target)  # type: ignore
-        self._push.val(self._data_flat, *((wr, xr) + yr))
-        return self
-
+    @docfiller_inherit_abc()
     def push_vals(
         self: T_CentralMoments,
         x: np.ndarray | tuple[np.ndarray, np.ndarray],
-        w: np.ndarray | None = None,
-        axis: int = 0,
+        w: float | np.ndarray | None = None,
+        axis: int | None = 0,
         broadcast: bool = False,
         **kwargs,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        pushed : CentralMoments
-            Same object as caller, with updated data
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -818,36 +813,53 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                 [ 6.4172e-02,  9.6487e-03,  6.3702e-03]]])
 
         """
-        if self.mom_ndim == 1:
-            ys = ()
-        else:
-            assert len(x) == self.mom_ndim
-            x, *ys = x  # type: ignore
-
-        xr, target = self._check_vals(x, axis=axis, target="vals", **kwargs)  # type: ignore
-        yr = tuple(  # type: ignore
-            self._check_vals(y, target=target, axis=axis, broadcast=broadcast, **kwargs)  # type: ignore
-            for y in ys  # type: ignore
-        )  # type: ignore
-        wr = self._check_weights(w, target=target, axis=axis, **kwargs)
-        self._push.vals(self._data_flat, *((wr, xr) + yr))
-        return self
+        return super().push_vals(
+            x=x, w=w, axis=axis or 0, broadcast=broadcast, **kwargs
+        )
 
     ###########################################################################
     # SECTION: Manipulation
     ###########################################################################
-    @docfiller_decorate
+    @overload
     def resample_and_reduce(
-        self: T_CentralMoments,
+        self: CentralMoments,
+        freq: np.ndarray | None,
+        indices: np.ndarray | None,
+        nrep: int | None,
+        axis: int | None,
+        parallel: bool,
+        resample_kws: Mapping | None,
+        full_output: Literal[False] = False,
+        **kws,
+    ) -> CentralMoments:
+        ...
+
+    @overload
+    def resample_and_reduce(
+        self: CentralMoments,
+        freq: np.ndarray | None,
+        indices: np.ndarray | None,
+        nrep: int | None,
+        axis: int | None,
+        parallel: bool,
+        resample_kws: Mapping | None,
+        full_output: Literal[True],
+        **kws,
+    ) -> tuple[CentralMoments, np.ndarray]:
+        ...
+
+    @docfiller.decorate
+    def resample_and_reduce(
+        self: CentralMoments,
         freq: np.ndarray | None = None,
         indices: np.ndarray | None = None,
-        nrep: None = None,
+        nrep: int | None = None,
         axis: int | None = None,
         parallel: bool = True,
         resample_kws: Mapping | None = None,
         full_output: bool = False,
         **kws,
-    ) -> T_CentralMoments | tuple[T_CentralMoments, np.ndarray]:
+    ) -> CentralMoments | tuple[CentralMoments, np.ndarray]:
         """
         Bootstrap resample and reduce.
 
@@ -857,8 +869,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         {indices}
         {nrep}
         {axis}
-        parallel : bool, default=True
-            flags to `numba.njit`
+        {parallel}
         {resample_kws}
         {full_output}
         **kws
@@ -898,7 +909,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         else:
             return out
 
-    @docfiller_decorate
+    @docfiller.decorate
     def reduce(
         self: T_CentralMoments, axis: int | None = None, **kws
     ) -> T_CentralMoments:
@@ -909,8 +920,15 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         ----------
         {axis}
         **kws
-            Extra parameters to :meth:`from_data`
+            Extra parameters to :meth:`from_datas`
 
+        Returns
+        -------
+        output : {klass}
+
+        See Also
+        --------
+        from_datas
         """
         self._raise_if_scalar()
         axis = self._wrap_axis(axis, **kws)
@@ -918,7 +936,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
             self.values, mom_ndim=self.mom_ndim, axis=axis, **kws
         )
 
-    @docfiller_decorate
+    @docfiller.decorate
     def block(
         self: T_CentralMoments,
         block_size: int | None = None,
@@ -977,7 +995,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         )
         return type(self).from_datas(datas=datas, mom_ndim=self.mom_ndim, axis=1, **kws)
 
-    @docfiller_decorate
+    @docfiller.decorate
     def reshape(
         self: T_CentralMoments,
         shape: tuple[int, ...],
@@ -1033,9 +1051,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                [10.    ,  0.5372,  0.0591],
                [10.    ,  0.4262,  0.0843],
                [10.    ,  0.4733,  0.0591]])
-
-
-
         """
         self._raise_if_scalar()
         new_shape = shape + self.mom_shape
@@ -1054,7 +1069,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
             **kws,
         )
 
-    @docfiller_decorate
+    @docfiller.decorate
     def moveaxis(
         self: T_CentralMoments,
         source: int | tuple[int, ...],
@@ -1129,28 +1144,23 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     # SECTION: Constructors
     ###########################################################################
     @classmethod
+    @docfiller_abc()
     def zeros(
         cls: type[T_CentralMoments],
         mom: Moments | None = None,
+        mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
-        mom_ndim: int | None = None,
         shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         zeros_kws: Mapping | None = None,
         **kws,
     ) -> T_CentralMoments:
-        """
-        Returns
-        -------
-        output : CentralMoments
-        """
-
         if shape is None:
             assert mom is not None
             if isinstance(mom, int):
                 mom = (mom,)
             if mom_ndim is None:
-                mom_ndim = len(mom)
+                mom_ndim = len(mom)  # type: ignore
             assert len(mom) == mom_ndim
 
             if val_shape is None:
@@ -1173,11 +1183,12 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         return cls.from_data(data=data, mom_ndim=mom_ndim, **kws)
 
     @classmethod
+    @docfiller_abc()
     def from_data(
         cls: type[T_CentralMoments],
         data: np.ndarray,
-        mom_ndim: int | None = None,
         mom: Moments | None = None,
+        mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         copy: bool = True,
         copy_kws: Mapping | None = None,
@@ -1187,10 +1198,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         # **kws,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        output : CentralMoments
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -1201,7 +1208,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         >>> da
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5816,  0.0761])
-
         """
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
 
@@ -1215,7 +1221,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                 val_shape = data_verified.shape[:-mom_ndim]
             mom = cls._check_mom(mom, mom_ndim, data_verified.shape)
 
-            if data_verified.shape != val_shape + tuple(x + 1 for x in mom):  # type: ignore
+            if data_verified.shape != val_shape + tuple(x + 1 for x in mom):
                 raise ValueError(
                     f"{data.shape} does not conform to {val_shape} and {mom}"
                 )
@@ -1228,11 +1234,12 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         return cls(data=data_verified, mom_ndim=mom_ndim)
 
     @classmethod
+    @docfiller_inherit_abc()
     def from_datas(
         cls: type[T_CentralMoments],
         datas: np.ndarray,
-        mom_ndim: int | None = None,
-        axis: int = 0,
+        mom_ndim: Mom_NDim | None = None,
+        axis: int | None = 0,
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
@@ -1241,10 +1248,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         **kws,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        output : CentralMoments
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -1262,6 +1265,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
         """
 
+        axis = axis or 0
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
 
         if verify:
@@ -1272,7 +1276,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                 val_shape = datas.shape[1:-mom_ndim]
 
             mom = cls._check_mom(mom, mom_ndim, datas.shape)
-            assert datas.shape[1:] == val_shape + tuple(x + 1 for x in mom)  # type: ignore
+            assert datas.shape[1:] == val_shape + tuple(x + 1 for x in mom)
 
         if dtype is None:
             dtype = datas.dtype
@@ -1282,12 +1286,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         ).push_datas(datas=datas, axis=0)
 
     @classmethod
+    @docfiller_inherit_abc()
     def from_vals(
         cls: type[T_CentralMoments],
         x: np.ndarray | tuple[np.ndarray, np.ndarray],
-        w: np.ndarray | None = None,
-        axis: int = 0,
-        dim: Hashable | None = None,
+        w: float | np.ndarray | None = None,
+        axis: int | None = 0,
+        # dim: Hashable | None = None,
         mom: Moments = 2,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
@@ -1295,10 +1300,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         **kws,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        out : CentralMoments
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -1311,6 +1312,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                [1.0000e+02, 5.2226e-01, 7.8481e-02]])
         """
 
+        axis = axis or 0
         mom_ndim = cls._mom_ndim_from_mom(mom)
         x0 = x if mom_ndim == 1 else x[0]
         x0 = cast(np.ndarray, x0)
@@ -1324,14 +1326,55 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         )
 
     @classmethod
+    @overload
     def from_resample_vals(
-        cls: type[T_CentralMoments],
+        cls: type[CentralMoments],
+        x: np.ndarray | tuple[np.ndarray, np.ndarray],
+        freq: np.ndarray | None,
+        indices: np.ndarray | None,
+        nrep: int | None,
+        w: np.ndarray | None,
+        axis: int | None,
+        mom: Moments,
+        dtype: DTypeLike | None,
+        broadcast: bool,
+        parallel: bool,
+        resample_kws: Mapping | None,
+        full_output: Literal[False] = False,
+        **kws,
+    ) -> CentralMoments:
+        ...
+
+    @classmethod
+    @overload
+    def from_resample_vals(
+        cls: type[CentralMoments],
+        x: np.ndarray | tuple[np.ndarray, np.ndarray],
+        freq: np.ndarray | None,
+        indices: np.ndarray | None,
+        nrep: int | None,
+        w: np.ndarray | None,
+        axis: int | None,
+        mom: Moments,
+        dtype: DTypeLike | None,
+        broadcast: bool,
+        parallel: bool,
+        resample_kws: Mapping | None,
+        full_output: Literal[True],
+        **kws,
+    ) -> tuple[CentralMoments, np.ndarray]:
+        ...
+
+    @classmethod
+    @docfiller_inherit_abc()
+    def from_resample_vals(
+        cls: type[CentralMoments],
         x: np.ndarray | tuple[np.ndarray, np.ndarray],
         freq: np.ndarray | None = None,
         indices: np.ndarray | None = None,
         nrep: int | None = None,
         w: np.ndarray | None = None,
-        axis: int = 0,
+        axis: int | None = 0,
         mom: Moments = 2,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
@@ -1339,14 +1382,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         resample_kws: Mapping | None = None,
         full_output: bool = False,
         **kws,
-    ) -> T_CentralMoments | tuple[T_CentralMoments, np.ndarray]:
+    ) -> CentralMoments | tuple[CentralMoments, np.ndarray]:
         """
-        Returns
-        -------
-        out : CentralMoments
-        freq : array, optional
-
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -1376,7 +1413,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
                [10.    ,  0.5633,  0.0259]])
 
         """
-
+        axis = axis or 0
         mom_ndim = cls._mom_ndim_from_mom(mom)
 
         x0 = x if mom_ndim == 1 else x[0]
@@ -1421,10 +1458,11 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         return out
 
     @classmethod
+    @docfiller_inherit_abc()
     def from_raw(
         cls: type[T_CentralMoments],
         raw: np.ndarray,
-        mom_ndim: int | None = None,
+        mom_ndim: Mom_NDim | None = None,
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
@@ -1432,11 +1470,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         **kws,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        out : CentralMoments
-
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -1473,7 +1506,6 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         0.6157662833156792
         >>> dy_cen.cmom()  # this matches above
         array([1.    , 0.    , 0.034 , 0.0038, 0.0026])
-
         """
 
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
@@ -1501,22 +1533,19 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         )
 
     @classmethod
+    @docfiller_inherit_abc()
     def from_raws(
         cls: type[T_CentralMoments],
         raws: np.ndarray,
-        mom_ndim: int | None = None,
+        mom_ndim: Mom_NDim | None = None,
         mom: Moments | None = None,
-        axis: int = 0,
+        axis: int | None = 0,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
         **kws,
     ) -> T_CentralMoments:
         """
-        Returns
-        -------
-        output : CentralMoments
-
         Examples
         --------
         >>> np.random.seed(0)
@@ -1541,6 +1570,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
         """
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
+        axis = axis or 0
 
         if convert_kws is None:
             convert_kws = {}
@@ -1564,20 +1594,19 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
     # --------------------------------------------------
     # mom_ndim == 1 specific
     # --------------------------------------------------
-
     @staticmethod
-    def _raise_if_not_1d(mom_ndim: int) -> None:
+    def _raise_if_not_1d(mom_ndim: Mom_NDim) -> None:
         if mom_ndim != 1:
             raise NotImplementedError("only available for mom_ndim == 1")
 
     # special, 1d only methods
     def push_stat(
-        self: T_CentralMoments,
+        self: CentralMoments,
         a: np.ndarray | float,
         v: np.ndarray | float = 0.0,
         w: np.ndarray | float | None = None,
         broadcast: bool = True,
-    ) -> T_CentralMoments:
+    ) -> CentralMoments:
         """Push statistics onto self."""
         self._raise_if_not_1d(self.mom_ndim)
 
@@ -1588,13 +1617,13 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         return self
 
     def push_stats(
-        self: T_CentralMoments,
+        self: CentralMoments,
         a: np.ndarray,
         v: np.ndarray | float = 0.0,
         w: np.ndarray | float | None = None,
         axis: int = 0,
         broadcast: bool = True,
-    ) -> T_CentralMoments:
+    ) -> CentralMoments:
         """Push multiple statistics onto self."""
         self._raise_if_not_1d(self.mom_ndim)
 
@@ -1606,7 +1635,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_stat(
-        cls: type[T_CentralMoments],
+        cls: type[CentralMoments],
         a: ArrayLike | float,
         v: np.ndarray | float = 0.0,
         w: np.ndarray | float | None = None,
@@ -1615,7 +1644,7 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
         dtype: DTypeLike | None = None,
         order: ArrayOrder | None = None,
         **kws,
-    ) -> T_CentralMoments:
+    ) -> CentralMoments:
         """Create object from single weight, average, variance/covariance."""
         mom_ndim = cls._mom_ndim_from_mom(mom)
         cls._raise_if_not_1d(mom_ndim)
@@ -1633,18 +1662,18 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):
 
     @classmethod
     def from_stats(
-        cls: type[T_CentralMoments],
+        cls: type[CentralMoments],
         a: np.ndarray,
         v: np.ndarray,
         w: np.ndarray | float | None = None,
         axis: int = 0,
         dim=None,
         mom: Moments = 2,
-        val_shape: tuple[int, ...] = None,
+        val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         order: ArrayOrder | None = None,
         **kws,
-    ) -> T_CentralMoments:
+    ) -> CentralMoments:
         """
         Create object from several statistics.
 

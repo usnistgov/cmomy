@@ -1,13 +1,10 @@
 """low level routines to do pushing."""
 from __future__ import annotations
 
-from collections import namedtuple
+from typing import Callable, NamedTuple, cast
 
 from .options import OPTIONS
 from .utils import factory_binomial, myjit
-
-# from typing import Any, Callable
-
 
 # from functool import lru_cache
 
@@ -514,7 +511,16 @@ def _push_datas_scale_cov_vec(data, Datas, scale):
 # named tuple for pushers
 
 
-Pusher = namedtuple("Pusher", ["val", "vals", "stat", "stats", "data", "datas"])
+class Pusher(NamedTuple):
+    """Collection of pusher functions."""
+
+    val: Callable[..., None]
+    vals: Callable[..., None]
+    stat: Callable[..., None] | None
+    stats: Callable[..., None] | None
+    data: Callable[..., None]
+    datas: Callable[..., None]
+
 
 pusher_scalar = Pusher(
     val=_push_val,
@@ -568,31 +574,39 @@ def factory_pushers(cov: bool = False, vec: bool = False) -> Pusher:
             return pusher_scalar
 
 
-def factory_pusher_datas_scale(cov=False, vec=False):
+def factory_pusher_datas_scale(
+    cov: bool = False, vec: bool = False
+) -> Callable[..., None]:
     """Factory method to get pushe with scale functions."""  # noqa D401
     if cov:
         if vec:
-            return _push_datas_scale_cov_vec
+            out = _push_datas_scale_cov_vec
         else:
-            return _push_datas_scale_cov
+            out = _push_datas_scale_cov
 
     else:
         if vec:
-            return _push_datas_scale_vec
+            out = _push_datas_scale_vec
         else:
-            return _push_datas_scale
+            out = _push_datas_scale
+
+    return cast(Callable[..., None], out)
 
 
-def factory_pusher_vals_scale(cov=False, vec=False):
+def factory_pusher_vals_scale(
+    cov: bool = False, vec: bool = False
+) -> Callable[..., None]:
     """Factory method to get val pusher functions."""  # noqa D401
     if cov:
         if vec:
-            return _push_vals_scale_cov_vec
+            out = _push_vals_scale_cov_vec
         else:
-            return _push_vals_scale_cov
+            out = _push_vals_scale_cov
 
     else:
         if vec:
-            return _push_vals_scale_vec
+            out = _push_vals_scale_vec
         else:
-            return _push_vals_scale
+            out = _push_vals_scale
+
+    return cast(Callable[..., None], out)

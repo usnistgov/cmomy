@@ -31,7 +31,7 @@ dependencies = [
     "xarray >= 0.16",
     "typing-extensions",
     "custom-inherit",
-    "module-utilities >= 0.1",
+    "module-utilities >= 0.5",
     "lazy_loader",
 ]
 
@@ -278,6 +278,8 @@ ignore = [
     "D203",
     "D212",
 ]
+# No clue why these these errors show up...
+per-file-ignores = ["noxfile.py:F821,F722"]
 
 [tool.scriv]
 format = "md"
@@ -300,14 +302,14 @@ check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
-module = []
+module = ["numba.*", "custom_inherit.*"]
 
 [[tool.mypy.overrides]]
 ignore_errors = true
 module = []
 
 [tool.pyright]
-include = ["src", "tests"]
+include = ["src"]
 exclude = ["**/__pycache__", ".tox/**", ".nox/**", "**/.mypy_cache"]
 pythonVersion = "3.10"
 typeCheckingMode = "basic"

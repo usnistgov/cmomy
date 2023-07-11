@@ -1,10 +1,11 @@
 """Routines to perform resampling."""
 
-from typing import Any, Callable, Dict, Hashable
+from typing import Any, Callable, Dict, Hashable, cast
 
 from numba import njit, prange
 
 from ._lazy_imports import np
+from ._typing import F
 from .options import OPTIONS
 from .pushers import (
     _push_datas_scale,
@@ -48,9 +49,12 @@ def _randsamp_freq_indices(indices, freq):
             freq[r, idx] += 1
 
 
-def jitter(parallel):
+def jitter(parallel: bool) -> Callable[[F], F]:
     """Perform jitting."""
-    return njit(fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"], parallel=parallel)
+    return cast(
+        Callable[[F], F],
+        njit(fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"], parallel=parallel),
+    )
 
 
 # NOTE: this is all due to closures not being cache-able with numba

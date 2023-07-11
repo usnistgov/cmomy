@@ -1,5 +1,5 @@
+# type: ignore
 """Set of routines to call most cases to pre-compile numba functions."""
-
 
 from ._lazy_imports import np
 from .central import CentralMoments

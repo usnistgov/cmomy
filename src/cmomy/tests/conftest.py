@@ -1,3 +1,5 @@
+from typing import Any
+
 import numpy as np
 import pytest
 import xarray as xr
@@ -37,9 +39,9 @@ def _get_cmom(w, x, moments, axis=0, last=True):
         y = (w * dx**n).sum(axis) * wsum_inv
         data.append(y)
 
-    data = np.array(data)
+    data = np.array(data)  # type: ignore
     if last:
-        data = np.moveaxis(data, 0, -1)
+        data = np.moveaxis(data, 0, -1)  # type: ignore
     return data
 
 
@@ -68,7 +70,7 @@ def _get_comom(w, x, y, moments, axis=0, broadcast=True):
 
     shape = list(x.shape)
     shape.pop(axis)
-    shape = tuple(shape) + tuple(x + 1 for x in moments)
+    shape = tuple(shape) + tuple(x + 1 for x in moments)  # type: ignore
 
     out = np.zeros(shape)
     wsum = w.sum(axis)
@@ -197,7 +199,7 @@ class Data:
                 Y = np.split(self.ydata, splits, axis=self.axis)
 
             # pack X, Y
-            X = list(zip(X, Y))
+            X = list(zip(X, Y))  # type: ignore
 
         return W, X
 
@@ -210,7 +212,7 @@ class Data:
         return self.split_data[1]
 
     @cached.prop
-    def data_fix(self):
+    def data_fix(self) -> Any:
         if self.cov:
             return _get_comom(
                 w=self.w,
@@ -332,7 +334,7 @@ class Data:
             return self.xdata_resamp
 
     @cached.prop
-    def w_resamp(self):
+    def w_resamp(self) -> Any:
         w = self.w
 
         if self.style is None:
@@ -345,7 +347,7 @@ class Data:
             return np.take(w, self.indices, axis=0)
 
     @cached.prop
-    def data_test_resamp(self):
+    def data_test_resamp(self) -> Any:
         return central.central_moments(
             x=self.x_resamp,
             mom=self.mom,
@@ -405,7 +407,7 @@ class Data:
         )
 
     @cached.prop
-    def W_xr(self):
+    def W_xr(self) -> Any:
         if isinstance(self.w_xr, xr.DataArray):
             dims = self.w_xr.dims
             return [xr.DataArray(_, dims=dims) for _ in self.W]

@@ -57,6 +57,7 @@ repos:
     hooks:
       - id: nbqa-ruff
         additional_dependencies: [ruff]
+        exclude: ^examples/archived/
       - id: nbqa-black
         additional_dependencies: [black]
 

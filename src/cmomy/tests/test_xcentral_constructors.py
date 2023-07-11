@@ -1,11 +1,18 @@
 """Some simple tests for factory methods of xCentral"""
+from __future__ import annotations
+
+from typing import Callable, cast
+
 import numpy as np
 import pytest
 import xarray as xr
 
 import cmomy
+from cmomy._typing import F
 
-my_fixture = lambda **kws: pytest.fixture(scope="module", **kws)
+
+def my_fixture(**kws) -> Callable[[F], F]:
+    return cast(Callable[[F], F], pytest.fixture(scope="module", **kws))
 
 
 @my_fixture(params=[3, (3, 3)])
@@ -129,8 +136,9 @@ def test_from_raws(dc, dcx):
 
 def test_from_vals(xy, shape, mom):
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
+    xy_xr: xr.DataArray | tuple[xr.DataArray, xr.DataArray]
     if isinstance(xy, tuple):
-        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)
+        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore
     else:
         xy_xr = xr.DataArray(xy, dims=dims)
 
@@ -150,27 +158,28 @@ def test_from_vals(xy, shape, mom):
 
 def test_from_resample_vals(xy, shape, mom):
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
+    xy_xr: xr.DataArray | tuple[xr.DataArray, xr.DataArray]
     if isinstance(xy, tuple):
-        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)
+        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore
     else:
         xy_xr = xr.DataArray(xy, dims=dims)
 
     for axis in range(len(shape)):
-        t, freq = cmomy.xCentralMoments.from_resample_vals(
+        t, freq = cmomy.xCentralMoments.from_resample_vals(  # type: ignore
             xy, nrep=10, full_output=True, axis=axis, mom=mom
-        )
+        )  # type : ignore
 
         # dims of output
         o1 = cmomy.xCentralMoments.from_resample_vals(
             xy, axis=axis, mom=mom, freq=freq, dims=dims[:axis] + dims[axis + 1 :]
         )
-        np.testing.assert_allclose(t, o1)
+        np.testing.assert_allclose(t, o1)  # type: ignore
 
         o2 = cmomy.xCentralMoments.from_resample_vals(
             xy_xr, dim=dims[axis], mom=mom, freq=freq
         )
 
-        xr.testing.assert_allclose(o1.values, o2.values)
+        xr.testing.assert_allclose(o1.values, o2.values)  # type: ignore
 
 
 def test_resample_and_reduce(dc, dcx):

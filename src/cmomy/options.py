@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import os
-from typing import Callable
+from typing import Any, Callable
 
 # Useful if doing any command line editing of doc string stuff
 
@@ -23,26 +23,26 @@ CACHE = "cache"
 OPTIONS = {NMAX: 20, PARALLEL: True, CACHE: True, FASTMATH: True}
 
 
-def _isbool(x):
-    isinstance(x, bool)
+def _isbool(x: Any) -> bool:
+    return isinstance(x, bool)
 
 
-def _isint(x):
-    isinstance(x, int)
+def _isint(x: Any) -> bool:
+    return isinstance(x, int)
 
 
-def _isstr(x):
-    isinstance(x, str)
+def _isstr(x: Any) -> bool:
+    return isinstance(x, str)
 
 
-_VALIDATORS = {
+_VALIDATORS: dict[str, Callable[[Any], bool]] = {
     NMAX: _isint,
     PARALLEL: _isbool,
     CACHE: _isbool,
     FASTMATH: _isbool,
 }
 
-_SETTERS: dict[str, Callable] = {}
+_SETTERS: dict[str, Callable[[Any], Any]] = {}
 
 
 class set_options:

@@ -19,7 +19,6 @@ def short_numpy_repr(*args, **kwargs):
         f = ff.short_numpy_repr
     else:
         f = repr
-
     return f(*args, **kwargs)
 
 

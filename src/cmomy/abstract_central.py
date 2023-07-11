@@ -1,49 +1,38 @@
-# type: ignore
 """Base class for central moments calculations."""
 
 
 from __future__ import annotations
 
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
     Generic,
-    Literal,
+    Hashable,
     Mapping,
     Tuple,
     Union,
     cast,
-    no_type_check,
 )
 
-from custom_inherit import DocInheritMeta
 from module_utilities import cached
 
 from . import convert
 from ._formatting import repr_html
 from ._lazy_imports import np
-from ._typing import Moments, T_Array, T_CentralMoments
-from .docstrings import docfiller_decorate
-from .options import DOC_SUB
+from ._typing import Mom_NDim, Moments, T_Array, T_CentralMoments
+from .docstrings import docfiller
 
 if TYPE_CHECKING:
-    import xarray as xr
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import DTypeLike
 
 # * TODO Main
 # TODO: Total rework is called for to handle typing correctly.
 
 
-def _get_metaclass():
-    if DOC_SUB:
-        return DocInheritMeta(style="numpy_with_merge")
-    else:
-        return ABCMeta
-
-
-class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
+@docfiller.decorate
+class CentralMomentsABC(ABC, Generic[T_Array]):
     r"""
     Wrapper to calculate central moments.
 
@@ -51,23 +40,18 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     .. math::
 
-        data[..., i, j] = \begin{cases}
-             \text{weight} & i = j = 0 \\
+        {{\rm data}}[..., i, j] = \begin{{cases}}
+             \text{{weight}} & i = j = 0 \\
             \langle x \rangle & i = 1, j = 0 \\
             \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j)
             \rangle & i + j > 0
-        \end{cases}
+        \end{{cases}}
 
     Parameters
     ----------
-    data : DataArray or ndarray
-        Moment collection array.
-    mom_ndim : {1, 2}
-        Number of dimensions for moment part of `data`.
-
-        * 1 : central moments of single variable
-        * 2 : central comoments of two variables
-
+    data : {t_array}
+        Moment collection array
+    {mom_ndim}
     """
 
     __slots__ = (
@@ -80,10 +64,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # Override __new__ to make signature correct
     # Better to do this in subclasses.
     # otherwise, signature for data will be 'T_Array``
-    def __new__(cls, data: T_Array, mom_ndim: Literal[1, 2] = 1):  # noqa: D102
-        return super().__new__(cls)  # , data=data, mom_ndim=mom_ndim)
+    # def __new__(cls, data: T_Array, mom_ndim: Literal[1, 2] = 1):  # noqa: D102
+    #     return super().__new__(cls)  # , data=data, mom_ndim=mom_ndim)
 
-    def __init__(self, data: T_Array, mom_ndim: Literal[1, 2] = 1) -> None:
+    def __init__(self, data: T_Array, mom_ndim: Mom_NDim = 1) -> None:
         self._data = cast(np.ndarray, data)
         self._data_flat = self._data
 
@@ -127,7 +111,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return cast(np.dtype, self.data.dtype)
 
     @property
-    def mom_ndim(self) -> Literal[1, 2]:
+    def mom_ndim(self) -> Mom_NDim:
         """
         Length of moments.
 
@@ -168,7 +152,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         if self.val_shape == ():
             return ()
         else:
-            return (np.prod(self.val_shape),)
+            return (int(np.prod(self.val_shape)),)
 
     @property
     def shape_flat(self) -> tuple[int, ...]:
@@ -215,11 +199,11 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # ** top level creation/copy/new
     ###########################################################################
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def new_like(
         self: T_CentralMoments,
         *,
-        data: ArrayLike | xr.DataArray | None = None,
+        data: np.ndarray | None = None,
         copy: bool = False,
         copy_kws: Mapping | None = None,
         verify: bool = True,
@@ -243,11 +227,13 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kws
             arguments to classmethod :meth:`from_data`
 
+        Returns
+        -------
+        output : {klass}
 
         See Also
         --------
         from_data
-
         """
 
     def zeros_like(self: T_CentralMoments) -> T_CentralMoments:
@@ -454,18 +440,18 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     @abstractmethod
     def _verify_value(
         self,
-        x: Any,
-        target: Any,
+        x: float | np.ndarray,
+        target: str | np.ndarray | None = None,
         axis: int | None = None,
+        dim: Hashable | None = None,  # included here for consistency
         broadcast: bool = False,
         expand: bool = False,
-        other: Any | None = None,
-        *args,
+        other: np.ndarray | None = None,
         **kwargs,
     ):
         pass
 
-    def _check_weight(self, w, target, **kwargs):  # type: ignore
+    def _check_weight(self, w, target, **kwargs):
         if w is None:
             w = 1.0
         return self._verify_value(
@@ -481,10 +467,9 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         self,
         w,
         target,
-        axis: int = None,
+        axis: int | None = None,
         **kwargs,
     ):
-        # type: ignore
         if w is None:
             w = 1.0
         return self._verify_value(
@@ -497,7 +482,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             **kwargs,
         )
 
-    def _check_val(self, x, target, broadcast=False, **kwargs):  # type: ignore
+    def _check_val(self, x, target, broadcast=False, **kwargs):
         return self._verify_value(
             x,
             target=target,
@@ -507,7 +492,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             **kwargs,
         )
 
-    def _check_vals(self, x, target, axis, broadcast=False, **kwargs):  # type: ignore
+    def _check_vals(self, x, target, axis, broadcast=False, **kwargs):
         return self._verify_value(
             x,
             target=target,
@@ -528,9 +513,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             **kwargs,
         )[0]
 
-    def _check_vars(
-        self, v, target, axis, broadcast: bool = False, **kwargs
-    ):  # type: ignore
+    def _check_vars(self, v, target, axis, broadcast: bool = False, **kwargs):
         return self._verify_value(
             v,
             target="vars",
@@ -542,12 +525,12 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             **kwargs,
         )[0]
 
-    def _check_data(self, data, **kwargs):  # type: ignore
+    def _check_data(self, data, **kwargs):
         return self._verify_value(
             data, target="data", shape_flat=self.shape_flat, **kwargs
         )[0]
 
-    def _check_datas(self, datas, axis, **kwargs):  # type: ignore
+    def _check_datas(self, datas, axis, **kwargs):
         return self._verify_value(
             datas,
             target="datas",
@@ -556,7 +539,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             **kwargs,
         )[0]
 
-    @docfiller_decorate
+    @docfiller.decorate
     def push_data(self: T_CentralMoments, data: Any) -> T_CentralMoments:
         """
         Push data object to moments.
@@ -568,16 +551,17 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        {pushed}
+        output : {klass}
+            Same object with pushed data.
         """
         data = self._check_data(data)
         self._push.data(self._data_flat, data)
         return self
 
-    @docfiller_decorate
+    @docfiller.decorate
     def push_datas(
         self: T_CentralMoments,
-        datas,
+        datas: Any,
         axis: int | None = None,
         **kwargs,
     ) -> T_CentralMoments:
@@ -594,16 +578,17 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        {pushed}
+        output : {klass}
+            Same object with pushed data.
         """
 
         datas = self._check_datas(datas=datas, axis=axis, **kwargs)
         self._push.datas(self._data_flat, datas)
         return self
 
-    @docfiller_decorate
+    @docfiller.decorate
     def push_val(
-        self: T_CentralMoments, x, w=None, broadcast: bool = False, **kwargs
+        self: T_CentralMoments, x: Any, w: Any = None, broadcast: bool = False, **kwargs
     ) -> T_CentralMoments:
         """
         Push single sample to central moments.
@@ -621,7 +606,8 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        {pushed}
+        output : {klass}
+            Same object with pushed data.
 
         Notes
         -----
@@ -632,19 +618,19 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             ys = ()
         else:
             assert isinstance(x, tuple) and len(x) == self.mom_ndim
-            x, *ys = x  # type: ignore
+            x, *ys = x
 
-        xr, target = self._check_val(x, "val", **kwargs)  # type: ignore
+        xr, target = self._check_val(x, "val", **kwargs)
         yr = tuple(self._check_val(y, target=target, broadcast=broadcast) for y in ys)  # type: ignore
-        wr = self._check_weight(w, target)  # type: ignore
+        wr = self._check_weight(w, target)
         self._push.val(self._data_flat, *((wr, xr) + yr))
         return self
 
-    @docfiller_decorate
+    @docfiller.decorate
     def push_vals(
         self: T_CentralMoments,
-        x,
-        w=None,
+        x: Any,
+        w: Any,
         axis: int | None = None,
         broadcast: bool = False,
         **kwargs,
@@ -665,19 +651,20 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        {pushed}
+        output : {klass}
+            Same object with pushed data.
         """
         if self.mom_ndim == 1:
             ys = ()
         else:
             assert len(x) == self.mom_ndim
-            x, *ys = x  # type: ignore
+            x, *ys = x
 
-        xr, target = self._check_vals(x, axis=axis, target="vals", **kwargs)  # type: ignore
+        xr, target = self._check_vals(x, axis=axis, target="vals", **kwargs)
         yr = tuple(  # type: ignore
-            self._check_vals(y, target=target, axis=axis, broadcast=broadcast, **kwargs)  # type: ignore
-            for y in ys  # type: ignore
-        )  # type: ignore
+            self._check_vals(y, target=target, axis=axis, broadcast=broadcast, **kwargs)
+            for y in ys
+        )
         wr = self._check_weights(w, target=target, axis=axis, **kwargs)
         self._push.vals(self._data_flat, *((wr, xr) + yr))
         return self
@@ -686,7 +673,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # ** Manipulation
     ###########################################################################
     def pipe(
-        self,
+        self: T_CentralMoments,
         func_or_method: Callable | str,
         *args,
         _order: bool = True,
@@ -751,7 +738,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
             values = func_or_method(self.values, *args, **kwargs)
 
         if _order:
-            values = values.transpose(..., *self.mom_dims)
+            if hasattr(self, "mom_dims"):
+                values = values.transpose(..., *self.mom_dims)
+            else:
+                raise AttributeError("to specify order, must have attribute `mom_dims`")
 
         if _kws is None:
             _kws = {}
@@ -780,7 +770,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     # * Universal reducers
 
-    @docfiller_decorate
+    @docfiller.decorate
     def resample(
         self: T_CentralMoments,
         indices: np.ndarray,
@@ -811,7 +801,6 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         See Also
         --------
         from_data
-
         """
         self._raise_if_scalar()
         axis = self._wrap_axis(axis, **kws)
@@ -907,10 +896,12 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     ###########################################################################
     # *** Utils
     @classmethod
-    @no_type_check
     def _check_mom(
-        cls, moments: Moments, mom_ndim: int, shape: tuple[int, ...] | None = None
-    ) -> tuple[int] | tuple[int, int]:  # type: ignore
+        cls,
+        moments: Moments | None,
+        mom_ndim: Mom_NDim | None,
+        shape: tuple[int, ...] | None = None,
+    ) -> tuple[int] | tuple[int, int]:
         """
         Check moments for correct shape.
 
@@ -918,32 +909,30 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         shape[-mom_ndim:] if integer, convert to tuple.
         """
 
-        if moments is None:
-            if shape is not None:
-                if mom_ndim is None:
-                    raise ValueError(
-                        "must specify either moments or shape and mom_ndim"
-                    )
-                moments = tuple(x - 1 for x in shape[-mom_ndim:])
-            else:
-                raise ValueError("must specify moments")
-
         if isinstance(moments, int):
-            if mom_ndim is None:
-                mom_ndim = 1
-            moments = (moments,) * mom_ndim
+            mom_ndim = mom_ndim or 1
+            moments = (moments,) * mom_ndim  # type: ignore
 
-        else:
-            moments = tuple(moments)
+        elif moments is None:
             if mom_ndim is None:
-                mom_ndim = len(moments)
+                raise ValueError("must specify either moments or mom_ndim and shape")
+            elif shape is None:
+                raise ValueError("Must pass shape if infering moments")
 
-        assert len(moments) == mom_ndim
-        return moments
+            assert len(shape) >= mom_ndim and mom_ndim in [1, 2]
+            moments = tuple(x - 1 for x in shape[-mom_ndim:])  # type: ignore
+
+        elif mom_ndim is None:
+            moments = tuple(moments)  # type: ignore
+            mom_ndim = len(moments)  # type: ignore
+            assert mom_ndim in [1, 2]
+
+        assert len(moments) == mom_ndim  # type: ignore
+        return cast(Union[Tuple[int], Tuple[int, int]], moments)
 
     @staticmethod
     def _datas_axis_to_first(
-        datas, axis: int, mom_ndim: int, **kws
+        datas, axis: int, mom_ndim: Mom_NDim, **kws
     ) -> tuple[np.ndarray, int]:
         """Move axis to first first position."""
         # NOTE: removinvg this. should be handles elsewhere
@@ -973,20 +962,22 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         return cast(int, normalize_axis_index(axis, ndim))
 
     @classmethod
-    def _mom_ndim_from_mom(cls, mom: Moments) -> int:
+    def _mom_ndim_from_mom(cls, mom: Moments) -> Mom_NDim:
         if isinstance(mom, int):
-            return 1
+            out = 1
         elif isinstance(mom, tuple):
-            return len(mom)
+            out = len(mom)
+            assert out in [1, 2]
         else:
             raise ValueError("mom must be int or tuple")
+        return cast(Mom_NDim, out)
 
     @classmethod
     def _choose_mom_ndim(
         cls,
         mom: Moments | None,
-        mom_ndim: int | None,
-    ) -> int:
+        mom_ndim: Mom_NDim | None,
+    ) -> Mom_NDim:
         if mom is not None:
             mom_ndim = cls._mom_ndim_from_mom(mom)
 
@@ -998,13 +989,13 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # *** Core
     @classmethod
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def zeros(
         cls: type[T_CentralMoments],
         mom: Moments | None = None,
+        mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         shape: tuple[int, ...] | None = None,
-        mom_ndim: int | None = None,
         dtype: DTypeLike | None = None,
         zeros_kws: Mapping | None = None,
         **kws,
@@ -1023,28 +1014,30 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kws
             extra arguments to :meth:`from_data`
 
+        Returns
+        -------
+        output : {klass}
+            New instance with zero values.
 
         Notes
         -----
         The resulting total shape of data is shape + (mom + 1).
         Must specify either `mom` or `mom_ndim`
 
-
         See Also
         --------
-        from_data : General constructor
+        from_data
         numpy.zeros
-
         """
 
     @classmethod
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def from_data(
         cls: type[T_CentralMoments],
         data: Any,
-        mom_ndim: int | None = None,
         mom: Moments | None = None,
+        mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         copy: bool = True,
         copy_kws: Mapping | None = None,
@@ -1070,18 +1063,17 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        out : object
+        out : {klass}
             Same type as calling class.
-
         """
 
     @classmethod
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def from_datas(
         cls: type[T_CentralMoments],
         datas: Any,
-        mom_ndim: int | None = None,
+        mom_ndim: Mom_NDim | None = None,
         axis: int | None = 0,
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
@@ -1109,14 +1101,18 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kws
             Extra arguments
 
+        Returns
+        -------
+        output : {klass}
+
         See Also
         --------
-        cmomy.CentralMoments.from_data
+        from_data
         """
 
     @classmethod
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def from_vals(
         cls: type[T_CentralMoments],
         x,
@@ -1146,6 +1142,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kws
             Optional arguments passed to :meth:`zeros`
 
+        Returns
+        -------
+        output: {klass}
+
         See Also
         --------
         push_vals
@@ -1153,23 +1153,12 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def from_resample_vals(
         cls: type[T_CentralMoments],
-        x,
-        freq: np.ndarray | None = None,
-        indices: np.ndarray | None = None,
-        nrep: int | None = None,
-        w: np.ndarray | None = None,
-        axis: int = 0,
-        mom: Moments = 2,
-        dtype: DTypeLike | None = None,
-        broadcast: bool = False,
-        parallel: bool = True,
-        resample_kws: Mapping | None = None,
-        full_output: bool = False,
-        **kws,
-    ) -> T_CentralMoments:
+        *args,
+        **kwargs,
+    ) -> T_CentralMoments | tuple[T_CentralMoments, np.ndarray]:
         """
         Create from resample observations/values.
 
@@ -1199,7 +1188,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
         Returns
         -------
-        out : object
+        out : {klass}
             Instance of calling class
         freq : ndarray, optional
             If `full_output` is True, also return `freq` array
@@ -1215,11 +1204,11 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def from_raw(
         cls: type[T_CentralMoments],
         raw,
-        mom_ndim: int | None = None,
+        mom_ndim: Mom_NDim | None = None,
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
@@ -1227,7 +1216,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kws,
     ) -> T_CentralMoments:
         """
-        Create object from raw.
+        Create object from raw moment data.
 
         raw[..., i, j] = <x**i y**j>.
         raw[..., 0, 0] = `weight`
@@ -1245,6 +1234,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kws
             Extra arguments to :meth:`from_data`
 
+        Returns
+        -------
+        output : {klass}
+
         See Also
         --------
         to_raw
@@ -1261,13 +1254,13 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
 
     @classmethod
     @abstractmethod
-    @docfiller_decorate
+    @docfiller.decorate
     def from_raws(
         cls: type[T_CentralMoments],
         raws,
-        mom_ndim: int | None = None,
+        mom_ndim: Mom_NDim | None = None,
         mom: Moments | None = None,
-        axis: int = 0,
+        axis: int | None = 0,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping | None = None,
@@ -1291,6 +1284,10 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
         **kws
             Extra arguments to :meth:`from_datas`
 
+        Returns
+        -------
+        output : {klass}
+
         See Also
         --------
         from_raw
@@ -1309,7 +1306,7 @@ class CentralMomentsABC(Generic[T_Array], metaclass=_get_metaclass()):
     # --------------------------------------------------
 
     # @staticmethod
-    # def _raise_if_not_1d(mom_ndim: int) -> None:
+    # def _raise_if_not_1d(mom_ndim: Mom_NDim) -> None:
     #     if mom_ndim != 1:
     #         raise NotImplementedError("only available for mom_ndim == 1")
 

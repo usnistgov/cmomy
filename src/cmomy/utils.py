@@ -52,7 +52,9 @@ def factory_binomial(order: int, dtype: DTypeLike = float):
 
 
 def _shape_insert_axis(
-    shape: Sequence[int], axis: int | None, new_size: int
+    shape: Sequence[int],
+    axis: int | None,
+    new_size: int,
 ) -> tuple[int, ...]:
     """Get new shape, given shape, with size put in position axis."""
     if axis is None:

@@ -1,3 +1,4 @@
+# type: ignore
 """Interface to numba push functions."""
 
 from __future__ import annotations

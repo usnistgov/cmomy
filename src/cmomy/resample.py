@@ -1,8 +1,6 @@
 """
 Routine to perform resampling (:mod:`cmomy.resample`)
 =====================================================
-
-
 """
 
 from __future__ import annotations
@@ -15,21 +13,21 @@ from .utils import _axis_expand_broadcast
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._typing import ArrayOrder, Moments, XvalStrict
+    from ._typing import ArrayOrder, Mom_NDim, Moments, XvalStrict
 
 ##############################################################################
 # resampling
 ###############################################################################
 
 
-def numba_random_seed(seed):
+def numba_random_seed(seed: int) -> None:
     """Set the random seed for numba functions."""
     from ._resample import _numba_random_seed
 
     _numba_random_seed(seed)
 
 
-def freq_to_indices(freq):
+def freq_to_indices(freq: np.ndarray) -> np.ndarray:
     """Convert a frequency array to indices array."""
 
     indices_all = []
@@ -41,7 +39,7 @@ def freq_to_indices(freq):
     return np.array(indices_all)
 
 
-def indices_to_freq(indices):
+def indices_to_freq(indices: np.ndarray) -> np.ndarray:
     """Convert indices to frequency array."""
     from ._resample import _randsamp_freq_indices
 
@@ -230,7 +228,7 @@ def resample_vals(
     mom: Moments,
     axis: int = 0,
     w: np.ndarray | None = None,
-    mom_ndim: int | None = None,
+    mom_ndim: Mom_NDim | None = None,
     broadcast: bool = False,
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
@@ -245,7 +243,7 @@ def resample_vals(
     assert isinstance(mom, tuple)
 
     if mom_ndim is None:
-        mom_ndim = len(mom)
+        mom_ndim = len(mom)  # type: ignore
     assert len(mom) == mom_ndim
     mom_shape = tuple(x + 1 for x in mom)
 
@@ -322,7 +320,7 @@ def resample_vals(
 
 def bootstrap_confidence_interval(
     distribution: np.ndarray,
-    stats_val: np.ndarray | Literal["percentile", "mean", "median"] = "mean",
+    stats_val: np.ndarray | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
     alpha: float = 0.05,
     style: Literal[None, "delta", "pm"] = None,
@@ -335,7 +333,7 @@ def bootstrap_confidence_interval(
     ----------
     distribution : array-like
         distribution of values to consider
-    stats_val : array-like, {None, 'mean','median'}
+    stats_val : array-like, {None, 'mean','median'}, optional
         * array: perform pivotal error bounds (correct) with this as `value`.
         * percentile: percentiles, with value as median
         * mean: pivotal error bounds with mean as value
@@ -401,7 +399,7 @@ def bootstrap_confidence_interval(
 
 def xbootstrap_confidence_interval(
     x: xr.DataArray,
-    stats_val: np.ndarray | Literal["percentile", "mean", "median"] = "mean",
+    stats_val: np.ndarray | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
     dim: Hashable | None = None,
     alpha: float = 0.05,
@@ -409,7 +407,7 @@ def xbootstrap_confidence_interval(
     bootstrap_dim: str = "bootstrap",
     bootstrap_coords: Sequence | None = None,
     **kws,
-):
+) -> xr.DataArray:
     """
     Bootstrap xarray object.
 
@@ -427,7 +425,7 @@ def xbootstrap_confidence_interval(
     """
 
     if dim is not None:
-        axis = x.get_axis_num(dim)
+        axis = cast(int, x.get_axis_num(dim))  # Problem with upstream
     else:
         dim = x.dims[axis]
 

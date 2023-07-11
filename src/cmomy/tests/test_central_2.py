@@ -1,9 +1,10 @@
 import numpy as np
 import pytest
 
-from cmomy import CentralMoments, central_moments
+from cmomy import central_moments
 from cmomy._testing import _get_cmom, _get_comom
-from cmomy.tests.conftest import Data
+
+# from cmomy.tests.conftest import Data
 
 
 class DataContainer:

@@ -5,8 +5,6 @@ import xarray as xr
 
 import cmomy.xcentral as xcentral
 
-# specific xcentral stuff
-
 
 def xtest(a, b):
     xr.testing.assert_allclose(a, b.transpose(*a.dims))
@@ -214,7 +212,7 @@ def test_resample_and_reduce(other):
             # check dims
             dims = list(other.s_xr.values.dims)
             dims.pop(axis)
-            dims = tuple(["hello"] + dims)
+            dims = tuple(["hello"] + dims)  # type: ignore
             assert t1.values.dims == dims
 
             # resample

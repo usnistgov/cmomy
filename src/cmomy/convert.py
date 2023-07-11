@@ -1,11 +1,10 @@
-# type: ignore
 """
 Routines to convert central (co)moments to raw (co)moments. (:mod:`cmomy.convert`)
 ==================================================================================
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Sequence, no_type_check
+from typing import TYPE_CHECKING, Any, Callable, Sequence
 
 from ._lazy_imports import np
 from .docstrings import DocFiller
@@ -93,7 +92,6 @@ out : ndarray, optional
 docfiller_decorate = DocFiller.from_docstring(_shared_docs, combine_keys="parameters")()
 
 
-@no_type_check
 def _convert_moments(
     data: ArrayLike,
     axis: int | Sequence[int],
@@ -137,12 +135,13 @@ def _convert_moments(
     if val_shape == ():
         reshape = (1,) + mom_shape
     else:
-        reshape = (np.prod(val_shape),) + mom_shape
+        reshape = (int(np.prod(val_shape)),) + mom_shape
 
     data_r = data_r.reshape(reshape)
     out_r = out_r.reshape(reshape)
 
     func(data_r, out_r)
+
     return out_r.reshape(shape)
 
 
