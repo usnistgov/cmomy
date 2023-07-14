@@ -72,7 +72,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self._data_flat = self._data
 
         self._mom_ndim = mom_ndim
-        self._cache: Mapping[Any, Any] = {}
+        self._cache: dict[str, Any] = {}
 
     @property
     def data(self) -> np.ndarray:

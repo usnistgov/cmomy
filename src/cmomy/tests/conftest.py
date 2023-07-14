@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Any
 
 import numpy as np
@@ -118,6 +119,7 @@ class Data:
         self.style = style
         self.mom = mom
         self.nsplit = nsplit
+        self._cache: dict[str, Any] = {}
 
     @cached.prop
     def cov(self):

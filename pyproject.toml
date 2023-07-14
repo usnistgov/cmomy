@@ -30,8 +30,8 @@ dependencies = [
     "numba >= 0.50",
     "xarray >= 0.16",
     "typing-extensions",
-    "custom-inherit",
-    "module-utilities >= 0.5",
+    "docstring-inheritance",
+    "module-utilities >= 0.6",
     "lazy_loader",
 ]
 
@@ -53,8 +53,8 @@ dev-extras = [
     "ipykernel",
 ]
 typing-extras = [
-    # "pytype; python_version < '3.11'",
-    "mypy",
+    "pytype; python_version < '3.11'", #
+    "mypy >= 1.4.1",
 ]
 typing = [
     "cmomy[typing-extras]", #
@@ -135,6 +135,11 @@ test = "pytest"
 addopts = "--doctest-modules --doctest-glob='*.md'"
 testpaths = ["README.md", "src", "tests"]
 
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:", "@overload"]
+omit = ["*/vendored/*"]
+include = ["src/*"]
+
 [tool.isort]
 profile = "black"
 skip_gitignore = true
@@ -143,7 +148,6 @@ known_first_party = ["cmomy"]
 [tool.ruff]
 fix = true
 line-length = 88
-update-check = false
 target-version = "py38"
 select = [
     # pyflakes

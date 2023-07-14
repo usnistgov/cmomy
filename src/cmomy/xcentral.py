@@ -1,6 +1,4 @@
 """Thin wrapper around central routines with xarray support."""
-
-
 from __future__ import annotations
 
 from typing import (  # TYPE_CHECKING,
@@ -24,7 +22,6 @@ from ._lazy_imports import np, xr
 from .abstract_central import CentralMomentsABC
 from .central import CentralMoments
 from .docstrings import docfiller_xcentral as docfiller
-from .docstrings import factory_docfiller_inherit_from_parent
 from .utils import _shape_reduce
 
 if TYPE_CHECKING:
@@ -272,15 +269,8 @@ def xcentral_moments(
 
 
 # --- * xCentralMoments-----------------------------------------------------------------
-from .docstrings import factory_docfiller_from_parent, factory_docinherit_from_parent
-
-docfiller_abc = factory_docfiller_from_parent(
-    docfiller=docfiller, cls=CentralMomentsABC
-)
-docinherit_abc = factory_docinherit_from_parent(cls=CentralMomentsABC)
-docfiller_inherit_abc = factory_docfiller_inherit_from_parent(
-    cls=CentralMomentsABC, docfiller=docfiller
-)
+docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
+docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller(CentralMomentsABC)
@@ -322,6 +312,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         if any(m <= 0 for m in self.mom):
             raise ValueError("moments must be positive")
+
+        self._cache: dict[str, Any] = {}
 
     # ** xarray attributes
     @property

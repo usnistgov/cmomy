@@ -10,11 +10,6 @@ from . import convert
 from ._lazy_imports import np, xr
 from .abstract_central import CentralMomentsABC
 from .docstrings import docfiller_central as docfiller
-from .docstrings import (
-    factory_docfiller_from_parent,
-    factory_docfiller_inherit_from_parent,
-    factory_docinherit_from_parent,
-)
 from .resample import randsamp_freq, resample_data, resample_vals
 from .utils import _axis_expand_broadcast, _shape_insert_axis, _shape_reduce
 
@@ -288,13 +283,8 @@ def central_moments(
 # Classes
 ###############################################################################
 
-docfiller_abc = factory_docfiller_from_parent(
-    docfiller=docfiller, cls=CentralMomentsABC
-)
-docinherit_abc = factory_docinherit_from_parent(cls=CentralMomentsABC)
-docfiller_inherit_abc = factory_docfiller_inherit_from_parent(
-    cls=CentralMomentsABC, docfiller=docfiller
-)
+docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
+docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller(CentralMomentsABC)
@@ -322,6 +312,8 @@ class CentralMoments(CentralMomentsABC[np.ndarray]):  # noqa: D101
 
         if any(m <= 0 for m in self.mom):
             raise ValueError("moments must be positive")
+
+        self._cache: dict[str, Any] = {}
 
     @property
     def values(self) -> np.ndarray:

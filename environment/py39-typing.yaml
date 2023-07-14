@@ -6,14 +6,16 @@
 channels:
   - conda-forge
 dependencies:
-  - python>=3.8
+  - python=3.9
   - numpy >= 1.21
   - numba >= 0.50
   - xarray >= 0.16
   - typing-extensions
-  - custom-inherit
-  - module-utilities >= 0.5
+  - docstring-inheritance
+  - module-utilities >= 0.6
   - lazy_loader
+  - pytype
+  - mypy >= 1.4.1
   - pytest
   - pytest-xdist
   - pytest-cov

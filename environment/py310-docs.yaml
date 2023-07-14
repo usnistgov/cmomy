@@ -6,16 +6,21 @@
 channels:
   - conda-forge
 dependencies:
-  - python>=3.8
+  - python=3.10
   - numpy >= 1.21
   - numba >= 0.50
   - xarray >= 0.16
   - typing-extensions
-  - custom-inherit
-  - module-utilities >= 0.5
+  - docstring-inheritance
+  - module-utilities >= 0.6
   - lazy_loader
-  - mypy
-  - pytest
-  - pytest-xdist
-  - pytest-cov
-  - pytest-sugar
+  - ipython
+  - pyenchant
+  - ghp-import
+  - sphinx
+  - sphinx-copybutton
+  - sphinxcontrib-spelling
+  - sphinx-autobuild
+  - myst-nb
+  - sphinx-book-theme
+  - autodocsumm

@@ -153,7 +153,7 @@ This package is used extensively in the newest version of `thermoextrap`. See
 
 ## Contact
 
-The author can be reached at wpk@nist.gov.
+The author can be reached at <wpk@nist.gov>.
 
 ## Credits
 
