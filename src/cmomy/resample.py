@@ -5,15 +5,15 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Hashable, Literal, Sequence, Tuple, cast
+from typing import TYPE_CHECKING, Any, Hashable, Literal, Sequence, cast
 
 from ._lazy_imports import np, xr
-from .utils import _axis_expand_broadcast
+from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._typing import ArrayOrder, Mom_NDim, Moments, XvalStrict
+    from ._typing import ArrayOrder, Mom_NDim, Moments, MyNDArray, XvalStrict
 
 ##############################################################################
 # resampling
@@ -22,15 +22,15 @@ if TYPE_CHECKING:
 
 def numba_random_seed(seed: int) -> None:
     """Set the random seed for numba functions."""
-    from ._resample import _numba_random_seed
+    from ._resample import _numba_random_seed  # pyright: ignore
 
     _numba_random_seed(seed)
 
 
-def freq_to_indices(freq: np.ndarray) -> np.ndarray:
+def freq_to_indices(freq: MyNDArray) -> MyNDArray:
     """Convert a frequency array to indices array."""
 
-    indices_all = []
+    indices_all: list[MyNDArray] = []
 
     for f in freq:
         indices = np.concatenate([np.repeat(i, count) for i, count in enumerate(f)])
@@ -39,9 +39,9 @@ def freq_to_indices(freq: np.ndarray) -> np.ndarray:
     return np.array(indices_all)
 
 
-def indices_to_freq(indices: np.ndarray) -> np.ndarray:
+def indices_to_freq(indices: MyNDArray) -> MyNDArray:
     """Convert indices to frequency array."""
-    from ._resample import _randsamp_freq_indices
+    from ._resample import _randsamp_freq_indices  # pyright: ignore
 
     freq = np.zeros_like(indices)
     _randsamp_freq_indices(indices, freq)
@@ -56,7 +56,7 @@ def randsamp_freq(
     transpose: bool = False,
     freq: ArrayLike | None = None,
     check: bool = False,
-) -> np.ndarray:
+) -> MyNDArray:
     """
     Produce a random sample for bootstrapping.
 
@@ -94,9 +94,9 @@ def randsamp_freq(
         if transpose, output.shape = (size, nrep)
     """
 
-    from ._resample import _randsamp_freq_indices, _randsamp_freq_out
+    from ._resample import _randsamp_freq_indices, _randsamp_freq_out  # pyright: ignore
 
-    def _array_check(x: ArrayLike, name="") -> np.ndarray:
+    def _array_check(x: ArrayLike, name: str = "") -> MyNDArray:
         x = np.asarray(x, dtype=np.int64)
         if check:
             if nrep is not None:
@@ -125,7 +125,7 @@ def randsamp_freq(
 
     if transpose:
         freq = freq.T
-    return cast(np.ndarray, freq)
+    return freq
 
 
 def resample_data(
@@ -136,8 +136,8 @@ def resample_data(
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
     parallel: bool = True,
-    out: np.ndarray | None = None,
-) -> np.ndarray:
+    out: MyNDArray | None = None,
+) -> MyNDArray:
     """
     Resample data according to frequency table.
 
@@ -224,17 +224,17 @@ def resample_data(
 
 def resample_vals(
     x: XvalStrict,
-    freq: np.ndarray,
+    freq: MyNDArray,
     mom: Moments,
     axis: int = 0,
-    w: np.ndarray | None = None,
+    w: MyNDArray | None = None,
     mom_ndim: Mom_NDim | None = None,
     broadcast: bool = False,
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
     parallel: bool = True,
-    out: np.ndarray | None = None,
-) -> np.ndarray:
+    out: MyNDArray | None = None,
+) -> MyNDArray:
     """Resample data according to frequency table."""
     from ._resample import factory_resample_vals
 
@@ -264,12 +264,12 @@ def resample_vals(
     if w is None:
         w = np.ones_like(x)
     else:
-        w = _axis_expand_broadcast(
+        w = axis_expand_broadcast(
             w, x.shape, axis, roll=False, dtype=dtype, order=order
         )
 
     if y is not None:
-        y = _axis_expand_broadcast(
+        y = axis_expand_broadcast(
             y, x.shape, axis, roll=False, broadcast=broadcast, dtype=dtype, order=order
         )
 
@@ -292,10 +292,11 @@ def resample_vals(
 
     # reshape
 
+    meta_reshape: tuple[int, ...]
     if shape == ():
-        meta_reshape = cast(Tuple[int, ...], ())
+        meta_reshape = ()
     else:
-        meta_reshape = cast(Tuple[int, ...], (np.prod(shape),))
+        meta_reshape = (int(np.prod(shape)),)  # pyright: ignore
     data_reshape = (ndat,) + meta_reshape
     out_reshape = (nrep,) + meta_reshape + mom_shape
 
@@ -319,13 +320,13 @@ def resample_vals(
 
 
 def bootstrap_confidence_interval(
-    distribution: np.ndarray,
-    stats_val: np.ndarray | Literal["percentile", "mean", "median"] | None = "mean",
+    distribution: MyNDArray,
+    stats_val: MyNDArray | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
     alpha: float = 0.05,
     style: Literal[None, "delta", "pm"] = None,
-    **kws,
-) -> np.ndarray:
+    **kws: Any,
+) -> MyNDArray:
     """
     Calculate the error bounds.
 
@@ -366,7 +367,7 @@ def bootstrap_confidence_interval(
         p_low = 100 * (alpha / 2.0)
         p_mid = 50
         p_high = 100 - p_low
-        val, low, high = np.percentile(
+        val, low, high = np.percentile(  # pyright: ignore
             a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kws
         )
 
@@ -385,8 +386,12 @@ def bootstrap_confidence_interval(
         q_high = 100 * (alpha / 2.0)
         q_low = 100 - q_high
         val = sv
-        low = 2 * sv - np.percentile(a=distribution, q=q_low, axis=axis, **kws)
-        high = 2 * sv - np.percentile(a=distribution, q=q_high, axis=axis, **kws)
+        low = 2 * sv - np.percentile(
+            a=distribution, q=q_low, axis=axis, **kws
+        )  # pyright: ignore
+        high = 2 * sv - np.percentile(
+            a=distribution, q=q_high, axis=axis, **kws
+        )  # pyright: ignore
 
     if style is None:
         out = np.array([val, low, high])
@@ -399,14 +404,14 @@ def bootstrap_confidence_interval(
 
 def xbootstrap_confidence_interval(
     x: xr.DataArray,
-    stats_val: np.ndarray | Literal["percentile", "mean", "median"] | None = "mean",
+    stats_val: MyNDArray | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
     dim: Hashable | None = None,
     alpha: float = 0.05,
     style: Literal[None, "delta", "pm"] = None,
-    bootstrap_dim: str = "bootstrap",
-    bootstrap_coords: Sequence | None = None,
-    **kws,
+    bootstrap_dim: Hashable | None = "bootstrap",
+    bootstrap_coords: str | Sequence[str] | None = None,
+    **kws: Any,
 ) -> xr.DataArray:
     """
     Bootstrap xarray object.
@@ -451,22 +456,30 @@ def xbootstrap_confidence_interval(
             bootstrap_coords = [bootstrap_coords, "err_low", "err_high"]
         elif style == "pm":
             bootstrap_coords = [bootstrap_coords, "err"]
+        else:
+            raise ValueError(f"unknown style={style}")
 
     if not isinstance(stats_val, str):
         stats_val = np.array(stats_val)
 
     out = bootstrap_confidence_interval(
-        x.values, stats_val=stats_val, axis=axis, alpha=alpha, style=style, **kws
+        x.values,
+        stats_val=stats_val,
+        axis=axis,
+        alpha=alpha,
+        style=style,
+        **kws,  # pyright: ignore
     )
 
     out_xr = xr.DataArray(
         out,
         dims=dims,
-        coords=template.coords,
+        coords=template.coords,  # pyright: ignore
         attrs=template.attrs,
         name=template.name,
         # indexes=template.indexes,
     )
-    if bootstrap_coords is not None:
-        out_xr.coords[bootstrap_dim] = bootstrap_coords
+
+    out_xr.coords[bootstrap_dim] = bootstrap_coords  # pyright: ignore
+
     return out_xr

@@ -55,6 +55,7 @@ dev-extras = [
 typing-extras = [
     "pytype; python_version < '3.11'", #
     "mypy >= 1.4.1",
+    "pandas-stubs",
 ]
 typing = [
     "cmomy[typing-extras]", #
@@ -303,6 +304,7 @@ warn_return_any = true
 warn_unused_configs = true
 exclude = [".eggs", ".tox", "doc", "docs", ".nox"]
 check_untyped_defs = true
+strict = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -315,6 +317,21 @@ module = []
 [tool.pyright]
 include = ["src"]
 exclude = ["**/__pycache__", ".tox/**", ".nox/**", "**/.mypy_cache"]
+strict = [
+    "src/cmomy/__init__.py",
+    "src/cmomy/_lazy_imports.py",
+    "src/cmomy/_typing.py",
+    "src/cmomy/abstract_central.py",
+    "src/cmomy/central.py",
+    "src/cmomy/xcentral.py",
+    "src/cmomy/convert.py",
+    "src/cmomy/docstrings.py",
+    "src/cmomy/options.py",
+    "src/cmomy/pusher_interface.py",
+    # "src/cmomy/pushers.py",
+    "src/cmomy/resample.py",
+    "src/cmomy/utils.py",
+]
 pythonVersion = "3.10"
 typeCheckingMode = "basic"
 # enable subset of "strict"

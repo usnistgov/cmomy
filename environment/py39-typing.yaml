@@ -16,6 +16,7 @@ dependencies:
   - lazy_loader
   - pytype
   - mypy >= 1.4.1
+  - pandas-stubs
   - pytest
   - pytest-xdist
   - pytest-cov

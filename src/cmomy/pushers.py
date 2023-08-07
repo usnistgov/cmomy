@@ -19,7 +19,7 @@ _bfac = factory_binomial(OPTIONS["nmax"])
 
 
 @myjit
-def _push_val(data, w, x):
+def _push_val(data, w, x):  # type: ignore
     if w == 0.0:
         return
 
@@ -61,14 +61,14 @@ def _push_val(data, w, x):
 
 
 @myjit
-def _push_vals(data, W, X):
+def _push_vals(data, W, X):  # type: ignore
     ns = X.shape[0]
     for s in range(ns):
         _push_val(data, W[s], X[s])
 
 
 @myjit
-def _push_vals_scale(data, W, X, scale):
+def _push_vals_scale(data, W, X, scale):  # type: ignore
     ns = X.shape[0]
     for s in range(ns):
         f = scale[s]
@@ -78,7 +78,7 @@ def _push_vals_scale(data, W, X, scale):
 
 
 @myjit
-def _push_stat(data, w, a, v):
+def _push_stat(data, w, a, v):  # type: ignore
     # w : weight
     # a : average
     # v[i] : <dx**(i+2)>
@@ -132,31 +132,31 @@ def _push_stat(data, w, a, v):
 
 
 @myjit
-def _push_stats(data, W, A, V):
+def _push_stats(data, W, A, V):  # type: ignore
     ns = A.shape[0]
     for s in range(ns):
         _push_stat(data, W[s], A[s], V[s, ...])
 
 
 @myjit
-def _push_data(data, data_in):
+def _push_data(data, data_in):  # type: ignore
     _push_stat(data, data_in[0], data_in[1], data_in[2:])
 
 
 @myjit
-def _push_datas(data, data_in):
+def _push_datas(data, data_in):  # type: ignore
     ns = data_in.shape[0]
     for s in range(ns):
         _push_stat(data, data_in[s, 0], data_in[s, 1], data_in[s, 2:])
 
 
 @myjit
-def _push_data_scale(data, data_in, scale):
+def _push_data_scale(data, data_in, scale):  # type: ignore
     _push_stat(data, data_in[0] * scale, data_in[1], data_in[2:])
 
 
 @myjit
-def _push_datas_scale(data, data_in, scale):
+def _push_datas_scale(data, data_in, scale):  # type: ignore
     ns = data_in.shape[0]
     for s in range(ns):
         f = scale[s]
@@ -167,14 +167,14 @@ def _push_datas_scale(data, data_in, scale):
 
 # Vector
 @myjit
-def _push_val_vec(data, w, x):
+def _push_val_vec(data, w, x):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_val(data[k, :], w[k], x[k])
 
 
 @myjit
-def _push_vals_vec(data, W, X):
+def _push_vals_vec(data, W, X):  # type: ignore
     ns = X.shape[0]
     nv = data.shape[0]
     for s in range(ns):
@@ -183,14 +183,14 @@ def _push_vals_vec(data, W, X):
 
 
 @myjit
-def _push_stat_vec(data, w, a, v):
+def _push_stat_vec(data, w, a, v):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_stat(data[k, :], w[k], a[k], v[k, :])
 
 
 @myjit
-def _push_stats_vec(data, W, A, V):
+def _push_stats_vec(data, W, A, V):  # type: ignore
     # V[sample, moment-2, value]
     ns = A.shape[0]
     nv = data.shape[0]
@@ -200,14 +200,14 @@ def _push_stats_vec(data, W, A, V):
 
 
 @myjit
-def _push_data_vec(data, data_in):
+def _push_data_vec(data, data_in):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_data(data[k, :], data_in[k, :])
 
 
 @myjit
-def _push_datas_vec(data, Data_in):
+def _push_datas_vec(data, Data_in):  # type: ignore
     ns = Data_in.shape[0]
     nv = data.shape[0]
     for s in range(ns):
@@ -216,7 +216,7 @@ def _push_datas_vec(data, Data_in):
 
 
 @myjit
-def _push_vals_scale_vec(data, W, X, scale):
+def _push_vals_scale_vec(data, W, X, scale):  # type: ignore
     ns = X.shape[0]
     nv = data.shape[0]
     for s in range(ns):
@@ -228,7 +228,7 @@ def _push_vals_scale_vec(data, W, X, scale):
 
 
 @myjit
-def _push_data_scale_vec(data, data_in, scale):
+def _push_data_scale_vec(data, data_in, scale):  # type: ignore
     nv = data.shape[0]
     if scale != 0:
         for k in range(nv):
@@ -236,7 +236,7 @@ def _push_data_scale_vec(data, data_in, scale):
 
 
 @myjit
-def _push_datas_scale_vec(data, Data_in, scale):
+def _push_datas_scale_vec(data, Data_in, scale):  # type: ignore
     ns = Data_in.shape[0]
     nv = data.shape[0]
     for s in range(ns):
@@ -253,7 +253,7 @@ def _push_datas_scale_vec(data, Data_in, scale):
 
 
 @myjit
-def _push_val_cov(data, w, x0, x1):
+def _push_val_cov(data, w, x0, x1):  # type: ignore
     if w == 0.0:
         return
 
@@ -327,14 +327,14 @@ def _push_val_cov(data, w, x0, x1):
 
 
 @myjit
-def _push_vals_cov(data, W, X1, X2):
+def _push_vals_cov(data, W, X1, X2):  # type: ignore
     ns = X1.shape[0]
     for s in range(ns):
         _push_val_cov(data, W[s], X1[s], X2[s])
 
 
 @myjit
-def _push_vals_scale_cov(data, W, X1, X2, scale):
+def _push_vals_scale_cov(data, W, X1, X2, scale):  # type: ignore
     ns = X1.shape[0]
     for s in range(ns):
         f = scale[s]
@@ -344,7 +344,7 @@ def _push_vals_scale_cov(data, W, X1, X2, scale):
 
 
 @myjit
-def _push_data_scale_cov(data, data_in, scale):
+def _push_data_scale_cov(data, data_in, scale):  # type: ignore
     w = data_in[0, 0] * scale
     if w == 0.0:
         return
@@ -422,19 +422,19 @@ def _push_data_scale_cov(data, data_in, scale):
 
 
 @myjit
-def _push_data_cov(data, data_in):
+def _push_data_cov(data, data_in):  # type: ignore
     _push_data_scale_cov(data, data_in, 1.0)
 
 
 @myjit
-def _push_datas_cov(data, datas):
+def _push_datas_cov(data, datas):  # type: ignore
     ns = datas.shape[0]
     for s in range(ns):
         _push_data_scale_cov(data, datas[s], 1.0)
 
 
 @myjit
-def _push_datas_scale_cov(data, datas, scale):
+def _push_datas_scale_cov(data, datas, scale):  # type: ignore
     ns = datas.shape[0]
     for s in range(ns):
         f = scale[s]
@@ -445,14 +445,14 @@ def _push_datas_scale_cov(data, datas, scale):
 
 # Vector
 @myjit
-def _push_val_cov_vec(data, w, x0, x1):
+def _push_val_cov_vec(data, w, x0, x1):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_val_cov(data[k, ...], w[k], x0[k], x1[k])
 
 
 @myjit
-def _push_vals_cov_vec(data, W, X0, X1):
+def _push_vals_cov_vec(data, W, X0, X1):  # type: ignore
     nv = data.shape[0]
     ns = X0.shape[0]
     for s in range(ns):
@@ -461,7 +461,7 @@ def _push_vals_cov_vec(data, W, X0, X1):
 
 
 @myjit
-def _push_vals_scale_cov_vec(data, W, X0, X1, scale):
+def _push_vals_scale_cov_vec(data, W, X0, X1, scale):  # type: ignore
     nv = data.shape[0]
     ns = X0.shape[0]
     for s in range(ns):
@@ -473,14 +473,14 @@ def _push_vals_scale_cov_vec(data, W, X0, X1, scale):
 
 
 @myjit
-def _push_data_cov_vec(data, data_in):
+def _push_data_cov_vec(data, data_in):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_data_scale_cov(data[k, ...], data_in[k, ...], 1.0)
 
 
 @myjit
-def _push_datas_cov_vec(data, Datas):
+def _push_datas_cov_vec(data, Datas):  # type: ignore
     nv = data.shape[0]
     ns = Datas.shape[0]
     for s in range(ns):
@@ -489,7 +489,7 @@ def _push_datas_cov_vec(data, Datas):
 
 
 @myjit
-def _push_data_scale_cov_vec(data, data_in, scale):
+def _push_data_scale_cov_vec(data, data_in, scale):  # type: ignore
     nv = data.shape[0]
     if scale > 0:
         for k in range(nv):
@@ -497,7 +497,7 @@ def _push_data_scale_cov_vec(data, data_in, scale):
 
 
 @myjit
-def _push_datas_scale_cov_vec(data, Datas, scale):
+def _push_datas_scale_cov_vec(data, Datas, scale):  # type: ignore
     nv = data.shape[0]
     ns = Datas.shape[0]
     for s in range(ns):

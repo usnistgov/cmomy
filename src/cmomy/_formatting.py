@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 """pretty formatting for notebook."""
 
 from typing import TYPE_CHECKING
@@ -38,16 +39,20 @@ def tuple_to_str(x):
 def numpy_section(x):
     """Create numpy array section."""
     # "unique" id to expand/collapse the section
-    data_id = "section-" + str(fm.uuid.uuid4())
+    # fmt: off
+    data_id = "section-" + str(fm.uuid.uuid4()) # type: ignore
     collapsed = (
         "checked"
-        if fm._get_boolean_with_default("display_expand_data", default=True)
+        if fm._get_boolean_with_default("display_expand_data", default=True) # type: ignore
         else ""
     )
-    preview = fm.escape(ff.format_array_flat(x, max_width=70))
+
+    preview = fm.escape(ff.format_array_flat(x, max_width=70)) # type: ignore
 
     # short data repr
-    text = fm.escape(short_numpy_repr(x))
+    text = fm.escape(short_numpy_repr(x)) # type: ignore
+    # fmt: on
+
     data_repr = f"<pre>{text}</pre>"
     data_icon = fm._icon("icon-database")
 

@@ -2,17 +2,9 @@
 
 from __future__ import annotations
 
-import os
 from typing import Any, Callable
 
 # Useful if doing any command line editing of doc string stuff
-
-try:
-    # Default to setting docs
-    DOC_SUB = os.getenv("DOCFILLER_SUB", "True").lower() not in ("0", "f", "false")
-except KeyError:
-    DOC_SUB = True
-
 
 NMAX = "nmax"
 FASTMATH = "fastmath"
@@ -20,7 +12,7 @@ PARALLEL = "parallel"
 CACHE = "cache"
 
 
-OPTIONS = {NMAX: 20, PARALLEL: True, CACHE: True, FASTMATH: True}
+OPTIONS: dict[str, Any] = {NMAX: 20, PARALLEL: True, CACHE: True, FASTMATH: True}
 
 
 def _isbool(x: Any) -> bool:
@@ -31,8 +23,8 @@ def _isint(x: Any) -> bool:
     return isinstance(x, int)
 
 
-def _isstr(x: Any) -> bool:
-    return isinstance(x, str)
+# def _isstr(x: Any) -> bool:
+#     return isinstance(x, str)
 
 
 _VALIDATORS: dict[str, Callable[[Any], bool]] = {
@@ -57,27 +49,26 @@ class set_options:
     - FASTMATH : bool, default=True
     """
 
-    def __init__(self, **kwargs):
-        self.old = {}
+    def __init__(self, **kwargs: Any) -> None:
+        self.old: dict[str, Any] = {}
         for k, v in kwargs.items():
             if k not in OPTIONS:
                 raise ValueError(
-                    "argument name %r is not in the set of valid options %r"
-                    % (k, set(OPTIONS))
+                    f"argument name {k!r} is not in the set of valid options {set(OPTIONS)!r}"
                 )
             if k in _VALIDATORS and not _VALIDATORS[k](v):
                 raise ValueError(f"option {k!r} given an invalid value: {v!r}")
             self.old[k] = OPTIONS[k]
         self._apply_update(kwargs)
 
-    def _apply_update(self, options_dict):
+    def _apply_update(self, options_dict: dict[str, Any]) -> None:
         for k, v in options_dict.items():
             if k in _SETTERS:
                 _SETTERS[k](v)
         OPTIONS.update(options_dict)
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         return
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
         self._apply_update(self.old)

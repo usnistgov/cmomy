@@ -7,7 +7,7 @@ _bfac = factory_binomial(OPTIONS["nmax"])
 
 
 @myjit
-def _central_to_raw_moments(central, raw):
+def _central_to_raw_moments(central, raw):  # type: ignore
     nv = central.shape[0]
     order = central.shape[1] - 1
 
@@ -32,7 +32,7 @@ def _central_to_raw_moments(central, raw):
 
 
 @myjit
-def _raw_to_central_moments(raw, central):
+def _raw_to_central_moments(raw, central):  # type: ignore
     nv = central.shape[0]
     order = central.shape[1] - 1
 
@@ -61,7 +61,7 @@ def _raw_to_central_moments(raw, central):
 
 # comoments
 @myjit
-def _central_to_raw_comoments(central, raw):
+def _central_to_raw_comoments(central, raw):  # type: ignore
     nv = central.shape[0]
     order0 = central.shape[1] - 1
     order1 = central.shape[2] - 1
@@ -102,7 +102,7 @@ def _central_to_raw_comoments(central, raw):
 
 
 @myjit
-def _raw_to_central_comoments(raw, central):
+def _raw_to_central_comoments(raw, central):  # type: ignore
     nv = central.shape[0]
     order0 = central.shape[1] - 1
     order1 = central.shape[2] - 1

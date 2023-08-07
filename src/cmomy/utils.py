@@ -1,8 +1,8 @@
 """Utilities."""
 from __future__ import annotations
 
-from functools import lru_cache
-from typing import TYPE_CHECKING, Sequence
+# from functools import lru_cache
+from typing import TYPE_CHECKING, Sequence, cast
 
 from ._lazy_imports import np
 from .options import OPTIONS
@@ -10,15 +10,15 @@ from .options import OPTIONS
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._typing import ArrayOrder
+    from ._typing import ArrayOrder, MyNDArray
 
 
-def myjit(func):
+def myjit(func):  # type: ignore # pyright: ignore
     """Jitter with option inline='always', fastmath=True."""
-    from numba import njit
+    from numba import njit  # pyright: ignore
 
     return njit(inline="always", fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"])(
-        func
+        func  # pyright: ignore
     )
 
 
@@ -29,7 +29,7 @@ def myjit(func):
 #     return bfac
 
 
-def _binom(n, k):
+def _binom(n: int, k: int) -> float:
     import math
 
     if n > k:
@@ -41,7 +41,7 @@ def _binom(n, k):
         return 0.0
 
 
-def factory_binomial(order: int, dtype: DTypeLike = float):
+def factory_binomial(order: int, dtype: DTypeLike = np.float_) -> MyNDArray:
     """Create binomial coefs at given order."""
     out = np.zeros((order + 1, order + 1), dtype=dtype)
     for n in range(order + 1):
@@ -65,14 +65,14 @@ def _shape_insert_axis(
     return shape[:axis] + (new_size,) + shape[axis:]
 
 
-def _shape_reduce(shape: tuple[int, ...], axis: int) -> tuple[int, ...]:
+def shape_reduce(shape: tuple[int, ...], axis: int) -> tuple[int, ...]:
     """Give shape shape after reducing along axis."""
     shape_list = list(shape)
     shape_list.pop(axis)
     return tuple(shape_list)
 
 
-def _axis_expand_broadcast(
+def axis_expand_broadcast(
     x: ArrayLike,
     shape: tuple[int, ...],
     axis: int | None,
@@ -82,7 +82,7 @@ def _axis_expand_broadcast(
     roll: bool = True,
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
-) -> np.ndarray:
+) -> MyNDArray:
     """
     Broadcast x to shape.
 
@@ -93,6 +93,7 @@ def _axis_expand_broadcast(
     if verify is True:
         x = np.asarray(x, dtype=dtype, order=order)
     else:
+        x = cast("MyNDArray", x)
         assert isinstance(x, np.ndarray)
 
     # if array, and 1d with size same as shape[axis]
@@ -102,7 +103,7 @@ def _axis_expand_broadcast(
         if x.ndim == 1 and x.ndim != len(shape):
             if axis is None:
                 raise ValueError("trying to expand an exis with axis==None")
-            if len(x) == shape[axis]:
+            if len(x) == shape[axis]:  # pyright: ignore
                 # reshape for broadcasting
                 reshape = (1,) * (len(shape) - 1)
                 reshape = _shape_insert_axis(reshape, axis, -1)
@@ -118,6 +119,6 @@ def _axis_expand_broadcast(
 # Mostly deprecated.  Keeping around for now.
 
 
-@lru_cache(maxsize=5)
-def _cached_ones(shape, dtype=None):
-    return np.ones(shape, dtype=dtype)
+# @lru_cache(maxsize=5)
+# def _cached_ones(shape: int | tuple[int, ...], dtype: DTypeLike=None) -> MyNDArray:
+#     return np.ones(shape, dtype=dtype)

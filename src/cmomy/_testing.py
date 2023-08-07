@@ -1,3 +1,4 @@
+# type: ignore
 """Common routings used in testing."""
 
 from ._lazy_imports import np

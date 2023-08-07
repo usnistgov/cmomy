@@ -4,7 +4,7 @@ from __future__ import annotations
 from module_utilities.docfiller import DocFiller
 
 
-def _dummy_docstrings():
+def _dummy_docstrings() -> None:
     """
     Parameters
     ----------
@@ -87,7 +87,7 @@ def _dummy_docstrings():
     """
 
 
-def _dummy_docstrings_central():
+def _dummy_docstrings_central() -> None:
     """
     Parameters
     ----------
@@ -96,7 +96,7 @@ def _dummy_docstrings_central():
     """
 
 
-def _dummy_docstrings_xcentral():
+def _dummy_docstrings_xcentral() -> None:
     """
     Parameters
     ----------
