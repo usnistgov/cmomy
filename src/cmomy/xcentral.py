@@ -894,21 +894,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     # ** Push/verify
     def _xverify_value(
         self,
+        *,
         x: MyNDArray | xr.DataArray | float,
-        target: str
-        | MyNDArray
-        | xr.DataArray
-        | tuple[Hashable, ...]
-        | str
-        | None = None,
+        target: str | MyNDArray | xr.DataArray | str | None = None,
         dim: Hashable | None = None,
         axis: int | None = None,
         broadcast: bool = False,
         expand: bool = False,
         shape_flat: Any | None = None,
-    ) -> (
-        tuple[MyNDArray, xr.DataArray] | MyNDArray | tuple[float, xr.DataArray] | float
-    ):
+    ) -> tuple[MyNDArray, xr.DataArray]:
         if isinstance(target, str):
             # if dim is not None:
             #     if isinstance(dim, int):
@@ -1001,26 +995,23 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         if values.ndim == 0:
             values = values[()]
 
-        if target_output is None:
-            return values
-        else:
-            return values, target_output
+        return values, target_output
 
     def _verify_value(
         self,
+        *,
         x: float | MyNDArray | xr.DataArray,
         target: str | MyNDArray | xr.DataArray | tuple[int, ...] | None = None,
+        shape_flat: tuple[int, ...] | None = None,
         axis: int | None = None,
         dim: Hashable | None = None,
         broadcast: bool = False,
         expand: bool = False,
         other: MyNDArray | None = None,
-        shape_flat: tuple[int, ...] | None = None,
-        **kwargs: Any,
     ) -> Any:
         if isinstance(x, xr.DataArray) or isinstance(target, xr.DataArray):
             return self._xverify_value(
-                x,
+                x=x,
                 target=target,
                 axis=axis,
                 dim=dim,
@@ -1035,8 +1026,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
                 axis, int
             ), f"Error with axis value {axis}"
 
-            return self.centralmoments_view._verify_value(
-                x,
+            return self.centralmoments_view._verify_value(  # pyright: ignore
+                x=x,
                 target=target,
                 axis=axis,
                 broadcast=broadcast,
@@ -1061,7 +1052,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         dim: Hashable | None = None,
         **kwargs: Any,
     ) -> Self:
-        return super().push_datas(datas=datas, axis=axis, dim=dim, **kwargs)
+        return super().push_datas(datas=datas, axis=axis, dim=dim)
 
     @docfiller_inherit_abc()
     def push_val(
@@ -1089,7 +1080,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         **kwargs: Any,
     ) -> Self:
         return super().push_vals(
-            x=x, w=w, axis=axis, broadcast=broadcast, dim=dim, **kwargs
+            x=x,
+            w=w,
+            axis=axis,
+            broadcast=broadcast,
+            dim=dim,
         )
 
     # ** Manipulation

@@ -622,15 +622,15 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
     def _verify_value(
         self,
+        *,
         x: float | ArrayLike | MyNDArray,
-        target: MyNDArray | tuple[int, ...] | str | None = None,
+        target: str | MyNDArray,
+        shape_flat: tuple[int, ...],
         axis: int | None = None,
-        dim: Hashable | None = None,  # included here for consistency
+        dim: Hashable | None = None,  # pyright: ignore # included here for consistency
         broadcast: bool = False,
         expand: bool = False,
         other: MyNDArray | None = None,
-        shape_flat: tuple[int, ...] | None = None,
-        **kwargs: Any,
     ) -> MyNDArray | tuple[MyNDArray, MyNDArray]:
         """
         Verify input values.
@@ -653,13 +653,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             )
             target_output = x
 
-        elif isinstance(target, tuple):
-            target_shape = target
-            target_output = x
-
-        elif isinstance(target, np.ndarray):
+        elif isinstance(target, np.ndarray):  # pyright: ignore
             target_shape = target.shape
-            target_output = None
+            target_output = target
 
         else:
             raise ValueError("unknown target type")
@@ -689,16 +685,12 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         else:
             nrec = ()
 
-        if shape_flat is not None:
-            x = x.reshape(nrec + shape_flat)
+        x = x.reshape(nrec + shape_flat)
 
         if x.ndim == 0:
             x = x[()]
 
-        if target_output is None:
-            return x
-        else:
-            return x, target_output
+        return x, target_output
 
     @docfiller_inherit_abc()
     def push_data(self, data: MyNDArray) -> Self:
@@ -753,7 +745,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5816,  0.0761])
         """
-        return super().push_datas(datas=datas, axis=axis or 0, **kwargs)
+        return super().push_datas(datas=datas, axis=axis or 0)
 
     @docfiller_inherit_abc()
     def push_val(
@@ -766,7 +758,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         | tuple[MyNDArray, MyNDArray],
         w: MyNDArray | float | None = None,
         broadcast: bool = False,
-        **kwargs: Any,
     ) -> Self:
         """
         Examples
@@ -805,7 +796,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                 [ 6.4172e-02,  9.6487e-03,  6.3702e-03]]])
 
         """
-        return super().push_val(x=x, w=w, broadcast=broadcast, **kwargs)
+        return super().push_val(x=x, w=w, broadcast=broadcast)
 
     @docfiller_inherit_abc()
     def push_vals(
@@ -850,7 +841,10 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         """
         return super().push_vals(
-            x=x, w=w, axis=axis or 0, broadcast=broadcast, **kwargs
+            x=x,
+            w=w,
+            axis=axis or 0,
+            broadcast=broadcast,
         )
 
     ###########################################################################
@@ -1644,9 +1638,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         """Push statistics onto self."""
         self._raise_if_not_1d(self.mom_ndim)
 
-        ar, target = self._check_val(a, target="val")
-        vr = self._check_var(v, broadcast=broadcast)
-        wr = self._check_weight(w, target=target)
+        ar, target = self._check_val(x=a, target="val")
+        vr = self._check_var(v=v, broadcast=broadcast)
+        wr = self._check_weight(w=w, target=target)
         self._push.stat(self._data_flat, wr, ar, vr)  # type: ignore
         return self
 
@@ -1661,9 +1655,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         """Push multiple statistics onto self."""
         self._raise_if_not_1d(self.mom_ndim)
 
-        ar, target = self._check_vals(a, target="vals", axis=axis)
-        vr = self._check_vars(v, target=target, axis=axis, broadcast=broadcast)
-        wr = self._check_weights(w, target=target, axis=axis)
+        ar, target = self._check_vals(x=a, target="vals", axis=axis)
+        vr = self._check_vars(v=v, target=target, axis=axis, broadcast=broadcast)
+        wr = self._check_weights(w=w, target=target, axis=axis)
         self._push.stats(self._data_flat, wr, ar, vr)  # type: ignore
         return self
 

@@ -450,118 +450,143 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @abstractmethod
     def _verify_value(
         self,
-        x: float | ArrayLike | MyNDArray | T_Array,
-        target: str | MyNDArray | T_Array | None = None,
+        *,
+        x: float | ArrayLike | T_Array,
+        target: str | MyNDArray | T_Array,
+        shape_flat: tuple[int, ...],
         axis: int | None = None,
         dim: Hashable | None = None,  # included here for consistency
         broadcast: bool = False,
         expand: bool = False,
         other: MyNDArray | None = None,
-        **kwargs: Any,
-    ) -> Any:
+    ) -> tuple[MyNDArray, MyNDArray]:
         pass
 
     def _check_weight(
         self,
-        w: float | MyNDArray | T_Array | None,
-        target: str | MyNDArray | None,
-        **kwargs: Any,
-    ) -> Any:
+        *,
+        w: float | ArrayLike | T_Array | None,
+        target: MyNDArray | T_Array,
+    ) -> MyNDArray:
         if w is None:
             w = 1.0
         return self._verify_value(
-            w,
+            x=w,
             target=target,
+            shape_flat=self.val_shape_flat,
             broadcast=True,
             expand=True,
-            shape_flat=self.val_shape_flat,
-            **kwargs,
-        )
+        )[0]
 
     def _check_weights(  # type: ignore
         self,
-        w: Any,
-        target: Any,
+        *,
+        w: float | ArrayLike | T_Array | None,
+        target: MyNDArray,
         axis: int | None = None,
-        **kwargs: Any,
-    ):
+        dim: Hashable | None = None,
+    ) -> MyNDArray:
         if w is None:
             w = 1.0
         return self._verify_value(
-            w,
+            x=w,
             target=target,
+            shape_flat=self.val_shape_flat,
             axis=axis,
+            dim=dim,
             broadcast=True,
             expand=True,
-            shape_flat=self.val_shape_flat,
-            **kwargs,
-        )
+        )[0]
 
     def _check_val(  # type: ignore
         self,
+        *,
         x: float | ArrayLike | T_Array,
         target: str | MyNDArray,
         broadcast: bool = False,
-        **kwargs: Any,
-    ):
+    ) -> tuple[MyNDArray, MyNDArray]:
         return self._verify_value(
-            x,
+            x=x,
             target=target,
+            shape_flat=self.val_shape_flat,
             broadcast=broadcast,
             expand=False,
-            shape_flat=self.val_shape_flat,
-            **kwargs,
         )
 
-    def _check_vals(self, x: Any, target: Any, axis: int | None, broadcast: bool = False, **kwargs):  # type: ignore
+    def _check_vals(
+        self,
+        *,
+        x: float | ArrayLike | T_Array,
+        target: str | MyNDArray,
+        axis: int | None,
+        broadcast: bool = False,
+        dim: Hashable | None = None,
+    ) -> tuple[MyNDArray, MyNDArray]:
         return self._verify_value(
-            x,
+            x=x,
             target=target,
+            shape_flat=self.val_shape_flat,
             axis=axis,
+            dim=dim,
             broadcast=broadcast,
             expand=broadcast,
-            shape_flat=self.val_shape_flat,
-            **kwargs,
         )
 
-    def _check_var(self, v: Any, broadcast: bool = False, **kwargs: Any):  # type: ignore
+    def _check_var(
+        self, *, v: float | ArrayLike | T_Array, broadcast: bool = False
+    ) -> MyNDArray:
         return self._verify_value(
-            v,
-            target="var",  # self.shape_var,
+            x=v,
+            target="var",
+            shape_flat=self.shape_flat_var,
             broadcast=broadcast,
             expand=False,
-            shape_flat=self.shape_flat_var,
-            **kwargs,
         )[0]
 
-    def _check_vars(self, v: Any, target: Any, axis: int | None, broadcast: bool = False, **kwargs: Any):  # type: ignore
+    def _check_vars(
+        self,
+        *,
+        v: float | ArrayLike | T_Array,
+        target: MyNDArray,
+        axis: int | None,
+        broadcast: bool = False,
+        dim: Hashable | None = None,
+    ) -> MyNDArray:
         return self._verify_value(
-            v,
+            x=v,
             target="vars",
+            shape_flat=self.shape_flat_var,
             axis=axis,
+            dim=dim,
             broadcast=broadcast,
             expand=broadcast,
-            shape_flat=self.shape_flat_var,
             other=target,
-            **kwargs,
         )[0]
 
-    def _check_data(self, data: Any, **kwargs: Any) -> MyNDArray:
-        return self._verify_value(  # type: ignore
-            data, target="data", shape_flat=self.shape_flat, **kwargs
-        )[0]
-
-    def _check_datas(self, datas: Any, axis: int, **kwargs: Any) -> MyNDArray:
-        return self._verify_value(  # type: ignore
-            datas,
-            target="datas",
-            axis=axis,
+    def _check_data(self, *, data: ArrayLike | T_Array) -> MyNDArray:
+        return self._verify_value(
+            x=data,
+            target="data",
             shape_flat=self.shape_flat,
-            **kwargs,
+        )[0]
+
+    def _check_datas(
+        self,
+        *,
+        datas: ArrayLike | T_Array,
+        axis: int | None,
+        dim: Hashable | None = None,
+    ) -> MyNDArray:
+        return self._verify_value(
+            x=datas,
+            target="datas",
+            shape_flat=self.shape_flat,
+            axis=axis,
+            dim=dim,
         )[0]
 
     @docfiller.decorate
-    def push_data(self, data: Any) -> Self:
+    def push_data(self, data: ArrayLike | T_Array) -> Self:
         """
         Push data object to moments.
 
@@ -575,14 +600,14 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         output : {klass}
             Same object with pushed data.
         """
-        data = self._check_data(data)
+        data = self._check_data(data=data)
         self._push.data(self._data_flat, data)
         return self
 
     @docfiller.decorate
     def push_datas(
         self,
-        datas: MyNDArray | T_Array,
+        datas: ArrayLike | T_Array,
         axis: int | None = None,
         **kwargs: Any,
     ) -> Self:
@@ -611,9 +636,8 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def push_val(
         self,
         x: float | ArrayLike | T_Array,
-        w: Any = None,
+        w: float | ArrayLike | T_Array | None = None,
         broadcast: bool = False,
-        **kwargs: Any,
     ) -> Self:
         """
         Push single sample to central moments.
@@ -645,17 +669,17 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             assert isinstance(x, tuple) and len(x) == self.mom_ndim
             x, *ys = x
 
-        xr, target = self._check_val(x, "val", **kwargs)
-        yr = tuple(self._check_val(y, target=target, broadcast=broadcast) for y in ys)  # type: ignore
-        wr = self._check_weight(w, target)
+        xr, target = self._check_val(x=x, target="val")
+        yr = tuple(self._check_val(x=y, target=target, broadcast=broadcast)[0] for y in ys)  # type: ignore
+        wr = self._check_weight(w=w, target=target)
         self._push.val(self._data_flat, *((wr, xr) + yr))
         return self
 
     @docfiller.decorate
     def push_vals(
         self,
-        x: Any,
-        w: Any,
+        x: ArrayLike | T_Array,
+        w: float | ArrayLike | T_Array | None,
         axis: int | None = None,
         broadcast: bool = False,
         **kwargs: Any,
@@ -686,13 +710,14 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             x, *ys = x
 
         # fmt: off
-        xr, target = self._check_vals(x, axis=axis, target="vals", **kwargs)
+        xr, target = self._check_vals(x=x, axis=axis, target="vals", **kwargs)
         yr = tuple( # type: ignore
-            self._check_vals(y, target=target, axis=axis, broadcast=broadcast, **kwargs)
+            self._check_vals(x=y, target=target, axis=axis, broadcast=broadcast, **kwargs)[0]
             for y in ys
         )
         # fmt: on
-        wr = self._check_weights(w, target=target, axis=axis, **kwargs)
+        wr = self._check_weights(w=w, target=target, axis=axis, **kwargs)
+
         self._push.vals(self._data_flat, *((wr, xr) + yr))
         return self
 
