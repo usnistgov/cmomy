@@ -1,6 +1,4 @@
 """Base class for central moments calculations."""
-
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -26,8 +24,10 @@ from .docstrings import docfiller
 from .pushers import Pusher, factory_pushers
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import DTypeLike
     from typing_extensions import Self
+
+    from ._typing import MultiArray, MultiArrayVals
 
 
 # * TODO Main
@@ -451,7 +451,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def _verify_value(
         self,
         *,
-        x: float | ArrayLike | T_Array,
+        x: MultiArray[T_Array],
         target: str | MyNDArray | T_Array,
         shape_flat: tuple[int, ...],
         axis: int | None = None,
@@ -459,13 +459,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         broadcast: bool = False,
         expand: bool = False,
         other: MyNDArray | None = None,
-    ) -> tuple[MyNDArray, MyNDArray]:
+    ) -> tuple[MyNDArray, MyNDArray | T_Array]:
         pass
 
     def _check_weight(
         self,
         *,
-        w: float | ArrayLike | T_Array | None,
+        w: MultiArray[T_Array] | None,
         target: MyNDArray | T_Array,
     ) -> MyNDArray:
         if w is None:
@@ -478,11 +478,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             expand=True,
         )[0]
 
-    def _check_weights(  # type: ignore
+    def _check_weights(
         self,
         *,
-        w: float | ArrayLike | T_Array | None,
-        target: MyNDArray,
+        w: MultiArray[T_Array] | None,
+        target: MyNDArray | T_Array,
         axis: int | None = None,
         dim: Hashable | None = None,
     ) -> MyNDArray:
@@ -498,13 +498,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             expand=True,
         )[0]
 
-    def _check_val(  # type: ignore
+    def _check_val(
         self,
         *,
-        x: float | ArrayLike | T_Array,
-        target: str | MyNDArray,
+        x: MultiArray[T_Array],
+        target: str | MyNDArray | T_Array,
         broadcast: bool = False,
-    ) -> tuple[MyNDArray, MyNDArray]:
+    ) -> tuple[MyNDArray, MyNDArray | T_Array]:
         return self._verify_value(
             x=x,
             target=target,
@@ -516,12 +516,12 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def _check_vals(
         self,
         *,
-        x: float | ArrayLike | T_Array,
-        target: str | MyNDArray,
+        x: MultiArrayVals[T_Array],
+        target: str | MyNDArray | T_Array,
         axis: int | None,
         broadcast: bool = False,
         dim: Hashable | None = None,
-    ) -> tuple[MyNDArray, MyNDArray]:
+    ) -> tuple[MyNDArray, MyNDArray | T_Array]:
         return self._verify_value(
             x=x,
             target=target,
@@ -533,7 +533,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         )
 
     def _check_var(
-        self, *, v: float | ArrayLike | T_Array, broadcast: bool = False
+        self, *, v: MultiArray[T_Array], broadcast: bool = False
     ) -> MyNDArray:
         return self._verify_value(
             x=v,
@@ -546,12 +546,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def _check_vars(
         self,
         *,
-        v: float | ArrayLike | T_Array,
-        target: MyNDArray,
+        v: MultiArrayVals[T_Array],
+        target: MyNDArray | T_Array,
         axis: int | None,
         broadcast: bool = False,
         dim: Hashable | None = None,
     ) -> MyNDArray:
+        assert isinstance(target, np.ndarray)
         return self._verify_value(
             x=v,
             target="vars",
@@ -563,7 +564,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             other=target,
         )[0]
 
-    def _check_data(self, *, data: ArrayLike | T_Array) -> MyNDArray:
+    def _check_data(self, *, data: MultiArrayVals[T_Array]) -> MyNDArray:
         return self._verify_value(
             x=data,
             target="data",
@@ -573,7 +574,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def _check_datas(
         self,
         *,
-        datas: ArrayLike | T_Array,
+        datas: MultiArrayVals[T_Array],
         axis: int | None,
         dim: Hashable | None = None,
     ) -> MyNDArray:
@@ -586,7 +587,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         )[0]
 
     @docfiller.decorate
-    def push_data(self, data: ArrayLike | T_Array) -> Self:
+    def push_data(self, data: MultiArrayVals[T_Array]) -> Self:
         """
         Push data object to moments.
 
@@ -607,7 +608,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @docfiller.decorate
     def push_datas(
         self,
-        datas: ArrayLike | T_Array,
+        datas: MultiArrayVals[T_Array],
         axis: int | None = None,
         **kwargs: Any,
     ) -> Self:
@@ -628,15 +629,15 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             Same object with pushed data.
         """
 
-        datas = self._check_datas(datas=datas, axis=axis, **kwargs)  # type: ignore
+        datas = self._check_datas(datas=datas, axis=axis, **kwargs)
         self._push.datas(self._data_flat, datas)
         return self
 
     @docfiller.decorate
     def push_val(
         self,
-        x: float | ArrayLike | T_Array,
-        w: float | ArrayLike | T_Array | None = None,
+        x: MultiArray[T_Array] | tuple[MultiArray[T_Array], MultiArray[T_Array]],
+        w: MultiArray[T_Array] | None = None,
         broadcast: bool = False,
     ) -> Self:
         """
@@ -669,7 +670,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             assert isinstance(x, tuple) and len(x) == self.mom_ndim
             x, *ys = x
 
-        xr, target = self._check_val(x=x, target="val")
+        xr, target = self._check_val(x=x, target="val")  # type: ignore
         yr = tuple(self._check_val(x=y, target=target, broadcast=broadcast)[0] for y in ys)  # type: ignore
         wr = self._check_weight(w=w, target=target)
         self._push.val(self._data_flat, *((wr, xr) + yr))
@@ -678,8 +679,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @docfiller.decorate
     def push_vals(
         self,
-        x: ArrayLike | T_Array,
-        w: float | ArrayLike | T_Array | None,
+        x: MultiArrayVals[T_Array]
+        | tuple[MultiArrayVals[T_Array], MultiArrayVals[T_Array]],
+        w: MultiArray[T_Array] | None = None,
         axis: int | None = None,
         broadcast: bool = False,
         **kwargs: Any,
@@ -706,11 +708,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         if self.mom_ndim == 1:
             ys = ()
         else:
-            assert len(x) == self.mom_ndim
+            assert isinstance(x, tuple) and len(x) == self.mom_ndim
             x, *ys = x
 
         # fmt: off
-        xr, target = self._check_vals(x=x, axis=axis, target="vals", **kwargs)
+        xr, target = self._check_vals(x=x, axis=axis, target="vals", **kwargs) # type: ignore
         yr = tuple( # type: ignore
             self._check_vals(x=y, target=target, axis=axis, broadcast=broadcast, **kwargs)[0]
             for y in ys

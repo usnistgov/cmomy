@@ -16,6 +16,8 @@ from typing import (
     Union,
 )
 
+from numpy.typing import ArrayLike
+
 if TYPE_CHECKING:
     import pandas as pd
     import xarray as xr
@@ -56,8 +58,7 @@ XArrayIndexesType: TypeAlias = Any
 
 # literals
 VerifyValuesStyles = Literal["val", "vals", "data", "datas", "var", "vars"]
-# _VerifyValuesStyles_list = list(get_args(VerifyValuesStyles))
 
-
-# def is_verifyvaluesstyle(style: str) -> TypeGuard[VerifyValuesStyles]:
-#     return style in _VerifyValuesStyles_list
+# pushing arrays
+MultiArray = Union[float, ArrayLike, T_Array]
+MultiArrayVals = Union[ArrayLike, T_Array]

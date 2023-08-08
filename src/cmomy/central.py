@@ -24,6 +24,8 @@ if TYPE_CHECKING:
         Mom_NDim,
         MomDims,
         Moments,
+        MultiArray,
+        MultiArrayVals,
         VerifyValuesStyles,
         XArrayAttrsType,
         XArrayCoordsType,
@@ -623,7 +625,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     def _verify_value(
         self,
         *,
-        x: float | ArrayLike | MyNDArray,
+        x: MultiArray[MyNDArray],
         target: str | MyNDArray,
         shape_flat: tuple[int, ...],
         axis: int | None = None,
@@ -631,7 +633,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         broadcast: bool = False,
         expand: bool = False,
         other: MyNDArray | None = None,
-    ) -> MyNDArray | tuple[MyNDArray, MyNDArray]:
+    ) -> tuple[MyNDArray, MyNDArray]:
         """
         Verify input values.
 
@@ -693,7 +695,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         return x, target_output
 
     @docfiller_inherit_abc()
-    def push_data(self, data: MyNDArray) -> Self:
+    def push_data(self, data: MultiArrayVals[MyNDArray]) -> Self:
         """
         Examples
         --------
@@ -723,7 +725,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def push_datas(
         self,
-        datas: MyNDArray,
+        datas: MultiArray[MyNDArray],
         axis: int | None = 0,
         **kwargs: Any,
     ) -> Self:
@@ -750,13 +752,8 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: float
-        | tuple[float, float]
-        | ArrayLike
-        | tuple[ArrayLike, ArrayLike]
-        | MyNDArray
-        | tuple[MyNDArray, MyNDArray],
-        w: MyNDArray | float | None = None,
+        x: MultiArray[MyNDArray] | tuple[MultiArray[MyNDArray], MultiArray[MyNDArray]],
+        w: MultiArray[MyNDArray] | None = None,
         broadcast: bool = False,
     ) -> Self:
         """
@@ -801,8 +798,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def push_vals(
         self,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray],
-        w: float | MyNDArray | None = None,
+        x: MultiArrayVals[MyNDArray]
+        | tuple[MultiArrayVals[MyNDArray], MultiArrayVals[MyNDArray]],
+        w: MultiArray[MyNDArray] | None = None,
         axis: int | None = 0,
         broadcast: bool = False,
         **kwargs: Any,
@@ -1630,9 +1628,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     # special, 1d only methods
     def push_stat(
         self,
-        a: MyNDArray | float,
-        v: MyNDArray | float = 0.0,
-        w: MyNDArray | float | None = None,
+        a: MultiArray[MyNDArray],
+        v: MultiArray[MyNDArray] = 0.0,
+        w: MultiArray[MyNDArray] | None = None,
         broadcast: bool = True,
     ) -> Self:
         """Push statistics onto self."""
@@ -1646,9 +1644,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
     def push_stats(
         self,
-        a: MyNDArray,
-        v: MyNDArray | float = 0.0,
-        w: MyNDArray | float | None = None,
+        a: MultiArrayVals[MyNDArray],
+        v: MultiArray[MyNDArray] = 0.0,
+        w: MultiArray[MyNDArray] | None = None,
         axis: int = 0,
         broadcast: bool = True,
     ) -> Self:

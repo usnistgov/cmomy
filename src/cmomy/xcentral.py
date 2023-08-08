@@ -33,6 +33,8 @@ if TYPE_CHECKING:
         Mom_NDim,
         MomDims,
         Moments,
+        MultiArray,
+        MultiArrayVals,
         MyNDArray,
         XArrayAttrsType,
         XArrayCoordsType,
@@ -895,7 +897,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     def _xverify_value(
         self,
         *,
-        x: MyNDArray | xr.DataArray | float,
+        x: MultiArray[xr.DataArray],
         target: str | MyNDArray | xr.DataArray | str | None = None,
         dim: Hashable | None = None,
         axis: int | None = None,
@@ -903,6 +905,12 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         expand: bool = False,
         shape_flat: Any | None = None,
     ) -> tuple[MyNDArray, xr.DataArray]:
+        if isinstance(x, xr.DataArray):
+            x = x.astype(dtype=self.dtype, copy=False)
+        else:
+            x = np.asarray(x, dtype=self.dtype)
+
+        target_dims: None | tuple[Hashable, ...] = None
         if isinstance(target, str):
             # if dim is not None:
             #     if isinstance(dim, int):
@@ -916,20 +924,19 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
                 axis, dim = _select_axis_dim(dims=x.dims, axis=axis, dim=dim)
 
             if target == "val":
-                target = self.val_dims
+                target_dims = self.val_dims
             elif target == "vals":
-                target = (dim,) + self.val_dims
+                target_dims = (dim,) + self.val_dims
             elif target == "data":
-                target = self.dims
+                target_dims = self.dims
             elif target == "datas":
-                target = (dim,) + self.dims
+                target_dims = (dim,) + self.dims
+            else:
+                raise ValueError(f"unknown option to xverify {target}")
 
-        if isinstance(target, tuple):
+        if target_dims is not None:
             # no broadcast in this cast
             assert isinstance(x, xr.DataArray)
-
-            target_dims = target
-
             target_shape = tuple(
                 x.sizes[k] if k == dim else self.sizes[k] for k in target_dims
             )
@@ -937,14 +944,16 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             # make sure in correct order
             x = x.transpose(*target_dims)
             target_output = x
-            values = x.values
+            values = cast("MyNDArray", x.values)
 
         else:
             assert isinstance(target, xr.DataArray)
+            target = target.astype(dtype=self.dtype, copy=False)
+
             target_dims = target.dims
             target_shape = target.shape
 
-            target_output = None
+            target_output = target
 
             if dim is not None and axis is not None:
                 axis = None
@@ -961,7 +970,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
                 else:
                     x = x.transpose(*target_dims)
 
-                values = x.values
+                values = cast("MyNDArray", x.values)
             else:
                 # only things this can be is either a scalar or
                 # array with same size as target
@@ -973,13 +982,13 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
                 elif x.ndim == 0 and broadcast and expand:
                     x = xr.DataArray(x).broadcast_like(target)
-                    values = x.values
+                    values = cast("MyNDArray", x.values)
 
                 elif (
                     x.ndim == 1 and len(x) == target.sizes[dim] and broadcast and expand
                 ):
                     x = xr.DataArray(x, dims=dim).broadcast_like(target)
-                    values = x.values
+                    values = cast("MyNDArray", x.values)
 
         # check shape
         assert values.shape == target_shape
@@ -1000,15 +1009,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     def _verify_value(
         self,
         *,
-        x: float | MyNDArray | xr.DataArray,
-        target: str | MyNDArray | xr.DataArray | tuple[int, ...] | None = None,
-        shape_flat: tuple[int, ...] | None = None,
+        x: MultiArray[xr.DataArray],
+        target: str | MyNDArray | xr.DataArray,
+        shape_flat: tuple[int, ...],
         axis: int | None = None,
         dim: Hashable | None = None,
         broadcast: bool = False,
         expand: bool = False,
         other: MyNDArray | None = None,
-    ) -> Any:
+    ) -> tuple[MyNDArray, MyNDArray | xr.DataArray]:
         if isinstance(x, xr.DataArray) or isinstance(target, xr.DataArray):
             return self._xverify_value(
                 x=x,
@@ -1040,14 +1049,14 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     @docfiller_inherit_abc()
     def push_data(
         self,
-        data: MyNDArray | xr.DataArray,
+        data: MultiArrayVals[xr.DataArray],
     ) -> Self:
         return super().push_data(data=data)
 
     @docfiller_inherit_abc()
     def push_datas(
         self,
-        datas: MyNDArray | xr.DataArray,
+        datas: MultiArrayVals[xr.DataArray],
         axis: int | None = None,
         dim: Hashable | None = None,
         **kwargs: Any,
@@ -1057,11 +1066,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: float
-        | MyNDArray
-        | xr.DataArray
-        | tuple[float | MyNDArray | xr.DataArray, float | MyNDArray | xr.DataArray],
-        w: float | MyNDArray | xr.DataArray | None = None,
+        x: MultiArray[xr.DataArray]
+        | tuple[MultiArray[xr.DataArray], MultiArray[xr.DataArray]],
+        w: MultiArray[xr.DataArray] | None = None,
         broadcast: bool = False,
         **kwargs: Any,
     ) -> Self:
@@ -1070,10 +1077,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     @docfiller_inherit_abc()
     def push_vals(
         self,
-        x: MyNDArray
-        | xr.DataArray
-        | tuple[MyNDArray | xr.DataArray, MyNDArray | xr.DataArray],
-        w: float | MyNDArray | xr.DataArray | None = None,
+        x: MultiArrayVals[xr.DataArray]
+        | tuple[MultiArrayVals[xr.DataArray], MultiArrayVals[xr.DataArray]],
+        w: MultiArray[xr.DataArray] | None = None,
         axis: int | None = None,
         broadcast: bool = False,
         dim: Hashable | None = None,
