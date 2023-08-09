@@ -31,6 +31,7 @@ MyDType: TypeAlias = Any
 MyNDArray: TypeAlias = "NDArray[MyDType]"
 
 Moments: TypeAlias = "int | tuple[int] | tuple[int, int]"
+MomentsStrict: TypeAlias = "tuple[int] | tuple[int, int]"
 XvalStrict: TypeAlias = "MyNDArray | tuple[MyNDArray, MyNDArray]"
 ArrayOrder = Literal["C", "F", "A", "K", None]
 

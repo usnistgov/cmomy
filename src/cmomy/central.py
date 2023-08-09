@@ -4,22 +4,21 @@ Central moments/comoments routines from :class:`np.ndarray` objects
 """
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Hashable, Mapping, cast, overload
+from typing import TYPE_CHECKING, cast, overload
 
 from . import convert
 from ._lazy_imports import np, xr
 from .abstract_central import CentralMomentsABC
 from .docstrings import docfiller_central as docfiller
-from .resample import randsamp_freq, resample_data, resample_vals
-from .utils import _shape_insert_axis, axis_expand_broadcast, shape_reduce
+from .utils import axis_expand_broadcast, shape_reduce
 
 if TYPE_CHECKING:
-    from typing import Literal
+    from typing import Any, Hashable, Literal, Mapping
 
     from numpy.typing import ArrayLike, DTypeLike
     from typing_extensions import Self
 
-    from ._typing import (
+    from .typing import (
         ArrayOrder,
         Mom_NDim,
         MomDims,
@@ -36,7 +35,7 @@ if TYPE_CHECKING:
     from .xcentral import xCentralMoments
 
 
-from ._typing import MyNDArray
+from .typing import MyNDArray
 
 
 ###############################################################################
@@ -83,18 +82,18 @@ def _central_moments(
             out = np.moveaxis(out, -1, 0)
         assert out.shape == shape
 
-    wsum = w.sum(axis=0)
+    wsum = w.sum(axis=0)  # pyright: ignore
     wsum_inv = 1.0 / wsum
-    xave = np.einsum("r...,r...->...", w, x) * wsum_inv
+    xave = np.einsum("r...,r...->...", w, x) * wsum_inv  # pyright: ignore
 
     shape = (-1,) + (1,) * (x.ndim)
-    p = np.arange(2, mom + 1).reshape(*shape)
+    p = np.arange(2, mom + 1).reshape(*shape)  # pyright: ignore
 
     dx = (x[None, ...] - xave) ** p
 
     out[0, ...] = wsum
     out[1, ...] = xave
-    out[2:, ...] = np.einsum("r..., mr...->m...", w, dx) * wsum_inv
+    out[2:, ...] = np.einsum("r..., mr...->m...", w, dx) * wsum_inv  # pyright: ignore
 
     if last:
         out = np.moveaxis(out, 0, -1)
@@ -165,20 +164,22 @@ def _central_comoments(
             out = np.moveaxis(out, [-2, -1], [0, 1])
         assert out.shape == shape
 
-    wsum = w.sum(axis=0)
+    wsum = w.sum(axis=0)  # pyright: ignore
     wsum_inv = 1.0 / wsum
 
-    xave = np.einsum("r...,r...->...", w, x) * wsum_inv
-    yave = np.einsum("r...,r...->...", w, y) * wsum_inv
+    xave = np.einsum("r...,r...->...", w, x) * wsum_inv  # pyright: ignore
+    yave = np.einsum("r...,r...->...", w, y) * wsum_inv  # pyright: ignore
 
     shape = (-1,) + (1,) * (x.ndim)
-    p0 = np.arange(0, mom[0] + 1).reshape(*shape)
-    p1 = np.arange(0, mom[1] + 1).reshape(*shape)
+    p0 = np.arange(0, mom[0] + 1).reshape(*shape)  # pyright: ignore
+    p1 = np.arange(0, mom[1] + 1).reshape(*shape)  # pyright: ignore
 
     dx = (x[None, ...] - xave) ** p0
     dy = (y[None, ...] - yave) ** p1
 
-    out[...] = np.einsum("r...,ir...,jr...->ij...", w, dx, dy) * wsum_inv
+    out[...] = (
+        np.einsum("r...,ir...,jr...->ij...", w, dx, dy) * wsum_inv  # pyright: ignore
+    )  # pyright: ignore
 
     out[0, 0, ...] = wsum
     out[1, 0, ...] = xave
@@ -318,7 +319,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                 "or 2 (for central comoments)"
             )
 
-        if not isinstance(data, np.ndarray):
+        if not isinstance(data, np.ndarray):  # pyright: ignore
             raise ValueError(f"data must be an np.ndarray.  Passed type {type(data)}")
 
         self._mom_ndim = mom_ndim
@@ -409,7 +410,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         attrs: XArrayAttrsType = None,
         coords: XArrayCoordsType = None,
         name: XArrayNameType = None,
-        indexes: XArrayIndexesType = None,
+        indexes: XArrayIndexesType = None,  # pyright: ignore
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
@@ -598,25 +599,24 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         axis: int | None = None,
         other: MyNDArray | None = None,
     ) -> tuple[int, ...]:
-        from numpy.core.numeric import normalize_axis_index  # type: ignore
+        from .utils import shape_insert_axis
 
         if style == "val":
             target_shape = self.val_shape
         elif style == "vals":
             assert axis is not None
-            target_shape = _shape_insert_axis(self.val_shape, axis, x.shape[axis])
+            target_shape = shape_insert_axis(self.val_shape, axis, x.shape[axis])
         elif style == "data":
             target_shape = self.shape
         elif style == "datas":
             # make sure axis in limits
             assert axis is not None
-            axis = cast(int, normalize_axis_index(axis, self.val_ndim + 1))
-            target_shape = _shape_insert_axis(self.shape, axis, x.shape[axis])
+            target_shape = shape_insert_axis(self.shape, axis, x.shape[axis])
         elif style == "var":
             target_shape = self.shape_var
         elif style == "vars":
             assert other is not None and axis is not None
-            target_shape = _shape_insert_axis(self.shape_var, axis, other.shape[axis])
+            target_shape = shape_insert_axis(self.shape_var, axis, other.shape[axis])
         else:
             raise ValueError(f"unknown string style name {style}")
 
@@ -727,7 +727,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         self,
         datas: MultiArray[MyNDArray],
         axis: int | None = 0,
-        **kwargs: Any,
+        **kwargs: Any,  # pyrigt: ignore
     ) -> Self:
         """
         Examples
@@ -803,7 +803,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         w: MultiArray[MyNDArray] | None = None,
         axis: int | None = 0,
         broadcast: bool = False,
-        **kwargs: Any,
+        **kwargs: Any,  # pyright: ignore
     ) -> Self:
         """
         Examples
@@ -850,56 +850,74 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     ###########################################################################
     @overload
     def resample_and_reduce(
-        self: CentralMoments,
-        freq: MyNDArray | None,
-        indices: MyNDArray | None,
-        nrep: int | None,
-        axis: int | None,
-        parallel: bool,
-        resample_kws: Mapping[str, Any] | None,
-        full_output: Literal[False] = False,
+        self,
+        nrep: int | None = ...,
+        *,
+        full_output: Literal[False] = ...,
+        freq: MyNDArray | None = ...,
+        indices: MyNDArray | None = ...,
+        axis: int | None = ...,
+        parallel: bool = ...,
+        resample_kws: Mapping[str, Any] | None = ...,
         **kws: Any,
-    ) -> CentralMoments:
+    ) -> Self:
         ...
 
     @overload
     def resample_and_reduce(
-        self: CentralMoments,
-        freq: MyNDArray | None,
-        indices: MyNDArray | None,
-        nrep: int | None,
-        axis: int | None,
-        parallel: bool,
-        resample_kws: Mapping[str, Any] | None,
+        self,
+        nrep: int | None = ...,
+        *,
         full_output: Literal[True],
+        freq: MyNDArray | None = ...,
+        indices: MyNDArray | None = ...,
+        axis: int | None = ...,
+        parallel: bool = ...,
+        resample_kws: Mapping[str, Any] | None = ...,
         **kws: Any,
-    ) -> tuple[CentralMoments, MyNDArray]:
+    ) -> tuple[Self, MyNDArray]:
+        ...
+
+    @overload
+    def resample_and_reduce(
+        self,
+        nrep: int | None = ...,
+        *,
+        full_output: bool,
+        freq: MyNDArray | None = ...,
+        indices: MyNDArray | None = ...,
+        axis: int | None = ...,
+        parallel: bool = ...,
+        resample_kws: Mapping[str, Any] | None = ...,
+        **kws: Any,
+    ) -> Self | tuple[Self, MyNDArray]:
         ...
 
     @docfiller.decorate
     def resample_and_reduce(
-        self: CentralMoments,
+        self,
+        nrep: int | None = None,
+        *,
+        full_output: bool = False,
         freq: MyNDArray | None = None,
         indices: MyNDArray | None = None,
-        nrep: int | None = None,
         axis: int | None = None,
         parallel: bool = True,
         resample_kws: Mapping[str, Any] | None = None,
-        full_output: bool = False,
         **kws: Any,
-    ) -> CentralMoments | tuple[CentralMoments, MyNDArray]:
+    ) -> Self | tuple[Self, MyNDArray]:
         """
         Bootstrap resample and reduce.
 
         Parameters
         ----------
+        {nrep}
+        {full_output}
         {freq}
         {indices}
-        {nrep}
         {axis}
         {parallel}
         {resample_kws}
-        {full_output}
         **kws
             Extra key-word arguments to :meth:`from_data`
 
@@ -919,8 +937,10 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         ~cmomy.resample.indices_to_freq : convert index sample to frequency sample
         ~cmomy.resample.resample_data : method to perform resampling
         """
+        from .resample import randsamp_freq, resample_data
+
         self._raise_if_scalar()
-        axis = self._wrap_axis(axis, **kws)
+        axis = self._wrap_axis(axis)
         if resample_kws is None:
             resample_kws = {}
 
@@ -957,7 +977,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         from_datas
         """
         self._raise_if_scalar()
-        axis = self._wrap_axis(axis, **kws)
+        axis = self._wrap_axis(axis)
         return type(self).from_datas(
             self.values, mom_ndim=self.mom_ndim, axis=axis, **kws
         )
@@ -1000,7 +1020,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         self._raise_if_scalar()
 
-        axis = self._wrap_axis(axis, **kws)
+        axis = self._wrap_axis(axis)
         data = self.data
 
         # move axis to first
@@ -1351,54 +1371,79 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             x=x, axis=axis, w=w, broadcast=broadcast
         )
 
-    @classmethod
     @overload
+    @classmethod
     def from_resample_vals(
-        cls: type[CentralMoments],
+        cls,
         x: MyNDArray | tuple[MyNDArray, MyNDArray],
-        freq: MyNDArray | None,
-        indices: MyNDArray | None,
-        nrep: int | None,
-        w: MyNDArray | None,
-        axis: int | None,
-        mom: Moments,
-        dtype: DTypeLike | None,
-        broadcast: bool,
-        parallel: bool,
-        resample_kws: Mapping[str, Any] | None,
-        full_output: Literal[False] = False,
+        nrep: int | None = ...,
+        *,
+        full_output: Literal[False] = ...,
+        freq: MyNDArray | None = ...,
+        indices: MyNDArray | None = ...,
+        w: MyNDArray | None = ...,
+        axis: int | None = ...,
+        mom: Moments = ...,
+        dtype: DTypeLike | None = ...,
+        broadcast: bool = ...,
+        parallel: bool = ...,
+        resample_kws: Mapping[str, Any] | None = ...,
         **kws: Any,
-    ) -> CentralMoments:
+    ) -> Self:
         ...
 
-    @classmethod
     @overload
+    @classmethod
     def from_resample_vals(
-        cls: type[CentralMoments],
+        cls,
         x: MyNDArray | tuple[MyNDArray, MyNDArray],
-        freq: MyNDArray | None,
-        indices: MyNDArray | None,
-        nrep: int | None,
-        w: MyNDArray | None,
-        axis: int | None,
-        mom: Moments,
-        dtype: DTypeLike | None,
-        broadcast: bool,
-        parallel: bool,
-        resample_kws: Mapping[str, Any] | None,
+        nrep: int | None = ...,
+        *,
         full_output: Literal[True],
+        freq: MyNDArray | None = ...,
+        indices: MyNDArray | None = ...,
+        w: MyNDArray | None = ...,
+        axis: int | None = ...,
+        mom: Moments = ...,
+        dtype: DTypeLike | None = ...,
+        broadcast: bool = ...,
+        parallel: bool = ...,
+        resample_kws: Mapping[str, Any] | None = ...,
         **kws: Any,
-    ) -> tuple[CentralMoments, MyNDArray]:
+    ) -> tuple[Self, MyNDArray]:
+        ...
+
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: MyNDArray | tuple[MyNDArray, MyNDArray],
+        nrep: int | None = ...,
+        *,
+        full_output: bool,
+        axis: int | None = ...,
+        freq: MyNDArray | None = ...,
+        indices: MyNDArray | None = ...,
+        w: MyNDArray | None = ...,
+        mom: Moments = ...,
+        dtype: DTypeLike | None = ...,
+        broadcast: bool = ...,
+        parallel: bool = ...,
+        resample_kws: Mapping[str, Any] | None = ...,
+        **kws: Any,
+    ) -> Self | tuple[Self, MyNDArray]:
         ...
 
     @classmethod
     @docfiller_inherit_abc()
     def from_resample_vals(
-        cls: type[CentralMoments],
+        cls,
         x: MyNDArray | tuple[MyNDArray, MyNDArray],
+        nrep: int | None = None,
+        *,
+        full_output: bool = False,
         freq: MyNDArray | None = None,
         indices: MyNDArray | None = None,
-        nrep: int | None = None,
         w: MyNDArray | None = None,
         axis: int | None = 0,
         mom: Moments = 2,
@@ -1406,9 +1451,8 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         broadcast: bool = False,
         parallel: bool = True,
         resample_kws: Mapping[str, Any] | None = None,
-        full_output: bool = False,
         **kws: Any,
-    ) -> CentralMoments | tuple[CentralMoments, MyNDArray]:
+    ) -> Self | tuple[Self, MyNDArray]:
         """
         Examples
         --------
@@ -1439,6 +1483,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                [10.    ,  0.5633,  0.0259]])
 
         """
+
+        from .resample import randsamp_freq, resample_vals
+
         axis = axis or 0
         mom_ndim = cls._mom_ndim_from_mom(mom)
 
@@ -1462,6 +1509,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             axis=axis,
             w=w,
             mom_ndim=mom_ndim,
+            dtype=dtype,
             parallel=parallel,
             **resample_kws,
             broadcast=broadcast,
@@ -1480,8 +1528,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             return out, freq
         else:
             return out
-
-        return out
 
     @classmethod
     @docfiller_inherit_abc()
@@ -1677,7 +1723,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         a = np.asarray(a, dtype=dtype, order=order)
 
-        if val_shape is None and isinstance(a, np.ndarray):
+        if val_shape is None:
             val_shape = a.shape
         if dtype is None:
             dtype = a.dtype
@@ -1693,7 +1739,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         v: MyNDArray,
         w: MyNDArray | float | None = None,
         axis: int = 0,
-        dim: str | None = None,
         mom: Moments = 2,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,

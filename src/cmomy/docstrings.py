@@ -119,28 +119,37 @@ docfiller = (
     .assign(
         klass="object", t_array=":class:`numpy.ndarray` or :class:`xarray.DataArray`"
     )
+    .assign_combined_key("axis_and_dim", ["axis"])
 )
 
 
-docfiller_central = docfiller.update(
-    DocFiller.from_docstring(
-        _dummy_docstrings_central,
-        combine_keys="parameters",
-    ).data
-).assign(
-    klass="CentralMoments",
-    t_array=":class:`numpy.ndarray`",
+docfiller_central = (
+    docfiller.update(
+        DocFiller.from_docstring(
+            _dummy_docstrings_central,
+            combine_keys="parameters",
+        ).data
+    )
+    .assign(
+        klass="CentralMoments",
+        t_array=":class:`numpy.ndarray`",
+    )
+    .assign_combined_key("axis_and_dim", ["axis"])
 )
 
 
-docfiller_xcentral = docfiller.update(
-    DocFiller.from_docstring(
-        _dummy_docstrings_xcentral,
-        combine_keys="parameters",
-    ).data
-).assign(
-    klass="xCentralMoments",
-    t_array=":class:`xarray.DataArray`",
+docfiller_xcentral = (
+    docfiller.update(
+        DocFiller.from_docstring(
+            _dummy_docstrings_xcentral,
+            combine_keys="parameters",
+        ).data
+    )
+    .assign(
+        klass="xCentralMoments",
+        t_array=":class:`xarray.DataArray`",
+    )
+    .assign_combined_key("axis_and_dim", ["axis", "dim"])
 )
 
 
@@ -152,7 +161,7 @@ docfiller_decorate = docfiller()
 
 # from custom_inherit import doc_inherit
 
-# from ._typing import F
+# from .typing import F
 # from .options import DOC_SUB
 
 

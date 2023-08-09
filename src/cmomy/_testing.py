@@ -1,11 +1,10 @@
-# type: ignore
-"""Common routings used in testing."""
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 
 from ._lazy_imports import np
 
 
 # Dumb calculations
-def _get_cmom(w, x, moments, axis=0, last=True):
+def get_cmom(w, x, moments, axis=0, last=True):
     if w is None:
         w = np.array(1.0)
 
@@ -41,7 +40,7 @@ def _get_cmom(w, x, moments, axis=0, last=True):
     return data_array
 
 
-def _get_comom(w, x, y, moments, axis=0, broadcast=True):
+def get_comom(w, x, y, moments, axis=0, broadcast=True):
     if w is None:
         w = np.array(1.0)
 

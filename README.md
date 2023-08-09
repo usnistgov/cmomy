@@ -127,15 +127,6 @@ been implemented. Therefore, the very first time you run a function, it may be
 slow. But all subsequent uses (including other sessions) will be already
 compiled.
 
-A quick way to cache (most all) the [Numba][Numba] functions is to run the
-tests. This can be done with
-
-```bash
-conda/mamba/pip install pytest
-
-pytest --pyargs cmomy
-```
-
 <!-- end-docs -->
 
 ## Documentation

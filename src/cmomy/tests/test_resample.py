@@ -1,7 +1,7 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 import numpy as np
 import pytest
 
-import cmomy.central as central
 import cmomy.resample as resample
 from cmomy.resample import (  # , xbootstrap_confidence_interval
     bootstrap_confidence_interval,
@@ -29,7 +29,7 @@ def test_freq_indices(nrep, ndat):
 def test_resample_vals(other, parallel):
     # test basic resampling
     if other.style == "total":
-        datar = central.resample_vals(
+        datar = resample.resample_vals(
             x=other.x,
             mom=other.mom,
             freq=other.freq,
@@ -81,7 +81,7 @@ def test_resample_data(other, parallel):
             ndat = data.shape[axis]
 
             idx = np.random.choice(ndat, (nrep, ndat), replace=True)
-            freq = central.randsamp_freq(indices=idx)
+            freq = resample.randsamp_freq(indices=idx)
 
             if axis != 0:
                 data = np.rollaxis(data, axis, 0)

@@ -5,15 +5,17 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Hashable, Literal, Sequence, cast
+from typing import TYPE_CHECKING, cast
 
 from ._lazy_imports import np, xr
 from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:
+    from typing import Any, Hashable, Literal, Sequence
+
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._typing import ArrayOrder, Mom_NDim, Moments, MyNDArray, XvalStrict
+    from .typing import ArrayOrder, Mom_NDim, Moments, MyNDArray, XvalStrict
 
 ##############################################################################
 # resampling
@@ -22,9 +24,9 @@ if TYPE_CHECKING:
 
 def numba_random_seed(seed: int) -> None:
     """Set the random seed for numba functions."""
-    from ._resample import _numba_random_seed  # pyright: ignore
+    from ._lib.resample import set_numba_random_seed  # pyright: ignore
 
-    _numba_random_seed(seed)
+    set_numba_random_seed(seed)  # type: ignore
 
 
 def freq_to_indices(freq: MyNDArray) -> MyNDArray:
@@ -41,10 +43,10 @@ def freq_to_indices(freq: MyNDArray) -> MyNDArray:
 
 def indices_to_freq(indices: MyNDArray) -> MyNDArray:
     """Convert indices to frequency array."""
-    from ._resample import _randsamp_freq_indices  # pyright: ignore
+    from ._lib.resample import randsamp_freq_indices  # pyright: ignore
 
     freq = np.zeros_like(indices)
-    _randsamp_freq_indices(indices, freq)
+    randsamp_freq_indices(indices, freq)  # type: ignore
 
     return freq
 
@@ -94,7 +96,10 @@ def randsamp_freq(
         if transpose, output.shape = (size, nrep)
     """
 
-    from ._resample import _randsamp_freq_indices, _randsamp_freq_out  # pyright: ignore
+    from ._lib.resample import (
+        randsamp_freq_indices,  # pyright: ignore
+        randsamp_freq_out,  # pyright: ignore
+    )
 
     def _array_check(x: ArrayLike, name: str = "") -> MyNDArray:
         x = np.asarray(x, dtype=np.int64)
@@ -114,11 +119,11 @@ def randsamp_freq(
     elif indices is not None:
         indices = _array_check(indices, "indices")
         freq = np.zeros(indices.shape, dtype=np.int64)
-        _randsamp_freq_indices(indices, freq)
+        randsamp_freq_indices(indices, freq)  # type: ignore
 
     elif nrep is not None and size is not None:
         freq = np.zeros((nrep, size), dtype=np.int64)
-        _randsamp_freq_out(freq)
+        randsamp_freq_out(freq)  # type: ignore
 
     else:
         raise ValueError("must specify freq, indices, or nrep and size")
@@ -165,7 +170,7 @@ def resample_data(
         output shape is `(nrep,) + shape + mom`, where shape is
         the shape of data less axis, and mom is the shape of the resulting mom.
     """
-    from ._resample import factory_resample_data
+    from ._lib.resample import factory_resample_data
 
     if isinstance(mom, int):
         mom = (mom,)
@@ -236,7 +241,7 @@ def resample_vals(
     out: MyNDArray | None = None,
 ) -> MyNDArray:
     """Resample data according to frequency table."""
-    from ._resample import factory_resample_vals
+    from ._lib.resample import factory_resample_vals
 
     if isinstance(mom, int):
         mom = (mom,) * 1
@@ -386,12 +391,14 @@ def bootstrap_confidence_interval(
         q_high = 100 * (alpha / 2.0)
         q_low = 100 - q_high
         val = sv
-        low = 2 * sv - np.percentile(
+        # fmt: off
+        low = 2 * sv - np.percentile( # pyright: ignore[reportUnknownMemberType]
             a=distribution, q=q_low, axis=axis, **kws
-        )  # pyright: ignore
-        high = 2 * sv - np.percentile(
+        )
+        high = 2 * sv - np.percentile( # pyright: ignore[reportUnknownMemberType]
             a=distribution, q=q_high, axis=axis, **kws
-        )  # pyright: ignore
+        )
+        # fmt: on
 
     if style is None:
         out = np.array([val, low, high])
@@ -463,7 +470,7 @@ def xbootstrap_confidence_interval(
         stats_val = np.array(stats_val)
 
     out = bootstrap_confidence_interval(
-        x.values,
+        x.values,  # pyright: ignore
         stats_val=stats_val,
         axis=axis,
         alpha=alpha,

@@ -2,56 +2,26 @@
 from __future__ import annotations
 
 # from functools import lru_cache
-from typing import TYPE_CHECKING, Sequence, cast
+from typing import TYPE_CHECKING, cast
 
 from ._lazy_imports import np
-from .options import OPTIONS
 
 if TYPE_CHECKING:
+    from typing import Sequence
+
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._typing import ArrayOrder, MyNDArray
+    from .typing import ArrayOrder, MyNDArray
 
 
-def myjit(func):  # type: ignore # pyright: ignore
-    """Jitter with option inline='always', fastmath=True."""
-    from numba import njit  # pyright: ignore
+def normalize_axis_index(axis: int, ndim: int) -> int:
+    """Interface to numpy.core.multiarray.normalize_axis_index"""
+    import numpy.core.multiarray as ma
 
-    return njit(inline="always", fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"])(
-        func  # pyright: ignore
-    )
+    return ma.normalize_axis_index(axis, ndim)  # type: ignore
 
 
-# from scipy.special import binom
-# def factory_binomial(order):
-#     irange = np.arange(order + 1)
-#     bfac = np.array([binom(i, irange) for i in irange])
-#     return bfac
-
-
-def _binom(n: int, k: int) -> float:
-    import math
-
-    if n > k:
-        return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
-    elif n == k:
-        return 1.0
-    else:
-        # n < k
-        return 0.0
-
-
-def factory_binomial(order: int, dtype: DTypeLike = np.float_) -> MyNDArray:
-    """Create binomial coefs at given order."""
-    out = np.zeros((order + 1, order + 1), dtype=dtype)
-    for n in range(order + 1):
-        for k in range(order + 1):
-            out[n, k] = _binom(n, k)
-
-    return out
-
-
-def _shape_insert_axis(
+def shape_insert_axis(
     shape: Sequence[int],
     axis: int | None,
     new_size: int,
@@ -60,7 +30,7 @@ def _shape_insert_axis(
     if axis is None:
         raise ValueError("must specify integre axis")
 
-    axis = np.core.numeric.normalize_axis_index(axis, len(shape) + 1)  # type: ignore
+    axis = normalize_axis_index(axis, len(shape) + 1)
     shape = tuple(shape)
     return shape[:axis] + (new_size,) + shape[axis:]
 
@@ -106,7 +76,7 @@ def axis_expand_broadcast(
             if len(x) == shape[axis]:  # pyright: ignore
                 # reshape for broadcasting
                 reshape = (1,) * (len(shape) - 1)
-                reshape = _shape_insert_axis(reshape, axis, -1)
+                reshape = shape_insert_axis(reshape, axis, -1)
                 x = x.reshape(*reshape)
 
     if broadcast and x.shape != shape:
@@ -114,11 +84,3 @@ def axis_expand_broadcast(
     if roll and axis is not None and axis != 0:
         x = np.moveaxis(x, axis, 0)
     return x
-
-
-# Mostly deprecated.  Keeping around for now.
-
-
-# @lru_cache(maxsize=5)
-# def _cached_ones(shape: int | tuple[int, ...], dtype: DTypeLike=None) -> MyNDArray:
-#     return np.ones(shape, dtype=dtype)

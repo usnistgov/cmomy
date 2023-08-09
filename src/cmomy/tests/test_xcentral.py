@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 import random
 
 import numpy as np
@@ -67,7 +68,6 @@ def test_from_vals(other):
 def test_push_val(other):
     if other.axis == 0 and other.style == "total":
         if other.s._mom_ndim == 1:
-            print("do_push_val")
             t = other.s_xr.zeros_like()
             for ww, xx in zip(other.w, other.x):
                 t.push_val(x=xx, w=ww, broadcast=other.broadcast)

@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 """
 Simple test for numerical stability
 
@@ -7,7 +8,7 @@ import numpy as np
 import pytest
 
 import cmomy
-from cmomy.utils import factory_binomial
+from cmomy._lib.utils import factory_binomial
 
 
 def algo(vals, mom, norm=True):

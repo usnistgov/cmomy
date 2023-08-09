@@ -320,16 +320,14 @@ exclude = ["**/__pycache__", ".tox/**", ".nox/**", "**/.mypy_cache"]
 strict = [
     "src/cmomy/__init__.py",
     "src/cmomy/_lazy_imports.py",
-    "src/cmomy/_typing.py",
     "src/cmomy/abstract_central.py",
     "src/cmomy/central.py",
     "src/cmomy/xcentral.py",
     "src/cmomy/convert.py",
     "src/cmomy/docstrings.py",
     "src/cmomy/options.py",
-    "src/cmomy/pusher_interface.py",
-    # "src/cmomy/pushers.py",
     "src/cmomy/resample.py",
+    "src/cmomy/typing.py",
     "src/cmomy/utils.py",
 ]
 pythonVersion = "3.10"

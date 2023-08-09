@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 import numpy as np
 import pytest
 import xarray as xr

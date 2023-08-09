@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 """Some simple tests for factory methods of xCentral"""
 from __future__ import annotations
 
@@ -8,7 +9,7 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy._typing import F
+from cmomy.typing import F
 
 
 def my_fixture(**kws) -> Callable[[F], F]:
@@ -165,7 +166,7 @@ def test_from_resample_vals(xy, shape, mom):
         xy_xr = xr.DataArray(xy, dims=dims)
 
     for axis in range(len(shape)):
-        t, freq = cmomy.xCentralMoments.from_resample_vals(  # type: ignore
+        t, freq = cmomy.xCentralMoments.from_resample_vals(
             xy, nrep=10, full_output=True, axis=axis, mom=mom
         )  # type : ignore
 
@@ -173,13 +174,13 @@ def test_from_resample_vals(xy, shape, mom):
         o1 = cmomy.xCentralMoments.from_resample_vals(
             xy, axis=axis, mom=mom, freq=freq, dims=dims[:axis] + dims[axis + 1 :]
         )
-        np.testing.assert_allclose(t, o1)  # type: ignore
+        np.testing.assert_allclose(t, o1)
 
         o2 = cmomy.xCentralMoments.from_resample_vals(
             xy_xr, dim=dims[axis], mom=mom, freq=freq
         )
 
-        xr.testing.assert_allclose(o1.values, o2.values)  # type: ignore
+        xr.testing.assert_allclose(o1.values, o2.values)
 
 
 def test_resample_and_reduce(dc, dcx):

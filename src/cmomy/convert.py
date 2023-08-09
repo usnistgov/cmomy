@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._typing import ArrayOrder, MyNDArray
+    from .typing import ArrayOrder, MyNDArray
 
 _shared_docs = r"""
 Parameters
@@ -171,7 +171,7 @@ def to_raw_moments(
     -------
     {out_rmom}
     """
-    from ._convert import _central_to_raw_moments  # pyright: ignore
+    from ._lib.convert import central_to_raw_moments  # pyright: ignore
 
     if axis is None:
         axis = -1
@@ -180,7 +180,7 @@ def to_raw_moments(
         data=x,
         axis=axis,
         target_axis=-1,
-        func=_central_to_raw_moments,  # pyright: ignore
+        func=central_to_raw_moments,  # pyright: ignore
         dtype=dtype,
         order=order,
         out=out,
@@ -212,7 +212,7 @@ def to_raw_comoments(
     -------
     {out_cormom}
     """
-    from ._convert import _central_to_raw_comoments  # pyright: ignore
+    from ._lib.convert import central_to_raw_comoments  # pyright: ignore
 
     if axis is None:
         axis = (-2, -1)
@@ -221,7 +221,7 @@ def to_raw_comoments(
         data=x,
         axis=axis,
         target_axis=(-2, -1),
-        func=_central_to_raw_comoments,  # pyright: ignore
+        func=central_to_raw_comoments,  # pyright: ignore
         dtype=dtype,
         order=order,
         out=out,
@@ -251,7 +251,7 @@ def to_central_moments(
     -------
     {out_cmom}
     """
-    from ._convert import _raw_to_central_moments  # pyright: ignore
+    from ._lib.convert import raw_to_central_moments  # pyright: ignore
 
     if axis is None:
         axis = -1
@@ -260,7 +260,7 @@ def to_central_moments(
         data=x,
         axis=axis,
         target_axis=-1,
-        func=_raw_to_central_moments,  # pyright: ignore
+        func=raw_to_central_moments,  # pyright: ignore
         dtype=dtype,
         order=order,
         out=out,
@@ -290,7 +290,7 @@ def to_central_comoments(
     -------
     {out_cocmom}
     """
-    from ._convert import _raw_to_central_comoments  # pyright: ignore
+    from ._lib.convert import raw_to_central_comoments  # pyright: ignore
 
     if axis is None:
         axis = (-2, -1)
@@ -299,7 +299,7 @@ def to_central_comoments(
         data=x,
         axis=axis,
         target_axis=(-2, -1),
-        func=_raw_to_central_comoments,  # pyright: ignore
+        func=raw_to_central_comoments,  # pyright: ignore
         dtype=dtype,
         order=order,
         out=out,
