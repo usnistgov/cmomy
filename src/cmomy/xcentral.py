@@ -1,11 +1,7 @@
 """Thin wrapper around central routines with xarray support."""
 from __future__ import annotations
 
-from typing import (  # TYPE_CHECKING,
-    TYPE_CHECKING,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, cast, overload  # TYPE_CHECKING,
 
 from module_utilities import cached
 
@@ -1572,8 +1568,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
             if verify:
                 # fmt: off
-                data_verified = data.astype( # pyright: ignore
-                    dtype=dtype or data.dtype, order="C", copy=False # pyright: ignore
+                data_verified = data.astype(  # pyright: ignore
+                    dtype=dtype or data.dtype, order="C", copy=False  # pyright: ignore
                 )
                 # fmt: on
             else:
@@ -1676,7 +1672,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
             if verify:
                 # fmt: off
-                datas = datas.astype(order="C", dtype=dtype, copy=False) # pyright: ignore
+                datas = datas.astype(order="C", dtype=dtype, copy=False)  # pyright: ignore
                 # fmt: on
 
             if check_shape:
@@ -1689,7 +1685,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
             # fmt: off
             new = (
                 cls(
-                    data=datas.isel({dim: 0}).astype(dtype=dtype, copy=True), # pyright: ignore
+                    data=datas.isel({dim: 0}).astype(dtype=dtype, copy=True),  # pyright: ignore
                     mom_ndim=mom_ndim,
                 )
                 .zero()

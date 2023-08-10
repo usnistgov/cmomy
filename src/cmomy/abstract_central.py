@@ -2,12 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import (
-    TYPE_CHECKING,
-    Generic,
-    cast,
-    overload,
-)
+from typing import TYPE_CHECKING, Generic, cast, overload
 
 from module_utilities import cached
 
@@ -18,13 +13,7 @@ from .typing import MyNDArray, T_Array
 from .utils import normalize_axis_index
 
 if TYPE_CHECKING:
-    from typing import (
-        Any,
-        Callable,
-        Hashable,
-        Literal,
-        Mapping,
-    )
+    from typing import Any, Callable, Hashable, Literal, Mapping
 
     from numpy.typing import DTypeLike
     from typing_extensions import Self
@@ -296,7 +285,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     ###########################################################################
 
     @cached.prop
-    def _weight_index(self) -> "tuple[int | ellipsis, ...]":  # noqa: UP037, F821
+    def _weight_index(self) -> tuple[int | ellipsis, ...]:  # noqa: UP037, F821
         index = (0,) * len(self.mom)
         if self.val_ndim > 0:
             return (...,) + index
@@ -306,7 +295,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @cached.meth
     def _single_index(
         self, val: int
-    ) -> "tuple[ellipsis | int | list[int], ...]":  # noqa: UP037, F821
+    ) -> tuple[ellipsis | int | list[int], ...]:  # noqa: UP037, F821
         # index with things like data[..., 1,0] data[..., 0,1]
         # index = (...,[1,0],[0,1])
         dims = len(self.mom)
@@ -721,8 +710,8 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             x, *ys = x
 
         # fmt: off
-        xr, target = self._check_vals(x=x, axis=axis, target="vals", **kwargs) # type: ignore
-        yr = tuple( # type: ignore
+        xr, target = self._check_vals(x=x, axis=axis, target="vals", **kwargs)  # type: ignore
+        yr = tuple(  # type: ignore
             self._check_vals(x=y, target=target, axis=axis, broadcast=broadcast, **kwargs)[0]
             for y in ys
         )
@@ -980,7 +969,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             if mom_ndim is None:
                 raise ValueError("must specify either moments or mom_ndim and shape")
             elif shape is None:
-                raise ValueError("Must pass shape if infering moments")
+                raise ValueError("Must pass shape if inferring moments")
 
             assert len(shape) >= mom_ndim and mom_ndim in [1, 2]
             moments = tuple(x - 1 for x in shape[-mom_ndim:])  # type: ignore

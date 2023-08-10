@@ -392,10 +392,10 @@ def bootstrap_confidence_interval(
         q_low = 100 - q_high
         val = sv
         # fmt: off
-        low = 2 * sv - np.percentile( # pyright: ignore[reportUnknownMemberType]
+        low = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
             a=distribution, q=q_low, axis=axis, **kws
         )
-        high = 2 * sv - np.percentile( # pyright: ignore[reportUnknownMemberType]
+        high = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
             a=distribution, q=q_high, axis=axis, **kws
         )
         # fmt: on

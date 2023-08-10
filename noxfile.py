@@ -1248,7 +1248,7 @@ def _create_doc_examples_symlinks(session: nox.Session, clean: bool = True) -> N
             os.symlink(target_rel, link)
 
 
-# # If want seperate env for updating/reporting version with setuptools-scm
+# # If want separate env for updating/reporting version with setuptools-scm
 # # We do this from dev environment.
 # # ** version report/update
 # @DEFAULT_SESSION_VENV

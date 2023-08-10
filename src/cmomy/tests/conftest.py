@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 from __future__ import annotations
+
 from typing import Any
 
 import numpy as np
@@ -8,10 +9,9 @@ import xarray as xr
 from module_utilities import cached
 
 import cmomy.central as central
-import cmomy.xcentral as xcentral
 import cmomy.resample as resample
-
-from cmomy._testing import get_comom, get_cmom
+import cmomy.xcentral as xcentral
+from cmomy._testing import get_cmom, get_comom
 
 
 class Data:
