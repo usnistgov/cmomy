@@ -4,7 +4,7 @@ from __future__ import annotations
 from module_utilities.docfiller import DocFiller
 
 
-def _dummy_docstrings():
+def _dummy_docstrings() -> None:
     """
     Parameters
     ----------
@@ -80,16 +80,169 @@ def _dummy_docstrings():
         Name of new 'replicated' dimension:
     rec_dim : hashable, optional
         Name of dimension for 'records', i.e., multiple observations.
+    data : DataArray or ndarray
+        Moment collection array
+    parallel : bool, default=True
+        flags to `numba.njit`
     """
 
 
-_docstrings = _dummy_docstrings.__doc__
+def _dummy_docstrings_central() -> None:
+    """
+    Parameters
+    ----------
+    data : ndarray
+        Moment collection array
+    """
 
-docfiller = DocFiller.from_docstring(
-    _docstrings, combine_keys="parameters"
-).assign_combined_key(
-    "xr_params", ["dims", "attrs", "coords", "name", "indexes", "template"]
+
+def _dummy_docstrings_xcentral() -> None:
+    """
+    Parameters
+    ----------
+    data : DataArray
+        Moment collection array
+    """
+
+
+_docstrings = _dummy_docstrings.__doc__ or ""
+
+docfiller = (
+    DocFiller.from_docstring(_docstrings, combine_keys="parameters")
+    .assign_combined_key(
+        "xr_params", ["dims", "attrs", "coords", "name", "indexes", "template"]
+    )
+    .assign_combined_key(
+        "xr_params_complete",
+        ["dims", "attrs", "coords", "name", "indexes", "template", "mom_dims"],
+    )
+    .assign(
+        klass="object", t_array=":class:`numpy.ndarray` or :class:`xarray.DataArray`"
+    )
+    .assign_combined_key("axis_and_dim", ["axis"])
+)
+
+
+docfiller_central = (
+    docfiller.update(
+        DocFiller.from_docstring(
+            _dummy_docstrings_central,
+            combine_keys="parameters",
+        ).data
+    )
+    .assign(
+        klass="CentralMoments",
+        t_array=":class:`numpy.ndarray`",
+    )
+    .assign_combined_key("axis_and_dim", ["axis"])
+)
+
+
+docfiller_xcentral = (
+    docfiller.update(
+        DocFiller.from_docstring(
+            _dummy_docstrings_xcentral,
+            combine_keys="parameters",
+        ).data
+    )
+    .assign(
+        klass="xCentralMoments",
+        t_array=":class:`xarray.DataArray`",
+    )
+    .assign_combined_key("axis_and_dim", ["axis", "dim"])
 )
 
 
 docfiller_decorate = docfiller()
+
+
+# --- Factory functions ----------------------------------------------------------------
+# from typing import Any, Callable, cast
+
+# from custom_inherit import doc_inherit
+
+# from .typing import F
+# from .options import DOC_SUB
+
+
+# def _my_doc_inherit(parent, style) -> Callable[[F], F]:
+#     if DOC_SUB:
+#         return cast(Callable[[F], F], doc_inherit(parent=parent, style=style))
+#     else:
+
+#         def wrapper(func: F) -> F:
+#             return func
+
+#         return wrapper
+
+
+# def factory_docfiller_from_parent(
+#     cls: Any, docfiller: DocFiller
+# ) -> Callable[..., Callable[[F], F]]:
+#     """Decorator with docfiller inheriting from cls"""
+
+#     def decorator(*name: str, **params) -> Callable[[F], F]:
+#         if len(name) == 0:
+#             _name = None
+#         elif len(name) == 1:
+#             _name = name[0]
+#         else:
+#             raise ValueError("can only pass a single name")
+
+#         def decorated(method: F) -> F:
+#             template = getattr(cls, _name or method.__name__)
+#             return docfiller(template, **params)(method)
+
+#         return decorated
+
+#     return decorator
+
+
+# def factory_docinherit_from_parent(
+#     cls: Any, style="numpy_with_merge"
+# ) -> Callable[..., Callable[[F], F]]:
+#     """Create decorator inheriting from cls"""
+
+#     def decorator(name: str | None = None) -> Callable[[F], F]:
+#         def decorated(method: F) -> F:
+#             template = getattr(cls, name or method.__name__)
+#             return cast(F, _my_doc_inherit(parent=template, style=style)(method))
+
+#         return decorated
+
+#     return decorator
+
+
+# def factory_docfiller_inherit_from_parent(
+#     cls: Any, docfiller: DocFiller, style="numpy_with_merge"
+# ) -> Callable[..., Callable[[F], F]]:
+#     """
+#     Do combination of doc_inherit and docfiller
+
+#     1. Fill parent and child with docfiller (from this module).
+#     2. Merge using doc_inherit
+#     """
+
+#     def decorator(*name: str, **params) -> Callable[[F], F]:
+#         if len(name) == 0:
+#             _name = None
+#         elif len(name) == 1:
+#             _name = name[0]
+#         else:
+#             raise ValueError("can only pass a single name")
+
+#         def decorated(method: F) -> F:
+#             template = getattr(cls, _name or method.__name__)
+
+#             @docfiller(template, **params)
+#             def dummy():
+#                 pass
+
+#             method = docfiller(**params)(method)
+#             return cast(
+#                 F, _my_doc_inherit(parent=dummy, style="numpy_with_merge")(method)
+#             )
+
+#         return decorated
+
+#     return decorator

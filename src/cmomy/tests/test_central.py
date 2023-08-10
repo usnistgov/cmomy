@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 import numpy as np
 import pytest
 
@@ -29,10 +30,10 @@ def test_central_moments_out(other):
 # exceptions
 def test_mom_ndim():
     with pytest.raises(ValueError):
-        central.CentralMoments(np.zeros((4, 4)), mom_ndim=0)
+        central.CentralMoments(np.zeros((4, 4)), mom_ndim=0)  # type: ignore
 
     with pytest.raises(ValueError):
-        central.CentralMoments(np.zeros((4, 4)), mom_ndim=3)
+        central.CentralMoments(np.zeros((4, 4)), mom_ndim=3)  # type: ignore
 
 
 def test_data_ndim():
@@ -89,7 +90,7 @@ def test_push_val(other):
 
 def test_push_vals_mult(other):
     t = other.s.zeros_like()
-    for ww, xx, s in zip(other.W, other.X, other.S):
+    for ww, xx, _ in zip(other.W, other.X, other.S):
         t.push_vals(x=xx, w=ww, axis=other.axis, broadcast=other.broadcast)
     other.test_values(t.values)
 
@@ -203,7 +204,7 @@ def test_reshape(other):
     if ndim > 0:
         for axis in range(ndim):
             new_shape = list(other.s.val_shape)
-            new_shape = tuple(new_shape[:axis] + [1, -1] + new_shape[axis + 1 :])
+            new_shape = tuple(new_shape[:axis] + [1, -1] + new_shape[axis + 1 :])  # type: ignore
 
             t = other.s.reshape(new_shape)
 

@@ -1,13 +1,10 @@
 """Numba functions to convert between raw and central moments."""
 
-from .options import OPTIONS
-from .utils import factory_binomial, myjit
-
-_bfac = factory_binomial(OPTIONS["nmax"])
+from .utils import BINOMIAL_FACTOR, myjit
 
 
-@myjit
-def _central_to_raw_moments(central, raw):
+@myjit()
+def central_to_raw_moments(central, raw):  # type: ignore
     nv = central.shape[0]
     order = central.shape[1] - 1
 
@@ -21,7 +18,7 @@ def _central_to_raw_moments(central, raw):
             tmp = 0.0
             ave_i = 1.0
             for i in range(0, n - 1):
-                tmp += central[v, n - i] * ave_i * _bfac[n, i]
+                tmp += central[v, n - i] * ave_i * BINOMIAL_FACTOR[n, i]
                 ave_i *= ave
 
             # last two
@@ -31,8 +28,8 @@ def _central_to_raw_moments(central, raw):
             raw[v, n] = tmp
 
 
-@myjit
-def _raw_to_central_moments(raw, central):
+@myjit()
+def raw_to_central_moments(raw, central):  # type: ignore
     nv = central.shape[0]
     order = central.shape[1] - 1
 
@@ -46,7 +43,7 @@ def _raw_to_central_moments(raw, central):
             tmp = 0.0
             ave_i = 1.0
             for i in range(0, n - 1):
-                tmp += raw[v, n - i] * ave_i * _bfac[n, i]
+                tmp += raw[v, n - i] * ave_i * BINOMIAL_FACTOR[n, i]
                 ave_i *= -ave
 
             # last two
@@ -60,8 +57,8 @@ def _raw_to_central_moments(raw, central):
 
 
 # comoments
-@myjit
-def _central_to_raw_comoments(central, raw):
+@myjit()
+def central_to_raw_comoments(central, raw):  # type: ignore
     nv = central.shape[0]
     order0 = central.shape[1] - 1
     order1 = central.shape[2] - 1
@@ -93,16 +90,16 @@ def _central_to_raw_comoments(central, raw):
                                     central[v, n - i, m - j]
                                     * ave_i
                                     * ave_j
-                                    * _bfac[n, i]
-                                    * _bfac[m, j]
+                                    * BINOMIAL_FACTOR[n, i]
+                                    * BINOMIAL_FACTOR[m, j]
                                 )
                             ave_j *= ave1
                         ave_i *= ave0
                     raw[v, n, m] = tmp
 
 
-@myjit
-def _raw_to_central_comoments(raw, central):
+@myjit()
+def raw_to_central_comoments(raw, central):  # type: ignore
     nv = central.shape[0]
     order0 = central.shape[1] - 1
     order1 = central.shape[2] - 1
@@ -131,8 +128,8 @@ def _raw_to_central_comoments(raw, central):
                                     raw[v, n - i, m - j]
                                     * ave_i
                                     * ave_j
-                                    * _bfac[n, i]
-                                    * _bfac[m, j]
+                                    * BINOMIAL_FACTOR[n, i]
+                                    * BINOMIAL_FACTOR[m, j]
                                 )
                             ave_j *= -ave1
                         ave_i *= -ave0

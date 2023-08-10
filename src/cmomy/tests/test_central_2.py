@@ -1,9 +1,11 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
-from cmomy import CentralMoments, central_moments
-from cmomy._testing import _get_cmom, _get_comom
-from cmomy.tests.conftest import Data
+from cmomy import central_moments
+from cmomy._testing import get_cmom, get_comom
 
 
 class DataContainer:
@@ -23,9 +25,9 @@ class DataContainer:
             cov = isinstance(mom, tuple) and len(mom) == 2
 
         if not cov:
-            return _get_cmom(x=self.x, w=self.w, moments=mom, axis=axis, last=True)
+            return get_cmom(x=self.x, w=self.w, moments=mom, axis=axis, last=True)
         else:
-            return _get_comom(
+            return get_comom(
                 x=self.x,
                 y=self.y,
                 w=self.w,
@@ -234,10 +236,10 @@ def test_result(result_container):
 # def expected(xdata, ydata, wdata, mom_tuple, broadcast, axis):
 
 #     if len(mom_tuple) == 1:
-#         return _get_cmom(w=wdata, x=xdata, moments=mom_tuple[0], axis=axis, last=True)
+#         return get_cmom(w=wdata, x=xdata, moments=mom_tuple[0], axis=axis, last=True)
 
 #     else:
-#         return _get_comom(
+#         return get_comom(
 #             w=wdata, x=xdata, y=ydata, axis=axis, moments=mom_tuple, broadcast=broadcast
 #         )
 

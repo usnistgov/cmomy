@@ -1,28 +1,16 @@
+# mypy: disable-error-code="no-untyped-call"
 """low level routines to do pushing."""
 from __future__ import annotations
 
-from collections import namedtuple
+from typing import Callable, NamedTuple
 
-from .options import OPTIONS
-from .utils import factory_binomial, myjit
+from .utils import BINOMIAL_FACTOR, myjit
 
-# from typing import Any, Callable
-
-
-# from functool import lru_cache
+# -- Scalars ---------------------------------------------------------------------------
 
 
-# Maximum binomial factor
-_bfac = factory_binomial(OPTIONS["nmax"])
-
-
-###############################################################################
-# Moments
-###############################################################################
-
-
-@myjit
-def _push_val(data, w, x):
+@myjit(inline=True)
+def _push_val(data, w, x):  # type: ignore
     if w == 0.0:
         return
 
@@ -48,7 +36,11 @@ def _push_val(data, w, x):
         one_alpha_b = 1.0
         for b in range(0, a - 1):
             c = a - b
-            tmp += _bfac[a, b] * delta_b * (minus_b * alpha_b * one_alpha * data[c])
+            tmp += (
+                BINOMIAL_FACTOR[a, b]
+                * delta_b
+                * (minus_b * alpha_b * one_alpha * data[c])
+            )
             delta_b *= delta
             alpha_b *= alpha
             one_alpha_b *= one_alpha
@@ -63,29 +55,18 @@ def _push_val(data, w, x):
     data[2] = one_alpha * (data[2] + delta * incr)
 
 
-@myjit
-def _push_vals(data, W, X):
+@myjit()
+def _push_vals(data, W, X):  # type: ignore
     ns = X.shape[0]
     for s in range(ns):
         _push_val(data, W[s], X[s])
 
 
-@myjit
-def _push_vals_scale(data, W, X, scale):
-    ns = X.shape[0]
-    for s in range(ns):
-        f = scale[s]
-        if f == 0:
-            continue
-        _push_val(data, W[s] * f, X[s])
-
-
-@myjit
-def _push_stat(data, w, a, v):
+@myjit(inline=True)
+def _push_stat(data, w, a, v):  # type: ignore
     # w : weight
     # a : average
     # v[i] : <dx**(i+2)>
-
     # scale : parameter to rescale the weight
 
     if w == 0:
@@ -114,7 +95,7 @@ def _push_stat(data, w, a, v):
         for b in range(0, a1 - 1):
             c = a1 - b
             tmp += (
-                _bfac[a1, b]
+                BINOMIAL_FACTOR[a1, b]
                 * delta_b
                 * (
                     minus_b * alpha_b * one_alpha * data[c]
@@ -134,50 +115,35 @@ def _push_stat(data, w, a, v):
     data[2] = v[0] * alpha + one_alpha * (data[2] + delta * incr)
 
 
-@myjit
-def _push_stats(data, W, A, V):
+@myjit()
+def _push_stats(data, W, A, V):  # type: ignore
     ns = A.shape[0]
     for s in range(ns):
         _push_stat(data, W[s], A[s], V[s, ...])
 
 
-@myjit
-def _push_data(data, data_in):
+@myjit(inline=True)
+def _push_data(data, data_in):  # type: ignore
     _push_stat(data, data_in[0], data_in[1], data_in[2:])
 
 
-@myjit
-def _push_datas(data, data_in):
+@myjit()
+def _push_datas(data, data_in):  # type: ignore
     ns = data_in.shape[0]
     for s in range(ns):
         _push_stat(data, data_in[s, 0], data_in[s, 1], data_in[s, 2:])
 
 
-@myjit
-def _push_data_scale(data, data_in, scale):
-    _push_stat(data, data_in[0] * scale, data_in[1], data_in[2:])
-
-
-@myjit
-def _push_datas_scale(data, data_in, scale):
-    ns = data_in.shape[0]
-    for s in range(ns):
-        f = scale[s]
-        if f == 0:
-            continue
-        _push_stat(data, data_in[s, 0] * f, data_in[s, 1], data_in[s, 2:])
-
-
 # Vector
-@myjit
-def _push_val_vec(data, w, x):
+@myjit()
+def _push_val_vec(data, w, x):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_val(data[k, :], w[k], x[k])
 
 
-@myjit
-def _push_vals_vec(data, W, X):
+@myjit()
+def _push_vals_vec(data, W, X):  # type: ignore
     ns = X.shape[0]
     nv = data.shape[0]
     for s in range(ns):
@@ -185,15 +151,15 @@ def _push_vals_vec(data, W, X):
             _push_val(data[k, :], W[s, k], X[s, k])
 
 
-@myjit
-def _push_stat_vec(data, w, a, v):
+@myjit()
+def _push_stat_vec(data, w, a, v):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_stat(data[k, :], w[k], a[k], v[k, :])
 
 
-@myjit
-def _push_stats_vec(data, W, A, V):
+@myjit()
+def _push_stats_vec(data, W, A, V):  # type: ignore
     # V[sample, moment-2, value]
     ns = A.shape[0]
     nv = data.shape[0]
@@ -202,15 +168,15 @@ def _push_stats_vec(data, W, A, V):
             _push_stat(data[k, :], W[s, k], A[s, k], V[s, k, :])
 
 
-@myjit
-def _push_data_vec(data, data_in):
+@myjit()
+def _push_data_vec(data, data_in):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_data(data[k, :], data_in[k, :])
 
 
-@myjit
-def _push_datas_vec(data, Data_in):
+@myjit()
+def _push_datas_vec(data, Data_in):  # type: ignore
     ns = Data_in.shape[0]
     nv = data.shape[0]
     for s in range(ns):
@@ -218,45 +184,11 @@ def _push_datas_vec(data, Data_in):
             _push_data(data[k, :], Data_in[s, k, :])
 
 
-@myjit
-def _push_vals_scale_vec(data, W, X, scale):
-    ns = X.shape[0]
-    nv = data.shape[0]
-    for s in range(ns):
-        f = scale[s]
-        if f == 0:
-            continue
-        for k in range(nv):
-            _push_val(data[k, :], W[s, k] * f, X[s, k])
+# --- Covariance -----------------------------------------------------------------------
 
 
-@myjit
-def _push_data_scale_vec(data, data_in, scale):
-    nv = data.shape[0]
-    if scale != 0:
-        for k in range(nv):
-            _push_data_scale(data[k, :], data_in[k, :], scale)
-
-
-@myjit
-def _push_datas_scale_vec(data, Data_in, scale):
-    ns = Data_in.shape[0]
-    nv = data.shape[0]
-    for s in range(ns):
-        f = scale[s]
-        if f == 0:
-            continue
-        for k in range(nv):
-            _push_data_scale(data[k, :], Data_in[s, k, :], f)
-
-
-######################################################################
-# Covariance "stuff"
-######################################################################
-
-
-@myjit
-def _push_val_cov(data, w, x0, x1):
+@myjit(inline=True)
+def _push_val_cov(data, w, x0, x1):  # type: ignore
     if w == 0.0:
         return
 
@@ -293,7 +225,7 @@ def _push_val_cov(data, w, x0, x1):
             one_alpha_b0 = 1.0
             for b0 in range(0, a0 + 1):
                 c0 = a0 - b0
-                f0 = _bfac[a0, b0]
+                f0 = BINOMIAL_FACTOR[a0, b0]
 
                 delta1_b1 = 1.0
                 alpha_bb = alpha_b0
@@ -311,7 +243,7 @@ def _push_val_cov(data, w, x0, x1):
                     elif cs != 1:
                         tmp += (
                             f0
-                            * _bfac[a1, b1]
+                            * BINOMIAL_FACTOR[a1, b1]
                             * delta0_b0
                             * delta1_b1
                             * (minus_bb * alpha_bb * one_alpha * data[c0, c1])
@@ -329,25 +261,15 @@ def _push_val_cov(data, w, x0, x1):
             data[a0, a1] = tmp
 
 
-@myjit
-def _push_vals_cov(data, W, X1, X2):
+@myjit()
+def _push_vals_cov(data, W, X1, X2):  # type: ignore
     ns = X1.shape[0]
     for s in range(ns):
         _push_val_cov(data, W[s], X1[s], X2[s])
 
 
-@myjit
-def _push_vals_scale_cov(data, W, X1, X2, scale):
-    ns = X1.shape[0]
-    for s in range(ns):
-        f = scale[s]
-        if f == 0:
-            continue
-        _push_val_cov(data, W[s] * f, X1[s], X2[s])
-
-
-@myjit
-def _push_data_scale_cov(data, data_in, scale):
+@myjit(inline=True)
+def _push_data_scale_cov(data, data_in, scale):  # type: ignore
     w = data_in[0, 0] * scale
     if w == 0.0:
         return
@@ -385,7 +307,7 @@ def _push_data_scale_cov(data, data_in, scale):
             one_alpha_b0 = 1.0
             for b0 in range(0, a0 + 1):
                 c0 = a0 - b0
-                f0 = _bfac[a0, b0]
+                f0 = BINOMIAL_FACTOR[a0, b0]
 
                 delta1_b1 = 1.0
                 alpha_bb = alpha_b0
@@ -403,7 +325,7 @@ def _push_data_scale_cov(data, data_in, scale):
                     elif cs != 1:
                         tmp += (
                             f0
-                            * _bfac[a1, b1]
+                            * BINOMIAL_FACTOR[a1, b1]
                             * delta0_b0
                             * delta1_b1
                             * (
@@ -424,38 +346,30 @@ def _push_data_scale_cov(data, data_in, scale):
             data[a0, a1] = tmp
 
 
-@myjit
-def _push_data_cov(data, data_in):
+@myjit()
+def _push_data_cov(data, data_in):  # type: ignore
     _push_data_scale_cov(data, data_in, 1.0)
 
 
-@myjit
-def _push_datas_cov(data, datas):
+@myjit()
+def _push_datas_cov(data, datas):  # type: ignore
     ns = datas.shape[0]
     for s in range(ns):
         _push_data_scale_cov(data, datas[s], 1.0)
 
 
-@myjit
-def _push_datas_scale_cov(data, datas, scale):
-    ns = datas.shape[0]
-    for s in range(ns):
-        f = scale[s]
-        if f == 0:
-            continue
-        _push_data_scale_cov(data, datas[s], f)
+# --- Vector Covariance ----------------------------------------------------------------
 
 
-# Vector
-@myjit
-def _push_val_cov_vec(data, w, x0, x1):
+@myjit()
+def _push_val_cov_vec(data, w, x0, x1):  # type: ignore
     nv = data.shape[0]
     for k in range(nv):
         _push_val_cov(data[k, ...], w[k], x0[k], x1[k])
 
 
-@myjit
-def _push_vals_cov_vec(data, W, X0, X1):
+@myjit()
+def _push_vals_cov_vec(data, W, X0, X1):  # type: ignore
     nv = data.shape[0]
     ns = X0.shape[0]
     for s in range(ns):
@@ -463,8 +377,59 @@ def _push_vals_cov_vec(data, W, X0, X1):
             _push_val_cov(data[k, ...], W[s, k], X0[s, k], X1[s, k])
 
 
-@myjit
-def _push_vals_scale_cov_vec(data, W, X0, X1, scale):
+@myjit()
+def _push_data_cov_vec(data, data_in):  # type: ignore
+    nv = data.shape[0]
+    for k in range(nv):
+        _push_data_scale_cov(data[k, ...], data_in[k, ...], 1.0)
+
+
+@myjit()
+def _push_datas_cov_vec(data, Datas):  # type: ignore
+    nv = data.shape[0]
+    ns = Datas.shape[0]
+    for s in range(ns):
+        for k in range(nv):
+            _push_data_scale_cov(data[k, ...], Datas[s, k, ...], 1.0)
+
+
+# --- Vals Scaled Pushers -------------------------------------------------------------------
+
+
+@myjit(inline=True)
+def push_vals_scale(data, W, X, scale):  # type: ignore
+    ns = X.shape[0]
+    for s in range(ns):
+        f = scale[s]
+        if f == 0:
+            continue
+        _push_val(data, W[s] * f, X[s])
+
+
+@myjit(inline=True)
+def push_vals_scale_vec(data, W, X, scale):  # type: ignore
+    ns = X.shape[0]
+    nv = data.shape[0]
+    for s in range(ns):
+        f = scale[s]
+        if f == 0:
+            continue
+        for k in range(nv):
+            _push_val(data[k, :], W[s, k] * f, X[s, k])
+
+
+@myjit(inline=True)
+def push_vals_scale_cov(data, W, X1, X2, scale):  # type: ignore
+    ns = X1.shape[0]
+    for s in range(ns):
+        f = scale[s]
+        if f == 0:
+            continue
+        _push_val_cov(data, W[s] * f, X1[s], X2[s])
+
+
+@myjit(inline=True)
+def push_vals_scale_cov_vec(data, W, X0, X1, scale):  # type: ignore
     nv = data.shape[0]
     ns = X0.shape[0]
     for s in range(ns):
@@ -475,32 +440,52 @@ def _push_vals_scale_cov_vec(data, W, X0, X1, scale):
             _push_val_cov(data[k, ...], W[s, k] * f, X0[s, k], X1[s, k])
 
 
-@myjit
-def _push_data_cov_vec(data, data_in):
-    nv = data.shape[0]
-    for k in range(nv):
-        _push_data_scale_cov(data[k, ...], data_in[k, ...], 1.0)
+# --- Datas SCaled Pushers -------------------------------------------------------------
 
 
-@myjit
-def _push_datas_cov_vec(data, Datas):
-    nv = data.shape[0]
-    ns = Datas.shape[0]
+@myjit(inline=True)
+def push_datas_scale(data, data_in, scale):  # type: ignore
+    ns = data_in.shape[0]
     for s in range(ns):
-        for k in range(nv):
-            _push_data_scale_cov(data[k, ...], Datas[s, k, ...], 1.0)
+        f = scale[s]
+        if f == 0:
+            continue
+        _push_stat(data, data_in[s, 0] * f, data_in[s, 1], data_in[s, 2:])
 
 
-@myjit
-def _push_data_scale_cov_vec(data, data_in, scale):
+# @myjit(inline=True)
+# def _push_data_scale(data, data_in, scale):  # type: ignore
+#     _push_stat(data, data_in[0] * scale, data_in[1], data_in[2:])
+
+
+@myjit(inline=True)
+def push_datas_scale_vec(data, Data_in, scale):  # type: ignore
+    ns = Data_in.shape[0]
     nv = data.shape[0]
-    if scale > 0:
+    for s in range(ns):
+        f = scale[s]
+        if f == 0:
+            continue
         for k in range(nv):
-            _push_data_scale_cov(data[k, ...], data_in[k, ...], scale)
+            # _push_data_scale(data[k, :], Data_in[s, k, :], f)
+            _push_stat(
+                data[k, :], Data_in[s, k, 0] * f, Data_in[s, k, 1], Data_in[s, k, 2:]
+            )
 
 
-@myjit
-def _push_datas_scale_cov_vec(data, Datas, scale):
+# Note: _push_data_scale_cov main func above
+@myjit(inline=True)
+def push_datas_scale_cov(data, datas, scale):  # type: ignore
+    ns = datas.shape[0]
+    for s in range(ns):
+        f = scale[s]
+        if f == 0:
+            continue
+        _push_data_scale_cov(data, datas[s], f)
+
+
+@myjit(inline=True)
+def push_datas_scale_cov_vec(data, Datas, scale):  # type: ignore
     nv = data.shape[0]
     ns = Datas.shape[0]
     for s in range(ns):
@@ -511,12 +496,35 @@ def _push_datas_scale_cov_vec(data, Datas, scale):
             _push_data_scale_cov(data[k, ...], Datas[s, k, ...], f)
 
 
-# named tuple for pushers
+# @myjit()
+# def _push_data_scale_vec(data, data_in, scale):  # type: ignore
+#     nv = data.shape[0]
+#     if scale != 0:
+#         for k in range(nv):
+#             _push_data_scale(data[k, :], data_in[k, :], scale)
 
 
-Pusher = namedtuple("Pusher", ["val", "vals", "stat", "stats", "data", "datas"])
+# @myjit()
+# def _push_data_scale_cov_vec(data, data_in, scale):  # type: ignore
+#     nv = data.shape[0]
+#     if scale > 0:
+#         for k in range(nv):
+#             _push_data_scale_cov(data[k, ...], data_in[k, ...], scale)
 
-pusher_scalar = Pusher(
+
+# --- Interaface - ---------------------------------------------------------------------
+class Pusher(NamedTuple):
+    """Collection of pusher functions."""
+
+    val: Callable[..., None]
+    vals: Callable[..., None]
+    stat: Callable[..., None] | None
+    stats: Callable[..., None] | None
+    data: Callable[..., None]
+    datas: Callable[..., None]
+
+
+_pusher_scalar = Pusher(
     val=_push_val,
     vals=_push_vals,
     stat=_push_stat,
@@ -525,7 +533,7 @@ pusher_scalar = Pusher(
     datas=_push_datas,
 )
 
-pusher_vector = Pusher(
+_pusher_vector = Pusher(
     val=_push_val_vec,
     vals=_push_vals_vec,
     stat=_push_stat_vec,
@@ -535,7 +543,7 @@ pusher_vector = Pusher(
 )
 
 
-pusher_cov_scalar = Pusher(
+_pusher_cov_scalar = Pusher(
     val=_push_val_cov,
     vals=_push_vals_cov,
     stat=None,
@@ -544,7 +552,7 @@ pusher_cov_scalar = Pusher(
     datas=_push_datas_cov,
 )
 
-pusher_cov_vector = Pusher(
+_pusher_cov_vector = Pusher(
     val=_push_val_cov_vec,
     vals=_push_vals_cov_vec,
     stat=None,
@@ -558,41 +566,11 @@ def factory_pushers(cov: bool = False, vec: bool = False) -> Pusher:
     """Factory method to get pusher functions."""  # noqa D401
     if cov:
         if vec:
-            return pusher_cov_vector
+            return _pusher_cov_vector
         else:
-            return pusher_cov_scalar
+            return _pusher_cov_scalar
     else:
         if vec:
-            return pusher_vector
+            return _pusher_vector
         else:
-            return pusher_scalar
-
-
-def factory_pusher_datas_scale(cov=False, vec=False):
-    """Factory method to get pushe with scale functions."""  # noqa D401
-    if cov:
-        if vec:
-            return _push_datas_scale_cov_vec
-        else:
-            return _push_datas_scale_cov
-
-    else:
-        if vec:
-            return _push_datas_scale_vec
-        else:
-            return _push_datas_scale
-
-
-def factory_pusher_vals_scale(cov=False, vec=False):
-    """Factory method to get val pusher functions."""  # noqa D401
-    if cov:
-        if vec:
-            return _push_vals_scale_cov_vec
-        else:
-            return _push_vals_scale_cov
-
-    else:
-        if vec:
-            return _push_vals_scale_vec
-        else:
-            return _push_vals_scale
+            return _pusher_scalar

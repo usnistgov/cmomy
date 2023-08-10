@@ -1,11 +1,10 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 import random
 
 import numpy as np
 import xarray as xr
 
 import cmomy.xcentral as xcentral
-
-# specific xcentral stuff
 
 
 def xtest(a, b):
@@ -69,7 +68,6 @@ def test_from_vals(other):
 def test_push_val(other):
     if other.axis == 0 and other.style == "total":
         if other.s._mom_ndim == 1:
-            print("do_push_val")
             t = other.s_xr.zeros_like()
             for ww, xx in zip(other.w, other.x):
                 t.push_val(x=xx, w=ww, broadcast=other.broadcast)
@@ -214,7 +212,7 @@ def test_resample_and_reduce(other):
             # check dims
             dims = list(other.s_xr.values.dims)
             dims.pop(axis)
-            dims = tuple(["hello"] + dims)
+            dims = tuple(["hello"] + dims)  # type: ignore
             assert t1.values.dims == dims
 
             # resample

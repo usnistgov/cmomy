@@ -127,15 +127,6 @@ been implemented. Therefore, the very first time you run a function, it may be
 slow. But all subsequent uses (including other sessions) will be already
 compiled.
 
-A quick way to cache (most all) the [Numba][Numba] functions is to run the
-tests. This can be done with
-
-```bash
-conda/mamba/pip install pytest
-
-pytest --pyargs cmomy
-```
-
 <!-- end-docs -->
 
 ## Documentation
@@ -153,7 +144,7 @@ This package is used extensively in the newest version of `thermoextrap`. See
 
 ## Contact
 
-The author can be reached at wpk@nist.gov.
+The author can be reached at <wpk@nist.gov>.
 
 ## Credits
 
