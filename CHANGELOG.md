@@ -20,7 +20,7 @@ See the fragment files in [changelog.d](https://github.com/usnistgov/cmomy)
 - Now using `module_utilities >=0.6`.
 - Changed from `custom-inherit` to `docstring-inheritance`
 - Now fully supports typing (passing mypy --stict and pyright)
-- Relocated numba functions to submodule `cmomy._lib_`.
+- Relocated numba functions to submodule `cmomy._lib`.
 
 ### Changed
 
