@@ -30,8 +30,8 @@ dependencies = [
     "numba >= 0.50",
     "xarray >= 0.16",
     "typing-extensions",
-    "custom-inherit",
-    "module-utilities >= 0.1",
+    "docstring-inheritance",
+    "module-utilities >= 0.6",
     "lazy_loader",
 ]
 
@@ -53,8 +53,9 @@ dev-extras = [
     "ipykernel",
 ]
 typing-extras = [
-    # "pytype; python_version < '3.11'",
-    "mypy",
+    "pytype; python_version < '3.11'", #
+    "mypy >= 1.4.1",
+    "pandas-stubs",
 ]
 typing = [
     "cmomy[typing-extras]", #
@@ -132,8 +133,13 @@ write_to = "src/cmomy/_version.py"
 test = "pytest"
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules --doctest-glob='*.md'"
-testpaths = ["README.md", "src", "tests"]
+addopts = "--doctest-modules --doctest-glob='*.md' --pyargs"
+testpaths = ["README.md", "cmomy", "tests"]
+
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:", "@overload"]
+omit = ["*/vendored/*"]
+include = ["src/*"]
 
 [tool.isort]
 profile = "black"
@@ -143,7 +149,6 @@ known_first_party = ["cmomy"]
 [tool.ruff]
 fix = true
 line-length = 88
-update-check = false
 target-version = "py38"
 select = [
     # pyflakes
@@ -278,6 +283,8 @@ ignore = [
     "D203",
     "D212",
 ]
+# No clue why these these errors show up...
+per-file-ignores = ["noxfile.py:F821,F722"]
 
 [tool.scriv]
 format = "md"
@@ -290,17 +297,18 @@ use_shortcuts = true
 [tool.cruft]
 
 [tool.mypy]
-files = ["src/cmomy"]
+files = ["src", "tests"]
 show_error_codes = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unused_configs = true
 exclude = [".eggs", ".tox", "doc", "docs", ".nox"]
 check_untyped_defs = true
+strict = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
-module = []
+module = ["numba.*", "custom_inherit.*"]
 
 [[tool.mypy.overrides]]
 ignore_errors = true
@@ -309,6 +317,19 @@ module = []
 [tool.pyright]
 include = ["src", "tests"]
 exclude = ["**/__pycache__", ".tox/**", ".nox/**", "**/.mypy_cache"]
+strict = [
+    "src/cmomy/__init__.py",
+    "src/cmomy/_lazy_imports.py",
+    "src/cmomy/abstract_central.py",
+    "src/cmomy/central.py",
+    "src/cmomy/xcentral.py",
+    "src/cmomy/convert.py",
+    "src/cmomy/docstrings.py",
+    "src/cmomy/options.py",
+    "src/cmomy/resample.py",
+    "src/cmomy/typing.py",
+    "src/cmomy/utils.py",
+]
 pythonVersion = "3.10"
 typeCheckingMode = "basic"
 # enable subset of "strict"
