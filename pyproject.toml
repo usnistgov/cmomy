@@ -133,8 +133,8 @@ write_to = "src/cmomy/_version.py"
 test = "pytest"
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules --doctest-glob='*.md'"
-testpaths = ["README.md", "src", "tests"]
+addopts = "--doctest-modules --doctest-glob='*.md' --pyargs"
+testpaths = ["README.md", "cmomy", "tests"]
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:", "@overload"]
