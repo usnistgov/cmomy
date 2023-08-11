@@ -10,6 +10,22 @@ See the fragment files in [changelog.d](https://github.com/usnistgov/cmomy)
 
 <!-- scriv-insert-here -->
 
+## v0.7.0 — 2023-08-11
+
+### Added
+
+- Now use [lazy_loader](https://github.com/scientific-python/lazy_loader) to
+  speed up initial load time.
+
+- Now using `module_utilities >=0.6`.
+- Changed from `custom-inherit` to `docstring-inheritance`
+- Now fully supports typing (passing mypy --stict and pyright)
+- Relocated numba functions to submodule `cmomy._lib_`.
+
+### Changed
+
+- Moved tests to top level of repo (`src/cmomy/tests` to `tests`)
+
 ## v0.5.0 — 2023-06-14
 
 ### Added
