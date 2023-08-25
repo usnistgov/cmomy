@@ -4,7 +4,7 @@ from __future__ import annotations
 # from functools import lru_cache
 from typing import TYPE_CHECKING, cast
 
-from ._lazy_imports import np
+import numpy as np
 
 if TYPE_CHECKING:
     from typing import Sequence

@@ -14,7 +14,7 @@ dependencies:
   - docstring-inheritance
   - module-utilities >= 0.6
   - lazy_loader
-  - mypy >= 1.4.1
+  - mypy >= 1.5.1
   - pandas-stubs
   - pytest
   - pytest-xdist

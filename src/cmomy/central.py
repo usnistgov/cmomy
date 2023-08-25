@@ -6,8 +6,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast, overload
 
+import numpy as np
+import xarray as xr
+
 from . import convert
-from ._lazy_imports import np, xr
 from .abstract_central import CentralMomentsABC
 from .docstrings import docfiller_central as docfiller
 from .utils import axis_expand_broadcast, shape_reduce

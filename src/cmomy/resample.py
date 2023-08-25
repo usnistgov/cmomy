@@ -7,7 +7,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from ._lazy_imports import np, xr
+import numpy as np
+import xarray as xr
+
 from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:

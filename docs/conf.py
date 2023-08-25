@@ -61,6 +61,9 @@ extensions = [
 ]
 
 nitpicky = True
+# nitpicky_ignore_regex = [(r"py:.*", r".*")]
+nitpicky_ignore = [("py:obj", "cmomy.typing.T_Array")]
+
 autosectionlabel_prefix_document = True
 
 # -- myst stuff ---------------------------------------------------------
@@ -83,7 +86,7 @@ myst_enable_extensions = [
 ]
 
 
-myst_heading_anchors = 2
+myst_heading_anchors = 3
 myst_footnote_transition = True
 myst_dmath_double_inline = True
 myst_enable_checkboxes = True

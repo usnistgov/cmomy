@@ -8,9 +8,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any, Callable, Hashable
 
+import numpy as np
 from numba import prange
 
-from .._lazy_imports import np
 from .pushers import (
     push_datas_scale,
     push_datas_scale_cov,

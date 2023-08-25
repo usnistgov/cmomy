@@ -19,14 +19,12 @@ dependencies:
   - pytest-cov
   - pytest-sugar
   - pytype
-  - mypy >= 1.4.1
+  - mypy >= 1.5.1
   - pandas-stubs
   - setuptools-scm
   - ipython
   - ipykernel
-  - nox
-  - ruamel.yaml
+  - nbval
   - pip
   - pip:
       - pytest-accept
-      - noxopt

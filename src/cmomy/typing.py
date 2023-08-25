@@ -46,7 +46,7 @@ F = TypeVar("F", bound=FuncType)
 
 # xarray specific stuff
 XArrayCoordsType: TypeAlias = Union[
-    Sequence[Union[Sequence[Any], "pd.Index", "xr.DataArray"]],
+    Sequence[Union[Sequence[Any], "pd.Index[Any]", "xr.DataArray"]],
     Mapping[Any, Any],
     None,
 ]

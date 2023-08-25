@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
+import numpy as np
 from numba import njit
 
-from .._lazy_imports import np
 from ..options import OPTIONS
 
 if TYPE_CHECKING:

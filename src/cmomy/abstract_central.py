@@ -4,10 +4,10 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Generic, cast, overload
 
+import numpy as np
 from module_utilities import cached
 
 from . import convert
-from ._lazy_imports import np
 from .docstrings import docfiller
 from .typing import MyNDArray, T_Array
 from .utils import normalize_axis_index
