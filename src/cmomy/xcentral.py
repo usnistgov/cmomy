@@ -174,10 +174,11 @@ def _xcentral_comoments(
     """Calculate central co-mom (covariance, etc) along axis."""
 
     if isinstance(mom, int):
-        mom = (mom,) * 2
+        mom = (mom, mom)
     else:
         mom = tuple(mom)  # type: ignore
 
+    assert isinstance(mom, tuple)
     assert len(mom) == 2
 
     assert isinstance(vals, tuple) and len(vals) == 2

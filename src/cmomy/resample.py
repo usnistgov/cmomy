@@ -246,7 +246,7 @@ def resample_vals(
     from ._lib.resample import factory_resample_vals
 
     if isinstance(mom, int):
-        mom = (mom,) * 1
+        mom = (mom,)
     assert isinstance(mom, tuple)
 
     if mom_ndim is None:
