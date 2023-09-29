@@ -3,10 +3,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast, overload  # TYPE_CHECKING,
 
+import numpy as np
+import xarray as xr
 from module_utilities import cached
 
 from . import convert
-from ._lazy_imports import np, xr
 from .abstract_central import CentralMomentsABC
 from .docstrings import docfiller_xcentral as docfiller
 from .utils import shape_reduce
@@ -173,10 +174,11 @@ def _xcentral_comoments(
     """Calculate central co-mom (covariance, etc) along axis."""
 
     if isinstance(mom, int):
-        mom = (mom,) * 2
+        mom = (mom, mom)
     else:
         mom = tuple(mom)  # type: ignore
 
+    assert isinstance(mom, tuple)
     assert len(mom) == 2
 
     assert isinstance(vals, tuple) and len(vals) == 2
@@ -1115,7 +1117,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         self,
         nrep: int | None = ...,
         *,
-        full_output: Literal[False],
+        full_output: Literal[False] = ...,
         dim: Hashable | None = ...,
         rep_dim: str = ...,
         axis: int | None = ...,

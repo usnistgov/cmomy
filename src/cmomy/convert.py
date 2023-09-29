@@ -6,9 +6,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
 from module_utilities.docfiller import DocFiller
-
-from ._lazy_imports import np
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Sequence

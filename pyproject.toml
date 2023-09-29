@@ -51,10 +51,11 @@ dev-extras = [
     "pytest-accept", # p2c: -p
     "ipython",
     "ipykernel",
+    "nbval",
 ]
 typing-extras = [
     "pytype; python_version < '3.11'", #
-    "mypy >= 1.4.1",
+    "mypy >= 1.5.1",
     "pandas-stubs",
 ]
 typing = [
@@ -73,8 +74,10 @@ dev = [
 ]
 tools = [
     "pre-commit", #
-    "cruft",
-    "scriv",
+    # "cruft",
+    "scriv", # p2c: -p
+    "nbqa",
+    "pyright",
 ]
 dev-complete = [
     "cmomy[dev]", #
@@ -85,7 +88,7 @@ docs = [
     "ipython", #
     "pyenchant",
     "ghp-import",
-    "sphinx",
+    "sphinx >= 5.3.0",
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
     "sphinx-autobuild",
@@ -104,7 +107,40 @@ dist-conda = [
 ]
 
 [tool.pyproject2conda]
+user_config = "config/userconfig.toml"
+template_python = "requirements/py{py}-{env}"
+template = "requirements/{env}"
+# defaults
+python = ["3.10"]
 channels = ["conda-forge"]
+style = ["yaml", "requirements"]
+default_envs = [
+    "test",
+    "typing",
+    "docs",
+    "dev",
+    "dev-complete",
+    "dist-conda",
+    "dist-pypi"
+]
+
+[tool.pyproject2conda.envs.test-extras]
+extras = ["test"]
+
+[tool.pyproject2conda.envs.dev-base]
+extras = ["dev"]
+
+[[tool.pyproject2conda.overrides]]
+envs = ["test-extras", "dist-conda", "dist-pypi"]
+base = false
+
+[[tool.pyproject2conda.overrides]]
+envs = ["test", "typing", "test-extras"]
+python = ["3.8", "3.9", "3.10", "3.11"]
+
+[[tool.pyproject2conda.overrides]]
+envs = ["dist-conda"]
+style = ["yaml"]
 
 ## grayskull still messes some things up, but use scripts/recipe-append.sh for this
 [tool.setuptools]
@@ -319,7 +355,6 @@ include = ["src", "tests"]
 exclude = ["**/__pycache__", ".tox/**", ".nox/**", "**/.mypy_cache"]
 strict = [
     "src/cmomy/__init__.py",
-    "src/cmomy/_lazy_imports.py",
     "src/cmomy/abstract_central.py",
     "src/cmomy/central.py",
     "src/cmomy/xcentral.py",

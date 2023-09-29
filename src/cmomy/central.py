@@ -6,8 +6,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast, overload
 
+import numpy as np
+import xarray as xr
+
 from . import convert
-from ._lazy_imports import np, xr
 from .abstract_central import CentralMomentsABC
 from .docstrings import docfiller_central as docfiller
 from .utils import axis_expand_broadcast, shape_reduce
@@ -114,10 +116,11 @@ def _central_comoments(
     """Calculate central co-mom (covariance, etc) along axis."""
 
     if isinstance(mom, int):
-        mom = (mom,) * 2
+        mom = (mom, mom)
 
     assert len(mom) == 2
     mom = tuple(mom)  # type: ignore
+    assert isinstance(mom, tuple)
 
     # change x to tuple of inputs
     assert isinstance(vals, tuple) and len(vals) == 2

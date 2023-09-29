@@ -1,6 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 
-from ._lazy_imports import np
+import numpy as np
 
 
 # Dumb calculations

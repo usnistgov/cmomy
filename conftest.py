@@ -16,3 +16,12 @@ def add_standard_imports(doctest_namespace):
     np.random.seed(0)
 
     np.set_printoptions(precision=4)
+
+
+def pytest_collectstart(collector):
+    if collector.fspath and collector.fspath.ext == ".ipynb":
+        collector.skip_compare += (
+            "text/html",
+            "application/javascript",
+            "stderr",
+        )

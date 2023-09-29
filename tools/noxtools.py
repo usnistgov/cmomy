@@ -14,7 +14,169 @@ if TYPE_CHECKING:
     import nox
 
 
-# --- Basic utilities -------------------------------------------------------------------
+# * Top level installation functions ---------------------------------------------------
+def py_prefix(python_version: Any) -> str:
+    if isinstance(python_version, str):
+        return "py" + python_version.replace(".", "")
+    else:
+        raise ValueError(f"passed non-string value {python_version}")
+
+
+def session_environment_filename(
+    name: str | None,
+    ext: str | None = None,
+    python_version: str | None = None,
+    lock: bool = False,
+) -> str:
+    """Get filename for a conda yaml or pip requirements file."""
+    if name is None:
+        raise ValueError("must supply name")
+
+    filename = name
+    if ext is not None:
+        filename = filename + ext
+    if python_version is not None:
+        filename = f"{py_prefix(python_version)}-{filename}"
+
+    if lock:
+        if filename.endswith(".yaml"):
+            filename = filename.rstrip(".yaml") + "-conda-lock.yml"
+        elif filename.endswith(".yml"):
+            filename = filename.rstrip(".yml") + "-conda-lock.yml"
+        elif filename.endswith(".txt"):
+            pass
+        else:
+            raise ValueError(f"unknown file extension for {filename}")
+
+        return f"./requirements/lock/{filename}"
+    else:
+        return f"./requirements/{filename}"
+
+
+def pkg_install_condaenv(
+    session: nox.Session,
+    name: str,
+    lock: bool = False,
+    display_name: str | None = None,
+    install_package: bool = True,
+    update: bool = False,
+    log_session: bool = False,
+    deps: Collection[str] | None = None,
+    reqs: Collection[str] | None = None,
+    channels: Collection[str] | None = None,
+    filename: str | None = None,
+    **kwargs: Any,
+) -> None:
+    """Install requirements.  If need fine control, do it in calling func."""
+
+    def check_filename(filename: str | Path) -> str:
+        if not Path(filename).exists():
+            raise ValueError(f"file {filename} does not exist")
+        session.log(f"Environment file: {filename}")
+        return str(filename)
+
+    assert isinstance(session.python, str)
+    filename = filename or session_environment_filename(
+        name=name, ext=".yaml", python_version=session.python, lock=lock
+    )
+
+    if lock:
+        session_install_envs_lock(
+            session=session,
+            lockfile=check_filename(filename),
+            display_name=display_name,
+            update=update,
+            install_package=install_package,
+            **kwargs,
+        )
+
+    else:
+        session_install_envs(
+            session,
+            check_filename(filename),
+            display_name=display_name,
+            update=update,
+            deps=deps,
+            reqs=reqs,
+            channels=channels,
+            install_package=install_package,
+            **kwargs,
+        )
+
+    if log_session:
+        session_log_session(session, conda=True)
+
+
+def pkg_install_venv(
+    session: nox.Session,
+    name: str,  # pyright: ignore
+    lock: bool = False,
+    requirement_paths: Collection[str] | None = None,
+    constraint_paths: Collection[str] | None = None,
+    extras: str | Collection[str] | None = None,
+    reqs: Collection[str] | None = None,
+    display_name: str | None = None,
+    update: bool = False,
+    install_package: bool = False,
+    no_deps: bool = False,
+    log_session: bool = False,
+) -> None:
+    if lock:
+        raise ValueError("lock not yet supported for install_pip")
+
+    session_install_pip(
+        session=session,
+        requirement_paths=requirement_paths,
+        constraint_paths=constraint_paths,
+        extras=extras,
+        reqs=reqs,
+        display_name=display_name,
+        update=update,
+        install_package=install_package,
+        no_deps=no_deps,
+        lock=lock,
+    )
+
+    if log_session:
+        session_log_session(session, conda=False)
+
+
+def session_log_session(session: nox.Session, conda: bool = True) -> None:
+    logfile = Path(session.create_tmp()) / "env_info.txt"
+
+    session.log(f"writing environment log to {logfile}")
+
+    with logfile.open("w") as f:
+        if conda:
+            session.run("conda", "list", stdout=f)
+        else:
+            session.run("python", "--version", stdout=f)
+            session.run("pip", "list", stdout=f)
+
+
+# * User config ------------------------------------------------------------------------
+def load_nox_config(path: str | Path = "./config/userconfig.toml") -> dict[str, Any]:
+    """
+    Load user toml config file.
+
+    File should look something like:
+
+    [nox.python]
+    paths = ["~/.conda/envs/python-3.*/bin"]
+
+    # Extras for environments
+    # for example, could have
+    # dev = ["dev", "nox", "tools"]
+    [nox.extras]
+    dev = ["dev", "nox"]
+    """
+
+    from .projectconfig import ProjectConfig
+
+    return ProjectConfig.from_path(path).to_nox_config()
+
+
+# * Basic utilities --------------------------------------------------------------------
 def combine_list_str(opts: list[str]) -> list[str]:
     if opts:
         return shlex.split(" ".join(opts))
@@ -33,21 +195,25 @@ def sort_like(values: Collection[Any], like: Sequence[Any]) -> list[Any]:
     return sorted(set(values), key=lambda k: sorter[k])
 
 
-def update_target(target: str | Path, *deps: str | Path) -> bool:
+def update_target(
+    target: str | Path, *deps: str | Path, allow_missing: bool = False
+) -> bool:
     """Check if target is older than deps:"""
-    target_path = Path(target)
-    deps_path = tuple(map(Path, deps))
+    target = Path(target)
 
-    for d in deps_path:
-        if not d.exists():
+    deps_filtered = []
+    for d in map(Path, deps):
+        if d.exists():
+            deps_filtered.append(d)
+        elif not allow_missing:
             raise ValueError(f"dependency {d} does not exist")
 
-    if not target_path.exists():
-        update = True
-
+    if not target.exists():
+        return True
     else:
-        target_time = target_path.stat().st_mtime
-        update = any(target_time < dep.stat().st_mtime for dep in deps_path)
+        target_time = target.stat().st_mtime
+
+        update = any(target_time < dep.stat().st_mtime for dep in deps_filtered)
 
     return update
 
@@ -85,64 +251,8 @@ def open_webpage(path: str | Path | None = None, url: str | None = None) -> None
         webbrowser.open(url)
 
 
-# --- Load user configuration ----------------------------------------------------------
-def load_nox_config(path: str | Path = "./.noxconfig.toml") -> dict[str, Any]:
-    """
-    Load user toml config file.
-
-    File should look something like:
-
-    [nox.python]
-    paths = ["~/.conda/envs/test-3.*/bin"]
-
-    # Extras for environments
-    # for example, could have
-    # dev = ["dev", "nox", "tools"]
-    [nox.extras]
-    dev = ["dev", "nox"]
-    """
-    import os
-    from glob import glob
-
-    import tomli
-
-    config: dict[str, Any] = {}
-
-    path = Path(path)
-    if not path.exists():
-        return config
-
-    with path.open("rb") as f:
-        data = tomli.load(f)
-
-    # Python paths
-    try:
-        paths = []
-        for p in data["nox"]["python"]["paths"]:
-            paths.extend(glob(os.path.expanduser(p)))
-
-        paths_str = ":".join(map(str, paths))
-        os.environ["PATH"] = paths_str + ":" + os.environ["PATH"]
-    except KeyError:
-        pass
-
-    # extras:
-    extras = {"dev": ["nox", "dev"]}
-    try:
-        for k, v in data["nox"]["extras"].items():
-            extras[k] = v
-    except KeyError:
-        pass
-
-    config["environment-extras"] = extras
-
-    # for py in PYTHON_ALL_VERSIONS:
-    #     print(f"which python{py}", shutil.which(f"python{py}"))
-
-    return config
-
-
-# --- Nox session utilities ------------------------------------------------------------
+# * Package install --------------------------------------------------------------------
+# ** Utilities
 def session_skip_install(session: nox.Session) -> bool:
     """
     Utility to check if we're skipping install and reusing existing venv
@@ -200,16 +310,16 @@ def session_install_package(
     session.install(*command, *args, **kwargs)
 
 
-# --- Create env from lock -------------------------------------------------------------
+# ** conda-lock
 def session_install_envs_lock(
     session: nox.Session,
     lockfile: str | Path,
     extras: str | list[str] | None = None,
     display_name: str | None = None,
-    force_reinstall: bool = False,
+    update: bool = False,
     install_package: bool = False,
 ) -> bool:
-    """Install depedencies using conda-lock."""
+    """Install dependencies using conda-lock."""
 
     if session_skip_install(session):
         return True
@@ -217,7 +327,7 @@ def session_install_envs_lock(
     unchanged, hashes = env_unchanged(
         session, lockfile, prefix="lock", other=dict(install_package=install_package)
     )
-    if unchanged and not force_reinstall:
+    if unchanged and not update:
         return unchanged
 
     if extras:
@@ -249,7 +359,7 @@ def session_install_envs_lock(
     return unchanged
 
 
-# --- create env from yaml -------------------------------------------------------------
+# ** Conda
 def parse_envs(
     *paths: str | Path,
     remove_python: bool = True,
@@ -310,7 +420,7 @@ def session_install_envs(
     conda_install_kws: dict[str, Any] | None = None,
     install_kws: dict[str, Any] | None = None,
     display_name: str | None = None,
-    force_reinstall: bool = False,
+    update: bool = False,
     install_package: bool = False,
 ) -> bool:
     """Parse and install everything. Pass an already merged yaml file."""
@@ -336,7 +446,7 @@ def session_install_envs(
             install_package=install_package,
         ),
     )
-    if unchanged and not force_reinstall:
+    if unchanged and not update:
         return unchanged
 
     if not channels:
@@ -344,9 +454,14 @@ def session_install_envs(
     if deps:
         conda_install_kws = conda_install_kws or {}
         conda_install_kws.update(channel=channels)
+        if update:
+            deps = ["--update-all"] + list(deps)
+
         session.conda_install(*deps, **(conda_install_kws or {}))
 
     if reqs:
+        if update:
+            reqs = ["--upgrade"] + list(reqs)
         session.install(*reqs, **(install_kws or {}))
 
     if install_package:
@@ -359,6 +474,7 @@ def session_install_envs(
     return unchanged
 
 
+# ** Pip
 def session_install_pip(
     session: nox.Session,
     requirement_paths: str | Collection[str] | None = None,
@@ -366,9 +482,10 @@ def session_install_pip(
     extras: str | Collection[str] | None = None,
     reqs: str | Collection[str] | None = None,
     display_name: str | None = None,
-    force_reinstall: bool = False,
+    update: bool = False,
     install_package: bool = False,
-    no_deps: bool = False,
+    no_deps: bool = True,
+    lock: bool = False,
 ) -> bool:
     if session_skip_install(session):
         return True
@@ -383,6 +500,23 @@ def session_install_pip(
         else:
             return list(x)
 
+    def _verify_paths(paths: str | list[str]) -> list[str]:
+        if isinstance(paths, str):
+            paths = [paths]
+
+        out = []
+        for path in paths:
+            if Path(path).exists():
+                out.append(path)
+            else:
+                inferred = session_environment_filename(name=path, lock=lock)
+                if Path(inferred).exists():
+                    out.append(inferred)
+                else:
+                    raise ValueError(f"no file {path} found/inferred")
+        return out
+
+    # parameters
     extras = _check_param(extras)
     if extras:
         install_package = True
@@ -390,15 +524,18 @@ def session_install_pip(
         install_package_args = ["-e", f".[{extras}]"]
     elif install_package:
         install_package_args = ["-e", "."]
+    else:
+        install_package_args = []
 
     if install_package and no_deps:
         install_package_args.append("--no-deps")
 
-    requirement_paths = _check_param(requirement_paths)
-    constraint_paths = _check_param(constraint_paths)
+    requirement_paths = _verify_paths(_check_param(requirement_paths))
+    constraint_paths = _verify_paths(_check_param(constraint_paths))
     reqs = _check_param(reqs)
     paths = list(requirement_paths) + list(constraint_paths)
 
+    # check update
     unchanged, hashes = env_unchanged(
         session,
         *paths,
@@ -408,9 +545,10 @@ def session_install_pip(
         ),
     )
 
-    if unchanged and not force_reinstall:
+    if unchanged and not update:
         return unchanged
 
+    # do install
     install_args = (
         prepend_flag("-r", *requirement_paths)
         + prepend_flag("-c", *constraint_paths)
@@ -418,6 +556,8 @@ def session_install_pip(
     )
 
     if install_args:
+        if update:
+            install_args = ["--upgrade"] + list(install_args)
         session.install(*install_args)
 
     if install_package:
@@ -429,7 +569,7 @@ def session_install_pip(
     return unchanged
 
 
-# --- Hash environment -----------------------------------------------------------------
+# ** Hash environment
 
 PREFIX_HASH_EXTS = Literal["env", "lock", "pip"]
 
@@ -530,7 +670,7 @@ def _get_file_hash(path: str | Path, buff_size: int = 65536) -> str:
     return md5.hexdigest()
 
 
-# --- Old stuff ------------------------------------------------------------------------
+# * Old stuff --------------------------------------------------------------------------
 # def session_install_envs_merge(
 #     session,
 #     *paths,
@@ -541,7 +681,7 @@ def _get_file_hash(path: str | Path, buff_size: int = 65536) -> str:
 #     conda_install_kws=None,
 #     install_kws=None,
 #     display_name=None,
-#     force_reinstall=False,
+#     update=False,
 # ) -> bool:
 #     """Merge files (using conda-merge) and then create env"""
 
@@ -551,7 +691,7 @@ def _get_file_hash(path: str | Path, buff_size: int = 65536) -> str:
 #     unchanged, hashes = env_unchanged(
 #         session, *paths, prefix="env", other=dict(deps=deps, reqs=reqs)
 #     )
-#     if unchanged and not force_reinstall:
+#     if unchanged and not update:
 #         return unchanged
 
 #     # first create a temporary file for the environment
@@ -839,20 +979,20 @@ def _get_file_hash(path: str | Path, buff_size: int = 65536) -> str:
 # #     session.run(*args, external=external, **kws)
 
 
-# # This should actually go in the noxfile.  Keeping here
-# # incase want it again in the future.
+## This should actually go in the noxfile.  Keeping here
+## in case want it again in the future.
 # @group.session(python=PYTHON_DEFAULT_VERSION)
 # def conda_merge(
 #     session: Session,
 #     conda_merge_force: bool = False,
-#     force_reinstall: FORCE_REINSTALL_CLI = False,
+#     update: FORCE_REINSTALL_CLI = False,
 # ):
 #     """Merge environments using conda-merge."""
 #     import tempfile
 #     session_install_envs(
 #         session,
 #         reqs=["conda-merge", "ruamel.yaml"],
-#         force_reinstall=force_reinstall,
+#         update=update,
 #     )
 
 #     env_base = ROOT / "environment.yaml"

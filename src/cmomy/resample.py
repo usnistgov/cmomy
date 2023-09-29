@@ -7,7 +7,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast
 
-from ._lazy_imports import np, xr
+import numpy as np
+import xarray as xr
+
 from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:
@@ -244,7 +246,7 @@ def resample_vals(
     from ._lib.resample import factory_resample_vals
 
     if isinstance(mom, int):
-        mom = (mom,) * 1
+        mom = (mom,)
     assert isinstance(mom, tuple)
 
     if mom_ndim is None:
