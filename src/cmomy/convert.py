@@ -4,6 +4,7 @@ Routines to convert central (co)moments to raw (co)moments. (:mod:`cmomy.convert
 """
 from __future__ import annotations
 
+from math import prod
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -137,7 +138,7 @@ def _convert_moments(
     if val_shape == ():
         reshape = (1,) + mom_shape
     else:
-        reshape = (int(np.prod(val_shape)),) + mom_shape  # pyright: ignore
+        reshape = (prod(val_shape),) + mom_shape
 
     data_r = data_r.reshape(reshape)
     out_r = out_r.reshape(reshape)

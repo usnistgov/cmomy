@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from math import prod
 from typing import TYPE_CHECKING, Generic, cast, overload
 
 import numpy as np
@@ -146,7 +147,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         if self.val_shape == ():
             return ()
         else:
-            return (int(np.prod(self.val_shape)),)  # pyright: ignore
+            return (prod(self.val_shape),)
 
     @property
     def shape_flat(self) -> tuple[int, ...]:
@@ -321,11 +322,15 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
     def mean(self) -> float | T_Array:
         """Mean (first moment)."""
-        return cast("float | T_Array", self.values[self._single_index(1)])
+        return cast(
+            "float | T_Array", self.values[self._single_index(1)]
+        )  # pyright: ignore
 
     def var(self) -> float | T_Array:
         """Variance (second central moment)."""
-        return cast("float | T_Array", self.values[self._single_index(2)])
+        return cast(
+            "float | T_Array", self.values[self._single_index(2)]
+        )  # pyright: ignore
 
     def std(self) -> float | T_Array:
         """Standard deviation."""  # noqa D401

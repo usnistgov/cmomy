@@ -5,6 +5,7 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 
 from __future__ import annotations
 
+from math import prod
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -207,14 +208,14 @@ def resample_data(
         # make sure out is in correct order
         out = np.asarray(out, dtype=dtype, order="C")
 
-    meta_reshape: tuple[()] | tuple[int]
+    meta_reshape: tuple[int, ...]
     if shape == ():
-        meta_reshape = ()
+        meta_reshape = mom_shape
     else:
-        meta_reshape = (np.prod(shape),)  # type: ignore
+        meta_reshape = (prod(shape),) + mom_shape
 
-    data_reshape = (ndat,) + meta_reshape + mom_shape
-    out_reshape = (nrep,) + meta_reshape + mom_shape
+    data_reshape = (ndat,) + meta_reshape
+    out_reshape = (nrep,) + meta_reshape
 
     datar = data.reshape(data_reshape)
     outr = out.reshape(out_reshape)
@@ -298,14 +299,15 @@ def resample_vals(
         out = np.asarray(out, dtype=dtype, order="C")
 
     # reshape
-
-    meta_reshape: tuple[int, ...]
+    data_reshape: tuple[int, ...] = (ndat,)
+    out_reshape: tuple[int, ...] = (nrep,)
     if shape == ():
-        meta_reshape = ()
+        pass
     else:
-        meta_reshape = (int(np.prod(shape)),)  # pyright: ignore
-    data_reshape = (ndat,) + meta_reshape
-    out_reshape = (nrep,) + meta_reshape + mom_shape
+        meta_reshape: tuple[int, ...] = (prod(shape),)
+        data_reshape = data_reshape + meta_reshape
+        out_reshape = out_reshape + meta_reshape
+    out_reshape = out_reshape + mom_shape
 
     xr = x.reshape(data_reshape)
     wr = w.reshape(data_reshape)
