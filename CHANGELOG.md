@@ -8,7 +8,7 @@ Changelog for `cmomy`
 
 ## Unreleased
 
-[changelog.d]: https://github.com/usnistgov/cmomy
+[changelog.d]: https://github.com/usnistgov/cmomy/tree/main/changelog.d
 
 See the fragment files in [changelog.d]
 

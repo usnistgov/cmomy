@@ -31,7 +31,7 @@ dependencies:
   - pytest-xdist
   - pytype
   - ruamel.yaml
-  - setuptools-scm
+  - setuptools-scm>=8.0
   - typing-extensions
   - xarray >= 0.16
   - pip
