@@ -232,7 +232,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "cmomy"
-copyright = "2023, William P. Krekelberg"
+copyright = "2020, William P. Krekelberg"
 author = "William P. Krekelberg"
 
 # The version info for the project you're documenting, acts as replacement
