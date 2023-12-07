@@ -291,7 +291,7 @@ def central_moments(
     else:
         return _central_comoments(
             vals=x,  # type: ignore
-            mom=mom,  # type: ignore
+            mom=mom,
             w=w,
             axis=axis,
             last=last,

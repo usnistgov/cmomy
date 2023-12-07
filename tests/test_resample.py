@@ -25,6 +25,7 @@ def test_freq_indices(nrep, ndat):
     np.testing.assert_allclose(freq0, freq1)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("parallel", [True, False])
 def test_resample_vals(other, parallel):
     # test basic resampling
@@ -43,6 +44,7 @@ def test_resample_vals(other, parallel):
         np.testing.assert_allclose(datar, other.data_test_resamp)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("parallel", [True, False])
 def test_stats_resample_vals(other, parallel):
     if other.style == "total":
@@ -70,6 +72,7 @@ def test_stats_resample_vals(other, parallel):
         np.testing.assert_allclose(t.data, other.data_test_resamp)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("parallel", [True, False])
 def test_resample_data(other, parallel):
     nrep = 10
@@ -92,6 +95,7 @@ def test_resample_data(other, parallel):
             np.testing.assert_allclose(data_ref, t.data)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("parallel", [True, False])
 def test_resample_against_vals(other, parallel):
     nrep = 10
@@ -110,6 +114,7 @@ def test_resample_against_vals(other, parallel):
             np.testing.assert_allclose(t0.values, t1.values)
 
 
+@pytest.mark.slow
 def test_bootstrap_stats(other):
     x = other.xdata
     axis = other.axis

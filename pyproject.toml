@@ -46,12 +46,12 @@ test = [
     "pytest-cov",
     "pytest-sugar",
 ]
+nbval = ["nbval"]
 dev-extras = [
     "setuptools-scm>=8.0", #
     "pytest-accept", # p2c: -p
     "ipython",
     "ipykernel",
-    "nbval",
 ]
 typing-extras = [
     "pytype; python_version < '3.11'", #
@@ -60,21 +60,17 @@ typing-extras = [
 ]
 typing = [
     "cmomy[typing-extras]", #
-    "cmomy[test]",
+    "pytest",
 ]
-nox = [
-    "nox",
-    "noxopt", # p2c: -p
-    "ruamel.yaml",
-]
+nox = ["nox", "ruamel.yaml"]
 dev = [
-    "cmomy[test]", #
+    "cmomy[nbval]", #
+    "cmomy[test]",
     "cmomy[typing-extras]",
     "cmomy[dev-extras]",
 ]
 tools = [
     "pre-commit", #
-    # "cruft",
     "scriv", # p2c: -p
     "nbqa",
     "pyright",
@@ -96,51 +92,43 @@ docs = [
     "sphinx-book-theme",
     "autodocsumm",
 ]
-# to be parsed with pyproject2conda with --no-base option
-dist-pypi = ["twine", "build"]
-dist-conda = [
-    "anaconda-client", #
-    "grayskull",
-    "conda-build",
-    "conda-verify",
-    "boa",
-]
 
 [tool.pyproject2conda]
 user_config = "config/userconfig.toml"
 template_python = "requirements/py{py}-{env}"
 template = "requirements/{env}"
 # defaults
-python = ["3.10"]
+python = ["3.11"]
 channels = ["conda-forge"]
 style = ["yaml", "requirements"]
-default_envs = [
-    "test",
-    "typing",
-    "docs",
-    "dev",
-    "dev-complete",
-    "dist-conda",
-    "dist-pypi"
-]
+default_envs = ["test", "typing", "docs", "dev", "dev-complete"]
 
 [tool.pyproject2conda.envs.test-extras]
 extras = ["test"]
+base = false
 
 [tool.pyproject2conda.envs.dev-base]
 extras = ["dev"]
 
-[[tool.pyproject2conda.overrides]]
-envs = ["test-extras", "dist-conda", "dist-pypi"]
+[tool.pyproject2conda.envs.build]
+extras = "build-system.requires"
+reqs = ["build"]
 base = false
+style = "requirements"
+
+# make sure pip available to all conda environments
+# that install the package
+[[tool.pyproject2conda.overrides]]
+envs = ["test", "dev", "dev-complete", "dev-base", "docs"]
+deps = ["pip"]
 
 [[tool.pyproject2conda.overrides]]
 envs = ["test", "typing", "test-extras"]
 python = ["3.8", "3.9", "3.10", "3.11"]
 
-[[tool.pyproject2conda.overrides]]
-envs = ["dist-conda"]
-style = ["yaml"]
+# Project specific
+[tool.pyproject2conda.envs.test-notebook]
+extras = ["test", "nbval"]
 
 ## grayskull still messes some things up, but use scripts/recipe-append.sh for this
 [tool.setuptools]
@@ -170,6 +158,7 @@ test = "pytest"
 [tool.pytest.ini_options]
 addopts = "--doctest-modules --doctest-glob='*.md' --pyargs"
 testpaths = ["README.md", "cmomy", "tests"]
+filterwarnings = ["ignore::UserWarning"]
 
 [tool.coverage.report]
 exclude_also = ["if TYPE_CHECKING:", "@overload"]
@@ -332,7 +321,7 @@ use_shortcuts = true
 [tool.cruft]
 
 [tool.mypy]
-files = ["src", "tests", "noxfile.py", "tools"]
+files = ["src", "tests"]
 show_error_codes = true
 warn_unused_ignores = true
 warn_return_any = true
@@ -364,7 +353,7 @@ strict = [
     "src/cmomy/typing.py",
     "src/cmomy/utils.py",
 ]
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 typeCheckingMode = "basic"
 # enable subset of "strict"
 reportDuplicateImport = true

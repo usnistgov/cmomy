@@ -318,18 +318,26 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
     def weight(self) -> float | T_Array:
         """Weight data."""
-        return cast("float | T_Array", self.values[self._weight_index])
+        return cast(
+            "float | T_Array", self.values[self._weight_index]
+        )  # pyright: ignore[reportGeneralTypeIssues]
 
     def mean(self) -> float | T_Array:
         """Mean (first moment)."""
         return cast(
-            "float | T_Array", self.values[self._single_index(1)]
+            "float | T_Array",
+            self.values[
+                self._single_index(1)
+            ],  # pyright: ignore[reportGeneralTypeIssues]
         )  # pyright: ignore
 
     def var(self) -> float | T_Array:
         """Variance (second central moment)."""
         return cast(
-            "float | T_Array", self.values[self._single_index(2)]
+            "float | T_Array",
+            self.values[
+                self._single_index(2)
+            ],  # pyright: ignore[reportGeneralTypeIssues]
         )  # pyright: ignore
 
     def std(self) -> float | T_Array:

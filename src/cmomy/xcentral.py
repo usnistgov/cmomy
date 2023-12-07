@@ -27,7 +27,6 @@ if TYPE_CHECKING:
     from xarray.core import types as xr_types
     from xarray.core.coordinates import DataArrayCoordinates
     from xarray.core.indexes import Indexes
-    from xarray.core.utils import Frozen
 
     from .central import CentralMoments
     from .typing import (
@@ -373,7 +372,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         return self._xdata.indexes  # pyright: ignore
 
     @property
-    def sizes(self) -> Frozen[Hashable, int]:
+    def sizes(self) -> Mapping[Hashable, int]:
         """Sizes of values."""
         return self._xdata.sizes
 
@@ -2179,7 +2178,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         new = cls.from_centralmoments(
             obj=out,
-            dims=dims,
+            dims=dims,  # pyright: ignore
             coords=coords,
             attrs=attrs,
             name=name,

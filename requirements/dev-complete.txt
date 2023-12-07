@@ -11,14 +11,13 @@ docstring-inheritance
 ipykernel
 ipython
 lazy_loader
-module-utilities >= 0.6
-mypy >= 1.5.1
+module-utilities>=0.6
+mypy>=1.5.1
 nbqa
 nbval
 nox
-noxopt
-numba >= 0.50
-numpy >= 1.21
+numba>=0.50
+numpy>=1.21
 pandas-stubs
 pre-commit
 pyright
@@ -27,9 +26,9 @@ pytest-accept
 pytest-cov
 pytest-sugar
 pytest-xdist
-pytype; python_version < '3.11'
+pytype;python_version<"3.11"
 ruamel.yaml
 scriv
 setuptools-scm>=8.0
 typing-extensions
-xarray >= 0.16
+xarray>=0.16
