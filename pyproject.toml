@@ -1,136 +1,100 @@
 [build-system]
-requires = ["setuptools>=61.2", "setuptools_scm[toml]>=8.0"]
 build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.2", "setuptools_scm[toml]>=8.0"]
 
 [project]
 name = "cmomy"
-authors = [{ name = "William P. Krekelberg", email = "wpk@nist.gov" }]
-license = { text = "NIST-PD" }
 description = "Central (co)moment calculation/manipulation"
-# if using markdown
-# long_description_content_type = text/markdown
 keywords = ["cmomy"]
+license = { text = "NIST-PD" }
+authors = [{ name = "William P. Krekelberg", email = "wpk@nist.gov" }]
+requires-python = ">=3.8"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
     "License :: Public Domain",
     "Operating System :: OS Independent",
-    "Intended Audience :: Science/Research",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
 ]
 dynamic = ["readme", "version"]
-requires-python = ">=3.8"
 dependencies = [
-    "numpy >= 1.21",
-    "numba >= 0.50",
-    "xarray >= 0.16",
-    "typing-extensions",
     "docstring-inheritance",
-    "module-utilities >= 0.6",
     "lazy_loader",
+    "module-utilities >= 0.6",
+    "numba >= 0.50",
+    "numpy >= 1.21",
+    "typing-extensions",
+    "xarray >= 0.16",
 ]
-
-[project.urls]
-homepage = "https://github.com/usnistgov/cmomy"
-documentation = "https://pages.nist.gov/cmomy/"
 
 [project.optional-dependencies]
-test = [
-    "pytest", #
-    "pytest-xdist",
-    "pytest-cov",
-    "pytest-sugar",
-]
-nbval = ["nbval"]
-dev-extras = [
-    "setuptools-scm>=8.0", #
-    "pytest-accept", # p2c: -p
-    "ipython",
-    "ipykernel",
-]
-typing-extras = [
-    "pytype; python_version < '3.11'", #
-    "mypy >= 1.5.1",
-    "pandas-stubs",
-]
-typing = [
-    "cmomy[typing-extras]", #
-    "pytest",
-]
-nox = ["nox", "ruamel.yaml"]
 dev = [
     "cmomy[nbval]", #
     "cmomy[test]",
     "cmomy[typing-extras]",
     "cmomy[dev-extras]",
 ]
-tools = [
-    "pre-commit", #
-    "scriv", # p2c: -p
-    "nbqa",
-    "pyright",
-]
 dev-complete = [
     "cmomy[dev]", #
     "cmomy[tools]",
     "cmomy[nox]",
 ]
+dev-extras = [
+    "ipykernel",
+    "ipython",
+    "pytest-accept", # p2c: -p
+    "setuptools-scm>=8.0", #
+
+]
 docs = [
-    "ipython", #
-    "pyenchant",
+    "autodocsumm",
     "ghp-import",
+    "ipython", #
+    "myst-nb",
+    "pyenchant",
     "sphinx >= 5.3.0",
+    "sphinx-autobuild",
+    "sphinx-book-theme",
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
-    "sphinx-autobuild",
-    "myst-nb",
-    "sphinx-book-theme",
-    "autodocsumm",
+]
+nbval = ["nbval"]
+nox = ["nox", "ruamel.yaml"]
+test = [
+    "pytest", #
+    "pytest-cov",
+    "pytest-sugar",
+    "pytest-xdist",
+]
+tools = [
+    "nbqa",
+    "pre-commit", #
+    "pyright",
+    "scriv", # p2c: -p
+
+]
+typing = [
+    "cmomy[typing-extras]", #
+    "pytest",
+]
+typing-extras = [
+    "mypy >= 1.5.1",
+    "pandas-stubs",
+    "pytype; python_version < '3.11'", #
+
 ]
 
-[tool.pyproject2conda]
-user_config = "config/userconfig.toml"
-template_python = "requirements/py{py}-{env}"
-template = "requirements/{env}"
-# defaults
-python = ["3.11"]
-channels = ["conda-forge"]
-style = ["yaml", "requirements"]
-default_envs = ["test", "typing", "docs", "dev", "dev-complete"]
+[project.urls]
+documentation = "https://pages.nist.gov/cmomy/"
+homepage = "https://github.com/usnistgov/cmomy"
 
-[tool.pyproject2conda.envs.test-extras]
-extras = ["test"]
-base = false
-
-[tool.pyproject2conda.envs.dev-base]
-extras = ["dev"]
-
-[tool.pyproject2conda.envs.build]
-extras = "build-system.requires"
-reqs = ["build"]
-base = false
-style = "requirements"
-
-# make sure pip available to all conda environments
-# that install the package
-[[tool.pyproject2conda.overrides]]
-envs = ["test", "dev", "dev-complete", "dev-base", "docs"]
-deps = ["pip"]
-
-[[tool.pyproject2conda.overrides]]
-envs = ["test", "typing", "test-extras"]
-python = ["3.8", "3.9", "3.10", "3.11"]
-
-# Project specific
-[tool.pyproject2conda.envs.test-notebook]
-extras = ["test", "nbval"]
-
-## grayskull still messes some things up, but use scripts/recipe-append.sh for this
 [tool.setuptools]
 zip-safe = true # if using mypy, must be False
 include-package-data = true
@@ -151,24 +115,6 @@ readme = { file = [
 
 [tool.setuptools_scm]
 fallback_version = "999"
-
-[tool.aliases]
-test = "pytest"
-
-[tool.pytest.ini_options]
-addopts = "--doctest-modules --doctest-glob='*.md' --pyargs"
-testpaths = ["README.md", "cmomy", "tests"]
-filterwarnings = ["ignore::UserWarning"]
-
-[tool.coverage.report]
-exclude_also = ["if TYPE_CHECKING:", "@overload"]
-omit = ["*/vendored/*"]
-include = ["src/*"]
-
-[tool.isort]
-profile = "black"
-skip_gitignore = true
-known_first_party = ["cmomy"]
 
 [tool.ruff]
 fix = true
@@ -273,8 +219,10 @@ known-first-party = ["cmomy"]
 # Unlike Flake8, default to a complexity level of 10.
 max-complexity = 10
 
-[tool.nbqa.addopts]
-ruff = ["--fix", "--extend-ignore=D100,B018"]
+[tool.isort]
+profile = "black"
+skip_gitignore = true
+known_first_party = ["cmomy"]
 
 [tool.flake8]
 docstring-convention = "numpy"
@@ -310,15 +258,18 @@ ignore = [
 # No clue why these these errors show up...
 per-file-ignores = ["noxfile.py:F821,F722"]
 
-[tool.scriv]
-format = "md"
-md_header_level = "2"
-new_fragment_template = "file: changelog.d/templates/new_fragment.md.j2"
+[tool.nbqa.addopts]
+ruff = ["--fix", "--extend-ignore=D100,B018"]
 
-[tool.commitizen]
-use_shortcuts = true
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --doctest-glob='*.md' --pyargs"
+testpaths = ["README.md", "cmomy", "tests"]
+filterwarnings = ["ignore::UserWarning"]
 
-[tool.cruft]
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:", "@overload"]
+omit = ["*/vendored/*"]
+include = ["src/*"]
 
 [tool.mypy]
 files = ["src", "tests"]
@@ -377,3 +328,54 @@ reportUnboundVariable = false
 
 [tool.pytype]
 inputs = ["src", "tests"]
+
+[tool.pyproject2conda]
+user_config = "config/userconfig.toml"
+template_python = "requirements/py{py}-{env}"
+template = "requirements/{env}"
+# defaults
+python = ["3.11"]
+channels = ["conda-forge"]
+style = ["yaml", "requirements"]
+default_envs = ["test", "typing", "docs", "dev", "dev-complete"]
+
+[tool.pyproject2conda.envs.test-extras]
+extras = ["test"]
+base = false
+
+[tool.pyproject2conda.envs.dev-base]
+extras = ["dev"]
+
+[tool.pyproject2conda.envs.build]
+extras = "build-system.requires"
+reqs = ["build"]
+base = false
+style = "requirements"
+
+# make sure pip available to all conda environments
+# that install the package
+[tool.pyproject2conda.envs.test-notebook]
+extras = ["test", "nbval"]
+
+## grayskull still messes some things up, but use scripts/recipe-append.sh for this
+[[tool.pyproject2conda.overrides]]
+envs = ["test", "dev", "dev-complete", "dev-base", "docs"]
+deps = ["pip"]
+
+[[tool.pyproject2conda.overrides]]
+envs = ["test", "typing", "test-extras"]
+python = ["3.8", "3.9", "3.10", "3.11"]
+
+# Project specific
+[tool.aliases]
+test = "pytest"
+
+[tool.scriv]
+format = "md"
+md_header_level = "2"
+new_fragment_template = "file: changelog.d/templates/new_fragment.md.j2"
+
+[tool.commitizen]
+use_shortcuts = true
+
+[tool.cruft]
