@@ -311,9 +311,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
     #     return super().__new__(cls, data=data, mom_ndim=mom_ndim)
 
     def __init__(self, data: xr.DataArray, mom_ndim: Mom_NDim = 1) -> None:
-        if not isinstance(
-            data, xr.DataArray
-        ):  # pyright: ignore[reportUnnecessaryIsInstance]
+        if not isinstance(data, xr.DataArray):  # pyright: ignore[reportUnnecessaryIsInstance]
             raise ValueError(
                 "data must be a xarray.DataArray. "
                 "See xCentralMoments.from_data for wrapping numpy arrays"
@@ -469,7 +467,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         out = self.values.isel(selector)
         if self._mom_ndim > 1:
-            out = out.assign_coords({dim_combined: list(coords_combined)})
+            out = out.assign_coords(coords={dim_combined: list(coords_combined)})  # pyright: ignore
         return out
 
     def mean(
@@ -1200,9 +1198,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         Examples
         --------
         >>> np.random.seed(0)
-        >>> da = xCentralMoments.from_vals(
-        ...     np.random.rand(10, 3), mom=3, axis=0, dims="rec"
-        ... )
+        >>> da = xCentralMoments.from_vals(np.random.rand(10, 3), mom=3, axis=0, dims="rec")
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(3,))>
         <xarray.DataArray (rec: 3, mom_0: 4)>
@@ -1216,9 +1212,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
 
         >>> from cmomy.resample import numba_random_seed
         >>> numba_random_seed(0)
-        >>> da_resamp, freq = da.resample_and_reduce(
-        ...     nrep=5, dim="rec", full_output=True
-        ... )
+        >>> da_resamp, freq = da.resample_and_reduce(nrep=5, dim="rec", full_output=True)
         >>> da_resamp
         <xCentralMoments(val_shape=(5,), mom=(3,))>
         <xarray.DataArray (rep: 5, mom_0: 4)>
@@ -1452,6 +1446,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):
         ).transpose(dim, ...)
 
         if coords_policy is None:
+            assert isinstance(dim, str)
             template = template.drop_vars(dim)
 
         central = self.centralmoments_view.block(

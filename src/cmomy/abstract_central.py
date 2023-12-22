@@ -294,9 +294,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             return index
 
     @cached.meth
-    def _single_index(
-        self, val: int
-    ) -> tuple[ellipsis | int | list[int], ...]:  # noqa: UP037, F821
+    def _single_index(self, val: int) -> tuple[ellipsis | int | list[int], ...]:  # noqa: UP037, F821
         # index with things like data[..., 1,0] data[..., 0,1]
         # index = (...,[1,0],[0,1])
         dims = len(self.mom)
@@ -319,26 +317,23 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def weight(self) -> float | T_Array:
         """Weight data."""
         return cast(
-            "float | T_Array", self.values[self._weight_index]
-        )  # pyright: ignore[reportGeneralTypeIssues]
+            "float | T_Array",
+            self.values[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues]
+        )
 
     def mean(self) -> float | T_Array:
         """Mean (first moment)."""
         return cast(
             "float | T_Array",
-            self.values[
-                self._single_index(1)
-            ],  # pyright: ignore[reportGeneralTypeIssues]
-        )  # pyright: ignore
+            self.values[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues]
+        )
 
     def var(self) -> float | T_Array:
         """Variance (second central moment)."""
         return cast(
             "float | T_Array",
-            self.values[
-                self._single_index(2)
-            ],  # pyright: ignore[reportGeneralTypeIssues]
-        )  # pyright: ignore
+            self.values[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues]
+        )
 
     def std(self) -> float | T_Array:
         """Standard deviation."""  # noqa D401
@@ -682,7 +677,14 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             x, *ys = x
 
         xr, target = self._check_val(x=x, target="val")  # type: ignore
-        yr = tuple(self._check_val(x=y, target=target, broadcast=broadcast)[0] for y in ys)  # type: ignore
+        yr = tuple(  # type: ignore
+            self._check_val(
+                x=y,
+                target=target,
+                broadcast=broadcast,
+            )[0]
+            for y in ys
+        )
         wr = self._check_weight(w=w, target=target)
         self._push.val(self._data_flat, *((wr, xr) + yr))
         return self

@@ -23,14 +23,13 @@ dependencies:
   - numba>=0.50
   - numpy>=1.21
   - pandas-stubs
+  - pip-tools
   - pre-commit
   - pyright
   - pytest
   - pytest-cov
   - pytest-sugar
   - pytest-xdist
-  - ruamel.yaml
-  - setuptools-scm>=8.0
   - typing-extensions
   - xarray>=0.16
   - pip
