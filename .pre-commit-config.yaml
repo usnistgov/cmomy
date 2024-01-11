@@ -78,6 +78,7 @@ repos:
       - id: nbqa-ruff
         additional_dependencies: [ruff==0.1.8]
         # Replace with builtin if/when available
+        exclude: "^examples/archived"
       - id: nbqa
         alias: nbqa-ruff-format
         name: nbqa-ruff-format
@@ -92,6 +93,7 @@ repos:
         types_or: [python, rst, markdown, cython, c, jupyter]
         additional_dependencies: [tomli]
         args: [-I, docs/spelling_wordlist.txt]
+        exclude: "^examples/archived"
 
   # * Commit message
   - repo: https://github.com/commitizen-tools/commitizen

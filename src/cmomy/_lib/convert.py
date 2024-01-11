@@ -1,10 +1,11 @@
+# mypy: disable-error-code="no-untyped-def"
 """Numba functions to convert between raw and central moments."""
 
 from .utils import BINOMIAL_FACTOR, myjit
 
 
 @myjit()
-def central_to_raw_moments(central, raw):  # type: ignore
+def central_to_raw_moments(central, raw) -> None:
     nv = central.shape[0]
     order = central.shape[1] - 1
 
@@ -17,7 +18,7 @@ def central_to_raw_moments(central, raw):  # type: ignore
         for n in range(2, order + 1):
             tmp = 0.0
             ave_i = 1.0
-            for i in range(0, n - 1):
+            for i in range(n - 1):
                 tmp += central[v, n - i] * ave_i * BINOMIAL_FACTOR[n, i]
                 ave_i *= ave
 
@@ -29,7 +30,7 @@ def central_to_raw_moments(central, raw):  # type: ignore
 
 
 @myjit()
-def raw_to_central_moments(raw, central):  # type: ignore
+def raw_to_central_moments(raw, central) -> None:
     nv = central.shape[0]
     order = central.shape[1] - 1
 
@@ -42,7 +43,7 @@ def raw_to_central_moments(raw, central):  # type: ignore
         for n in range(2, order + 1):
             tmp = 0.0
             ave_i = 1.0
-            for i in range(0, n - 1):
+            for i in range(n - 1):
                 tmp += raw[v, n - i] * ave_i * BINOMIAL_FACTOR[n, i]
                 ave_i *= -ave
 
@@ -58,7 +59,7 @@ def raw_to_central_moments(raw, central):  # type: ignore
 
 # comoments
 @myjit()
-def central_to_raw_comoments(central, raw):  # type: ignore
+def central_to_raw_comoments(central, raw) -> None:
     nv = central.shape[0]
     order0 = central.shape[1] - 1
     order1 = central.shape[2] - 1
@@ -67,8 +68,8 @@ def central_to_raw_comoments(central, raw):  # type: ignore
         ave0 = central[v, 1, 0]
         ave1 = central[v, 0, 1]
 
-        for n in range(0, order0 + 1):
-            for m in range(0, order1 + 1):
+        for n in range(order0 + 1):
+            for m in range(order1 + 1):
                 nm = n + m
                 if nm <= 1:
                     raw[v, n, m] = central[v, n, m]
@@ -99,7 +100,7 @@ def central_to_raw_comoments(central, raw):  # type: ignore
 
 
 @myjit()
-def raw_to_central_comoments(raw, central):  # type: ignore
+def raw_to_central_comoments(raw, central) -> None:
     nv = central.shape[0]
     order0 = central.shape[1] - 1
     order1 = central.shape[2] - 1
@@ -108,8 +109,8 @@ def raw_to_central_comoments(raw, central):  # type: ignore
         ave0 = raw[v, 1, 0]
         ave1 = raw[v, 0, 1]
 
-        for n in range(0, order0 + 1):
-            for m in range(0, order1 + 1):
+        for n in range(order0 + 1):
+            for m in range(order1 + 1):
                 nm = n + m
                 if nm <= 1:
                     central[v, n, m] = raw[v, n, m]

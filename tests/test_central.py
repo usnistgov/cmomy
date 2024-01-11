@@ -2,16 +2,16 @@
 import numpy as np
 import pytest
 
-import cmomy.central as central
+from cmomy import central
 
 
 # Tests
-def test_fix_test(other):
+def test_fix_test(other) -> None:
     np.testing.assert_allclose(other.data_fix, other.data_test)
 
 
 # test central_moments with out parameter
-def test_central_moments_out(other):
+def test_central_moments_out(other) -> None:
     out = np.zeros_like(other.data_test)
 
     _ = central.central_moments(
@@ -28,20 +28,20 @@ def test_central_moments_out(other):
 
 
 # exceptions
-def test_mom_ndim():
+def test_mom_ndim() -> None:
     with pytest.raises(ValueError):
-        central.CentralMoments(np.zeros((4, 4)), mom_ndim=0)  # type: ignore
+        central.CentralMoments(np.zeros((4, 4)), mom_ndim=0)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
-        central.CentralMoments(np.zeros((4, 4)), mom_ndim=3)  # type: ignore
+        central.CentralMoments(np.zeros((4, 4)), mom_ndim=3)  # type: ignore[arg-type]
 
 
-def test_data_ndim():
+def test_data_ndim() -> None:
     with pytest.raises(ValueError):
         central.CentralMoments(np.zeros(4), mom_ndim=2)
 
 
-def test_ndim():
+def test_ndim() -> None:
     data = np.empty((1, 2, 3))
 
     s = central.CentralMoments(data, 1)
@@ -49,11 +49,11 @@ def test_ndim():
     assert data.ndim == s.ndim
 
 
-def test_s(other):
+def test_s(other) -> None:
     other.test_values(other.s.values)
 
 
-def test_push(other):
+def test_push(other) -> None:
     s, x, w, axis, broadcast = other.unpack(
         "s",
         "x",
@@ -66,20 +66,20 @@ def test_push(other):
     other.test_values(t.values)
 
 
-def test_create(other):
+def test_create(other) -> None:
     t = other.cls.zeros(mom=other.mom, val_shape=other.val_shape)
     t.push_vals(other.x, w=other.w, axis=other.axis, broadcast=other.broadcast)
     other.test_values(t.values)
 
 
-def test_from_vals(other):
+def test_from_vals(other) -> None:
     t = other.cls.from_vals(
         x=other.x, w=other.w, axis=other.axis, mom=other.mom, broadcast=other.broadcast
     )
     other.test_values(t.values)
 
 
-def test_push_val(other):
+def test_push_val(other) -> None:
     if other.axis == 0 and other.style == "total":
         t = other.s.zeros_like()
         if other.s.mom_ndim == 1:
@@ -88,34 +88,34 @@ def test_push_val(other):
             other.test_values(t.values)
 
 
-def test_push_vals_mult(other):
+def test_push_vals_mult(other) -> None:
     t = other.s.zeros_like()
     for ww, xx, _ in zip(other.W, other.X, other.S):
         t.push_vals(x=xx, w=ww, axis=other.axis, broadcast=other.broadcast)
     other.test_values(t.values)
 
 
-def test_combine(other):
+def test_combine(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
         t.push_data(s.values)
     other.test_values(t.values)
 
 
-def test_from_datas(other):
+def test_from_datas(other) -> None:
     datas = np.array([s.values for s in other.S])
     t = other.cls.from_datas(datas, mom=other.mom)
     other.test_values(t.values)
 
 
-def test_push_datas(other):
+def test_push_datas(other) -> None:
     datas = np.array([s.values for s in other.S])
     t = other.s.zeros_like()
     t.push_datas(datas)
     other.test_values(t.values)
 
 
-def test_push_stat(other):
+def test_push_stat(other) -> None:
     if other.s.mom_ndim == 1:
         t = other.s.zeros_like()
         for s in other.S:
@@ -123,7 +123,7 @@ def test_push_stat(other):
         other.test_values(t.values)
 
 
-def test_from_stat(other):
+def test_from_stat(other) -> None:
     if other.s.mom_ndim == 1:
         t = other.cls.from_stat(
             a=other.s.mean(),
@@ -134,7 +134,7 @@ def test_from_stat(other):
         other.test_values(t.values)
 
 
-def test_from_stats(other):
+def test_from_stats(other) -> None:
     if other.s.mom_ndim == 1:
         t = other.s.zeros_like()
         t.push_stats(
@@ -146,38 +146,38 @@ def test_from_stats(other):
         other.test_values(t.values)
 
 
-def test_add(other):
+def test_add(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
         t = t + s
     other.test_values(t.values)
 
 
-def test_sum(other):
+def test_sum(other) -> None:
     t = sum(other.S, other.s.zeros_like())
     other.test_values(t.values)
 
 
-def test_iadd(other):
+def test_iadd(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
         t += s
     other.test_values(t.values)
 
 
-def test_sub(other):
+def test_sub(other) -> None:
     t = other.s - sum(other.S[1:], other.s.zeros_like())
     np.testing.assert_allclose(t.values, other.S[0].values)
 
 
-def test_isub(other):
+def test_isub(other) -> None:
     t = other.s.copy()
     for s in other.S[1:]:
         t -= s
     np.testing.assert_allclose(t.values, other.S[0].values)
 
 
-def test_mult(other):
+def test_mult(other) -> None:
     s = other.s
 
     np.testing.assert_allclose((s * 2).values, (s + s).values)
@@ -187,7 +187,7 @@ def test_mult(other):
     np.testing.assert_allclose(t.values, (s + s).values)
 
 
-def test_reduce(other):
+def test_reduce(other) -> None:
     ndim = len(other.val_shape)
     if ndim > 0:
         for axis in range(ndim):
@@ -199,12 +199,12 @@ def test_reduce(other):
             np.testing.assert_allclose(t.data, f.data)
 
 
-def test_reshape(other):
+def test_reshape(other) -> None:
     ndim = len(other.val_shape)
     if ndim > 0:
         for axis in range(ndim):
             new_shape = list(other.s.val_shape)
-            new_shape = tuple(new_shape[:axis] + [1, -1] + new_shape[axis + 1 :])  # type: ignore
+            new_shape = tuple(new_shape[:axis] + [1, -1] + new_shape[axis + 1 :])  # type: ignore[assignment]
 
             t = other.s.reshape(new_shape)
 
@@ -214,7 +214,7 @@ def test_reshape(other):
             np.testing.assert_allclose(t.data, f)
 
 
-def test_moveaxis(other):
+def test_moveaxis(other) -> None:
     ndim = len(other.val_shape)
     if ndim > 1:
         for axis in range(1, ndim):

@@ -5,6 +5,7 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 
 from __future__ import annotations
 
+from itertools import starmap
 from math import prod
 from typing import TYPE_CHECKING, cast
 
@@ -27,9 +28,11 @@ if TYPE_CHECKING:
 
 def numba_random_seed(seed: int) -> None:
     """Set the random seed for numba functions."""
-    from ._lib.resample import set_numba_random_seed  # pyright: ignore
+    from ._lib.resample import (
+        set_numba_random_seed,  # pyright: ignore[reportUnknownVariableType]
+    )
 
-    set_numba_random_seed(seed)  # type: ignore
+    set_numba_random_seed(seed)
 
 
 def freq_to_indices(freq: MyNDArray) -> MyNDArray:
@@ -38,7 +41,7 @@ def freq_to_indices(freq: MyNDArray) -> MyNDArray:
     indices_all: list[MyNDArray] = []
 
     for f in freq:
-        indices = np.concatenate([np.repeat(i, count) for i, count in enumerate(f)])
+        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))
         indices_all.append(indices)
 
     return np.array(indices_all)
@@ -46,10 +49,12 @@ def freq_to_indices(freq: MyNDArray) -> MyNDArray:
 
 def indices_to_freq(indices: MyNDArray) -> MyNDArray:
     """Convert indices to frequency array."""
-    from ._lib.resample import randsamp_freq_indices  # pyright: ignore
+    from ._lib.resample import (
+        randsamp_freq_indices,  # pyright: ignore[reportUnknownVariableType]
+    )
 
     freq = np.zeros_like(indices)
-    randsamp_freq_indices(indices, freq)  # type: ignore
+    randsamp_freq_indices(indices, freq)
 
     return freq
 
@@ -100,20 +105,21 @@ def randsamp_freq(
     """
 
     from ._lib.resample import (
-        randsamp_freq_indices,  # pyright: ignore
-        randsamp_freq_out,  # pyright: ignore
+        randsamp_freq_indices,  # pyright: ignore[reportUnknownVariableType]
+        randsamp_freq_out,  # pyright: ignore[reportUnknownVariableType]
     )
 
     def _array_check(x: ArrayLike, name: str = "") -> MyNDArray:
         x = np.asarray(x, dtype=np.int64)
         if check:
-            if nrep is not None:
-                if x.shape[0] != nrep:
-                    raise ValueError(f"{name} has wrong nrep")
+            if nrep is not None and x.shape[0] != nrep:
+                msg = f"{name} has wrong nrep"
+                raise ValueError(msg)
 
             assert size is not None
             if x.shape[1] != size:
-                raise ValueError(f"{name} has wrong size")
+                msg = f"{name} has wrong size"
+                raise ValueError(msg)
         return x
 
     if freq is not None:
@@ -122,14 +128,15 @@ def randsamp_freq(
     elif indices is not None:
         indices = _array_check(indices, "indices")
         freq = np.zeros(indices.shape, dtype=np.int64)
-        randsamp_freq_indices(indices, freq)  # type: ignore
+        randsamp_freq_indices(indices, freq)
 
     elif nrep is not None and size is not None:
         freq = np.zeros((nrep, size), dtype=np.int64)
-        randsamp_freq_out(freq)  # type: ignore
+        randsamp_freq_out(freq)
 
     else:
-        raise ValueError("must specify freq, indices, or nrep and size")
+        msg = "must specify freq, indices, or nrep and size"
+        raise ValueError(msg)
 
     if transpose:
         freq = freq.T
@@ -197,7 +204,7 @@ def resample_data(
     shape: tuple[int, ...] = data.shape[1 : -len(mom)]
     mom_shape = tuple(x + 1 for x in mom)
 
-    assert data.shape == (ndat,) + shape + mom_shape
+    assert data.shape == (ndat, *shape, *mom_shape)
 
     # output
     out_shape = (nrep,) + data.shape[1:]
@@ -209,13 +216,10 @@ def resample_data(
         out = np.asarray(out, dtype=dtype, order="C")
 
     meta_reshape: tuple[int, ...]
-    if shape == ():
-        meta_reshape = mom_shape
-    else:
-        meta_reshape = (prod(shape),) + mom_shape
+    meta_reshape = mom_shape if shape == () else (prod(shape), *mom_shape)
 
-    data_reshape = (ndat,) + meta_reshape
-    out_reshape = (nrep,) + meta_reshape
+    data_reshape = (ndat, *meta_reshape)
+    out_reshape = (nrep, *meta_reshape)
 
     datar = data.reshape(data_reshape)
     outr = out.reshape(out_reshape)
@@ -230,7 +234,7 @@ def resample_data(
     return outr.reshape(out.shape)
 
 
-def resample_vals(
+def resample_vals(  # noqa: C901,PLR0912,PLR0915
     x: XvalStrict,
     freq: MyNDArray,
     mom: Moments,
@@ -251,7 +255,7 @@ def resample_vals(
     assert isinstance(mom, tuple)
 
     if mom_ndim is None:
-        mom_ndim = len(mom)  # type: ignore
+        mom_ndim = len(mom)  # type: ignore[assignment]
     assert len(mom) == mom_ndim
     mom_shape = tuple(x + 1 for x in mom)
 
@@ -260,7 +264,8 @@ def resample_vals(
     elif mom_ndim == 2:
         x, y = x
     else:
-        raise ValueError("only mom_ndim <= 2 supported")
+        msg = "only mom_ndim <= 2 supported"
+        raise ValueError(msg)
 
     # check input data
     freq = np.asarray(freq, dtype=np.int64)
@@ -291,7 +296,7 @@ def resample_vals(
 
     # output
     shape = x.shape[1:]
-    out_shape = (nrep,) + shape + mom_shape
+    out_shape = (nrep, *shape, *mom_shape)
     if out is None:
         out = np.empty(out_shape, dtype=dtype)
     else:
@@ -376,7 +381,7 @@ def bootstrap_confidence_interval(
         p_low = 100 * (alpha / 2.0)
         p_mid = 50
         p_high = 100 - p_low
-        val, low, high = np.percentile(  # pyright: ignore
+        val, low, high = np.percentile(  # pyright: ignore[reportUnknownMemberType]
             a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kws
         )
 
@@ -387,7 +392,8 @@ def bootstrap_confidence_interval(
             elif stats_val == "median":
                 sv = np.median(distribution, axis=axis)
             else:
-                raise ValueError("stats val should be None, mean, median, or an array")
+                msg = "stats val should be None, mean, median, or an array"
+                raise ValueError(msg)
 
         else:
             sv = stats_val
@@ -452,13 +458,10 @@ def xbootstrap_confidence_interval(
 
     if bootstrap_dim in template.dims:
         bootstrap_dim = f"{dim}_{bootstrap_dim}"
-    dims = (bootstrap_dim,) + template.dims
+    dims = (bootstrap_dim, *template.dims)
 
     if bootstrap_coords is None:
-        if isinstance(stats_val, str):
-            bootstrap_coords = stats_val
-        else:
-            bootstrap_coords = "stats_val"
+        bootstrap_coords = stats_val if isinstance(stats_val, str) else "stats_val"
 
     if isinstance(bootstrap_coords, str):
         if style is None:
@@ -468,29 +471,30 @@ def xbootstrap_confidence_interval(
         elif style == "pm":
             bootstrap_coords = [bootstrap_coords, "err"]
         else:
-            raise ValueError(f"unknown style={style}")
+            msg = f"unknown style={style}"
+            raise ValueError(msg)
 
     if not isinstance(stats_val, str):
         stats_val = np.array(stats_val)
 
     out = bootstrap_confidence_interval(
-        x.values,  # pyright: ignore
+        x.values,  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
         stats_val=stats_val,
         axis=axis,
         alpha=alpha,
         style=style,
-        **kws,  # pyright: ignore
+        **kws,
     )
 
     out_xr = xr.DataArray(
         out,
         dims=dims,
-        coords=template.coords,  # pyright: ignore
+        coords=template.coords,  # pyright: ignore[reportUnknownMemberType]
         attrs=template.attrs,
         name=template.name,
         # indexes=template.indexes,
     )
 
-    out_xr.coords[bootstrap_dim] = bootstrap_coords  # pyright: ignore
+    out_xr.coords[bootstrap_dim] = bootstrap_coords  # pyright: ignore[reportUnknownMemberType]
 
     return out_xr

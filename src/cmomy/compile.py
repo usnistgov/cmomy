@@ -1,10 +1,10 @@
-# type: ignore
+# type: ignore  # noqa: PGH003
 """Set of routines to call most cases to pre-compile numba functions."""
 
 from __future__ import annotations
 
 
-def compile_numba_funcs(verbose: bool = True) -> None:
+def compile_numba_funcs(verbose: bool = True) -> None:  # noqa: ARG001
     """Compile commonly used numba functions."""
 
     # def _print(*args: Any, **kwargs: Any) -> None:

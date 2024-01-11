@@ -1,9 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-"""
-Simple test for numerical stability
-
-
-"""
+"""Simple test for numerical stability"""
 import numpy as np
 import pytest
 
@@ -25,8 +21,7 @@ def algo(vals, mom, norm=True):
 
         for p in range(order, 2, -1):
             Mp = (
-                M[p]
-                + ((M[0] - 1) / (-M[0]) ** p + ((M[0] - 1) / M[0]) ** p) * delta**p
+                M[p] + ((M[0] - 1) / (-M[0]) ** p + ((M[0] - 1) / M[0]) ** p) * delta**p
             )
 
             for k in range(1, p - 2 + 1):
@@ -43,8 +38,6 @@ def algo(vals, mom, norm=True):
 
 
 def algo2(vals, mom):
-    dx = vals - vals.mean(axis=0)
-
     out = np.empty((mom + 1,), dtype=float)
     out[0] = len(vals)
     out[1] = vals.mean(axis=0)
@@ -53,7 +46,7 @@ def algo2(vals, mom):
     return out
 
 
-def test_stability():
+def test_stability() -> None:
     np.random.seed(0)
     x = np.random.rand(10000)
 

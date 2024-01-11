@@ -10,7 +10,7 @@ argcomplete==3.2.1
     # via nox
 asttokens==2.4.1
     # via stack-data
-attrs==23.1.0
+attrs==23.2.0
     # via
     #   jsonschema
     #   referencing
@@ -34,9 +34,9 @@ click-log==0.4.0
     # via scriv
 colorlog==6.8.0
     # via nox
-comm==0.2.0
+comm==0.2.1
     # via ipykernel
-coverage==7.3.4
+coverage==7.4.0
     # via
     #   nbval
     #   pytest-cov
@@ -52,7 +52,7 @@ execnet==2.0.2
     # via pytest-xdist
 executing==2.0.1
     # via stack-data
-fastjsonschema==2.19.0
+fastjsonschema==2.19.1
     # via nbformat
 filelock==3.13.1
     # via virtualenv
@@ -62,28 +62,28 @@ idna==3.6
     # via requests
 iniconfig==2.0.0
     # via pytest
-ipykernel==6.27.1
+ipykernel==6.28.0
     # via
     #   -r requirements/dev-complete.txt
     #   nbval
-ipython==8.19.0
+ipython==8.20.0
     # via
     #   -r requirements/dev-complete.txt
     #   ipykernel
     #   nbqa
 jedi==0.19.1
     # via ipython
-jinja2==3.1.2
+jinja2==3.1.3
     # via scriv
 jsonschema==4.20.0
     # via nbformat
-jsonschema-specifications==2023.11.2
+jsonschema-specifications==2023.12.1
     # via jsonschema
 jupyter-client==8.6.0
     # via
     #   ipykernel
     #   nbval
-jupyter-core==5.5.1
+jupyter-core==5.7.1
     # via
     #   ipykernel
     #   jupyter-client
@@ -124,7 +124,7 @@ nox==2023.4.22
     # via -r requirements/dev-complete.txt
 numba==0.58.1
     # via -r requirements/dev-complete.txt
-numpy==1.26.2
+numpy==1.26.3
     # via
     #   -r requirements/dev-complete.txt
     #   numba
@@ -141,7 +141,7 @@ packaging==23.2
     #   xarray
 pandas==2.1.4
     # via xarray
-pandas-stubs==2.1.4.231218
+pandas-stubs==2.1.4.231227
     # via -r requirements/dev-complete.txt
 parso==0.8.3
     # via jedi
@@ -171,9 +171,9 @@ pygments==2.17.2
     # via ipython
 pyproject-hooks==1.0.0
     # via build
-pyright==1.1.342
+pyright==1.1.345
     # via -r requirements/dev-complete.txt
-pytest==7.4.3
+pytest==7.4.4
     # via
     #   -r requirements/dev-complete.txt
     #   nbval
@@ -201,13 +201,13 @@ pyzmq==25.1.2
     # via
     #   ipykernel
     #   jupyter-client
-referencing==0.32.0
+referencing==0.32.1
     # via
     #   jsonschema
     #   jsonschema-specifications
 requests==2.31.0
     # via scriv
-rpds-py==0.15.2
+rpds-py==0.16.2
     # via
     #   jsonschema
     #   referencing
@@ -229,7 +229,7 @@ tornado==6.4
     # via
     #   ipykernel
     #   jupyter-client
-traitlets==5.14.0
+traitlets==5.14.1
     # via
     #   comm
     #   ipykernel
@@ -245,7 +245,7 @@ typing-extensions==4.9.0
     #   -r requirements/dev-complete.txt
     #   module-utilities
     #   mypy
-tzdata==2023.3
+tzdata==2023.4
     # via pandas
 urllib3==2.1.0
     # via requests
@@ -253,7 +253,7 @@ virtualenv==20.25.0
     # via
     #   nox
     #   pre-commit
-wcwidth==0.2.12
+wcwidth==0.2.13
     # via prompt-toolkit
 wheel==0.42.0
     # via pip-tools
@@ -263,7 +263,7 @@ xarray==2023.12.0
 # The following packages are considered to be unsafe in a requirements file:
 pip==23.3.2
     # via pip-tools
-setuptools==69.0.2
+setuptools==69.0.3
     # via
     #   nodeenv
     #   pip-tools

@@ -8,18 +8,16 @@ import pytest
 import xarray as xr
 from module_utilities import cached
 
-import cmomy.central as central
-import cmomy.resample as resample
-import cmomy.xcentral as xcentral
+from cmomy import central, resample, xcentral
 from cmomy._testing import get_cmom, get_comom
 
 
-class Data:
+class Data:  # noqa: PLR0904
     """wrapper around stuff for generic testing."""
 
     # _count = 0
 
-    def __init__(self, shape, axis, style, mom, nsplit=3):
+    def __init__(self, shape, axis, style, mom, nsplit=3) -> None:
         if isinstance(shape, int):
             shape = (shape,)
         self.shape = shape
@@ -30,18 +28,18 @@ class Data:
         self._cache: dict[str, Any] = {}
 
     @cached.prop
-    def cov(self):
+    def cov(self) -> bool | None:
         if isinstance(self.mom, int):
             return False
         if isinstance(self.mom, tuple) and len(self.mom) == 2:
             return True
+        return None
 
     @property
-    def mom_ndim(self):
+    def mom_ndim(self) -> int:
         if self.cov:
             return 2
-        else:
-            return 1
+        return 1
 
     @property
     def broadcast(self):
@@ -60,10 +58,10 @@ class Data:
     def _get_data(self, style=None):
         if style is None or style == "total":
             return np.random.rand(*self.shape)
-        elif style == "broadcast":
+        if style == "broadcast":
             return np.random.rand(self.shape[self.axis])
-        else:
-            raise ValueError("bad style")
+        msg = "bad style"
+        raise ValueError(msg)
 
     @cached.prop
     def xdata(self):
@@ -77,17 +75,13 @@ class Data:
     def w(self):
         if self.style is None:
             return None
-        #            return np.array(1.0)
-        else:
-            return self._get_data(style=self.style)
-        return self._get_weight()
+        return self._get_data(style=self.style)
 
     @cached.prop
     def x(self):
         if self.cov:
             return (self.xdata, self.ydata)
-        else:
-            return self.xdata
+        return self.xdata
 
     @cached.prop
     def split_data(self):
@@ -109,7 +103,7 @@ class Data:
                 Y = np.split(self.ydata, splits, axis=self.axis)
 
             # pack X, Y
-            X = list(zip(X, Y))  # type: ignore
+            X = list(zip(X, Y))  # type: ignore[arg-type]
 
         return W, X
 
@@ -132,10 +126,7 @@ class Data:
                 axis=self.axis,
                 broadcast=self.broadcast,
             )
-        else:
-            return get_cmom(
-                w=self.w, x=self.x, moments=self.mom, axis=self.axis, last=True
-            )
+        return get_cmom(w=self.w, x=self.x, moments=self.mom, axis=self.axis, last=True)
 
     @cached.prop
     def data_test(self):
@@ -173,7 +164,7 @@ class Data:
             out = out[0]
         return out
 
-    def test_values(self, x):
+    def test_values(self, x) -> None:
         np.testing.assert_allclose(self.values, x)
 
     @property
@@ -231,17 +222,16 @@ class Data:
 
         if self.style == "broadcast":
             return np.take(ydata, self.indices, axis=0)
-        else:
-            if self.axis != 0:
-                ydata = np.moveaxis(ydata, self.axis, 0)
-            return np.take(ydata, self.indices, axis=0)
+
+        if self.axis != 0:
+            ydata = np.moveaxis(ydata, self.axis, 0)
+        return np.take(ydata, self.indices, axis=0)
 
     @property
     def x_resamp(self):
         if self.cov:
             return (self.xdata_resamp, self.ydata_resamp)
-        else:
-            return self.xdata_resamp
+        return self.xdata_resamp
 
     @cached.prop
     def w_resamp(self) -> Any:
@@ -249,12 +239,11 @@ class Data:
 
         if self.style is None:
             return w
-        elif self.style == "broadcast":
+        if self.style == "broadcast":
             return np.take(w, self.indices, axis=0)
-        else:
-            if self.axis != 0:
-                w = np.moveaxis(w, self.axis, 0)
-            return np.take(w, self.indices, axis=0)
+        if self.axis != 0:
+            w = np.moveaxis(w, self.axis, 0)
+        return np.take(w, self.indices, axis=0)
 
     @cached.prop
     def data_test_resamp(self) -> Any:
@@ -296,10 +285,8 @@ class Data:
     def w_xr(self):
         if self.style is None:
             return None
-        elif self.style == "broadcast":
-            dims = "rec"
-        else:
-            dims = self.xdata_xr.dims
+
+        dims = "rec" if self.style == "broadcast" else self.xdata_xr.dims
 
         return xr.DataArray(self.w, dims=dims)
 
@@ -307,8 +294,7 @@ class Data:
     def x_xr(self):
         if self.cov:
             return (self.xdata_xr, self.ydata_xr)
-        else:
-            return self.xdata_xr
+        return self.xdata_xr
 
     @cached.prop
     def data_test_xr(self):
@@ -321,8 +307,7 @@ class Data:
         if isinstance(self.w_xr, xr.DataArray):
             dims = self.w_xr.dims
             return [xr.DataArray(_, dims=dims) for _ in self.W]
-        else:
-            return self.W
+        return self.W
 
     @cached.prop
     def X_xr(self):
@@ -335,8 +320,7 @@ class Data:
                 (xr.DataArray(x, dims=xdims), xr.DataArray(y, dims=ydims))
                 for x, y in self.X
             ]
-        else:
-            return [xr.DataArray(x, dims=xdims) for x in self.X]
+        return [xr.DataArray(x, dims=xdims) for x in self.X]
 
     @cached.prop
     def S_xr(self):
@@ -344,7 +328,7 @@ class Data:
             self.cls_xr.from_vals(
                 x=x, w=w, axis=self.axis, mom=self.mom, broadcast=self.broadcast
             )
-            for w, x, in zip(self.W, self.X)
+            for w, x in zip(self.W, self.X)
         ]
 
 
@@ -366,22 +350,22 @@ def get_params():
                 yield shape, axis, style, mom
 
 
-@pytest.fixture(params=get_params(), scope="module")  # type: ignore
+@pytest.fixture(params=get_params(), scope="module")  # type: ignore[call-overload]
 def other(request):
     return Data(*request.param)
 
 
-def pytest_addoption(parser):
+def pytest_addoption(parser) -> None:
     parser.addoption(
         "--run-slow", action="store_true", default=False, help="run slow tests"
     )
 
 
-def pytest_configure(config):
+def pytest_configure(config) -> None:
     config.addinivalue_line("markers", "slow: mark test as slow to run")
 
 
-def pytest_collection_modifyitems(config, items):
+def pytest_collection_modifyitems(config, items) -> None:
     if config.getoption("--run-slow"):
         # --runslow given in cli: do not skip slow tests
         return
