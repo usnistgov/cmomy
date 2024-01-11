@@ -25,8 +25,7 @@ def mom(request):
 def mom_tuple(mom):
     if isinstance(mom, int):
         return (mom,)
-    else:
-        return mom
+    return mom
 
 
 @my_fixture(params=[(10,), (10, 5, 6), (10, 5, 6, 7)])
@@ -46,8 +45,7 @@ def xy(shape, mom_tuple):
     if len(mom_tuple) == 2:
         y = np.random.rand(*shape)
         return (x, y)
-    else:
-        return x
+    return x
 
 
 @my_fixture()
@@ -60,11 +58,11 @@ def dcx(dc):
     return dc.to_xcentralmoments()
 
 
-def test_CS(dc, dcx):
+def test_CS(dc, dcx) -> None:
     np.testing.assert_allclose(dc, dcx)
 
 
-def test_from_data(dc, dcx):
+def test_from_data(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
     t = cmomy.CentralMoments.from_data(dc.data, mom_ndim=mom_ndim)
@@ -81,7 +79,7 @@ def test_from_data(dc, dcx):
     xr.testing.assert_allclose(o1.values, o2.values)
 
 
-def test_from_datas(dc, dcx):
+def test_from_datas(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
     for axis in range(dc.val_ndim):
@@ -101,7 +99,7 @@ def test_from_datas(dc, dcx):
         xr.testing.assert_allclose(o1.values, o2.values)
 
 
-def test_from_raw(dc, dcx):
+def test_from_raw(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
     t = cmomy.CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim)
@@ -115,7 +113,7 @@ def test_from_raw(dc, dcx):
     xr.testing.assert_allclose(o1.values, o2.values)
 
 
-def test_from_raws(dc, dcx):
+def test_from_raws(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
     for axis in range(dc.val_ndim):
@@ -132,14 +130,14 @@ def test_from_raws(dc, dcx):
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = cmomy.xCentralMoments.from_raws(dcx.to_raw(), dim=dim, mom_ndim=mom_ndim)
+        cmomy.xCentralMoments.from_raws(dcx.to_raw(), dim=dim, mom_ndim=mom_ndim)
 
 
-def test_from_vals(xy, shape, mom):
+def test_from_vals(xy, shape, mom) -> None:
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
     xy_xr: xr.DataArray | tuple[xr.DataArray, xr.DataArray]
     if isinstance(xy, tuple):
-        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore
+        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
     else:
         xy_xr = xr.DataArray(xy, dims=dims)
 
@@ -157,11 +155,11 @@ def test_from_vals(xy, shape, mom):
         xr.testing.assert_allclose(o1.values, o2.values)
 
 
-def test_from_resample_vals(xy, shape, mom):
+def test_from_resample_vals(xy, shape, mom) -> None:
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
     xy_xr: xr.DataArray | tuple[xr.DataArray, xr.DataArray]
     if isinstance(xy, tuple):
-        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore
+        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
     else:
         xy_xr = xr.DataArray(xy, dims=dims)
 
@@ -183,7 +181,7 @@ def test_from_resample_vals(xy, shape, mom):
         xr.testing.assert_allclose(o1.values, o2.values)
 
 
-def test_resample_and_reduce(dc, dcx):
+def test_resample_and_reduce(dc, dcx) -> None:
     for axis in range(dc.val_ndim):
         t, freq = dc.resample_and_reduce(nrep=10, full_output=True, axis=axis)
 

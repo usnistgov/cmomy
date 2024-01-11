@@ -2,14 +2,14 @@
 import numpy as np
 import pytest
 
-import cmomy.resample as resample
+from cmomy import resample
 from cmomy.resample import (  # , xbootstrap_confidence_interval
     bootstrap_confidence_interval,
 )
 
 
-@pytest.mark.parametrize("nrep, ndat", [(100, 50)])
-def test_freq_indices(nrep, ndat):
+@pytest.mark.parametrize("ndat", [50])
+def test_freq_indices(ndat) -> None:
     indices = np.random.choice(10, (20, 10), replace=True)
 
     freq0 = resample.indices_to_freq(indices)
@@ -20,13 +20,14 @@ def test_freq_indices(nrep, ndat):
 
     # round trip should be identical as well
     indices1 = resample.freq_to_indices(freq0)
-    freq2 = resample.indices_to_freq(indices1)
+    resample.indices_to_freq(indices1)
 
     np.testing.assert_allclose(freq0, freq1)
 
 
+@pytest.mark.slow()
 @pytest.mark.parametrize("parallel", [True, False])
-def test_resample_vals(other, parallel):
+def test_resample_vals(other, parallel) -> None:
     # test basic resampling
     if other.style == "total":
         datar = resample.resample_vals(
@@ -43,8 +44,9 @@ def test_resample_vals(other, parallel):
         np.testing.assert_allclose(datar, other.data_test_resamp)
 
 
+@pytest.mark.slow()
 @pytest.mark.parametrize("parallel", [True, False])
-def test_stats_resample_vals(other, parallel):
+def test_stats_resample_vals(other, parallel) -> None:
     if other.style == "total":
         t = other.cls.from_resample_vals(
             x=other.x,
@@ -70,8 +72,9 @@ def test_stats_resample_vals(other, parallel):
         np.testing.assert_allclose(t.data, other.data_test_resamp)
 
 
+@pytest.mark.slow()
 @pytest.mark.parametrize("parallel", [True, False])
-def test_resample_data(other, parallel):
+def test_resample_data(other, parallel) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
@@ -92,8 +95,9 @@ def test_resample_data(other, parallel):
             np.testing.assert_allclose(data_ref, t.data)
 
 
+@pytest.mark.slow()
 @pytest.mark.parametrize("parallel", [True, False])
-def test_resample_against_vals(other, parallel):
+def test_resample_against_vals(other, parallel) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
@@ -110,7 +114,8 @@ def test_resample_against_vals(other, parallel):
             np.testing.assert_allclose(t0.values, t1.values)
 
 
-def test_bootstrap_stats(other):
+@pytest.mark.slow()
+def test_bootstrap_stats(other) -> None:
     x = other.xdata
     axis = other.axis
     alpha = 0.05

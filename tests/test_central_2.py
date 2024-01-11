@@ -9,7 +9,7 @@ from cmomy._testing import get_cmom, get_comom
 
 
 class DataContainer:
-    def __init__(self, x, y, w):
+    def __init__(self, x, y, w) -> None:
         self.x = x
         self.y = y
         self.w = w
@@ -17,8 +17,7 @@ class DataContainer:
     def xy(self, cov):
         if cov:
             return (self.x, self.y)
-        else:
-            return self.x
+        return self.x
 
     def result_expected(self, axis, mom, broadcast=None, cov=None):
         if cov is None:
@@ -26,15 +25,14 @@ class DataContainer:
 
         if not cov:
             return get_cmom(x=self.x, w=self.w, moments=mom, axis=axis, last=True)
-        else:
-            return get_comom(
-                x=self.x,
-                y=self.y,
-                w=self.w,
-                moments=mom,
-                axis=axis,
-                broadcast=broadcast,
-            )
+        return get_comom(
+            x=self.x,
+            y=self.y,
+            w=self.w,
+            moments=mom,
+            axis=axis,
+            broadcast=broadcast,
+        )
 
     def result_central_moments(self, axis, mom, broadcast=None, cov=None, **kws):
         if cov is None:
@@ -63,7 +61,7 @@ class DataContainer:
 
 
 class ExpectedResults:
-    def __init__(self, data, shape, axis, mom, style):
+    def __init__(self, data, shape, axis, mom, style) -> None:
         self.data = data
         self.shape = shape
         self.axis = axis
@@ -78,15 +76,13 @@ class ExpectedResults:
     def shape_tuple(self):
         if isinstance(self.shape, int):
             return (self.shape,)
-        else:
-            return self.shape
+        return self.shape
 
     @property
     def mom_tuple(self):
         if isinstance(self.mom, int):
             return (self.mom,)
-        else:
-            return self.mom
+        return self.mom
 
     @property
     def cov(self):
@@ -136,8 +132,7 @@ def shape(shape_axis):
 def shape_tuple(shape):
     if isinstance(shape, int):
         return (shape,)
-    else:
-        return shape
+    return shape
 
 
 @pytest.fixture(scope="module")
@@ -165,7 +160,7 @@ def result_container(data, shape, axis, mom, style):
     return ExpectedResults(data=data, shape=shape, axis=axis, mom=mom, style=style)
 
 
-def test_result(result_container):
+def test_result(result_container) -> None:
     r = result_container
     a = r.result_expected()
     b = r.result_central_moments()

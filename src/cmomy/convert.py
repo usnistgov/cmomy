@@ -4,6 +4,7 @@ Routines to convert central (co)moments to raw (co)moments. (:mod:`cmomy.convert
 """
 from __future__ import annotations
 
+from math import prod
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -134,10 +135,7 @@ def _convert_moments(
     mom_shape = shape[-len(axis) :]
     val_shape = shape[: -len(axis)]
 
-    if val_shape == ():
-        reshape = (1,) + mom_shape
-    else:
-        reshape = (int(np.prod(val_shape)),) + mom_shape  # pyright: ignore
+    reshape = (1, *mom_shape) if val_shape == () else (prod(val_shape), *mom_shape)
 
     data_r = data_r.reshape(reshape)
     out_r = out_r.reshape(reshape)
@@ -170,22 +168,22 @@ def to_raw_moments(
     -------
     {out_rmom}
     """
-    from ._lib.convert import central_to_raw_moments  # pyright: ignore
+    from ._lib.convert import (
+        central_to_raw_moments,  # pyright: ignore[reportUnknownVariableType]
+    )
 
     if axis is None:
         axis = -1
 
-    out = _convert_moments(
+    return _convert_moments(
         data=x,
         axis=axis,
         target_axis=-1,
-        func=central_to_raw_moments,  # pyright: ignore
+        func=central_to_raw_moments,  # pyright: ignore[reportUnknownArgumentType]
         dtype=dtype,
         order=order,
         out=out,
     )
-
-    return out
 
 
 @docfiller_decorate
@@ -211,7 +209,9 @@ def to_raw_comoments(
     -------
     {out_cormom}
     """
-    from ._lib.convert import central_to_raw_comoments  # pyright: ignore
+    from ._lib.convert import (
+        central_to_raw_comoments,  # pyright: ignore[reportUnknownVariableType]
+    )
 
     if axis is None:
         axis = (-2, -1)
@@ -220,7 +220,7 @@ def to_raw_comoments(
         data=x,
         axis=axis,
         target_axis=(-2, -1),
-        func=central_to_raw_comoments,  # pyright: ignore
+        func=central_to_raw_comoments,  # pyright: ignore[reportUnknownArgumentType]
         dtype=dtype,
         order=order,
         out=out,
@@ -250,7 +250,9 @@ def to_central_moments(
     -------
     {out_cmom}
     """
-    from ._lib.convert import raw_to_central_moments  # pyright: ignore
+    from ._lib.convert import (
+        raw_to_central_moments,  # pyright: ignore[reportUnknownVariableType]
+    )
 
     if axis is None:
         axis = -1
@@ -259,7 +261,7 @@ def to_central_moments(
         data=x,
         axis=axis,
         target_axis=-1,
-        func=raw_to_central_moments,  # pyright: ignore
+        func=raw_to_central_moments,  # pyright: ignore[reportUnknownArgumentType]
         dtype=dtype,
         order=order,
         out=out,
@@ -289,7 +291,9 @@ def to_central_comoments(
     -------
     {out_cocmom}
     """
-    from ._lib.convert import raw_to_central_comoments  # pyright: ignore
+    from ._lib.convert import (
+        raw_to_central_comoments,  # pyright: ignore[reportUnknownVariableType]
+    )
 
     if axis is None:
         axis = (-2, -1)
@@ -298,7 +302,7 @@ def to_central_comoments(
         data=x,
         axis=axis,
         target_axis=(-2, -1),
-        func=raw_to_central_comoments,  # pyright: ignore
+        func=raw_to_central_comoments,  # pyright: ignore[reportUnknownArgumentType]
         dtype=dtype,
         order=order,
         out=out,

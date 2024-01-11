@@ -10,32 +10,16 @@
 channels:
   - conda-forge
 dependencies:
-  - python=3.10
+  - python=3.11
   - docstring-inheritance
-  - ipykernel
-  - ipython
   - lazy_loader
-  - module-utilities >= 0.6
-  - mypy >= 1.5.1
-  - nbqa
+  - module-utilities>=0.6
   - nbval
-  - nox
-  - numba >= 0.50
-  - numpy >= 1.21
-  - pandas-stubs
-  - pre-commit
-  - pyright
+  - numba>=0.50
+  - numpy>=1.21
   - pytest
   - pytest-cov
   - pytest-sugar
   - pytest-xdist
-  - pytype
-  - ruamel.yaml
-  - setuptools-scm
   - typing-extensions
-  - xarray >= 0.16
-  - pip
-  - pip:
-      - noxopt
-      - pytest-accept
-      - scriv
+  - xarray>=0.16

@@ -10,21 +10,24 @@
 channels:
   - conda-forge
 dependencies:
-  - python=3.10
-  - autodocsumm
+  - python=3.11
   - docstring-inheritance
-  - ghp-import
+  - ipykernel
   - ipython
   - lazy_loader
-  - module-utilities >= 0.6
-  - myst-nb
-  - numba >= 0.50
-  - numpy >= 1.21
-  - pyenchant
-  - sphinx >= 5.3.0
-  - sphinx-autobuild
-  - sphinx-book-theme
-  - sphinx-copybutton
-  - sphinxcontrib-spelling
+  - module-utilities>=0.6
+  - mypy>=1.5.1
+  - nbval
+  - nox
+  - numba>=0.50
+  - numpy>=1.21
+  - pandas-stubs
+  - pytest
+  - pytest-cov
+  - pytest-sugar
+  - pytest-xdist
   - typing-extensions
-  - xarray >= 0.16
+  - xarray>=0.16
+  - pip
+  - pip:
+      - pytest-accept

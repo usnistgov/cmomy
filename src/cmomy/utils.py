@@ -18,7 +18,7 @@ def normalize_axis_index(axis: int, ndim: int) -> int:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
     import numpy.core.multiarray as ma
 
-    return ma.normalize_axis_index(axis, ndim)  # type: ignore
+    return ma.normalize_axis_index(axis, ndim)  # type: ignore[no-any-return,attr-defined]
 
 
 def shape_insert_axis(
@@ -28,7 +28,8 @@ def shape_insert_axis(
 ) -> tuple[int, ...]:
     """Get new shape, given shape, with size put in position axis."""
     if axis is None:
-        raise ValueError("must specify integre axis")
+        msg = "must specify integre axis"
+        raise ValueError(msg)
 
     axis = normalize_axis_index(axis, len(shape) + 1)
     shape = tuple(shape)
@@ -68,16 +69,15 @@ def axis_expand_broadcast(
 
     # if array, and 1d with size same as shape[axis]
     # broadcast from here
-    if expand:
-        # assert axis is not None
-        if x.ndim == 1 and x.ndim != len(shape):
-            if axis is None:
-                raise ValueError("trying to expand an exis with axis==None")
-            if len(x) == shape[axis]:  # pyright: ignore
-                # reshape for broadcasting
-                reshape = (1,) * (len(shape) - 1)
-                reshape = shape_insert_axis(reshape, axis, -1)
-                x = x.reshape(*reshape)
+    if expand and x.ndim == 1 and x.ndim != len(shape):
+        if axis is None:
+            msg = "trying to expand an axis with axis==None"
+            raise ValueError(msg)
+        if len(x) == shape[axis]:
+            # reshape for broadcasting
+            reshape = (1,) * (len(shape) - 1)
+            reshape = shape_insert_axis(reshape, axis, -1)
+            x = x.reshape(*reshape)
 
     if broadcast and x.shape != shape:
         x = np.broadcast_to(x, shape)

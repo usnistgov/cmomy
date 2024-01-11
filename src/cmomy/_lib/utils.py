@@ -46,11 +46,10 @@ def _binom(n: int, k: int) -> float:
 
     if n > k:
         return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
-    elif n == k:
+    if n == k:
         return 1.0
-    else:
-        # n < k
-        return 0.0
+    # n < k
+    return 0.0
 
 
 def factory_binomial(order: int, dtype: DTypeLike = np.float_) -> MyNDArray:
