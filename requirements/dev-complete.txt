@@ -19,7 +19,6 @@ nox
 numba>=0.50
 numpy>=1.21
 pandas-stubs
-pip-tools
 pre-commit
 pyright
 pytest

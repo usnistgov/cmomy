@@ -56,7 +56,7 @@ def test_from_vals(other) -> None:
 
     t = xcentral.xCentralMoments.from_vals(
         x=scramble_xr(other.x_xr),
-        w=scramble_xr(other.w_xr),
+        w=scramble_xr(other.w_xr),  # pyright: ignore[reportArgumentType]
         dim="rec",
         mom=other.mom,
         broadcast=other.broadcast,
@@ -100,7 +100,7 @@ def test_combine(other) -> None:
 
 def test_from_datas(other) -> None:
     datas = xr.concat([s.values for s in other.S_xr], dim="rec")
-    datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))
+    datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
     t = other.cls_xr.from_datas(datas, mom=other.mom, dim="rec")
     xtest(other.data_test_xr, t.values)
 
@@ -108,7 +108,7 @@ def test_from_datas(other) -> None:
 def test_push_datas(other) -> None:
     datas = xr.concat([s.values for s in other.S_xr], dim="rec")
 
-    datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))
+    datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
     t = other.s_xr.zeros_like()
     t.push_datas(datas, dim="rec")
@@ -156,7 +156,7 @@ def test_add(other) -> None:
 
 def test_sum(other) -> None:
     t = sum(other.S_xr, other.s_xr.zeros_like())
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.values)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_iadd(other) -> None:

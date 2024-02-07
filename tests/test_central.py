@@ -155,7 +155,7 @@ def test_add(other) -> None:
 
 def test_sum(other) -> None:
     t = sum(other.S, other.s.zeros_like())
-    other.test_values(t.values)
+    other.test_values(t.values)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_iadd(other) -> None:

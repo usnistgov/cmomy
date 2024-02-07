@@ -33,8 +33,8 @@ __email__ = "wpk@nist.gov"
 
 __all__ = [
     "CentralMoments",
+    "__version__",
     "central_moments",
     "xCentralMoments",
     "xcentral_moments",
-    "__version__",
 ]

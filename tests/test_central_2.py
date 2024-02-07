@@ -31,14 +31,19 @@ class DataContainer:
             w=self.w,
             moments=mom,
             axis=axis,
-            broadcast=broadcast,
+            broadcast=broadcast,  # pyright: ignore[reportArgumentType]
         )
 
     def result_central_moments(self, axis, mom, broadcast=None, cov=None, **kws):
         if cov is None:
             cov = isinstance(mom, tuple) and len(mom) == 2
         return central_moments(
-            x=self.xy(cov), w=self.w, mom=mom, axis=axis, broadcast=broadcast, **kws
+            x=self.xy(cov),
+            w=self.w,
+            mom=mom,
+            axis=axis,
+            broadcast=broadcast,  # pyright: ignore[reportArgumentType]
+            **kws,  # pyright: ignore[reportArgumentType]
         )
 
     @classmethod

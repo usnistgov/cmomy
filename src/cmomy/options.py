@@ -71,5 +71,5 @@ class set_options:  # noqa: N801
     def __enter__(self) -> None:
         return
 
-    def __exit__(self, type: Any, value: Any, traceback: Any) -> None:  # noqa: A002
+    def __exit__(self, type: object, value: object, traceback: object) -> None:  # noqa: A002
         self._apply_update(self.old)

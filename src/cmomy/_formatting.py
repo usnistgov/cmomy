@@ -15,9 +15,9 @@ else:
 
 def short_numpy_repr(*args, **kwargs):
     if hasattr(ff, "short_array_repr"):
-        f = ff.short_array_repr
+        f = ff.short_array_repr  # pyright: ignore[reportAttributeAccessIssue]
     elif hasattr(ff, "short_numpy_repr"):
-        f = ff.short_numpy_repr
+        f = ff.short_numpy_repr  # pyright: ignore[reportAttributeAccessIssue]
     else:
         f = repr
     return f(*args, **kwargs)

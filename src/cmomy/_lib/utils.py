@@ -23,7 +23,6 @@ def myjit(
     **kws: Any,
 ) -> Callable[[F], F]:
     """Perform jitting."""
-
     if signature is not None:
         kws["signature_or_function"] = signature
 
@@ -35,7 +34,7 @@ def myjit(
         else:
             kws["inline"] = "never"
 
-    return cast(
+    return cast(  # pyright: ignore[reportReturnType]
         "Callable[[F], F]",
         njit(fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"], **kws),
     )

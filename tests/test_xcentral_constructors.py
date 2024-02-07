@@ -2,18 +2,22 @@
 """Some simple tests for factory methods of xCentral"""
 from __future__ import annotations
 
-from typing import Callable, cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
 import xarray as xr
 
 import cmomy
-from cmomy.typing import F
+
+if TYPE_CHECKING:
+    from typing import Callable
+
+    from cmomy.typing import F
 
 
 def my_fixture(**kws) -> Callable[[F], F]:
-    return cast(Callable[[F], F], pytest.fixture(scope="module", **kws))
+    return cast("Callable[[F], F]", pytest.fixture(scope="module", **kws))  # pyright: ignore[reportReturnType]
 
 
 @my_fixture(params=[3, (3, 3)])

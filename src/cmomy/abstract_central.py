@@ -57,10 +57,12 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     )
 
     def __init__(self, data: T_Array, mom_ndim: Mom_NDim = 1) -> None:
-        self._data: MyNDArray = data  # type: ignore[assignment]
-        self._data_flat: MyNDArray = self._data  # pyright: ignore[reportGeneralTypeIssues]
+        self._data = cast("MyNDArray", data)  # type: ignore[redundant-cast]
+        self._data_flat = self._data
 
-        assert mom_ndim in {1, 2}
+        if mom_ndim not in {1, 2}:
+            msg = f"{mom_ndim=} must be 1 or 2."
+            raise ValueError(msg)
 
         self._mom_ndim = mom_ndim
         self._cache: dict[str, Any] = {}
@@ -309,21 +311,21 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """Weight data."""
         return cast(
             "float | T_Array",
-            self.values[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues]
+            self.values[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
     def mean(self) -> float | T_Array:
         """Mean (first moment)."""
         return cast(
             "float | T_Array",
-            self.values[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues]
+            self.values[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
     def var(self) -> float | T_Array:
         """Variance (second central moment)."""
         return cast(
             "float | T_Array",
-            self.values[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues]
+            self.values[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
     def std(self) -> float | T_Array:
@@ -547,7 +549,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         broadcast: bool = False,
         dim: Hashable | None = None,
     ) -> MyNDArray:
-        assert isinstance(target, np.ndarray)
+        # assert isinstance(target, np.ndarray)
+        if not isinstance(target, np.ndarray):
+            msg = f"{type(target)=} must be numpy.ndarray."
+            raise TypeError(msg)
         return self._verify_value(
             x=v,
             target="vars",
@@ -626,7 +631,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         output : {klass}
             Same object with pushed data.
         """
-
         datas = self._check_datas(datas=datas, axis=axis, **kwargs)
         self._push.datas(self._data_flat, datas)
         return self
@@ -661,12 +665,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         -----
         Array `x0` should have same shape as `self.val_shape`.
         """
-
         if self.mom_ndim == 1:
             ys = ()
+        elif not isinstance(x, tuple):
+            raise TypeError
+        elif len(x) != self.mom_ndim:
+            raise ValueError
         else:
-            assert isinstance(x, tuple)
-            assert len(x) == self.mom_ndim
             x, *ys = x
 
         xr, target = self._check_val(x=x, target="val")  # type: ignore[arg-type]
@@ -713,9 +718,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """
         if self.mom_ndim == 1:
             ys = ()
+        elif not isinstance(x, tuple):
+            raise TypeError
+        elif len(x) != self.mom_ndim:
+            raise ValueError
         else:
-            assert isinstance(x, tuple)
-            assert len(x) == self.mom_ndim
             x, *ys = x
 
         # fmt: off
@@ -792,7 +799,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         --------
         from_data
         """
-
         if isinstance(func_or_method, str):
             values = getattr(self.values, func_or_method)(*args, **kwargs)
         else:
@@ -800,7 +806,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
         if _order:
             if hasattr(self, "mom_dims"):
-                values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues]
+                values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues, reportAttributeAccessIssue]
             else:
                 msg = "to specify order, must have attribute `mom_dims`"
                 raise AttributeError(msg)
@@ -883,9 +889,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     ###########################################################################
     def _check_other(self, b: Self) -> None:
         """Check other object."""
-        assert type(self) == type(b)
-        assert self.mom_ndim == b.mom_ndim
-        assert self.shape == b.shape
+        if type(self) != type(b):
+            raise TypeError
+        if self.mom_ndim != b.mom_ndim or self.shape != b.shape:
+            raise ValueError
 
     def __iadd__(
         self,
@@ -915,7 +922,8 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """Inplace subtraction."""
         # NOTE: consider implementint push_data_scale routine to make this cleaner
         self._check_other(b)
-        assert np.all(self.weight() >= b.weight())
+        if not np.all(self.weight() >= b.weight()):
+            raise ValueError
         data = b.data.copy()
         data[self._weight_index] *= -1
         # self.push_data(data)
@@ -928,21 +936,22 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     ) -> Self:
         """Subtract objects."""
         self._check_other(b)
-        assert np.all(self.weight() >= b.weight())
+        if not np.all(self.weight() >= b.weight()):
+            raise ValueError
         new = b.copy()
         new._data[self._weight_index] *= -1
         # new.push_data(self.data)
         # return new
         return new.push_data(self.data)
 
-    def __mul__(self, scale: float | int) -> Self:
+    def __mul__(self, scale: float) -> Self:
         """New object with weights scaled by scale."""  # D401
         scale = float(scale)
         new = self.copy()
         new._data[self._weight_index] *= scale
         return new
 
-    def __imul__(self, scale: float | int) -> Self:
+    def __imul__(self, scale: float) -> Self:
         """Inplace multiply."""
         scale = float(scale)
         self._data[self._weight_index] *= scale
@@ -965,7 +974,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         If moments is None, infer from
         shape[-mom_ndim:] if integer, convert to tuple.
         """
-
         if isinstance(moments, int):
             mom_ndim = mom_ndim or 1
             moments = (moments,) * mom_ndim  # type: ignore[assignment]
@@ -978,16 +986,20 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
                 msg = "Must pass shape if inferring moments"
                 raise ValueError(msg)
 
-            assert len(shape) >= mom_ndim
-            assert mom_ndim in {1, 2}
+            if len(shape) < mom_ndim:
+                raise ValueError
+            if mom_ndim not in {1, 2}:
+                raise ValueError
             moments = tuple(x - 1 for x in shape[-mom_ndim:])  # type: ignore[assignment]
 
         elif mom_ndim is None:
             moments = tuple(moments)  # type: ignore[assignment]
             mom_ndim = len(moments)  # type: ignore[assignment]
-            assert mom_ndim in {1, 2}
+            if mom_ndim not in {1, 2}:
+                raise ValueError
 
-        assert len(moments) == mom_ndim  # type: ignore[arg-type]
+        if len(moments) != mom_ndim:  # type: ignore[arg-type]
+            raise ValueError
         return cast("MomentsStrict", moments)
 
     @staticmethod
@@ -1013,7 +1025,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self, axis: int | None, default: int = 0, ndim: int | None = None
     ) -> int:
         """Wrap axis to positive value and check."""
-
         if axis is None:
             axis = default
         if ndim is None:
@@ -1027,10 +1038,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             out = 1
         elif isinstance(mom, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
             out = len(mom)
-            assert out in {1, 2}
+            if out not in {1, 2}:
+                raise ValueError
         else:
             msg = "mom must be int or tuple"
-            raise ValueError(msg)
+            raise TypeError(msg)
         return cast("Mom_NDim", out)
 
     @classmethod

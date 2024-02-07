@@ -54,7 +54,6 @@ def _central_moments(
     out: MyNDArray | None = None,
 ) -> MyNDArray:
     """Calculate central mom along axis."""
-
     if isinstance(mom, tuple):
         mom = mom[0]
 
@@ -78,11 +77,11 @@ def _central_moments(
     shape = (mom + 1,) + x.shape[1:]
     if out is None:
         out = np.empty(shape, dtype=dtype)
-    else:
+    elif out.shape != shape:
+        # try rolling
+        out = np.moveaxis(out, -1, 0)
         if out.shape != shape:
-            # try rolling
-            out = np.moveaxis(out, -1, 0)
-        assert out.shape == shape
+            raise ValueError
 
     wsum = w.sum(axis=0)  # pyright: ignore[reportUnknownMemberType]
     wsum_inv = 1.0 / wsum
@@ -102,7 +101,7 @@ def _central_moments(
     return out
 
 
-def _central_comoments(
+def _central_comoments(  # noqa: C901, PLR0912
     vals: tuple[MyNDArray, MyNDArray],
     mom: int | tuple[int, int],
     w: MyNDArray | None = None,
@@ -114,17 +113,20 @@ def _central_comoments(
     out: MyNDArray | None = None,
 ) -> MyNDArray:
     """Calculate central co-mom (covariance, etc) along axis."""
-
     if isinstance(mom, int):
         mom = (mom, mom)
 
-    assert len(mom) == 2
+    if len(mom) != 2:
+        raise ValueError
     mom = tuple(mom)  # type: ignore[assignment]
-    assert isinstance(mom, tuple)
+    if not isinstance(mom, tuple):
+        raise TypeError
 
     # change x to tuple of inputs
-    assert isinstance(vals, tuple)
-    assert len(vals) == 2
+    if not isinstance(vals, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
+        raise TypeError
+    if len(vals) != 2:
+        raise ValueError
     x, y = vals
 
     x = np.asarray(x, dtype=dtype, order=order)
@@ -149,11 +151,9 @@ def _central_comoments(
             w, x.shape, axis, roll=False, dtype=dtype, order=order
         )
 
-    assert w.shape == x.shape
-    assert y.shape == x.shape
+    if w.shape != x.shape or y.shape != x.shape:
+        raise ValueError
 
-    # if axis < 0:
-    #     axis += x.ndim
     if axis != 0:
         x = np.moveaxis(x, axis, 0)
         y = np.moveaxis(y, axis, 0)
@@ -162,11 +162,11 @@ def _central_comoments(
     shape = tuple(x + 1 for x in mom) + x.shape[1:]
     if out is None:
         out = np.empty(shape, dtype=dtype)
-    else:
+    elif out.shape != shape:
+        # try moving axis
+        out = np.moveaxis(out, [-2, -1], [0, 1])
         if out.shape != shape:
-            # try moving axis
-            out = np.moveaxis(out, [-2, -1], [0, 1])
-        assert out.shape == shape
+            raise ValueError
 
     wsum = w.sum(axis=0)  # pyright: ignore[reportUnknownMemberType]
     wsum_inv = 1.0 / wsum
@@ -274,7 +274,6 @@ def central_moments(
            [ 3.8979e-02, -3.3614e-03,  2.3024e-03]])
 
     """
-
     if isinstance(mom, int):
         mom = (mom,)
 
@@ -325,7 +324,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         if not isinstance(data, np.ndarray):  # pyright: ignore[reportUnnecessaryIsInstance]
             msg = f"data must be an np.ndarray.  Passed type {type(data)}"
-            raise ValueError(msg)
+            raise TypeError(msg)
 
         self._mom_ndim = mom_ndim
 
@@ -381,7 +380,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         array([1.0000e+01, 6.1577e-01, 3.4031e-02, 3.8198e-03])
 
         """
-
         if data is None:
             data = np.zeros_like(self._data, order="C")
             copy = verify = check_shape = False
@@ -411,7 +409,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     # SECTION: To/from xarray
     ###########################################################################
     @docfiller.decorate
-    def to_xarray(
+    def to_xarray(  # noqa: PLR0912
         self,
         dims: XArrayDimsType = None,
         attrs: XArrayAttrsType = None,
@@ -465,7 +463,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                 [10.    ,  0.6425,  0.0633]]])
 
         """
-
         if template is not None:
             out = template.copy(data=self.data)
         else:
@@ -489,9 +486,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                     # try to convert to tuple
                     mom_dims = tuple(mom_dims)  # type: ignore[arg-type]
 
-                assert (
-                    len(mom_dims) == self.mom_ndim
-                ), f"mom_dims={mom_dims} has wrong length?"
+                if len(mom_dims) != self.mom_ndim:
+                    msg = f"{mom_dims=} != {self.mom_ndim=}"
+                    raise ValueError(msg)
 
                 dims_output = dims + mom_dims
 
@@ -610,19 +607,21 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         if style == "val":
             target_shape = self.val_shape
         elif style == "vals":
-            assert axis is not None
+            if axis is None:
+                raise ValueError
             target_shape = shape_insert_axis(self.val_shape, axis, x.shape[axis])
         elif style == "data":
             target_shape = self.shape
         elif style == "datas":
             # make sure axis in limits
-            assert axis is not None
+            if axis is None:
+                raise ValueError
             target_shape = shape_insert_axis(self.shape, axis, x.shape[axis])
         elif style == "var":
             target_shape = self.shape_var
         elif style == "vars":
-            assert other is not None
-            assert axis is not None
+            if other is None or axis is None:
+                raise ValueError
             target_shape = shape_insert_axis(self.shape_var, axis, other.shape[axis])
         else:
             msg = f"unknown string style name {style}"
@@ -669,7 +668,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         else:
             msg = "unknown target type"
-            raise ValueError(msg)
+            raise TypeError(msg)
 
         x = axis_expand_broadcast(
             x,
@@ -683,9 +682,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         )
 
         # check shape:
-        assert (
-            x.shape == target_shape
-        ), f"x.shape = {x.shape} not equal target_shape={target_shape}"
+        if x.shape != target_shape:
+            msg = f"{x.shape=} not equal {target_shape=}"
+            raise ValueError(msg)
 
         # move axis
         nrec: tuple[int, ...]
@@ -696,7 +695,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         else:
             nrec = ()
 
-        x = x.reshape(nrec + shape_flat)
+        x = x.reshape(nrec + shape_flat)  # pyright: ignore[reportUnknownArgumentType]
 
         if x.ndim == 0:
             x = x[()]
@@ -1024,7 +1023,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         `moveaxis
         :meth:`reduce`
         """
-
         self._raise_if_scalar()
 
         axis = self._wrap_axis(axis)
@@ -1195,32 +1193,35 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     ###########################################################################
     @classmethod
     @docfiller_abc()
-    def zeros(
+    def zeros(  # noqa: C901
         cls,
         mom: Moments | None = None,
         mom_ndim: Mom_NDim | None = None,
-        val_shape: tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | int | None = None,
         shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         zeros_kws: Mapping[str, Any] | None = None,
         **kws: Any,
     ) -> Self:
         if shape is None:
-            assert mom is not None
+            if mom is None:
+                raise ValueError
             if isinstance(mom, int):
                 mom = (mom,)
             if mom_ndim is None:
                 mom_ndim = len(mom)  # type: ignore[assignment]
-            assert len(mom) == mom_ndim
+            if len(mom) != mom_ndim:
+                raise ValueError
 
             if val_shape is None:
                 val_shape = ()
             elif isinstance(val_shape, int):
                 val_shape = (val_shape,)
-            shape = val_shape + tuple(x + 1 for x in mom)
 
-        else:
-            assert mom_ndim is not None
+            shape = cast("tuple[int, ...]", val_shape) + tuple(x + 1 for x in mom)  # type: ignore[redundant-cast]
+
+        elif mom_ndim is None:
+            raise ValueError
 
         if dtype is None:
             dtype = float
@@ -1310,7 +1311,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         array([20.    ,  0.5816,  0.0761])
 
         """
-
         axis = axis or 0
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
 
@@ -1322,7 +1322,8 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                 val_shape = datas.shape[1:-mom_ndim]
 
             mom = cls._check_mom(mom, mom_ndim, datas.shape)
-            assert datas.shape[1:] == val_shape + tuple(x + 1 for x in mom)
+            if datas.shape[1:] != val_shape + tuple(x + 1 for x in mom):
+                raise ValueError
 
         if dtype is None:
             dtype = datas.dtype
@@ -1357,7 +1358,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                [1.0000e+02, 4.8657e-01, 8.5287e-02],
                [1.0000e+02, 5.2226e-01, 7.8481e-02]])
         """
-
         axis = axis or 0
         mom_ndim = cls._mom_ndim_from_mom(mom)
         x0 = x if mom_ndim == 1 else x[0]
@@ -1483,7 +1483,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
                [10.    ,  0.5633,  0.0259]])
 
         """
-
         from .resample import randsamp_freq, resample_vals
 
         axis = axis or 0
@@ -1578,7 +1577,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         >>> dy_cen.cmom()  # this matches above
         array([1.    , 0.    , 0.034 , 0.0038, 0.0026])
         """
-
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
 
         if convert_kws is None:
@@ -1753,7 +1751,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         Weights, averages, variances/covariances along
         axis.
         """
-
         mom_ndim = cls._mom_ndim_from_mom(mom)
         cls._raise_if_not_1d(mom_ndim)
 
