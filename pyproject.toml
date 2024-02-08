@@ -124,8 +124,8 @@ extend-include = ["*.ipynb"]
 extend-exclude = [
     ".venv",
     "dist-conda",
-    "examples/archived",
     ".numba_cache",
+    "examples/archived",
     # "tests/",
     # "src/cmomy/tests",
 ]
@@ -261,7 +261,7 @@ show_error_codes = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unused_configs = true
-exclude = [".eggs", ".tox", "doc", "docs", ".nox"]
+exclude = [".eggs", ".tox", "doc", "docs", ".nox", ".numba_cache"]
 check_untyped_defs = true
 strict = true
 
@@ -290,7 +290,7 @@ strict = [
     "noxfile.py",
     "tools/*.py",
 ]
-exclude = ["**/__pycache__", ".tox/**", ".nox/**", ".venv/**", "**/.mypy_cache"]
+exclude = ["**/__pycache__", ".tox/**", ".nox/**", ".venv/**", "**/.mypy_cache", "**/.numba_cache"]
 # strict = ["src", "tests", "noxfile.py", "tools/*.py"]
 pythonVersion = "3.11"
 typeCheckingMode = "basic"
