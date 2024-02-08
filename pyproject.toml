@@ -125,6 +125,7 @@ extend-exclude = [
     ".venv",
     "dist-conda",
     "examples/archived",
+    ".numba_cache",
     # "tests/",
     # "src/cmomy/tests",
 ]

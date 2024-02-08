@@ -5,6 +5,7 @@ import numpy as np
 
 # Dumb calculations
 def get_cmom(w, x, moments, axis=0, last=True):
+    """Calculate central moments"""
     if w is None:
         w = np.array(1.0)
 
@@ -41,6 +42,7 @@ def get_cmom(w, x, moments, axis=0, last=True):
 
 
 def get_comom(w, x, y, moments, axis=0, broadcast=True):
+    """Calculate central co-moments."""
     if w is None:
         w = np.array(1.0)
 

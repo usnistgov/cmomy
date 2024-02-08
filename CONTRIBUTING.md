@@ -189,6 +189,17 @@ You can also run [pre-commit] on all files via nox using:
 nox -s lint
 ```
 
+## Shared [numba] cache
+
+[numba]: https://github.com/numba/numba
+
+This project uses [numba] to accelerate calculations. For development, we
+specify the environment variable `NUMBA_CACHE_DIR={project_root}/.numba_cache`
+relative to the project root. If using [zsh-autoenv], there is a recipe in the
+`Makefile` to create this environment variable on entering the repo directory.
+Also, `noxfile.py` and the notebooks sets this environment variable. This should
+greatly speed up recompilation of [numba] compiled functions during development.
+
 ## Using nox
 
 This project makes extensive use of [nox] to automate testing, typing,

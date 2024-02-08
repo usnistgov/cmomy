@@ -106,6 +106,7 @@ pre-commit-codespell: ## run codespell. Note that this imports allowed words fro
 .PHONY: user-autoenv-zsh user-all
 user-autoenv-zsh: ## create .autoenv.zsh files
 	echo conda activate ./.venv > .autoenv.zsh
+	echo autostash NUMBA_CACHE_DIR=$(PWD)/.numba_cache >> .autoenv.zsh
 	echo conda deactivate > .autoenv_leave.zsh
 
 user-all: user-autoenv-zsh ## runs user scripts

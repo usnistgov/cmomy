@@ -2,6 +2,7 @@
 # * Imports ----------------------------------------------------------------------------
 from __future__ import annotations
 
+import os
 import shlex
 import shutil
 import sys
@@ -61,6 +62,11 @@ if TYPE_CHECKING:
 PACKAGE_NAME = "cmomy"
 IMPORT_NAME = "cmomy"
 KERNEL_BASE = "cmomy"
+
+# * Environments variables -------------------------------------------------------------
+
+# Set numba_cache directory for sharing
+os.environ["NUMBA_CACHE_DIR"] = str(Path(__file__).parent / ".numba_cache")
 
 # * nox options ------------------------------------------------------------------------
 
@@ -246,7 +252,9 @@ class SessionParams(DataclassParser):
     build_silent: bool = False
 
     # publish
-    publish: list[Literal["release", "test"]] | None = add_option("-p", "--publish")
+    publish: list[Literal["release", "test", "check"]] | None = add_option(
+        "-p", "--publish"
+    )
     publish_run: RUN_ANNO = None
 
     # conda-recipe/grayskull
@@ -549,8 +557,6 @@ def _test(
     test_opts: OPT_TYPE,
     no_cov: bool,
 ) -> None:
-    import os
-
     tmpdir = os.environ.get("TMPDIR", None)
 
     session_run_commands(session, run)
@@ -987,6 +993,9 @@ def publish(session: nox.Session, opts: SessionParams) -> None:
 
         elif cmd == "release":
             session.run("twine", "upload", "dist/*")
+
+        elif cmd == "check":
+            session.run("twine", "check", "--strict", "dist/*")
 
 
 # # ** Dist conda
