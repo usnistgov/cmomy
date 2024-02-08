@@ -218,13 +218,33 @@ docstring-code-format = true
 [tool.nbqa.exclude]
 codespell = "^examples/archived"
 
+[tool.check-wheel-contents]
+toplevel = ["cmomy"]
+src_dir = ["src"]
+package_omit = [".*", "*.pyc", "*.pyo", "*.nbc", "__pycache__/*", "*.egg-info"]
+
 # * Testing --------------------------------------------------------------------
 
 [tool.pytest.ini_options]
-addopts = "--doctest-modules --doctest-glob='*.md' --pyargs"
-testpaths = ["cmomy", "tests", "README.md"]
+addopts = [
+    "--doctest-modules",
+    "--doctest-glob=*.md",
+    "--pyargs",
+    "--cov-config=pyproject.toml",
+    # "-n",
+    # "4",
+]
+testpaths = [
+    "README.md",
+    "cmomy",
+    "tests",
+]
+
+[tool.coverage.run]
+branch = true
 
 [tool.coverage.report]
+# show_missing = true
 exclude_also = ["if TYPE_CHECKING:", "@overload"]
 omit = ["*/vendored/*", "*/_typing.py"]
 include = ["src/*"]
