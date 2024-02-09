@@ -172,7 +172,7 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Use extend-ignore for project specific ignores (avoid changing ignore directly)
 extend-ignore = [
     "PD",        # - not using pandas?
-    "NPY",       # - not using numpy?
+    # "NPY",       # - not using numpy?
     # * Annotations
     # "SLF001",  # - flake8-self (private access sometimes OK)
     # "ANN",     # - Annotations (just use mypy/pyright)
@@ -209,6 +209,8 @@ max-public-methods = 30
 "src/**/*.py" = ["TD003", "FIX002", "PLR2004", "D102"]
 "src/cmomy/abstract_central.py" = ["PLR2004"]
 "src/cmomy/central.py" = ["PLR2004", "D102"]
+"src/cmomy/_lib/resample.py" = ["NPY002"]
+# "**/*.py" = ["NPY002"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["cmomy"]
@@ -222,7 +224,7 @@ codespell = "^examples/archived"
 [tool.check-wheel-contents]
 toplevel = ["cmomy"]
 src_dir = ["src"]
-package_omit = [".*", "*.pyc", "*.pyo", "*.nbc", "__pycache__/*", "*.egg-info"]
+# package_omit = [".*", "*.pyc", "*.pyo", "*.nbc", "__pycache__/*", "*.egg-info"]
 
 # * Testing --------------------------------------------------------------------
 

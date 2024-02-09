@@ -188,7 +188,7 @@ def test_mult(other) -> None:
     xtest(t.values, (s + s).values)
 
 
-def test_resample_and_reduce(other) -> None:
+def test_resample_and_reduce(other, rng) -> None:
     ndim = len(other.val_shape)
 
     if ndim > 0:
@@ -196,7 +196,7 @@ def test_resample_and_reduce(other) -> None:
             ndat = other.val_shape[axis]
             nrep = 10
 
-            idx = np.random.choice(ndat, (nrep, ndat), replace=True)
+            idx = rng.choice(ndat, (nrep, ndat), replace=True)
 
             t0 = other.s.resample_and_reduce(indices=idx, axis=axis)
 

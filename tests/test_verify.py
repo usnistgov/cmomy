@@ -7,8 +7,8 @@ import cmomy
 
 
 @pytest.fixture(scope="module")
-def data():
-    out = np.random.rand(1, 2, 3, 4)
+def data(rng):
+    out = rng.random((1, 2, 3, 4))
     return np.moveaxis(out, [2, 1], [1, 2])
 
 

@@ -47,8 +47,8 @@ def algo2(vals, mom):
 
 
 def test_stability() -> None:
-    np.random.seed(0)
-    x = np.random.rand(10000)
+    rng = np.random.default_rng(seed=0)
+    x = rng.random(10000)
 
     mom = 5
     moments = cmomy.central_moments(x, mom=mom)

@@ -51,7 +51,7 @@ def _binom(n: int, k: int) -> float:
     return 0.0
 
 
-def factory_binomial(order: int, dtype: DTypeLike = np.float_) -> MyNDArray:
+def factory_binomial(order: int, dtype: DTypeLike = np.float64) -> MyNDArray:
     """Create binomial coefs at given order."""
     out = np.zeros((order + 1, order + 1), dtype=dtype)
     for n in range(order + 1):

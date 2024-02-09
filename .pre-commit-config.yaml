@@ -152,9 +152,13 @@ repos:
         alias: nbqa-typos
         name: nbqa-typos
         additional_dependencies: [typos==1.18.2]
+        stages: [manual]
+        exclude: "^examples/archived/"
         args: ["typos", "--nbqa-shell"]
       - id: nbqa
         alias: nbqa-typos
         name: nbqa-typos-markdown
         additional_dependencies: [typos==1.18.2]
+        stages: [manual]
+        exclude: "^examples/archived/"
         args: ["typos", "--nbqa-shell", "--nbqa-md"]

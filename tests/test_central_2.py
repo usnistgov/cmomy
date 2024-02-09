@@ -47,21 +47,21 @@ class DataContainer:
         )
 
     @classmethod
-    def from_params(cls, shape, axis, style):
+    def from_params(cls, shape, axis, style, rng):
         if isinstance(shape, int):
             shape = (shape,)
 
-        x = np.random.rand(*shape)
+        x = rng.random(shape)
 
         if style is None:
-            y = np.random.rand(*shape)
+            y = rng.random(shape)
             w = None
         if style == "total":
-            y = np.random.rand(*shape)
-            w = np.random.rand(*shape)
+            y = rng.random(shape)
+            w = rng.random(shape)
         elif style == "broadcast":
-            y = np.random.rand(shape[axis])
-            w = np.random.rand(shape[axis])
+            y = rng.random(shape[axis])
+            w = rng.random(shape[axis])
         return cls(x=x, y=y, w=w)
 
 
@@ -151,8 +151,8 @@ def style(request):
 
 
 @pytest.fixture(scope="module")
-def data(shape, axis, style):
-    return DataContainer.from_params(shape=shape, axis=axis, style=style)
+def data(shape, axis, style, rng):
+    return DataContainer.from_params(shape=shape, axis=axis, style=style, rng=rng)
 
 
 @pytest.fixture(scope="module", params=[3, (3, 3)])
@@ -174,16 +174,16 @@ def test_result(result_container) -> None:
 
 # @pytest.fixture(scope="module")
 # def xdata(shape_tuple):
-#     return np.random.rand(*shape_tuple)
+#     return default_rng.random(shape_tuple)
 
 
 # @pytest.fixture(scope="module")
 # def ydata(shape_tuple, style, axis):
 #     shape = shape_tuple
 #     if style is None or style == "total":
-#         return np.random.rand(*shape)
+#         return default_rng.random(shape)
 #     elif style == "broadcast":
-#         return np.random.rand(shape[axis])
+#         return default_rng.random(shape[axis])
 #     else:
 #         raise ValueError
 
@@ -194,9 +194,9 @@ def test_result(result_container) -> None:
 #     if style is None:
 #         return None
 #     elif style == "total":
-#         return np.random.rand(*shape)
+#         return default_rng.random(shape)
 #     elif style == "broadcast":
-#         return np.random.rand(shape[axis])
+#         return default_rng.random(shape[axis])
 
 
 # @pytest.fixture(scope="module")
@@ -368,4 +368,4 @@ def test_result(result_container) -> None:
 # # class TestCentral:
 # #     @pytest.fixture(autouse=True)
 # #     def setup(self, shape, axis):
-# #         self.x = np.random.rand(*shape)
+# #         self.x = default_rng.random(shape)

@@ -14,6 +14,13 @@ from cmomy._testing import get_cmom, get_comom
 if TYPE_CHECKING:
     from cmomy.typing import Moments, MyNDArray
 
+default_rng = np.random.default_rng()
+
+
+@pytest.fixture(scope="session")
+def rng():
+    return default_rng
+
 
 class Data:  # noqa: PLR0904
     """wrapper around stuff for generic testing."""
@@ -67,9 +74,9 @@ class Data:  # noqa: PLR0904
 
     def _get_data(self, style: str | None = None) -> MyNDArray:
         if style is None or style == "total":
-            return np.random.rand(*self.shape)  # pyright: ignore[reportReturnType]
+            return default_rng.random(self.shape)  # pyright: ignore[reportReturnType]
         if style == "broadcast":
-            return np.random.rand(self.shape[self.axis])
+            return default_rng.random(self.shape[self.axis])
         msg = "bad style"
         raise ValueError(msg)
 
@@ -212,7 +219,7 @@ class Data:  # noqa: PLR0904
     def indices(self) -> MyNDArray:
         ndat = self.xdata.shape[self.axis]
         nrep = 10
-        return np.random.choice(ndat, (nrep, ndat), replace=True)
+        return default_rng.choice(ndat, (nrep, ndat), replace=True)
 
     @cached.prop
     def freq(self) -> MyNDArray:

@@ -38,16 +38,16 @@ def shape(request):
 
 
 @my_fixture()
-def axis(shape):
-    return np.random.randint(0, len(shape))
+def axis(shape, rng):
+    return rng.integers(0, len(shape))
 
 
 @my_fixture()
-def xy(shape, mom_tuple):
-    x = np.random.rand(*shape)
+def xy(shape, mom_tuple, rng):
+    x = rng.random(shape)
 
     if len(mom_tuple) == 2:
-        y = np.random.rand(*shape)
+        y = rng.random(shape)
         return (x, y)
     return x
 

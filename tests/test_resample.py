@@ -9,8 +9,8 @@ from cmomy.resample import (  # , xbootstrap_confidence_interval
 
 
 @pytest.mark.parametrize("ndat", [50])
-def test_freq_indices(ndat) -> None:
-    indices = np.random.choice(10, (20, 10), replace=True)
+def test_freq_indices(ndat, rng) -> None:
+    indices = rng.choice(10, (20, 10), replace=True)
 
     freq0 = resample.indices_to_freq(indices)
 
@@ -74,7 +74,7 @@ def test_stats_resample_vals(other, parallel) -> None:
 
 @pytest.mark.slow()
 @pytest.mark.parametrize("parallel", [True, False])
-def test_resample_data(other, parallel) -> None:
+def test_resample_data(other, parallel, rng) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
@@ -83,7 +83,7 @@ def test_resample_data(other, parallel) -> None:
 
             ndat = data.shape[axis]
 
-            idx = np.random.choice(ndat, (nrep, ndat), replace=True)
+            idx = rng.choice(ndat, (nrep, ndat), replace=True)
             freq = resample.randsamp_freq(indices=idx)
 
             if axis != 0:
@@ -97,7 +97,7 @@ def test_resample_data(other, parallel) -> None:
 
 @pytest.mark.slow()
 @pytest.mark.parametrize("parallel", [True, False])
-def test_resample_against_vals(other, parallel) -> None:
+def test_resample_against_vals(other, parallel, rng) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
@@ -105,7 +105,7 @@ def test_resample_against_vals(other, parallel) -> None:
 
         for axis in range(s.val_ndim):
             ndat = s.val_shape[axis]
-            idx = np.random.choice(ndat, (nrep, ndat), replace=True)
+            idx = rng.choice(ndat, (nrep, ndat), replace=True)
 
             t0 = s.resample_and_reduce(indices=idx, axis=axis, parallel=parallel)
 
