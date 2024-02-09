@@ -37,7 +37,7 @@ coverage==7.4.1
     # via
     #   nbval
     #   pytest-cov
-debugpy==1.8.0
+debugpy==1.8.1
     # via ipykernel
 decorator==5.1.1
     # via ipython
@@ -234,7 +234,6 @@ types-pytz==2024.1.0.20240203
     # via pandas-stubs
 typing-extensions==4.9.0
     # via
-    #   -r requirements/dev-complete.txt
     #   module-utilities
     #   mypy
 tzdata==2023.4

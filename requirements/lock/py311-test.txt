@@ -58,9 +58,7 @@ six==1.16.0
 termcolor==2.4.0
     # via pytest-sugar
 typing-extensions==4.9.0
-    # via
-    #   -r requirements/test.txt
-    #   module-utilities
+    # via module-utilities
 tzdata==2023.4
     # via pandas
 xarray==2024.1.1

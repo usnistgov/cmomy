@@ -28,5 +28,5 @@ pytest-sugar
 pytest-xdist
 pytype;python_version<"3.11"
 scriv
-typing-extensions
+typing-extensions;python_version<"3.11"
 xarray>=0.16
