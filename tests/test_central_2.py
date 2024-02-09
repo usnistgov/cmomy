@@ -280,7 +280,7 @@ def test_result(result_container) -> None:
 #     np.testing.assert_allclose(c_obj.data, expected, rtol=1e-10, atol=1e-10)
 
 
-# def test_propeties(c_obj, shape_tuple, val_shape, mom_tuple):
+# def test_properties(c_obj, shape_tuple, val_shape, mom_tuple):
 #     assert val_shape == c_obj.val_shape
 
 #     assert mom_tuple == c_obj.mom

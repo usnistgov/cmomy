@@ -17,9 +17,9 @@ if TYPE_CHECKING:
     from typing import Any, Callable, Hashable, Literal, Mapping
 
     from numpy.typing import DTypeLike
-    from typing_extensions import Self
 
     from ._lib.pushers import Pusher
+    from ._typing_compat import Self
     from .typing import Mom_NDim, Moments, MomentsStrict, MultiArray, MultiArrayVals
 
 # * Main
@@ -894,20 +894,12 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         if self.mom_ndim != b.mom_ndim or self.shape != b.shape:
             raise ValueError
 
-    def __iadd__(
-        self,
-        b: Self,
-    ) -> Self:  # D105
+    def __iadd__(self, b: Self) -> Self:  # noqa: PYI034
         """Self adder."""
         self._check_other(b)
-        # self.push_data(b.data)
-        # return self
         return self.push_data(b.data)
 
-    def __add__(
-        self,
-        b: Self,
-    ) -> Self:
+    def __add__(self, b: Self) -> Self:
         """Add objects to new object."""
         self._check_other(b)
         # new = self.copy()
@@ -915,10 +907,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         # return new
         return self.copy().push_data(b.data)
 
-    def __isub__(
-        self,
-        b: Self,
-    ) -> Self:
+    def __isub__(self, b: Self) -> Self:  # noqa: PYI034
         """Inplace subtraction."""
         # NOTE: consider implementint push_data_scale routine to make this cleaner
         self._check_other(b)
@@ -926,14 +915,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             raise ValueError
         data = b.data.copy()
         data[self._weight_index] *= -1
-        # self.push_data(data)
-        # return self
         return self.push_data(data)
 
-    def __sub__(
-        self,
-        b: Self,
-    ) -> Self:
+    def __sub__(self, b: Self) -> Self:
         """Subtract objects."""
         self._check_other(b)
         if not np.all(self.weight() >= b.weight()):
@@ -951,7 +935,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         new._data[self._weight_index] *= scale
         return new
 
-    def __imul__(self, scale: float) -> Self:
+    def __imul__(self, scale: float) -> Self:  # noqa: PYI034
         """Inplace multiply."""
         scale = float(scale)
         self._data[self._weight_index] *= scale

@@ -143,6 +143,7 @@ repos:
     rev: v1.18.2
     hooks:
       - id: typos
+        # args: []
         stages: [manual]
         exclude: "[.]ipynb$"
   - repo: https://github.com/nbQA-dev/nbQA

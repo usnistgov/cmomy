@@ -18,8 +18,8 @@ if TYPE_CHECKING:
     from typing import Any, Hashable, Literal, Mapping
 
     from numpy.typing import ArrayLike, DTypeLike
-    from typing_extensions import Self
 
+    from ._typing_compat import Self
     from .typing import (
         ArrayOrder,
         Mom_NDim,

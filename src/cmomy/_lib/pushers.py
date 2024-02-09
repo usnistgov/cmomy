@@ -440,7 +440,7 @@ def push_vals_scale_cov_vec(data, W, X0, X1, scale) -> None:
             _push_val_cov(data[k, ...], W[s, k] * f, X0[s, k], X1[s, k])
 
 
-# --- Datas SCaled Pushers -------------------------------------------------------------
+# --- Datas Scaled Pushers -------------------------------------------------------------
 
 
 @myjit(inline=True)

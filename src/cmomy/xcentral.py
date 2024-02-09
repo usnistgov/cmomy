@@ -25,11 +25,11 @@ if TYPE_CHECKING:
 
     # Iterable,
     from numpy.typing import DTypeLike
-    from typing_extensions import Self
     from xarray.core import types as xr_types
     from xarray.core.coordinates import DataArrayCoordinates
     from xarray.core.indexes import Indexes
 
+    from ._typing_compat import Self
     from .central import CentralMoments
     from .typing import (
         Mom_NDim,
@@ -2196,7 +2196,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
     #     mom_dims=None,
     #     **kws: Any
     # ):
-    #     """Create from single observation of statisitcs (mean, variance).
+    #     """Create from single observation of statistics (mean, variance).
 
     #     See CentralMoment.from_stat
     #     """
@@ -2237,7 +2237,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
     #     mom_dims=None,
     #     **kws: Any
     # ):
-    #     """Create from collection of statisitcs.
+    #     """Create from collection of statistics.
 
     #     See CentralMoments.from_stats
     #     """

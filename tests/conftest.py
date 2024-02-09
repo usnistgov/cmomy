@@ -350,7 +350,7 @@ class Data:  # noqa: PLR0904
         ]
 
 
-# Fixutre
+# Fixture
 # def get_params():
 #     for shape, axis in [(20, 0), ((20, 2, 3), 0), ((2, 20, 3), 1), ((2, 3, 20), 2)]:
 #         for style in [None, "total", "broadcast"]:
