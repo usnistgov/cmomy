@@ -101,7 +101,7 @@ def _move_mom_dims_to_end(
         mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]
 
         if mom_ndim is not None and len(mom_dims) != mom_ndim:
-            msg = "len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
+            msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
             raise ValueError(msg)
 
         order = (..., *mom_dims)
@@ -316,7 +316,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
     Most methods are wrapped to accept :class:`xarray.DataArray` object.
     """
 
-    __slots__ = ("_mom_ndim", "_cache", "_data", "_data_flat", "_xdata")
+    __slots__ = ("_cache", "_data", "_data_flat", "_mom_ndim", "_xdata")
 
     def __init__(self, data: xr.DataArray, mom_ndim: Mom_NDim = 1) -> None:
         if not isinstance(data, xr.DataArray):  # pyright: ignore[reportUnnecessaryIsInstance]

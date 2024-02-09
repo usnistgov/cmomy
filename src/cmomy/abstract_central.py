@@ -50,10 +50,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     """
 
     __slots__ = (
-        "_mom_ndim",
         "_cache",
         "_data",
         "_data_flat",
+        "_mom_ndim",
     )
 
     def __init__(self, data: T_Array, mom_ndim: Mom_NDim = 1) -> None:

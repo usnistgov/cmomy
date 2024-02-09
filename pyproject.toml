@@ -186,6 +186,9 @@ extend-ignore = [
     # "D202",    # - blank line after docstring
 ]
 
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
 [tool.ruff.lint.pylint]
 max-args = 15
 max-positional-args = 15
@@ -225,6 +228,8 @@ codespell = "^examples/archived"
 toplevel = ["cmomy"]
 src_dir = ["src"]
 # package_omit = [".*", "*.pyc", "*.pyo", "*.nbc", "__pycache__/*", "*.egg-info"]
+
+
 
 # * Testing --------------------------------------------------------------------
 
