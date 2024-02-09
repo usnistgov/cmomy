@@ -98,22 +98,23 @@ def repr_html(x):
         )
     ]
 
-    if hasattr(x.values, "_repr_html_"):
+    values = x.to_values()
+    if hasattr(values, "_repr_html_"):
         sections += []
 
         out = fm._obj_repr(
-            x.values,
+            values,
             header_components,
             sections,
         )
 
-        out = out + x.values._repr_html_()
+        out = out + values._repr_html_()
 
     else:
         sections += [numpy_section(x.data)]
         header_components += [
-            f"<div class='xr-obj-type'>{type(x.values)}</div>",
+            f"<div class='xr-obj-type'>{type(values)}</div>",
         ]
-        out = fm._obj_repr(x.values, header_components, sections)
+        out = fm._obj_repr(values, header_components, sections)
 
     return out

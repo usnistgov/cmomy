@@ -78,9 +78,9 @@ def test_from_data(dc, dcx) -> None:
 
     # create from xarray?
     o2 = cmomy.xCentralMoments.from_data(
-        dcx.values.rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
+        dcx.to_dataarray().rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
     )
-    xr.testing.assert_allclose(o1.values, o2.values)
+    xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_datas(dc, dcx) -> None:
@@ -98,9 +98,11 @@ def test_from_datas(dc, dcx) -> None:
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = cmomy.xCentralMoments.from_datas(dcx.values, dim=dim, mom_ndim=mom_ndim)
+        o2 = cmomy.xCentralMoments.from_datas(
+            dcx.to_dataarray(), dim=dim, mom_ndim=mom_ndim
+        )
 
-        xr.testing.assert_allclose(o1.values, o2.values)
+        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_raw(dc, dcx) -> None:
@@ -114,7 +116,7 @@ def test_from_raw(dc, dcx) -> None:
 
     o2 = cmomy.xCentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim)
 
-    xr.testing.assert_allclose(o1.values, o2.values)
+    xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_raws(dc, dcx) -> None:
@@ -126,7 +128,7 @@ def test_from_raws(dc, dcx) -> None:
         t = cmomy.CentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
         r = dc.reduce(axis=axis)
 
-        np.testing.assert_allclose(t.values, r.values)
+        np.testing.assert_allclose(t.to_numpy(), r.to_numpy())
 
         # test xCentral
         o1 = cmomy.xCentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
@@ -156,7 +158,7 @@ def test_from_vals(xy, shape, mom) -> None:
 
         o2 = cmomy.xCentralMoments.from_vals(xy_xr, dim=dims[axis], mom=mom)
 
-        xr.testing.assert_allclose(o1.values, o2.values)
+        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_resample_vals(xy, shape, mom) -> None:
@@ -182,7 +184,7 @@ def test_from_resample_vals(xy, shape, mom) -> None:
             xy_xr, dim=dims[axis], mom=mom, freq=freq
         )
 
-        xr.testing.assert_allclose(o1.values, o2.values)
+        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_resample_and_reduce(dc, dcx) -> None:

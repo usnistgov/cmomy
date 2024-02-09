@@ -341,8 +341,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         self._cache: dict[str, Any] = {}
 
-    @property
-    def values(self) -> MyNDArray:
+    def to_values(self) -> MyNDArray:
         """Accesses for self.data."""
         return self._data
 
@@ -985,7 +984,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         self._raise_if_scalar()
         axis = self._wrap_axis(axis)
         return type(self).from_datas(
-            self.values, mom_ndim=self.mom_ndim, axis=axis, **kws
+            self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kws
         )
 
     @docfiller.decorate

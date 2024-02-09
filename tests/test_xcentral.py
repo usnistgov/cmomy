@@ -16,7 +16,7 @@ def test_fix_test(other) -> None:
 
 
 def test_s(other) -> None:
-    xtest(other.data_test_xr, other.s_xr.values)
+    xtest(other.data_test_xr, other.s_xr.to_dataarray())
 
 
 def scramble_xr(x):
@@ -35,7 +35,7 @@ def test_create(other) -> None:
 
     # from array
     t.push_vals(other.x, w=other.w, axis=other.axis, broadcast=other.broadcast)
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
     # from xarray
     t.zero()
@@ -45,14 +45,14 @@ def test_create(other) -> None:
         dim="rec",
         broadcast=other.broadcast,
     )
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_from_vals(other) -> None:
     t = xcentral.xCentralMoments.from_vals(
         x=other.x, w=other.w, mom=other.mom, axis=other.axis, broadcast=other.broadcast
     )
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
     t = xcentral.xCentralMoments.from_vals(
         x=scramble_xr(other.x_xr),
@@ -61,7 +61,7 @@ def test_from_vals(other) -> None:
         mom=other.mom,
         broadcast=other.broadcast,
     )
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_push_val(other) -> None:
@@ -69,50 +69,50 @@ def test_push_val(other) -> None:
         t = other.s_xr.zeros_like()
         for ww, xx in zip(other.w, other.x):
             t.push_val(x=xx, w=ww, broadcast=other.broadcast)
-        xtest(other.data_test_xr, t.values)
+        xtest(other.data_test_xr, t.to_dataarray())
 
         t.zero()
         for ww, xx in zip(other.w_xr, other.x_xr):
             t.push_val(x=scramble_xr(xx), w=scramble_xr(ww), broadcast=other.broadcast)
-        xtest(other.data_test_xr, t.values)
+        xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_push_vals_mult(other) -> None:
     t = other.s_xr.zeros_like()
     for ww, xx in zip(other.W, other.X):
         t.push_vals(x=xx, w=ww, axis=other.axis, broadcast=other.broadcast)
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
     t.zero()
     for ww, xx in zip(other.W_xr, other.X_xr):
         t.push_vals(
             x=scramble_xr(xx), w=scramble_xr(ww), dim="rec", broadcast=other.broadcast
         )
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_combine(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
-        t.push_data(scramble_xr(s.values))
-    xtest(other.data_test_xr, t.values)
+        t.push_data(scramble_xr(s.to_dataarray()))
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_from_datas(other) -> None:
-    datas = xr.concat([s.values for s in other.S_xr], dim="rec")
+    datas = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
     datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
     t = other.cls_xr.from_datas(datas, mom=other.mom, dim="rec")
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_push_datas(other) -> None:
-    datas = xr.concat([s.values for s in other.S_xr], dim="rec")
+    datas = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
 
     datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
     t = other.s_xr.zeros_like()
     t.push_datas(datas, dim="rec")
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 # def test_push_stat(other):
@@ -120,19 +120,19 @@ def test_push_datas(other) -> None:
 
 #         t = other.s_xr.zeros_like()
 #         for s in other.S_xr:
-#             t.push_stat(s.mean(), v=s.values[..., 2:], w=s.weight())
-#         xtest(other.data_test_xr, t.values)
+#             t.push_stat(s.mean(), v=s.to_dataarray()[..., 2:], w=s.weight())
+#         xtest(other.data_test_xr, t.to_dataarray())
 
 
 # def test_from_stat(other):
 #     if other.s._mom_ndim == 1:
 #         t = other.cls.from_stat(
 #             a=other.s.mean(),
-#             v=other.s.values[..., 2:],
+#             v=other.s.to_dataarray()[..., 2:],
 #             w=other.s.weight(),
 #             mom=other.mom,
 #         )
-#         other.test_values(t.values)
+#         other.test_values(t.to_dataarray())
 
 
 # def test_from_stats(other):
@@ -140,52 +140,52 @@ def test_push_datas(other) -> None:
 #         t = other.s.zeros_like()
 #         t.push_stats(
 #             a=np.array([s.mean() for s in other.S]),
-#             v=np.array([s.values[..., 2:] for s in other.S]),
+#             v=np.array([s.to_dataarray()[..., 2:] for s in other.S]),
 #             w=np.array([s.weight() for s in other.S]),
 #             axis=0,
 #         )
-#         other.test_values(t.values)
+#         other.test_values(t.to_dataarray())
 
 
 def test_add(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
         t = t + s
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_sum(other) -> None:
     t = sum(other.S_xr, other.s_xr.zeros_like())
-    xtest(other.data_test_xr, t.values)  # pyright: ignore[reportAttributeAccessIssue]
+    xtest(other.data_test_xr, t.to_dataarray())  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_iadd(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
         t += s
-    xtest(other.data_test_xr, t.values)
+    xtest(other.data_test_xr, t.to_dataarray())
 
 
 def test_sub(other) -> None:
     t = other.s_xr - sum(other.S_xr[1:], other.s_xr.zeros_like())
-    xtest(t.values, other.S_xr[0].values)
+    xtest(t.to_dataarray(), other.S_xr[0].to_dataarray())
 
 
 def test_isub(other) -> None:
     t = other.s_xr.copy()
     for s in other.S_xr[1:]:
         t -= s
-    xtest(t.values, other.S_xr[0].values)
+    xtest(t.to_dataarray(), other.S_xr[0].to_dataarray())
 
 
 def test_mult(other) -> None:
     s = other.s_xr
 
-    xtest((s * 2).values, (s + s).values)
+    xtest((s * 2).to_dataarray(), (s + s).to_dataarray())
 
     t = s.copy()
     t *= 2
-    xtest(t.values, (s + s).values)
+    xtest(t.to_dataarray(), (s + s).to_dataarray())
 
 
 def test_resample_and_reduce(other, rng) -> None:
@@ -206,10 +206,10 @@ def test_resample_and_reduce(other, rng) -> None:
             np.testing.assert_allclose(t0.data, t1.data)
 
             # check dims
-            dims = list(other.s_xr.values.dims)
+            dims = list(other.s_xr.to_dataarray().dims)
             dims.pop(axis)
             dims = ("hello", *dims)  # type: ignore[assignment]
-            assert t1.values.dims == dims
+            assert t1.to_dataarray().dims == dims
 
             # resample
             tr = other.s.resample(idx, axis=axis)
@@ -220,8 +220,8 @@ def test_resample_and_reduce(other, rng) -> None:
             np.testing.assert_allclose(tr.data, tx.transpose("hello", dim, ...).data)
 
             # # check dims
-            # assert tx.dims == ('hello', ) + other.s_xr.values.dims
+            # assert tx.dims == ('hello', ) + other.s_xr.to_dataarray().dims
 
             # reduce
             tx = tx.reduce(dim=dim)
-            xtest(t1.values, tx.values)
+            xtest(t1.to_dataarray(), tx.to_dataarray())

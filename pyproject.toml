@@ -171,7 +171,7 @@ ignore = [
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 # Use extend-ignore for project specific ignores (avoid changing ignore directly)
 extend-ignore = [
-    "PD",        # - not using pandas?
+    # "PD",        # - not using pandas?
     # "NPY",       # - not using numpy?
     # * Annotations
     # "SLF001",  # - flake8-self (private access sometimes OK)
@@ -208,7 +208,7 @@ max-public-methods = 30
 "src/cmomy/_formatting.py" = ["SLF001"]
 "src/cmomy/_lib/*.py" = ["PLR2004", "PLR0914", "S101", "ANN", "N803"]
 "src/cmomy/_testing.py" = ["S101"]
-"**/*.ipynb" = ["ANN", "T201", "D103", "PLR2004"]
+"**/*.ipynb" = ["ANN", "T201", "D103", "PLR2004", "PD013"]
 "src/**/*.py" = ["TD003", "FIX002", "PLR2004", "D102"]
 "src/cmomy/abstract_central.py" = ["PLR2004"]
 "src/cmomy/central.py" = ["PLR2004", "D102"]

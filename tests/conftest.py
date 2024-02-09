@@ -172,8 +172,10 @@ class Data:  # noqa: PLR0904
             for ww, xx in zip(self.W, self.X)
         ]
 
-    @property
-    def values(self) -> MyNDArray:
+    # @property
+    # def values(self) -> MyNDArray:
+    #     return self.data_test
+    def to_values(self) -> MyNDArray:
         return self.data_test
 
     def unpack(self, *args) -> Any:
@@ -183,7 +185,7 @@ class Data:  # noqa: PLR0904
         return out
 
     def test_values(self, x) -> None:
-        np.testing.assert_allclose(self.values, x)
+        np.testing.assert_allclose(self.to_values(), x)
 
     @property
     def raw(self) -> MyNDArray | None:

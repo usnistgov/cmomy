@@ -481,7 +481,7 @@ def xbootstrap_confidence_interval(
         stats_val = np.array(stats_val)
 
     out = bootstrap_confidence_interval(
-        x.values,  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
+        x.to_numpy(),  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
         stats_val=stats_val,
         axis=axis,
         alpha=alpha,

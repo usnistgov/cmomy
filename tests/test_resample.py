@@ -111,7 +111,7 @@ def test_resample_against_vals(other, parallel, rng) -> None:
 
             t1 = s.resample(idx, axis=axis).reduce(1)
 
-            np.testing.assert_allclose(t0.values, t1.values)
+            np.testing.assert_allclose(t0.to_values(), t1.to_values())
 
 
 @pytest.mark.slow()

@@ -82,10 +82,18 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """
         return self._data
 
-    @property
     @abstractmethod
+    def to_values(self) -> T_Array:
+        """Access underlying central moments array."""
+
+    @property
     def values(self) -> T_Array:
         """Access underlying central moments array."""
+        return self.to_values()
+
+    def to_numpy(self) -> MyNDArray:
+        """Access to numpy array underlying class."""
+        return self._data
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -176,7 +184,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """Repr for class."""
         name = self.__class__.__name__
         s = f"<{name}(val_shape={self.val_shape}, mom={self.mom})>\n"
-        return s + repr(self.values)
+        return s + repr(self.to_values())
 
     def _repr_html_(self) -> str:  # noqa: PLW3201
         from ._formatting import repr_html  # pyright: ignore[reportUnknownVariableType]
@@ -269,7 +277,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         zeros_like
         """
         return self.new_like(
-            data=self.values,
+            data=self.to_values(),
             verify=False,
             check_shape=False,
             copy=True,
@@ -311,21 +319,21 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """Weight data."""
         return cast(
             "float | T_Array",
-            self.values[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
+            self.to_values()[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
     def mean(self) -> float | T_Array:
         """Mean (first moment)."""
         return cast(
             "float | T_Array",
-            self.values[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
+            self.to_values()[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
     def var(self) -> float | T_Array:
         """Variance (second central moment)."""
         return cast(
             "float | T_Array",
-            self.values[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
+            self.to_values()[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
     def std(self) -> float | T_Array:
@@ -761,9 +769,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         Parameters
         ----------
         func_or_method : str or callable
-            If callable, then apply ``values = func_or_method(self.values,
+            If callable, then apply ``values = func_or_method(self.to_values(),
             *args, **kwargs)``. If string is passed, then ``values =
-            getattr(self.values, func_or_method)(*args, **kwargs)``.
+            getattr(self.to_values(), func_or_method)(*args, **kwargs)``.
         _order : bool, default=True
             If True, reorder the data such that ``mom_dims`` are last.
         _copy : bool, default=False
@@ -786,7 +794,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         -------
         output : :class:`cmomy.xCentralMoments`
             New :class:`cmomy.xCentralMoments` object after `func_or_method` is
-            applies to `self.values`
+            applies to `self.to_values()`
 
 
         Notes
@@ -800,9 +808,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         from_data
         """
         if isinstance(func_or_method, str):
-            values = getattr(self.values, func_or_method)(*args, **kwargs)
+            values = getattr(self.to_values(), func_or_method)(*args, **kwargs)
         else:
-            values = func_or_method(self.values, *args, **kwargs)
+            values = func_or_method(self.to_values(), *args, **kwargs)
 
         if _order:
             if hasattr(self, "mom_dims"):

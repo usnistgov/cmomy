@@ -340,7 +340,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             msg = "not enough dimensions in data"
             raise ValueError(msg)
 
-        # TODO(wpk): data.data or data.values?
+        # make sure nothing weird with underlying data
+        if not isinstance(data.variable._data, np.ndarray):  # noqa: SLF001  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
+            msg = f"Underlying data must be an array, not {type(data.variable._data)=}"  # noqa: SLF001  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage,reportUnknownArgumentType]
+            raise TypeError(msg)
+
         self._data = data.data
         self._data_flat = self._data.reshape(self.shape_flat)
 
@@ -351,9 +355,12 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         self._cache: dict[str, Any] = {}
 
     # ** xarray attributes
-    @property
-    def values(self) -> xr.DataArray:
-        """Underlying data."""
+    def to_values(self) -> xr.DataArray:
+        """Underlying :class:`xarray.DataArray`."""
+        return self._xdata
+
+    def to_dataarray(self) -> xr.DataArray:
+        """Underlying :class:`xarray.DataArray`."""
         return self._xdata
 
     @property
@@ -476,7 +483,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             val=val, dim_combined=dim_combined, coords_combined=coords_combined
         )
 
-        out = self.values.isel(selector)
+        out = self.to_dataarray().isel(selector)
         if self._mom_ndim > 1:
             out = out.assign_coords(coords={dim_combined: list(coords_combined)})  # pyright: ignore[reportUnknownMemberType]
         return out
@@ -1011,7 +1018,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                 ):
                     x = xr.DataArray(x, dims=dim).broadcast_like(target)  # type: ignore[arg-type,unused-ignore] # pyright: ignore[reportArgumentType]
 
-        values: MyNDArray = x.values if isinstance(x, xr.DataArray) else x  # pyright: ignore[reportUnknownMemberType]
+        values: MyNDArray = x.to_numpy() if isinstance(x, xr.DataArray) else x  # pyright: ignore[reportUnknownMemberType]
 
         # check shape
         if values.shape != target_shape:
@@ -1260,7 +1267,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         # Final form will move `dim` to front of array.
         # this will be replaced by rep_dimension
-        template = self.values.isel({dim: 0})
+        template = self.to_dataarray().isel({dim: 0})
 
         out, freq = self.centralmoments_view.resample_and_reduce(
             freq=freq,
@@ -1333,7 +1340,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
         axis = self._wrap_axis(axis)
         return type(self).from_datas(
-            self.values, mom_ndim=self.mom_ndim, axis=axis, **kws
+            self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kws
         )
 
     @docfiller.decorate
@@ -1448,9 +1455,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         start = 0 if coords_policy == "first" else block_size - 1
 
         # get template values
-        template = self.values.isel(
-            {dim: slice(start, block_size * nblock, block_size)}
-        ).transpose(dim, ...)
+        template = (
+            self.to_dataarray()
+            .isel({dim: slice(start, block_size * nblock, block_size)})
+            .transpose(dim, ...)
+        )
 
         if coords_policy is None:
             if not isinstance(dim, str):
@@ -1591,7 +1600,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
                 # to make sure copy has same format
                 data_verified = data_verified.copy(
-                    data=data_verified.values.copy(**copy_kws)  # pyright: ignore[reportUnknownMemberType]
+                    data=data_verified.to_numpy().copy(**copy_kws)  # pyright: ignore[reportUnknownMemberType]
                 )
 
             return cls(data=data_verified, mom_ndim=mom_ndim)
@@ -1755,7 +1764,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             if convert_kws is None:
                 convert_kws = {}
 
-            values = cast("MyNDArray", raw.values)  # pyright: ignore[reportUnknownMemberType]
+            values = cast("MyNDArray", raw.to_numpy())  # pyright: ignore[reportUnknownMemberType]
 
             if mom_ndim == 1:
                 data_values = convert.to_central_moments(
@@ -2131,9 +2140,10 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         w_values: MyNDArray | None
         if isinstance(w, xr.DataArray):
             if isinstance(x0, xr.DataArray):
-                w_values = w.broadcast_like(x0).values  # pyright: ignore[reportUnknownMemberType]
+                w_values = w.broadcast_like(x0).to_numpy()  # pyright: ignore[reportUnknownMemberType]
+
             else:
-                w_values = w.values  # pyright: ignore[reportUnknownMemberType]
+                w_values = w.to_numpy()  # pyright: ignore[reportUnknownMemberType]
         else:
             w_values = w
 
@@ -2348,7 +2358,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 #             pass
 #         else:
 #             axis, dim = _select_axis_dim(dims=x.dims, axis=axis, dim=dim)
-#         values = x.values
+#         values = x.to_numpy()
 #     else:
 #         if axis is None:
 #             dim = None
@@ -2436,21 +2446,21 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 #             raise ValueError(f"last dimensions {data.dims} do not match {mom_dims}")
 
 #     if verify:
-#         vals = np.asarray(data.values, dtype=dtype, order="c")
+#         vals = np.asarray(data.to_numpy(), dtype=dtype, order="c")
 #     else:
-#         vals = data.values
+#         vals = data.to_numpy()
 
 #     if copy:
 #         if copy_kws is None:
 #             copy_kws = {}
 
-#         if vals is data.values:
+#         if vals is data.to_numpy():
 #             vals = vals.copy(**copy_kws)
 
 #         data = data.copy(data=vals)
 
-#     elif vals is not data.values:
-#         # data.values = vals
+#     elif vals is not data.to_numpy():
+#         # data._data = vals
 #         # Above leads to overwriting the data object in cases where we are updating things.
 #         # Instead, create a new object with the correct data
 #         data = data.copy(data=vals)
