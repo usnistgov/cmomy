@@ -19,5 +19,4 @@ dependencies:
   - numpy>=1.21
   - pandas-stubs
   - pytest
-  - typing-extensions
   - xarray>=0.16

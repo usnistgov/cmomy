@@ -189,6 +189,17 @@ You can also run [pre-commit] on all files via nox using:
 nox -s lint
 ```
 
+## Shared [numba] cache
+
+[numba]: https://github.com/numba/numba
+
+This project uses [numba] to accelerate calculations. For development, we
+specify the environment variable `NUMBA_CACHE_DIR={project_root}/.numba_cache`
+relative to the project root. If using [zsh-autoenv], there is a recipe in the
+`Makefile` to create this environment variable on entering the repo directory.
+Also, `noxfile.py` and the notebooks sets this environment variable. This should
+greatly speed up recompilation of [numba] compiled functions during development.
+
 ## Using nox
 
 This project makes extensive use of [nox] to automate testing, typing,
@@ -503,7 +514,6 @@ like to install them in the development environment instead, use the
 
 Additional tools are:
 
-- [pip-tools]
 - [pre-commit]
 - [scriv]
 - [nbqa]
@@ -515,7 +525,6 @@ Additional tools are:
 These are setup using the following:
 
 ```console
-condax/pipx install pip-tools
 condax/pipx install pre-commit
 pipx install scriv
 condax/pipx install nbqa
@@ -529,11 +538,11 @@ condax/pipx install cogapp
 
 ## Package version
 
-[setuptools_scm]: https://github.com/pypa/setuptools_scm
+[hatch-vcs]: https://github.com/ofek/hatch-vcs
 
-Versioning is handled with [setuptools_scm]. The package version is set by the
-git tag. For convenience, you can override the version with nox setting
-`--version ...`. This is useful for updating the docs, etc.
+Versioning is handled with [hatch-vcs]. The package version is set by the git
+tag. For convenience, you can override the version with nox setting
+`++version ...`. This is useful for updating the docs, etc.
 
 Note that the version in a given environment/session can become stale. The
 easiest way to update the installed package version version is to reinstall the

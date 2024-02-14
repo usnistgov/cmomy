@@ -7,8 +7,8 @@ import cmomy
 
 
 @pytest.fixture(scope="module")
-def data():
-    out = np.random.rand(1, 2, 3, 4)
+def data(rng):
+    out = rng.random((1, 2, 3, 4))
     return np.moveaxis(out, [2, 1], [1, 2])
 
 
@@ -23,7 +23,7 @@ def get_c_contig(data):
 
 def test_data(data, xdata) -> None:
     assert get_c_contig(data) is False
-    assert xdata.values is data
+    assert xdata.to_numpy() is data
 
 
 @pytest.fixture(params=[1, 2])
@@ -73,7 +73,7 @@ def test_xCentral(
         copy_kws={"order": copy_order},
         verify=verify,
     )
-    assert c.data is c.values.data
+    assert c.data is c.to_numpy()
     assert (c.data is data) is same_data
     assert get_c_contig(c.data) is c_contig
 
@@ -99,8 +99,8 @@ def test_xCentral_xdata(
         verify=verify,
     )
 
-    assert c.data is c.values.data
+    assert c.data is c.to_numpy()
 
-    assert (c.data is xdata.values) is same_data
-    assert (c.values is xdata) is same_xdata
+    assert (c.data is xdata.to_numpy()) is same_data
+    assert (c.to_dataarray() is xdata) is same_xdata
     assert get_c_contig(c.data) is c_contig

@@ -23,7 +23,6 @@ def myjit(
     **kws: Any,
 ) -> Callable[[F], F]:
     """Perform jitting."""
-
     if signature is not None:
         kws["signature_or_function"] = signature
 
@@ -35,7 +34,7 @@ def myjit(
         else:
             kws["inline"] = "never"
 
-    return cast(
+    return cast(  # pyright: ignore[reportReturnType]
         "Callable[[F], F]",
         njit(fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"], **kws),
     )
@@ -52,7 +51,7 @@ def _binom(n: int, k: int) -> float:
     return 0.0
 
 
-def factory_binomial(order: int, dtype: DTypeLike = np.float_) -> MyNDArray:
+def factory_binomial(order: int, dtype: DTypeLike = np.float64) -> MyNDArray:
     """Create binomial coefs at given order."""
     out = np.zeros((order + 1, order + 1), dtype=dtype)
     for n in range(order + 1):

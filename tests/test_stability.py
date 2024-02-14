@@ -47,8 +47,8 @@ def algo2(vals, mom):
 
 
 def test_stability() -> None:
-    np.random.seed(0)
-    x = np.random.rand(10000)
+    rng = np.random.default_rng(seed=0)
+    x = rng.random(10000)
 
     mom = 5
     moments = cmomy.central_moments(x, mom=mom)
@@ -57,7 +57,7 @@ def test_stability() -> None:
     test2 = algo2(x, mom=mom)
 
     # all should be good
-    np.testing.assert_allclose(c.values, moments)
+    np.testing.assert_allclose(c.to_numpy(), moments)
     np.testing.assert_allclose(moments, test)
     np.testing.assert_allclose(moments, test2)
 
@@ -80,7 +80,7 @@ def test_stability() -> None:
     test_shift = algo(x * a + b, mom=5)
     test2_shift = algo2(x * a + b, mom=5)
 
-    np.testing.assert_allclose(moments_test, c_shift.values)
+    np.testing.assert_allclose(moments_test, c_shift.to_numpy())
     np.testing.assert_allclose(moments_test, test_shift)
 
     with pytest.raises(AssertionError):

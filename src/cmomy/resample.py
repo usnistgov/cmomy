@@ -37,7 +37,6 @@ def numba_random_seed(seed: int) -> None:
 
 def freq_to_indices(freq: MyNDArray) -> MyNDArray:
     """Convert a frequency array to indices array."""
-
     indices_all: list[MyNDArray] = []
 
     for f in freq:
@@ -103,7 +102,6 @@ def randsamp_freq(
         if not transpose: output.shape == (nrep, size)
         if transpose, output.shape = (size, nrep)
     """
-
     from ._lib.resample import (
         randsamp_freq_indices,  # pyright: ignore[reportUnknownVariableType]
         randsamp_freq_out,  # pyright: ignore[reportUnknownVariableType]
@@ -116,7 +114,8 @@ def randsamp_freq(
                 msg = f"{name} has wrong nrep"
                 raise ValueError(msg)
 
-            assert size is not None
+            if size is None:
+                raise ValueError
             if x.shape[1] != size:
                 msg = f"{name} has wrong size"
                 raise ValueError(msg)
@@ -143,7 +142,7 @@ def randsamp_freq(
     return freq
 
 
-def resample_data(
+def resample_data(  # noqa: PLR0914
     data: ArrayLike,
     freq: ArrayLike,
     mom: Moments,
@@ -196,7 +195,8 @@ def resample_data(
     ndim = data.ndim - len(mom)
     if axis < 0:
         axis += ndim
-    assert 0 <= axis < ndim
+    if not 0 <= axis < ndim:
+        raise ValueError
 
     if axis != 0:
         data = np.moveaxis(data, axis, 0)
@@ -204,15 +204,16 @@ def resample_data(
     shape: tuple[int, ...] = data.shape[1 : -len(mom)]
     mom_shape = tuple(x + 1 for x in mom)
 
-    assert data.shape == (ndat, *shape, *mom_shape)
+    if data.shape != (ndat, *shape, *mom_shape):
+        raise ValueError
 
     # output
     out_shape = (nrep,) + data.shape[1:]
     if out is None:
         out = np.empty(out_shape, dtype=dtype)
-    else:
-        assert out.shape == out_shape
-        # make sure out is in correct order
+    elif out.shape != out_shape:
+        raise ValueError
+    else:  # make sure out is in correct order
         out = np.asarray(out, dtype=dtype, order="C")
 
     meta_reshape: tuple[int, ...]
@@ -234,7 +235,7 @@ def resample_data(
     return outr.reshape(out.shape)
 
 
-def resample_vals(  # noqa: C901,PLR0912,PLR0915
+def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
     x: XvalStrict,
     freq: MyNDArray,
     mom: Moments,
@@ -252,11 +253,13 @@ def resample_vals(  # noqa: C901,PLR0912,PLR0915
 
     if isinstance(mom, int):
         mom = (mom,)
-    assert isinstance(mom, tuple)
+    elif not isinstance(mom, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
+        raise TypeError
 
     if mom_ndim is None:
         mom_ndim = len(mom)  # type: ignore[assignment]
-    assert len(mom) == mom_ndim
+    if len(mom) != mom_ndim:
+        raise ValueError
     mom_shape = tuple(x + 1 for x in mom)
 
     if mom_ndim == 1:
@@ -292,15 +295,17 @@ def resample_vals(  # noqa: C901,PLR0912,PLR0915
         if y is not None:
             y = np.moveaxis(y, axis, 0)
 
-    assert len(x) == ndat
+    if len(x) != ndat:
+        raise ValueError
 
     # output
     shape = x.shape[1:]
     out_shape = (nrep, *shape, *mom_shape)
     if out is None:
         out = np.empty(out_shape, dtype=dtype)
+    elif out.shape != out_shape:
+        raise ValueError
     else:
-        assert out.shape == out_shape
         out = np.asarray(out, dtype=dtype, order="C")
 
     # reshape
@@ -376,7 +381,6 @@ def bootstrap_confidence_interval(
         * pm : [val, (high - low) / 2]
 
     """
-
     if stats_val is None:
         p_low = 100 * (alpha / 2.0)
         p_mid = 50
@@ -445,7 +449,6 @@ def xbootstrap_confidence_interval(
         If `None`, use default names
         If string, use this for the 'values' name
     """
-
     if dim is not None:
         axis = cast(int, x.get_axis_num(dim))  # Problem with upstream
     else:
@@ -478,7 +481,7 @@ def xbootstrap_confidence_interval(
         stats_val = np.array(stats_val)
 
     out = bootstrap_confidence_interval(
-        x.values,  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
+        x.to_numpy(),  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
         stats_val=stats_val,
         axis=axis,
         alpha=alpha,

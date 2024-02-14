@@ -16,23 +16,21 @@ from typing import (
     Union,
 )
 
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 
 if TYPE_CHECKING:
     import pandas as pd
     import xarray as xr
-    from numpy.typing import NDArray
-    from typing_extensions import TypeAlias
 
+    from ._typing_compat import TypeAlias
     from .abstract_central import CentralMomentsABC
 
-
 MyDType: TypeAlias = Any
-MyNDArray: TypeAlias = "NDArray[MyDType]"
+MyNDArray: TypeAlias = NDArray[MyDType]
 
-Moments: TypeAlias = "int | tuple[int] | tuple[int, int]"
-MomentsStrict: TypeAlias = "tuple[int] | tuple[int, int]"
-XvalStrict: TypeAlias = "MyNDArray | tuple[MyNDArray, MyNDArray]"
+Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
+MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
+XvalStrict: TypeAlias = Union[MyNDArray, "tuple[MyNDArray, MyNDArray]"]
 ArrayOrder = Literal["C", "F", "A", "K", None]
 
 T_Array = TypeVar("T_Array", "MyNDArray", "xr.DataArray")

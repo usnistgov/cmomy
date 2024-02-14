@@ -112,13 +112,15 @@ def _convert_moments(
     axis = tuple(axis)
     target_axis = tuple(target_axis)
 
-    assert len(axis) == len(target_axis)
+    if len(axis) != len(target_axis):
+        raise ValueError
 
     data = np.asarray(data, dtype=dtype, order=order)
     if out is None:
         out = np.zeros_like(data)
+    elif out.shape != data.shape:
+        raise ValueError
     else:
-        assert out.shape == data.shape
         out[...] = 0.0
 
     if axis != target_axis:

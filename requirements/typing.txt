@@ -16,5 +16,5 @@ numpy>=1.21
 pandas-stubs
 pytest
 pytype;python_version<"3.11"
-typing-extensions
+typing-extensions;python_version<"3.11"
 xarray>=0.16

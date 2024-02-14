@@ -60,12 +60,11 @@ def axis_expand_broadcast(
     If x is 1d, and shape is n-d, but len(x) is same as shape[axis],
     broadcast x across all dimensions
     """
-
     if verify is True:
         x = np.asarray(x, dtype=dtype, order=order)
-    else:
-        x = cast("MyNDArray", x)
-        assert isinstance(x, np.ndarray)
+    elif not isinstance(x, np.ndarray):
+        raise ValueError
+    x = cast("MyNDArray", x)
 
     # if array, and 1d with size same as shape[axis]
     # broadcast from here

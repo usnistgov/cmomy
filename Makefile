@@ -61,44 +61,16 @@ clean-test: ## remove test and coverage artifacts
 pre-commit-init: ## install pre-commit
 	pre-commit install
 
-pre-commit: ## run pre-commit
-	pre-commit run
-
 pre-commit-all: ## run pre-commit on all files
 	pre-commit run --all-files
 
-.PHONY: pre-commit-lint pre-commit-lint-notebooks pre-commit-prettier pre-commit-lint-markdown
-pre-commit-lint: ## run ruff and black on on all files
-	pre-commit run --all-files ruff
-	pre-commit run --all-files black
-	pre-commit run --all-files blacken-docs
-
-pre-commit-lint-notebooks: ## Run nbqa linting
-	pre-commit run --all-files nbqa-ruff
-	pre-commit run --all-files nbqa-black
-
-pre-commit-prettier: ## run prettier on all files.
-	pre-commit run --all-files prettier
-
-pre-commit-lint-markdown: ## run markdown linter.
-	pre-commit run --all-files --hook-stage manual markdownlint-cli2
-
-.PHONY: pre-commit-lint-extra pre-commit-mypy pre-commit-codespell
-pre-commit-lint-extra: ## run all extra linting (isort, flake8, pyupgrade, nbqa isort and pyupgrade)
-	pre-commit run --all-files --hook-stage manual isort
-	pre-commit run --all-files --hook-stage manual flake8
-	pre-commit run --all-files --hook-stage manual pyupgrade
-	pre-commit run --all-files --hook-stage manual nbqa-pyupgrade
-	pre-commit run --all-files --hook-stage manual nbqa-isort
-
-pre-commit-mypy: ## run mypy
-	pre-commit run --all-files --hook-stage manual mypy
-
-pre-commit-pyright: ## run pyright
-	pre-commit run --all-files --hook-stage manual pyright
-
 pre-commit-codespell: ## run codespell. Note that this imports allowed words from docs/spelling_wordlist.txt
-	pre-commit run --all-files --hook-stage manual codespell
+	pre-commit run --all-files codespell
+	pre-commit run --all-files nbqa-codespell
+
+pre-commit-typos:  ## run typos.
+	pre-commit run --all-files --hook-stage manual typos
+	pre-commit run --all-files --hook-stage manual nbqa-typos
 
 ################################################################################
 # * User setup
@@ -106,6 +78,7 @@ pre-commit-codespell: ## run codespell. Note that this imports allowed words fro
 .PHONY: user-autoenv-zsh user-all
 user-autoenv-zsh: ## create .autoenv.zsh files
 	echo conda activate ./.venv > .autoenv.zsh
+	echo autostash NUMBA_CACHE_DIR=$(PWD)/.numba_cache >> .autoenv.zsh
 	echo conda deactivate > .autoenv_leave.zsh
 
 user-all: user-autoenv-zsh ## runs user scripts
@@ -133,7 +106,7 @@ coverage: ## check code coverage quickly with the default Python
 ################################################################################
 .PHONY: version-scm version-import version
 
-version-scm: ## check/update version of package with setuptools-scm
+version-scm: ## check/update version of package from scm
 	nox -s build -- ++build version
 
 version-import: ## check version from python import
@@ -214,6 +187,19 @@ testrelease: ## test release on testpypi
 release: ## release to pypi, can pass posargs=...
 	$(NOX) -s publish -- +p release
 
+.PHONY: check-release check-wheel check-dist
+check-release: ## run twine check on dist
+	$(NOX) -s publish -- +p check
+check-wheel: ## Run check-wheel-contents (requires check-wheel-contents to be installed)
+	check-wheel-contents dist/*.whl
+check-dist: check-release check-wheel ## Run check-release and check-wheel
+.PHONY:  list-wheel list-sdist list-dist
+list-wheel: ## Cat out contents of wheel
+	unzip -vl dist/*.whl
+list-sdist: ## Cat out contents of sdist
+	tar -tzvf dist/*.tar.gz
+list-dist: list-wheel list-sdist ## Cat out sdist and wheel contents
+
 # ** dist conda
 .PHONY: conda-recipe conda-build
 conda-recipe: ## build conda recipe can pass posargs=...
@@ -252,6 +238,10 @@ typing-notebook: mypy-notebook pyright-notebook ## run nbqa mypy/pyright
 .PHONY: pytest-nbval
 pytest-notebook:  ## run pytest --nbval
 	pytest --nbval --nbval-current-env --nbval-sanitize-with=config/nbval.ini --dist loadscope -x $(NOTEBOOKS)
+
+.PHONY: clean-kernelspec
+clean-kernelspec: ## cleanup unused kernels (assuming notebooks handled by conda environment notebook)
+	conda run -n notebook python tools/clean_kernelspec.py
 
 
 ################################################################################

@@ -31,32 +31,37 @@ class DataContainer:
             w=self.w,
             moments=mom,
             axis=axis,
-            broadcast=broadcast,
+            broadcast=broadcast,  # pyright: ignore[reportArgumentType]
         )
 
     def result_central_moments(self, axis, mom, broadcast=None, cov=None, **kws):
         if cov is None:
             cov = isinstance(mom, tuple) and len(mom) == 2
         return central_moments(
-            x=self.xy(cov), w=self.w, mom=mom, axis=axis, broadcast=broadcast, **kws
+            x=self.xy(cov),
+            w=self.w,
+            mom=mom,
+            axis=axis,
+            broadcast=broadcast,  # pyright: ignore[reportArgumentType]
+            **kws,  # pyright: ignore[reportArgumentType]
         )
 
     @classmethod
-    def from_params(cls, shape, axis, style):
+    def from_params(cls, shape, axis, style, rng):
         if isinstance(shape, int):
             shape = (shape,)
 
-        x = np.random.rand(*shape)
+        x = rng.random(shape)
 
         if style is None:
-            y = np.random.rand(*shape)
+            y = rng.random(shape)
             w = None
         if style == "total":
-            y = np.random.rand(*shape)
-            w = np.random.rand(*shape)
+            y = rng.random(shape)
+            w = rng.random(shape)
         elif style == "broadcast":
-            y = np.random.rand(shape[axis])
-            w = np.random.rand(shape[axis])
+            y = rng.random(shape[axis])
+            w = rng.random(shape[axis])
         return cls(x=x, y=y, w=w)
 
 
@@ -146,8 +151,8 @@ def style(request):
 
 
 @pytest.fixture(scope="module")
-def data(shape, axis, style):
-    return DataContainer.from_params(shape=shape, axis=axis, style=style)
+def data(shape, axis, style, rng):
+    return DataContainer.from_params(shape=shape, axis=axis, style=style, rng=rng)
 
 
 @pytest.fixture(scope="module", params=[3, (3, 3)])
@@ -169,16 +174,16 @@ def test_result(result_container) -> None:
 
 # @pytest.fixture(scope="module")
 # def xdata(shape_tuple):
-#     return np.random.rand(*shape_tuple)
+#     return default_rng.random(shape_tuple)
 
 
 # @pytest.fixture(scope="module")
 # def ydata(shape_tuple, style, axis):
 #     shape = shape_tuple
 #     if style is None or style == "total":
-#         return np.random.rand(*shape)
+#         return default_rng.random(shape)
 #     elif style == "broadcast":
-#         return np.random.rand(shape[axis])
+#         return default_rng.random(shape[axis])
 #     else:
 #         raise ValueError
 
@@ -189,9 +194,9 @@ def test_result(result_container) -> None:
 #     if style is None:
 #         return None
 #     elif style == "total":
-#         return np.random.rand(*shape)
+#         return default_rng.random(shape)
 #     elif style == "broadcast":
-#         return np.random.rand(shape[axis])
+#         return default_rng.random(shape[axis])
 
 
 # @pytest.fixture(scope="module")
@@ -275,7 +280,7 @@ def test_result(result_container) -> None:
 #     np.testing.assert_allclose(c_obj.data, expected, rtol=1e-10, atol=1e-10)
 
 
-# def test_propeties(c_obj, shape_tuple, val_shape, mom_tuple):
+# def test_properties(c_obj, shape_tuple, val_shape, mom_tuple):
 #     assert val_shape == c_obj.val_shape
 
 #     assert mom_tuple == c_obj.mom
@@ -363,4 +368,4 @@ def test_result(result_container) -> None:
 # # class TestCentral:
 # #     @pytest.fixture(autouse=True)
 # #     def setup(self, shape, axis):
-# #         self.x = np.random.rand(*shape)
+# #         self.x = default_rng.random(shape)

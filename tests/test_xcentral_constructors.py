@@ -2,18 +2,22 @@
 """Some simple tests for factory methods of xCentral"""
 from __future__ import annotations
 
-from typing import Callable, cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
 import xarray as xr
 
 import cmomy
-from cmomy.typing import F
+
+if TYPE_CHECKING:
+    from typing import Callable
+
+    from cmomy.typing import F
 
 
 def my_fixture(**kws) -> Callable[[F], F]:
-    return cast(Callable[[F], F], pytest.fixture(scope="module", **kws))
+    return cast("Callable[[F], F]", pytest.fixture(scope="module", **kws))  # pyright: ignore[reportReturnType]
 
 
 @my_fixture(params=[3, (3, 3)])
@@ -34,16 +38,16 @@ def shape(request):
 
 
 @my_fixture()
-def axis(shape):
-    return np.random.randint(0, len(shape))
+def axis(shape, rng):
+    return rng.integers(0, len(shape))
 
 
 @my_fixture()
-def xy(shape, mom_tuple):
-    x = np.random.rand(*shape)
+def xy(shape, mom_tuple, rng):
+    x = rng.random(shape)
 
     if len(mom_tuple) == 2:
-        y = np.random.rand(*shape)
+        y = rng.random(shape)
         return (x, y)
     return x
 
@@ -74,9 +78,9 @@ def test_from_data(dc, dcx) -> None:
 
     # create from xarray?
     o2 = cmomy.xCentralMoments.from_data(
-        dcx.values.rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
+        dcx.to_dataarray().rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
     )
-    xr.testing.assert_allclose(o1.values, o2.values)
+    xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_datas(dc, dcx) -> None:
@@ -94,9 +98,11 @@ def test_from_datas(dc, dcx) -> None:
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = cmomy.xCentralMoments.from_datas(dcx.values, dim=dim, mom_ndim=mom_ndim)
+        o2 = cmomy.xCentralMoments.from_datas(
+            dcx.to_dataarray(), dim=dim, mom_ndim=mom_ndim
+        )
 
-        xr.testing.assert_allclose(o1.values, o2.values)
+        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_raw(dc, dcx) -> None:
@@ -110,7 +116,7 @@ def test_from_raw(dc, dcx) -> None:
 
     o2 = cmomy.xCentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim)
 
-    xr.testing.assert_allclose(o1.values, o2.values)
+    xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_raws(dc, dcx) -> None:
@@ -122,7 +128,7 @@ def test_from_raws(dc, dcx) -> None:
         t = cmomy.CentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
         r = dc.reduce(axis=axis)
 
-        np.testing.assert_allclose(t.values, r.values)
+        np.testing.assert_allclose(t.to_numpy(), r.to_numpy())
 
         # test xCentral
         o1 = cmomy.xCentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
@@ -152,7 +158,7 @@ def test_from_vals(xy, shape, mom) -> None:
 
         o2 = cmomy.xCentralMoments.from_vals(xy_xr, dim=dims[axis], mom=mom)
 
-        xr.testing.assert_allclose(o1.values, o2.values)
+        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_from_resample_vals(xy, shape, mom) -> None:
@@ -178,7 +184,7 @@ def test_from_resample_vals(xy, shape, mom) -> None:
             xy_xr, dim=dims[axis], mom=mom, freq=freq
         )
 
-        xr.testing.assert_allclose(o1.values, o2.values)
+        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
 def test_resample_and_reduce(dc, dcx) -> None:
