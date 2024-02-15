@@ -203,6 +203,7 @@ napoleon_type_aliases = {
     "MaskedArray": "~numpy.ma.MaskedArray",
     "dtype": "~numpy.dtype",
     "ComplexWarning": "~numpy.ComplexWarning",
+    "Generator": "~numpy.random.Generator",
     # objects without namespace: pandas
     "Index": "~pandas.Index",
     "MultiIndex": "~pandas.MultiIndex",

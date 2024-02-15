@@ -14,7 +14,7 @@ def test_freq_indices(ndat, rng) -> None:
 
     freq0 = resample.indices_to_freq(indices)
 
-    freq1 = resample.randsamp_freq(indices=indices, size=ndat)
+    freq1 = resample.randsamp_freq(indices=indices, ndat=ndat)
 
     np.testing.assert_allclose(freq0, freq1)
 

@@ -82,28 +82,27 @@ conda install -c conda-forge cmomy
 ```pycon
 >>> import numpy as np
 >>> import cmomy
-
->>> np.random.seed(0)
->>> x = np.random.rand(100)
+>>> rng = cmomy.random.default_rng(seed=0)
+>>> x = rng.random(100)
 >>> m = x.mean()
 >>> mom = np.array([((x - m) ** i).mean() for i in range(4)])
 >>> c = cmomy.CentralMoments.from_vals(x, mom=3)
 
 >>> np.testing.assert_allclose(c.cmom(), mom, atol=1e-8)
 >>> c.cmom()
-array([1.    , 0.    , 0.0831, 0.0016])
+array([ 1.    ,  0.    ,  0.0919, -0.0061])
 
 # break up into chunks
 >>> c = cmomy.CentralMoments.from_vals(x.reshape(-1, 2), mom=3)
 
 >>> c
 <CentralMoments(val_shape=(2,), mom=(3,))>
-array([[5.0000e+01, 5.0013e-01, 7.9827e-02, 2.1156e-03],
-       [5.0000e+01, 4.4546e-01, 8.4914e-02, 1.5954e-03]])
+array([[ 5.0000e+01,  5.3019e-01,  8.0115e-02, -4.3748e-03],
+       [ 5.0000e+01,  5.6639e-01,  1.0297e-01, -8.9911e-03]])
 
 # Reduce along an axis
 >>> c.reduce(axis=0).cmom()
-array([1.    , 0.    , 0.0831, 0.0016])
+array([ 1.    ,  0.    ,  0.0919, -0.0061])
 
 # unequal chunks
 >>> x0, x1, x2 = x[:20], x[20:60], x[60:]
@@ -114,7 +113,7 @@ array([1.    , 0.    , 0.0831, 0.0016])
 
 >>> np.testing.assert_allclose(c.cmom(), mom, atol=1e-8)
 >>> c.cmom()
-array([1.    , 0.    , 0.0831, 0.0016])
+array([ 1.    ,  0.    ,  0.0919, -0.0061])
 
 ```
 

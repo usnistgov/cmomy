@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
+    from . import convert, random, resample  # noqa: TCH004
     from .central import CentralMoments, central_moments  # noqa: TCH004
     from .xcentral import xcentral_moments, xCentralMoments  # noqa: TCH004
 else:
@@ -14,6 +15,11 @@ else:
 
     __getattr__, __dir__, _ = lazy.attach(
         __name__,
+        submodules=[
+            "convert",
+            "random",
+            "resample",
+        ],
         submod_attrs={
             "central": ["CentralMoments", "central_moments"],
             "xcentral": ["xCentralMoments", "xcentral_moments"],
@@ -35,6 +41,9 @@ __all__ = [
     "CentralMoments",
     "__version__",
     "central_moments",
+    "convert",
+    "random",
+    "resample",
     "xCentralMoments",
     "xcentral_moments",
 ]

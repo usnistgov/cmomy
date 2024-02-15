@@ -16,7 +16,8 @@ api-baseclasses
 .. autosummary::
 
     cmomy
-    cmomy.resample
     cmomy.convert
+    cmomy.random
+    cmomy.resample
 
 ```

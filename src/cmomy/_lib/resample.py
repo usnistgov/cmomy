@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from typing import Any, Callable, Hashable
 
-import numpy as np
 from numba import prange
 
 from .pushers import (
@@ -25,22 +24,6 @@ from .utils import myjit
 
 # --- * Utilities ------------------------------------------------------------------------
 # put these here to avoid slow load up
-
-
-@myjit()
-def set_numba_random_seed(seed) -> None:
-    """Set the random seed for numba functions."""
-    np.random.seed(seed)
-
-
-@myjit()
-def randsamp_freq_out(freq) -> None:
-    nrep = freq.shape[0]
-    ndat = freq.shape[1]
-    for i in range(nrep):
-        for _j in range(ndat):
-            index = np.random.randint(0, ndat)
-            freq[i, index] += 1
 
 
 @myjit()
