@@ -212,7 +212,6 @@ max-public-methods = 30
 "src/**/*.py" = ["TD003", "FIX002", "PLR2004", "D102"]
 "src/cmomy/abstract_central.py" = ["PLR2004"]
 "src/cmomy/central.py" = ["PLR2004", "D102"]
-"src/cmomy/_lib/resample.py" = ["NPY002"]
 "src/cmomy/_lib/convert.py" = ["PLR1702"]
 
 [tool.ruff.lint.isort]
@@ -282,16 +281,17 @@ module = []
 include = ["src", "tests"]
 strict = [
     "src/cmomy/__init__.py",
+    "src/cmomy/_compat.py",
     "src/cmomy/abstract_central.py",
     "src/cmomy/central.py",
-    "src/cmomy/xcentral.py",
     "src/cmomy/convert.py",
     "src/cmomy/docstrings.py",
     "src/cmomy/options.py",
+    "src/cmomy/random.py",
     "src/cmomy/resample.py",
     "src/cmomy/typing.py",
     "src/cmomy/utils.py",
-    "src/cmomy/_compat.py",
+    "src/cmomy/xcentral.py",
     "noxfile.py",
     "tools/*.py",
 ]

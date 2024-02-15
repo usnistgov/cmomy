@@ -53,7 +53,7 @@ fastjsonschema==2.19.1
     # via nbformat
 filelock==3.13.1
     # via virtualenv
-identify==2.5.33
+identify==2.5.34
     # via pre-commit
 idna==3.6
     # via requests
@@ -149,7 +149,7 @@ platformdirs==4.2.0
     #   virtualenv
 pluggy==1.4.0
     # via pytest
-pre-commit==3.6.0
+pre-commit==3.6.1
     # via -r requirements/dev-complete.txt
 prompt-toolkit==3.0.43
     # via ipython
@@ -165,7 +165,7 @@ pygments==2.17.2
     # via ipython
 pyright==1.1.350
     # via -r requirements/dev-complete.txt
-pytest==7.4.4
+pytest==8.0.0
     # via
     #   -r requirements/dev-complete.txt
     #   nbval
@@ -173,7 +173,7 @@ pytest==7.4.4
     #   pytest-cov
     #   pytest-sugar
     #   pytest-xdist
-pytest-accept==0.1.9
+pytest-accept==0.1.10
     # via -r requirements/dev-complete.txt
 pytest-cov==4.1.0
     # via -r requirements/dev-complete.txt
@@ -199,7 +199,7 @@ referencing==0.33.0
     #   jsonschema-specifications
 requests==2.31.0
     # via scriv
-rpds-py==0.17.1
+rpds-py==0.18.0
     # via
     #   jsonschema
     #   referencing
@@ -236,7 +236,7 @@ typing-extensions==4.9.0
     # via
     #   module-utilities
     #   mypy
-tzdata==2023.4
+tzdata==2024.1
     # via pandas
 urllib3==2.2.0
     # via requests
@@ -250,5 +250,5 @@ xarray==2024.1.1
     # via -r requirements/dev-complete.txt
 
 # The following packages are considered to be unsafe in a requirements file:
-setuptools==69.0.3
+setuptools==69.1.0
     # via nodeenv

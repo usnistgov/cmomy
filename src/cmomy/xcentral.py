@@ -558,29 +558,30 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> np.random.seed(0)
-        >>> da = xCentralMoments.from_vals(np.random.rand(10, 2, 3), mom=2, axis=0)
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
         >>> da
         <xCentralMoments(val_shape=(2, 3), mom=(2,))>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)>
-        array([[[10.    ,  0.4549,  0.044 ],
-                [10.    ,  0.6019,  0.0849],
-                [10.    ,  0.6049,  0.0911]],
+        array([[[10.    ,  0.5205,  0.0452],
+                [10.    ,  0.4438,  0.0734],
+                [10.    ,  0.5038,  0.1153]],
         <BLANKLINE>
-               [[10.    ,  0.5372,  0.0591],
-                [10.    ,  0.4262,  0.0843],
-                [10.    ,  0.4733,  0.0591]]])
+               [[10.    ,  0.5238,  0.1272],
+                [10.    ,  0.628 ,  0.0524],
+                [10.    ,  0.412 ,  0.0865]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da_stack = da.stack(z=["dim_0", "dim_1"])
         >>> da_stack
         <xCentralMoments(val_shape=(6,), mom=(2,))>
         <xarray.DataArray (z: 6, mom_0: 3)>
-        array([[10.    ,  0.4549,  0.044 ],
-               [10.    ,  0.6019,  0.0849],
-               [10.    ,  0.6049,  0.0911],
-               [10.    ,  0.5372,  0.0591],
-               [10.    ,  0.4262,  0.0843],
-               [10.    ,  0.4733,  0.0591]])
+        array([[10.    ,  0.5205,  0.0452],
+               [10.    ,  0.4438,  0.0734],
+               [10.    ,  0.5038,  0.1153],
+               [10.    ,  0.5238,  0.1272],
+               [10.    ,  0.628 ,  0.0524],
+               [10.    ,  0.412 ,  0.0865]])
         Coordinates:
           * z        (z) object MultiIndex
           * dim_0    (z) int64 0 0 0 1 1 1
@@ -592,13 +593,13 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da_stack.unstack("z")
         <xCentralMoments(val_shape=(2, 3), mom=(2,))>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)>
-        array([[[10.    ,  0.4549,  0.044 ],
-                [10.    ,  0.6019,  0.0849],
-                [10.    ,  0.6049,  0.0911]],
+        array([[[10.    ,  0.5205,  0.0452],
+                [10.    ,  0.4438,  0.0734],
+                [10.    ,  0.5038,  0.1153]],
         <BLANKLINE>
-               [[10.    ,  0.5372,  0.0591],
-                [10.    ,  0.4262,  0.0843],
-                [10.    ,  0.4733,  0.0591]]])
+               [[10.    ,  0.5238,  0.1272],
+                [10.    ,  0.628 ,  0.0524],
+                [10.    ,  0.412 ,  0.0865]]])
         Coordinates:
           * dim_0    (dim_0) int64 0 1
           * dim_1    (dim_1) int64 0 1 2
@@ -679,16 +680,17 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> np.random.seed(0)
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
         >>> da = xCentralMoments.from_vals(
-        ...     np.random.rand(10, 3), axis=0, dims="x", coords=dict(x=list("abc"))
+        ...     rng.random((10, 3)), axis=0, dims="x", coords=dict(x=list("abc"))
         ... )
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(2,))>
         <xarray.DataArray (x: 3, mom_0: 3)>
-        array([[10.    ,  0.521 ,  0.0703],
-               [10.    ,  0.6261,  0.0701],
-               [10.    ,  0.5962,  0.0892]])
+        array([[10.    ,  0.5248,  0.1106],
+               [10.    ,  0.5688,  0.0689],
+               [10.    ,  0.5094,  0.1198]])
         Coordinates:
           * x        (x) <U1 'a' 'b' 'c'
         Dimensions without coordinates: mom_0
@@ -698,15 +700,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da.sel(x="a")
         <xCentralMoments(val_shape=(), mom=(2,))>
         <xarray.DataArray (mom_0: 3)>
-        array([10.    ,  0.521 ,  0.0703])
+        array([10.    ,  0.5248,  0.1106])
         Coordinates:
             x        <U1 'a'
         Dimensions without coordinates: mom_0
         >>> da.sel(x=["a", "c"])
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (x: 2, mom_0: 3)>
-        array([[10.    ,  0.521 ,  0.0703],
-               [10.    ,  0.5962,  0.0892]])
+        array([[10.    ,  0.5248,  0.1106],
+               [10.    ,  0.5094,  0.1198]])
         Coordinates:
           * x        (x) <U1 'a' 'c'
         Dimensions without coordinates: mom_0
@@ -717,15 +719,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da.isel(x=0)
         <xCentralMoments(val_shape=(), mom=(2,))>
         <xarray.DataArray (mom_0: 3)>
-        array([10.    ,  0.521 ,  0.0703])
+        array([10.    ,  0.5248,  0.1106])
         Coordinates:
             x        <U1 'a'
         Dimensions without coordinates: mom_0
         >>> da.isel(x=[0, 1])
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (x: 2, mom_0: 3)>
-        array([[10.    ,  0.521 ,  0.0703],
-               [10.    ,  0.6261,  0.0701]])
+        array([[10.    ,  0.5248,  0.1106],
+               [10.    ,  0.5688,  0.0689]])
         Coordinates:
           * x        (x) <U1 'a' 'b'
         Dimensions without coordinates: mom_0
@@ -1137,6 +1139,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         indices: MyNDArray | None = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
+        rng: np.random.Generator | None = ...,
         **kws: Any,
     ) -> Self:
         ...
@@ -1154,6 +1157,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         indices: MyNDArray | None = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
+        rng: np.random.Generator | None = ...,
         **kws: Any,
     ) -> tuple[Self, MyNDArray]:
         ...
@@ -1171,6 +1175,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         indices: MyNDArray | None = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
+        rng: np.random.Generator | None = ...,
         **kws: Any,
     ) -> Self | tuple[Self, MyNDArray]:
         ...
@@ -1188,6 +1193,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         indices: MyNDArray | None = None,
         parallel: bool = True,
         resample_kws: Mapping[str, Any] | None = None,
+        rng: np.random.Generator | None = None,
         **kws: Any,
     ) -> Self | tuple[Self, MyNDArray]:
         """
@@ -1203,6 +1209,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         {parallel}
         {resample_kws}
         {full_output}
+        {rng}
         **kws
             Arguments to :meth:`CentralMoments.resample_and_reduce`
 
@@ -1212,34 +1219,36 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> np.random.seed(0)
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
         >>> da = xCentralMoments.from_vals(
-        ...     np.random.rand(10, 3), mom=3, axis=0, dims="rec"
+        ...     rng.random((10, 3)), mom=3, axis=0, dims="rec"
         ... )
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(3,))>
         <xarray.DataArray (rec: 3, mom_0: 4)>
-        array([[ 1.0000e+01,  5.2102e-01,  7.0287e-02, -3.5494e-03],
-               [ 1.0000e+01,  6.2614e-01,  7.0138e-02, -1.7101e-02],
-               [ 1.0000e+01,  5.9620e-01,  8.9201e-02, -1.1886e-02]])
+        array([[ 1.0000e+01,  5.2485e-01,  1.1057e-01, -4.6282e-03],
+               [ 1.0000e+01,  5.6877e-01,  6.8876e-02, -1.2745e-02],
+               [ 1.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02]])
         Dimensions without coordinates: rec, mom_0
 
         Note that for reproducible results, must set numba random
         seed as well
 
-        >>> from cmomy.resample import numba_random_seed
-        >>> numba_random_seed(0)
         >>> da_resamp, freq = da.resample_and_reduce(
-        ...     nrep=5, dim="rec", full_output=True
+        ...     nrep=5,
+        ...     dim="rec",
+        ...     full_output=True,
+        ...     rng=rng,
         ... )
         >>> da_resamp
         <xCentralMoments(val_shape=(5,), mom=(3,))>
         <xarray.DataArray (rep: 5, mom_0: 4)>
-        array([[ 3.0000e+01,  5.5606e-01,  7.2693e-02, -7.9911e-03],
-               [ 3.0000e+01,  6.1616e-01,  7.6691e-02, -1.5745e-02],
-               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
-               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
-               [ 3.0000e+01,  6.0618e-01,  8.3046e-02, -1.4003e-02]])
+        array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
+               [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
+               [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
+               [ 3.0000e+01,  5.5413e-01,  8.3204e-02, -1.1267e-02],
+               [ 3.0000e+01,  5.4899e-01,  8.6627e-02, -1.5407e-02]])
         Dimensions without coordinates: rep, mom_0
 
         Alternatively, we can resample and reduce
@@ -1249,11 +1258,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
         <xCentralMoments(val_shape=(5,), mom=(3,))>
         <xarray.DataArray (rep: 5, mom_0: 4)>
-        array([[ 3.0000e+01,  5.5606e-01,  7.2693e-02, -7.9911e-03],
-               [ 3.0000e+01,  6.1616e-01,  7.6691e-02, -1.5745e-02],
-               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
-               [ 3.0000e+01,  5.4608e-01,  7.7848e-02, -5.3486e-03],
-               [ 3.0000e+01,  6.0618e-01,  8.3046e-02, -1.4003e-02]])
+        array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
+               [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
+               [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
+               [ 3.0000e+01,  5.5413e-01,  8.3204e-02, -1.1267e-02],
+               [ 3.0000e+01,  5.4899e-01,  8.6627e-02, -1.5407e-02]])
         Dimensions without coordinates: rep, mom_0
 
         """
@@ -1277,6 +1286,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             parallel=parallel,
             resample_kws=resample_kws,
             full_output=True,
+            rng=rng,
             **kws,
         )
 
@@ -1326,14 +1336,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> np.random.seed(0)
-        >>> da = xCentralMoments.from_vals(np.random.rand(10, 2, 3), axis=0)
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), axis=0)
         >>> da.reduce(dim="dim_0")
         <xCentralMoments(val_shape=(3,), mom=(2,))>
         <xarray.DataArray (dim_1: 3, mom_0: 3)>
-        array([[20.    ,  0.4961,  0.0532],
-               [20.    ,  0.5141,  0.0923],
-               [20.    ,  0.5391,  0.0794]])
+        array([[20.    ,  0.5221,  0.0862],
+               [20.    ,  0.5359,  0.0714],
+               [20.    ,  0.4579,  0.103 ]])
         Dimensions without coordinates: dim_1, mom_0
         """
         self._raise_if_scalar()
@@ -1381,29 +1392,30 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> np.random.seed(0)
-        >>> x = np.random.rand(10, 10)
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> x = rng.random((10, 10))
         >>> da = xCentralMoments.from_vals(x)
         >>> da
         <xCentralMoments(val_shape=(10,), mom=(2,))>
         <xarray.DataArray (dim_0: 10, mom_0: 3)>
-        array([[10.    ,  0.5285,  0.0798],
-               [10.    ,  0.5354,  0.0395],
-               [10.    ,  0.5603,  0.0837],
-               [10.    ,  0.5134,  0.0842],
-               [10.    ,  0.3299,  0.0589],
-               [10.    ,  0.3679,  0.0579],
-               [10.    ,  0.429 ,  0.0589],
-               [10.    ,  0.4   ,  0.1276],
-               [10.    ,  0.6528,  0.0561],
-               [10.    ,  0.4107,  0.0933]])
+        array([[10.    ,  0.6247,  0.0583],
+               [10.    ,  0.3938,  0.0933],
+               [10.    ,  0.425 ,  0.1003],
+               [10.    ,  0.5   ,  0.117 ],
+               [10.    ,  0.5606,  0.0446],
+               [10.    ,  0.5612,  0.0861],
+               [10.    ,  0.531 ,  0.0731],
+               [10.    ,  0.8403,  0.0233],
+               [10.    ,  0.5097,  0.103 ],
+               [10.    ,  0.5368,  0.085 ]])
         Dimensions without coordinates: dim_0, mom_0
 
         >>> da.block(block_size=5, dim="dim_0")
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)>
-        array([[50.    ,  0.4935,  0.0761],
-               [50.    ,  0.4521,  0.0892]])
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
         Dimensions without coordinates: dim_0, mom_0
 
         This is equivalent to
@@ -1411,8 +1423,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> xCentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1)
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)>
-        array([[50.    ,  0.538 ,  0.0741],
-               [50.    ,  0.4076,  0.0836]])
+        array([[50.    ,  0.5268,  0.0849],
+               [50.    ,  0.5697,  0.0979]])
         Dimensions without coordinates: dim_0, mom_0
 
 
@@ -1422,24 +1434,24 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da2.block(5, dim="dim_0", coords_policy="first")
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)>
-        array([[50.    ,  0.4935,  0.0761],
-               [50.    ,  0.4521,  0.0892]])
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
         Coordinates:
           * dim_0    (dim_0) int64 0 5
         Dimensions without coordinates: mom_0
         >>> da2.block(5, dim="dim_0", coords_policy="last")
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)>
-        array([[50.    ,  0.4935,  0.0761],
-               [50.    ,  0.4521,  0.0892]])
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
         Coordinates:
           * dim_0    (dim_0) int64 4 9
         Dimensions without coordinates: mom_0
         >>> da2.block(5, dim="dim_0", coords_policy=None)
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)>
-        array([[50.    ,  0.4935,  0.0761],
-               [50.    ,  0.4521,  0.0892]])
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
         Dimensions without coordinates: dim_0, mom_0
 
         """
@@ -1994,6 +2006,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         broadcast: bool = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
+        rng: np.random.Generator | None = ...,
         # xarray specific
         dims: XArrayDimsType = ...,
         attrs: XArrayAttrsType = ...,
@@ -2027,6 +2040,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         broadcast: bool = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
+        rng: np.random.Generator | None = ...,
         # xarray specific
         dims: XArrayDimsType = ...,
         attrs: XArrayAttrsType = ...,
@@ -2060,6 +2074,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         broadcast: bool = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
+        rng: np.random.Generator | None = ...,
         # xarray specific
         dims: XArrayDimsType = ...,
         attrs: XArrayAttrsType = ...,
@@ -2093,6 +2108,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         broadcast: bool = False,
         parallel: bool = True,
         resample_kws: Mapping[str, Any] | None = None,
+        rng: np.random.Generator | None = None,
         # xarray specific
         dims: XArrayDimsType = None,
         attrs: XArrayAttrsType = None,
@@ -2171,6 +2187,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             parallel=parallel,
             resample_kws=resample_kws,
             full_output=True,
+            rng=rng,
             **kws,
         )
 

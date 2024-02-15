@@ -12,9 +12,6 @@ def add_standard_imports(doctest_namespace):
     doctest_namespace["pd"] = pd
     doctest_namespace["xr"] = xr
 
-    # always seed numpy.random to make the examples deterministic
-    np.random.seed(0)
-
     np.set_printoptions(precision=4)
 
 

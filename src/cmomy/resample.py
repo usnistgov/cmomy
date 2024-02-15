@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, cast
 import numpy as np
 import xarray as xr
 
+from .random import validate_rng
 from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:
@@ -21,29 +22,34 @@ if TYPE_CHECKING:
 
     from .typing import ArrayOrder, Mom_NDim, Moments, MyNDArray, XvalStrict
 
+
 ##############################################################################
 # resampling
 ###############################################################################
+def freq_to_indices(
+    freq: MyNDArray, shuffle: bool = True, rng: np.random.Generator | None = None
+) -> MyNDArray:
+    """
+    Convert a frequency array to indices array.
 
-
-def numba_random_seed(seed: int) -> None:
-    """Set the random seed for numba functions."""
-    from ._lib.resample import (
-        set_numba_random_seed,  # pyright: ignore[reportUnknownVariableType]
-    )
-
-    set_numba_random_seed(seed)
-
-
-def freq_to_indices(freq: MyNDArray) -> MyNDArray:
-    """Convert a frequency array to indices array."""
+    This creates an "indices" array that is compatible with "freq" array.
+    Note that by default, the indices for a single sample (along output[k, :])
+    are randomly shuffled.  If you pass `shuffle=False`, then the output will
+    be something like [[0,0,..., 1,1,..., 2,2, ...]].
+    """
     indices_all: list[MyNDArray] = []
 
     for f in freq:
         indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))
         indices_all.append(indices)
 
-    return np.array(indices_all)
+    out = np.array(indices_all)
+
+    if shuffle:
+        rng = validate_rng(rng)
+        rng.shuffle(out, axis=1)
+
+    return out
 
 
 def indices_to_freq(indices: MyNDArray) -> MyNDArray:
@@ -58,27 +64,62 @@ def indices_to_freq(indices: MyNDArray) -> MyNDArray:
     return freq
 
 
-def randsamp_freq(
+def random_indices(
+    nrep: int, ndat: int, rng: np.random.Generator | None = None, replace: bool = True
+) -> MyNDArray:
+    """
+    Create indices for random resampling (bootstrapping).
+
+    Parameters
+    ----------
+    nrep, ndat : int
+        Number of repetitions (`nrep`) and size of data to sample along (ndat).
+    rng : Generator, optional
+        Optional Generator.
+    replace : bool, default=True
+        Whether to allow replacement.
+    """
+    rng = validate_rng(rng)
+    return rng.choice(ndat, size=(nrep, ndat), replace=replace)
+
+
+def random_freq(
+    nrep: int, ndat: int, rng: np.random.Generator | None = None, replace: bool = True
+) -> MyNDArray:
+    """
+    Create frequencies for random resampling (bootstrapping).
+
+    See Also
+    --------
+    random_indices
+    """
+    return indices_to_freq(
+        random_indices(nrep=nrep, ndat=ndat, rng=rng, replace=replace)
+    )
+
+
+def randsamp_freq(  # noqa: C901
     nrep: int | None = None,
-    size: int | None = None,
+    ndat: int | None = None,
     indices: ArrayLike | None = None,
-    transpose: bool = False,
     freq: ArrayLike | None = None,
+    transpose: bool = False,
     check: bool = False,
+    rng: np.random.Generator | None = None,
 ) -> MyNDArray:
     """
     Produce a random sample for bootstrapping.
 
     Parameters
     ----------
-    size : int, optional
-        data dimension size
+    ndat : int, optional
+        data dimension ndat
     freq : array-like,  optional
-        `shape=(nrep, size)`.
+        `shape=(nrep, ndat)`.
         If passed, use this frequency array.
-        overrides size
+        overrides ndat
     indices : array-like, , optional
-        `shape=(nrep, size)`.
+        `shape=(nrep, ndat)`.
         if passed and `freq` is `None`, construct frequency
         array from this indices array
 
@@ -93,31 +134,32 @@ def randsamp_freq(
     transpose : bool
         see output
     check : bool, default=False
-        if `check` is `True`, then check `freq` and `indices` against `size` and `nrep`
+        if `check` is `True`, then check `freq` and `indices` against `ndat` and `nrep`
 
     Returns
     -------
     output : ndarray
         Frequency table.
-        if not transpose: output.shape == (nrep, size)
-        if transpose, output.shape = (size, nrep)
+        if not transpose: output.shape == (nrep, ndat)
+        if transpose, output.shape = (ndat, nrep)
     """
-    from ._lib.resample import (
-        randsamp_freq_indices,  # pyright: ignore[reportUnknownVariableType]
-        randsamp_freq_out,  # pyright: ignore[reportUnknownVariableType]
-    )
 
     def _array_check(x: ArrayLike, name: str = "") -> MyNDArray:
         x = np.asarray(x, dtype=np.int64)
         if check:
+            if x.ndim != 2:
+                msg = f"{x.ndim} != 2"
+                raise ValueError(msg)
+
             if nrep is not None and x.shape[0] != nrep:
                 msg = f"{name} has wrong nrep"
                 raise ValueError(msg)
 
-            if size is None:
+            if ndat is None:
                 raise ValueError
-            if x.shape[1] != size:
-                msg = f"{name} has wrong size"
+
+            if x.shape[1] != ndat:
+                msg = f"{name} has wrong ndat"
                 raise ValueError(msg)
         return x
 
@@ -126,15 +168,13 @@ def randsamp_freq(
 
     elif indices is not None:
         indices = _array_check(indices, "indices")
-        freq = np.zeros(indices.shape, dtype=np.int64)
-        randsamp_freq_indices(indices, freq)
+        freq = indices_to_freq(indices)
 
-    elif nrep is not None and size is not None:
-        freq = np.zeros((nrep, size), dtype=np.int64)
-        randsamp_freq_out(freq)
+    elif nrep is not None and ndat is not None:
+        freq = random_freq(nrep=nrep, ndat=ndat, rng=validate_rng(rng), replace=True)
 
     else:
-        msg = "must specify freq, indices, or nrep and size"
+        msg = "must specify freq, indices, or nrep and ndat"
         raise ValueError(msg)
 
     if transpose:

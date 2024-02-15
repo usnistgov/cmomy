@@ -1300,6 +1300,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         parallel : bool, default=True
             If True, perform resampling in parallel.
         {resample_kws}
+        {rng}
         **kws
             Extra arguments to CentralMoments.from_data
 
