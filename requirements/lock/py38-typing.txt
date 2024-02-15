@@ -68,7 +68,7 @@ pytest==8.0.0
     # via -r requirements/typing.txt
 python-dateutil==2.8.2
     # via pandas
-pytype==2024.1.24 ; python_version < "3.11"
+pytype==2024.2.13 ; python_version < "3.11"
     # via -r requirements/typing.txt
 pytz==2024.1
     # via pandas
@@ -96,7 +96,7 @@ typing-extensions==4.9.0 ; python_version < "3.11"
     #   typing-inspect
 typing-inspect==0.9.0
     # via libcst
-tzdata==2023.4
+tzdata==2024.1
     # via pandas
 xarray==2023.1.0
     # via -r requirements/typing.txt
