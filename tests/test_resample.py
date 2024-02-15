@@ -24,6 +24,14 @@ def test_freq_indices(ndat, rng) -> None:
 
     np.testing.assert_allclose(freq0, freq1)
 
+    freq0 = resample.randsamp_freq(nrep=10, ndat=ndat, rng=np.random.default_rng(123))
+
+    freq1 = resample.randsamp_freq(nrep=10, ndat=ndat, rng=np.random.default_rng(456))
+    assert not np.all(freq0 == freq1)
+
+    freq1 = resample.randsamp_freq(nrep=10, ndat=ndat, rng=np.random.default_rng(123))
+    np.testing.assert_allclose(freq0, freq1)
+
 
 @pytest.mark.slow()
 @pytest.mark.parametrize("parallel", [True, False])
