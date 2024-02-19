@@ -63,7 +63,8 @@ def axis_expand_broadcast(
     if verify is True:
         x = np.asarray(x, dtype=dtype, order=order)
     elif not isinstance(x, np.ndarray):
-        raise ValueError
+        msg = f"{type(x)=} must be np.ndarray"
+        raise TypeError(msg)
     x = cast("MyNDArray", x)
 
     # if array, and 1d with size same as shape[axis]

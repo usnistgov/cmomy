@@ -194,6 +194,7 @@ class SessionParams(DataclassParser):
     test_no_pytest: bool = False
     test_opts: OPT_TYPE = add_option(help="Options to pytest")
     test_run: RUN_ANNO = None
+    test_no_numba: bool = False
     no_cov: bool = False
 
     # coverage
@@ -556,14 +557,22 @@ def _test(
     test_no_pytest: bool,
     test_opts: OPT_TYPE,
     no_cov: bool,
+    test_no_numba: bool = False,
 ) -> None:
     tmpdir = os.environ.get("TMPDIR", None)
 
     session_run_commands(session, run)
     if not test_no_pytest:
         opts = combine_list_str(test_opts or [])
+
+        if test_no_numba:
+            session.env["NUMBA_DISABLE_JIT"] = "1"
+
         if not no_cov:
-            session.env["COVERAGE_FILE"] = str(Path(session.create_tmp()) / ".coverage")
+            session.env["COVERAGE_FILE"] = str(
+                Path(session.create_tmp())
+                / (".coverage-no-numba" if test_no_numba else ".coverage")
+            )
 
             if not any(o.startswith("--cov") for o in opts):
                 opts.append(f"--cov={IMPORT_NAME}")
@@ -604,11 +613,41 @@ def test(
         test_no_pytest=opts.test_no_pytest,
         test_opts=opts.test_opts,
         no_cov=opts.no_cov,
+        test_no_numba=opts.test_no_numba,
     )
 
 
 nox.session(name="test", **ALL_KWS)(test)
 nox.session(name="test-conda", **CONDA_ALL_KWS)(test)
+
+# @nox.session(name="test-nojit", **DEFAULT_KWS)
+# @add_opts
+# def test_nojit(
+#         session: Session,
+#         opts: SessionParams,
+# ) -> None:
+#     (
+#         Installer.from_envname(
+#             session=session,
+#             envname="test",
+#             lock=opts.lock,
+#             # To use editable install
+#             package=True,
+#             # To use full install
+#             # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),
+#             update=opts.update,
+#         ).install_all(log_session=opts.log_session, update_package=opts.update_package)
+#     )
+
+#     session.env["NUMBA_"]
+
+#     _test(
+#         session=session,
+#         run=opts.test_run,
+#         test_no_pytest=opts.test_no_pytest,
+#         test_opts=opts.test_opts,
+#         no_cov=opts.no_cov,
+#     )
 
 
 @nox.session(name="test-notebook", **DEFAULT_KWS)
@@ -674,8 +713,9 @@ def coverage(
     for c in cmd:
         if c == "combine":
             paths = list(
-                Path(session.virtualenv.location).parent.glob("test-*/tmp/.coverage"),
+                Path(session.virtualenv.location).parent.glob("test-*/tmp/.coverage*"),
             )
+            session.log(f"{paths=}")
             if update_target(".coverage", *paths):
                 session.run("coverage", "combine", "--keep", "-a", *map(str, paths))
         elif c == "open":

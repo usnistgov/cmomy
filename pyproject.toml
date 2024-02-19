@@ -251,7 +251,7 @@ branch = true
 [tool.coverage.report]
 # show_missing = true
 exclude_also = ["if TYPE_CHECKING:", "@overload"]
-omit = ["*/vendored/*", "*/_typing.py"]
+omit = ["*/vendored/*", "*/_typing.py", "*/options.py"]
 include = ["src/*"]
 
 [tool.coverage.paths]

@@ -54,7 +54,7 @@ def _central_moments(
     out: MyNDArray | None = None,
 ) -> MyNDArray:
     """Calculate central mom along axis."""
-    if isinstance(mom, tuple):
+    if isinstance(mom, tuple):  # pragma: no cover
         mom = mom[0]
 
     x = np.asarray(vals, dtype=dtype, order=order)
@@ -103,7 +103,7 @@ def _central_moments(
 
 def _central_comoments(  # noqa: C901, PLR0912
     vals: tuple[MyNDArray, MyNDArray],
-    mom: int | tuple[int, int],
+    mom: tuple[int, int],
     w: MyNDArray | None = None,
     axis: int = 0,
     last: bool = True,
@@ -113,14 +113,13 @@ def _central_comoments(  # noqa: C901, PLR0912
     out: MyNDArray | None = None,
 ) -> MyNDArray:
     """Calculate central co-mom (covariance, etc) along axis."""
-    if isinstance(mom, int):
-        mom = (mom, mom)
+    if not isinstance(
+        mom, tuple
+    ):  # pragma: no cover  # pyright: ignore[reportUnnecessaryIsInstance]
+        raise TypeError
 
     if len(mom) != 2:
         raise ValueError
-    mom = tuple(mom)  # type: ignore[assignment]
-    if not isinstance(mom, tuple):
-        raise TypeError
 
     # change x to tuple of inputs
     if not isinstance(vals, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
@@ -665,7 +664,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             )
             target_output = x
 
-        elif isinstance(target, np.ndarray):  # pyright: ignore[reportUnnecessaryIsInstance]
+        elif isinstance(
+            target, np.ndarray
+        ):  # pragma: no cover  # pyright: ignore[reportUnnecessaryIsInstance]
             target_shape = target.shape
             target_output = target
 
@@ -1310,7 +1311,6 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
-        verify: bool = True,
         check_shape: bool = True,
         **kws: Any,
     ) -> Self:
@@ -1335,8 +1335,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         axis = axis or 0
         mom_ndim = cls._choose_mom_ndim(mom, mom_ndim)
 
-        if verify:
-            datas = np.asarray(datas, dtype=dtype)
+        datas = np.asarray(datas, dtype=dtype, order="C")
         datas, axis = cls._datas_axis_to_first(datas, axis=axis, mom_ndim=mom_ndim)
         if check_shape:
             if val_shape is None:
@@ -1592,8 +1591,11 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         >>> dy_raw = CentralMoments.from_raw(raw_y, mom_ndim=1)
         >>> dy_raw.mean() - 10000
         0.5505105129050207
-        >>> dy_raw.cmom()  # note that these don't match dx_raw, which they should
-        array([ 1.    ,  0.    ,  0.1014, -0.0171, -5.1518])
+
+        Note that the central moments don't match!
+
+        >>> np.isclose(dy_raw.cmom(), dx_raw.cmom())
+        array([ True,  True,  True, False, False])
 
         >>> dy_cen = CentralMoments.from_vals(y, axis=0, mom=4)
         >>> dy_cen.mean() - 10000
@@ -1610,7 +1612,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             data = convert.to_central_moments(raw, dtype=dtype, **convert_kws)
         elif mom_ndim == 2:
             data = convert.to_central_comoments(raw, dtype=dtype, **convert_kws)
-        else:
+        else:  # pragma: no cover
             msg = f"unknown mom_ndim {mom_ndim}"
             raise ValueError(msg)
 
@@ -1673,7 +1675,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             datas = convert.to_central_moments(raws, dtype=dtype, **convert_kws)
         elif mom_ndim == 2:
             datas = convert.to_central_comoments(raws, dtype=dtype, **convert_kws)
-        else:
+        else:  # pragma: no cover
             msg = f"unknown mom_ndim {mom_ndim}"
             raise ValueError(msg)
 

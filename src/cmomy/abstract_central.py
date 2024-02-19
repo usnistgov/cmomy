@@ -56,7 +56,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         "_mom_ndim",
     )
 
-    def __init__(self, data: T_Array, mom_ndim: Mom_NDim = 1) -> None:
+    def __init__(
+        self, data: T_Array, mom_ndim: Mom_NDim = 1
+    ) -> None:  # pragma: no cover
         self._data = cast("MyNDArray", data)  # type: ignore[redundant-cast]
         self._data_flat = self._data
 
@@ -388,7 +390,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             out = convert.to_raw_moments(x=self.data)
         elif self.mom_ndim == 2:
             out = convert.to_raw_comoments(x=self.data)
-        else:
+        else:  # pragma: no cover
             msg = f"bad mom_ndim={self.mom_ndim}"
             raise ValueError(msg)
 
@@ -453,7 +455,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         return self.fill(value=0.0)
 
     @abstractmethod
-    def _verify_value(
+    def _verify_value(  # pragma: no cover
         self,
         *,
         x: MultiArray[T_Array],
@@ -558,7 +560,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         dim: Hashable | None = None,
     ) -> MyNDArray:
         # assert isinstance(target, np.ndarray)
-        if not isinstance(target, np.ndarray):
+        if not isinstance(target, np.ndarray):  # pragma: no cover
             msg = f"{type(target)=} must be numpy.ndarray."
             raise TypeError(msg)
         return self._verify_value(
@@ -835,7 +837,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
     def _raise_if_scalar(self, message: str | None = None) -> None:
         if not self._is_vector:
-            if message is None:
+            if message is None:  # pragma: no cover
                 message = "not implemented for scalar"
             raise ValueError(message)
 
@@ -1044,10 +1046,18 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom_ndim: Mom_NDim | None,
     ) -> Mom_NDim:
         if mom is not None:
-            mom_ndim = cls._mom_ndim_from_mom(mom)
+            mom_ndim_calc = cls._mom_ndim_from_mom(mom)
+            if mom_ndim and mom_ndim_calc != mom_ndim:
+                msg = f"{mom=} is incompatible with {mom_ndim=}"
+                raise ValueError(msg)
+            mom_ndim = mom_ndim_calc
 
-        if mom_ndim is None:
+        elif mom_ndim is None:
             msg = "must specify mom_ndim or mom"
+            raise TypeError(msg)
+
+        if mom_ndim not in {1, 2}:
+            msg = f"{mom_ndim=} must be 1 or 2."
             raise ValueError(msg)
 
         return mom_ndim
@@ -1144,7 +1154,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
-        verify: bool = True,
         check_shape: bool = True,
         **kws: Any,
     ) -> Self:
@@ -1162,7 +1171,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {mom_ndim}
         {val_shape}
         {dtype}
-        {verify}
         {check_shape}
         **kws
             Extra arguments

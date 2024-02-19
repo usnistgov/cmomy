@@ -16,16 +16,16 @@ else:
 def short_numpy_repr(*args, **kwargs):
     if hasattr(ff, "short_array_repr"):
         f = ff.short_array_repr  # pyright: ignore[reportAttributeAccessIssue]
-    elif hasattr(ff, "short_numpy_repr"):
+    elif hasattr(ff, "short_numpy_repr"):  # pragma: no cover
         f = ff.short_numpy_repr  # pyright: ignore[reportAttributeAccessIssue]
-    else:
+    else:  # pragma: no cover
         f = repr
     return f(*args, **kwargs)
 
 
 def tuple_to_str(x):
     """Convert tuple to a string."""
-    if len(x) == 0:
+    if len(x) == 0:  # pragma: no cover
         return "*empty*"
 
     out = ", ".join(map(str, x))

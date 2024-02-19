@@ -63,7 +63,7 @@ def _select_axis_dim(
             msg = "can only specify one of default_axis or default_dim"
             raise ValueError(msg)
 
-        if default_axis:
+        if default_axis is not None:
             axis = default_axis
         else:
             dim = default_dim
@@ -83,9 +83,9 @@ def _select_axis_dim(
             msg = f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}"
             raise ValueError(msg)
         dim = dims[axis]
-    else:
+    else:  # pragma: no cover
         msg = f"unknown dim {dim} and axis {axis}"
-        raise ValueError(msg)
+        raise TypeError(msg)
 
     return axis, dim
 
@@ -117,7 +117,6 @@ def _xcentral_moments(
     w: xr.DataArray | None = None,
     axis: int | None = None,
     dim: Hashable | None = None,
-    last: bool = True,
     mom_dims: MomDims | None = None,
 ) -> xr.DataArray:
     x = vals
@@ -162,26 +161,25 @@ def _xcentral_moments(
     out.loc[{mom_dims[0]: 0}] = wsum
     out.loc[{mom_dims[0]: 1}] = xave
 
-    if last:
-        out = out.transpose(..., *mom_dims)
+    # ensure in correct order
+    out = out.transpose(..., *mom_dims)
     return cast(xr.DataArray, out)
 
 
-def _xcentral_comoments(  # noqa: C901, PLR0912
+def _xcentral_comoments(  # noqa: C901
     vals: tuple[xr.DataArray, xr.DataArray],
     mom: Moments,
     w: xr.DataArray | None = None,
     axis: int | None = None,
     dim: Hashable | None = None,
-    last: bool = True,
     broadcast: bool = False,
     mom_dims: tuple[Hashable, Hashable] | None = None,
 ) -> xr.DataArray:
     """Calculate central co-mom (covariance, etc) along axis."""
     mom = (mom, mom) if isinstance(mom, int) else tuple(mom)  # type: ignore[assignment]
 
-    if not isinstance(mom, tuple):
-        raise TypeError
+    assert isinstance(mom, tuple)  # noqa: S101  # pragma: no cover
+
     if len(mom) != 2:
         raise ValueError
     if not isinstance(vals, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
@@ -236,8 +234,7 @@ def _xcentral_comoments(  # noqa: C901, PLR0912
     out.loc[{mom_dims[0]: 1, mom_dims[1]: 0}] = xave[0]
     out.loc[{mom_dims[0]: 0, mom_dims[1]: 1}] = xave[1]
 
-    if last:
-        out = out.transpose(..., *mom_dims)
+    out = out.transpose(..., *mom_dims)
     return cast(xr.DataArray, out)
 
 
@@ -248,7 +245,6 @@ def xcentral_moments(
     w: xr.DataArray | None = None,
     axis: int | None = None,
     dim: Hashable | None = None,
-    last: bool = True,
     mom_dims: MomDims | None = None,
     broadcast: bool = False,
 ) -> xr.DataArray:
@@ -266,9 +262,6 @@ def xcentral_moments(
         w will be reshaped and broadcast against x
     {axis}
     {dim}
-    last : bool, default=True
-        if True, put mom as last dimension.
-        Otherwise, mom will be in first dimension
     {dtype}
     {mom_dims}
     {broadcast}
@@ -291,7 +284,6 @@ def xcentral_moments(
         "w": w,
         "axis": axis,
         "dim": dim,
-        "last": last,
         "mom_dims": mom_dims,
     }
     if len(mom) == 1:
@@ -341,7 +333,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             raise ValueError(msg)
 
         # make sure nothing weird with underlying data
-        if not isinstance(data.variable._data, np.ndarray):  # noqa: SLF001  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
+        if not isinstance(data.variable._data, np.ndarray):  # noqa: SLF001  # pragma: no cover # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
             msg = f"Underlying data must be an array, not {type(data.variable._data)=}"  # noqa: SLF001  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage,reportUnknownArgumentType]
             raise TypeError(msg)
 
@@ -384,7 +376,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         return self._xdata.name
 
     @property
-    def indexes(self) -> Indexes[Any]:
+    def indexes(self) -> Indexes[Any]:  # pragma: no cover
         """Indexes of values."""
         return self._xdata.indexes  # pyright: ignore[reportUnknownMemberType,reportUnknownVariableType]
 
@@ -404,10 +396,10 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         return self.dims[-self.mom_ndim :]
 
     # ** top level creation/copy/new
-    @cached.prop
-    def _template_val(self) -> xr.DataArray:
-        """Template for values part of data."""
-        return self._xdata[self._weight_index]
+    # @cached.prop
+    # def _template_val(self) -> xr.DataArray:
+    #     """Template for values part of data."""
+    #     return self._xdata[self._weight_index]
 
     def _wrap_like(self, x: MyNDArray) -> xr.DataArray:
         return self._xdata.copy(data=x)
@@ -420,7 +412,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         copy_kws: Mapping[str, Any] | None = None,
         verify: bool = True,
         check_shape: bool = True,
-        dtype: DTypeLike | None = None,
         strict: bool = False,
         **kws: Any,
     ) -> Self:
@@ -449,7 +440,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             copy_kws=copy_kws,
             verify=verify,
             check_shape=check_shape,
-            dtype=dtype,
             **kws,
         )
 
@@ -459,12 +449,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         self,
         val: int,
         dim_combined: str = "variable",
-        coords_combined: Any | None = None,
     ) -> dict[Hashable, Any]:
         idxs = self._single_index(val)[-self.mom_ndim :]
-        if coords_combined is None:
-            coords_combined = self.mom_dims
-
         return {
             dim: (idx if self._mom_ndim == 1 else xr.DataArray(idx, dims=dim_combined))
             for dim, idx in zip(self.mom_dims, idxs)
@@ -480,7 +466,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             coords_combined = self.mom_dims
 
         selector = self._single_index_selector(
-            val=val, dim_combined=dim_combined, coords_combined=coords_combined
+            val=val,
+            dim_combined=dim_combined,
         )
 
         out = self.to_dataarray().isel(selector)
@@ -790,7 +777,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         *dims: Hashable,
         transpose_coords: bool = True,
         missing_dims: xr_types.ErrorOptionsWithWarn = "raise",
-        _order: bool = True,
         _copy: bool = False,
         _verify: bool = False,
         _check_mom: bool = True,
@@ -801,8 +787,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         Notes
         -----
-        if ``_order = True`` (the default), then make sure mom_dims are last
-        regardless of input.
+        ``mom_dims`` will always be put at the end of the array.
 
         See Also
         --------
@@ -811,8 +796,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         """
         # make sure dims are last
 
-        if _order:
-            dims = tuple(d for d in dims if d not in self.mom_dims) + self.mom_dims
+        dims = tuple(d for d in dims if d not in self.mom_dims) + self.mom_dims
 
         return self.pipe(
             "transpose",
@@ -947,15 +931,14 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         target_dims: None | tuple[Hashable, ...] = None
         if isinstance(target, str):
-            # if dim is not None:
-            #     if isinstance(dim, int):
-            #         dim = x.dims[dim]
-
             if dim is not None and axis is not None:
+                # prefer dim over axis
                 axis = None
 
             if dim is not None or axis is not None:
-                if not isinstance(x, xr.DataArray):
+                if not isinstance(
+                    x, xr.DataArray
+                ):  # pragma: no cover (probably not needed)
                     raise TypeError
                 axis, dim = _select_axis_dim(dims=x.dims, axis=axis, dim=dim)
 
@@ -973,7 +956,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         if target_dims is not None:
             # no broadcast in this cast
-            if not isinstance(x, xr.DataArray):
+            if not isinstance(
+                x, xr.DataArray
+            ):  # pragma: no cover (might not be needed)
                 raise TypeError
             target_shape = tuple(
                 x.sizes[k] if k == dim else self.sizes[k] for k in target_dims
@@ -983,7 +968,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             x = x.transpose(*target_dims)
             target_output = x
 
-        elif not isinstance(target, xr.DataArray):
+        elif not isinstance(target, xr.DataArray):  # pragma: no cover
             raise TypeError
         else:
             target = target.astype(dtype=self.dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
@@ -993,7 +978,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
             target_output = target
 
-            if dim is not None and axis is not None:
+            if dim is not None and axis is not None:  # pragma: no cover
                 axis = None
 
             if dim is not None or axis is not None:
@@ -1009,10 +994,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                 # only things this can be is either a scalar or
                 # array with same size as target
                 x = np.asarray(x)
-                if x.shape == target.shape:
-                    x = target
-
-                elif x.ndim == 0 and broadcast and expand:
+                if x.ndim == 0 and broadcast and expand:
                     x = xr.DataArray(x).broadcast_like(target)
 
                 elif (
@@ -1020,15 +1002,18 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                 ):
                     x = xr.DataArray(x, dims=dim).broadcast_like(target)  # type: ignore[arg-type,unused-ignore] # pyright: ignore[reportArgumentType]
 
-        values: MyNDArray = x.to_numpy() if isinstance(x, xr.DataArray) else x  # pyright: ignore[reportUnknownMemberType]
+                elif x.shape == target.shape:
+                    x = xr.DataArray(x, dims=target.dims)
+                else:
+                    raise ValueError
+
+        values: MyNDArray = x.to_numpy() if isinstance(x, xr.DataArray) else x  # pyright: ignore[reportUnknownMemberType, reportUnnecessaryIsInstance]
 
         # check shape
-        if values.shape != target_shape:
+        if values.shape != target_shape:  # pragma: no cover
             raise ValueError
         if dim is None:
             nrec: tuple[int, ...] = ()
-        elif not isinstance(x, xr.DataArray):
-            raise TypeError
         else:
             nrec = (x.sizes[dim],)
 
@@ -1064,7 +1049,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                 shape_flat=shape_flat,
             )
 
-        if axis is not None and not isinstance(axis, int):  # pyright: ignore[reportUnnecessaryIsInstance]
+        if axis is not None and not isinstance(axis, int):  # pyright: ignore[reportUnnecessaryIsInstance]  # pragma: no cover
             msg = f"Error with axis value {axis}"
             raise ValueError(msg)
 
@@ -1304,14 +1289,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         return new
 
-    def _wrap_axis(
-        self, axis: int | None, default: int = 0, ndim: int | None = None
-    ) -> int:
-        if isinstance(axis, str):
-            msg = "shouldn't get string axis here"
-            raise TypeError(msg)
-        return super()._wrap_axis(axis=axis, default=default, ndim=ndim)
-
     @docfiller.decorate
     def reduce(
         self, dim: Hashable | None = None, axis: int | None = None, **kws: Any
@@ -1349,7 +1326,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         """
         self._raise_if_scalar()
         axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
-        axis = self._wrap_axis(axis)
         return type(self).from_datas(
             self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kws
         )
@@ -1474,7 +1450,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         )
 
         if coords_policy is None:
-            if not isinstance(dim, str):
+            if not isinstance(dim, str):  # pragma: no cover
                 raise TypeError
             template = template.drop_vars(dim)
 
@@ -1606,8 +1582,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                     msg = f"{data.shape} does not conform to {val_shape} and {mom}"
                     raise ValueError(msg)
 
-            if copy and data_verified is data:
-                if copy_kws is None:
+            if copy and data_verified is data:  # pragma: no cover
+                if copy_kws is None:  # pragma: no cover
                     copy_kws = {}
 
                 # to make sure copy has same format
@@ -1639,7 +1615,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
     @classmethod
     @docfiller_inherit_abc()
-    def from_datas(  # noqa: PLR0913,PLR0917
+    def from_datas(  # noqa: PLR0913
         cls,
         datas: MyNDArray | xr.DataArray,
         mom_ndim: Mom_NDim | None = None,
@@ -1647,7 +1623,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
-        verify: bool = True,
         check_shape: bool = True,
         dim: Hashable | None = None,
         dims: XArrayDimsType = None,
@@ -1689,10 +1664,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
             datas = _move_mom_dims_to_end(datas, mom_dims, mom_ndim).transpose(dim, ...)
 
-            if verify:
-                # fmt: off
-                datas = datas.astype(order="C", dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
-                # fmt: on
+            # fmt: off
+            datas = datas.astype(order="C", dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
+            # fmt: on
 
             if check_shape:
                 if val_shape is None:
@@ -1722,7 +1696,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                 axis=axis,
                 val_shape=val_shape,
                 dtype=dtype,
-                verify=verify,
                 check_shape=check_shape,
                 dims=dims,
                 attrs=attrs,
@@ -1786,7 +1759,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                 data_values = convert.to_central_comoments(
                     values, dtype=dtype, **convert_kws
                 )
-            else:
+            else:  # pragma: no cover
                 msg = f"unknown mom_ndim {mom_ndim}"
                 raise ValueError(msg)
 
@@ -2158,13 +2131,13 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             if isinstance(x0, xr.DataArray):
                 w_values = w.broadcast_like(x0).to_numpy()  # pyright: ignore[reportUnknownMemberType]
 
-            else:
+            else:  # pragma: no cover
                 w_values = w.to_numpy()  # pyright: ignore[reportUnknownMemberType]
         else:
             w_values = w
 
         if dims is not None:
-            if isinstance(dims, str):
+            if isinstance(dims, str):  # pragma: no cover
                 dims = (dims,)
             dims = (rep_dim, *dims)  # type: ignore[misc]
 
