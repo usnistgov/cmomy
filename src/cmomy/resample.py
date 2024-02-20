@@ -327,12 +327,18 @@ def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
         w = np.ones_like(x)
     else:
         w = axis_expand_broadcast(
-            w, x.shape, axis, roll=False, dtype=dtype, order=order
+            w, shape=x.shape, axis=axis, roll=False, dtype=dtype, order=order
         )
 
     if y is not None:
         y = axis_expand_broadcast(
-            y, x.shape, axis, roll=False, broadcast=broadcast, dtype=dtype, order=order
+            y,
+            shape=x.shape,
+            axis=axis,
+            roll=False,
+            broadcast=broadcast,
+            dtype=dtype,
+            order=order,
         )
 
     if axis != 0:

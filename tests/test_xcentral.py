@@ -228,8 +228,8 @@ def test__xverify_value(rng) -> None:
 
     x = xr.DataArray(rng.random((10, 2)), dims=("rec", "a"))
 
-    a = cmomy.xCentralMoments.from_vals(x, dim="rec", val_shape=2)  # type: ignore[arg-type]
-    b = cmomy.xCentralMoments.from_vals(x, axis=0)
+    a = cmomy.xCentralMoments.from_vals(x, dim="rec", val_shape=2, mom=2)  # type: ignore[arg-type]
+    b = cmomy.xCentralMoments.from_vals(x, axis=0, mom=2)
 
     xr.testing.assert_allclose(a.to_dataarray(), b.to_dataarray())
 
@@ -390,27 +390,19 @@ def test_from_datas(other) -> None:
     datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
     for verify in [True, False]:
-        for check_shape in [True, False]:
-            # print("verify", verify, "check_shape", check_shape)
-            # print(f"{other.shape=}, {other.axis=}, {other.style=}, {other.mom=}")
-            # print(f"{datas.dims=}, {other.data_test_xr.dims=}")
-            # print("datas", datas.to_numpy().flags)
-
-            t = other.cls_xr.from_datas(
-                datas,
-                mom=other.mom,
-                dim="rec",
-                check_shape=check_shape,
-                verify=verify,
-            )
-            xtest(other.data_test_xr, t.to_dataarray())
+        t = other.cls_xr.from_datas(
+            datas,
+            mom=other.mom,
+            dim="rec",
+            verify=verify,
+        )
+        xtest(other.data_test_xr, t.to_dataarray())
 
     with pytest.raises(ValueError):
         t = other.cls_xr.from_datas(
             datas,
             mom=other.mom,
             dim="rec",
-            check_shape=True,
             val_shape=(2, 3, 4, 5, 6, 7),
         )
 

@@ -112,6 +112,29 @@ def test_zeros() -> None:
     with pytest.raises(ValueError):
         cmomy.CentralMoments.zeros(mom=(3,), mom_ndim=2)
 
+    c = cmomy.CentralMoments.zeros(shape=(2, 3, 4), mom_ndim=1)
+    assert c.shape == (2, 3, 4)
+    assert c.mom == (3,)
+
+    c = cmomy.CentralMoments.zeros(shape=(2, 3, 4), mom_ndim=2)
+    assert c.shape == (2, 3, 4)
+    assert c.mom == (2, 3)
+
+    with pytest.raises(ValueError):
+        c = cmomy.CentralMoments.zeros(val_shape=(2,), mom_ndim=1)
+
+    c = cmomy.CentralMoments.zeros(val_shape=2, mom=2)
+    assert c.shape == (2, 3)
+    assert c.mom == (2,)
+
+    c = cmomy.CentralMoments.zeros(mom=2)
+    assert c.shape == (3,)
+    assert c.mom == (2,)
+
+    c = cmomy.CentralMoments.zeros(mom=(2, 2))
+    assert c.shape == (3, 3)
+    assert c.mom == (2, 2)
+
 
 # exceptions
 def test_raises_centralmoments_init() -> None:
@@ -158,8 +181,8 @@ def test_raises_from_datas() -> None:
 def test_raises_from_vals(rng) -> None:
     x = rng.random(10)
 
-    a = cmomy.CentralMoments.from_vals(x, dtype=np.float32)
-    b = cmomy.CentralMoments.from_vals(x)
+    a = cmomy.CentralMoments.from_vals(x, dtype=np.float32, mom=2)
+    b = cmomy.CentralMoments.from_vals(x, mom=2)
 
     assert a.dtype == np.dtype(np.float32)
     assert b.dtype == np.dtype(np.float64)
@@ -167,7 +190,7 @@ def test_raises_from_vals(rng) -> None:
     np.testing.assert_allclose(a.data, b.data, rtol=1e-5)
 
     with pytest.raises(ValueError):
-        cmomy.CentralMoments.from_vals(x, val_shape=(2, 3))
+        cmomy.CentralMoments.from_vals(x, val_shape=(2, 3), mom=2)
 
 
 def test_to_xarray() -> None:
@@ -334,58 +357,11 @@ def test_raises_operations(rng) -> None:
         c3 -= c0
 
 
-def test_check_mom() -> None:
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._check_mom(moments=None, mom_ndim=None)
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._check_mom(moments=None, mom_ndim=1)
-
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._check_mom(moments=None, mom_ndim=2, shape=(2,))
-
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._check_mom(moments=None, mom_ndim=3, shape=(2, 3, 4))  # type: ignore[arg-type]
-
-    assert cmomy.CentralMoments._check_mom(moments=(2, 2), mom_ndim=None) == (2, 2)
-
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._check_mom(moments=(2, 2, 2), mom_ndim=None)  # type: ignore[arg-type]
-
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._check_mom(moments=(2, 2), mom_ndim=1)
-
-
 def test_wrap_axis() -> None:
     c = cmomy.CentralMoments.zeros(mom=3, val_shape=(2, 3, 4))
 
     assert c._wrap_axis(-1) == 2
     assert c._wrap_axis(-2, ndim=2) == 0
-
-
-def test_mom_ndim_from_mom() -> None:
-    assert cmomy.CentralMoments._mom_ndim_from_mom(2) == 1
-    assert cmomy.CentralMoments._mom_ndim_from_mom((2, 2)) == 2
-
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._mom_ndim_from_mom((2, 2, 2))  # type: ignore[arg-type]
-
-    with pytest.raises(TypeError):
-        cmomy.CentralMoments._mom_ndim_from_mom([2, 2])  # type: ignore[arg-type]
-
-
-def test_choose_mom_ndim() -> None:
-    assert cmomy.CentralMoments._choose_mom_ndim(mom=2, mom_ndim=None) == 1
-    assert cmomy.CentralMoments._choose_mom_ndim(mom=(2, 2), mom_ndim=None) == 2
-
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._choose_mom_ndim(mom=(2, 2), mom_ndim=1)
-
-    with pytest.raises(TypeError):
-        cmomy.CentralMoments._choose_mom_ndim(mom=None, mom_ndim=None)
-
-    assert cmomy.CentralMoments._choose_mom_ndim(mom=None, mom_ndim=1) == 1
-    with pytest.raises(ValueError):
-        cmomy.CentralMoments._choose_mom_ndim(mom=None, mom_ndim=3)  # type: ignore[arg-type]
 
 
 def test_ndim() -> None:
@@ -456,8 +432,9 @@ def test_combine(other) -> None:
 
 def test_from_datas(other) -> None:
     datas = np.array([s.to_numpy() for s in other.S])
-    t = other.cls.from_datas(datas, mom=other.mom)
-    other.test_values(t.to_values())
+    for verify in [True, False]:
+        t = other.cls.from_datas(datas, mom=other.mom, verify=verify)
+        other.test_values(t.to_values())
 
 
 def test_push_datas(other) -> None:

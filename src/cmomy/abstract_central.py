@@ -212,12 +212,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @docfiller.decorate
     def new_like(
         self,
-        *,
         data: MyNDArray | T_Array | None = None,
+        *,
         copy: bool = False,
         copy_kws: Mapping[str, Any] | None = None,
-        verify: bool = True,
-        check_shape: bool = False,
+        verify: bool = False,
         strict: bool = False,
         **kwargs: Any,
     ) -> Self:
@@ -231,7 +230,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {copy}
         {copy_kws}
         {verify}
-        {check_shape}
         strict : bool, default=False
             If True, verify that `data` has correct shape
         {kwargs}
@@ -289,7 +287,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         return self.new_like(
             data=self.to_values(),
             verify=False,
-            check_shape=False,
             copy=True,
             copy_kws=copy_kws,
         )
@@ -375,7 +372,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         out[self._single_index(1)] = 0
         return self._wrap_like(out)
 
-    def to_raw(self, weights: float | MyNDArray | None = None) -> T_Array:
+    def to_raw(self, *, weights: float | MyNDArray | None = None) -> T_Array:
         r"""
         Raw moments accumulation array.
 
@@ -837,7 +834,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         _kws.setdefault("mom_ndim", self.mom_ndim)
         if _check_mom:
             _kws["mom"] = self.mom
-            _kws["check_shape"] = True
 
         return type(self).from_data(data=values, **_kws)
 
@@ -857,8 +853,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def resample(
         self,
         indices: MyNDArray,
-        axis: int = 0,
+        axis: int | None = 0,
+        *,
         first: bool = True,
+        verify: bool = False,
         **kwargs: Any,
     ) -> Self:
         """
@@ -886,6 +884,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         --------
         from_data
         """
+        axis = axis or 0
         self._raise_if_scalar()
         axis = self._wrap_axis(axis)
 
@@ -901,7 +900,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             mom_ndim=self.mom_ndim,
             mom=self.mom,
             copy=False,  # pyright: ignore[reportUnknownMemberType]
-            verify=True,
+            verify=verify,
             **kwargs,
         )
 
@@ -966,47 +965,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     # ** Constructors
     ###########################################################################
     # *** Utils
-    @classmethod
-    def _check_mom(
-        cls,
-        moments: Moments | None,
-        mom_ndim: Mom_NDim | None,
-        shape: tuple[int, ...] | None = None,
-    ) -> MomentsStrict:
-        """
-        Check moments for correct shape.
-
-        If moments is None, infer from
-        shape[-mom_ndim:] if integer, convert to tuple.
-        """
-        if isinstance(moments, int):
-            mom_ndim = mom_ndim or 1
-            moments = (moments,) * mom_ndim  # type: ignore[assignment]
-
-        elif moments is None:
-            if mom_ndim is None:
-                msg = "must specify either moments or mom_ndim and shape"
-                raise ValueError(msg)
-            if shape is None:
-                msg = "Must pass shape if inferring moments"
-                raise ValueError(msg)
-
-            if len(shape) < mom_ndim:
-                raise ValueError
-            if mom_ndim not in {1, 2}:
-                raise ValueError
-            moments = tuple(x - 1 for x in shape[-mom_ndim:])  # type: ignore[assignment]
-
-        elif mom_ndim is None:
-            moments = tuple(moments)  # type: ignore[assignment]
-            mom_ndim = len(moments)  # type: ignore[assignment]
-            if mom_ndim not in {1, 2}:
-                raise ValueError
-
-        if len(moments) != mom_ndim:  # type: ignore[arg-type]
-            raise ValueError
-        return cast("MomentsStrict", moments)
-
     @staticmethod
     def _datas_axis_to_first(
         datas: MyNDArray,
@@ -1014,13 +972,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom_ndim: Mom_NDim,
     ) -> tuple[MyNDArray, int]:
         """Move axis to first first position."""
-        # NOTE: removing this. should be handles elsewhere
-        # datas = np.asarray(datas)
-        # ndim = datas.ndim - mom_ndim
-        # if axis < 0:
-        #     axis += ndim
-        # assert 0 <= axis < ndim
-
         axis = normalize_axis_index(axis, datas.ndim - mom_ndim)
         if axis != 0:
             datas = np.moveaxis(datas, axis, 0)
@@ -1037,48 +988,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
         return normalize_axis_index(axis, ndim)
 
-    @classmethod
-    def _mom_ndim_from_mom(cls, mom: Moments) -> Mom_NDim:
-        if isinstance(mom, int):
-            out = 1
-        elif isinstance(mom, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
-            out = len(mom)
-            if out not in {1, 2}:
-                raise ValueError
-        else:
-            msg = "mom must be int or tuple"
-            raise TypeError(msg)
-        return cast("Mom_NDim", out)
-
-    @classmethod
-    def _choose_mom_ndim(
-        cls,
-        mom: Moments | None,
-        mom_ndim: Mom_NDim | None,
-    ) -> Mom_NDim:
-        if mom is not None:
-            mom_ndim_calc = cls._mom_ndim_from_mom(mom)
-            if mom_ndim and mom_ndim_calc != mom_ndim:
-                msg = f"{mom=} is incompatible with {mom_ndim=}"
-                raise ValueError(msg)
-            mom_ndim = mom_ndim_calc
-
-        elif mom_ndim is None:
-            msg = "must specify mom_ndim or mom"
-            raise TypeError(msg)
-
-        if mom_ndim not in {1, 2}:
-            msg = f"{mom_ndim=} must be 1 or 2."
-            raise ValueError(msg)
-
-        return mom_ndim
-
     # *** Core
     @classmethod
     @abstractmethod
     @docfiller.decorate
     def zeros(
         cls,
+        *,
         mom: Moments | None = None,
         mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
@@ -1123,13 +1039,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_data(
         cls,
         data: Any,
+        *,
         mom: Moments | None = None,
         mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         copy: bool = True,
         copy_kws: Mapping[str, Any] | None = None,
-        verify: bool = True,
-        check_shape: bool = True,
+        verify: bool = False,
         dtype: DTypeLike | None = None,
     ) -> Self:
         """
@@ -1145,7 +1061,6 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {copy}
         {copy_kws}
         {verify}
-        {check_shape}
         {dtype}
 
         Returns
@@ -1160,13 +1075,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_datas(
         cls,
         datas: Any,
-        mom_ndim: Mom_NDim | None = None,
-        axis: int | None = 0,
+        *,
         mom: Moments | None = None,
+        mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
-        verify: bool = True,
-        check_shape: bool = True,
+        verify: bool = False,
+        axis: int | None = 0,
         **kwargs: Any,
     ) -> Self:
         """
@@ -1178,13 +1093,12 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             Array of multiple Moment arrays.
             datas[..., i, ...] is the ith data array, where i is
             in position `axis`.
-        {axis_and_dim}
         {mom}
         {mom_ndim}
         {val_shape}
         {dtype}
         {verify}
-        {check_shape}
+        {axis_and_dim}
         **kwargs
             Extra arguments.
 
@@ -1203,12 +1117,13 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_vals(
         cls,
         x: Any,
+        mom: Moments,
+        *,
         w: Any = None,
-        axis: int | None = 0,
-        mom: Moments = 2,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
+        axis: int | None = 0,
         **kwargs: Any,
     ) -> Self:
         """
@@ -1243,18 +1158,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_resample_vals(
         cls,
         x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
-        nrep: int | None = ...,
+        mom: Moments,
         *,
         full_output: Literal[False] = ...,
-        # freq: MyNDArray | None = ...,
-        # indices: MyNDArray | None = ...,
-        # w: MyNDArray | None = ...,
-        # axis: int | None = ...,
-        # mom: Moments = ...,
-        # dtype: DTypeLike | None = ...,
-        # broadcast: bool = ...,
-        # parallel: bool = ...,
-        # resample_kws: Mapping[str, Any] | None = ...,
         **kwargs: Any,
     ) -> Self:
         ...
@@ -1265,7 +1171,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_resample_vals(
         cls,
         x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
-        nrep: int | None = ...,
+        mom: Moments,
         *,
         full_output: Literal[True],
         **kwargs: Any,
@@ -1278,7 +1184,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_resample_vals(
         cls,
         x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
-        nrep: int | None = ...,
+        mom: Moments,
         *,
         full_output: bool,
         **kwargs: Any,
@@ -1291,7 +1197,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_resample_vals(
         cls,
         x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
-        nrep: int | None = None,
+        mom: Moments,
         *,
         full_output: bool = False,
         **kwargs: Any,
@@ -1306,15 +1212,15 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         x : array-like or tuple of array-like
             For moments, pass single array-like objects `x=x0`.
             For comoments, pass tuple of array-like objects `x=(x0, x1)`.
-        {nrep}
+        {mom}
         {full_output}
+        {nrep}
         {freq}
         {indices}
         w : scalar or array-like, optional
             Optional weights.  If scalar or array, attempt to
             broadcast to `x0.shape`
         {axis_and_dim}
-        {mom}
         {dtype}
         {broadcast}
         parallel : bool, default=True
@@ -1346,8 +1252,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_raw(
         cls,
         raw: Any,
-        mom_ndim: Mom_NDim | None = None,
+        *,
         mom: Moments | None = None,
+        mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping[str, Any] | None = None,
@@ -1396,10 +1303,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def from_raws(
         cls,
         raws: Any,
-        mom_ndim: Mom_NDim | None = None,
+        *,
         mom: Moments | None = None,
-        axis: int | None = 0,
+        mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
+        axis: int | None = 0,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping[str, Any] | None = None,
         **kwargs: Any,
@@ -1438,104 +1346,3 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         Weights are taken from ``raw[...,0, 0]``.
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
         """
-
-    # --------------------------------------------------
-    # mom_ndim == 1 specific
-    # --------------------------------------------------
-
-    # @staticmethod
-    # def _raise_if_not_1d(mom_ndim: Mom_NDim) -> None:
-    #     if mom_ndim != 1:
-    #         raise NotImplementedError("only available for mom_ndim == 1")
-
-    # special, 1d only methods
-    # def push_stat(
-    #     self: T_CentralMoments,
-    #     a: MyNDArray | float,
-    #     v: MyNDArray | float = 0.0,
-    #     w: MyNDArray | float | None = None,
-    #     broadcast: bool = True,
-    # ) -> T_CentralMoments:
-    #     """Push statistics onto self."""
-    #     self._raise_if_not_1d(self.mom_ndim)
-
-    #     ar, target = self._check_val(a, target="val")
-    #     vr = self._check_var(v, broadcast=broadcast)
-    #     wr = self._check_weight(w, target=target)
-    #     self._push.stat(self._data_flat, wr, ar, vr)
-    #     return self
-
-    # def push_stats(
-    #     self: T_CentralMoments,
-    #     a: MyNDArray,
-    #     v: MyNDArray | float = 0.0,
-    #     w: MyNDArray | float | None = None,
-    #     axis: int = 0,
-    #     broadcast: bool = True,
-    # ) -> T_CentralMoments:
-    #     """Push multiple statistics onto self."""
-    #     self._raise_if_not_1d(self.mom_ndim)
-
-    #     ar, target = self._check_vals(a, target="vals", axis=axis)
-    #     vr = self._check_vars(v, target=target, axis=axis, broadcast=broadcast)
-    #     wr = self._check_weights(w, target=target, axis=axis)
-    #     self._push.stats(self._data_flat, wr, ar, vr)
-    #     return self
-
-    # @classmethod
-    # def from_stat(
-    #     cls: Type[T_CentralMoments],
-    #     a: ArrayLike | float,
-    #     v: MyNDArray | float = 0.0,
-    #     w: MyNDArray | float | None = None,
-    #     mom: Moments = 2,
-    #     val_shape: Tuple[int, ...] | None = None,
-    #     dtype: DTypeLike | None = None,
-    #     order: ArrayOrder | None = None,
-    #     **kws,
-    # ) -> T_CentralMoments:
-    #     """Create object from single weight, average, variance/covariance."""
-    #     mom_ndim = cls._mom_ndim_from_mom(mom)
-    #     cls._raise_if_not_1d(mom_ndim)
-
-    #     a = np.asarray(a, dtype=dtype, order=order)
-
-    #     if val_shape is None and isinstance(a, MyNDArray):
-    #         val_shape = a.shape
-    #     if dtype is None:
-    #         dtype = a.dtype
-
-    #     return cls.zeros(val_shape=val_shape, mom=mom, dtype=dtype, **kws).push_stat(
-    #         w=w, a=a, v=v
-    #     )
-
-    # @classmethod
-    # def from_stats(
-    #     cls: Type[T_CentralMoments],
-    #     a: MyNDArray,
-    #     v: MyNDArray,
-    #     w: MyNDArray | float | None = None,
-    #     axis: int = 0,
-    #     mom: Moments = 2,
-    #     val_shape: Tuple[int, ...] = None,
-    #     dtype: DTypeLike | None = None,
-    #     order: ArrayOrder | None = None,
-    #     **kws,
-    # ) -> T_CentralMoments:
-    #     """Create object from several statistics.
-
-    #     Weights, averages, variances/covarainces along
-    #     axis.
-    #     """
-
-    #     mom_ndim = cls._mom_ndim_from_mom(mom)
-    #     cls._raise_if_not_1d(mom_ndim)
-
-    #     a = np.asarray(a, dtype=dtype, order=order)
-
-    #     # get val_shape
-    #     if val_shape is None:
-    #         val_shape = shape_reduce(a.shape, axis)
-    #     return cls.zeros(val_shape=val_shape, dtype=dtype, mom=mom, **kws).push_stats(
-    #         a=a, v=v, w=w, axis=axis
-    #     )

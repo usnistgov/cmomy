@@ -13,9 +13,7 @@ def _dummy_docstrings() -> None:
     copy_kws : mapping, optional
         extra arguments to copy
     verify : bool, optional
-        If True, make sure data is c-contiguous
-    check_shape : bool, optional
-        If True, check that shape of resulting object is correct.
+        If True, make sure data is c-contiguous.
     mom : int or tuple of int
         Order or moments.  If integer or length one tuple, then moments are for
         a single variable.  If length 2 tuple, then comoments of two variables
