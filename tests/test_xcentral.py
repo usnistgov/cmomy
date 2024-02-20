@@ -1,5 +1,4 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-import random
 
 import numpy as np
 import pytest
@@ -21,13 +20,16 @@ def test_s(other) -> None:
     xtest(other.data_test_xr, other.s_xr.to_dataarray())
 
 
-def scramble_xr(x):
+def scramble_xr(x, rng=None):
+    if rng is None:
+        rng = cmomy.random.default_rng()
+
     if isinstance(x, tuple):
         return tuple(scramble_xr(_) for _ in x)
 
     if isinstance(x, xr.DataArray):
         order = list(x.dims)
-        random.shuffle(order)
+        rng.shuffle(order)  # pyright: ignore[reportArgumentType]
         return x.transpose(*order)
     return x
 
@@ -381,14 +383,27 @@ def test_from_data() -> None:
 
 
 def test_from_datas(other) -> None:
+    # set the rng for reproduciblility right now:
+    cmomy.random.default_rng(0)
+
     datas = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
     datas = scramble_xr(datas).transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
-    for check_shape in [True, False]:
-        t = other.cls_xr.from_datas(
-            datas, mom=other.mom, dim="rec", check_shape=check_shape
-        )
-        xtest(other.data_test_xr, t.to_dataarray())
+    for verify in [True, False]:
+        for check_shape in [True, False]:
+            # print("verify", verify, "check_shape", check_shape)
+            # print(f"{other.shape=}, {other.axis=}, {other.style=}, {other.mom=}")
+            # print(f"{datas.dims=}, {other.data_test_xr.dims=}")
+            # print("datas", datas.to_numpy().flags)
+
+            t = other.cls_xr.from_datas(
+                datas,
+                mom=other.mom,
+                dim="rec",
+                check_shape=check_shape,
+                verify=verify,
+            )
+            xtest(other.data_test_xr, t.to_dataarray())
 
     with pytest.raises(ValueError):
         t = other.cls_xr.from_datas(

@@ -147,9 +147,7 @@ def test_raises_from_data() -> None:
 def test_raises_from_datas() -> None:
     datas = np.zeros((10, 2, 3))
 
-    c = cmomy.CentralMoments.from_datas(
-        datas, check_shape=False, mom_ndim=1, dtype=np.float32
-    )
+    c = cmomy.CentralMoments.from_datas(datas, mom_ndim=1, dtype=np.float32)
     assert c.shape == (2, 3)
     assert c.dtype == np.dtype(np.float32)
 
@@ -665,15 +663,15 @@ def test_block(rng) -> None:
 
     c = cmomy.CentralMoments.from_vals(x, axis=0, mom=3)
 
-    c1 = cmomy.CentralMoments(c.data[::2, ...])
-    c2 = cmomy.CentralMoments(c.data[1::2, ...])
+    c1 = cmomy.CentralMoments.from_data(c.data[::2, ...], mom_ndim=1)
+    c2 = cmomy.CentralMoments.from_data(c.data[1::2, ...], mom_ndim=1)
 
     c3 = c1 + c2
 
     np.testing.assert_allclose(c3.data, c.block(2, axis=0).data)
 
-    c1 = cmomy.CentralMoments(c.data[:, ::2, ...])
-    c2 = cmomy.CentralMoments(c.data[:, 1::2, ...])
+    c1 = cmomy.CentralMoments.from_data(c.data[:, ::2, ...], mom_ndim=1)
+    c2 = cmomy.CentralMoments.from_data(c.data[:, 1::2, ...], mom_ndim=1)
 
     c3 = (c1 + c2).moveaxis(1, 0)
 

@@ -69,6 +69,14 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self._mom_ndim = mom_ndim
         self._cache: dict[str, Any] = {}
 
+        self._validate_data()
+
+    def _validate_data(self) -> None:  # pragma: no cover
+        if np.shares_memory(self._data_flat, self._data):
+            return
+
+        raise ValueError
+
     @property
     def data(self) -> MyNDArray:
         """
@@ -211,7 +219,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         verify: bool = True,
         check_shape: bool = False,
         strict: bool = False,
-        **kws: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         Create new object like self, with new data.
@@ -226,7 +234,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {check_shape}
         strict : bool, default=False
             If True, verify that `data` has correct shape
-        **kws
+        {kwargs}
             arguments to classmethod :meth:`from_data`
 
         Returns
@@ -635,6 +643,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             This should have shape like `(nrec,) + self.shape`
             if `axis=0`, where `nrec` is the number of data objects to sum.
         {axis_and_dim}
+        {kwargs}
 
         Returns
         -------
@@ -720,6 +729,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             Weight of each sample.  If scalar, broadcast to `x0.shape`
         {broadcast}
         {axis_and_dim}
+        {kwargs}
 
         Returns
         -------
@@ -849,7 +859,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         indices: MyNDArray,
         axis: int = 0,
         first: bool = True,
-        **kws: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         Create a new object sampled from index.
@@ -862,6 +872,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             if True, and axis != 0, the move the axis to first position.
             This makes results similar to resample and reduce
             If `first` False, then resampled array can have odd shape
+        {kwargs}
 
         Returns
         -------
@@ -891,7 +902,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             mom=self.mom,
             copy=False,  # pyright: ignore[reportUnknownMemberType]
             verify=True,
-            **kws,
+            **kwargs,
         )
 
     ###########################################################################
@@ -1074,7 +1085,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         zeros_kws: Mapping[str, Any] | None = None,
-        **kws: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         Create a new base object.
@@ -1087,7 +1098,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {shape}
         {dtype}
         {zeros_kws}
-        **kws
+        **kwargs
             extra arguments to :meth:`from_data`
 
         Returns
@@ -1154,8 +1165,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom: Moments | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
+        verify: bool = True,
         check_shape: bool = True,
-        **kws: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         Create object from multiple data arrays.
@@ -1171,9 +1183,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {mom_ndim}
         {val_shape}
         {dtype}
+        {verify}
         {check_shape}
-        **kws
-            Extra arguments
+        **kwargs
+            Extra arguments.
 
         Returns
         -------
@@ -1196,7 +1209,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
-        **kws: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         Create from observations/values.
@@ -1213,8 +1226,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {mom}
         {val_shape}
         {broadcast}
-        **kws
-            Optional arguments passed to :meth:`zeros`
+        {kwargs}
 
         Returns
         -------
@@ -1309,7 +1321,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             If True, perform resampling in parallel.
         {resample_kws}
         {rng}
-        **kws
+        **kwargs
             Extra arguments to CentralMoments.from_data
 
         Returns
@@ -1339,7 +1351,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping[str, Any] | None = None,
-        **kws: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         Create object from raw moment data.
@@ -1357,7 +1369,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {val_shape}
         {dtype}
         {convert_kws}
-        **kws
+        **kwargs
             Extra arguments to :meth:`from_data`
 
         Returns
@@ -1390,7 +1402,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         convert_kws: Mapping[str, Any] | None = None,
-        **kws: Any,
+        **kwargs: Any,
     ) -> Self:
         """
         Create object from multiple `raw` moment arrays.
@@ -1407,7 +1419,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {val_shape}
         {dtype}
         {convert_kws}
-        **kws
+        **kwargs
             Extra arguments to :meth:`from_datas`
 
         Returns

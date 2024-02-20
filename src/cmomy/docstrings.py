@@ -86,6 +86,8 @@ def _dummy_docstrings() -> None:
         flags to `numba.njit`
     rng : :class:`~numpy.random.Generator`, optional
         Random number generator object.  Defaults to output of :func:`~cmomy.random.default_rng`.
+    kwargs | **kwargs
+        Extra keyword arguments.
     """
 
 

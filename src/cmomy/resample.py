@@ -391,7 +391,7 @@ def bootstrap_confidence_interval(  # pragma: no cover
     axis: int = 0,
     alpha: float = 0.05,
     style: Literal[None, "delta", "pm"] = None,
-    **kws: Any,
+    **kwargs: Any,
 ) -> MyNDArray:
     """
     Calculate the error bounds.
@@ -410,10 +410,10 @@ def bootstrap_confidence_interval(  # pragma: no cover
     alpha : float
         alpha value for confidence interval.
         Percent confidence = `100 * (1 - alpha)`
-    kws : dict
-        extra arguments to `numpy.percentile`
     style : {None, 'delta', 'pm'}
         controls style of output
+    **kwargs
+        extra arguments to `numpy.percentile`
 
     Returns
     -------
@@ -433,7 +433,7 @@ def bootstrap_confidence_interval(  # pragma: no cover
         p_mid = 50
         p_high = 100 - p_low
         val, low, high = np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kws
+            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kwargs
         )
 
     else:
@@ -454,10 +454,10 @@ def bootstrap_confidence_interval(  # pragma: no cover
         val = sv
         # fmt: off
         low = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_low, axis=axis, **kws
+            a=distribution, q=q_low, axis=axis, **kwargs
         )
         high = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_high, axis=axis, **kws
+            a=distribution, q=q_high, axis=axis, **kwargs
         )
         # fmt: on
 
@@ -479,7 +479,7 @@ def xbootstrap_confidence_interval(  # pragma: no cover
     style: Literal[None, "delta", "pm"] = None,
     bootstrap_dim: Hashable | None = "bootstrap",
     bootstrap_coords: str | Sequence[str] | None = None,
-    **kws: Any,
+    **kwargs: Any,
 ) -> xr.DataArray:
     """
     Bootstrap xarray object.
@@ -533,7 +533,7 @@ def xbootstrap_confidence_interval(  # pragma: no cover
         axis=axis,
         alpha=alpha,
         style=style,
-        **kws,
+        **kwargs,
     )
 
     out_xr = xr.DataArray(
