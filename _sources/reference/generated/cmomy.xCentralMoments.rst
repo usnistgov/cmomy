@@ -49,7 +49,10 @@
       ~xCentralMoments.stack
       ~xCentralMoments.std
       ~xCentralMoments.to_centralmoments
+      ~xCentralMoments.to_dataarray
+      ~xCentralMoments.to_numpy
       ~xCentralMoments.to_raw
+      ~xCentralMoments.to_values
       ~xCentralMoments.transpose
       ~xCentralMoments.unstack
       ~xCentralMoments.var

@@ -1,15 +1,14 @@
 
-
 <!DOCTYPE html>
 
 
-<html lang="en" >
+<html lang="en" data-content_root="../../" >
 
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Routines to convert central (co)moments to raw (co)moments. (cmomy.convert) &#8212; cmomy 0.7.0 documentation</title>
+    <title>Routines to convert central (co)moments to raw (co)moments. (cmomy.convert) &#8212; cmomy v0.8.0 documentation</title>
   
   
   
@@ -19,50 +18,49 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=e353d410970836974a52" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=e353d410970836974a52" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=e353d410970836974a52" rel="stylesheet" />
-  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
-<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+  <link href="../../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
-    <link rel="stylesheet" href="../../_static/styles/sphinx-book-theme.css?digest=14f4ca6b54d191a8c7657f6c759bf11a5fb86285" type="text/css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-    <script src="../../_static/jquery.js"></script>
-    <script src="../../_static/underscore.js"></script>
-    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
-    <script src="../../_static/doctools.js"></script>
-    <script src="../../_static/sphinx_highlight.js"></script>
-    <script src="../../_static/clipboard.min.js"></script>
-    <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/scripts/sphinx-book-theme.js?digest=5a5c038af52cf7bc1a1ec88eea08e6366ee68824"></script>
-    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
-    <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
-    <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
-    <script src="../../_static/js/leave_notice.js"></script>
-    <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
+    <script src="../../_static/documentation_options.js?v=a3bab12e"></script>
+    <script src="../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
     <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
     <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.convert';</script>
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
+    <script src="../../_static/js/leave_notice.js?v=133c5535"></script>
+    <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Base Classes" href="../api-baseclasses.html" />
     <link rel="prev" title="Routine to perform resampling (cmomy.resample)" href="cmomy.resample.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
+    <meta name="docbuild:last-update" content="2024-02-20"/>
   </head>
   
   
@@ -70,7 +68,15 @@
 
   
   
-  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
   
   <input type="checkbox"
           class="sidebar-toggle"
@@ -105,11 +111,14 @@
 </form></div>
   </div>
   
-    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
-    </nav>
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
   
+
   <div class="bd-container">
     <div class="bd-container__inner bd-page-width">
+      
+      
       
       <div class="bd-sidebar-primary bd-sidebar">
         
@@ -124,6 +133,7 @@
   
     <div class="sidebar-primary-items__start sidebar-primary__section">
         <div class="sidebar-primary-item">
+
   
 
 <a class="navbar-brand logo" href="../../index.html">
@@ -132,10 +142,22 @@
   
   
   
-    <p class="title logo__title">cmomy 0.7.0 documentation</p>
+  
+    <p class="title logo__title">cmomy v0.8.0 documentation</p>
   
 </a></div>
-        <div class="sidebar-primary-item"><nav class="bd-links" id="bd-docs-nav" aria-label="Main">
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
         <ul class="nav bd-sidenav bd-sidenav__home-link">
@@ -156,7 +178,13 @@
 <li class="toctree-l2"><a class="reference internal" href="../api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a></li>
 
 
+<li class="toctree-l2"><a class="reference internal" href="cmomy.random.html">Routines to set common <code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
+
+
+
+
 <li class="toctree-l2"><a class="reference internal" href="cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a></li>
+
 
 
 
@@ -335,20 +363,22 @@
 </button>
 
 
+
 <script>
 document.write(`
-  <button class="theme-switch-button btn btn-sm btn-outline-primary navbar-btn rounded-circle" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch" data-mode="light"><i class="fa-solid fa-sun"></i></span>
-    <span class="theme-switch" data-mode="dark"><i class="fa-solid fa-moon"></i></span>
-    <span class="theme-switch" data-mode="auto"><i class="fa-solid fa-circle-half-stroke"></i></span>
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
   </button>
 `);
 </script>
 
+
 <script>
 document.write(`
   <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <i class="fa-solid fa-magnifying-glass"></i>
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
 </script>
@@ -390,10 +420,10 @@ document.write(`
               
                 
 <div id="searchbox"></div>
-                <article class="bd-article" role="main">
+                <article class="bd-article">
                   
-  <span class="target" id="module-cmomy.convert"></span><section id="routines-to-convert-central-co-moments-to-raw-co-moments-cmomy-convert">
-<h1>Routines to convert central (co)moments to raw (co)moments. (<a class="reference internal" href="#module-cmomy.convert" title="cmomy.convert"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.convert</span></code></a>)<a class="headerlink" href="#routines-to-convert-central-co-moments-to-raw-co-moments-cmomy-convert" title="Permalink to this heading">#</a></h1>
+  <section id="routines-to-convert-central-co-moments-to-raw-co-moments-cmomy-convert">
+<span id="module-cmomy.convert"></span><h1>Routines to convert central (co)moments to raw (co)moments. (<a class="reference internal" href="#module-cmomy.convert" title="cmomy.convert"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.convert</span></code></a>)<a class="headerlink" href="#routines-to-convert-central-co-moments-to-raw-co-moments-cmomy-convert" title="Link to this heading">#</a></h1>
 </section>
 <p><strong>Functions:</strong></p>
 <table class="autosummary longtable table autosummary">
@@ -414,26 +444,26 @@ document.write(`
 </table>
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.convert.to_raw_moments">
-<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_raw_moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L151-L189"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_raw_moments" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_raw_moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L150-L188"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_raw_moments" title="Link to this definition">#</a></dt>
 <dd><p>Convert central moments to raw moments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central moments array.  The expected structure is:</p>
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central moments array.  The expected structure is:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0]</span></code> : weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">1]</span></code> : mean</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">k]</span></code> : kth central moment</p></li>
 </ul>
 </li>
-<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">-1</span></code>) – Axis location of moments in <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.25)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">-1</span></code>) – Axis location of moments in <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.26)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
+<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw moments array.  The expected structure is:</p>
+<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw moments array.  The expected structure is:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">0]</span></code> : weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">k]</span></code> : kth moment <span class="math notranslate nohighlight">\(\langle a^k \rangle\)</span></p></li>
@@ -445,12 +475,12 @@ document.write(`
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.convert.to_raw_comoments">
-<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_raw_comoments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-2,</span> <span class="pre">-1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L192-L228"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_raw_comoments" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_raw_comoments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-2,</span> <span class="pre">-1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L191-L229"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_raw_comoments" title="Link to this definition">#</a></dt>
 <dd><p>Convert central moments to raw moments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central comoments array.  The expected structure is:</p>
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central comoments array.  The expected structure is:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0,</span> <span class="pre">0]</span></code> : weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">1,</span> <span class="pre">0]</span></code> : mean of <cite>a</cite></p></li>
@@ -459,14 +489,14 @@ document.write(`
 where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p></li>
 </ul>
 </li>
-<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">(-2,-1)</span></code>) – Axis locations of moments in comoments array <code class="docutils literal notranslate"><span class="pre">x</span></code></p></li>
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.25)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">(-2,-1)</span></code>) – Axis locations of moments in comoments array <code class="docutils literal notranslate"><span class="pre">x</span></code></p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.26)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
+<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw comoments array.  The expected structure is:</p>
+<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw comoments array.  The expected structure is:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">0,</span> <span class="pre">0]</span></code> : weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> : <span class="math notranslate nohighlight">\(\langle a^i b^j \rangle\)</span>,
@@ -479,25 +509,25 @@ where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p><
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.convert.to_central_moments">
-<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_central_moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L231-L267"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_central_moments" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_central_moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L232-L270"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_central_moments" title="Link to this definition">#</a></dt>
 <dd><p>Convert central moments to raw moments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw moments array.  The expected structure is:</p>
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw moments array.  The expected structure is:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0]</span></code> : weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">k]</span></code> : kth moment <span class="math notranslate nohighlight">\(\langle a^k \rangle\)</span></p></li>
 </ul>
 </li>
-<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">-1</span></code>) – Axis location of moments in <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.25)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">-1</span></code>) – Axis location of moments in <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.26)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
+<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central moments array.  The expected structure is:</p>
+<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central moments array.  The expected structure is:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">0]</span></code> : weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">1]</span></code> : mean</p></li>
@@ -510,26 +540,26 @@ where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p><
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.convert.to_central_comoments">
-<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_central_comoments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-2,</span> <span class="pre">-1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L270-L306"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_central_comoments" title="Permalink to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.convert.</span></span><span class="sig-name descname"><span class="pre">to_central_comoments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-2,</span> <span class="pre">-1)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/convert.py#L273-L311"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert.to_central_comoments" title="Link to this definition">#</a></dt>
 <dd><p>Convert raw comoments to central comoments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw comoments array.  The expected structure is:</p>
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Raw comoments array.  The expected structure is:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0,</span> <span class="pre">0]</span></code>: weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> : <span class="math notranslate nohighlight">\(\langle a^i b^j \rangle\)</span>,
 where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p></li>
 </ul>
 </li>
-<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">(-2,-1)</span></code>) – Axis locations of moments in comoments array <code class="docutils literal notranslate"><span class="pre">x</span></code></p></li>
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.25)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
-<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.11)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">(-2,-1)</span></code>) – Axis locations of moments in comoments array <code class="docutils literal notranslate"><span class="pre">x</span></code></p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/index.html#module-numpy" title="(in NumPy v1.26)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">numpy</span></code></a> data type to apply to output.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Optional ordering (‘c’, ‘f’, etc) to apply to output.</p></li>
+<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>, <em>optional</em>) – Optional numpy output array.  Should have same shape as <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.25)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central comoments array.  The expected structure is:</p>
+<dd class="field-even"><p><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Central comoments array.  The expected structure is:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">0,</span> <span class="pre">0]</span></code> : weight</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">out[...,</span> <span class="pre">1,</span> <span class="pre">0]</span></code> : mean of <cite>a</cite></p></li>
@@ -549,11 +579,10 @@ where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p><
 
               
               
-                <footer class="bd-footer-article">
+              
+              
+                <footer class="prev-next-footer">
                   
-<div class="footer-article-items footer-article__inner">
-  
-    <div class="footer-article-item"><!-- Previous / next buttons -->
 <div class="prev-next-area">
     <a class="left-prev"
        href="cmomy.resample.html"
@@ -573,10 +602,7 @@ where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p><
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
-</div></div>
-  
 </div>
-
                 </footer>
               
             </div>
@@ -584,6 +610,7 @@ where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p><
             
               
                 <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
 
   <div class="sidebar-secondary-item">
   <div class="page-toc tocsection onthispage">
@@ -618,9 +645,10 @@ By William P. Krekelberg
   
   <div class="footer-item">
     
+
   <p class="copyright">
     
-      © Copyright 2023, William P. Krekelberg.
+      © Copyright 2020, William P. Krekelberg.
       <br/>
     
   </p>
@@ -629,7 +657,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2023-08-11.
+  Last updated on 2024-02-20.
   <br/>
 </p>
   </div>
@@ -647,8 +675,8 @@ By William P. Krekelberg
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=e353d410970836974a52"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=e353d410970836974a52"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
 
   <footer class="bd-footer">
   </footer>

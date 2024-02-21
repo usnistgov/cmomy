@@ -47,7 +47,9 @@
       ~CentralMoments.reshape
       ~CentralMoments.rmom
       ~CentralMoments.std
+      ~CentralMoments.to_numpy
       ~CentralMoments.to_raw
+      ~CentralMoments.to_values
       ~CentralMoments.to_xarray
       ~CentralMoments.to_xcentralmoments
       ~CentralMoments.var
