@@ -64,7 +64,7 @@ pydot==2.0.0
     # via pytype
 pyparsing==3.1.1
     # via pydot
-pytest==8.0.0
+pytest==8.0.1
     # via -r requirements/typing.txt
 python-dateutil==2.8.2
     # via pandas

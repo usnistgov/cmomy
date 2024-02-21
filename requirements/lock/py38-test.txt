@@ -4,7 +4,7 @@
 #
 #    pip-compile --allow-unsafe --output-file=requirements/lock/py38-test.txt --strip-extras requirements/test.txt
 #
-coverage==7.4.1
+coverage==7.4.2
     # via
     #   coverage
     #   pytest-cov
@@ -41,7 +41,7 @@ pandas==2.0.3
     # via xarray
 pluggy==1.4.0
     # via pytest
-pytest==8.0.0
+pytest==8.0.1
     # via
     #   -r requirements/test.txt
     #   pytest-cov

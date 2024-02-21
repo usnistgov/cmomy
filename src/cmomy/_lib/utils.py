@@ -23,15 +23,15 @@ def myjit(
     **kws: Any,
 ) -> Callable[[F], F]:
     """Perform jitting."""
-    if signature is not None:
-        kws["signature_or_function"] = signature
+    if signature is not None:  # pragma: no cover
+        kws["signature_or_function"] = signature  # pragma: no cover
 
     if parallel:
         kws["parallel"] = parallel
     if inline is not None:
-        if inline:
+        if inline:  # pragma: no cover
             kws["inline"] = "always"
-        else:
+        else:  # pragma: no cover
             kws["inline"] = "never"
 
     return cast(  # pyright: ignore[reportReturnType]

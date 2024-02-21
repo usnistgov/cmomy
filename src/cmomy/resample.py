@@ -98,12 +98,37 @@ def random_freq(
     )
 
 
-def randsamp_freq(  # noqa: C901
+def _validate_resample_array(
+    x: ArrayLike,
+    nrep: int | None,
+    ndat: int | None,
+    check: bool = True,
+    name: str = "array",
+) -> MyNDArray:
+    x = np.asarray(x, dtype=np.int64)
+    if check:
+        if x.ndim != 2:
+            msg = f"{name}.ndim={x.ndim} != 2"
+            raise ValueError(msg)
+
+        if nrep is not None and x.shape[0] != nrep:
+            msg = f"{name}.shape[0]={x.shape[0]} != {nrep}"
+            raise ValueError(msg)
+
+        if ndat is None:
+            raise ValueError
+
+        if x.shape[1] != ndat:
+            msg = f"{name} has wrong ndat"
+            raise ValueError(msg)
+    return x
+
+
+def randsamp_freq(
     nrep: int | None = None,
     ndat: int | None = None,
     indices: ArrayLike | None = None,
     freq: ArrayLike | None = None,
-    transpose: bool = False,
     check: bool = False,
     rng: np.random.Generator | None = None,
 ) -> MyNDArray:
@@ -131,43 +156,23 @@ def randsamp_freq(  # noqa: C901
         shape = (nrep, ndat)
     freq : array-like, optional
         if passed, use this frequency array
-    transpose : bool
-        see output
     check : bool, default=False
         if `check` is `True`, then check `freq` and `indices` against `ndat` and `nrep`
 
     Returns
     -------
     output : ndarray
-        Frequency table.
-        if not transpose: output.shape == (nrep, ndat)
-        if transpose, output.shape = (ndat, nrep)
+        Frequency table of shape ``(nrep, ndat)``.
     """
-
-    def _array_check(x: ArrayLike, name: str = "") -> MyNDArray:
-        x = np.asarray(x, dtype=np.int64)
-        if check:
-            if x.ndim != 2:
-                msg = f"{x.ndim} != 2"
-                raise ValueError(msg)
-
-            if nrep is not None and x.shape[0] != nrep:
-                msg = f"{name} has wrong nrep"
-                raise ValueError(msg)
-
-            if ndat is None:
-                raise ValueError
-
-            if x.shape[1] != ndat:
-                msg = f"{name} has wrong ndat"
-                raise ValueError(msg)
-        return x
-
     if freq is not None:
-        freq = _array_check(freq, "freq")
+        freq = _validate_resample_array(
+            freq, name="freq", nrep=nrep, ndat=ndat, check=check
+        )
 
     elif indices is not None:
-        indices = _array_check(indices, "indices")
+        indices = _validate_resample_array(
+            indices, name="indices", nrep=nrep, ndat=ndat, check=check
+        )
         freq = indices_to_freq(indices)
 
     elif nrep is not None and ndat is not None:
@@ -177,8 +182,6 @@ def randsamp_freq(  # noqa: C901
         msg = "must specify freq, indices, or nrep and ndat"
         raise ValueError(msg)
 
-    if transpose:
-        freq = freq.T
     return freq
 
 
@@ -235,7 +238,7 @@ def resample_data(  # noqa: PLR0914
     ndim = data.ndim - len(mom)
     if axis < 0:
         axis += ndim
-    if not 0 <= axis < ndim:
+    if not 0 <= axis < ndim:  # pragma: no cover
         raise ValueError
 
     if axis != 0:
@@ -244,15 +247,18 @@ def resample_data(  # noqa: PLR0914
     shape: tuple[int, ...] = data.shape[1 : -len(mom)]
     mom_shape = tuple(x + 1 for x in mom)
 
-    if data.shape != (ndat, *shape, *mom_shape):
-        raise ValueError
+    target_shape = (ndat, *shape, *mom_shape)
+    if data.shape != target_shape:
+        msg = f"{data.shape=} != {target_shape}"
+        raise ValueError(msg)
 
     # output
     out_shape = (nrep,) + data.shape[1:]
     if out is None:
         out = np.empty(out_shape, dtype=dtype)
     elif out.shape != out_shape:
-        raise ValueError
+        msg = f"{out.shape=} != {out_shape}"
+        raise ValueError(msg)
     else:  # make sure out is in correct order
         out = np.asarray(out, dtype=dtype, order="C")
 
@@ -321,12 +327,18 @@ def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
         w = np.ones_like(x)
     else:
         w = axis_expand_broadcast(
-            w, x.shape, axis, roll=False, dtype=dtype, order=order
+            w, shape=x.shape, axis=axis, roll=False, dtype=dtype, order=order
         )
 
     if y is not None:
         y = axis_expand_broadcast(
-            y, x.shape, axis, roll=False, broadcast=broadcast, dtype=dtype, order=order
+            y,
+            shape=x.shape,
+            axis=axis,
+            roll=False,
+            broadcast=broadcast,
+            dtype=dtype,
+            order=order,
         )
 
     if axis != 0:
@@ -378,13 +390,14 @@ def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
     return outr.reshape(out.shape)
 
 
-def bootstrap_confidence_interval(
+# TODO(wpk): add coverage for these
+def bootstrap_confidence_interval(  # pragma: no cover
     distribution: MyNDArray,
     stats_val: MyNDArray | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
     alpha: float = 0.05,
     style: Literal[None, "delta", "pm"] = None,
-    **kws: Any,
+    **kwargs: Any,
 ) -> MyNDArray:
     """
     Calculate the error bounds.
@@ -403,10 +416,10 @@ def bootstrap_confidence_interval(
     alpha : float
         alpha value for confidence interval.
         Percent confidence = `100 * (1 - alpha)`
-    kws : dict
-        extra arguments to `numpy.percentile`
     style : {None, 'delta', 'pm'}
         controls style of output
+    **kwargs
+        extra arguments to `numpy.percentile`
 
     Returns
     -------
@@ -426,7 +439,7 @@ def bootstrap_confidence_interval(
         p_mid = 50
         p_high = 100 - p_low
         val, low, high = np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kws
+            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kwargs
         )
 
     else:
@@ -447,10 +460,10 @@ def bootstrap_confidence_interval(
         val = sv
         # fmt: off
         low = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_low, axis=axis, **kws
+            a=distribution, q=q_low, axis=axis, **kwargs
         )
         high = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_high, axis=axis, **kws
+            a=distribution, q=q_high, axis=axis, **kwargs
         )
         # fmt: on
 
@@ -463,7 +476,7 @@ def bootstrap_confidence_interval(
     return out
 
 
-def xbootstrap_confidence_interval(
+def xbootstrap_confidence_interval(  # pragma: no cover
     x: xr.DataArray,
     stats_val: MyNDArray | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
@@ -472,7 +485,7 @@ def xbootstrap_confidence_interval(
     style: Literal[None, "delta", "pm"] = None,
     bootstrap_dim: Hashable | None = "bootstrap",
     bootstrap_coords: str | Sequence[str] | None = None,
-    **kws: Any,
+    **kwargs: Any,
 ) -> xr.DataArray:
     """
     Bootstrap xarray object.
@@ -490,7 +503,7 @@ def xbootstrap_confidence_interval(
         If string, use this for the 'values' name
     """
     if dim is not None:
-        axis = cast(int, x.get_axis_num(dim))  # Problem with upstream
+        axis = cast(int, x.get_axis_num(dim))  # type: ignore[redundant-cast, unused-ignore]
     else:
         dim = x.dims[axis]
 
@@ -526,13 +539,13 @@ def xbootstrap_confidence_interval(
         axis=axis,
         alpha=alpha,
         style=style,
-        **kws,
+        **kwargs,
     )
 
     out_xr = xr.DataArray(
         out,
         dims=dims,
-        coords=template.coords,  # pyright: ignore[reportUnknownMemberType]
+        coords=template.coords,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         attrs=template.attrs,
         name=template.name,
         # indexes=template.indexes,

@@ -18,7 +18,7 @@ colorlog==6.8.2
     # via nox
 comm==0.2.1
     # via ipykernel
-coverage==7.4.1
+coverage==7.4.2
     # via
     #   nbval
     #   pytest-cov
@@ -103,7 +103,7 @@ packaging==23.2
     #   xarray
 pandas==2.2.0
     # via xarray
-pandas-stubs==2.1.4.231227
+pandas-stubs==2.2.0.240218
     # via -r requirements/dev.txt
 parso==0.8.3
     # via jedi
@@ -125,7 +125,7 @@ pure-eval==0.2.2
     # via stack-data
 pygments==2.17.2
     # via ipython
-pytest==8.0.0
+pytest==8.0.1
     # via
     #   -r requirements/dev.txt
     #   nbval
@@ -192,5 +192,5 @@ virtualenv==20.25.0
     # via nox
 wcwidth==0.2.13
     # via prompt-toolkit
-xarray==2024.1.1
+xarray==2024.2.0
     # via -r requirements/dev.txt

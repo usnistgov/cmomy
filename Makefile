@@ -266,3 +266,9 @@ tuna-import: ## Analyze load time for module
 typing-tools:
 	mypy --strict noxfile.py tools/*.py
 	pyright noxfile.py tools/*.py
+
+
+.PHONY: test-all-cover
+test-all-cover:
+	nox -s test test-notebook -- ++test-opts --run-slow
+	nox -s test-3.11 coverage -- ++test-no-numba ++test-opts --run-slow ++test-no-numba

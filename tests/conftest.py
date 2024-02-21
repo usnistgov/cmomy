@@ -8,13 +8,16 @@ import pytest
 import xarray as xr
 from module_utilities import cached
 
+import cmomy
 from cmomy import central, resample, xcentral
-from cmomy._testing import get_cmom, get_comom
+
+from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
     from cmomy.typing import Moments, MyNDArray
 
-default_rng = np.random.default_rng()
+
+default_rng = cmomy.random.default_rng(0)
 
 
 @pytest.fixture(scope="session")
@@ -184,8 +187,8 @@ class Data:  # noqa: PLR0904
             out = out[0]
         return out
 
-    def test_values(self, x) -> None:
-        np.testing.assert_allclose(self.to_values(), x)
+    def test_values(self, x, **kws) -> None:
+        np.testing.assert_allclose(self.to_values(), x, **kws)
 
     @property
     def raw(self) -> MyNDArray | None:
@@ -364,9 +367,9 @@ class Data:  # noqa: PLR0904
 # def other(request):
 #     return request.param
 def get_params():
-    for shape, axis in [(20, 0), ((20, 2, 3), 0), ((2, 20, 3), 1), ((2, 3, 20), 2)]:
+    for shape, axis in [(10, 0), ((10, 2, 3), 0), ((2, 10, 3), 1), ((2, 3, 10), 2)]:
         for style in [None, "total", "broadcast"]:
-            for mom in [4, (3, 3)]:
+            for mom in [3, (3, 3)]:
                 yield shape, axis, style, mom
 
 

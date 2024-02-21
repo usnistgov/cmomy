@@ -33,11 +33,11 @@ packaging==23.2
     #   xarray
 pandas==2.2.0
     # via xarray
-pandas-stubs==2.1.4.231227
+pandas-stubs==2.2.0.240218
     # via -r requirements/typing.txt
 pluggy==1.4.0
     # via pytest
-pytest==8.0.0
+pytest==8.0.1
     # via -r requirements/typing.txt
 python-dateutil==2.8.2
     # via pandas
@@ -53,5 +53,5 @@ typing-extensions==4.9.0
     #   mypy
 tzdata==2024.1
     # via pandas
-xarray==2024.1.1
+xarray==2024.2.0
     # via -r requirements/typing.txt

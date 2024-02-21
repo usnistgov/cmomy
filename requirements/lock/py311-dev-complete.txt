@@ -33,7 +33,7 @@ colorlog==6.8.2
     # via nox
 comm==0.2.1
     # via ipykernel
-coverage==7.4.1
+coverage==7.4.2
     # via
     #   nbval
     #   pytest-cov
@@ -53,7 +53,7 @@ fastjsonschema==2.19.1
     # via nbformat
 filelock==3.13.1
     # via virtualenv
-identify==2.5.34
+identify==2.5.35
     # via pre-commit
 idna==3.6
     # via requests
@@ -137,7 +137,7 @@ packaging==23.2
     #   xarray
 pandas==2.2.0
     # via xarray
-pandas-stubs==2.1.4.231227
+pandas-stubs==2.2.0.240218
     # via -r requirements/dev-complete.txt
 parso==0.8.3
     # via jedi
@@ -149,7 +149,7 @@ platformdirs==4.2.0
     #   virtualenv
 pluggy==1.4.0
     # via pytest
-pre-commit==3.6.1
+pre-commit==3.6.2
     # via -r requirements/dev-complete.txt
 prompt-toolkit==3.0.43
     # via ipython
@@ -163,9 +163,9 @@ pycodestyle==2.11.1
     # via autopep8
 pygments==2.17.2
     # via ipython
-pyright==1.1.350
+pyright==1.1.351
     # via -r requirements/dev-complete.txt
-pytest==8.0.0
+pytest==8.0.1
     # via
     #   -r requirements/dev-complete.txt
     #   nbval
@@ -238,7 +238,7 @@ typing-extensions==4.9.0
     #   mypy
 tzdata==2024.1
     # via pandas
-urllib3==2.2.0
+urllib3==2.2.1
     # via requests
 virtualenv==20.25.0
     # via
@@ -246,7 +246,7 @@ virtualenv==20.25.0
     #   pre-commit
 wcwidth==0.2.13
     # via prompt-toolkit
-xarray==2024.1.1
+xarray==2024.2.0
     # via -r requirements/dev-complete.txt
 
 # The following packages are considered to be unsafe in a requirements file:

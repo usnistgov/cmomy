@@ -104,13 +104,13 @@ def _convert_moments(
     order: ArrayOrder | None = None,
     out: MyNDArray | None = None,
 ) -> MyNDArray:
-    if isinstance(axis, int):
-        axis = (axis,)
-    if isinstance(target_axis, int):
-        target_axis = (target_axis,)
+    def _verify_tuple(x: int | Sequence[int]) -> tuple[int, ...]:
+        if isinstance(x, int):
+            return (x,)
+        return tuple(x)
 
-    axis = tuple(axis)
-    target_axis = tuple(target_axis)
+    axis = _verify_tuple(axis)
+    target_axis = _verify_tuple(target_axis)
 
     if len(axis) != len(target_axis):
         raise ValueError

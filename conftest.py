@@ -42,3 +42,14 @@ def pytest_collection_modifyitems(config, items) -> None:
     for item in items:
         if "slow" in item.keywords:
             item.add_marker(skip_slow)
+
+
+def pytest_ignore_collect(collection_path, path, config) -> None:
+    import sys
+
+    if sys.version_info < (3, 9):
+        if "cmomy/tests" in str(collection_path):
+            return False
+        return True
+
+    return False

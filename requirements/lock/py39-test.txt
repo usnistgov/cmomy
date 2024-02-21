@@ -4,7 +4,7 @@
 #
 #    pip-compile --allow-unsafe --output-file=requirements/lock/py39-test.txt --strip-extras requirements/test.txt
 #
-coverage==7.4.1
+coverage==7.4.2
     # via
     #   coverage
     #   pytest-cov
@@ -39,7 +39,7 @@ pandas==2.2.0
     # via xarray
 pluggy==1.4.0
     # via pytest
-pytest==8.0.0
+pytest==8.0.1
     # via
     #   -r requirements/test.txt
     #   pytest-cov
@@ -69,5 +69,5 @@ typing-extensions==4.9.0 ; python_version < "3.11"
     #   module-utilities
 tzdata==2024.1
     # via pandas
-xarray==2024.1.1
+xarray==2024.2.0
     # via -r requirements/test.txt
