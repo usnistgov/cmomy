@@ -333,26 +333,22 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
             msg = f"data must be an np.ndarray.  Passed type {type(data)}"
             raise TypeError(msg)
 
-        # assure that data is contigouse
-        # data = np.ascontiguousarray(data)
-
-        self._mom_ndim = mom_ndim
-
-        if data.ndim < self.mom_ndim:
+        if data.ndim < mom_ndim:
             msg = "not enough dimensions in data"
             raise ValueError(msg)
 
+        self._mom_ndim = mom_ndim
         self._data = data
         self._data_flat = self._data.reshape(self.shape_flat)
-        # this should ensure data/data_flat share data
-        self._data = self._data_flat.reshape(self.shape)
+        self._data = self._data_flat.reshape(self.shape)  # ensure same data
 
         if any(m <= 0 for m in self.mom):
             msg = "moments must be positive"
             raise ValueError(msg)
 
-        self._cache: dict[str, Any] = {}
         self._validate_data()  # pragma: no cover
+
+        self._cache: dict[str, Any] = {}
 
     def to_values(self) -> MyNDArray:
         """Accesses for self.data."""
@@ -459,7 +455,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         Default constructor
 
         >>> da.to_xarray()
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
@@ -467,7 +463,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         Setting attributes
 
         >>> da.to_xarray()
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
@@ -561,7 +557,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         >>> da.to_xcentralmoments()
         <xCentralMoments(val_shape=(1, 2), mom=(2,))>
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
@@ -570,7 +566,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         >>> da.to_xcentralmoments()
         <xCentralMoments(val_shape=(1, 2), mom=(2,))>
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0

@@ -503,7 +503,7 @@ def xbootstrap_confidence_interval(  # pragma: no cover
         If string, use this for the 'values' name
     """
     if dim is not None:
-        axis = cast(int, x.get_axis_num(dim))  # Problem with upstream
+        axis = cast(int, x.get_axis_num(dim))  # type: ignore[redundant-cast, unused-ignore]
     else:
         dim = x.dims[axis]
 

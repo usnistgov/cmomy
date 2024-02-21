@@ -317,6 +317,13 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
     __slots__ = ("_cache", "_data", "_data_flat", "_mom_ndim", "_xdata")
 
     def __init__(self, data: xr.DataArray, mom_ndim: Mom_NDim = 1) -> None:
+        if mom_ndim not in {1, 2}:
+            msg = (
+                "mom_ndim must be either 1 (for central moments)"
+                "or 2 (for central comoments)"
+            )
+            raise ValueError(msg)
+
         if not isinstance(data, xr.DataArray):  # pyright: ignore[reportUnnecessaryIsInstance]
             msg = (
                 "data must be a xarray.DataArray. "
@@ -324,40 +331,28 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             )
             raise TypeError(msg)
 
-        if mom_ndim not in {1, 2}:
-            msg = (
-                "mom_ndim must be either 1 (for central moments)"
-                "or 2 (for central comoments)"
-            )
-            raise ValueError(msg)
-        self._mom_ndim = mom_ndim
-
-        if data.ndim < self.mom_ndim:
+        if data.ndim < mom_ndim:
             msg = "not enough dimensions in data"
             raise ValueError(msg)
 
-        # only use numpy array
+        self._mom_ndim = mom_ndim
         self._data: MyNDArray = data.to_numpy()  # pyright: ignore[reportUnknownMemberType]
         self._data_flat = self._data.reshape(self.shape_flat)
-
-        # ensure that data/data_flat/xdata share memory and that xdata uses numpy array.
-        self._data = self._data_flat.reshape(self.shape)
+        self._data = self._data_flat.reshape(data.shape)  # ensure same data
         self._xdata = data.copy(data=self._data)
 
         if any(m <= 0 for m in self.mom):
             msg = "moments must be positive"
             raise ValueError(msg)
 
-        self._cache: dict[str, Any] = {}
-
-        # with above, this is probably unnecessary...
-        self._validate_data()  # pragma: no cover
-
+        self._validate_data()
         if (
             self._xdata.to_numpy() is not self._data  # pyright: ignore[reportUnknownMemberType]
             or self._xdata.variable._data is not self._data  # noqa: SLF001  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
         ):  # pragma: no cover
             raise ValueError
+
+        self._cache: dict[str, Any] = {}
 
     # ** xarray attributes
     def to_values(self) -> xr.DataArray:
@@ -563,7 +558,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
         >>> da
         <xCentralMoments(val_shape=(2, 3), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)>
+        <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
         array([[[10.    ,  0.5205,  0.0452],
                 [10.    ,  0.4438,  0.0734],
                 [10.    ,  0.5038,  0.1153]],
@@ -575,7 +570,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da_stack = da.stack(z=["dim_0", "dim_1"])
         >>> da_stack
         <xCentralMoments(val_shape=(6,), mom=(2,))>
-        <xarray.DataArray (z: 6, mom_0: 3)>
+        <xarray.DataArray (z: 6, mom_0: 3)> Size: 144B
         array([[10.    ,  0.5205,  0.0452],
                [10.    ,  0.4438,  0.0734],
                [10.    ,  0.5038,  0.1153],
@@ -583,16 +578,16 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                [10.    ,  0.628 ,  0.0524],
                [10.    ,  0.412 ,  0.0865]])
         Coordinates:
-          * z        (z) object MultiIndex
-          * dim_0    (z) int64 0 0 0 1 1 1
-          * dim_1    (z) int64 0 1 2 0 1 2
+          * z        (z) object 48B MultiIndex
+          * dim_0    (z) int64 48B 0 0 0 1 1 1
+          * dim_1    (z) int64 48B 0 1 2 0 1 2
         Dimensions without coordinates: mom_0
 
         And unstack
 
         >>> da_stack.unstack("z")
         <xCentralMoments(val_shape=(2, 3), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)>
+        <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
         array([[[10.    ,  0.5205,  0.0452],
                 [10.    ,  0.4438,  0.0734],
                 [10.    ,  0.5038,  0.1153]],
@@ -601,8 +596,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                 [10.    ,  0.628 ,  0.0524],
                 [10.    ,  0.412 ,  0.0865]]])
         Coordinates:
-          * dim_0    (dim_0) int64 0 1
-          * dim_1    (dim_1) int64 0 1 2
+          * dim_0    (dim_0) int64 16B 0 1
+          * dim_1    (dim_1) int64 24B 0 1 2
         Dimensions without coordinates: mom_0
         """
         return self.pipe(
@@ -689,30 +684,30 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         ... )
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(2,))>
-        <xarray.DataArray (x: 3, mom_0: 3)>
+        <xarray.DataArray (x: 3, mom_0: 3)> Size: 72B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5688,  0.0689],
                [10.    ,  0.5094,  0.1198]])
         Coordinates:
-          * x        (x) <U1 'a' 'b' 'c'
+          * x        (x) <U1 12B 'a' 'b' 'c'
         Dimensions without coordinates: mom_0
 
         Select by value
 
         >>> da.sel(x="a")
         <xCentralMoments(val_shape=(), mom=(2,))>
-        <xarray.DataArray (mom_0: 3)>
+        <xarray.DataArray (mom_0: 3)> Size: 24B
         array([10.    ,  0.5248,  0.1106])
         Coordinates:
-            x        <U1 'a'
+            x        <U1 4B 'a'
         Dimensions without coordinates: mom_0
         >>> da.sel(x=["a", "c"])
         <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (x: 2, mom_0: 3)>
+        <xarray.DataArray (x: 2, mom_0: 3)> Size: 48B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5094,  0.1198]])
         Coordinates:
-          * x        (x) <U1 'a' 'c'
+          * x        (x) <U1 8B 'a' 'c'
         Dimensions without coordinates: mom_0
 
 
@@ -720,18 +715,18 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         >>> da.isel(x=0)
         <xCentralMoments(val_shape=(), mom=(2,))>
-        <xarray.DataArray (mom_0: 3)>
+        <xarray.DataArray (mom_0: 3)> Size: 24B
         array([10.    ,  0.5248,  0.1106])
         Coordinates:
-            x        <U1 'a'
+            x        <U1 4B 'a'
         Dimensions without coordinates: mom_0
         >>> da.isel(x=[0, 1])
         <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (x: 2, mom_0: 3)>
+        <xarray.DataArray (x: 2, mom_0: 3)> Size: 48B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5688,  0.0689]])
         Coordinates:
-          * x        (x) <U1 'a' 'b'
+          * x        (x) <U1 8B 'a' 'b'
         Dimensions without coordinates: mom_0
 
         """
@@ -846,7 +841,10 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         CentralMoments.to_xcentralmoments
         xCentralMoments.from_centralmoments
         """
-        return self.to_centralmoments()
+        out = self.to_centralmoments()
+        if not np.shares_memory(out.to_numpy(), self._data):  # pragma: no cover
+            raise ValueError
+        return out
 
     @classmethod
     @docfiller.decorate
@@ -1228,7 +1226,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         ... )
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(3,))>
-        <xarray.DataArray (rec: 3, mom_0: 4)>
+        <xarray.DataArray (rec: 3, mom_0: 4)> Size: 96B
         array([[ 1.0000e+01,  5.2485e-01,  1.1057e-01, -4.6282e-03],
                [ 1.0000e+01,  5.6877e-01,  6.8876e-02, -1.2745e-02],
                [ 1.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02]])
@@ -1245,7 +1243,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         ... )
         >>> da_resamp
         <xCentralMoments(val_shape=(5,), mom=(3,))>
-        <xarray.DataArray (rep: 5, mom_0: 4)>
+        <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
         array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
                [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
                [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
@@ -1259,7 +1257,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> indices = freq_to_indices(freq)
         >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
         <xCentralMoments(val_shape=(5,), mom=(3,))>
-        <xarray.DataArray (rep: 5, mom_0: 4)>
+        <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
         array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
                [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
                [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
@@ -1335,7 +1333,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), axis=0, mom=2)
         >>> da.reduce(dim="dim_0")
         <xCentralMoments(val_shape=(3,), mom=(2,))>
-        <xarray.DataArray (dim_1: 3, mom_0: 3)>
+        <xarray.DataArray (dim_1: 3, mom_0: 3)> Size: 72B
         array([[20.    ,  0.5221,  0.0862],
                [20.    ,  0.5359,  0.0714],
                [20.    ,  0.4579,  0.103 ]])
@@ -1391,7 +1389,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da = xCentralMoments.from_vals(x, mom=2)
         >>> da
         <xCentralMoments(val_shape=(10,), mom=(2,))>
-        <xarray.DataArray (dim_0: 10, mom_0: 3)>
+        <xarray.DataArray (dim_0: 10, mom_0: 3)> Size: 240B
         array([[10.    ,  0.6247,  0.0583],
                [10.    ,  0.3938,  0.0933],
                [10.    ,  0.425 ,  0.1003],
@@ -1406,7 +1404,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         >>> da.block(block_size=5, dim="dim_0")
         <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
         Dimensions without coordinates: dim_0, mom_0
@@ -1415,7 +1413,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
         >>> xCentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1)
         <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5268,  0.0849],
                [50.    ,  0.5697,  0.0979]])
         Dimensions without coordinates: dim_0, mom_0
@@ -1426,23 +1424,23 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         >>> da2 = da.assign_coords(dim_0=range(10))
         >>> da2.block(5, dim="dim_0", coords_policy="first")
         <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
         Coordinates:
-          * dim_0    (dim_0) int64 0 5
+          * dim_0    (dim_0) int64 16B 0 5
         Dimensions without coordinates: mom_0
         >>> da2.block(5, dim="dim_0", coords_policy="last")
         <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
         Coordinates:
-          * dim_0    (dim_0) int64 4 9
+          * dim_0    (dim_0) int64 16B 4 9
         Dimensions without coordinates: mom_0
         >>> da2.block(5, dim="dim_0", coords_policy=None)
         <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
         Dimensions without coordinates: dim_0, mom_0

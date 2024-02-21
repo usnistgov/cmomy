@@ -14,7 +14,7 @@ attrs==23.2.0
     #   referencing
 comm==0.2.1
     # via ipykernel
-coverage==7.4.1
+coverage==7.4.2
     # via
     #   nbval
     #   pytest-cov
@@ -101,7 +101,7 @@ pure-eval==0.2.2
     # via stack-data
 pygments==2.17.2
     # via ipython
-pytest==8.0.0
+pytest==8.0.1
     # via
     #   -r requirements/test-notebook.txt
     #   nbval
@@ -159,5 +159,5 @@ tzdata==2024.1
     # via pandas
 wcwidth==0.2.13
     # via prompt-toolkit
-xarray==2024.1.1
+xarray==2024.2.0
     # via -r requirements/test-notebook.txt
