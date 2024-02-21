@@ -37,7 +37,7 @@ _VALIDATORS: dict[str, Callable[[Any], bool]] = {
 _SETTERS: dict[str, Callable[[Any], Any]] = {}
 
 
-class set_options:
+class set_options:  # noqa: N801
     """
     Set options for xarray in a controlled context.
 
@@ -53,15 +53,16 @@ class set_options:
         self.old: dict[str, Any] = {}
         for k, v in kwargs.items():
             if k not in OPTIONS:
-                raise ValueError(
-                    f"argument name {k!r} is not in the set of valid options {set(OPTIONS)!r}"
-                )
+                msg = f"argument name {k!r} is not in the set of valid options {set(OPTIONS)!r}"
+                raise ValueError(msg)
             if k in _VALIDATORS and not _VALIDATORS[k](v):
-                raise ValueError(f"option {k!r} given an invalid value: {v!r}")
+                msg = f"option {k!r} given an invalid value: {v!r}"
+                raise ValueError(msg)
             self.old[k] = OPTIONS[k]
         self._apply_update(kwargs)
 
-    def _apply_update(self, options_dict: dict[str, Any]) -> None:
+    @staticmethod
+    def _apply_update(options_dict: dict[str, Any]) -> None:
         for k, v in options_dict.items():
             if k in _SETTERS:
                 _SETTERS[k](v)
@@ -70,5 +71,5 @@ class set_options:
     def __enter__(self) -> None:
         return
 
-    def __exit__(self, type: Any, value: Any, traceback: Any) -> None:
+    def __exit__(self, type: object, value: object, traceback: object) -> None:  # noqa: A002
         self._apply_update(self.old)

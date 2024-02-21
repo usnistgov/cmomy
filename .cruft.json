@@ -1,43 +1,24 @@
 {
-  "template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git",
-  "commit": "1248acddb527d195e8ba9a4186f9d79010ecefa8",
-  "checkout": "feature/nox",
-  "skip": [
-    "src/cmomy/__init__.py",
-    "docs/examples/usage/demo.ipynb",
-    "examples/usage/demo.ipynb",
-    "docs/examples/example-usage.md"
-  ],
+  "template": "https://github.com/usnistgov/cookiecutter-nist-python.git",
+  "commit": "ce1b977122d2269581a75ef434e90f5e3935a0ca",
+  "checkout": "develop",
   "context": {
     "cookiecutter": {
+      "project_name": "cmomy",
+      "project_slug": "cmomy",
+      "project_short_description": "Central (co)moment calculation/manipulation",
       "full_name": "William P. Krekelberg",
       "email": "wpk@nist.gov",
       "github_username": "usnistgov",
       "pypi_username": "wpk-nist",
       "conda_channel": "conda-forge",
-      "project_name": "cmomy",
-      "project_slug": "cmomy",
-      "_copy_without_render": [
-        "*.html",
-        "docs/_templates/*.rst",
-        "docs/_templates/autosummary/*.rst",
-        "docs/_templates/autodocsumm/*.rst",
-        "docs/_static/css/*",
-        "docs/_static/js/*",
-        "changelog.d/templates/*.j2",
-        "changelog.d/templates/auto-changelog/*.jinja2"
-      ],
-      "project_short_description": "Central (co)moment calculation/manipulation",
-      "version": "0.0.1",
-      "use_pytest": "y",
-      "use_pypi_deployment_with_travis": "n",
-      "command_line_interface": "No command-line interface",
-      "create_author_file": "y",
-      "open_source_license": "NIST license",
-      "sphinx_auto": "autosummary",
-      "sphinx_use_autodocsumm": "y",
+      "command_line_interface": "none",
+      "sphinx_use_autodocsumm": true,
       "sphinx_theme": "sphinx_book_theme",
-      "_template": "https://github.com/wpk-nist-gov/cookiecutter-pypackage.git"
+      "year": "2020",
+      "__answers": "",
+      "_copy_without_render": [],
+      "_template": "https://github.com/usnistgov/cookiecutter-nist-python.git"
     }
   },
   "directory": null

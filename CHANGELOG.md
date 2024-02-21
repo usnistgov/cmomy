@@ -1,4 +1,6 @@
 <!-- markdownlint-disable MD024 -->
+<!-- markdownlint-disable MD013 -->
+<!-- prettier-ignore-start -->
 
 # Changelog
 
@@ -6,9 +8,38 @@ Changelog for `cmomy`
 
 ## Unreleased
 
-See the fragment files in [changelog.d](https://github.com/usnistgov/cmomy)
+[changelog.d]: https://github.com/usnistgov/cmomy/tree/main/changelog.d
+
+See the fragment files in [changelog.d]
+
+<!-- prettier-ignore-end -->
+
+<!-- markdownlint-enable MD013 -->
 
 <!-- scriv-insert-here -->
+
+## v0.8.0 — 2024-02-20
+
+### Added
+
+- Added `to_values` method to access underlying array data. This should be
+  preferred to `.values` attribute.
+- Added `to_numpy` method to access underlying `numpy.ndarray`.
+- Added `to_dataarray` method to access underlying `xarray.DataArray` in
+  `xCentralMoment s`
+
+- Added submodule `cmomy.random` to handle random numbers generation. This uses
+  `numpy.random.Generator` behind the scenes.
+- Updated `ruff` lintering rules
+- Now using `hatchling` for package building
+- Update repo template
+
+### Changed
+
+- Now CentralMoments and xCentralMoments ensure that data/data_flat share
+  memory. This may result in passed data not being the same as the internal
+  data, if reshaping data creates a copy.
+- Made little used arguments keyword only
 
 ## v0.7.0 — 2023-08-11
 

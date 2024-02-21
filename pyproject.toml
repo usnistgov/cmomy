@@ -1,300 +1,263 @@
 [build-system]
-requires = ["setuptools>=61.2", "setuptools_scm[toml]>=7.0"]
-build-backend = "setuptools.build_meta"
+build-backend = "hatchling.build"
+requires = [
+    "hatch-fancy-pypi-readme",
+    "hatch-vcs",
+    "hatchling",
+]
 
 [project]
 name = "cmomy"
-authors = [{ name = "William P. Krekelberg", email = "wpk@nist.gov" }]
-license = { text = "NIST-PD" }
 description = "Central (co)moment calculation/manipulation"
-# if using markdown
-# long_description_content_type = text/markdown
-keywords = ["cmomy"]
+keywords = [
+    "cmomy",
+]
+license = { text = "NIST-PD" }
+license-files = { paths = ["LICENSE"] }
+authors = [{ name = "William P. Krekelberg", email = "wpk@nist.gov" }]
+requires-python = ">=3.8,<3.12"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
     "License :: Public Domain",
     "Operating System :: OS Independent",
-    "Intended Audience :: Science/Research",
     "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering",
 ]
-dynamic = ["readme", "version"]
-requires-python = ">=3.8"
+dynamic = [
+    "readme",
+    "version",
+]
 dependencies = [
-    "numpy >= 1.21",
-    "numba >= 0.50",
-    "xarray >= 0.16",
-    "typing-extensions",
     "docstring-inheritance",
-    "module-utilities >= 0.6",
     "lazy_loader",
+    "module-utilities >= 0.6",
+    "numba >= 0.50",
+    "numpy >= 1.21",
+    "typing-extensions;python_version<'3.11'",
+    "xarray >= 0.16",
 ]
-
-[project.urls]
-homepage = "https://github.com/usnistgov/cmomy"
-documentation = "https://pages.nist.gov/cmomy/"
-
 [project.optional-dependencies]
-test = [
-    "pytest", #
-    "pytest-xdist",
-    "pytest-cov",
-    "pytest-sugar",
-]
-dev-extras = [
-    "setuptools-scm", #
-    "pytest-accept", # p2c: -p
-    "ipython",
-    "ipykernel",
-]
-typing-extras = [
-    "pytype; python_version < '3.11'", #
-    "mypy >= 1.4.1",
-    "pandas-stubs",
-]
-typing = [
-    "cmomy[typing-extras]", #
-    "cmomy[test]",
-]
-nox = [
-    "nox",
-    "noxopt", # p2c: -p
-    "ruamel.yaml",
-]
 dev = [
-    "cmomy[test]", #
+    "cmomy[nbval]",
+    "cmomy[test]",
     "cmomy[typing-extras]",
     "cmomy[dev-extras]",
 ]
-tools = [
-    "pre-commit", #
-    "cruft",
-    "scriv",
-]
 dev-complete = [
-    "cmomy[dev]", #
+    "cmomy[dev]",
     "cmomy[tools]",
-    "cmomy[nox]",
+]
+dev-extras = [
+    "ipykernel",
+    "ipython",
+    "nox",
+    "pytest-accept",
 ]
 docs = [
-    "ipython", #
-    "pyenchant",
+    "autodocsumm",
     "ghp-import",
-    "sphinx",
+    "ipython",
+    "myst-nb",
+    "pyenchant",
+    "sphinx >= 5.3.0",
+    "sphinx-autobuild",
+    "sphinx-book-theme",
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
-    "sphinx-autobuild",
-    "myst-nb",
-    "sphinx-book-theme",
-    "autodocsumm",
 ]
-# to be parsed with pyproject2conda with --no-base option
-dist-pypi = ["twine", "build"]
-dist-conda = [
-    "anaconda-client", #
-    "grayskull",
-    "conda-build",
-    "conda-verify",
-    "boa",
+nbval = [
+    "nbval",
+]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-sugar",
+    "pytest-xdist",
+]
+tools = [
+    "nbqa",
+    "pre-commit",
+    "pyright",
+    "scriv",
+]
+typing = [
+    "cmomy[typing-extras]",
+    "pytest",
+]
+typing-extras = [
+    "mypy >= 1.5.1",
+    "pandas-stubs",
+    "pytype; python_version < '3.11'",
+]
+[project.urls]
+Documentation = "https://pages.nist.gov/cmomy/"
+Homepage = "https://github.com/usnistgov/cmomy"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build]
+exclude = [
+  ".*_cache",
 ]
 
-[tool.pyproject2conda]
-channels = ["conda-forge"]
+[tool.hatch.metadata.hooks.fancy-pypi-readme]
+content-type = "text/markdown"
+fragments = [
+    { path = "README.md" },
+    { path = "CHANGELOG.md" },
+    { path = "LICENSE" },
+]
 
-## grayskull still messes some things up, but use scripts/recipe-append.sh for this
-[tool.setuptools]
-zip-safe = true # if using mypy, must be False
-include-package-data = true
-license-files = ["LICENSE"]
-
-[tool.setuptools.packages.find]
-namespaces = true
-where = ["src"]
-
-## include = []
-## exclude = []
-[tool.setuptools.dynamic]
-readme = { file = [
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
-], content-type = "text/markdown" }
-
-[tool.setuptools_scm]
-fallback_version = "999"
-write_to = "src/cmomy/_version.py"
-
-[tool.aliases]
-test = "pytest"
-
-[tool.pytest.ini_options]
-addopts = "--doctest-modules --doctest-glob='*.md' --pyargs"
-testpaths = ["README.md", "cmomy", "tests"]
-
-[tool.coverage.report]
-exclude_also = ["if TYPE_CHECKING:", "@overload"]
-omit = ["*/vendored/*"]
-include = ["src/*"]
-
-[tool.isort]
-profile = "black"
-skip_gitignore = true
-known_first_party = ["cmomy"]
+# * Linting --------------------------------------------------------------------
 
 [tool.ruff]
 fix = true
 line-length = 88
-target-version = "py38"
-select = [
-    # pyflakes
-    "F",
-    # pycodestyle
-    "E",
-    "W",
-    # isort
-    "I",
-    # pyupgrade
-    "UP",
-    # pydocstyle
-    "D",
-    # # flake8-2020
-    "YTT",
-    # # flake8-bugbear
-    # "B",
-    # flake8-quotes
-    "Q",
-    # # pylint
-    # "PLE", "PLR", "PLW",
-    # # misc lints
-    "PIE",
-    # # tidy imports
-    "TID",
-    # # implicit string concatenation
-    # "ISC",
-    # # type-checking imports
-    "TCH",
-]
-# Allow autofix for all enabled rules (when `--fix`) is provided.
-# fixable = ["A", "B", "C", "D", "E", "F", "..."]
-unfixable = []
-# Exclude a variety of commonly ignored directories.
-exclude = [
-    ".bzr",
-    ".direnv",
-    ".eggs",
-    ".git",
-    ".hg",
-    ".mypy_cache",
-    ".nox",
-    ".pants.d",
-    ".pytype",
-    ".ruff_cache",
-    ".svn",
-    ".tox",
+extend-include = ["*.ipynb"]
+extend-exclude = [
     ".venv",
-    "__pypackages__",
-    "_build",
-    "buck-out",
-    "build",
-    "dist",
-    "node_modules",
-    "venv",
-    "tests/",
-    "src/cmomy/tests",
+    "dist-conda",
+    ".numba_cache",
+    "examples/archived",
+    # "tests/",
+    # "src/cmomy/tests",
 ]
+unsafe-fixes = true
+
+[tool.ruff.lint]
+preview = true
+select = ["ALL"]
+# fixable = ["ALL"]
+# unfixable = []
 ignore = [
-    # # whitespace before ':' - doesn't work well with black
-    # "E203",
-    # module level import not at top of file
-    "E402",
-    # line too long - let black worry about that
-    "E501",
-    # do not assign a lambda expression, use a def
-    "E731",
-    # # line break before binary operator
-    # "W503",
-    # allow black line after docstring
-    "D202",
-    "D105",
-    "D205",
-    # this leads to errors with placing titles in module
-    # docstrings
-    "D400",
-    "D401",
-    "D415",
-    "D102",
-    "D103",
-    # these are useful, but too many errors
-    # due to use of docfiller
-    "D417",
-    "D107",
-    "D203",
-    "D212",
-    # Allow relative imports
-    "TID252",
+    "CPY",       # - Don't require copyright
+    "ERA",       # - eradicate (want to keep some stuff)
+    "FBT",       # - bools are ok
+    # * Annotations
+    "ANN101",    # - Leads to issues with methods and self
+    "ANN102",    # - Leads to issues with classmethods and cls
+    "ANN401",    # - Any ok sometimes
+    # * Allow non top level imports
+    "PLC0415",   # - import should be at top level (leads to issues with imports in func?)
+    "TID252",    # - Allow relative imports
+    "E402",      # - module level import not at top of file
+    # * Other
+    "E501",      # - line too long - let formatter fix this
+    "E731",      # - do not assign a lambda expression, use a def
+    # * Docstrings
+    "D105",      # - Missing magic method docstring
+    "D205",      # - blank line after summary
+    # * This leads to errors with placing titles in module
+    "D400",      # - First line should end with a period
+    "D401",      # - First line of docstring should be in imperative mood: "{first_line}"
+    "D415",      # - First line should end with a period, question mark, or exclamation point
+    # * Not a fan of these.  And lead to issues with docfiller
+    "D107",      # - Missing docstring in __init__
+    "D203",      # - 1 blank line required before class docstring
+    "D212",      # - Multi-line docstring summary should start at the first line
+    "D417",      # - Missing argument description in the docstring for {definition}: {name} (bad with docfiller)
+    # * These conflict with formatter
+    "COM",       # - flake8-commas, formatter should take care of this?
+    "ISC",       # - flake8-implicit-str-concat
 ]
-per-file-ignores = {  }
 # Allow unused variables when underscore-prefixed.
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+# Use extend-ignore for project specific ignores (avoid changing ignore directly)
+extend-ignore = [
+    # "PD",        # - not using pandas?
+    # "NPY",       # - not using numpy?
+    # * Annotations
+    # "SLF001",  # - flake8-self (private access sometimes OK)
+    # "ANN",     # - Annotations (just use mypy/pyright)
+    # * pylint
+    # "PLR2004", # - numbers in comparison sometimes ok
+    # "PLR0913", # - complexity sometimes ok
+    # "PLR0917", # - complexity sometimes ok
+    # * Docstrings ymmv
+    # "D102",    # - Missing docstring in public method
+    # "D103",    # - Missing docstring in public function
+    # "D202",    # - blank line after docstring
+]
 
-[tool.ruff.isort]
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.pylint]
+max-args = 15
+max-positional-args = 15
+max-public-methods = 30
+
+[tool.ruff.lint.per-file-ignores]
+"docs/conf.py" = ["INP001"]
+"noxfile.py" = ["RUF009"]
+"tools/*.py" = ["S", "A", "SLF001"]
+"tests/*.py" = ["D", "S101"]
+"**/*.ipynb" = ["D100", "B018", "INP001"]
+
+[tool.ruff.lint.extend-per-file-ignores]
+# Project specific ignores (avoid changing per-file-ignores directly)
+"tests/*.py" = ["ANN", "N802", "N806", "PT011", "PLC2701", "PLR2004", "SLF001"]
+"src/cmomy/_{formatting,testing}.py" = ["ANN"]
+"src/cmomy/_formatting.py" = ["SLF001"]
+"src/cmomy/_lib/*.py" = ["PLR2004", "PLR0914", "S101", "ANN", "N803"]
+"src/cmomy/_testing.py" = ["S101"]
+"**/*.ipynb" = ["ANN", "T201", "D103", "PLR2004", "PD013"]
+"src/**/*.py" = ["TD003", "FIX002", "PLR2004", "D102"]
+"src/cmomy/abstract_central.py" = ["PLR2004"]
+"src/cmomy/central.py" = ["PLR2004", "D102"]
+"src/cmomy/_lib/convert.py" = ["PLR1702"]
+
+[tool.ruff.lint.isort]
 known-first-party = ["cmomy"]
 
-[tool.ruff.mccabe]
-# Unlike Flake8, default to a complexity level of 10.
-max-complexity = 10
+[tool.ruff.format]
+docstring-code-format = true
 
-[tool.nbqa.addopts]
-ruff = ["--fix", "--extend-ignore=D100,B018"]
+[tool.nbqa.exclude]
+codespell = "^examples/archived"
 
-[tool.flake8]
-docstring-convention = "numpy"
-ignore = [
-    # # whitespace before ':' - doesn't work well with black
-    "E203",
-    # module level import not at top of file
-    "E402",
-    # line too long - let black worry about that
-    "E501",
-    # do not assign a lambda expression, use a def
-    "E731",
-    # # line break before binary operator
-    "W503",
-    # allow black line after docstring
-    "D202",
-    "D105",
-    "D205",
-    # this leads to errors with placing titles in module
-    # docstrings
-    "D400",
-    "D401",
-    "D415",
-    "D102",
-    "D103",
-    # these are useful, but too many errors
-    # due to use of docfiller
-    "D417",
-    "D107",
-    "D203",
-    "D212",
+[tool.check-wheel-contents]
+toplevel = ["cmomy"]
+src_dir = ["src"]
+# package_omit = [".*", "*.pyc", "*.pyo", "*.nbc", "__pycache__/*", "*.egg-info"]
+
+# * Testing --------------------------------------------------------------------
+
+[tool.pytest.ini_options]
+addopts = [
+    "--doctest-modules",
+    "--doctest-glob=*.md",
+    "--pyargs",
+    "--cov-config=pyproject.toml",
+    # "-n",
+    # "4",
 ]
-# No clue why these these errors show up...
-per-file-ignores = ["noxfile.py:F821,F722"]
+testpaths = [
+    "README.md",
+    "cmomy",
+    "tests",
+]
 
-[tool.scriv]
-format = "md"
-md_header_level = "2"
-new_fragment_template = "file: changelog.d/templates/new_fragment.md.j2"
+[tool.coverage.run]
+branch = true
 
-[tool.commitizen]
-use_shortcuts = true
+[tool.coverage.report]
+# show_missing = true
+exclude_also = ["if TYPE_CHECKING:", "@overload"]
+omit = ["*/vendored/*", "*/_typing.py", "*/options.py"]
+include = ["src/*"]
 
-[tool.cruft]
+[tool.coverage.paths]
+source = ["src/", ".nox/**/site-packages/"]
+
+# * Typing ---------------------------------------------------------------------
 
 [tool.mypy]
 files = ["src", "tests"]
@@ -302,7 +265,7 @@ show_error_codes = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unused_configs = true
-exclude = [".eggs", ".tox", "doc", "docs", ".nox"]
+exclude = [".eggs", ".tox", "doc", "docs", ".nox", ".numba_cache"]
 check_untyped_defs = true
 strict = true
 
@@ -316,21 +279,25 @@ module = []
 
 [tool.pyright]
 include = ["src", "tests"]
-exclude = ["**/__pycache__", ".tox/**", ".nox/**", "**/.mypy_cache"]
 strict = [
     "src/cmomy/__init__.py",
-    "src/cmomy/_lazy_imports.py",
+    "src/cmomy/_compat.py",
     "src/cmomy/abstract_central.py",
     "src/cmomy/central.py",
-    "src/cmomy/xcentral.py",
     "src/cmomy/convert.py",
     "src/cmomy/docstrings.py",
     "src/cmomy/options.py",
+    "src/cmomy/random.py",
     "src/cmomy/resample.py",
     "src/cmomy/typing.py",
     "src/cmomy/utils.py",
+    "src/cmomy/xcentral.py",
+    "noxfile.py",
+    "tools/*.py",
 ]
-pythonVersion = "3.10"
+exclude = ["**/__pycache__", ".tox/**", ".nox/**", ".venv/**", "**/.mypy_cache", "**/.numba_cache"]
+# strict = ["src", "tests", "noxfile.py", "tools/*.py"]
+pythonVersion = "3.11"
 typeCheckingMode = "basic"
 # enable subset of "strict"
 reportDuplicateImport = true
@@ -354,3 +321,62 @@ reportUnboundVariable = false
 
 [tool.pytype]
 inputs = ["src", "tests"]
+
+# * Dependency creation --------------------------------------------------------
+
+[tool.pyproject2conda]
+user_config = "config/userconfig.toml"
+template_python = "requirements/py{py}-{env}"
+template = "requirements/{env}"
+python = ["3.11"]
+channels = ["conda-forge"]
+style = ["yaml", "requirements"]
+default_envs = ["test", "typing", "docs", "dev", "dev-complete"]
+
+[tool.pyproject2conda.dependencies]
+pytest-accept = { pip = true }
+scriv = { pip = true }
+
+[tool.pyproject2conda.envs.build]
+extras = "build-system.requires"
+reqs = ["build"]
+base = false
+style = "requirements"
+
+[tool.pyproject2conda.envs.test-extras]
+extras = ["test"]
+base = false
+
+[tool.pyproject2conda.envs.test-notebook]
+extras = ["test", "nbval"]
+
+[[tool.pyproject2conda.overrides]]
+# Ensure these have pip in yaml file
+envs = ["test", "docs", "dev", "dev-complete"]
+deps = ["pip"]
+
+[[tool.pyproject2conda.overrides]]
+envs = ["test", "typing", "test-extras"]
+python = ["3.8", "3.9", "3.10", "3.11"]
+
+[tool.pip-tools]
+allow-unsafe = true
+strip-extras = true
+
+# * Other tools ----------------------------------------------------------------
+
+[tool.scriv]
+format = "md"
+md_header_level = "2"
+new_fragment_template = "file: changelog.d/templates/new_fragment.md.j2"
+
+[tool.commitizen]
+use_shortcuts = true
+
+[tool.cruft]
+
+[tool.typos.default.extend-words]
+datas = "datas"
+
+[tool.typos.default.extend-identifiers]
+MyNDArray = "MyNDArray"

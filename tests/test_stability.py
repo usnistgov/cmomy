@@ -1,9 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-"""
-Simple test for numerical stability
-
-
-"""
+"""Simple test for numerical stability"""
 import numpy as np
 import pytest
 
@@ -25,8 +21,7 @@ def algo(vals, mom, norm=True):
 
         for p in range(order, 2, -1):
             Mp = (
-                M[p]
-                + ((M[0] - 1) / (-M[0]) ** p + ((M[0] - 1) / M[0]) ** p) * delta**p
+                M[p] + ((M[0] - 1) / (-M[0]) ** p + ((M[0] - 1) / M[0]) ** p) * delta**p
             )
 
             for k in range(1, p - 2 + 1):
@@ -43,8 +38,6 @@ def algo(vals, mom, norm=True):
 
 
 def algo2(vals, mom):
-    dx = vals - vals.mean(axis=0)
-
     out = np.empty((mom + 1,), dtype=float)
     out[0] = len(vals)
     out[1] = vals.mean(axis=0)
@@ -53,9 +46,9 @@ def algo2(vals, mom):
     return out
 
 
-def test_stability():
-    np.random.seed(0)
-    x = np.random.rand(10000)
+def test_stability() -> None:
+    rng = np.random.default_rng(seed=0)
+    x = rng.random(10000)
 
     mom = 5
     moments = cmomy.central_moments(x, mom=mom)
@@ -64,7 +57,7 @@ def test_stability():
     test2 = algo2(x, mom=mom)
 
     # all should be good
-    np.testing.assert_allclose(c.values, moments)
+    np.testing.assert_allclose(c.to_numpy(), moments)
     np.testing.assert_allclose(moments, test)
     np.testing.assert_allclose(moments, test2)
 
@@ -87,7 +80,7 @@ def test_stability():
     test_shift = algo(x * a + b, mom=5)
     test2_shift = algo2(x * a + b, mom=5)
 
-    np.testing.assert_allclose(moments_test, c_shift.values)
+    np.testing.assert_allclose(moments_test, c_shift.to_numpy())
     np.testing.assert_allclose(moments_test, test_shift)
 
     with pytest.raises(AssertionError):

@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-call"
+# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """Routines to perform resampling."""
 
 from __future__ import annotations
@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 
 from numba import prange
 
-from .._lazy_imports import np
 from .pushers import (
     push_datas_scale,
     push_datas_scale_cov,
@@ -28,23 +27,7 @@ from .utils import myjit
 
 
 @myjit()
-def set_numba_random_seed(seed):  # type: ignore
-    """Set the random seed for numba functions."""
-    np.random.seed(seed)
-
-
-@myjit()
-def randsamp_freq_out(freq):  # type: ignore
-    nrep = freq.shape[0]
-    ndat = freq.shape[1]
-    for i in range(nrep):
-        for j in range(ndat):
-            index = np.random.randint(0, ndat)
-            freq[i, index] += 1
-
-
-@myjit()
-def randsamp_freq_indices(indices, freq):  # type: ignore
+def randsamp_freq_indices(indices, freq) -> None:
     assert freq.shape == indices.shape
     nrep, ndat = freq.shape
     for r in range(nrep):
@@ -92,14 +75,14 @@ def randsamp_freq_indices(indices, freq):  # type: ignore
 # resample data
 # mom/scalar
 @myjit()
-def _resample_data(data, freq, out):  # type: ignore
+def _resample_data(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale(out[irep, ...], data, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_data_parallel(data, freq, out):  # type: ignore
+def _resample_data_parallel(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale(out[irep, ...], data, freq[irep, ...])
@@ -107,14 +90,14 @@ def _resample_data_parallel(data, freq, out):  # type: ignore
 
 # mom/vector
 @myjit()
-def _resample_data_vec(data, freq, out):  # type: ignore
+def _resample_data_vec(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale_vec(out[irep, ...], data, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_data_vec_parallel(data, freq, out):  # type: ignore
+def _resample_data_vec_parallel(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale_vec(out[irep, ...], data, freq[irep, ...])
@@ -122,14 +105,14 @@ def _resample_data_vec_parallel(data, freq, out):  # type: ignore
 
 # cov/vector
 @myjit()
-def _resample_data_cov(data, freq, out):  # type: ignore
+def _resample_data_cov(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale_cov(out[irep, ...], data, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_data_cov_parallel(data, freq, out):  # type: ignore
+def _resample_data_cov_parallel(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale_cov(out[irep, ...], data, freq[irep, ...])
@@ -137,14 +120,14 @@ def _resample_data_cov_parallel(data, freq, out):  # type: ignore
 
 # cov/vector
 @myjit()
-def _resample_data_cov_vec(data, freq, out):  # type: ignore
+def _resample_data_cov_vec(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale_cov_vec(out[irep, ...], data, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_data_cov_vec_parallel(data, freq, out):  # type: ignore
+def _resample_data_cov_vec_parallel(data, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_datas_scale_cov_vec(out[irep, ...], data, freq[irep, ...])
@@ -174,14 +157,14 @@ def factory_resample_data(cov: bool, vec: bool, parallel: bool) -> Callable[...,
 
 # mom/scalar
 @myjit()
-def _resample_vals(W, X, freq, out):  # type: ignore
+def _resample_vals(W, X, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale(out[irep, ...], W, X, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_vals_parallel(W, X, freq, out):  # type: ignore
+def _resample_vals_parallel(W, X, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale(out[irep, ...], W, X, freq[irep, ...])
@@ -189,14 +172,14 @@ def _resample_vals_parallel(W, X, freq, out):  # type: ignore
 
 # mom/vec
 @myjit()
-def _resample_vals_vec(W, X, freq, out):  # type: ignore
+def _resample_vals_vec(W, X, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale_vec(out[irep, ...], W, X, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_vals_vec_parallel(W, X, freq, out):  # type: ignore
+def _resample_vals_vec_parallel(W, X, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale_vec(out[irep, ...], W, X, freq[irep, ...])
@@ -204,14 +187,14 @@ def _resample_vals_vec_parallel(W, X, freq, out):  # type: ignore
 
 # cov/scalar
 @myjit()
-def _resample_vals_cov(W, X, Y, freq, out):  # type: ignore
+def _resample_vals_cov(W, X, Y, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale_cov(out[irep, ...], W, X, Y, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_vals_cov_parallel(W, X, Y, freq, out):  # type: ignore
+def _resample_vals_cov_parallel(W, X, Y, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale_cov(out[irep, ...], W, X, Y, freq[irep, ...])
@@ -219,14 +202,14 @@ def _resample_vals_cov_parallel(W, X, Y, freq, out):  # type: ignore
 
 # cov/vec
 @myjit()
-def _resample_vals_cov_vec(W, X, Y, freq, out):  # type: ignore
+def _resample_vals_cov_vec(W, X, Y, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale_cov_vec(out[irep, ...], W, X, Y, freq[irep, ...])
 
 
 @myjit(parallel=True)
-def _resample_vals_cov_vec_parallel(W, X, Y, freq, out):  # type: ignore
+def _resample_vals_cov_vec_parallel(W, X, Y, freq, out) -> None:
     nrep = freq.shape[0]
     for irep in prange(nrep):
         push_vals_scale_cov_vec(out[irep, ...], W, X, Y, freq[irep, ...])

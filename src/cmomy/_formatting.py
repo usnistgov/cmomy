@@ -15,17 +15,17 @@ else:
 
 def short_numpy_repr(*args, **kwargs):
     if hasattr(ff, "short_array_repr"):
-        f = ff.short_array_repr
-    elif hasattr(ff, "short_numpy_repr"):
-        f = ff.short_numpy_repr
-    else:
+        f = ff.short_array_repr  # pyright: ignore[reportAttributeAccessIssue]
+    elif hasattr(ff, "short_numpy_repr"):  # pragma: no cover
+        f = ff.short_numpy_repr  # pyright: ignore[reportAttributeAccessIssue]
+    else:  # pragma: no cover
         f = repr
     return f(*args, **kwargs)
 
 
 def tuple_to_str(x):
     """Convert tuple to a string."""
-    if len(x) == 0:
+    if len(x) == 0:  # pragma: no cover
         return "*empty*"
 
     out = ", ".join(map(str, x))
@@ -36,22 +36,19 @@ def tuple_to_str(x):
     return out
 
 
-def numpy_section(x):
+def numpy_section(x) -> str:
     """Create numpy array section."""
-    # "unique" id to expand/collapse the section
-    # fmt: off
-    data_id = "section-" + str(fm.uuid.uuid4())  # type: ignore
+    data_id = "section-" + str(fm.uuid.uuid4())  # type: ignore[attr-defined]
     collapsed = (
         "checked"
-        if fm._get_boolean_with_default("display_expand_data", default=True)  # type: ignore
+        if fm._get_boolean_with_default("display_expand_data", default=True)  # type: ignore[attr-defined]
         else ""
     )
 
-    preview = fm.escape(ff.format_array_flat(x, max_width=70))  # type: ignore
+    preview = fm.escape(ff.format_array_flat(x, max_width=70))  # type: ignore[attr-defined]
 
     # short data repr
-    text = fm.escape(short_numpy_repr(x))  # type: ignore
-    # fmt: on
+    text = fm.escape(short_numpy_repr(x))  # type: ignore[attr-defined]
 
     data_repr = f"<pre>{text}</pre>"
     data_icon = fm._icon("icon-database")
@@ -101,22 +98,23 @@ def repr_html(x):
         )
     ]
 
-    if hasattr(x.values, "_repr_html_"):
+    values = x.to_values()
+    if hasattr(values, "_repr_html_"):
         sections += []
 
         out = fm._obj_repr(
-            x.values,
+            values,
             header_components,
             sections,
         )
 
-        out = out + x.values._repr_html_()
+        out = out + values._repr_html_()
 
     else:
         sections += [numpy_section(x.data)]
         header_components += [
-            f"<div class='xr-obj-type'>{type(x.values)}</div>",
+            f"<div class='xr-obj-type'>{type(values)}</div>",
         ]
-        out = fm._obj_repr(x.values, header_components, sections)
+        out = fm._obj_repr(values, header_components, sections)
 
     return out

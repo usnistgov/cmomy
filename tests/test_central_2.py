@@ -5,11 +5,12 @@ import numpy as np
 import pytest
 
 from cmomy import central_moments
-from cmomy._testing import get_cmom, get_comom
+
+from ._simple_cmom import get_cmom, get_comom
 
 
 class DataContainer:
-    def __init__(self, x, y, w):
+    def __init__(self, x, y, w) -> None:
         self.x = x
         self.y = y
         self.w = w
@@ -17,8 +18,7 @@ class DataContainer:
     def xy(self, cov):
         if cov:
             return (self.x, self.y)
-        else:
-            return self.x
+        return self.x
 
     def result_expected(self, axis, mom, broadcast=None, cov=None):
         if cov is None:
@@ -26,44 +26,48 @@ class DataContainer:
 
         if not cov:
             return get_cmom(x=self.x, w=self.w, moments=mom, axis=axis, last=True)
-        else:
-            return get_comom(
-                x=self.x,
-                y=self.y,
-                w=self.w,
-                moments=mom,
-                axis=axis,
-                broadcast=broadcast,
-            )
+        return get_comom(
+            x=self.x,
+            y=self.y,
+            w=self.w,
+            moments=mom,
+            axis=axis,
+            broadcast=broadcast,  # pyright: ignore[reportArgumentType]
+        )
 
     def result_central_moments(self, axis, mom, broadcast=None, cov=None, **kws):
         if cov is None:
             cov = isinstance(mom, tuple) and len(mom) == 2
         return central_moments(
-            x=self.xy(cov), w=self.w, mom=mom, axis=axis, broadcast=broadcast, **kws
+            x=self.xy(cov),
+            w=self.w,
+            mom=mom,
+            axis=axis,
+            broadcast=broadcast,  # pyright: ignore[reportArgumentType]
+            **kws,  # pyright: ignore[reportArgumentType]
         )
 
     @classmethod
-    def from_params(cls, shape, axis, style):
+    def from_params(cls, shape, axis, style, rng):
         if isinstance(shape, int):
             shape = (shape,)
 
-        x = np.random.rand(*shape)
+        x = rng.random(shape)
 
         if style is None:
-            y = np.random.rand(*shape)
+            y = rng.random(shape)
             w = None
         if style == "total":
-            y = np.random.rand(*shape)
-            w = np.random.rand(*shape)
+            y = rng.random(shape)
+            w = rng.random(shape)
         elif style == "broadcast":
-            y = np.random.rand(shape[axis])
-            w = np.random.rand(shape[axis])
+            y = rng.random(shape[axis])
+            w = rng.random(shape[axis])
         return cls(x=x, y=y, w=w)
 
 
 class ExpectedResults:
-    def __init__(self, data, shape, axis, mom, style):
+    def __init__(self, data, shape, axis, mom, style) -> None:
         self.data = data
         self.shape = shape
         self.axis = axis
@@ -78,15 +82,13 @@ class ExpectedResults:
     def shape_tuple(self):
         if isinstance(self.shape, int):
             return (self.shape,)
-        else:
-            return self.shape
+        return self.shape
 
     @property
     def mom_tuple(self):
         if isinstance(self.mom, int):
             return (self.mom,)
-        else:
-            return self.mom
+        return self.mom
 
     @property
     def cov(self):
@@ -136,8 +138,7 @@ def shape(shape_axis):
 def shape_tuple(shape):
     if isinstance(shape, int):
         return (shape,)
-    else:
-        return shape
+    return shape
 
 
 @pytest.fixture(scope="module")
@@ -151,8 +152,8 @@ def style(request):
 
 
 @pytest.fixture(scope="module")
-def data(shape, axis, style):
-    return DataContainer.from_params(shape=shape, axis=axis, style=style)
+def data(shape, axis, style, rng):
+    return DataContainer.from_params(shape=shape, axis=axis, style=style, rng=rng)
 
 
 @pytest.fixture(scope="module", params=[3, (3, 3)])
@@ -165,7 +166,7 @@ def result_container(data, shape, axis, mom, style):
     return ExpectedResults(data=data, shape=shape, axis=axis, mom=mom, style=style)
 
 
-def test_result(result_container):
+def test_result(result_container) -> None:
     r = result_container
     a = r.result_expected()
     b = r.result_central_moments()
@@ -174,16 +175,16 @@ def test_result(result_container):
 
 # @pytest.fixture(scope="module")
 # def xdata(shape_tuple):
-#     return np.random.rand(*shape_tuple)
+#     return default_rng.random(shape_tuple)
 
 
 # @pytest.fixture(scope="module")
 # def ydata(shape_tuple, style, axis):
 #     shape = shape_tuple
 #     if style is None or style == "total":
-#         return np.random.rand(*shape)
+#         return default_rng.random(shape)
 #     elif style == "broadcast":
-#         return np.random.rand(shape[axis])
+#         return default_rng.random(shape[axis])
 #     else:
 #         raise ValueError
 
@@ -194,9 +195,9 @@ def test_result(result_container):
 #     if style is None:
 #         return None
 #     elif style == "total":
-#         return np.random.rand(*shape)
+#         return default_rng.random(shape)
 #     elif style == "broadcast":
-#         return np.random.rand(shape[axis])
+#         return default_rng.random(shape[axis])
 
 
 # @pytest.fixture(scope="module")
@@ -280,7 +281,7 @@ def test_result(result_container):
 #     np.testing.assert_allclose(c_obj.data, expected, rtol=1e-10, atol=1e-10)
 
 
-# def test_propeties(c_obj, shape_tuple, val_shape, mom_tuple):
+# def test_properties(c_obj, shape_tuple, val_shape, mom_tuple):
 #     assert val_shape == c_obj.val_shape
 
 #     assert mom_tuple == c_obj.mom
@@ -368,4 +369,4 @@ def test_result(result_container):
 # # class TestCentral:
 # #     @pytest.fixture(autouse=True)
 # #     def setup(self, shape, axis):
-# #         self.x = np.random.rand(*shape)
+# #         self.x = default_rng.random(shape)
