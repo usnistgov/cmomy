@@ -1,4 +1,5 @@
 """Thin wrapper around central routines with xarray support."""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast, overload  # TYPE_CHECKING,
@@ -109,8 +110,8 @@ def _move_mom_dims_to_end(
             msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
             raise ValueError(msg)
 
-        order = (..., *mom_dims)
-        x = x.transpose(*order)
+        order = (..., *mom_dims)  # pyright: ignore[reportUnknownVariableType]
+        x = x.transpose(*order)  # pyright: ignore[reportUnknownArgumentType]
 
     return x
 
@@ -1141,8 +1142,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> Self:
-        ...
+    ) -> Self: ...
 
     @overload
     def resample_and_reduce(
@@ -1159,8 +1159,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]:
-        ...
+    ) -> tuple[Self, MyNDArray]: ...
 
     @overload
     def resample_and_reduce(
@@ -1177,8 +1176,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
-        ...
+    ) -> Self | tuple[Self, MyNDArray]: ...
 
     @docfiller.decorate
     def resample_and_reduce(
@@ -1461,7 +1459,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         template = (
             self.to_dataarray()
             .isel({dim: slice(start, block_size * nblock, block_size)})
-            .transpose(dim, ...)
+            .transpose(dim, ...)  # pyright: ignore[reportUnknownArgumentType]
         )
 
         if coords_policy is None:
@@ -1680,7 +1678,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             axis, dim = _select_axis_dim(dims=datas.dims, axis=axis, dim=dim)
             mom_ndim = select_mom_ndim(mom=mom, mom_ndim=mom_ndim)
             # move moments to end and dim to beginning
-            datas = _move_mom_dims_to_end(datas, mom_dims, mom_ndim).transpose(dim, ...)
+            datas = _move_mom_dims_to_end(datas, mom_dims, mom_ndim).transpose(dim, ...)  # pyright: ignore[reportUnknownArgumentType]
 
             if verify:
                 datas = datas.astype(order="C", dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
@@ -1847,8 +1845,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         name: XArrayNameType = ...,
         mom_dims: MomDims | None = ...,
         **kwargs: Any,
-    ) -> Self:
-        ...
+    ) -> Self: ...
 
     @overload
     @classmethod
@@ -1881,8 +1878,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         name: XArrayNameType = ...,
         mom_dims: MomDims | None = ...,
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]:
-        ...
+    ) -> tuple[Self, MyNDArray]: ...
 
     @overload
     @classmethod
@@ -1915,8 +1911,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         name: XArrayNameType = ...,
         mom_dims: MomDims | None = ...,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
-        ...
+    ) -> Self | tuple[Self, MyNDArray]: ...
 
     @classmethod
     @docfiller_inherit_abc()

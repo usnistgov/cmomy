@@ -2,6 +2,7 @@
 Central moments/comoments routines from :class:`np.ndarray` objects
 -------------------------------------------------------------------.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast, overload
@@ -892,8 +893,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> Self:
-        ...
+    ) -> Self: ...
 
     @overload
     def resample_and_reduce(
@@ -908,8 +908,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]:
-        ...
+    ) -> tuple[Self, MyNDArray]: ...
 
     @overload
     def resample_and_reduce(
@@ -924,8 +923,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
-        ...
+    ) -> Self | tuple[Self, MyNDArray]: ...
 
     @docfiller.decorate
     def resample_and_reduce(
@@ -1423,8 +1421,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         **kwargs: Any,
-    ) -> Self:
-        ...
+    ) -> Self: ...
 
     @overload
     @classmethod
@@ -1444,8 +1441,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]:
-        ...
+    ) -> tuple[Self, MyNDArray]: ...
 
     @overload
     @classmethod
@@ -1465,8 +1461,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
-        ...
+    ) -> Self | tuple[Self, MyNDArray]: ...
 
     @classmethod
     @docfiller_inherit_abc()

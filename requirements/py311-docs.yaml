@@ -13,8 +13,6 @@ dependencies:
   - python=3.11
   - autodocsumm
   - docstring-inheritance
-  - ghp-import
-  - ipython
   - lazy_loader
   - module-utilities>=0.6
   - myst-nb
