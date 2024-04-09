@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 """Some simple tests for factory methods of xCentral"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast

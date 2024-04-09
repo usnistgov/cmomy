@@ -1,4 +1,5 @@
 """Base class for central moments calculations."""
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -299,7 +300,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def _weight_index(self) -> tuple[int | ellipsis, ...]:  # noqa: F821
         index: tuple[int, ...] = (0,) * len(self.mom)
         if self.val_ndim > 0:
-            return (..., *index)
+            return (..., *index)  # pyright: ignore[reportUnknownVariableType]
         return index
 
     @cached.meth
@@ -319,7 +320,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
                 index[i][i] = val
 
         if self.val_ndim > 0:
-            return (..., *index)
+            return (..., *index)  # pyright: ignore[reportUnknownVariableType]
         return tuple(index)
 
     def weight(self) -> float | T_Array:
@@ -1162,8 +1163,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         *,
         full_output: Literal[False] = ...,
         **kwargs: Any,
-    ) -> Self:
-        ...
+    ) -> Self: ...
 
     @overload
     @classmethod
@@ -1175,8 +1175,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         *,
         full_output: Literal[True],
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]:
-        ...
+    ) -> tuple[Self, MyNDArray]: ...
 
     @overload
     @classmethod
@@ -1188,8 +1187,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         *,
         full_output: bool,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
-        ...
+    ) -> Self | tuple[Self, MyNDArray]: ...
 
     @classmethod
     @abstractmethod

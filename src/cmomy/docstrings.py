@@ -1,4 +1,5 @@
 """Common docstrings."""
+
 from __future__ import annotations
 
 from module_utilities.docfiller import DocFiller

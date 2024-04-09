@@ -14,11 +14,10 @@ dependencies:
   - docstring-inheritance
   - lazy_loader
   - module-utilities>=0.6
-  - mypy>=1.5.1
   - numba>=0.50
   - numpy>=1.21
+  - packaging
   - pandas-stubs
   - pytest
-  - pytype
   - typing-extensions
   - xarray>=0.16
