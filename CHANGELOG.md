@@ -18,6 +18,31 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.9.0 — 2024-04-10
+
+### Changed
+
+- Can now resample with an arbitrary number of samples. Previously, it was
+  assumed that resampling should be done with a shape `(nrep, ndat)`, where
+  `nrep` is the number of replicates and `ndat` is the shape of the data along
+  the resampled axis. Now you can pass sample with shape `(nrep, nsamp)` where
+  `nsamp` is the specified number of samples in a replicate (defaulting to
+  `ndat`). This allows users to do things like jacknife resampling, etc, with
+  `resample_and_reduce` methods.
+- Preliminary support for using type hints in generated documentation. The
+  standard sphinx autodoc support doesn't quite work for `cmomy`, as it requires
+  type hints to be accessible at run time, and not in `TYPE_CHECKING` blocks.
+  Instead, we use
+  [`sphinx_autodoc_type`](https://github.com/tox-dev/sphinx-autodoc-typehints).
+  This has the downside of expanding type aliases, but handles (most things)
+  being in `TYPE_CHECKING` blocks. Over time, we'll replace some of the explicit
+  parameter type documentation with those from type hints.
+- Fixed creation of templates in reduction routines of `xCentralMoments`.
+  Previously, we build the template for the result using something like
+  `da.isel(dim=0)`. This kept scalar coordinates of `da` with `dim`. Now we use
+  `da.isel(dim=0, drop=True)` to drop these.
+- Updated dependencies.
+
 ## v0.8.0 — 2024-02-20
 
 ### Added
