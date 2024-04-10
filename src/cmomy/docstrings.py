@@ -9,51 +9,55 @@ def _dummy_docstrings() -> None:
     """
     Parameters
     ----------
-    copy : bool, optional
+    copy : bool
         If True, copy the data.  If False, attempt to use view.
-    copy_kws : mapping, optional
+    copy_kws : mapping
         extra arguments to copy
-    verify : bool, optional
+    verify : bool
         If True, make sure data is c-contiguous.
     mom : int or tuple of int
         Order or moments.  If integer or length one tuple, then moments are for
         a single variable.  If length 2 tuple, then comoments of two variables
     mom_ndim : {1, 2}
         Value indicates if moments (``mom_ndim = 1``) or comoments (``mom_ndim=2``).
-    val_shape : tuple, optional
+    val_shape : tuple
         Shape of `values` part of data.  That is, the non-moment dimensions.
-    shape : tuple, optional
+    shape : tuple
         Total shape.  ``shape = val_shape + tuple(m+1 for m in mom)``
-    dtype : dtype, optional
+    dtype : dtype
         Optional ``dtype`` for output data.
-    zeros_kws : mapping, optional
+    zeros_kws : mapping
         Optional parameters to :func:`numpy.zeros`
     axis : int
         Axis to reduce along.
-    broadcast : bool, optional
+    broadcast : bool
         If True, and ``x=(x0, x1)``, then perform 'smart' broadcasting.
         In this case, if ``x1.ndim = 1`` and ``len(x1) == x0.shape[axis]``, then
         broadcast `x1` to ``x0.shape``.
-    freq : array of int, optional
+    freq : array of int
         Array of shape ``(nrep, size)`` where `nrep` is the number of replicates and
         ``size = self.shape[axis]``.  `freq` is the weight that each sample contributes
         to resamples values.  See :func:`~cmomy.resample.randsamp_freq`
-    indices : array of int, optional
+    indices : array of int
         Array of shape ``(nrep, size)``.  If passed, create `freq` from indices.
         See :func:`~cmomy.resample.randsamp_freq`.
-    nrep : int, optional
-        Number of replicates.  Create `freq` with this many replicates.
-        See :func:`~cmomy.resample.randsamp_freq`
+    nrep : int
+        Number of resample replicates.
+    nsamp : int
+        Number of samples in a single resampled replicate. Defaults to size of
+        data along sampled axis.
+    ndat : int
+        Size of data along resampled axis.
     pushed : object
         Same as object, with new data pushed onto `self.data`
     resample_kws : mapping
         Extra arguments to :func:`~cmomy.resample.resample_vals`
-    full_output : bool, optional
-        If True, also return `freq` array
+    full_output : bool
+        If True, also return ``freq`` array
     convert_kws : mapping
         Extra arguments to :func:`~cmomy.convert.to_central_moments` or
         :func:`~cmomy.convert.to_central_comoments`
-    dims : hashable or sequence of hashable, optional
+    dims : hashable or sequence of hashable
         Dimension of resulting :class:`xarray.DataArray`.
 
         * If ``len(dims) == self.ndim``, then dims specifies all dimensions.
@@ -73,17 +77,17 @@ def _dummy_docstrings() -> None:
     template : DataArray
         If present, output will have attributes of `template`.
         Overrides other options.
-    dim : hashable, optional
+    dim : hashable
         Dimension to reduce along.
-    rep_dim : hashable, optional
+    rep_dim : hashable
         Name of new 'replicated' dimension:
-    rec_dim : hashable, optional
+    rec_dim : hashable
         Name of dimension for 'records', i.e., multiple observations.
     data : DataArray or ndarray
         Moment collection array
     parallel : bool, default=True
         flags to `numba.njit`
-    rng : :class:`~numpy.random.Generator`, optional
+    rng : :class:`~numpy.random.Generator`
         Random number generator object.  Defaults to output of :func:`~cmomy.random.default_rng`.
     kwargs | **kwargs
         Extra keyword arguments.

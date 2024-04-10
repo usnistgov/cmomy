@@ -19,7 +19,7 @@ docstring-inheritance==2.2.0
 execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
 fastjsonschema==2.19.1    # via nbformat
-filelock==3.13.3          # via virtualenv
+filelock==3.13.4          # via virtualenv
 identify==2.5.35          # via pre-commit
 idna==3.6                 # via requests
 iniconfig==2.0.0          # via pytest

@@ -63,11 +63,18 @@ extensions = [
     # - myst stuff
     "myst_nb",
     # "myst_parser",
+    "sphinx_autodoc_typehints",
 ]
 
 nitpicky = True
-# nitpicky_ignore_regex = [(r"py:.*", r".*")]
-nitpicky_ignore = [("py:obj", "cmomy.typing.T_Array")]
+nitpicky_ignore_regex = [
+    (r"py:.*", r".*\.T_Array.*"),
+    (r"py:.*", r"numpy\._typing.*"),
+]
+# nitpicky_ignore = [
+#     ("py:obj", "cmomy.typing.T_Array"),
+#     # ("py:class", "numpy._typing.*"),
+# ]
 autosectionlabel_prefix_document = True
 
 # -- myst stuff ---------------------------------------------------------
@@ -154,13 +161,33 @@ autodoc_default_flags = [
     "private-members",
     "show-inheritance",
 ]
+
 autodoc_typehints = "none"
+# Attempted to get type hints working.  Pain points.
+# - Need to make type hint accessible at runtime (outside TYPE_CHECKING).
+# - Either expands type aliases (sphinx_autodoc_type), or lose links to type alias (regular autodoc.  Never got it to work).
+# autodoc_typehints = "both"
+# autodoc_typehints_description_target = "documented"
+# autodoc_typehints_format = "fully-qualified"
+# autodoc_typehints = "description"
+
+# autodoc_type_aliases = {
+#     "XvalStrict": "XvalStrict",
+#     "NDArrayAny": "NDArrayAny",
+# }
+
+typehints_document_rtype = False
+typehints_use_rtype = False
+typehints_defaults = "comma"
+# always_document_param_types = True
+# typehints_use_signature = True
+
 
 # -- napoleon ------------------------------------------------------------------
 napoleon_google_docstring = False
 napoleon_numpy_docstring = True
 
-napoleon_use_param = False
+# napoleon_use_param = False
 napoleon_use_rtype = False
 napoleon_preprocess_types = True
 napoleon_type_aliases = {
@@ -219,6 +246,7 @@ napoleon_type_aliases = {
     # objects with abbreviated namespace (from pandas)
     "pd.Index": "~pandas.Index",
     "pd.NaT": "~pandas.NaT",
+    # "pd.Index[Any]": "~pandas.Index"
 }
 
 

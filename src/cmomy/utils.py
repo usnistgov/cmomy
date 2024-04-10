@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike
 
-    from .typing import ArrayOrder, Mom_NDim, Moments, MomentsStrict, MyNDArray
+    from .typing import ArrayOrder, Mom_NDim, Moments, MomentsStrict, NDArrayAny
 
 
 def normalize_axis_index(axis: int, ndim: int) -> int:
@@ -58,7 +58,7 @@ def axis_expand_broadcast(
     roll: bool = True,
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
-) -> MyNDArray:
+) -> NDArrayAny:
     """
     Broadcast x to shape.
 
@@ -70,7 +70,7 @@ def axis_expand_broadcast(
     elif not isinstance(x, np.ndarray):
         msg = f"{type(x)=} must be np.ndarray"
         raise TypeError(msg)
-    x = cast("MyNDArray", x)
+    x = cast("NDArrayAny", x)
 
     # if array, and 1d with size same as shape[axis]
     # broadcast from here

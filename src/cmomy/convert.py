@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike
 
-    from .typing import ArrayOrder, MyNDArray
+    from .typing import ArrayOrder, NDArrayAny
 
 _shared_docs = r"""
 Parameters
@@ -103,8 +103,8 @@ def _convert_moments(
     func: Callable[..., Any],
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     def _verify_tuple(x: int | Sequence[int]) -> tuple[int, ...]:
         if isinstance(x, int):
             return (x,)
@@ -150,12 +150,12 @@ def _convert_moments(
 
 @docfiller_decorate
 def to_raw_moments(
-    x: MyNDArray,
+    x: NDArrayAny,
     axis: int | None = -1,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     r"""
     Convert central moments to raw moments.
 
@@ -191,12 +191,12 @@ def to_raw_moments(
 
 @docfiller_decorate
 def to_raw_comoments(
-    x: MyNDArray,
+    x: NDArrayAny,
     axis: tuple[int, int] | None = (-2, -1),
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     r"""
     Convert central moments to raw moments.
 
@@ -232,12 +232,12 @@ def to_raw_comoments(
 
 @docfiller_decorate
 def to_central_moments(
-    x: MyNDArray,
+    x: NDArrayAny,
     axis: int | None = -1,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     r"""
     Convert central moments to raw moments.
 
@@ -273,12 +273,12 @@ def to_central_moments(
 
 @docfiller_decorate
 def to_central_comoments(
-    x: MyNDArray,
+    x: NDArrayAny,
     axis: tuple[int, int] | None = (-2, -1),
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     r"""
     Convert raw comoments to central comoments.
 

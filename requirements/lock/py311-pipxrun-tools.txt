@@ -19,10 +19,10 @@ conda-souschef==2.2.3     # via grayskull
 crashtest==0.3.1          # via clikit, conda-lock
 decorator==5.1.1          # via ipython
 distlib==0.3.8            # via virtualenv
-docutils==0.20.1          # via readme-renderer
+docutils==0.21.post1      # via readme-renderer
 ensureconda==1.4.4        # via conda-lock
 executing==2.0.1          # via stack-data
-filelock==3.13.3          # via cachecontrol, ensureconda, virtualenv
+filelock==3.13.4          # via cachecontrol, ensureconda, virtualenv
 gitdb==4.0.11             # via gitpython
 gitpython==3.1.43         # via conda-lock
 grayskull==2.6.0
@@ -63,7 +63,7 @@ pydantic==2.6.4           # via conda-lock
 pydantic-core==2.16.3     # via pydantic
 pygments==2.17.2          # via ipython, readme-renderer, rich
 pylev==1.4.0              # via clikit
-pyright==1.1.357
+pyright==1.1.358
 python-utils==3.8.2       # via progressbar2
 pyyaml==6.0.1             # via conda-lock
 rapidfuzz==3.8.1          # via grayskull

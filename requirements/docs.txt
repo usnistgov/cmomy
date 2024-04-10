@@ -16,6 +16,7 @@ numba>=0.50
 numpy>=1.21
 pyenchant
 sphinx-autobuild
+sphinx-autodoc-typehints
 sphinx-book-theme
 sphinx-copybutton
 sphinx>=5.3.0

@@ -14,7 +14,7 @@ from cmomy import central, resample, xcentral
 from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
-    from cmomy.typing import Moments, MyNDArray
+    from cmomy.typing import Moments, NDArrayAny
 
 
 default_rng = cmomy.random.default_rng(0)
@@ -75,7 +75,7 @@ class Data:  # noqa: PLR0904
         val_shape.pop(self.axis)
         return tuple(val_shape)
 
-    def _get_data(self, style: str | None = None) -> MyNDArray:
+    def _get_data(self, style: str | None = None) -> NDArrayAny:
         if style is None or style == "total":
             return default_rng.random(self.shape)  # pyright: ignore[reportReturnType]
         if style == "broadcast":
@@ -84,32 +84,32 @@ class Data:  # noqa: PLR0904
         raise ValueError(msg)
 
     @cached.prop
-    def xdata(self) -> MyNDArray:
+    def xdata(self) -> NDArrayAny:
         return self._get_data()
 
     @cached.prop
-    def ydata(self) -> MyNDArray:
+    def ydata(self) -> NDArrayAny:
         return self._get_data(style=self.style)
 
     @cached.prop
-    def w(self) -> MyNDArray | None:
+    def w(self) -> NDArrayAny | None:
         if self.style is None:
             return None
         return self._get_data(style=self.style)
 
     @cached.prop
-    def x(self) -> MyNDArray | tuple[MyNDArray, MyNDArray]:
+    def x(self) -> NDArrayAny | tuple[NDArrayAny, NDArrayAny]:
         if self.cov:
             return (self.xdata, self.ydata)
         return self.xdata
 
     @cached.prop
-    def split_data(self) -> tuple[list[MyNDArray] | list[None], list[MyNDArray]]:
+    def split_data(self) -> tuple[list[NDArrayAny] | list[None], list[NDArrayAny]]:
         v = self.xdata.shape[self.axis] // self.nsplit
         splits = [v * i for i in range(1, self.nsplit)]
         X = np.split(self.xdata, splits, axis=self.axis)
 
-        W: list[MyNDArray] | list[None]
+        W: list[NDArrayAny] | list[None]
         if self.style == "total":
             W = np.split(self.w, splits, axis=self.axis)  # type: ignore[arg-type]
         elif self.style == "broadcast":
@@ -129,15 +129,15 @@ class Data:  # noqa: PLR0904
         return W, X  # pyright: ignore[reportReturnType]
 
     @property
-    def W(self) -> list[MyNDArray] | list[None]:
+    def W(self) -> list[NDArrayAny] | list[None]:
         return self.split_data[0]
 
     @property
-    def X(self) -> list[MyNDArray]:
+    def X(self) -> list[NDArrayAny]:
         return self.split_data[1]
 
     @cached.prop
-    def data_fix(self) -> MyNDArray:
+    def data_fix(self) -> NDArrayAny:
         if self.cov:
             return get_comom(  # type: ignore[no-any-return]
                 w=self.w,
@@ -150,7 +150,7 @@ class Data:  # noqa: PLR0904
         return get_cmom(w=self.w, x=self.x, moments=self.mom, axis=self.axis, last=True)  # type: ignore[no-any-return]
 
     @cached.prop
-    def data_test(self) -> MyNDArray:
+    def data_test(self) -> NDArrayAny:
         return central.central_moments(
             x=self.x,
             mom=self.mom,
@@ -176,9 +176,9 @@ class Data:  # noqa: PLR0904
         ]
 
     # @property
-    # def values(self) -> MyNDArray:
+    # def values(self) -> NDArrayAny:
     #     return self.data_test
-    def to_values(self) -> MyNDArray:
+    def to_values(self) -> NDArrayAny:
         return self.data_test
 
     def unpack(self, *args) -> Any:
@@ -191,7 +191,7 @@ class Data:  # noqa: PLR0904
         np.testing.assert_allclose(self.to_values(), x, **kws)
 
     @property
-    def raw(self) -> MyNDArray | None:
+    def raw(self) -> NDArrayAny | None:
         if self.style == "total":
             if not self.cov:
                 raw = np.array(
@@ -220,18 +220,24 @@ class Data:  # noqa: PLR0904
             raw = None
         return raw
 
-    @cached.prop
-    def indices(self) -> MyNDArray:
-        ndat = self.xdata.shape[self.axis]
-        nrep = 10
-        return default_rng.choice(ndat, (nrep, ndat), replace=True)
+    @property
+    def nrep(self) -> int:
+        return 10
+
+    @property
+    def ndat(self) -> int:
+        return self.xdata.shape[self.axis]
 
     @cached.prop
-    def freq(self) -> MyNDArray:
-        return resample.randsamp_freq(indices=self.indices)
+    def indices(self) -> NDArrayAny:
+        return default_rng.choice(self.ndat, (self.nrep, self.ndat), replace=True)
 
     @cached.prop
-    def xdata_resamp(self) -> MyNDArray:
+    def freq(self) -> NDArrayAny:
+        return resample.randsamp_freq(indices=self.indices, ndat=self.ndat)
+
+    @cached.prop
+    def xdata_resamp(self) -> NDArrayAny:
         xdata = self.xdata
 
         if self.axis != 0:
@@ -240,7 +246,7 @@ class Data:  # noqa: PLR0904
         return np.take(xdata, self.indices, axis=0)
 
     @cached.prop
-    def ydata_resamp(self) -> MyNDArray:
+    def ydata_resamp(self) -> NDArrayAny:
         ydata = self.ydata
 
         if self.style == "broadcast":
@@ -251,13 +257,13 @@ class Data:  # noqa: PLR0904
         return np.take(ydata, self.indices, axis=0)
 
     @property
-    def x_resamp(self) -> MyNDArray | tuple[MyNDArray, MyNDArray]:
+    def x_resamp(self) -> NDArrayAny | tuple[NDArrayAny, NDArrayAny]:
         if self.cov:
             return (self.xdata_resamp, self.ydata_resamp)
         return self.xdata_resamp
 
     @cached.prop
-    def w_resamp(self) -> MyNDArray | None:
+    def w_resamp(self) -> NDArrayAny | None:
         w = self.w
 
         if self.style is None:
@@ -269,7 +275,7 @@ class Data:  # noqa: PLR0904
         return np.take(w, self.indices, axis=0)  # type: ignore[arg-type]
 
     @cached.prop
-    def data_test_resamp(self) -> MyNDArray:
+    def data_test_resamp(self) -> NDArrayAny:
         return central.central_moments(
             x=self.x_resamp,
             mom=self.mom,
