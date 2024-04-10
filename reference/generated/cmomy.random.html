@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Routines to set common Generator (cmomy.random) &#8212; cmomy v0.8.0 documentation</title>
+    <title>Routines to set common Generator (cmomy.random) &#8212; cmomy v0.9.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="../../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="../../_static/documentation_options.js?v=a3bab12e"></script>
+    <script src="../../_static/documentation_options.js?v=5f6084c2"></script>
     <script src="../../_static/doctools.js?v=888ff710"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="&lt;no title&gt;" href="../api-modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-02-20"/>
+    <meta name="docbuild:last-update" content="2024-04-10"/>
   </head>
   
   
@@ -141,7 +141,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.8.0 documentation</p>
+    <p class="title logo__title">cmomy v0.9.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -448,42 +448,34 @@ objects to routines that require random number.</p>
 </table>
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.random.set_internal_rng">
-<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">set_internal_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L41-L56"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.set_internal_rng" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">set_internal_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L41-L49"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.set_internal_rng" title="Link to this definition">#</a></dt>
 <dd><p>Set the internal random number <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>.</p>
 <p>The function <a class="reference internal" href="#cmomy.random.default_rng" title="cmomy.random.default_rng"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_rng()</span></code></a> will call <cite>rng</cite> if called with a new seed
 (or when called the first time). However, if want to override the internal
 rng, you can use this function.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>force</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – If false, only set internal rng if not already set</p></li>
-<li><p><strong>If true, set internal rng</strong></p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.random.get_internal_rng">
-<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">get_internal_rng</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L59-L64"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.get_internal_rng" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">get_internal_rng</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L52-L57"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.get_internal_rng" title="Link to this definition">#</a></dt>
 <dd><p>Get the internal random number <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.random.default_rng">
-<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">default_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L71-L104"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.default_rng" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">default_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L64-L97"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.default_rng" title="Link to this definition">#</a></dt>
 <dd><p>Get default internal random number generator.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.12)"><span class="xref std std-term">sequence</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/random/bit_generators/generated/numpy.random.SeedSequence.html#numpy.random.SeedSequence" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeedSequence</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/random/bit_generators/generated/numpy.random.BitGenerator.html#numpy.random.BitGenerator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BitGenerator</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>, <em>optional</em>) – If specified, set the internal seed to this value. If pass in a
+<dd class="field-odd"><p><strong>seed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.12)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Sequence" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>], <a class="reference external" href="https://numpy.org/doc/stable/reference/random/bit_generators/generated/numpy.random.SeedSequence.html#numpy.random.SeedSequence" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">SeedSequence</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/random/bit_generators/generated/numpy.random.BitGenerator.html#numpy.random.BitGenerator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">BitGenerator</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a>]</span>, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>) – If specified, set the internal seed to this value. If pass in a
 <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code></a>, return that object.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a> – If called with <cite>seed=None</cite> (default), return the previously created rng
-(if already created). This means you can call <cite>default_rng(seed=…)</cite>
-and subsequent calls of form <cite>default_rng()</cite> or <cite>default_rng(None)</cite>
-will continue rng sequence from first call with <cite>seed=…</cite>. If New call
-with <cite>seed</cite> set will create a new rng sequence. Note that if you pass a
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a> – If called with <code class="docutils literal notranslate"><span class="pre">seed=None</span></code> (default), return the previously created rng
+(if already created). This means you can call <code class="docutils literal notranslate"><span class="pre">default_rng(seed=...)</span></code>
+and subsequent calls of form <code class="docutils literal notranslate"><span class="pre">default_rng()</span></code> or <code class="docutils literal notranslate"><span class="pre">default_rng(None)</span></code>
+will continue rng sequence from first call with <code class="docutils literal notranslate"><span class="pre">seed=...</span></code>. If New call
+with <code class="docutils literal notranslate"><span class="pre">seed</span></code> set will create a new rng sequence. Note that if you pass a
 <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a> for seed, that object will be
 returned, but in this case, the internal generator will not be altered.</p>
 </dd>
@@ -492,17 +484,17 @@ returned, but in this case, the internal generator will not be altered.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.random.validate_rng">
-<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">validate_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L107-L133"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.validate_rng" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.random.</span></span><span class="sig-name descname"><span class="pre">validate_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/random.py#L100-L126"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.random.validate_rng" title="Link to this definition">#</a></dt>
 <dd><p>Decide whether to use passed <a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a> or that from <a class="reference internal" href="#cmomy.random.default_rng" title="cmomy.random.default_rng"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_rng()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rng</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code></a>, <em>optional</em>) – If pass a rng, then use it.  Otherwise, use <cite>default_rng(seed)</cite></p></li>
-<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Seed to use if call <a class="reference internal" href="#cmomy.random.default_rng" title="cmomy.random.default_rng"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_rng()</span></code></a></p></li>
+<li><p><strong>rng</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>) – If pass a rng, then use it.  Otherwise, use <code class="docutils literal notranslate"><span class="pre">default_rng(seed)</span></code></p></li>
+<li><p><strong>seed</strong> (<span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></span>, default: <code class="docutils literal notranslate"><span class="pre">None</span></code>) – Seed to use if call <a class="reference internal" href="#cmomy.random.default_rng" title="cmomy.random.default_rng"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_rng()</span></code></a></p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code></a></p>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -592,7 +584,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-02-20.
+  Last updated on 2024-04-10.
   <br/>
 </p>
   </div>

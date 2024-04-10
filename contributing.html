@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Contributing &#8212; cmomy v0.8.0 documentation</title>
+    <title>Contributing &#8212; cmomy v0.9.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
   <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
 
-    <script src="_static/documentation_options.js?v=a3bab12e"></script>
+    <script src="_static/documentation_options.js?v=5f6084c2"></script>
     <script src="_static/doctools.js?v=888ff710"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="License" href="license.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-02-20"/>
+    <meta name="docbuild:last-update" content="2024-04-10"/>
   </head>
   
   
@@ -141,7 +141,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.8.0 documentation</p>
+    <p class="title logo__title">cmomy v0.9.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -551,11 +551,6 @@ checks: tests.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span><span class="nb">test</span>
 </pre></div>
 </div>
-<p>Additionally, you should run the following:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>pre-commit-lint-markdown
-make<span class="w"> </span>pre-commit-codespell
-</pre></div>
-</div>
 </li>
 <li><p>Create changelog fragment. See <a class="reference external" href="https://github.com/nedbat/scrivl">scriv</a> for more info.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>scriv<span class="w"> </span>create<span class="w"> </span>--edit
@@ -705,10 +700,8 @@ automatically calls the session <code class="docutils literal notranslate"><span
 <p>The environments created by nox <code class="docutils literal notranslate"><span class="pre">dev</span></code> and <code class="docutils literal notranslate"><span class="pre">docs-conda</span></code> will try to add
 meaningful display names for ipykernel. These are installed at the user level.
 To cleanup the kernels (meaning, removing installed kernels that point to a
-removed environment), You can use the script <code class="docutils literal notranslate"><span class="pre">tools/clean_kernelspec.py</span></code>. This
-script should be run from the environment of the jupyter server. For example, if
-you run jupyter from a conda environment named <code class="docutils literal notranslate"><span class="pre">notebook</span></code>, run</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>run<span class="w"> </span>-n<span class="w"> </span>notebook<span class="w"> </span>python<span class="w"> </span>tools/clean_kernelspec.py
+removed environment), You can use the script <code class="docutils literal notranslate"><span class="pre">tools/clean_kernelspec.py</span></code>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>tools/clean_kernelspec.py
 </pre></div>
 </div>
 </section>
@@ -811,6 +804,10 @@ create the final recipe.</p>
 </pre></div>
 </div>
 <p>Use <code class="docutils literal notranslate"><span class="pre">typing-conda</span></code> to test typing in a conda environment.</p>
+<p>Note that the repo is setup to use a single install of <a class="reference external" href="https://github.com/python/mypy">mypy</a> and <a class="reference external" href="https://github.com/microsoft/pyright">pyright</a>. The
+script <code class="docutils literal notranslate"><span class="pre">tools/pipxrun.py</span></code> will run check if an appropriate version of the
+typecheckers is installed. If not, they will be run (and cached) using
+<code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span></code>.</p>
 </section>
 <section id="setup-development-environment">
 <h2>Setup development environment<a class="headerlink" href="#setup-development-environment" title="Link to this heading">#</a></h2>
@@ -863,7 +860,7 @@ environment, use <code class="docutils literal notranslate"><span class="pre">no
 activate the development environment when in the parent directory.</p>
 <p>Note that you can bootstrap the whole process with <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>run<span class="w"> </span>--spec<span class="w"> </span>nox<span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>nox<span class="w"> </span>-s<span class="w"> </span>dev<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
+<span class="w">     </span>nox<span class="w"> </span>-s<span class="w"> </span>dev/dev-venv<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
 <span class="w">     </span>++dev-envname<span class="w"> </span>dev/dev-complete
 </pre></div>
 </div>
@@ -875,26 +872,39 @@ like to install them in the development environment instead, use the
 <code class="docutils literal notranslate"><span class="pre">dev-complete</span></code> version of the commands above.</p>
 <p>Additional tools are:</p>
 <ul class="simple">
+<li><p><a class="reference external" href="https://github.com/pypa/pipx">pipx</a></p></li>
 <li><p><a class="reference external" href="https://pre-commit.com/">pre-commit</a></p></li>
-<li><p><a class="reference external" href="https://github.com/nedbat/scrivl">scriv</a></p></li>
-<li><p><a class="reference external" href="https://github.com/nbQA-dev/nbQA">nbqa</a></p></li>
-<li><p><a class="reference external" href="https://github.com/microsoft/pyright">pyright</a></p></li>
+<li><p><a class="reference external" href="https://github.com/astral-sh/uv">uv</a> (optional, highly recommended)</p></li>
+<li><p><a class="reference external" href="https://github.com/nedbat/scrivl">scriv</a> (optional)</p></li>
+<li><p><a class="reference external" href="https://github.com/microsoft/pyright">pyright</a> (optional)</p></li>
 <li><p><a class="reference external" href="https://github.com/cruft/cruft">cruft</a> (optional)</p></li>
 <li><p><a class="reference external" href="https://github.com/commitizen-tools/commitizen">commitizen</a> (optional)</p></li>
 <li><p><a class="reference external" href="https://github.com/nedbat/cog">cog</a> (optional)</p></li>
+<li><p><a class="reference external" href="https://github.com/nbQA-dev/nbQA">nbqa</a> (optional)</p></li>
 </ul>
 <p>These are setup using the following:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">condax/pipx install pre-commit</span>
-<span class="go">pipx install scriv</span>
-<span class="go">condax/pipx install nbqa</span>
-<span class="go">condax/pipx install pyright</span>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>install<span class="w"> </span>pipx<span class="w"> </span>using<span class="w"> </span>something<span class="w"> </span>like<span class="w"> </span>...
+<span class="go">pip install --user pipx</span>
+
+<span class="go">condax/pipx install pre-commit</span>
 
 <span class="gp"># </span>optional<span class="w"> </span>packages
+<span class="go">pipx install scriv</span>
+<span class="go">condax/pipx install uv</span>
+<span class="go">condax/pipx install pyright</span>
 <span class="go">condax/pipx install cruft</span>
 <span class="go">condax/pipx install commitizen</span>
 <span class="go">condax/pipx install cogapp</span>
+<span class="go">condax/pipx install nbqa</span>
 </pre></div>
 </div>
+<p>Note that the repo is setup to automatically use pipx for many of these tools.
+Behind the scenes, the makefile and <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> will invoke <code class="docutils literal notranslate"><span class="pre">tools/pipxrun.py</span></code>.
+This will either run the tool with <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span> <span class="pre">tool..</span></code>, or, if it is already
+installed (with proper version), run the tool from the install. This prevents
+having to install a bunch of tooling in the “dev” environment, and also avoid
+creating a bunch of through away <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments. This is experimental, and I
+might change back to using small <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments again in the future.</p>
 </section>
 </section>
 <section id="package-version">
@@ -905,7 +915,10 @@ tag. For convenience, you can override the version with nox setting
 <p>Note that the version in a given environment/session can become stale. The
 easiest way to update the installed package version version is to reinstall the
 package. This can be done using the following:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--no-deps
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># using pip</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--no-deps
+<span class="c1"># using uv</span>
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--no-deps
 </pre></div>
 </div>
 <p>To do this in a given session, use:</p>
@@ -1027,7 +1040,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-02-20.
+  Last updated on 2024-04-10.
   <br/>
 </p>
   </div>
