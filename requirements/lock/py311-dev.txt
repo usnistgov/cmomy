@@ -14,7 +14,7 @@ docstring-inheritance==2.2.0
 execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
 fastjsonschema==2.19.1    # via nbformat
-filelock==3.13.3          # via virtualenv
+filelock==3.13.4          # via virtualenv
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.4         # via nbval
 ipython==8.23.0           # via ipykernel

@@ -6,12 +6,13 @@ import cmomy
 from cmomy import resample
 from cmomy.resample import (  # , xbootstrap_confidence_interval
     bootstrap_confidence_interval,
+    freq_to_indices,
 )
 
 
 @pytest.mark.parametrize("ndat", [50])
 def test_freq_indices(ndat, rng) -> None:
-    indices = rng.choice(10, (20, 10), replace=True)
+    indices = rng.choice(ndat, (20, ndat), replace=True)
 
     freq0 = resample.indices_to_freq(indices)
 
@@ -33,8 +34,16 @@ def test_freq_indices(ndat, rng) -> None:
     freq1 = resample.randsamp_freq(nrep=10, ndat=ndat, rng=np.random.default_rng(123))
     np.testing.assert_allclose(freq0, freq1)
 
+    # test bad freq
+    freq = np.array([[5, 0], [0, 4]])
+    with pytest.raises(ValueError, match="Inconsistent number of samples .*"):
+        freq_to_indices(freq)
 
-@pytest.mark.parametrize("parallel", [True, False])
+
+parallel_parametrize = pytest.mark.parametrize("parallel", [True, False])
+
+
+@parallel_parametrize
 @pytest.mark.parametrize("mom", [2, (2, 2)])
 def test_resample_vec(parallel, mom):
     rng = cmomy.random.default_rng()
@@ -77,16 +86,29 @@ def test_validate_resample_array() -> None:
     np.zeros((2, 3, 4))
 
     with pytest.raises(ValueError):
-        cmomy.resample._validate_resample_array(np.zeros((2, 3, 4)), nrep=2, ndat=3)
+        cmomy.resample._validate_resample_array(
+            np.zeros((2, 3, 4)), nrep=2, ndat=3, is_freq=True
+        )
 
     with pytest.raises(ValueError):
-        cmomy.resample._validate_resample_array(np.zeros((2, 3)), nrep=3, ndat=3)
+        cmomy.resample._validate_resample_array(
+            np.zeros((2, 3)), nrep=3, ndat=3, is_freq=True
+        )
 
     with pytest.raises(ValueError):
-        cmomy.resample._validate_resample_array(np.zeros((2, 3)), nrep=2, ndat=None)
+        cmomy.resample._validate_resample_array(
+            np.zeros((2, 3)), nrep=2, ndat=5, is_freq=True
+        )
+
+    # indices
+    _ = cmomy.resample._validate_resample_array(
+        np.zeros((2, 3)), nrep=2, ndat=5, is_freq=False
+    )
 
     with pytest.raises(ValueError):
-        cmomy.resample._validate_resample_array(np.zeros((2, 3)), nrep=2, ndat=5)
+        cmomy.resample._validate_resample_array(
+            np.zeros((2, 3)) + 10, nrep=2, ndat=5, is_freq=False
+        )
 
 
 def test_randsamp_freq() -> None:
@@ -97,7 +119,7 @@ def test_randsamp_freq() -> None:
     np.testing.assert_allclose(f0, f1)
 
     with pytest.raises(ValueError):
-        cmomy.resample.randsamp_freq()
+        cmomy.resample.randsamp_freq(ndat=10)
 
 
 def test_resample_resample_data(rng) -> None:
@@ -164,7 +186,7 @@ def test_resample_resample_vals(rng) -> None:
 
 
 @pytest.mark.slow()
-@pytest.mark.parametrize("parallel", [True, False])
+@parallel_parametrize
 def test_resample_vals(other, parallel) -> None:
     # test basic resampling
     if other.style == "total":
@@ -183,7 +205,7 @@ def test_resample_vals(other, parallel) -> None:
 
 
 @pytest.mark.slow()
-@pytest.mark.parametrize("parallel", [True, False])
+@parallel_parametrize
 def test_stats_resample_vals(other, parallel) -> None:
     if other.style == "total":
         t = other.cls.from_resample_vals(
@@ -212,7 +234,7 @@ def test_stats_resample_vals(other, parallel) -> None:
 
 
 @pytest.mark.slow()
-@pytest.mark.parametrize("parallel", [True, False])
+@parallel_parametrize
 def test_resample_data(other, parallel, rng) -> None:
     nrep = 10
 
@@ -223,7 +245,7 @@ def test_resample_data(other, parallel, rng) -> None:
             ndat = data.shape[axis]
 
             idx = rng.choice(ndat, (nrep, ndat), replace=True)
-            freq = resample.randsamp_freq(indices=idx)
+            freq = resample.randsamp_freq(indices=idx, ndat=ndat)
 
             if axis != 0:
                 data = np.rollaxis(data, axis, 0)
@@ -235,7 +257,7 @@ def test_resample_data(other, parallel, rng) -> None:
 
 
 @pytest.mark.slow()
-@pytest.mark.parametrize("parallel", [True, False])
+@parallel_parametrize
 def test_resample_against_vals(other, parallel, rng) -> None:
     nrep = 10
 
@@ -302,3 +324,30 @@ def test_bootstrap_stats(other) -> None:
 
     expected = np.array([val, low, high])
     np.testing.assert_allclose(test, expected)
+
+
+# * Arbitrary number of samples in resample.
+
+
+@parallel_parametrize
+def test_resample_nsamp(other, parallel) -> None:
+    nrep = 10
+
+    if len(other.val_shape) > 0:
+        s = other.s
+
+        for axis in range(s.val_ndim):
+            ndat = s.val_shape[axis]
+
+            for nsamp in [ndat + 1, ndat - 1]:
+                indices = cmomy.resample.random_indices(
+                    nrep=nrep, ndat=ndat, nsamp=nsamp
+                )
+
+                t0 = s.resample_and_reduce(
+                    indices=indices, axis=axis, parallel=parallel
+                )
+
+                t1 = s.resample(indices, axis=axis).reduce(1)
+
+                np.testing.assert_allclose(t0.to_values(), t1.to_values())

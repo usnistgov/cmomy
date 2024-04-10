@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import DTypeLike
 
-    from ..typing import F, MyNDArray
+    from ..typing import F, NDArrayAny
 
 
 def myjit(
@@ -51,7 +51,7 @@ def _binom(n: int, k: int) -> float:
     return 0.0
 
 
-def factory_binomial(order: int, dtype: DTypeLike = np.float64) -> MyNDArray:
+def factory_binomial(order: int, dtype: DTypeLike = np.float64) -> NDArrayAny:
     """Create binomial coefs at given order."""
     out = np.zeros((order + 1, order + 1), dtype=dtype)
     for n in range(order + 1):

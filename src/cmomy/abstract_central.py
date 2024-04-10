@@ -11,7 +11,7 @@ from module_utilities import cached
 
 from . import convert
 from .docstrings import docfiller
-from .typing import MyNDArray, T_Array
+from .typing import NDArrayAny, T_Array
 from .utils import normalize_axis_index
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     def __init__(
         self, data: T_Array, mom_ndim: Mom_NDim = 1
     ) -> None:  # pragma: no cover
-        self._data = cast("MyNDArray", data)  # type: ignore[redundant-cast]
+        self._data = cast("NDArrayAny", data)  # type: ignore[redundant-cast]
         self._data_flat = self._data
 
         if mom_ndim not in {1, 2}:
@@ -79,7 +79,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         raise ValueError
 
     @property
-    def data(self) -> MyNDArray:
+    def data(self) -> NDArrayAny:
         """
         Accessor to numpy array underlying data.
 
@@ -102,7 +102,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """Access underlying central moments array."""
         return self.to_values()
 
-    def to_numpy(self) -> MyNDArray:
+    def to_numpy(self) -> NDArrayAny:
         """Access to numpy array underlying class."""
         return self._data
 
@@ -202,7 +202,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 
-    def __array__(self, dtype: DTypeLike | None = None) -> MyNDArray:  # noqa: PLW3201
+    def __array__(self, dtype: DTypeLike | None = None) -> NDArrayAny:  # noqa: PLW3201
         """Used by np.array(self)."""  # D401
         return np.asarray(self.data, dtype=dtype)
 
@@ -213,7 +213,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @docfiller.decorate
     def new_like(
         self,
-        data: MyNDArray | T_Array | None = None,
+        data: NDArrayAny | T_Array | None = None,
         *,
         copy: bool = False,
         copy_kws: Mapping[str, Any] | None = None,
@@ -348,7 +348,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         """Standard deviation."""  # D401
         return cast("float | T_Array", np.sqrt(self.var()))
 
-    def _wrap_like(self, x: MyNDArray) -> T_Array:  # noqa: PLR6301
+    def _wrap_like(self, x: NDArrayAny) -> T_Array:  # noqa: PLR6301
         return x  # type: ignore[return-value]
 
     def cmom(self) -> T_Array:
@@ -373,7 +373,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         out[self._single_index(1)] = 0
         return self._wrap_like(out)
 
-    def to_raw(self, *, weights: float | MyNDArray | None = None) -> T_Array:
+    def to_raw(self, *, weights: float | NDArrayAny | None = None) -> T_Array:
         r"""
         Raw moments accumulation array.
 
@@ -465,22 +465,22 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self,
         *,
         x: MultiArray[T_Array],
-        target: str | MyNDArray | T_Array,
+        target: str | NDArrayAny | T_Array,
         shape_flat: tuple[int, ...],
         axis: int | None = None,
         dim: Hashable | None = None,  # included here for consistency
         broadcast: bool = False,
         expand: bool = False,
-        other: MyNDArray | None = None,
-    ) -> tuple[MyNDArray, MyNDArray | T_Array]:
+        other: NDArrayAny | None = None,
+    ) -> tuple[NDArrayAny, NDArrayAny | T_Array]:
         pass
 
     def _check_weight(
         self,
         *,
         w: MultiArray[T_Array] | None,
-        target: MyNDArray | T_Array,
-    ) -> MyNDArray:
+        target: NDArrayAny | T_Array,
+    ) -> NDArrayAny:
         if w is None:
             w = 1.0
         return self._verify_value(
@@ -495,10 +495,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self,
         *,
         w: MultiArray[T_Array] | None,
-        target: MyNDArray | T_Array,
+        target: NDArrayAny | T_Array,
         axis: int | None = None,
         dim: Hashable | None = None,
-    ) -> MyNDArray:
+    ) -> NDArrayAny:
         if w is None:
             w = 1.0
         return self._verify_value(
@@ -515,9 +515,9 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self,
         *,
         x: MultiArray[T_Array],
-        target: str | MyNDArray | T_Array,
+        target: str | NDArrayAny | T_Array,
         broadcast: bool = False,
-    ) -> tuple[MyNDArray, MyNDArray | T_Array]:
+    ) -> tuple[NDArrayAny, NDArrayAny | T_Array]:
         return self._verify_value(
             x=x,
             target=target,
@@ -530,11 +530,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self,
         *,
         x: MultiArrayVals[T_Array],
-        target: str | MyNDArray | T_Array,
+        target: str | NDArrayAny | T_Array,
         axis: int | None,
         broadcast: bool = False,
         dim: Hashable | None = None,
-    ) -> tuple[MyNDArray, MyNDArray | T_Array]:
+    ) -> tuple[NDArrayAny, NDArrayAny | T_Array]:
         return self._verify_value(
             x=x,
             target=target,
@@ -547,7 +547,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
     def _check_var(
         self, *, v: MultiArray[T_Array], broadcast: bool = False
-    ) -> MyNDArray:
+    ) -> NDArrayAny:
         return self._verify_value(
             x=v,
             target="var",
@@ -560,11 +560,11 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         self,
         *,
         v: MultiArrayVals[T_Array],
-        target: MyNDArray | T_Array,
+        target: NDArrayAny | T_Array,
         axis: int | None,
         broadcast: bool = False,
         dim: Hashable | None = None,
-    ) -> MyNDArray:
+    ) -> NDArrayAny:
         # assert isinstance(target, np.ndarray)
         if not isinstance(target, np.ndarray):  # pragma: no cover
             msg = f"{type(target)=} must be numpy.ndarray."
@@ -580,7 +580,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
             other=target,
         )[0]
 
-    def _check_data(self, *, data: MultiArrayVals[T_Array]) -> MyNDArray:
+    def _check_data(self, *, data: MultiArrayVals[T_Array]) -> NDArrayAny:
         return self._verify_value(
             x=data,
             target="data",
@@ -593,7 +593,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         datas: MultiArrayVals[T_Array],
         axis: int | None = None,
         dim: Hashable | None = None,
-    ) -> MyNDArray:
+    ) -> NDArrayAny:
         if axis is not None:
             axis = normalize_axis_index(axis, self.val_ndim + 1)
 
@@ -853,7 +853,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @docfiller.decorate
     def resample(
         self,
-        indices: MyNDArray,
+        indices: NDArrayAny,
         axis: int | None = 0,
         *,
         first: bool = True,
@@ -968,10 +968,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     # *** Utils
     @staticmethod
     def _datas_axis_to_first(
-        datas: MyNDArray,
+        datas: NDArrayAny,
         axis: int,
         mom_ndim: Mom_NDim,
-    ) -> tuple[MyNDArray, int]:
+    ) -> tuple[NDArrayAny, int]:
         """Move axis to first first position."""
         axis = normalize_axis_index(axis, datas.ndim - mom_ndim)
         if axis != 0:
@@ -1158,7 +1158,10 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @abstractmethod
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
+        x: NDArrayAny
+        | tuple[NDArrayAny, NDArrayAny]
+        | T_Array
+        | tuple[T_Array, T_Array],
         mom: Moments,
         *,
         full_output: Literal[False] = ...,
@@ -1170,36 +1173,45 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     @abstractmethod
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
+        x: NDArrayAny
+        | tuple[NDArrayAny, NDArrayAny]
+        | T_Array
+        | tuple[T_Array, T_Array],
         mom: Moments,
         *,
         full_output: Literal[True],
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]: ...
+    ) -> tuple[Self, NDArrayAny]: ...
 
     @overload
     @classmethod
     @abstractmethod
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
+        x: NDArrayAny
+        | tuple[NDArrayAny, NDArrayAny]
+        | T_Array
+        | tuple[T_Array, T_Array],
         mom: Moments,
         *,
         full_output: bool,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]: ...
+    ) -> Self | tuple[Self, NDArrayAny]: ...
 
     @classmethod
     @abstractmethod
     @docfiller.decorate
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray] | T_Array | tuple[T_Array, T_Array],
+        x: NDArrayAny
+        | tuple[NDArrayAny, NDArrayAny]
+        | T_Array
+        | tuple[T_Array, T_Array],
         mom: Moments,
         *,
         full_output: bool = False,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
+    ) -> Self | tuple[Self, NDArrayAny]:
         """
         Create from resample observations/values.
 
@@ -1213,6 +1225,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         {mom}
         {full_output}
         {nrep}
+        {nsamp}
         {freq}
         {indices}
         w : scalar or array-like, optional
