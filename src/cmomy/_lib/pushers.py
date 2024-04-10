@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """low level routines to do pushing."""
+
 from __future__ import annotations
 
 from typing import Callable, NamedTuple

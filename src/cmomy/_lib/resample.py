@@ -27,11 +27,17 @@ from .utils import myjit
 
 
 @myjit()
-def randsamp_freq_indices(indices, freq) -> None:
-    assert freq.shape == indices.shape
+def randsamp_indices_to_freq(indices, freq) -> None:
+    # allowed to pass in different number of samples than ndat.
     nrep, ndat = freq.shape
+
+    assert indices.shape[0] == nrep
+    assert indices.max() < ndat
+
+    nsamp = indices.shape[1]
+
     for r in range(nrep):
-        for d in range(ndat):
+        for d in range(nsamp):
             idx = indices[r, d]
             freq[r, idx] += 1
 

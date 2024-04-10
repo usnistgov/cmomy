@@ -7,28 +7,30 @@ from __future__ import annotations
 
 from itertools import starmap
 from math import prod
-from typing import TYPE_CHECKING, cast
+
+# if TYPE_CHECKING:
+from typing import TYPE_CHECKING, Any, Hashable, Literal, Sequence, cast
 
 import numpy as np
 import xarray as xr
 
+from .docstrings import docfiller
 from .random import validate_rng
 from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:
-    from typing import Any, Hashable, Literal, Sequence
-
     from numpy.typing import ArrayLike, DTypeLike
 
-    from .typing import ArrayOrder, Mom_NDim, Moments, MyNDArray, XvalStrict
+    from .typing import ArrayOrder, Mom_NDim, Moments, NDArrayAny
 
 
 ##############################################################################
 # resampling
 ###############################################################################
+@docfiller.decorate
 def freq_to_indices(
-    freq: MyNDArray, shuffle: bool = True, rng: np.random.Generator | None = None
-) -> MyNDArray:
+    freq: NDArrayAny, shuffle: bool = True, rng: np.random.Generator | None = None
+) -> NDArrayAny:
     """
     Convert a frequency array to indices array.
 
@@ -36,8 +38,27 @@ def freq_to_indices(
     Note that by default, the indices for a single sample (along output[k, :])
     are randomly shuffled.  If you pass `shuffle=False`, then the output will
     be something like [[0,0,..., 1,1,..., 2,2, ...]].
+
+    Parameters
+    ----------
+    {freq}
+    shuffle :
+        If ``True`` (default), shuffle values for each row.
+    {rng}
+
+    Returns
+    -------
+    ndarray :
+        Indices array of shape ``(nrep, nsamp)`` where ``nsamp = freq[k,
+        :].sum()`` where `k` is any row.
     """
-    indices_all: list[MyNDArray] = []
+    indices_all: list[NDArrayAny] = []
+
+    # validate freq -> indices
+    nsamps = freq.sum(-1)  # pyright: ignore[reportUnknownMemberType]
+    if any(nsamps[0] != nsamps):
+        msg = "Inconsistent number of samples from freq array"
+        raise ValueError(msg)
 
     for f in freq:
         indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))
@@ -52,61 +73,93 @@ def freq_to_indices(
     return out
 
 
-def indices_to_freq(indices: MyNDArray) -> MyNDArray:
-    """Convert indices to frequency array."""
+def indices_to_freq(indices: NDArrayAny, ndat: int | None = None) -> NDArrayAny:
+    """
+    Convert indices to frequency array.
+
+    It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp == ndat``.
+    For cases that ``nsamp != ndat``, pass in ``ndat``.
+    """
     from ._lib.resample import (
-        randsamp_freq_indices,  # pyright: ignore[reportUnknownVariableType]
+        randsamp_indices_to_freq,  # pyright: ignore[reportUnknownVariableType]
     )
 
-    freq = np.zeros_like(indices)
-    randsamp_freq_indices(indices, freq)
+    ndat = indices.shape[1] if ndat is None else ndat
+    freq = np.zeros((indices.shape[0], ndat), dtype=indices.dtype)
+
+    randsamp_indices_to_freq(indices, freq)
 
     return freq
 
 
+@docfiller.decorate
 def random_indices(
-    nrep: int, ndat: int, rng: np.random.Generator | None = None, replace: bool = True
-) -> MyNDArray:
+    nrep: int,
+    ndat: int,
+    nsamp: int | None = None,
+    rng: np.random.Generator | None = None,
+    replace: bool = True,
+) -> NDArrayAny:
     """
     Create indices for random resampling (bootstrapping).
 
     Parameters
     ----------
-    nrep, ndat : int
-        Number of repetitions (`nrep`) and size of data to sample along (ndat).
-    rng : Generator, optional
-        Optional Generator.
-    replace : bool, default=True
+    {nrep}
+    {ndat}
+    {nsamp}
+    {rng}
+    replace :
         Whether to allow replacement.
+
+    Returns
+    -------
+    indices : ndarray
+        Index array of integers of shape ``(nrep, nsamp)``.
     """
-    rng = validate_rng(rng)
-    return rng.choice(ndat, size=(nrep, ndat), replace=replace)
+    nsamp = ndat if nsamp is None else nsamp
+    return validate_rng(rng).choice(ndat, size=(nrep, nsamp), replace=replace)
 
 
+@docfiller.inherit(random_indices)
 def random_freq(
-    nrep: int, ndat: int, rng: np.random.Generator | None = None, replace: bool = True
-) -> MyNDArray:
+    nrep: int,
+    ndat: int,
+    nsamp: int | None = None,
+    rng: np.random.Generator | None = None,
+    replace: bool = True,
+) -> NDArrayAny:
     """
     Create frequencies for random resampling (bootstrapping).
+
+    Returns
+    -------
+    freq : ndarray
+        Frequency array. ``freq[rep, k]`` is the number of times to sample from the `k`th
+        observation for replicate `rep`.
 
     See Also
     --------
     random_indices
     """
     return indices_to_freq(
-        random_indices(nrep=nrep, ndat=ndat, rng=rng, replace=replace)
+        indices=random_indices(
+            nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng, replace=replace
+        ),
+        ndat=ndat,
     )
 
 
 def _validate_resample_array(
     x: ArrayLike,
+    ndat: int,
     nrep: int | None,
-    ndat: int | None,
+    is_freq: bool,
     check: bool = True,
-    name: str = "array",
-) -> MyNDArray:
+) -> NDArrayAny:
     x = np.asarray(x, dtype=np.int64)
     if check:
+        name = "freq" if is_freq else "indices"
         if x.ndim != 2:
             msg = f"{name}.ndim={x.ndim} != 2"
             raise ValueError(msg)
@@ -115,76 +168,90 @@ def _validate_resample_array(
             msg = f"{name}.shape[0]={x.shape[0]} != {nrep}"
             raise ValueError(msg)
 
-        if ndat is None:
-            raise ValueError
+        if is_freq:
+            if x.shape[1] != ndat:
+                msg = f"{name} has wrong ndat"
+                raise ValueError(msg)
 
-        if x.shape[1] != ndat:
-            msg = f"{name} has wrong ndat"
-            raise ValueError(msg)
+        else:
+            # only restriction is that values in [0, ndat)
+            min_, max_ = x.min(), x.max()  # pyright: ignore[reportUnknownMemberType]
+            if min_ < 0 or max_ >= ndat:
+                msg = f"Indices range [{min_}, {max_}) outside [0, {ndat - 1})"
+                raise ValueError(msg)
+
     return x
 
 
+@docfiller.decorate
 def randsamp_freq(
+    ndat: int,
     nrep: int | None = None,
-    ndat: int | None = None,
+    nsamp: int | None = None,
     indices: ArrayLike | None = None,
     freq: ArrayLike | None = None,
     check: bool = False,
     rng: np.random.Generator | None = None,
-) -> MyNDArray:
+) -> NDArrayAny:
     """
     Produce a random sample for bootstrapping.
 
+    In order, the return will be one of ``freq``, frequencies from ``indices`` or
+    new sample from :func:`random_freq`.
+
     Parameters
     ----------
-    ndat : int, optional
-        data dimension ndat
-    freq : array-like,  optional
-        `shape=(nrep, ndat)`.
-        If passed, use this frequency array.
-        overrides ndat
-    indices : array-like, , optional
-        `shape=(nrep, ndat)`.
-        if passed and `freq` is `None`, construct frequency
-        array from this indices array
-
-    nrep : int, optional
-        if `freq` and `indices` are `None`, construct
-        sample with this number of repetitions
-    indices : array-like, optional
-        if passed, build frequency table based on this sampling.
-        shape = (nrep, ndat)
-    freq : array-like, optional
-        if passed, use this frequency array
+    {nrep}
+    {ndat}
+    {nsamp}
+    {freq}
+    {indices}
     check : bool, default=False
         if `check` is `True`, then check `freq` and `indices` against `ndat` and `nrep`
 
     Returns
     -------
-    output : ndarray
-        Frequency table of shape ``(nrep, ndat)``.
+    freq : ndarray
+        Frequency array.
+
+    See Also
+    --------
+    random_freq
+    indices_to_freq
     """
     if freq is not None:
         freq = _validate_resample_array(
-            freq, name="freq", nrep=nrep, ndat=ndat, check=check
+            freq,
+            nrep=nrep,
+            ndat=ndat,
+            check=check,
+            is_freq=True,
         )
 
     elif indices is not None:
         indices = _validate_resample_array(
-            indices, name="indices", nrep=nrep, ndat=ndat, check=check
+            indices,
+            nrep=nrep,
+            ndat=ndat,
+            check=check,
+            is_freq=False,
         )
-        freq = indices_to_freq(indices)
 
-    elif nrep is not None and ndat is not None:
-        freq = random_freq(nrep=nrep, ndat=ndat, rng=validate_rng(rng), replace=True)
+        freq = indices_to_freq(indices, ndat=ndat)
+
+    elif nrep is not None:
+        freq = random_freq(
+            nrep=nrep, ndat=ndat, nsamp=nsamp, rng=validate_rng(rng), replace=True
+        )
 
     else:
-        msg = "must specify freq, indices, or nrep and ndat"
+        msg = "must specify freq, indices, or nrep"
         raise ValueError(msg)
 
     return freq
 
 
+@docfiller.decorate
 def resample_data(  # noqa: PLR0914
     data: ArrayLike,
     freq: ArrayLike,
@@ -193,8 +260,8 @@ def resample_data(  # noqa: PLR0914
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
     parallel: bool = True,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     """
     Resample data according to frequency table.
 
@@ -202,19 +269,11 @@ def resample_data(  # noqa: PLR0914
     ----------
     data : array-like
         central mom array to be resampled
-    freq : array-like
-        frequency array with shape (nrep, data.shape[axis])
-    mom : int or array-like
-        if int or length 1, then data contains central mom.
-        if length is 2, then data contains central comoments
-    axis : int, default=0
-        axis to reduce along
-    parallel : bool
-        option to run jitted pusher in parallel.
-    dtype, order : object
-        options to :func:`numpy.asarray`
+    {freq}
+    {mom}
+    {parallel}
     out : ndarray, optional
-      optional output array.
+        optional output array.
 
     Returns
     -------
@@ -281,20 +340,46 @@ def resample_data(  # noqa: PLR0914
     return outr.reshape(out.shape)
 
 
+@docfiller.decorate
 def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
-    x: XvalStrict,
-    freq: MyNDArray,
+    x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
+    freq: NDArrayAny,
     mom: Moments,
     axis: int = 0,
-    w: MyNDArray | None = None,
+    w: NDArrayAny | None = None,
     mom_ndim: Mom_NDim | None = None,
     broadcast: bool = False,
     dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
     parallel: bool = True,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
-    """Resample data according to frequency table."""
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
+    """
+    Resample data according to frequency table.
+
+    Parameters
+    ----------
+    x : ndarray or tuple of ndarray
+        Input values.
+    {freq}
+    {mom}
+    {axis}
+    w :
+        Weights array.
+    {mom_ndim}
+    {broadcast}
+    {dtype}
+    order :
+        Parameter ``order`` to :func:`numpy.asarray`.
+    {parallel}
+    out : ndarray
+        Optional output array.
+
+    Returns
+    -------
+    ndarray
+        Resampled central moments array.
+    """
     from ._lib.resample import factory_resample_vals
 
     if isinstance(mom, int):
@@ -392,13 +477,13 @@ def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
 
 # TODO(wpk): add coverage for these
 def bootstrap_confidence_interval(  # pragma: no cover
-    distribution: MyNDArray,
-    stats_val: MyNDArray | Literal["percentile", "mean", "median"] | None = "mean",
+    distribution: NDArrayAny,
+    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
     alpha: float = 0.05,
     style: Literal[None, "delta", "pm"] = None,
     **kwargs: Any,
-) -> MyNDArray:
+) -> NDArrayAny:
     """
     Calculate the error bounds.
 
@@ -478,7 +563,7 @@ def bootstrap_confidence_interval(  # pragma: no cover
 
 def xbootstrap_confidence_interval(  # pragma: no cover
     x: xr.DataArray,
-    stats_val: MyNDArray | Literal["percentile", "mean", "median"] | None = "mean",
+    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
     dim: Hashable | None = None,
     alpha: float = 0.05,

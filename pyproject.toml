@@ -44,35 +44,47 @@ dependencies = [
 ]
 [project.optional-dependencies]
 dev = [
-    "cmomy[nbval]",
-    "cmomy[test]",
-    "cmomy[typing-extras]",
-    "cmomy[dev-extras]",
+    "cmomy[dev-extras,test,typing,pipxrun,nbval]",
 ]
 dev-complete = [
-    "cmomy[dev]",
-    "cmomy[tools]",
+    "cmomy[dev,tools]",
 ]
 dev-extras = [
     "ipykernel",
     "ipython",
-    "nox",
+    "nbclient >= 0.10.0",
+    "nox >= 2024.3.2",
     "pytest-accept",
 ]
 docs = [
     "autodocsumm",
-    "ghp-import",
-    "ipython",
     "myst-nb",
     "pyenchant",
     "sphinx >= 5.3.0",
     "sphinx-autobuild",
+    "sphinx-autodoc-typehints",
     "sphinx-book-theme",
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
 ]
+mypy = [
+    "mypy >= 1.9.0",
+]
 nbval = [
     "nbval",
+]
+pipxrun = [
+    # Anything needed to run tools/pipxrun.py
+    "packaging",
+]
+pipxrun-tools = [
+    # these used solely for specking tools to be used with tools/pipxrun.py
+    "cmomy[mypy]",
+    "conda-lock >= 2.5.5",
+    "grayskull >= 2.5.3",
+    "nbqa >= 1.8.4",
+    "pyright >= 1.1.358",
+    "twine >= 5.0.0",
 ]
 test = [
     "pytest",
@@ -81,19 +93,14 @@ test = [
     "pytest-xdist",
 ]
 tools = [
-    "nbqa",
+    "pipx",
     "pre-commit",
-    "pyright",
     "scriv",
 ]
 typing = [
-    "cmomy[typing-extras]",
-    "pytest",
-]
-typing-extras = [
-    "mypy >= 1.5.1",
+    "cmomy[pipxrun]",
     "pandas-stubs",
-    "pytype; python_version < '3.11'",
+    "pytest",
 ]
 [project.urls]
 Documentation = "https://pages.nist.gov/cmomy/"
@@ -135,7 +142,7 @@ unsafe-fixes = true
 preview = true
 select = ["ALL"]
 # fixable = ["ALL"]
-# unfixable = []
+unfixable = ["T"]
 ignore = [
     "CPY",       # - Don't require copyright
     "ERA",       # - eradicate (want to keep some stuff)
@@ -197,7 +204,7 @@ max-public-methods = 30
 [tool.ruff.lint.per-file-ignores]
 "docs/conf.py" = ["INP001"]
 "noxfile.py" = ["RUF009"]
-"tools/*.py" = ["S", "A", "SLF001"]
+"tools/*.py" = ["S", "A", "SLF001", "D102"]
 "tests/*.py" = ["D", "S101"]
 "**/*.ipynb" = ["D100", "B018", "INP001"]
 
@@ -208,7 +215,7 @@ max-public-methods = 30
 "src/cmomy/_formatting.py" = ["SLF001"]
 "src/cmomy/_lib/*.py" = ["PLR2004", "PLR0914", "S101", "ANN", "N803"]
 "src/cmomy/_testing.py" = ["S101"]
-"**/*.ipynb" = ["ANN", "T201", "D103", "PLR2004", "PD013"]
+"**/*.ipynb" = ["ANN", "T201", "D103", "PLR2004", "PD013", "E305", "E302"]
 "src/**/*.py" = ["TD003", "FIX002", "PLR2004", "D102"]
 "src/cmomy/abstract_central.py" = ["PLR2004"]
 "src/cmomy/central.py" = ["PLR2004", "D102"]
@@ -343,6 +350,11 @@ reqs = ["build"]
 base = false
 style = "requirements"
 
+[tool.pyproject2conda.envs.pipxrun-tools]
+extras = "pipxrun-tools"
+base = false
+style = "requirements"
+
 [tool.pyproject2conda.envs.test-extras]
 extras = ["test"]
 base = false
@@ -379,4 +391,4 @@ use_shortcuts = true
 datas = "datas"
 
 [tool.typos.default.extend-identifiers]
-MyNDArray = "MyNDArray"
+NDArrayAny = "NDArrayAny"

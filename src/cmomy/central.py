@@ -2,11 +2,15 @@
 Central moments/comoments routines from :class:`np.ndarray` objects
 -------------------------------------------------------------------.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
+
+# pandas needed for autdoc typehints
+import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import xarray as xr
 
 from . import convert
@@ -43,7 +47,7 @@ if TYPE_CHECKING:
     from .xcentral import xCentralMoments
 
 
-from .typing import MyNDArray
+from .typing import NDArrayAny
 
 
 ###############################################################################
@@ -52,13 +56,13 @@ from .typing import MyNDArray
 def _central_moments(
     vals: ArrayLike,
     mom: Moments,
-    w: MyNDArray | None = None,
+    w: NDArrayAny | None = None,
     axis: int = 0,
     last: bool = True,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     """Calculate central mom along axis."""
     if isinstance(mom, tuple):  # pragma: no cover
         mom = mom[0]
@@ -108,16 +112,16 @@ def _central_moments(
 
 
 def _central_comoments(  # noqa: C901, PLR0912
-    vals: tuple[MyNDArray, MyNDArray],
+    vals: tuple[NDArrayAny, NDArrayAny],
     mom: tuple[int, int],
-    w: MyNDArray | None = None,
+    w: NDArrayAny | None = None,
     axis: int = 0,
     last: bool = True,
     broadcast: bool = False,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
-) -> MyNDArray:
+    out: NDArrayAny | None = None,
+) -> NDArrayAny:
     """Calculate central co-mom (covariance, etc) along axis."""
     if not isinstance(
         mom, tuple
@@ -201,17 +205,17 @@ def _central_comoments(  # noqa: C901, PLR0912
 
 @docfiller.decorate
 def central_moments(
-    x: MyNDArray | tuple[MyNDArray, MyNDArray],
+    x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
     mom: Moments,
     *,
-    w: MyNDArray | None = None,
+    w: NDArrayAny | None = None,
     axis: int = 0,
     last: bool = True,
     dtype: DTypeLike | None = None,
     order: ArrayOrder | None = None,
-    out: MyNDArray | None = None,
+    out: NDArrayAny | None = None,
     broadcast: bool = False,
-) -> MyNDArray:
+) -> NDArrayAny:
     """
     Calculate central moments or comoments along axis.
 
@@ -317,11 +321,11 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller(CentralMomentsABC)  # noqa: PLR0904
-class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
-    # def __new__(cls, data: MyNDArray, mom_ndim: Literal[1, 2] = 1):
+class CentralMoments(CentralMomentsABC[NDArrayAny]):  # noqa: D101
+    # def __new__(cls, data: NDArrayAny, mom_ndim: Literal[1, 2] = 1):
     #     return super().__new__(cls, data=data, mom_ndim=mom_ndim)
 
-    def __init__(self, data: MyNDArray, mom_ndim: Mom_NDim = 1) -> None:
+    def __init__(self, data: NDArrayAny, mom_ndim: Mom_NDim = 1) -> None:
         if mom_ndim not in {1, 2}:
             msg = (
                 "mom_ndim must be either 1 (for central moments)"
@@ -350,7 +354,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
         self._cache: dict[str, Any] = {}
 
-    def to_values(self) -> MyNDArray:
+    def to_values(self) -> NDArrayAny:
         """Accesses for self.data."""
         return self._data
 
@@ -361,7 +365,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_abc()
     def new_like(
         self,
-        data: MyNDArray | None = None,
+        data: NDArrayAny | None = None,
         *,
         copy: bool = False,
         copy_kws: Mapping[str, Any] | None = None,
@@ -609,10 +613,10 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
     def _get_target_shape(
         self,
-        x: MyNDArray,
+        x: NDArrayAny,
         style: VerifyValuesStyles,
         axis: int | None = None,
-        other: MyNDArray | None = None,
+        other: NDArrayAny | None = None,
     ) -> tuple[int, ...]:
         from .utils import shape_insert_axis
 
@@ -650,15 +654,15 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     def _verify_value(
         self,
         *,
-        x: MultiArray[MyNDArray],
-        target: str | MyNDArray,
+        x: MultiArray[NDArrayAny],
+        target: str | NDArrayAny,
         shape_flat: tuple[int, ...],
         axis: int | None = None,
         dim: Hashable | None = None,  # included here for consistency  # noqa: ARG002
         broadcast: bool = False,
         expand: bool = False,
-        other: MyNDArray | None = None,
-    ) -> tuple[MyNDArray, MyNDArray]:
+        other: NDArrayAny | None = None,
+    ) -> tuple[NDArrayAny, NDArrayAny]:
         """
         Verify input values.
 
@@ -723,7 +727,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         return x, target_output
 
     @docfiller_inherit_abc()
-    def push_data(self, data: MultiArrayVals[MyNDArray]) -> Self:
+    def push_data(self, data: MultiArrayVals[NDArrayAny]) -> Self:
         """
         Examples
         --------
@@ -754,7 +758,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def push_datas(
         self,
-        datas: MultiArray[MyNDArray],
+        datas: MultiArray[NDArrayAny],
         axis: int | None = 0,
         **kwargs: Any,  # noqa: ARG002
     ) -> Self:
@@ -782,8 +786,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: MultiArray[MyNDArray] | tuple[MultiArray[MyNDArray], MultiArray[MyNDArray]],
-        w: MultiArray[MyNDArray] | None = None,
+        x: MultiArray[NDArrayAny]
+        | tuple[MultiArray[NDArrayAny], MultiArray[NDArrayAny]],
+        w: MultiArray[NDArrayAny] | None = None,
         broadcast: bool = False,
     ) -> Self:
         """
@@ -828,9 +833,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def push_vals(
         self,
-        x: MultiArrayVals[MyNDArray]
-        | tuple[MultiArrayVals[MyNDArray], MultiArrayVals[MyNDArray]],
-        w: MultiArray[MyNDArray] | None = None,
+        x: MultiArrayVals[NDArrayAny]
+        | tuple[MultiArrayVals[NDArrayAny], MultiArrayVals[NDArrayAny]],
+        w: MultiArray[NDArrayAny] | None = None,
         axis: int | None = 0,
         broadcast: bool = False,
         **kwargs: Any,  # noqa: ARG002
@@ -885,15 +890,15 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         nrep: int | None = ...,
         *,
         full_output: Literal[False] = ...,
-        freq: MyNDArray | None = ...,
-        indices: MyNDArray | None = ...,
+        nsamp: int | None = ...,
+        freq: NDArrayAny | None = ...,
+        indices: NDArrayAny | None = ...,
         axis: int | None = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> Self:
-        ...
+    ) -> Self: ...
 
     @overload
     def resample_and_reduce(
@@ -901,15 +906,15 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         nrep: int | None = ...,
         *,
         full_output: Literal[True],
-        freq: MyNDArray | None = ...,
-        indices: MyNDArray | None = ...,
+        nsamp: int | None = ...,
+        freq: NDArrayAny | None = ...,
+        indices: NDArrayAny | None = ...,
         axis: int | None = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]:
-        ...
+    ) -> tuple[Self, NDArrayAny]: ...
 
     @overload
     def resample_and_reduce(
@@ -917,15 +922,15 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         nrep: int | None = ...,
         *,
         full_output: bool,
-        freq: MyNDArray | None = ...,
-        indices: MyNDArray | None = ...,
+        nsamp: int | None = ...,
+        freq: NDArrayAny | None = ...,
+        indices: NDArrayAny | None = ...,
         axis: int | None = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         rng: np.random.Generator | None = ...,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
-        ...
+    ) -> Self | tuple[Self, NDArrayAny]: ...
 
     @docfiller.decorate
     def resample_and_reduce(
@@ -933,14 +938,15 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         nrep: int | None = None,
         *,
         full_output: bool = False,
-        freq: MyNDArray | None = None,
-        indices: MyNDArray | None = None,
+        nsamp: int | None = None,
+        freq: NDArrayAny | None = None,
+        indices: NDArrayAny | None = None,
         axis: int | None = None,
         parallel: bool = True,
         resample_kws: Mapping[str, Any] | None = None,
         rng: np.random.Generator | None = None,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
+    ) -> Self | tuple[Self, NDArrayAny]:
         """
         Bootstrap resample and reduce.
 
@@ -948,6 +954,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         ----------
         {nrep}
         {full_output}
+        {nsamp}
         {freq}
         {indices}
         {axis}
@@ -983,6 +990,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         freq = randsamp_freq(
             nrep=nrep,
             ndat=self.val_shape[axis],
+            nsamp=nsamp,
             indices=indices,
             freq=freq,
             check=True,
@@ -1268,7 +1276,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_abc()
     def from_data(
         cls,
-        data: MyNDArray,
+        data: NDArrayAny,
         *,
         mom: Moments | None = None,
         mom_ndim: Mom_NDim | None = None,
@@ -1314,7 +1322,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def from_datas(
         cls,
-        datas: MyNDArray,
+        datas: NDArrayAny,
         *,
         mom: Moments | None = None,
         mom_ndim: Mom_NDim | None = None,
@@ -1367,10 +1375,10 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def from_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray],
+        x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
         mom: Moments,
         *,
-        w: float | MyNDArray | None = None,
+        w: float | NDArrayAny | None = None,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
@@ -1394,7 +1402,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         mom_ndim = mom_to_mom_ndim(mom)
 
         x0 = x if mom_ndim == 1 else x[0]
-        x0 = cast("MyNDArray", x0)
+        x0 = cast("NDArrayAny", x0)
 
         if val_shape is None:
             val_shape = shape_reduce(shape=x0.shape, axis=axis)
@@ -1409,77 +1417,78 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @classmethod
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray],
+        x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
         mom: Moments,
         *,
         full_output: Literal[False] = ...,
         nrep: int | None = ...,
-        freq: MyNDArray | None = ...,
-        indices: MyNDArray | None = ...,
-        w: MyNDArray | None = ...,
+        nsamp: int | None = ...,
+        freq: NDArrayAny | None = ...,
+        indices: NDArrayAny | None = ...,
+        w: NDArrayAny | None = ...,
         axis: int | None = ...,
         dtype: DTypeLike | None = ...,
         broadcast: bool = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         **kwargs: Any,
-    ) -> Self:
-        ...
+    ) -> Self: ...
 
     @overload
     @classmethod
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray],
+        x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
         mom: Moments,
         *,
         full_output: Literal[True],
         nrep: int | None = ...,
-        freq: MyNDArray | None = ...,
-        indices: MyNDArray | None = ...,
-        w: MyNDArray | None = ...,
+        nsamp: int | None = ...,
+        freq: NDArrayAny | None = ...,
+        indices: NDArrayAny | None = ...,
+        w: NDArrayAny | None = ...,
         axis: int | None = ...,
         dtype: DTypeLike | None = ...,
         broadcast: bool = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         **kwargs: Any,
-    ) -> tuple[Self, MyNDArray]:
-        ...
+    ) -> tuple[Self, NDArrayAny]: ...
 
     @overload
     @classmethod
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray],
+        x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
         mom: Moments,
         *,
         full_output: bool,
         nrep: int | None = ...,
-        freq: MyNDArray | None = ...,
-        indices: MyNDArray | None = ...,
-        w: MyNDArray | None = ...,
+        nsamp: int | None = ...,
+        freq: NDArrayAny | None = ...,
+        indices: NDArrayAny | None = ...,
+        w: NDArrayAny | None = ...,
         axis: int | None = ...,
         dtype: DTypeLike | None = ...,
         broadcast: bool = ...,
         parallel: bool = ...,
         resample_kws: Mapping[str, Any] | None = ...,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
-        ...
+    ) -> Self | tuple[Self, NDArrayAny]: ...
 
     @classmethod
     @docfiller_inherit_abc()
     def from_resample_vals(
         cls,
-        x: MyNDArray | tuple[MyNDArray, MyNDArray],
+        x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
         mom: Moments,
         *,
         full_output: bool = False,
         nrep: int | None = None,
-        freq: MyNDArray | None = None,
-        indices: MyNDArray | None = None,
-        w: MyNDArray | None = None,
+        nsamp: int | None = None,
+        freq: NDArrayAny | None = None,
+        indices: NDArrayAny | None = None,
+        w: NDArrayAny | None = None,
         axis: int | None = 0,
         dtype: DTypeLike | None = None,
         broadcast: bool = False,
@@ -1487,7 +1496,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         resample_kws: Mapping[str, Any] | None = None,
         rng: np.random.Generator | None = None,
         **kwargs: Any,
-    ) -> Self | tuple[Self, MyNDArray]:
+    ) -> Self | tuple[Self, NDArrayAny]:
         """
         Examples
         --------
@@ -1523,10 +1532,11 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
         mom_ndim = mom_to_mom_ndim(mom)
 
         x0 = x if mom_ndim == 1 else x[0]
-        x0 = cast("MyNDArray", x0)
+        x0 = cast("NDArrayAny", x0)
         freq = randsamp_freq(
             nrep=nrep,
             ndat=x0.shape[axis],
+            nsamp=nsamp,
             freq=freq,
             indices=indices,
             check=True,
@@ -1564,7 +1574,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def from_raw(
         cls,
-        raw: MyNDArray,
+        raw: NDArrayAny,
         *,
         mom_ndim: Mom_NDim | None = None,
         mom: Moments | None = None,
@@ -1642,7 +1652,7 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @docfiller_inherit_abc()
     def from_raws(
         cls,
-        raws: MyNDArray,
+        raws: NDArrayAny,
         *,
         mom_ndim: Mom_NDim | None = None,
         mom: Moments | None = None,
@@ -1712,9 +1722,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     # special, 1d only methods
     def push_stat(
         self,
-        a: MultiArray[MyNDArray],
-        v: MultiArray[MyNDArray] = 0.0,
-        w: MultiArray[MyNDArray] | None = None,
+        a: MultiArray[NDArrayAny],
+        v: MultiArray[NDArrayAny] = 0.0,
+        w: MultiArray[NDArrayAny] | None = None,
         broadcast: bool = True,
     ) -> Self:
         """Push statistics onto self."""
@@ -1728,9 +1738,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
 
     def push_stats(
         self,
-        a: MultiArrayVals[MyNDArray],
-        v: MultiArray[MyNDArray] = 0.0,
-        w: MultiArray[MyNDArray] | None = None,
+        a: MultiArrayVals[NDArrayAny],
+        v: MultiArray[NDArrayAny] = 0.0,
+        w: MultiArray[NDArrayAny] | None = None,
         axis: int = 0,
         broadcast: bool = True,
     ) -> Self:
@@ -1747,8 +1757,8 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     def from_stat(
         cls,
         a: ArrayLike | float,
-        v: MyNDArray | float = 0.0,
-        w: MyNDArray | float | None = None,
+        v: NDArrayAny | float = 0.0,
+        w: NDArrayAny | float | None = None,
         mom: Moments = 2,
         val_shape: tuple[int, ...] | None = None,
         dtype: DTypeLike | None = None,
@@ -1773,9 +1783,9 @@ class CentralMoments(CentralMomentsABC[MyNDArray]):  # noqa: D101
     @classmethod
     def from_stats(
         cls,
-        a: MyNDArray,
-        v: MyNDArray,
-        w: MyNDArray | float | None = None,
+        a: NDArrayAny,
+        v: NDArrayAny,
+        w: NDArrayAny | float | None = None,
         axis: int = 0,
         mom: Moments = 2,
         val_shape: tuple[int, ...] | None = None,
