@@ -55,7 +55,7 @@ def freq_to_indices(
     indices_all: list[NDArrayAny] = []
 
     # validate freq -> indices
-    nsamps = freq.sum(-1)
+    nsamps = freq.sum(-1)  # pyright: ignore[reportUnknownMemberType]
     if any(nsamps[0] != nsamps):
         msg = "Inconsistent number of samples from freq array"
         raise ValueError(msg)
@@ -175,7 +175,7 @@ def _validate_resample_array(
 
         else:
             # only restriction is that values in [0, ndat)
-            min_, max_ = x.min(), x.max()
+            min_, max_ = x.min(), x.max()  # pyright: ignore[reportUnknownMemberType]
             if min_ < 0 or max_ >= ndat:
                 msg = f"Indices range [{min_}, {max_}) outside [0, {ndat - 1})"
                 raise ValueError(msg)

@@ -45,13 +45,6 @@ def set_internal_rng(rng: np.random.Generator) -> None:
     The function :func:`default_rng` will call `rng` if called with a new seed
     (or when called the first time). However, if want to override the internal
     rng, you can use this function.
-
-    Parameters
-    ----------
-    force: bool, default=False
-        If false, only set internal rng if not already set
-    If true, set internal rng
-
     """
     _DATA["rng"] = rng
 
@@ -74,18 +67,18 @@ def default_rng(seed: SEED_TYPES | None = None) -> np.random.Generator:
 
     Parameters
     ----------
-    seed: int, sequence of int, :class:`~numpy.random.SeedSequence`, :class:`~numpy.random.BitGenerator`, Generator, optional
+    seed:
         If specified, set the internal seed to this value. If pass in a
         :class:`numpy.random.Generator`, return that object.
 
     Returns
     -------
     Generator
-        If called with `seed=None` (default), return the previously created rng
-        (if already created). This means you can call `default_rng(seed=...)`
-        and subsequent calls of form `default_rng()` or `default_rng(None)`
-        will continue rng sequence from first call with `seed=...`. If New call
-        with `seed` set will create a new rng sequence. Note that if you pass a
+        If called with ``seed=None`` (default), return the previously created rng
+        (if already created). This means you can call ``default_rng(seed=...)``
+        and subsequent calls of form ``default_rng()`` or ``default_rng(None)``
+        will continue rng sequence from first call with ``seed=...``. If New call
+        with ``seed`` set will create a new rng sequence. Note that if you pass a
         :class:`~numpy.random.Generator` for seed, that object will be
         returned, but in this case, the internal generator will not be altered.
 
@@ -112,14 +105,14 @@ def validate_rng(
 
     Parameters
     ----------
-    rng : :class:`numpy.random.Generator`, optional
-        If pass a rng, then use it.  Otherwise, use `default_rng(seed)`
-    seed : int, optional
+    rng :
+        If pass a rng, then use it.  Otherwise, use ``default_rng(seed)``
+    seed :
         Seed to use if call :func:`default_rng`
 
     Returns
     -------
-    :class:`numpy.random.Generator`
+    Generator
     """
     if rng is None:
         return default_rng(seed=seed)
