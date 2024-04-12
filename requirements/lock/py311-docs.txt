@@ -20,7 +20,7 @@ docutils==0.20.1          # via myst-parser, pydata-sphinx-theme, sphinx
 executing==2.0.1          # via stack-data
 fastjsonschema==2.19.1    # via nbformat
 greenlet==3.0.3           # via sqlalchemy
-idna==3.6                 # via requests
+idna==3.7                 # via requests
 imagesize==1.4.1          # via sphinx
 importlib-metadata==7.1.0  # via jupyter-cache, myst-nb
 ipykernel==6.29.4         # via myst-nb
