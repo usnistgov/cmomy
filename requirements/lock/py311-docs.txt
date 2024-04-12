@@ -20,7 +20,7 @@ docutils==0.20.1          # via myst-parser, pydata-sphinx-theme, sphinx
 executing==2.0.1          # via stack-data
 fastjsonschema==2.19.1    # via nbformat
 greenlet==3.0.3           # via sqlalchemy
-idna==3.6                 # via requests
+idna==3.7                 # via requests
 imagesize==1.4.1          # via sphinx
 importlib-metadata==7.1.0  # via jupyter-cache, myst-nb
 ipykernel==6.29.4         # via myst-nb
@@ -41,7 +41,7 @@ matplotlib-inline==0.1.6  # via ipykernel, ipython
 mdit-py-plugins==0.4.0    # via myst-parser
 mdurl==0.1.2              # via markdown-it-py
 module-utilities==0.9.0
-myst-nb==1.0.0
+myst-nb==1.1.0
 myst-parser==2.0.0        # via myst-nb
 nbclient==0.10.0          # via jupyter-cache, myst-nb
 nbformat==5.10.4          # via jupyter-cache, myst-nb, nbclient
@@ -49,7 +49,7 @@ nest-asyncio==1.6.0       # via ipykernel
 numba==0.59.1
 numpy==1.26.4             # via numba, pandas, xarray
 packaging==24.0           # via ipykernel, lazy-loader, pydata-sphinx-theme, sphinx, xarray
-pandas==2.2.1             # via xarray
+pandas==2.2.2             # via xarray
 parso==0.8.4              # via jedi
 pexpect==4.9.0            # via ipython
 platformdirs==4.2.0       # via jupyter-core
@@ -72,7 +72,7 @@ snowballstemmer==2.2.0    # via sphinx
 soupsieve==2.5            # via beautifulsoup4
 sphinx==7.2.6             # via autodocsumm, myst-nb, myst-parser, pydata-sphinx-theme, sphinx-autobuild, sphinx-autodoc-typehints, sphinx-book-theme, sphinx-copybutton, sphinxcontrib-spelling
 sphinx-autobuild==2024.2.4
-sphinx-autodoc-typehints==2.0.0
+sphinx-autodoc-typehints==2.0.1
 sphinx-book-theme==1.1.2
 sphinx-copybutton==0.5.2
 sphinxcontrib-applehelp==1.0.8  # via sphinx

@@ -21,7 +21,7 @@ executing==2.0.1          # via stack-data
 fastjsonschema==2.19.1    # via nbformat
 filelock==3.13.4          # via virtualenv
 identify==2.5.35          # via pre-commit
-idna==3.6                 # via requests
+idna==3.7                 # via requests
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.4         # via nbval
 ipython==8.23.0           # via ipykernel
@@ -47,7 +47,7 @@ nox==2024.3.2
 numba==0.59.1
 numpy==1.26.4             # via numba, pandas, pandas-stubs, xarray
 packaging==24.0           # via ipykernel, lazy-loader, nox, pipx, pytest, pytest-sugar, xarray
-pandas==2.2.1             # via xarray
+pandas==2.2.2             # via xarray
 pandas-stubs==2.2.1.240316
 parso==0.8.4              # via jedi
 pexpect==4.9.0            # via ipython
@@ -73,7 +73,7 @@ referencing==0.34.0       # via jsonschema, jsonschema-specifications
 requests==2.31.0          # via scriv
 rpds-py==0.18.0           # via jsonschema, referencing
 scriv==1.5.1
-setuptools==69.2.0        # via nodeenv
+setuptools==69.3.0        # via nodeenv
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar

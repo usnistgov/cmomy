@@ -452,9 +452,9 @@ def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
         pass
     else:
         meta_reshape: tuple[int, ...] = (prod(shape),)
-        data_reshape = data_reshape + meta_reshape
-        out_reshape = out_reshape + meta_reshape
-    out_reshape = out_reshape + mom_shape
+        data_reshape += meta_reshape
+        out_reshape += meta_reshape
+    out_reshape += mom_shape
 
     xr = x.reshape(data_reshape)
     wr = w.reshape(data_reshape)

@@ -35,7 +35,7 @@ nox==2024.3.2
 numba==0.59.1
 numpy==1.26.4             # via numba, pandas, pandas-stubs, xarray
 packaging==24.0           # via ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray
-pandas==2.2.1             # via xarray
+pandas==2.2.2             # via xarray
 pandas-stubs==2.2.1.240316
 parso==0.8.4              # via jedi
 pexpect==4.9.0            # via ipython

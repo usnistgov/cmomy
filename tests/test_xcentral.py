@@ -452,7 +452,7 @@ def test_push_datas(other) -> None:
 def test_add(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
-        t = t + s
+        t += s
     xtest(other.data_test_xr, t.to_dataarray())
 
 
