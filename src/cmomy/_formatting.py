@@ -108,7 +108,7 @@ def repr_html(x):
             sections,
         )
 
-        out = out + values._repr_html_()
+        out += values._repr_html_()
 
     else:
         sections += [numpy_section(x.data)]

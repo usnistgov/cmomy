@@ -557,7 +557,7 @@ def test_from_stats(other) -> None:
 def test_add(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
-        t = t + s
+        t += s
     other.test_values(t.to_values())
 
 

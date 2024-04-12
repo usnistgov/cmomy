@@ -33,7 +33,7 @@ def algo(vals, mom, norm=True):
         M[2] += (M[0] - 1) / M[0] * delta**2
 
     if norm:
-        M[2:] = M[2:] / M[0]
+        M[2:] /= M[0]
 
     return M
 
@@ -73,7 +73,7 @@ def test_stability() -> None:
     # true value just by shifting first moment
     moments_test = moments.copy()
     moments_test[1] = moments_test[1] * a + b
-    moments_test[2:] = moments_test[2:] * a ** np.arange(2, mom + 1)
+    moments_test[2:] *= a ** np.arange(2, mom + 1)
 
     # calculated
     moments_shift = cmomy.central_moments(x * a + b, mom=5)

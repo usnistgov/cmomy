@@ -10,7 +10,7 @@ module-utilities==0.9.0
 numba==0.59.1
 numpy==1.26.4             # via numba, pandas, xarray
 packaging==24.0           # via lazy-loader, pytest, pytest-sugar, xarray
-pandas==2.2.1             # via xarray
+pandas==2.2.2             # via xarray
 pluggy==1.4.0             # via pytest
 pytest==8.1.1             # via pytest-cov, pytest-sugar, pytest-xdist
 pytest-cov==5.0.0
