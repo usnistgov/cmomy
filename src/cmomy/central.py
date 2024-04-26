@@ -325,7 +325,24 @@ class CentralMoments(CentralMomentsABC[NDArrayAny]):  # noqa: D101
     # def __new__(cls, data: NDArrayAny, mom_ndim: Literal[1, 2] = 1):
     #     return super().__new__(cls, data=data, mom_ndim=mom_ndim)
 
-    def __init__(self, data: NDArrayAny, mom_ndim: Mom_NDim = 1) -> None:
+    def __init__(
+        self,
+        data: NDArrayAny,
+        mom_ndim: Mom_NDim = 1,
+        *,
+        fastpath: bool = False,
+        data_flat: NDArrayAny | None = None,
+    ) -> None:
+        self._cache = {}
+        if fastpath:
+            if not isinstance(data_flat, np.ndarray):
+                msg = "Must supply data_flat with fastpath"
+                raise TypeError(msg)
+            self._mom_ndim = mom_ndim
+            self._data = data
+            self._data_flat = data_flat
+            return
+
         if mom_ndim not in {1, 2}:
             msg = (
                 "mom_ndim must be either 1 (for central moments)"
@@ -341,18 +358,19 @@ class CentralMoments(CentralMomentsABC[NDArrayAny]):  # noqa: D101
             msg = "not enough dimensions in data"
             raise ValueError(msg)
 
+        if data_flat is None:
+            data_flat = data.reshape(
+                *((-1,) if data.ndim > mom_ndim else ()), *data.shape[-mom_ndim:]
+            )
+        self._data_flat = data_flat
+        self._data = self._data_flat.reshape(data.shape)
         self._mom_ndim = mom_ndim
-        self._data = data
-        self._data_flat = self._data.reshape(self.shape_flat)
-        self._data = self._data_flat.reshape(self.shape)  # ensure same data
 
         if any(m <= 0 for m in self.mom):
             msg = "moments must be positive"
             raise ValueError(msg)
 
         self._validate_data()  # pragma: no cover
-
-        self._cache: dict[str, Any] = {}
 
     def to_values(self) -> NDArrayAny:
         """Accesses for self.data."""
@@ -984,8 +1002,6 @@ class CentralMoments(CentralMomentsABC[NDArrayAny]):  # noqa: D101
 
         self._raise_if_scalar()
         axis = self._wrap_axis(axis)
-        if resample_kws is None:
-            resample_kws = {}
 
         freq = randsamp_freq(
             nrep=nrep,
@@ -997,7 +1013,12 @@ class CentralMoments(CentralMomentsABC[NDArrayAny]):  # noqa: D101
             rng=rng,
         )
         data = resample_data(
-            self.data, freq, mom=self.mom, axis=axis, parallel=parallel, **resample_kws
+            self.data,
+            freq,
+            mom=self.mom,
+            axis=axis,
+            parallel=parallel,
+            **(resample_kws or {}),
         )
         out = type(self).from_data(data, mom_ndim=self.mom_ndim, copy=False, **kwargs)
 
@@ -1133,7 +1154,6 @@ class CentralMoments(CentralMomentsABC[NDArrayAny]):  # noqa: D101
         if block_size is None:
             block_size = n
             nblock = 1
-
         else:
             nblock = n // block_size
 

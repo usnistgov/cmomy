@@ -69,35 +69,27 @@ def _select_axis_dim(
 ) -> tuple[int, Hashable]:
     """Produce axis/dim from input."""
     if axis is None and dim is None:
-        if default_axis is None and default_dim is None:
-            msg = "must specify axis or dim"
-            raise ValueError(msg)
-        if default_axis is not None and default_dim is not None:
-            msg = "can only specify one of default_axis or default_dim"
-            raise ValueError(msg)
-
-        if default_axis is not None:
+        if default_axis is not None and default_dim is None:
             axis = default_axis
-        else:
+        elif default_axis is None and default_dim is not None:
             dim = default_dim
+        else:
+            msg = "Must specify axis or dim, or one of default_axis or default_dim"
+            raise ValueError(msg)
 
     elif axis is not None and dim is not None:
-        msg = "can only specify axis or dim"
+        msg = "Can only specify one of axis or dim"
         raise ValueError(msg)
 
     if dim is not None:
-        if dim in dims:
-            axis = dims.index(dim)
-        else:
-            msg = f"did not find '{dim}' in {dims}"
-            raise ValueError(msg)
+        axis = dims.index(dim)
     elif axis is not None:
         if isinstance(axis, str):
             msg = f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}"
             raise ValueError(msg)
         dim = dims[axis]
     else:  # pragma: no cover
-        msg = f"unknown dim {dim} and axis {axis}"
+        msg = f"Unknown dim {dim} and axis {axis}"
         raise TypeError(msg)
 
     return axis, dim
@@ -107,10 +99,6 @@ def _move_mom_dims_to_end(
     x: xr.DataArray, mom_dims: MomDims, mom_ndim: Mom_NDim | None = None
 ) -> xr.DataArray:
     if mom_dims is not None:
-        # if isinstance(mom_dims, str):
-        #     mom_dims = (mom_dims,)
-        # else:
-        #     mom_dims = tuple(mom_dims)
         mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]
 
         if mom_ndim is not None and len(mom_dims) != mom_ndim:
@@ -140,7 +128,9 @@ def _replace_coords_from_isel(
     """
     from xarray.core.indexes import isel_indexes
     from xarray.core.indexing import is_fancy_indexer
-    from xarray.namedarray.utils import either_dict_or_kwargs
+
+    # Would prefer to import from actual source by old xarray error.
+    from xarray.core.utils import either_dict_or_kwargs  # type: ignore[attr-defined]
 
     indexers = either_dict_or_kwargs(indexers, indexers_kwargs, "isel")
     if any(is_fancy_indexer(idx) for idx in indexers.values()):
@@ -365,9 +355,30 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
     Most methods are wrapped to accept :class:`xarray.DataArray` object.
     """
 
-    __slots__ = ("_cache", "_data", "_data_flat", "_mom_ndim", "_xdata")
+    _xdata: xr.DataArray
 
-    def __init__(self, data: xr.DataArray, mom_ndim: Mom_NDim = 1) -> None:
+    __slots__ = ("_xdata",)
+
+    def __init__(
+        self,
+        data: xr.DataArray,
+        mom_ndim: Mom_NDim = 1,
+        *,
+        fastpath: bool = False,
+        data_flat: NDArrayAny | None = None,
+    ) -> None:
+        self._cache = {}
+
+        if fastpath:
+            if not isinstance(data_flat, np.ndarray):
+                msg = "Must supply data_flat with fastpath"
+                raise TypeError(msg)
+            self._mom_ndim = mom_ndim
+            self._data = data.data
+            self._data_flat = data_flat
+            self._xdata = data
+            return
+
         if mom_ndim not in {1, 2}:
             msg = (
                 "mom_ndim must be either 1 (for central moments)"
@@ -386,10 +397,14 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             msg = "not enough dimensions in data"
             raise ValueError(msg)
 
+        if data_flat is None:
+            data_flat = data.to_numpy().reshape(  # pyright: ignore[reportUnknownMemberType]
+                *((-1,) if data.ndim > mom_ndim else ()), *data.shape[-mom_ndim:]
+            )
+
         self._mom_ndim = mom_ndim
-        self._data: NDArrayAny = data.to_numpy()  # pyright: ignore[reportUnknownMemberType]
-        self._data_flat = self._data.reshape(self.shape_flat)
-        self._data = self._data_flat.reshape(data.shape)  # ensure same data
+        self._data_flat = data_flat
+        self._data = data_flat.reshape(data.shape)
         self._xdata = data.copy(data=self._data)
 
         if any(m <= 0 for m in self.mom):
@@ -470,6 +485,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         drop: bool = False,
         **indexers_kwargs: Any,
     ) -> xr.DataArray:
+        """Update coords when reducing."""
         return _replace_coords_from_isel(
             da_original=self._xdata,
             da_selected=da_selected,
@@ -477,6 +493,40 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             drop=drop,
             **indexers_kwargs,
         )
+
+    # def _check_reduce_dim(self, dim: Hashable):
+    #     if dim in self.mom_dims:
+    #         msg = f"Can only reduce over value dimensions {self.val_dims}. Passed moment dimension {dim}."
+    #         raise ValueError(msg)
+
+    def _check_reduce_axis_dim(
+        self,
+        *,
+        axis: int | None = None,
+        dim: Hashable | None = None,
+        default_axis: int | None = None,
+        default_dim: Hashable | None = None,
+    ) -> tuple[int, Hashable]:
+        self._raise_if_scalar()
+
+        axis, dim = _select_axis_dim(
+            dims=self.dims,
+            axis=axis,
+            dim=dim,
+            default_axis=default_axis,
+            default_dim=default_dim,
+        )
+
+        if dim in self.mom_dims:
+            msg = f"Can only reduce over value dimensions {self.val_dims}. Passed moment dimension {dim}."
+            raise ValueError(msg)
+
+        return axis, dim
+
+    def _remove_dim(self, dim: Hashable | Iterable[Hashable]) -> tuple[Hashable, ...]:
+        """Return self.dims with dim removed"""
+        dim = {dim} if isinstance(dim, str) else set(dim)  # type: ignore[arg-type]
+        return tuple(d for d in self.dims if d not in dim)
 
     @docfiller_abc()
     def new_like(
@@ -998,7 +1048,15 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         """Create a CentralMoments object from xCentralMoments."""
         from .central import CentralMoments
 
-        return CentralMoments(data=data or self.data, mom_ndim=self.mom_ndim)
+        if data is None:
+            return CentralMoments(
+                data=self._data,
+                mom_ndim=self.mom_ndim,
+                fastpath=True,
+                data_flat=self._data_flat,
+            )
+
+        return CentralMoments(data=data, mom_ndim=self.mom_ndim)
 
     @cached.prop
     def centralmoments_view(self) -> CentralMoments:
@@ -1013,10 +1071,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         CentralMoments.to_xcentralmoments
         xCentralMoments.from_centralmoments
         """
-        out = self.to_centralmoments()
-        if not np.shares_memory(out.to_numpy(), self._data):  # pragma: no cover
-            raise ValueError
-        return out
+        return self.to_centralmoments()
 
     @classmethod
     @docfiller.decorate
@@ -1441,198 +1496,36 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         Dimensions without coordinates: rep, mom_0
 
         """
-        from .resample import randsamp_freq, resample_data
+        axis, dim = self._check_reduce_axis_dim(axis=axis, dim=dim)
 
-        self._raise_if_scalar()
-
-        axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
-        if dim in self.mom_dims:
-            msg = f"can only resample from value dimensions {self.val_dims}"
-            raise ValueError(msg)
-
-        freq = randsamp_freq(
+        resampled, freq = self.centralmoments_view.resample_and_reduce(
             nrep=nrep,
-            ndat=self.val_shape[axis],
+            full_output=True,
             nsamp=nsamp,
-            indices=indices,
             freq=freq,
-            check=True,
+            indices=indices,
+            axis=axis,
+            parallel=parallel,
+            resample_kws=resample_kws,
             rng=rng,
         )
 
-        def wrapper(data: NDArrayAny) -> NDArrayAny:
-            out = resample_data(
-                np.moveaxis(data, -1, 0),
-                freq,
-                mom=self.mom,
-                axis=0,
-                parallel=parallel,
-                **(resample_kws or {}),
-            )
-            return np.moveaxis(out, 0, -1)
-
+        # note:  Just using to get correct structure
         out = cast(
             "xr.DataArray",
             xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-                wrapper,
+                lambda x: resampled._data,  # noqa: ARG005,SLF001  # pyright: ignore[reportUnknownLambdaType]
                 self._xdata,
-                input_core_dims=[[dim]],
-                output_core_dims=[[rep_dim]],
+                input_core_dims=[self.dims],
+                output_core_dims=[[rep_dim, *self._remove_dim(dim)]],
                 keep_attrs=keep_attrs,
-            ).transpose(rep_dim, ...),
+            ),
         )
 
         new = self.new_like(data=out, mom=self.mom, **kwargs)
         if full_output:
             return new, freq
         return new
-
-    @docfiller.decorate
-    def reduce_dumb(
-        self,
-        dim: Hashable | None = None,
-        *,
-        axis: int | None = None,
-        by: NDArrayAny | xr.DataArray | str | Iterable[str] | None = None,
-        reduce_kws: Mapping[Any, Any] | None = None,
-        coords_policy: CoordsPolicy | Literal["group"] = "first",
-        group_name: Hashable | None = None,
-        rename_dim: Hashable | None = None,
-        **kwargs: Any,
-    ) -> Self:
-        """
-        Parameters
-        ----------
-        {dim}
-        {axis}
-        by : ndarray or DataArray or str or iterable of str, optional
-            If ``None``, reduce over entire ``dim``. Otherwise, reduce by
-            group. If :class:`~numpy.ndarray`, use the unique values. If
-            :class:`~xarray.DataArray`, use unique values and rename dimension
-            ``by.name``. If str or Iterable of str, Create grouper from these
-            named coordinates.
-        coords_policy : {{'first', 'last', 'group', None}}
-            Policy for handling coordinates along ``dim`` by ``by`` is specified.
-            If no coordinates do nothing, otherwise use:
-
-            * 'first': select first value of coordinate for each block.
-            * 'last': select last value of coordinate for each block.
-            * 'group': Assign unique groups from ``group_idx`` to ``dim``
-            * None: drop any coordinates.
-        group_name : str, optional
-            If supplied, add the unique groups to this coordinate. Ignored if
-            ``coords_policy == "group"`.
-        rename_dim : hashable, optional
-            Optional name for the output dimension (rename ``dim`` to
-            ``rename_dim``).
-        reduce_kws : mapping, optional
-            Optional parameters to :func:`.indexed.reduce_by_index`.
-        **kwargs
-            Extra arguments to :meth:`from_datas` if ``group_idx`` is ``None``,
-            or to :meth:`from_data` otherwise
-
-        Returns
-        -------
-        output : {klass}
-            If ``group_idx`` is ``None``, reduce over all samples in ``dim`` or
-            ``axis``. Otherwise, reduce for each unique value of ``group_idx``.
-
-        Notes
-        -----
-        This is a new feature, and subject to change. In particular, the
-        current implementation is not smart about the output coordinates and
-        dimensions, and is inconsistent with :meth:`xarray.DataArray.groupby`.
-        It is up the the user to manipulate the dimensions/coordinates. output
-        dimensions and coords simplistically.
-
-        See Also
-        --------
-        from_datas
-        .indexed.reduce_by_group_idx
-
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), axis=0, mom=2)
-        >>> da.reduce(dim="dim_0")
-        <xCentralMoments(val_shape=(3,), mom=(2,))>
-        <xarray.DataArray (dim_1: 3, mom_0: 3)> Size: 72B
-        array([[20.    ,  0.5221,  0.0862],
-               [20.    ,  0.5359,  0.0714],
-               [20.    ,  0.4579,  0.103 ]])
-        Dimensions without coordinates: dim_1, mom_0
-        """
-        self._raise_if_scalar()
-        axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
-
-        if by is None:
-            return type(self).from_datas(
-                self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kwargs
-            )
-
-        # reduce by group
-        from .indexed import group_idx_to_groups_index_start_end, reduce_by_index
-
-        group_idx: NDArrayAny
-        if isinstance(by, np.ndarray):
-            group_idx = by
-
-        elif isinstance(by, xr.DataArray):
-            group_idx = by.to_numpy()  # pyright: ignore[reportUnknownMemberType]
-            rename_dim = rename_dim or by.name
-        else:
-            # assume string of coordinates
-            by = [by] if isinstance(by, str) else list(by)
-
-            group_idx = (
-                self.to_dataarray()[dim]  # pyright: ignore[reportUnknownMemberType]
-                .assign_coords(_index=lambda x: (dim, range(x.sizes[dim])))  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownMemberType]
-                .to_dataframe()
-                .reset_index(drop=True)
-                .assign(_group=lambda x: x.groupby(by).ngroup())  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType]
-                .set_index("_index")["_group"]
-                .loc[range(self.sizes[dim])]
-                .to_numpy()
-            )
-
-        groups, index, group_start, group_end = group_idx_to_groups_index_start_end(
-            group_idx
-        )
-
-        if coords_policy in {"first", "last"}:
-            dim_select = index[
-                group_end - 1 if coords_policy == "last" else group_start
-            ]
-            template = self.to_dataarray().isel({dim: dim_select}).transpose(dim, ...)
-
-            if group_name:
-                template = template.assign_coords({group_name: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
-
-        else:
-            template = (
-                self.to_dataarray()
-                .isel({dim: slice(0, len(groups))})
-                .drop_vars(dim, errors="ignore")  # type: ignore[arg-type]
-            )
-            if coords_policy == "group":
-                template = template.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
-            elif group_name:
-                template = template.assign_coords({group_name: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
-
-        if rename_dim:
-            template = template.rename({dim: rename_dim})
-
-        data = reduce_by_index(
-            self.to_numpy(),
-            mom=self.mom,
-            index=index,
-            group_start=group_start,
-            group_end=group_end,
-            axis=axis,
-            **(reduce_kws or {}),
-        )
-        return type(self).from_data(data, mom=self.mom, template=template, **kwargs)
 
     def reduce(
         self,
@@ -1710,8 +1603,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
                [20.    ,  0.4579,  0.103 ]])
         Dimensions without coordinates: dim_1, mom_0
         """
-        self._raise_if_scalar()
-        axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
+        axis, dim = self._check_reduce_axis_dim(axis=axis, dim=dim)
 
         if by is None:
             return type(self).from_datas(
@@ -1747,35 +1639,29 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             group_idx
         )
 
-        def wrapper(data: NDArrayAny) -> NDArrayAny:
-            # move core dimension to the front
-            data = np.moveaxis(data, -1, 0)
-
-            out = reduce_by_index(
+        # get result
+        def wrapper(data: NDArrayAny, axis: int) -> NDArrayAny:
+            return reduce_by_index(
                 data,
                 mom=self.mom,
                 index=index,
                 group_start=group_start,
                 group_end=group_end,
-                axis=0,
+                axis=axis,
                 **(reduce_kws or {}),
             )
-
-            # move core dimension to back
-            return np.moveaxis(out, 0, -1)
 
         out = cast(
             "xr.DataArray",
             xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 wrapper,
                 self._xdata,
-                input_core_dims=[[dim]],
-                output_core_dims=[[dim]],
+                input_core_dims=[self.dims],
+                output_core_dims=[[dim, *self._remove_dim(dim)]],
                 exclude_dims={dim},
                 keep_attrs=keep_attrs,
-            )
-            # move dim back to front
-            .transpose(dim, ...),
+                kwargs={"axis": axis},
+            ),
         )
 
         if coords_policy in {"first", "last"}:
@@ -1800,140 +1686,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
 
     @docfiller.decorate
     def block(
-        self,
-        block_size: int | None,
-        dim: Hashable | None = None,
-        axis: int | None = None,
-        coords_policy: CoordsPolicy = "first",
-        **kwargs: Any,
-    ) -> Self:
-        """
-        Parameters
-        ----------
-        block_size : int
-            Number of observations to include in a given block.
-        {dim}
-        {axis}
-        coords_policy : {{'first', 'last', None}}
-            Policy for handling coordinates along `axis`.
-            If no coordinates do nothing, otherwise use:
-
-            * 'first': select first value of coordinate for each block.
-            * 'last': select last value of coordinate for each block.
-            * None: drop any coordinates.
-
-
-
-        {coords_policy}
-        **kwargs
-            Extra arguments to :meth:`CentralMoments.block`
-
-        Returns
-        -------
-        output : xCentralMoments
-            Object with block averaging.
-
-        See Also
-        --------
-        CentralMoments.block
-
-
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> x = rng.random((10, 10))
-        >>> da = xCentralMoments.from_vals(x, mom=2)
-        >>> da
-        <xCentralMoments(val_shape=(10,), mom=(2,))>
-        <xarray.DataArray (dim_0: 10, mom_0: 3)> Size: 240B
-        array([[10.    ,  0.6247,  0.0583],
-               [10.    ,  0.3938,  0.0933],
-               [10.    ,  0.425 ,  0.1003],
-               [10.    ,  0.5   ,  0.117 ],
-               [10.    ,  0.5606,  0.0446],
-               [10.    ,  0.5612,  0.0861],
-               [10.    ,  0.531 ,  0.0731],
-               [10.    ,  0.8403,  0.0233],
-               [10.    ,  0.5097,  0.103 ],
-               [10.    ,  0.5368,  0.085 ]])
-        Dimensions without coordinates: dim_0, mom_0
-
-        >>> da.block(block_size=5, dim="dim_0")
-        <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
-        array([[50.    ,  0.5008,  0.0899],
-               [50.    ,  0.5958,  0.0893]])
-        Dimensions without coordinates: dim_0, mom_0
-
-        This is equivalent to
-
-        >>> xCentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1)
-        <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
-        array([[50.    ,  0.5268,  0.0849],
-               [50.    ,  0.5697,  0.0979]])
-        Dimensions without coordinates: dim_0, mom_0
-
-
-        The coordinate policy can be useful to keep coordinates:
-
-        >>> da2 = da.assign_coords(dim_0=range(10))
-        >>> da2.block(5, dim="dim_0", coords_policy="first")
-        <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
-        array([[50.    ,  0.5008,  0.0899],
-               [50.    ,  0.5958,  0.0893]])
-        Coordinates:
-          * dim_0    (dim_0) int64 16B 0 5
-        Dimensions without coordinates: mom_0
-        >>> da2.block(5, dim="dim_0", coords_policy="last")
-        <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
-        array([[50.    ,  0.5008,  0.0899],
-               [50.    ,  0.5958,  0.0893]])
-        Coordinates:
-          * dim_0    (dim_0) int64 16B 4 9
-        Dimensions without coordinates: mom_0
-        >>> da2.block(5, dim="dim_0", coords_policy=None)
-        <xCentralMoments(val_shape=(2,), mom=(2,))>
-        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
-        array([[50.    ,  0.5008,  0.0899],
-               [50.    ,  0.5958,  0.0893]])
-        Dimensions without coordinates: dim_0, mom_0
-
-        """
-        self._raise_if_scalar()
-        axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim, default_axis=0)
-
-        if block_size is None:
-            block_size = self.sizes[dim]
-            nblock = 1
-        else:
-            nblock = self.sizes[dim] // block_size
-
-        start = 0 if coords_policy == "first" else block_size - 1
-
-        # get template values
-        template = (
-            self.to_dataarray()
-            .isel({dim: slice(start, block_size * nblock, block_size)})
-            .transpose(dim, ...)  # pyright: ignore[reportUnknownArgumentType]
-        )
-
-        if coords_policy is None:
-            if not isinstance(dim, str):  # pragma: no cover
-                raise TypeError
-            template = template.drop_vars(dim)
-
-        central = self.centralmoments_view.block(
-            block_size=block_size, axis=axis, **kwargs
-        )
-
-        return self.from_centralmoments(obj=central, template=template)
-
-    @docfiller.decorate
-    def block_new(
         self,
         block_size: int | None,
         dim: Hashable | None = None,
@@ -2039,35 +1791,28 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         Dimensions without coordinates: dim_0, mom_0
 
         """
-        self._raise_if_scalar()
-        axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim, default_axis=0)
+        axis, dim = self._check_reduce_axis_dim(axis=axis, dim=dim, default_axis=0)
 
-        if block_size is None:
-            block_size = self.sizes[dim]
-            nblock = 1
-        else:
-            nblock = self.sizes[dim] // block_size
-
-        def wrapper(data: NDArrayAny) -> NDArrayAny:  # noqa: ARG001
+        def wrapper(dat: NDArrayAny) -> NDArrayAny:  # noqa: ARG001
             # ignore data.
-            out = self.centralmoments_view.block(
+            return self.centralmoments_view.block(  # noqa: SLF001
                 block_size=block_size, axis=axis, **(block_kws or {})
-            ).to_numpy()
-            # core dim last
-            return np.moveaxis(out, 0, -1)
+            )._data
 
         out = cast(
             "xr.DataArray",
             xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 wrapper,
                 self._xdata,
-                input_core_dims=[[dim]],
-                output_core_dims=[[dim]],
+                input_core_dims=[self.dims],
+                output_core_dims=[[dim, *self._remove_dim(dim)]],
                 exclude_dims={dim},
                 keep_attrs=keep_attrs,
-            ).transpose(dim, ...),
+            ),
         )
 
+        block_size = block_size or self.sizes[dim]
+        nblock = out.shape[0]
         # update coords
         if coords_policy in {"first", "last"}:
             start = 0 if coords_policy == "first" else block_size - 1

@@ -48,7 +48,17 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     data : {t_array}
         Moment collection array
     {mom_ndim}
+    fastpath : bool
+        For internal use.
+    data_flat : ndarray
+        For internal use.
+
     """
+
+    _cache: dict[str, Any]
+    _data: NDArrayAny
+    _data_flat: NDArrayAny
+    _mom_ndim: int
 
     __slots__ = (
         "_cache",
@@ -58,17 +68,24 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
     )
 
     def __init__(
-        self, data: T_Array, mom_ndim: Mom_NDim = 1
+        self,
+        data: T_Array,
+        mom_ndim: Mom_NDim = 1,
+        *,
+        fastpath: bool = False,
+        data_flat: NDArrayAny | None = None,
     ) -> None:  # pragma: no cover
         self._data = cast("NDArrayAny", data)  # type: ignore[redundant-cast]
-        self._data_flat = self._data
+        self._data_flat = data_flat if data_flat is not None else self.data
+        self._mom_ndim = mom_ndim
+        self._cache = {}
+
+        if fastpath:
+            return
 
         if mom_ndim not in {1, 2}:
             msg = f"{mom_ndim=} must be 1 or 2."
             raise ValueError(msg)
-
-        self._mom_ndim = mom_ndim
-        self._cache: dict[str, Any] = {}
 
         self._validate_data()
 
