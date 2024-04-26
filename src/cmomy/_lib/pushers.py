@@ -499,7 +499,7 @@ def push_datas_scale_cov_vec(data, others, scales) -> None:
 
 
 @myjit(inline=True)
-def push_datas_scalezero(data, others, scales) -> None:
+def push_datas_scale_fromzero(data, others, scales) -> None:
     ns = others.shape[0]
 
     first_nonzero = ns
@@ -518,7 +518,7 @@ def push_datas_scalezero(data, others, scales) -> None:
 
 
 @myjit(inline=True)
-def push_datas_scalezero_vec(data, others, scales) -> None:
+def push_datas_scale_fromzero_vec(data, others, scales) -> None:
     ns = others.shape[0]
     nv = data.shape[0]
 
@@ -543,7 +543,7 @@ def push_datas_scalezero_vec(data, others, scales) -> None:
 
 # Note: _push_data_scale_cov main func above
 @myjit(inline=True)
-def push_datas_scalezero_cov(data, others, scales) -> None:
+def push_datas_scale_fromzero_cov(data, others, scales) -> None:
     ns = others.shape[0]
 
     first_nonzero = ns
@@ -562,7 +562,7 @@ def push_datas_scalezero_cov(data, others, scales) -> None:
 
 
 @myjit(inline=True)
-def push_datas_scalezero_cov_vec(data, others, scales) -> None:
+def push_datas_scale_fromzero_cov_vec(data, others, scales) -> None:
     nv = data.shape[0]
     ns = others.shape[0]
 
@@ -576,17 +576,81 @@ def push_datas_scalezero_cov_vec(data, others, scales) -> None:
                 data[k, 0, 0] *= f
             break
 
-    for s in range(first_nonzero, ns):
+    for s in range(first_nonzero + 1, ns):
         f = scales[s]
         if f != 0:
             for k in range(nv):
                 _push_data_scale_cov(data[k, ...], others[s, k, ...], f)
 
 
-# * Groupby ----------------------------------------------------------------------------
+# * indexed accumulation ----------------------------------------------------------------------------
+# to be used with groupby.
 
-# @myjit(inline=True)
-# def push_datas_group(data, others, group_idx) -> None:
+
+@myjit(inline=True)
+def push_datas_scale_fromzero_indexed(data, others, index, scales) -> None:
+    # first
+    s = index[0]
+    f = scales[0]
+    data[:] = others[s, :]
+    data[0] *= f
+
+    for i in range(1, len(index)):
+        s = index[i]
+        f = scales[i]
+        _push_stat(data, others[s, 0] * f, others[s, 1], others[s, 2:])
+
+
+@myjit(inline=True)
+def push_datas_scale_fromzero_indexed_vec(data, others, index, scales) -> None:
+    nv = data.shape[0]
+
+    # first
+    s = index[0]
+    f = scales[0]
+    for k in range(nv):
+        data[k, :] = others[s, k, :]
+        data[k, 0] *= f
+
+    for i in range(1, len(index)):
+        s = index[i]
+        f = scales[i]
+        for k in range(nv):
+            _push_stat(
+                data[k, :], others[s, k, 0] * f, others[s, k, 1], others[s, k, 2:]
+            )
+
+
+@myjit(inline=True)
+def push_datas_scale_fromzero_indexed_cov(data, others, index, scales) -> None:
+    # first
+    s = index[0]
+    f = scales[0]
+    data[...] = others[s, ...]
+    data[0, 0] *= f
+
+    for i in range(1, len(index)):
+        s = index[i]
+        f = scales[i]
+        _push_data_scale_cov(data, others[s], f)
+
+
+@myjit(inline=True)
+def push_datas_scale_fromzero_indexed_cov_vec(data, others, index, scales) -> None:
+    nv = data.shape[0]
+
+    # first
+    s = index[0]
+    f = scales[0]
+    for k in range(nv):
+        data[k, ...] = others[s, k, ...]
+        data[k, 0, 0] *= f
+
+    for i in range(1, len(index)):
+        s = index[i]
+        f = scales[i]
+        for k in range(nv):
+            _push_data_scale_cov(data[k, ...], others[s, k, ...], f)
 
 
 # --- Interaface - ---------------------------------------------------------------------

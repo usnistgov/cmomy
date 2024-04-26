@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 import cmomy
+import cmomy.indexed
 from cmomy import resample
 from cmomy.resample import (  # , xbootstrap_confidence_interval
     bootstrap_confidence_interval,
@@ -41,6 +42,7 @@ def test_freq_indices(ndat, rng) -> None:
 
 
 parallel_parametrize = pytest.mark.parametrize("parallel", [True, False])
+fromzero_parametrize = pytest.mark.parametrize("fromzero", [False, True])
 
 
 @parallel_parametrize
@@ -70,6 +72,27 @@ def test_resample_vec(parallel, mom):
     )
 
     np.testing.assert_allclose(cc1.data, cc2.data[:, 0, ...])
+
+    cca = c1.resample_and_reduce(
+        freq=freq, parallel=parallel, resample_kws={"order": "C", "fromzero": False}
+    )
+    ccb = c2.resample_and_reduce(
+        freq=freq, parallel=parallel, resample_kws={"order": "C", "fromzero": False}
+    )
+
+    np.testing.assert_allclose(cc1.data, cca.data)
+    np.testing.assert_allclose(cc2.data, ccb.data)
+
+    # using indexed
+    out1 = cmomy.indexed.resample_data(
+        c1.data, freq=freq, mom=c1.mom, parallel=parallel
+    )
+    np.testing.assert_allclose(cc1.data, out1)
+
+    out2 = cmomy.indexed.resample_data(
+        c2.data, freq=freq, mom=c2.mom, parallel=parallel
+    )
+    np.testing.assert_allclose(cc2.data, out2)
 
 
 def test_resample_indices(rng) -> None:
@@ -142,6 +165,11 @@ def test_resample_resample_data(rng) -> None:
         v, freq=freq, mom=3, axis=-1, out=np.zeros((5, 3, 4)), dtype=np.float64
     )
 
+    np.testing.assert_allclose(c2.data, out)
+
+    out = cmomy.indexed.resample_data(
+        v, freq=freq, mom=3, axis=-1, out=np.zeros((5, 3, 4)), dtype=np.float64
+    )
     np.testing.assert_allclose(c2.data, out)
 
     with pytest.raises(ValueError):
@@ -235,7 +263,8 @@ def test_stats_resample_vals(other, parallel) -> None:
 
 @pytest.mark.slow()
 @parallel_parametrize
-def test_resample_data(other, parallel, rng) -> None:
+@fromzero_parametrize
+def test_resample_data(other, parallel, rng, fromzero) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
@@ -252,13 +281,25 @@ def test_resample_data(other, parallel, rng) -> None:
             data = np.take(data, idx, axis=0)
             data_ref = other.cls.from_datas(data, mom_ndim=other.mom_ndim, axis=1)
 
-            t = other.s.resample_and_reduce(freq=freq, axis=axis, parallel=parallel)
+            t = other.s.resample_and_reduce(
+                freq=freq,
+                axis=axis,
+                parallel=parallel,
+                resample_kws={"fromzero": fromzero},
+            )
             np.testing.assert_allclose(data_ref, t.data)
+
+            # indexed
+            out = cmomy.indexed.resample_data(
+                other.s.data, freq=freq, mom=other.s.mom, axis=axis, parallel=parallel
+            )
+            np.testing.assert_allclose(data_ref, out)
 
 
 @pytest.mark.slow()
 @parallel_parametrize
-def test_resample_against_vals(other, parallel, rng) -> None:
+@fromzero_parametrize
+def test_resample_against_vals(other, parallel, rng, fromzero) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
@@ -268,20 +309,24 @@ def test_resample_against_vals(other, parallel, rng) -> None:
             ndat = s.val_shape[axis]
             idx = rng.choice(ndat, (nrep, ndat), replace=True)
 
-            t0 = s.resample_and_reduce(indices=idx, axis=axis, parallel=parallel)
+            t0 = s.resample_and_reduce(
+                indices=idx,
+                axis=axis,
+                parallel=parallel,
+                resample_kws={"fromzero": fromzero},
+            )
 
-            t1 = s.resample(idx, axis=axis).reduce(1)
+            t1 = s.resample(idx, axis=axis).reduce(axis=1)
 
             np.testing.assert_allclose(t0.to_values(), t1.to_values())
 
 
-def test_resample_zero_weight() -> None:
-    import cmomy
-
+@fromzero_parametrize
+def test_resample_zero_weight(fromzero) -> None:
     freq = np.zeros((10, 10), dtype=int)
     c = cmomy.CentralMoments.zeros(mom=(2, 2), val_shape=(10, 2))
 
-    c2 = c.resample_and_reduce(nrep=10, axis=0)
+    c2 = c.resample_and_reduce(nrep=10, axis=0, resample_kws={"fromzero": fromzero})
 
     np.testing.assert_allclose(c2.data, 0.0)
 
@@ -291,9 +336,13 @@ def test_resample_zero_weight() -> None:
 
     c = cmomy.CentralMoments.from_vals((x, x), mom=(2, 2))
 
-    c2 = c.resample_and_reduce(freq=freq)
+    c2 = c.resample_and_reduce(freq=freq, resample_kws={"fromzero": fromzero})
 
     np.testing.assert_allclose(c2.data, 0.0)
+
+    # indexed:
+    out = cmomy.indexed.resample_data(c.data, freq=freq, mom=(2, 2), axis=0)
+    np.testing.assert_allclose(c2.data, out)
 
 
 @pytest.mark.slow()
@@ -330,7 +379,8 @@ def test_bootstrap_stats(other) -> None:
 
 
 @parallel_parametrize
-def test_resample_nsamp(other, parallel) -> None:
+@fromzero_parametrize
+def test_resample_nsamp(other, parallel, fromzero) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
@@ -345,9 +395,19 @@ def test_resample_nsamp(other, parallel) -> None:
                 )
 
                 t0 = s.resample_and_reduce(
-                    indices=indices, axis=axis, parallel=parallel
+                    indices=indices,
+                    axis=axis,
+                    parallel=parallel,
+                    resample_kws={"fromzero": fromzero},
                 )
 
-                t1 = s.resample(indices, axis=axis).reduce(1)
-
+                t1 = s.resample(indices, axis=axis).reduce(axis=1)
                 np.testing.assert_allclose(t0.to_values(), t1.to_values())
+
+                # test indexed resample
+                freq = cmomy.resample.indices_to_freq(indices, ndat=ndat)
+
+                out = cmomy.indexed.resample_data(
+                    s.data, freq=freq, mom=s.mom, axis=axis, parallel=parallel
+                )
+                np.testing.assert_allclose(t0.to_values(), out)

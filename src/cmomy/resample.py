@@ -261,6 +261,7 @@ def resample_data(  # noqa: PLR0914
     order: ArrayOrder = None,
     parallel: bool = True,
     out: NDArrayAny | None = None,
+    fromzero: bool = True,
 ) -> NDArrayAny:
     """
     Resample data according to frequency table.
@@ -290,6 +291,8 @@ def resample_data(  # noqa: PLR0914
     data = np.asarray(data, dtype=dtype, order=order)
     freq = np.asarray(freq, dtype=np.int64, order=order)
 
+    # TODO(wpk): Can refactor this...
+    # Overlaps with indexed.reduce_by_index
     if dtype is None:
         dtype = data.dtype
 
@@ -331,7 +334,10 @@ def resample_data(  # noqa: PLR0914
     outr = out.reshape(out_reshape)
 
     resample = factory_resample_data(
-        cov=len(mom) > 1, vec=len(shape) > 0, parallel=parallel
+        cov=len(mom) > 1,
+        vec=len(shape) > 0,
+        parallel=parallel,
+        fromzero=fromzero,
     )
 
     outr.fill(0.0)

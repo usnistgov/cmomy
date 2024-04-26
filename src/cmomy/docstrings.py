@@ -91,6 +91,19 @@ def _dummy_docstrings() -> None:
         Random number generator object.  Defaults to output of :func:`~cmomy.random.default_rng`.
     kwargs | **kwargs
         Extra keyword arguments.
+
+    group_idx : ndarray
+        Array of integers.  Each value corresponds to a unique group.
+
+    coords_policy : {'first', 'last', None}
+        Policy for handling coordinates along `axis`.
+        If no coordinates do nothing, otherwise use:
+
+        * 'first': select first value of coordinate for each block.
+        * 'last': select last value of coordinate for each block.
+        * None: drop any coordinates.
+
+
     """
 
 

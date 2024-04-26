@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, overload  # TYPE_CHECKING,
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 
@@ -27,6 +27,7 @@ if TYPE_CHECKING:
         Any,
         Callable,
         Hashable,
+        Iterable,
         Literal,
         Mapping,
         Sequence,
@@ -38,9 +39,12 @@ if TYPE_CHECKING:
     from xarray.core.coordinates import DataArrayCoordinates
     from xarray.core.indexes import Indexes
 
+    from cmomy.typing import KeepAttrs
+
     from ._typing_compat import Self
     from .central import CentralMoments
     from .typing import (
+        CoordsPolicy,
         Mom_NDim,
         MomDims,
         Moments,
@@ -117,6 +121,49 @@ def _move_mom_dims_to_end(
         x = x.transpose(*order)  # pyright: ignore[reportUnknownArgumentType]
 
     return x
+
+
+def _replace_coords_from_isel(
+    da_original: xr.DataArray,
+    da_selected: xr.DataArray,
+    indexers: Mapping[Any, Any] | None = None,
+    drop: bool = False,
+    **indexers_kwargs: Any,
+) -> xr.DataArray:
+    """
+    Replace coords in da_selected with coords from coords from da_original.isel(...).
+
+    This assumes that `da_selected` is the result of soe operation, and that indexeding
+    ``da_original`` will give the correct coordinates/indexed.
+
+    Useful for adding back coordinates to reduced object.
+    """
+    from xarray.core.indexes import isel_indexes
+    from xarray.core.indexing import is_fancy_indexer
+    from xarray.namedarray.utils import either_dict_or_kwargs
+
+    indexers = either_dict_or_kwargs(indexers, indexers_kwargs, "isel")
+    if any(is_fancy_indexer(idx) for idx in indexers.values()):
+        msg = "no fancy indexers for this"
+        raise ValueError(msg)
+
+    indexes, index_variables = isel_indexes(da_original.xindexes, indexers)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+
+    coords = {}
+    for coord_name, coord_value in da_original._coords.items():  # noqa: SLF001  # pyright: ignore[reportPrivateUsage]
+        if coord_name in index_variables:
+            coord_value = index_variables[coord_name]  # noqa: PLW2901
+        else:
+            coord_indexers = {
+                k: v for k, v in indexers.items() if k in coord_value.dims
+            }
+            if coord_indexers:
+                coord_value = coord_value.isel(coord_indexers)  # noqa: PLW2901
+                if drop and coord_value.ndim == 0:
+                    continue
+        coords[coord_name] = coord_value
+
+    return da_selected._replace(coords=coords, indexes=indexes)  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
 
 
 # * xcentral moments/comoments
@@ -416,6 +463,21 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
     def _wrap_like(self, x: NDArrayAny) -> xr.DataArray:
         return self._xdata.copy(data=x)
 
+    def _replace_coords_isel(
+        self,
+        da_selected: xr.DataArray,
+        indexers: Mapping[Any, Any] | None = None,
+        drop: bool = False,
+        **indexers_kwargs: Any,
+    ) -> xr.DataArray:
+        return _replace_coords_from_isel(
+            da_original=self._xdata,
+            da_selected=da_selected,
+            indexers=indexers,
+            drop=drop,
+            **indexers_kwargs,
+        )
+
     @docfiller_abc()
     def new_like(
         self,
@@ -653,6 +715,112 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             sparse=sparse,
         )
 
+    def set_index(
+        self,
+        indexes: Mapping[Any, Hashable | Sequence[Hashable]] | None = None,
+        append: bool = False,
+        *,
+        _order: bool = True,
+        _copy: bool = False,
+        _verify: bool = False,
+        _check_mom: bool = True,
+        _kws: Mapping[str, Any] | None = None,
+        **indexes_kwargs: Hashable | Sequence[Hashable],
+    ) -> Self:
+        """
+        Interface to :meth:`xarray.DataArray.set_index`
+
+        Returns
+        -------
+        output : xCentralMoments
+            With new index.
+
+        See Also
+        --------
+        stack
+        unstack
+        reset_index
+        """
+        return self.pipe(
+            "set_index",
+            _order=_order,
+            _copy=_copy,
+            _verify=_verify,
+            _kws=_kws,
+            _check_mom=_check_mom,
+            indexes=indexes,
+            append=append,
+            **indexes_kwargs,
+        )
+
+    def reset_index(
+        self,
+        dims_or_levels: Hashable | Sequence[Hashable],
+        drop: bool = False,
+        *,
+        _order: bool = True,
+        _copy: bool = False,
+        _verify: bool = False,
+        _check_mom: bool = True,
+        _kws: Mapping[str, Any] | None = None,
+    ) -> Self:
+        """Interface to :meth:`xarray.DataArray.reset_index`."""
+        return self.pipe(
+            "reset_index",
+            _order=_order,
+            _copy=_copy,
+            _verify=_verify,
+            _kws=_kws,
+            _check_mom=_check_mom,
+            dims_or_levels=dims_or_levels,
+            drop=drop,
+        )
+
+    def drop_vars(
+        self,
+        names: str | Iterable[Hashable] | Callable[[Self], str | Iterable[Hashable]],
+        *,
+        errors: Literal["raise", "ignore"] = "raise",
+        _order: bool = True,
+        _copy: bool = False,
+        _verify: bool = False,
+        _check_mom: bool = True,
+        _kws: Mapping[str, Any] | None = None,
+    ) -> Self:
+        """Interface to :meth:`xarray.DataArray.drop_vars`"""
+        return self.pipe(
+            "drop_vars",
+            names=names,
+            errors=errors,
+            _order=_order,
+            _copy=_copy,
+            _verify=_verify,
+            _kws=_kws,
+            _check_mom=_check_mom,
+        )
+
+    def swap_dims(
+        self,
+        dims_dict: Mapping[Any, Hashable] | None = None,
+        _order: bool = True,
+        _copy: bool = False,
+        _verify: bool = False,
+        _check_mom: bool = True,
+        _kws: Mapping[str, Any] | None = None,
+        **dims_kwargs: Any,
+    ) -> Self:
+        """Interface to :meth:`xarray.DataArray.swap_dims`."""
+        return self.pipe(
+            "drop_vars",
+            dims_dict=dims_dict,
+            _order=_order,
+            _copy=_copy,
+            _verify=_verify,
+            _kws=_kws,
+            _check_mom=_check_mom,
+            **dims_kwargs,
+        )
+
     def sel(
         self,
         indexers: Mapping[Any, Any] | None = None,
@@ -826,11 +994,11 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         )
 
     # ** To/from CentralMoments
-    def to_centralmoments(self) -> CentralMoments:
+    def to_centralmoments(self, data: NDArrayAny | None = None) -> CentralMoments:
         """Create a CentralMoments object from xCentralMoments."""
         from .central import CentralMoments
 
-        return CentralMoments(data=self.data, mom_ndim=self.mom_ndim)
+        return CentralMoments(data=data or self.data, mom_ndim=self.mom_ndim)
 
     @cached.prop
     def centralmoments_view(self) -> CentralMoments:
@@ -1199,6 +1367,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         parallel: bool = True,
         resample_kws: Mapping[str, Any] | None = None,
         rng: np.random.Generator | None = None,
+        keep_attrs: KeepAttrs = None,
         **kwargs: Any,
     ) -> Self | tuple[Self, NDArrayAny]:
         """
@@ -1272,66 +1441,114 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         Dimensions without coordinates: rep, mom_0
 
         """
+        from .resample import randsamp_freq, resample_data
+
         self._raise_if_scalar()
 
         axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
-
         if dim in self.mom_dims:
             msg = f"can only resample from value dimensions {self.val_dims}"
             raise ValueError(msg)
 
-        # Final form will move `dim` to front of array.
-        # this will be replaced by rep_dimension
-        template = self.to_dataarray().isel({dim: 0}, drop=True)
-
-        out, freq = self.centralmoments_view.resample_and_reduce(
-            freq=freq,
-            indices=indices,
+        freq = randsamp_freq(
             nrep=nrep,
-            axis=axis,
+            ndat=self.val_shape[axis],
             nsamp=nsamp,
-            parallel=parallel,
-            resample_kws=resample_kws,
-            full_output=True,
+            indices=indices,
+            freq=freq,
+            check=True,
             rng=rng,
-            **kwargs,
         )
 
-        new = self.from_centralmoments(
-            obj=out,
-            dims=(rep_dim, *template.dims),
-            mom_dims=None,
-            attrs=template.attrs,
-            coords=template.coords,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-            name=template.name,
+        def wrapper(data: NDArrayAny) -> NDArrayAny:
+            out = resample_data(
+                np.moveaxis(data, -1, 0),
+                freq,
+                mom=self.mom,
+                axis=0,
+                parallel=parallel,
+                **(resample_kws or {}),
+            )
+            return np.moveaxis(out, 0, -1)
+
+        out = cast(
+            "xr.DataArray",
+            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+                wrapper,
+                self._xdata,
+                input_core_dims=[[dim]],
+                output_core_dims=[[rep_dim]],
+                keep_attrs=keep_attrs,
+            ).transpose(rep_dim, ...),
         )
 
+        new = self.new_like(data=out, mom=self.mom, **kwargs)
         if full_output:
             return new, freq
-
         return new
 
     @docfiller.decorate
-    def reduce(
-        self, dim: Hashable | None = None, axis: int | None = None, **kwargs: Any
+    def reduce_dumb(
+        self,
+        dim: Hashable | None = None,
+        *,
+        axis: int | None = None,
+        by: NDArrayAny | xr.DataArray | str | Iterable[str] | None = None,
+        reduce_kws: Mapping[Any, Any] | None = None,
+        coords_policy: CoordsPolicy | Literal["group"] = "first",
+        group_name: Hashable | None = None,
+        rename_dim: Hashable | None = None,
+        **kwargs: Any,
     ) -> Self:
         """
         Parameters
         ----------
         {dim}
         {axis}
+        by : ndarray or DataArray or str or iterable of str, optional
+            If ``None``, reduce over entire ``dim``. Otherwise, reduce by
+            group. If :class:`~numpy.ndarray`, use the unique values. If
+            :class:`~xarray.DataArray`, use unique values and rename dimension
+            ``by.name``. If str or Iterable of str, Create grouper from these
+            named coordinates.
+        coords_policy : {{'first', 'last', 'group', None}}
+            Policy for handling coordinates along ``dim`` by ``by`` is specified.
+            If no coordinates do nothing, otherwise use:
+
+            * 'first': select first value of coordinate for each block.
+            * 'last': select last value of coordinate for each block.
+            * 'group': Assign unique groups from ``group_idx`` to ``dim``
+            * None: drop any coordinates.
+        group_name : str, optional
+            If supplied, add the unique groups to this coordinate. Ignored if
+            ``coords_policy == "group"`.
+        rename_dim : hashable, optional
+            Optional name for the output dimension (rename ``dim`` to
+            ``rename_dim``).
+        reduce_kws : mapping, optional
+            Optional parameters to :func:`.indexed.reduce_by_index`.
         **kwargs
-            Extra arguments to :meth:`from_datas`
+            Extra arguments to :meth:`from_datas` if ``group_idx`` is ``None``,
+            or to :meth:`from_data` otherwise
 
         Returns
         -------
         output : {klass}
-            Reduced along dimension
+            If ``group_idx`` is ``None``, reduce over all samples in ``dim`` or
+            ``axis``. Otherwise, reduce for each unique value of ``group_idx``.
+
+        Notes
+        -----
+        This is a new feature, and subject to change. In particular, the
+        current implementation is not smart about the output coordinates and
+        dimensions, and is inconsistent with :meth:`xarray.DataArray.groupby`.
+        It is up the the user to manipulate the dimensions/coordinates. output
+        dimensions and coords simplistically.
 
         See Also
         --------
         from_datas
-
+        .indexed.reduce_by_group_idx
 
         Examples
         --------
@@ -1348,9 +1565,238 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         """
         self._raise_if_scalar()
         axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
-        return type(self).from_datas(
-            self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kwargs
+
+        if by is None:
+            return type(self).from_datas(
+                self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kwargs
+            )
+
+        # reduce by group
+        from .indexed import group_idx_to_groups_index_start_end, reduce_by_index
+
+        group_idx: NDArrayAny
+        if isinstance(by, np.ndarray):
+            group_idx = by
+
+        elif isinstance(by, xr.DataArray):
+            group_idx = by.to_numpy()  # pyright: ignore[reportUnknownMemberType]
+            rename_dim = rename_dim or by.name
+        else:
+            # assume string of coordinates
+            by = [by] if isinstance(by, str) else list(by)
+
+            group_idx = (
+                self.to_dataarray()[dim]  # pyright: ignore[reportUnknownMemberType]
+                .assign_coords(_index=lambda x: (dim, range(x.sizes[dim])))  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownMemberType]
+                .to_dataframe()
+                .reset_index(drop=True)
+                .assign(_group=lambda x: x.groupby(by).ngroup())  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType]
+                .set_index("_index")["_group"]
+                .loc[range(self.sizes[dim])]
+                .to_numpy()
+            )
+
+        groups, index, group_start, group_end = group_idx_to_groups_index_start_end(
+            group_idx
         )
+
+        if coords_policy in {"first", "last"}:
+            dim_select = index[
+                group_end - 1 if coords_policy == "last" else group_start
+            ]
+            template = self.to_dataarray().isel({dim: dim_select}).transpose(dim, ...)
+
+            if group_name:
+                template = template.assign_coords({group_name: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
+
+        else:
+            template = (
+                self.to_dataarray()
+                .isel({dim: slice(0, len(groups))})
+                .drop_vars(dim, errors="ignore")  # type: ignore[arg-type]
+            )
+            if coords_policy == "group":
+                template = template.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
+            elif group_name:
+                template = template.assign_coords({group_name: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
+
+        if rename_dim:
+            template = template.rename({dim: rename_dim})
+
+        data = reduce_by_index(
+            self.to_numpy(),
+            mom=self.mom,
+            index=index,
+            group_start=group_start,
+            group_end=group_end,
+            axis=axis,
+            **(reduce_kws or {}),
+        )
+        return type(self).from_data(data, mom=self.mom, template=template, **kwargs)
+
+    def reduce(
+        self,
+        dim: Hashable | None = None,
+        *,
+        axis: int | None = None,
+        by: NDArrayAny | xr.DataArray | str | Iterable[str] | None = None,
+        reduce_kws: Mapping[Any, Any] | None = None,
+        coords_policy: CoordsPolicy | Literal["group"] = "first",
+        group_name: Hashable | None = None,
+        rename_dim: Hashable | None = None,
+        keep_attrs: KeepAttrs = None,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Parameters
+        ----------
+        {dim}
+        {axis}
+        by : ndarray or DataArray or str or iterable of str, optional
+            If ``None``, reduce over entire ``dim``. Otherwise, reduce by
+            group. If :class:`~numpy.ndarray`, use the unique values. If
+            :class:`~xarray.DataArray`, use unique values and rename dimension
+            ``by.name``. If str or Iterable of str, Create grouper from these
+            named coordinates.
+        coords_policy : {{'first', 'last', 'group', None}}
+            Policy for handling coordinates along ``dim`` by ``by`` is specified.
+            If no coordinates do nothing, otherwise use:
+
+            * 'first': select first value of coordinate for each block.
+            * 'last': select last value of coordinate for each block.
+            * 'group': Assign unique groups from ``group_idx`` to ``dim``
+            * None: drop any coordinates.
+        group_name : str, optional
+            If supplied, add the unique groups to this coordinate. Ignored if
+            ``coords_policy == "group"`.
+        rename_dim : hashable, optional
+            Optional name for the output dimension (rename ``dim`` to
+            ``rename_dim``).
+        reduce_kws : mapping, optional
+            Optional parameters to :func:`.indexed.reduce_by_index`.
+        **kwargs
+            Extra arguments to :meth:`from_datas` if ``group_idx`` is ``None``,
+            or to :meth:`from_data` otherwise
+
+        Returns
+        -------
+        output : {klass}
+            If ``group_idx`` is ``None``, reduce over all samples in ``dim`` or
+            ``axis``. Otherwise, reduce for each unique value of ``group_idx``.
+
+        Notes
+        -----
+        This is a new feature, and subject to change. In particular, the
+        current implementation is not smart about the output coordinates and
+        dimensions, and is inconsistent with :meth:`xarray.DataArray.groupby`.
+        It is up the the user to manipulate the dimensions/coordinates. output
+        dimensions and coords simplistically.
+
+        See Also
+        --------
+        from_datas
+        .indexed.reduce_by_group_idx
+
+        Examples
+        --------
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), axis=0, mom=2)
+        >>> da.reduce(dim="dim_0")
+        <xCentralMoments(val_shape=(3,), mom=(2,))>
+        <xarray.DataArray (dim_1: 3, mom_0: 3)> Size: 72B
+        array([[20.    ,  0.5221,  0.0862],
+               [20.    ,  0.5359,  0.0714],
+               [20.    ,  0.4579,  0.103 ]])
+        Dimensions without coordinates: dim_1, mom_0
+        """
+        self._raise_if_scalar()
+        axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim)
+
+        if by is None:
+            return type(self).from_datas(
+                self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kwargs
+            )
+
+        # reduce by group
+        from .indexed import group_idx_to_groups_index_start_end, reduce_by_index
+
+        group_idx: NDArrayAny
+        if isinstance(by, np.ndarray):
+            group_idx = by
+
+        elif isinstance(by, xr.DataArray):
+            group_idx = by.to_numpy()  # pyright: ignore[reportUnknownMemberType]
+            rename_dim = rename_dim or by.name
+        else:
+            # assume string of coordinates
+            by = [by] if isinstance(by, str) else list(by)
+
+            group_idx = (
+                self.to_dataarray()[dim]  # pyright: ignore[reportUnknownMemberType]
+                .assign_coords(_index=lambda x: (dim, range(x.sizes[dim])))  # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownMemberType]
+                .to_dataframe()
+                .reset_index(drop=True)
+                .assign(_group=lambda x: x.groupby(by).ngroup())  # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType]
+                .set_index("_index")["_group"]
+                .loc[range(self.sizes[dim])]
+                .to_numpy()
+            )
+
+        groups, index, group_start, group_end = group_idx_to_groups_index_start_end(
+            group_idx
+        )
+
+        def wrapper(data: NDArrayAny) -> NDArrayAny:
+            # move core dimension to the front
+            data = np.moveaxis(data, -1, 0)
+
+            out = reduce_by_index(
+                data,
+                mom=self.mom,
+                index=index,
+                group_start=group_start,
+                group_end=group_end,
+                axis=0,
+                **(reduce_kws or {}),
+            )
+
+            # move core dimension to back
+            return np.moveaxis(out, 0, -1)
+
+        out = cast(
+            "xr.DataArray",
+            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+                wrapper,
+                self._xdata,
+                input_core_dims=[[dim]],
+                output_core_dims=[[dim]],
+                exclude_dims={dim},
+                keep_attrs=keep_attrs,
+            )
+            # move dim back to front
+            .transpose(dim, ...),
+        )
+
+        if coords_policy in {"first", "last"}:
+            dim_select = index[
+                group_end - 1 if coords_policy == "last" else group_start
+            ]
+            # fix up coordinates
+            out = self._replace_coords_isel(
+                out,
+                {dim: dim_select},
+            )
+        elif coords_policy == "group":
+            group_name = dim
+
+        if group_name:
+            out = out.assign_coords({group_name: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
+
+        if rename_dim:
+            out = out.rename({dim: rename_dim})
+
+        return self.new_like(data=out, mom=self.mom)
 
     @docfiller.decorate
     def block(
@@ -1358,7 +1804,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         block_size: int | None,
         dim: Hashable | None = None,
         axis: int | None = None,
-        coords_policy: Literal["first", "last", None] = "first",
+        coords_policy: CoordsPolicy = "first",
         **kwargs: Any,
     ) -> Self:
         """
@@ -1368,13 +1814,17 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
             Number of observations to include in a given block.
         {dim}
         {axis}
-        coords_policy : {{'first','last',None}}
+        coords_policy : {{'first', 'last', None}}
             Policy for handling coordinates along `axis`.
             If no coordinates do nothing, otherwise use:
 
             * 'first': select first value of coordinate for each block.
             * 'last': select last value of coordinate for each block.
             * None: drop any coordinates.
+
+
+
+        {coords_policy}
         **kwargs
             Extra arguments to :meth:`CentralMoments.block`
 
@@ -1481,6 +1931,151 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray]):  # noqa: N801
         )
 
         return self.from_centralmoments(obj=central, template=template)
+
+    @docfiller.decorate
+    def block_new(
+        self,
+        block_size: int | None,
+        dim: Hashable | None = None,
+        axis: int | None = None,
+        coords_policy: CoordsPolicy = "first",
+        block_kws: Mapping[Any, Any] | None = None,
+        keep_attrs: KeepAttrs = None,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Parameters
+        ----------
+        block_size : int
+            Number of observations to include in a given block.
+        {dim}
+        {axis}
+        coords_policy : {{'first', 'last', None}}
+            Policy for handling coordinates along `axis`.
+            If no coordinates do nothing, otherwise use:
+
+            * 'first': select first value of coordinate for each block.
+            * 'last': select last value of coordinate for each block.
+            * None: drop any coordinates.
+
+
+
+        {coords_policy}
+        **kwargs
+            Extra arguments to :meth:`CentralMoments.block`
+
+        Returns
+        -------
+        output : xCentralMoments
+            Object with block averaging.
+
+        See Also
+        --------
+        CentralMoments.block
+
+
+        Examples
+        --------
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> x = rng.random((10, 10))
+        >>> da = xCentralMoments.from_vals(x, mom=2)
+        >>> da
+        <xCentralMoments(val_shape=(10,), mom=(2,))>
+        <xarray.DataArray (dim_0: 10, mom_0: 3)> Size: 240B
+        array([[10.    ,  0.6247,  0.0583],
+               [10.    ,  0.3938,  0.0933],
+               [10.    ,  0.425 ,  0.1003],
+               [10.    ,  0.5   ,  0.117 ],
+               [10.    ,  0.5606,  0.0446],
+               [10.    ,  0.5612,  0.0861],
+               [10.    ,  0.531 ,  0.0731],
+               [10.    ,  0.8403,  0.0233],
+               [10.    ,  0.5097,  0.103 ],
+               [10.    ,  0.5368,  0.085 ]])
+        Dimensions without coordinates: dim_0, mom_0
+
+        >>> da.block(block_size=5, dim="dim_0")
+        <xCentralMoments(val_shape=(2,), mom=(2,))>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
+        Dimensions without coordinates: dim_0, mom_0
+
+        This is equivalent to
+
+        >>> xCentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1)
+        <xCentralMoments(val_shape=(2,), mom=(2,))>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
+        array([[50.    ,  0.5268,  0.0849],
+               [50.    ,  0.5697,  0.0979]])
+        Dimensions without coordinates: dim_0, mom_0
+
+
+        The coordinate policy can be useful to keep coordinates:
+
+        >>> da2 = da.assign_coords(dim_0=range(10))
+        >>> da2.block(5, dim="dim_0", coords_policy="first")
+        <xCentralMoments(val_shape=(2,), mom=(2,))>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
+        Coordinates:
+          * dim_0    (dim_0) int64 16B 0 5
+        Dimensions without coordinates: mom_0
+        >>> da2.block(5, dim="dim_0", coords_policy="last")
+        <xCentralMoments(val_shape=(2,), mom=(2,))>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
+        Coordinates:
+          * dim_0    (dim_0) int64 16B 4 9
+        Dimensions without coordinates: mom_0
+        >>> da2.block(5, dim="dim_0", coords_policy=None)
+        <xCentralMoments(val_shape=(2,), mom=(2,))>
+        <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
+        array([[50.    ,  0.5008,  0.0899],
+               [50.    ,  0.5958,  0.0893]])
+        Dimensions without coordinates: dim_0, mom_0
+
+        """
+        self._raise_if_scalar()
+        axis, dim = _select_axis_dim(dims=self.dims, axis=axis, dim=dim, default_axis=0)
+
+        if block_size is None:
+            block_size = self.sizes[dim]
+            nblock = 1
+        else:
+            nblock = self.sizes[dim] // block_size
+
+        def wrapper(data: NDArrayAny) -> NDArrayAny:  # noqa: ARG001
+            # ignore data.
+            out = self.centralmoments_view.block(
+                block_size=block_size, axis=axis, **(block_kws or {})
+            ).to_numpy()
+            # core dim last
+            return np.moveaxis(out, 0, -1)
+
+        out = cast(
+            "xr.DataArray",
+            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+                wrapper,
+                self._xdata,
+                input_core_dims=[[dim]],
+                output_core_dims=[[dim]],
+                exclude_dims={dim},
+                keep_attrs=keep_attrs,
+            ).transpose(dim, ...),
+        )
+
+        # update coords
+        if coords_policy in {"first", "last"}:
+            start = 0 if coords_policy == "first" else block_size - 1
+            out = self._replace_coords_isel(
+                out, {dim: slice(start, block_size * nblock, block_size)}
+            )
+
+        return self.new_like(data=out, mom=self.mom, **kwargs)
 
     # ** Constructors
     @classmethod

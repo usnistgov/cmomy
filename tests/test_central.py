@@ -1,4 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+from __future__ import annotations
+
 import numpy as np
 import pytest
 
@@ -599,7 +601,7 @@ def test_reduce(other) -> None:
     ndim = len(other.val_shape)
     if ndim > 0:
         for axis in range(ndim):
-            t = other.s.reduce(axis)
+            t = other.s.reduce(axis=axis)
 
             f = other.cls.from_datas(
                 other.data_test, axis=axis, mom_ndim=other.mom_ndim
@@ -635,23 +637,38 @@ def test_moveaxis(other) -> None:
             np.testing.assert_allclose(t.data, f)
 
 
-def test_block(rng) -> None:
-    x = rng.random((100, 10, 10))
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_block(rng, mom_ndim: int) -> None:
+    x = rng.random((10, 10, 10))
 
-    c = cmomy.CentralMoments.from_vals(x, axis=0, mom=3)
+    mom: tuple[int] | tuple[int, int]
+    if mom_ndim == 1:
+        mom = (3,)
+        c = cmomy.CentralMoments.from_vals(x, axis=0, mom=mom)
+    else:
+        mom = (3, 3)
+        y = rng.random((10, 10, 10))
+        c = cmomy.CentralMoments.from_vals((x, y), axis=0, mom=mom)
 
-    c1 = cmomy.CentralMoments.from_data(c.data[::2, ...], mom_ndim=1)
-    c2 = cmomy.CentralMoments.from_data(c.data[1::2, ...], mom_ndim=1)
+    c1 = cmomy.CentralMoments.from_data(c.data[::2, ...], mom=mom)
+    c2 = cmomy.CentralMoments.from_data(c.data[1::2, ...], mom=mom)
 
     c3 = c1 + c2
-
     np.testing.assert_allclose(c3.data, c.block(2, axis=0).data)
 
-    c1 = cmomy.CentralMoments.from_data(c.data[:, ::2, ...], mom_ndim=1)
-    c2 = cmomy.CentralMoments.from_data(c.data[:, 1::2, ...], mom_ndim=1)
+    # using grouped
+    group_idx = np.arange(5).repeat(2)
+    np.testing.assert_allclose(
+        c.reduce(by=group_idx, axis=0)[0].to_numpy(), c.block(2, axis=0).to_numpy()
+    )
+
+    c1 = cmomy.CentralMoments.from_data(c.data[:, ::2, ...], mom=mom)
+    c2 = cmomy.CentralMoments.from_data(c.data[:, 1::2, ...], mom=mom)
 
     c3 = (c1 + c2).moveaxis(1, 0)
 
     np.testing.assert_allclose(c3.data, c.block(2, axis=1).data)
-
     np.testing.assert_allclose(c.block().data[0, ...], c.reduce())
+    np.testing.assert_allclose(
+        c.reduce(by=group_idx, axis=1)[0].to_numpy(), c.block(2, axis=1).to_numpy()
+    )

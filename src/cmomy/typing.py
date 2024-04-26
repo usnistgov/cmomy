@@ -69,7 +69,14 @@ XArrayIndexesType: TypeAlias = Any
 
 
 # literals
-VerifyValuesStyles = Literal["val", "vals", "data", "datas", "var", "vars"]
+VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
+CoordsPolicy: TypeAlias = Literal["first", "last", None]
+KeepAttrs: TypeAlias = Union[
+    Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
+    bool,
+    None,
+]
+
 
 # pushing arrays
 MultiArray = Union[float, ArrayLike, T_Array]

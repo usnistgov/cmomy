@@ -1005,30 +1005,84 @@ class CentralMoments(CentralMomentsABC[NDArrayAny]):  # noqa: D101
             return out, freq
         return out
 
+    @overload
+    def reduce(
+        self,
+        axis: int | None = ...,
+        *,
+        by: None = ...,
+        reduce_kws: Mapping[Any, Any] | None = ...,
+        **kwargs: Any,
+    ) -> Self: ...
+
+    @overload
+    def reduce(
+        self,
+        axis: int | None = ...,
+        *,
+        by: NDArrayAny,
+        reduce_kws: Mapping[Any, Any] | None = ...,
+        **kwargs: Any,
+    ) -> tuple[Self, NDArrayAny]: ...
+
     @docfiller.decorate
-    def reduce(self, axis: int | None = None, **kwargs: Any) -> Self:
+    def reduce(
+        self,
+        axis: int | None = None,
+        *,
+        by: NDArrayAny | None = None,
+        reduce_kws: Mapping[Any, Any] | None = None,
+        **kwargs: Any,
+    ) -> Self | tuple[Self, NDArrayAny]:
         """
         Create new object reduce along axis.
 
         Parameters
         ----------
         {axis}
+        by : ndarray, optional
+            Groups to be reduced together.  Length must be ``self.shape[axis]``.
+            Reduce all samples with ``by == groups[k]`` to ``out[k, ...]``.
+        reduce_kws : mapping, optional
+            Optional parameters to :func:`.indexed.reduce_by_group_idx`.
         **kwargs
-            Extra parameters to :meth:`from_datas`
+            Extra parameters to :meth:`from_datas` if ``by`` is ``None``, or
+            to :meth:`from_data` otherwise.
 
         Returns
         -------
         output : {klass}
+            If ``by`` is ``None``, reduce all samples along ``axis``.  Otherwise,
+            reduce for each unique value of ``by``.  In this case, output will have shape
+            ``(ngroups, self.shape[0], .. self.shape[axis-1], self.shape[axis+1], ...)`` where ``ngroups``
+            is the number of unique values in ``by``.
+        groups : ndarray, optional
+            If ``by`` is not None, return unique groups.  ``groups[k]`` corresponds to the group identity of
+            ``out[k, ...]``.
 
         See Also
         --------
         from_datas
+        .indexed.reduce_by_group_idx
         """
         self._raise_if_scalar()
         axis = self._wrap_axis(axis)
-        return type(self).from_datas(
-            self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kwargs
+
+        if by is None:
+            return type(self).from_datas(
+                self.to_values(), mom_ndim=self.mom_ndim, axis=axis, **kwargs
+            )
+
+        from .indexed import reduce_by_group_idx
+
+        groups, data = reduce_by_group_idx(
+            data=self.to_values(),
+            mom=self.mom,
+            group_idx=by,
+            axis=axis,
+            **(reduce_kws or {}),
         )
+        return type(self).from_data(data, mom=self.mom, **kwargs), groups
 
     @docfiller.decorate
     def block(

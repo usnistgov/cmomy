@@ -14,7 +14,13 @@ from .pushers import (
     push_datas_scale,
     push_datas_scale_cov,
     push_datas_scale_cov_vec,
+    # fromzero
+    push_datas_scale_fromzero,
+    push_datas_scale_fromzero_cov,
+    push_datas_scale_fromzero_cov_vec,
+    push_datas_scale_fromzero_vec,
     push_datas_scale_vec,
+    # vals
     push_vals_scale,
     push_vals_scale_cov,
     push_vals_scale_cov_vec,
@@ -77,9 +83,8 @@ def randsamp_indices_to_freq(indices, freqs) -> None:
 #     return resample
 
 
-######################################################################
-# resample data
-# mom/scalar
+# * resample data
+# ** mom/scalar
 @myjit()
 def _resample_data(data, freqs, out) -> None:
     nrep = freqs.shape[0]
@@ -94,7 +99,7 @@ def _resample_data_parallel(data, freqs, out) -> None:
         push_datas_scale(out[irep, ...], data, freqs[irep, ...])
 
 
-# mom/vector
+# ** mom/vector
 @myjit()
 def _resample_data_vec(data, freqs, out) -> None:
     nrep = freqs.shape[0]
@@ -109,7 +114,7 @@ def _resample_data_vec_parallel(data, freqs, out) -> None:
         push_datas_scale_vec(out[irep, ...], data, freqs[irep, ...])
 
 
-# cov/vector
+# ** cov/vector
 @myjit()
 def _resample_data_cov(data, freqs, out) -> None:
     nrep = freqs.shape[0]
@@ -124,7 +129,7 @@ def _resample_data_cov_parallel(data, freqs, out) -> None:
         push_datas_scale_cov(out[irep, ...], data, freqs[irep, ...])
 
 
-# cov/vector
+# ** cov/vector
 @myjit()
 def _resample_data_cov_vec(data, freqs, out) -> None:
     nrep = freqs.shape[0]
@@ -139,22 +144,92 @@ def _resample_data_cov_vec_parallel(data, freqs, out) -> None:
         push_datas_scale_cov_vec(out[irep, ...], data, freqs[irep, ...])
 
 
+# * From zero data
+@myjit()
+def _resample_data_fromzero(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero(out[irep, ...], data, freqs[irep, ...])
+
+
+@myjit(parallel=True)
+def _resample_data_fromzero_parallel(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero(out[irep, ...], data, freqs[irep, ...])
+
+
+# ** mom/vector
+@myjit()
+def _resample_data_fromzero_vec(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero_vec(out[irep, ...], data, freqs[irep, ...])
+
+
+@myjit(parallel=True)
+def _resample_data_fromzero_vec_parallel(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero_vec(out[irep, ...], data, freqs[irep, ...])
+
+
+# ** cov/vector
+@myjit()
+def _resample_data_fromzero_cov(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero_cov(out[irep, ...], data, freqs[irep, ...])
+
+
+@myjit(parallel=True)
+def _resample_data_fromzero_cov_parallel(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero_cov(out[irep, ...], data, freqs[irep, ...])
+
+
+# ** cov/vector
+@myjit()
+def _resample_data_fromzero_cov_vec(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero_cov_vec(out[irep, ...], data, freqs[irep, ...])
+
+
+@myjit(parallel=True)
+def _resample_data_fromzero_cov_vec_parallel(data, freqs, out) -> None:
+    nrep = freqs.shape[0]
+    for irep in prange(nrep):
+        push_datas_scale_fromzero_cov_vec(out[irep, ...], data, freqs[irep, ...])
+
+
 _RESAMPLE_DATA_DICT: dict[Hashable, Callable[..., Any]] = {
-    # cov, vec, parallel
-    (False, False, False): _resample_data,
-    (False, False, True): _resample_data_parallel,
-    (False, True, False): _resample_data_vec,
-    (False, True, True): _resample_data_vec_parallel,
-    (True, False, False): _resample_data_cov,
-    (True, False, True): _resample_data_cov_parallel,
-    (True, True, False): _resample_data_cov_vec,
-    (True, True, True): _resample_data_cov_vec_parallel,
+    # cov, vec, parallel, fromzero
+    (False, False, False, False): _resample_data,
+    (False, False, True, False): _resample_data_parallel,
+    (False, True, False, False): _resample_data_vec,
+    (False, True, True, False): _resample_data_vec_parallel,
+    (True, False, False, False): _resample_data_cov,
+    (True, False, True, False): _resample_data_cov_parallel,
+    (True, True, False, False): _resample_data_cov_vec,
+    (True, True, True, False): _resample_data_cov_vec_parallel,
+    (False, False, False, True): _resample_data_fromzero,
+    (False, False, True, True): _resample_data_fromzero_parallel,
+    (False, True, False, True): _resample_data_fromzero_vec,
+    (False, True, True, True): _resample_data_fromzero_vec_parallel,
+    (True, False, False, True): _resample_data_fromzero_cov,
+    (True, False, True, True): _resample_data_fromzero_cov_parallel,
+    (True, True, False, True): _resample_data_fromzero_cov_vec,
+    (True, True, True, True): _resample_data_fromzero_cov_vec_parallel,
 }
 
 
-def factory_resample_data(cov: bool, vec: bool, parallel: bool) -> Callable[..., Any]:
+def factory_resample_data(
+    cov: bool, vec: bool, parallel: bool, fromzero: bool
+) -> Callable[..., Any]:
     """Get resampler functions(s)."""
-    return _RESAMPLE_DATA_DICT[cov, vec, parallel]
+    return _RESAMPLE_DATA_DICT[cov, vec, parallel, fromzero]
 
 
 ######################################################################
