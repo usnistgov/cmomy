@@ -81,3 +81,17 @@ def push_data(other, data) -> None:
 def reduce_datas(other, data) -> None:
     for i in range(other.shape[0]):
         pushscalar.push_data(other[i, :], data)
+
+
+@_decorator(
+    "(sample, mom) -> (mom)",
+    [
+        (nb.float32[:, :], nb.float32[:]),
+        (nb.float64[:, :], nb.float64[:]),
+    ],
+    writable=None,
+)
+def reduce_datas_fromzero(other, data) -> None:
+    data[...] = 0.0
+    for i in range(other.shape[0]):
+        pushscalar.push_data(other[i, :], data)

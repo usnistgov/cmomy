@@ -43,11 +43,12 @@ def resample_data(other, freq, data) -> None:
 
 
 @_vectorize(
-    "(sample,mom0,mom1),(replicate,sample),(replicate,mom0,mom1)",
+    "(sample,mom0,mom1),(replicate,sample) -> (replicate,mom0,mom1)",
     [
         (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
         (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
     ],
+    writable=None,
 )
 def resample_data_fromzero(other, freq, data) -> None:
     nrep, nsamp = freq.shape
@@ -55,6 +56,8 @@ def resample_data_fromzero(other, freq, data) -> None:
     assert other.shape[1:] == data.shape[1:]
     assert other.shape[0] == nsamp
     assert data.shape[0] == nrep
+
+    data[...] = 0.0
 
     for irep in range(nrep):
         first_nonzero = nsamp
@@ -70,28 +73,6 @@ def resample_data_fromzero(other, freq, data) -> None:
             f = freq[irep, isamp]
             if f != 0:
                 pushscalar_cov.push_data_scale(other[isamp, ...], f, data[irep, ...])
-
-
-@_vectorize(
-    "(sample,mom0,mom1),(replicate,sample),(replicate,mom0,mom1)",
-    [
-        (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
-        (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
-    ],
-)
-def resample_data2(other, freq, data) -> None:
-    nrep, nsamp = freq.shape
-
-    assert other.shape[1:] == data.shape[1:]
-    assert other.shape[0] == nsamp
-    assert data.shape[0] == nrep
-
-    for isamp in range(nsamp):
-        for irep in range(nrep):
-            f = freq[irep, isamp]
-            if f == 0:
-                continue
-            pushscalar_cov.push_data_scale(other[isamp, ...], f, data[irep, ...])
 
 
 @_jit(
@@ -135,6 +116,8 @@ def resample_data_fromzero_jit(other, freq, data) -> None:
     assert other.shape[0] == nsamp
     assert data.shape[0] == nrep
 
+    data[...] = 0.0
+
     for irep in nb.prange(nrep):
         first_nonzero = nsamp
         for isamp in range(nsamp):
@@ -168,8 +151,8 @@ def resample_data_fromzero_jit(other, freq, data) -> None:
         ),
         (
             nb.float64[:],
-            nb.float32[:],
-            nb.float32[:],
+            nb.float64[:],
+            nb.float64[:],
             nb.float64[:, :],
             nb.float64[:, :, :],
         ),

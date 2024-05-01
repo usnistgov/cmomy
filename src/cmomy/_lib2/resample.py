@@ -19,6 +19,7 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 _jit = partial(myjit, parallel=_PARALLEL)
 
 
+# * Data
 @_vectorize(
     "(sample,mom),(replicate,sample),(replicate,mom)",
     [
@@ -39,6 +40,39 @@ def resample_data(other, freq, data) -> None:
             if f == 0:
                 continue
             pushscalar.push_data_scale(other[isamp, ...], f, data[irep, ...])
+
+
+@_vectorize(
+    "(sample,mom),(replicate,sample) -> (replicate,mom)",
+    [
+        (nb.float32[:, :], nb.float32[:, :], nb.float32[:, :]),
+        (nb.float64[:, :], nb.float64[:, :], nb.float64[:, :]),
+    ],
+    writable=None,
+)
+def resample_data_fromzero(other, freq, data) -> None:
+    nrep, nsamp = freq.shape
+
+    assert other.shape[1:] == data.shape[1:]
+    assert other.shape[0] == nsamp
+    assert data.shape[0] == nrep
+
+    data[...] = 0.0
+
+    for irep in range(nrep):
+        first_nonzero = nsamp
+        for isamp in range(nsamp):
+            f = freq[irep, isamp]
+            if f != 0:
+                first_nonzero = isamp
+                data[irep, :] = other[isamp, :]
+                data[irep, 0] *= f
+                break
+
+        for isamp in range(first_nonzero + 1, nsamp):
+            f = freq[irep, isamp]
+            if f != 0:
+                pushscalar.push_data_scale(other[isamp, ...], f, data[irep, ...])
 
 
 @_jit(
@@ -65,76 +99,48 @@ def resample_data_jit(other, freq, data):
                 pushscalar.push_data_scale(other[isamp, k, ...], f, data[irep, k, ...])
 
 
-# Using fromzero doesn't help all that much...
-# @_vectorize(
-#     "(sample,mom),(replicate,sample),(replicate,mom)",
-#     [
-#         (nb.float32[:, :], nb.float32[:, :], nb.float32[:, :]),
-#         (nb.float64[:, :], nb.float64[:, :], nb.float64[:, :]),
-#     ],
-# )
-# def resample_data_fromzero(other, freq, data) -> None:
-#     nrep, nsamp = freq.shape
+@_jit(
+    # data[samp, value, mom], freq[rep, samp], out[rep, value, mom]
+    [
+        (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
+        (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
+    ],
+)
+def resample_data_fromzero_jit(other, freq, data):
+    nrep, nsamp = freq.shape
+    nval = other.shape[1]
 
-#     assert other.shape[1:] == data.shape[1:]
-#     assert other.shape[0] == nsamp
-#     assert data.shape[0] == nrep
+    assert other.shape[1:] == data.shape[1:]
+    assert other.shape[0] == nsamp
+    assert data.shape[0] == nrep
 
-#     for irep in range(nrep):
-#         first_nonzero = nsamp
-#         for isamp in range(nsamp):
-#             f = freq[irep, isamp]
-#             if f != 0:
-#                 first_nonzero = isamp
-#                 data[irep, :] = other[isamp, :]
-#                 data[irep, 0] *= f
-#                 break
+    data[...] = 0.0
 
-#         for isamp in range(first_nonzero + 1, nsamp):
-#             f = freq[irep, isamp]
-#             if f != 0:
-#                 pushscalar.push_data_scale(other[isamp, ...], f, data[irep, ...])
+    for irep in nb.prange(nrep):
+        first_nonzero = nsamp
+        for isamp in range(nsamp):
+            f = freq[irep, isamp]
+            if f != 0:
+                first_nonzero = isamp
+                for k in range(nval):
+                    data[irep, k, :] = other[isamp, k, :]
+                    data[irep, k, 0] *= f
+                break
 
-
-# @_jit(
-#     # data[samp, value, mom], freq[rep, samp], out[rep, value, mom]
-#     [
-#         (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
-#         (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
-#     ],
-# )
-# def resample_data_jit(other, freq, data):
-#     nrep, nsamp = freq.shape
-#     nval = other.shape[1]
-
-#     assert other.shape[1:] == data.shape[1:]
-#     assert other.shape[0] == nsamp
-#     assert data.shape[0] == nrep
-
-#     for irep in nb.prange(nrep):
-#         first_nonzero = nsamp
-#         for isamp in range(nsamp):
-#             f = freq[irep, isamp]
-#             if f != 0:
-#                 first_nonzero = isamp
-#                 for k in range(nval):
-#                     data[irep, k, :] = other[isamp, k, :]
-#                     data[irep, k, 0] *= f
-#                 break
-
-#         for isamp in range(first_nonzero + 1, nsamp):
-#             f = freq[irep, isamp]
-#             if f == 0:
-#                 continue
-#             for k in range(nval):
-#                 pushscalar.push_data_scale(other[isamp, k, ...], f, data[irep, k, ...])
+        for isamp in range(first_nonzero + 1, nsamp):
+            f = freq[irep, isamp]
+            if f == 0:
+                continue
+            for k in range(nval):
+                pushscalar.push_data_scale(other[isamp, k, ...], f, data[irep, k, ...])
 
 
+# Vals
 @_vectorize(
     "(sample),(sample),(replicate,sample),(replicate,mom)",
     [
         (nb.float32[:], nb.float32[:], nb.float32[:, :], nb.float32[:, :]),
-        (nb.float64[:], nb.float32[:], nb.float64[:, :], nb.float64[:, :]),
+        (nb.float64[:], nb.float64[:], nb.float64[:, :], nb.float64[:, :]),
     ],
 )
 def resample_vals(w, x, freq, data) -> None:
@@ -176,121 +182,3 @@ def resample_vals_jit(w, x, freq, data):
                 continue
             for k in range(nval):
                 pushscalar.push_val(w[isamp, k] * f, x[isamp, k], data[irep, k, ...])
-
-
-# * indexed
-@_vectorize(
-    "(sample,mom),(index),(group),(group),(index),(group,mom)",
-    [
-        (
-            nb.float32[:, :],
-            nb.int64[:],
-            nb.int64[:],
-            nb.int64[:],
-            nb.float32[:],
-            nb.float32[:, :],
-        ),
-        (
-            nb.float64[:, :],
-            nb.int64[:],
-            nb.int64[:],
-            nb.int64[:],
-            nb.float64[:],
-            nb.float64[:, :],
-        ),
-    ],
-)
-def reduceindexed_data(other, index, group_start, group_end, scales, data) -> None:
-    ngroups = len(group_start)
-    for group in range(ngroups):
-        start = group_start[group]
-        end = group_end[group]
-        if end > start:
-            # assume start from zero
-            s = index[start]
-            f = scales[start]
-            data[group, :] = other[s, :]
-            data[group, 0] *= f
-
-            for i in range(start + 1, end):
-                s = index[i]
-                f = scales[i]
-                pushscalar.push_data_scale(other[s, ...], f, data[group, ...])
-
-
-@_vectorize(
-    "(sample,mom),(index),(group),(group),(index),(group,mom)",
-    [
-        (
-            nb.float32[:, :],
-            nb.int64[:],
-            nb.int64[:],
-            nb.int64[:],
-            nb.float32[:],
-            nb.float32[:, :],
-        ),
-        (
-            nb.float64[:, :],
-            nb.int64[:],
-            nb.int64[:],
-            nb.int64[:],
-            nb.float64[:],
-            nb.float64[:, :],
-        ),
-    ],
-)
-def reduceindexed_data2(other, index, group_start, group_end, scales, data) -> None:
-    ngroups = len(group_start)
-    for group in range(ngroups):
-        start = group_start[group]
-        end = group_end[group]
-        if end > start:
-            for i in range(start, end):
-                s = index[i]
-                f = scales[i]
-                pushscalar.push_data_scale(other[s, ...], f, data[group, ...])
-
-
-@_jit(
-    # other[sample,val,mom],index[index],start[group],end[group],scale[index],data[group,val,mom]
-    [
-        (
-            nb.float32[:, :, :],
-            nb.int64[:],
-            nb.int64[:],
-            nb.int64[:],
-            nb.float32[:],
-            nb.float32[:, :, :],
-        ),
-        (
-            nb.float64[:, :, :],
-            nb.int64[:],
-            nb.int64[:],
-            nb.int64[:],
-            nb.float64[:],
-            nb.float64[:, :, :],
-        ),
-    ],
-)
-def reduceindexed_data_jit(other, index, group_start, group_end, scales, data) -> None:
-    ngroups = len(group_start)
-    nval = other.shape[1]
-
-    assert other.shape[1:] == data.shape[1:]
-    assert data.shape[0] == ngroups
-
-    for group in nb.prange(ngroups):
-        start = group_start[group]
-        end = group_end[group]
-        if end > start:
-            s = index[start]
-            f = scales[start]
-            for k in range(nval):
-                data[group, k, :] = other[s, k, :]
-                data[group, k, 0] *= f
-
-            for i in range(start + 1, end):
-                s = index[i]
-                f = scales[i]
-                for k in range(nval):
-                    pushscalar.push_data_scale(other[s, k, ...], f, data[group, k, ...])
