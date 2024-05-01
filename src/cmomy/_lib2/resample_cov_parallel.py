@@ -7,8 +7,8 @@ from functools import partial
 
 import numba as nb
 
-from . import pushscalar_cov
-from .utils import myguvectorize, myjit
+from . import pushscalar_cov as pushscalar
+from .decorators import myguvectorize, myjit
 
 _PARALLEL = True  # Auto generated from resample_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
@@ -39,7 +39,7 @@ def resample_data(other, freq, data) -> None:
             f = freq[irep, isamp]
             if f == 0:
                 continue
-            pushscalar_cov.push_data_scale(other[isamp, ...], f, data[irep, ...])
+            pushscalar.push_data_scale(other[isamp, ...], f, data[irep, ...])
 
 
 @_vectorize(
@@ -72,7 +72,7 @@ def resample_data_fromzero(other, freq, data) -> None:
         for isamp in range(first_nonzero + 1, nsamp):
             f = freq[irep, isamp]
             if f != 0:
-                pushscalar_cov.push_data_scale(other[isamp, ...], f, data[irep, ...])
+                pushscalar.push_data_scale(other[isamp, ...], f, data[irep, ...])
 
 
 @_jit(
@@ -96,9 +96,7 @@ def resample_data_jit(other, freq, data) -> None:
             if f == 0:
                 continue
             for k in range(nval):
-                pushscalar_cov.push_data_scale(
-                    other[isamp, k, ...], f, data[irep, k, ...]
-                )
+                pushscalar.push_data_scale(other[isamp, k, ...], f, data[irep, k, ...])
 
 
 @_jit(
@@ -134,9 +132,7 @@ def resample_data_fromzero_jit(other, freq, data) -> None:
             if f == 0:
                 continue
             for k in range(nval):
-                pushscalar_cov.push_data_scale(
-                    other[isamp, k, ...], f, data[irep, k, ...]
-                )
+                pushscalar.push_data_scale(other[isamp, k, ...], f, data[irep, k, ...])
 
 
 @_vectorize(
@@ -171,7 +167,7 @@ def resample_vals(w, x0, x1, freq, data) -> None:
             f = freq[irep, isamp]
             if f == 0:
                 continue
-            pushscalar_cov.push_val(w[isamp] * f, x0[isamp], x1[isamp], data[irep, ...])
+            pushscalar.push_val(w[isamp] * f, x0[isamp], x1[isamp], data[irep, ...])
 
 
 # Old (dumb) way of doing things.  Faster is many cases
@@ -210,6 +206,6 @@ def resample_vals_jit(w, x0, x1, freq, data):
             if f == 0:
                 continue
             for k in range(nval):
-                pushscalar_cov.push_val(
+                pushscalar.push_val(
                     w[isamp, k] * f, x0[isamp, k], x1[isamp, k], data[irep, k, ...]
                 )

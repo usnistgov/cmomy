@@ -41,6 +41,7 @@ if __name__ == "__main__":
         "resample",
         "resample_cov",
         "reduceindexed",
+        "reduceindexed_cov",
     ]
 
     for name in names:

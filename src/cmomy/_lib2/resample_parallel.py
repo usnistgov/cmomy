@@ -8,7 +8,7 @@ from functools import partial
 import numba as nb
 
 from . import pushscalar
-from .utils import myguvectorize, myjit
+from .decorators import myguvectorize, myjit
 
 # NOTE: The parallel implementation is quite similar to the old
 # way of doing things (with reshape and njit), but the serial is slower.

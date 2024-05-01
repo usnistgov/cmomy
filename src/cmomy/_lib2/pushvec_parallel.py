@@ -8,7 +8,7 @@ from functools import partial
 import numba as nb
 
 from . import pushscalar
-from .utils import myguvectorize
+from .decorators import myguvectorize
 
 _PARALLEL = True  # Auto generated from pushvec.py
 _decorator = partial(myguvectorize, parallel=_PARALLEL)

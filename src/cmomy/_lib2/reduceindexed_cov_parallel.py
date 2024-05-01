@@ -7,26 +7,26 @@ from functools import partial
 
 import numba as nb
 
-from . import pushscalar
+from . import pushscalar_cov as pushscalar
 from .decorators import myguvectorize, myjit
 
-_PARALLEL = True  # Auto generated from reduceindexed.py
+_PARALLEL = True  # Auto generated from reduceindexed_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 _jit = partial(myjit, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample,mom),(sample),(group,mom)",
+    "(sample,mom0,mom1),(sample),(group,mom0,mom1)",
     [
         (
-            nb.float32[:, :],
+            nb.float32[:, :, :],
             nb.int64[:],
-            nb.float32[:, :],
+            nb.float32[:, :, :],
         ),
         (
-            nb.float64[:, :],
+            nb.float64[:, :, :],
             nb.int64[:],
-            nb.float64[:, :],
+            nb.float64[:, :, :],
         ),
     ],
 )
@@ -40,23 +40,23 @@ def reduce_data_grouped(other, group_idx, data) -> None:
 
 
 @_vectorize(
-    "(sample,mom),(index),(group),(group),(index),(group,mom)",
+    "(sample,mom0,mom1),(index),(group),(group),(index),(group,mom0,mom1)",
     [
         (
-            nb.float32[:, :],
+            nb.float32[:, :, :],
             nb.int64[:],
             nb.int64[:],
             nb.int64[:],
             nb.float32[:],
-            nb.float32[:, :],
+            nb.float32[:, :, :],
         ),
         (
-            nb.float64[:, :],
+            nb.float64[:, :, :],
             nb.int64[:],
             nb.int64[:],
             nb.int64[:],
             nb.float64[:],
-            nb.float64[:, :],
+            nb.float64[:, :, :],
         ),
     ],
 )
@@ -79,23 +79,23 @@ def reduce_data_indexed(other, index, group_start, group_end, scale, data) -> No
 
 
 @_vectorize(
-    "(sample,mom),(index),(group),(group),(index) -> (group,mom)",
+    "(sample,mom0,mom1),(index),(group),(group),(index) -> (group,mom0,mom1)",
     [
         (
-            nb.float32[:, :],
+            nb.float32[:, :, :],
             nb.int64[:],
             nb.int64[:],
             nb.int64[:],
             nb.float32[:],
-            nb.float32[:, :],
+            nb.float32[:, :, :],
         ),
         (
-            nb.float64[:, :],
+            nb.float64[:, :, :],
             nb.int64[:],
             nb.int64[:],
             nb.int64[:],
             nb.float64[:],
-            nb.float64[:, :],
+            nb.float64[:, :, :],
         ),
     ],
     writable=None,
@@ -119,8 +119,8 @@ def reduce_data_indexed_fromzero(
             # assume start from zero
             s = index[start]
             f = scale[start]
-            data[group, :] = other[s, :]
-            data[group, 0] *= f
+            data[group, :, :] = other[s, :, :]
+            data[group, 0, 0] *= f
 
             for i in range(start + 1, end):
                 s = index[i]
@@ -128,67 +128,24 @@ def reduce_data_indexed_fromzero(
                 pushscalar.push_data_scale(other[s, ...], f, data[group, ...])
 
 
-# This is faster, but not sure when i'd need it?
-# @_vectorize(
-#     "(sample,mom),(index),(group),(group) -> (group,mom)",
-#     [
-#         (
-#             nb.float32[:, :],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.float32[:],
-#             nb.float32[:, :],
-#         ),
-#         (
-#             nb.float64[:, :],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.float64[:],
-#             nb.float64[:, :],
-#         ),
-#     ],
-#     writable=None,
-# )
-# def reduce_data_indexed_fromzero_noscale(other, index, group_start, group_end, data) -> None:
-#     ngroup = len(group_start)
-
-#     assert other.shape[1:] == data.shape[1:]
-#     assert len(group_end) == ngroup
-#     assert data.shape[0] == ngroup
-
-#     data[...] = 0.0
-
-#     for group in range(ngroup):
-#         start = group_start[group]
-#         end = group_end[group]
-#         if end > start:
-#             # assume start from zero
-#             s = index[start]
-#             data[group, :] = other[s, :]
-
-#             for i in range(start + 1, end):
-#                 s = index[i]
-#                 pushscalar.push_data(other[s, ...], data[group, ...])
-
-
 # @_jit(
-#     # other[sample,val,mom],index[index],start[group],end[group],scale[index],data[group,val,mom]
+#     # other[sample,val,mom0,mom1],index[index],start[group],end[group],scale[index],data[group,val,mom0,mom1]
 #     [
 #         (
-#             nb.float32[:, :, :],
+#             nb.float32[:, :, :, :],
 #             nb.int64[:],
 #             nb.int64[:],
 #             nb.int64[:],
 #             nb.float32[:],
-#             nb.float32[:, :, :],
+#             nb.float32[:, :, :, :],
 #         ),
 #         (
-#             nb.float64[:, :, :],
+#             nb.float64[:, :, :, :],
 #             nb.int64[:],
 #             nb.int64[:],
 #             nb.int64[:],
 #             nb.float64[:],
-#             nb.float64[:, :, :],
+#             nb.float64[:, :, :, :],
 #         ),
 #     ],
 # )
@@ -208,8 +165,8 @@ def reduce_data_indexed_fromzero(
 #             s = index[start]
 #             f = scale[start]
 #             for k in range(nval):
-#                 data[group, k, :] = other[s, k, :]
-#                 data[group, k, 0] *= f
+#                 data[group, k, :, :] = other[s, k, :, :]
+#                 data[group, k, 0, 0] *= f
 
 #             for i in range(start + 1, end):
 #                 s = index[i]

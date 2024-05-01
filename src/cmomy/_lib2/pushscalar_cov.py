@@ -5,7 +5,8 @@ from __future__ import annotations
 
 import numba as nb
 
-from .utils import BINOMIAL_FACTOR, myjit
+from .decorators import myjit
+from .utils import BINOMIAL_FACTOR
 
 
 @myjit(
