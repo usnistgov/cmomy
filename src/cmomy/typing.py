@@ -19,6 +19,7 @@ from typing import (
     Union,
 )
 
+# import numba as nb
 # put outside to get autodoc typehints working...
 import pandas as pd
 import xarray as xr
@@ -33,6 +34,11 @@ if TYPE_CHECKING:
 DTypeAny: TypeAlias = Any
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
 ArrayOrder = Literal["C", "F", "A", "K", None]
+
+# Numba types
+# NumbaType = Union[nb.typing.Integer, nb.typing.Array]
+# The above isn't working for pyright.  Just using any for now...
+NumbaType = Any
 
 # Moments
 Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
