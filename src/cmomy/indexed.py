@@ -90,7 +90,7 @@ def _verify_index(
         raise ValueError(msg)
 
 
-def reduce_by_index(
+def reduce_by_index(  # noqa: PLR0914
     data: NDArrayAny,
     mom: Moments,
     index: NDArrayAny,
@@ -147,8 +147,9 @@ def reduce_by_index(
     else:
         out = np.asarray(out, dtype=dtype, order="C")
 
-    datar = data.reshape((data.shape[0], *meta_shape, *mom_shape))
-    outr = out.reshape((ngroups, *meta_shape, *mom_shape))
+    meta_reshape = (np.prod(meta_shape),) if meta_shape else ()
+    datar = data.reshape((data.shape[0], *meta_reshape, *mom_shape))
+    outr = out.reshape((ngroups, *meta_reshape, *mom_shape))
 
     if scales is None:
         scales = np.ones_like(index, dtype=dtype or data.dtype)

@@ -16,7 +16,7 @@ _jit = partial(myjit, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample,mom),(index),(group),(group),(index),(group,mom)",
+    "(sample,mom),(index),(group),(group),(index) -> (group,mom)",
     [
         (
             nb.float32[:, :],
@@ -35,10 +35,19 @@ _jit = partial(myjit, parallel=_PARALLEL)
             nb.float64[:, :],
         ),
     ],
+    writable=None,
 )
 def reduceindexed_data(other, index, group_start, group_end, scales, data) -> None:
-    ngroups = len(group_start)
-    for group in range(ngroups):
+    ngroup = len(group_start)
+
+    assert other.shape[1:] == data.shape[1:]
+    assert index.shape == scales.shape
+    assert len(group_end) == ngroup
+    assert data.shape[0] == ngroup
+
+    data[...] = 0.0
+
+    for group in range(ngroup):
         start = group_start[group]
         end = group_end[group]
         if end > start:
@@ -55,7 +64,7 @@ def reduceindexed_data(other, index, group_start, group_end, scales, data) -> No
 
 
 @_vectorize(
-    "(sample,mom),(index),(group),(group),(index),(group,mom)",
+    "(sample,mom),(index),(group),(group),(index) -> (group,mom)",
     [
         (
             nb.float32[:, :],
@@ -74,10 +83,18 @@ def reduceindexed_data(other, index, group_start, group_end, scales, data) -> No
             nb.float64[:, :],
         ),
     ],
+    writable=None,
 )
 def reduceindexed_data2(other, index, group_start, group_end, scales, data) -> None:
-    ngroups = len(group_start)
-    for group in range(ngroups):
+    ngroup = len(group_start)
+
+    assert other.shape[1:] == data.shape[1:]
+    assert index.shape == scales.shape
+    assert len(group_end) == ngroup
+    assert data.shape[0] == ngroup
+
+    data[...] = 0.0
+    for group in range(ngroup):
         start = group_start[group]
         end = group_end[group]
         if end > start:
@@ -109,13 +126,15 @@ def reduceindexed_data2(other, index, group_start, group_end, scales, data) -> N
     ],
 )
 def reduceindexed_data_jit(other, index, group_start, group_end, scales, data) -> None:
-    ngroups = len(group_start)
+    ngroup = len(group_start)
     nval = other.shape[1]
 
     assert other.shape[1:] == data.shape[1:]
-    assert data.shape[0] == ngroups
+    assert index.shape == scales.shape
+    assert len(group_end) == ngroup
+    assert data.shape[0] == ngroup
 
-    for group in nb.prange(ngroups):
+    for group in nb.prange(ngroup):
         start = group_start[group]
         end = group_end[group]
         if end > start:
