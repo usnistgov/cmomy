@@ -7,10 +7,10 @@ from functools import partial
 
 import numba as nb
 
-from . import pushscalar
+from . import _push
 from .decorators import myguvectorize
 
-_PARALLEL = False
+_PARALLEL = True  # Auto generated from push.py
 _decorator = partial(myguvectorize, parallel=_PARALLEL)
 
 
@@ -22,7 +22,7 @@ _decorator = partial(myguvectorize, parallel=_PARALLEL)
     ],
 )
 def push_val(w, x, data) -> None:
-    pushscalar.push_val(w, x, data)
+    _push.push_val(w, x, data)
 
 
 @_decorator(
@@ -34,7 +34,7 @@ def push_val(w, x, data) -> None:
 )
 def reduce_vals(w, x, data) -> None:
     for i in range(x.shape[0]):
-        pushscalar.push_val(w[i], x[i], data)
+        _push.push_val(w[i], x[i], data)
 
 
 @_decorator(
@@ -45,7 +45,7 @@ def reduce_vals(w, x, data) -> None:
     ],
 )
 def push_stat(w, a, v, data) -> None:
-    pushscalar.push_stat(w, a, v, data)
+    _push.push_stat(w, a, v, data)
 
 
 @_decorator(
@@ -57,7 +57,7 @@ def push_stat(w, a, v, data) -> None:
 )
 def reduce_stats(w, a, v, data) -> None:
     for i in range(a.shape[0]):
-        pushscalar.push_stat(w[i], a[i], v[i, :], data)
+        _push.push_stat(w[i], a[i], v[i, :], data)
 
 
 @_decorator(
@@ -68,7 +68,7 @@ def reduce_stats(w, a, v, data) -> None:
     ],
 )
 def push_data(other, data) -> None:
-    pushscalar.push_data(other, data)
+    _push.push_data(other, data)
 
 
 @_decorator(
@@ -78,9 +78,9 @@ def push_data(other, data) -> None:
         (nb.float64[:, :], nb.float64[:]),
     ],
 )
-def reduce_datas(other, data) -> None:
+def reduce_data(other, data) -> None:
     for i in range(other.shape[0]):
-        pushscalar.push_data(other[i, :], data)
+        _push.push_data(other[i, :], data)
 
 
 @_decorator(
@@ -91,7 +91,7 @@ def reduce_datas(other, data) -> None:
     ],
     writable=None,
 )
-def reduce_datas_fromzero(other, data) -> None:
+def reduce_data_fromzero(other, data) -> None:
     data[...] = 0.0
     for i in range(other.shape[0]):
-        pushscalar.push_data(other[i, :], data)
+        _push.push_data(other[i, :], data)

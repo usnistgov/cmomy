@@ -36,12 +36,12 @@ if __name__ == "__main__":
     src = Path(__file__).parent.resolve()
 
     names = [
-        "pushvec",
-        "pushvec_cov",
+        "push",
+        "push_cov",
         "resample",
         "resample_cov",
-        "reduceindexed",
-        "reduceindexed_cov",
+        "indexed",
+        "indexed_cov",
     ]
 
     for name in names:

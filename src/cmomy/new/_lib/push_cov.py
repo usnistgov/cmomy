@@ -7,7 +7,7 @@ from functools import partial
 
 import numba as nb
 
-from . import pushscalar_cov as pushscalar
+from . import _push_cov as _push
 from .decorators import myguvectorize
 
 _PARALLEL = False
@@ -22,7 +22,7 @@ _decorator = partial(myguvectorize, parallel=_PARALLEL)
     ],
 )
 def push_val(w, x0, x1, data) -> None:
-    pushscalar.push_val(w, x0, x1, data)
+    _push.push_val(w, x0, x1, data)
 
 
 @_decorator(
@@ -34,7 +34,7 @@ def push_val(w, x0, x1, data) -> None:
 )
 def reduce_vals(w, x0, x1, data) -> None:
     for i in range(len(w)):
-        pushscalar.push_val(w[i], x0[i], x1[i], data)
+        _push.push_val(w[i], x0[i], x1[i], data)
 
 
 @_decorator(
@@ -45,7 +45,7 @@ def reduce_vals(w, x0, x1, data) -> None:
     ],
 )
 def push_data(other, data) -> None:
-    pushscalar.push_data(other, data)
+    _push.push_data(other, data)
 
 
 @_decorator(
@@ -55,9 +55,9 @@ def push_data(other, data) -> None:
         (nb.float64[:, :, :], nb.float64[:, :]),
     ],
 )
-def reduce_datas(other, data) -> None:
+def reduce_data(other, data) -> None:
     for i in range(other.shape[0]):
-        pushscalar.push_data(other[i, :, :], data)
+        _push.push_data(other[i, :, :], data)
 
 
 @_decorator(
@@ -68,7 +68,7 @@ def reduce_datas(other, data) -> None:
     ],
     writable=None,
 )
-def reduce_datas_fromzero(other, data) -> None:
+def reduce_data_fromzero(other, data) -> None:
     data[...] = 0.0
     for i in range(other.shape[0]):
-        pushscalar.push_data(other[i, :, :], data)
+        _push.push_data(other[i, :, :], data)
