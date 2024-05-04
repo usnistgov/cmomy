@@ -30,6 +30,11 @@ def _dummy_docstrings() -> None:
         Optional parameters to :func:`numpy.zeros`
     axis : int
         Axis to reduce along.
+    axis_data | axis : int
+        Axis to reduce along. Note that negative values are relative to
+        ``data.ndim - mom_ndim``. It is assumed that the last dimensions are
+        for moments. For example, if ``data.shape == (1,2,3)`` with
+        ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
     broadcast : bool
         If True, and ``x=(x0, x1)``, then perform 'smart' broadcasting.
         In this case, if ``x1.ndim = 1`` and ``len(x1) == x0.shape[axis]``, then
@@ -85,6 +90,8 @@ def _dummy_docstrings() -> None:
         Name of dimension for 'records', i.e., multiple observations.
     data : DataArray or ndarray
         Moment collection array
+    data_numpy | data : ndarray
+        Moments collection array.  It is assumed momens dimensions are last.
     parallel : bool, default=True
         flags to `numba.njit`
     rng : :class:`~numpy.random.Generator`
@@ -103,6 +110,21 @@ def _dummy_docstrings() -> None:
         * 'last': select last value of coordinate for each block.
         * None: drop any coordinates.
 
+    by : Sequence[int | None]
+        Groupby values. Values of ``None`` or negative integers indicate no
+        group (i.e., skip this index).
+    factor : bool
+        If ``True`` factorize the passed group values.
+    sort_groups : bool
+        If ``True``, sort the groups.
+    out : ndarray
+        Optional output array. If specified, output will be a reference to this
+        array.
+    order : {"C", "F", "A", "K"}, optional
+        Order parameter to :func:`numpy.asarray`.
+    weight : array-like, optional
+        Optional weights. Can be scalar, 1d array of length
+        ``args[0].shape[axis]`` or array of same form as ``args[0]``.
 
     """
 

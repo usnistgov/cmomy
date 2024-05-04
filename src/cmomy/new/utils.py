@@ -7,14 +7,17 @@ from typing import TYPE_CHECKING, cast
 
 import numpy as np
 
+from ._lib.utils import supports_parallel
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
-    from typing import Sequence
+    from typing import Iterable, Sequence
 
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from ._typing_compat import TypeGuard
     from .typing import ArrayOrder, Mom_NDim, Moments, MomentsStrict, NDArrayAny
+    from .typing import T_FloatDType as T_Float
 
 
 def normalize_axis_index(axis: int, ndim: int) -> int:
@@ -91,6 +94,46 @@ def axis_expand_broadcast(
     return x
 
 
+# * Moment validation
+def is_mom_ndim(mom_ndim: int) -> TypeGuard[Mom_NDim]:
+    """Validate mom_ndim."""
+    return mom_ndim in {1, 2}
+
+
+def is_mom_tuple(mom: tuple[int, ...]) -> TypeGuard[MomentsStrict]:
+    """Validate moment tuple"""
+    return len(mom) in {1, 2}
+
+
+def validate_mom_ndim(mom_ndim: int) -> Mom_NDim:
+    """Raise error if mom_ndim invalid."""
+    if is_mom_ndim(mom_ndim):
+        return mom_ndim
+
+    msg = f"{mom_ndim=} must be either 1 or 2"
+    raise ValueError(msg)
+
+
+def validate_mom(mom: int | Sequence[int]) -> MomentsStrict:
+    """
+    Convert to MomentsStrict.
+
+    Raise ValueError mom invalid.
+
+    Integers to length 1 tuple
+    """
+    if isinstance(mom, int):
+        mom = (mom,)
+    elif not isinstance(mom, tuple):
+        mom = tuple(mom)
+
+    if is_mom_tuple(mom):
+        return mom
+
+    msg = f"{len(mom)=} must be either 1 or 2"
+    raise ValueError(msg)
+
+
 @docfiller.decorate
 def validate_mom_and_mom_ndim(
     *,
@@ -124,39 +167,28 @@ def validate_mom_and_mom_ndim(
     >>> validate_mom_and_mom_ndim(mom_ndim=1, shape=(3, 3))
     ((2,), 1)
     """
-    if isinstance(mom, int):
-        mom_ndim = mom_ndim or 1
-        mom = (mom,) * mom_ndim  # type: ignore[assignment]
-
-    elif mom is None:
-        if mom_ndim is None or shape is None:
-            msg = "Must specify either moments or mom_ndim and shape"
+    if mom is not None and mom_ndim is not None:
+        mom_ndim = validate_mom_ndim(mom_ndim)
+        mom = validate_mom(mom)
+        if len(mom) != mom_ndim:
+            msg = f"{len(mom)=} != {mom_ndim=}"
             raise ValueError(msg)
+        return mom, mom_ndim
+
+    if mom is None and mom_ndim is not None and shape is not None:
+        mom_ndim = validate_mom_ndim(mom_ndim)
         if len(shape) < mom_ndim:
             raise ValueError
-        mom = tuple(x - 1 for x in shape[-mom_ndim:])  # type: ignore[assignment]
+        mom = validate_mom(tuple(x - 1 for x in shape[-mom_ndim:]))
+        return mom, mom_ndim
 
-    elif mom_ndim is None:
-        mom = tuple(mom)  # type: ignore[assignment]
-        mom_ndim = len(mom)  # type: ignore[assignment]
+    if mom is not None and mom_ndim is None:
+        mom = validate_mom(mom)
+        mom_ndim = validate_mom_ndim(len(mom))
+        return mom, mom_ndim
 
-    # validate everything:
-    if not isinstance(mom, tuple):  # pragma: no cover
-        raise TypeError
-
-    if mom_ndim not in {1, 2}:
-        msg = f"{mom_ndim=} must be 1 or 2."
-        raise ValueError(msg)
-
-    if len(mom) != mom_ndim:
-        msg = f"{len(mom)=} != {mom_ndim=}"
-        raise ValueError(msg)
-
-    if shape and mom != tuple(x - 1 for x in shape[-mom_ndim:]):
-        msg = f"{mom=} does not conform to {shape[-mom_ndim:]}"
-        raise ValueError(msg)
-
-    return mom, mom_ndim
+    msg = "Must specify either mom, mom and mom_ndim, or shape and mom_ndim"
+    raise ValueError(msg)
 
 
 @docfiller.decorate
@@ -172,15 +204,8 @@ def mom_to_mom_ndim(mom: Moments) -> Mom_NDim:
     -------
     {mom_ndim}
     """
-    if isinstance(mom, int):
-        mom_ndim = 1
-    elif isinstance(mom, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
-        if (mom_ndim := len(mom)) not in {1, 2}:
-            raise ValueError
-    else:
-        msg = "mom must be int or tuple"
-        raise TypeError(msg)
-    return cast("Mom_NDim", mom_ndim)
+    mom_ndim = 1 if isinstance(mom, int) else len(mom)
+    return validate_mom_ndim(mom_ndim)
 
 
 @docfiller.decorate
@@ -202,14 +227,119 @@ def select_mom_ndim(*, mom: Moments | None, mom_ndim: Mom_NDim | None) -> Mom_ND
         if mom_ndim and mom_ndim_calc != mom_ndim:
             msg = f"{mom=} is incompatible with {mom_ndim=}"
             raise ValueError(msg)
-        return mom_ndim_calc
+        return validate_mom_ndim(mom_ndim_calc)
 
     if mom_ndim is None:
         msg = "must specify mom_ndim or mom"
         raise TypeError(msg)
 
-    if mom_ndim not in {1, 2}:
-        msg = f"{mom_ndim=} must be 1 or 2."
+    return validate_mom_ndim(mom_ndim)
+
+
+# * New helpers
+def parallel_heuristic(parallel: bool | None, size: int, cutoff: int = 10000) -> bool:
+    """Default parallel."""
+    if parallel is not None:
+        return parallel and supports_parallel()
+    return size > cutoff
+
+
+def _prepare_secondary_value_for_reduction(
+    target: NDArray[T_Float],
+    x: ArrayLike,
+    axis: int,
+    move_axis: bool,
+    *,
+    order: ArrayOrder = None,
+) -> NDArray[T_Float]:
+    """
+    Prepare value array (x1, w) for reduction.
+
+    Here, target input base array with ``axis`` already moved
+    to the last position (``target = np.moveaxis(base, axis, -1)``).
+    If same number of dimensions, move axis if needed.
+    If ndim == 0, broadcast to target.shape[axis]
+    If ndim == 1, make sure length == target.shape[axis]
+    If ndim == target.ndim, move axis to last and verify
+    Otherwise, make sure x.shape == target.shape[-x.ndim:]
+
+    Parameters
+    ----------
+    target : ndarray
+        Target array (e.g. ``x0``).  This should already have been
+        passed through `_prepare_target_value_for_reduction`
+
+    """
+    out: NDArray[T_Float] = np.asarray(x, dtype=target.dtype, order=order)
+    if out.ndim == target.ndim:
+        if move_axis:
+            out = np.moveaxis(out, axis, -1)
+            if order:
+                out = np.asarray(out, order=order)
+        return out
+
+    if out.ndim == 0:
+        return np.broadcast_to(out, target.shape[-1])
+
+    if out.ndim == 1 and len(out) != target.shape[-1]:
+        msg = f"For 1D secondary values, {len(out)=} must be same as target.shape[axis]={target.shape[-1]}"
         raise ValueError(msg)
 
-    return mom_ndim
+    return out
+
+
+def prepare_values_for_reduction(
+    target: NDArray[T_Float],
+    *args: ArrayLike,
+    axis: int = -1,
+    order: ArrayOrder = None,
+    ndim: int | None = None,
+) -> tuple[NDArray[T_Float], ...]:
+    """Convert input value arrays to correct form for reduction."""
+    ndim = ndim or target.ndim
+    axis = normalize_axis_index(axis, ndim)
+
+    move_axis = (target.ndim > 1) and (axis != ndim - 1)
+
+    if move_axis:
+        target = np.moveaxis(target, axis, -1)
+
+    if order:
+        target = np.asarray(target, order=order)
+
+    others: Iterable[NDArray[T_Float]] = (
+        _prepare_secondary_value_for_reduction(
+            target=target, x=x, axis=axis, move_axis=move_axis, order=order
+        )
+        for x in args
+    )
+    return target, *others  # type: ignore[arg-type]
+
+
+def prepare_data_for_reduction(
+    data: NDArray[T_Float],
+    axis: int,
+    mom_ndim: Mom_NDim,
+    order: ArrayOrder = None,
+) -> NDArray[T_Float]:
+    """Convert central moments array to correct form for reduction."""
+    ndim = data.ndim - mom_ndim
+    axis = normalize_axis_index(axis, ndim)
+    last_dim = ndim - 1
+
+    if (ndim > 1) and axis != last_dim:
+        data = np.moveaxis(data, axis, last_dim)
+
+    if order:
+        data = np.asarray(data, order=order)
+    return data
+
+
+def raise_if_wrong_shape(
+    array: NDArrayAny, shape: tuple[int, ...], name: str | None = None
+) -> None:
+    """Raise error if array.shape != shape"""
+    if array.shape != shape:
+        name = "out" if name is None else name
+        msg = f"name.shape={array.shape=} != required shape {shape}"
+        raise ValueError(msg)

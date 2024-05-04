@@ -301,6 +301,8 @@ strict = [
     "src/cmomy/xcentral.py",
     "noxfile.py",
     "tools/*.py",
+    "src/cmomy/new/*.py",
+    "src/cmomy/new/_lib/factory.py",
 ]
 exclude = ["**/__pycache__", ".tox/**", ".nox/**", ".venv/**", "**/.mypy_cache", "**/.numba_cache"]
 # strict = ["src", "tests", "noxfile.py", "tools/*.py"]

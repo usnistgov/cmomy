@@ -44,9 +44,11 @@ def group_idx_to_groups_index_start_end(
     end : ndarray
         See ``index``.
     """
-    indexes_sorted = np.argsort(group_idx)
+    group_idx = np.asarray(group_idx, dtype=np.int64)
 
-    group_idx_sorted = np.asarray(group_idx, dtype=np.int64)[indexes_sorted]
+    indexes_sorted = np.argsort(group_idx)
+    group_idx_sorted = group_idx[indexes_sorted]
+
     groups, n_start, count = np.unique(
         group_idx_sorted, return_index=True, return_counts=True
     )

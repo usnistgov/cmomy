@@ -1,14 +1,21 @@
-# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """Vectorized pushers."""
 
 from __future__ import annotations
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numba as nb
 
 from . import _push_cov as _push
 from .decorators import myguvectorize
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from ..typing import NDGeneric
+    from ..typing import T_FloatDType as T_Float
+
 
 _PARALLEL = True  # Auto generated from push_cov.py
 _decorator = partial(myguvectorize, parallel=_PARALLEL)
@@ -21,8 +28,13 @@ _decorator = partial(myguvectorize, parallel=_PARALLEL)
         (nb.float64, nb.float64, nb.float64, nb.float64[:, :]),
     ],
 )
-def push_val(w, x0, x1, data) -> None:
-    _push.push_val(w, x0, x1, data)
+def push_val(
+    x0: NDGeneric[T_Float],
+    x1: NDGeneric[T_Float],
+    w: NDGeneric[T_Float],
+    out: NDArray[T_Float],
+) -> None:
+    _push.push_val(x0, x1, w, out)
 
 
 @_decorator(
@@ -32,9 +44,14 @@ def push_val(w, x0, x1, data) -> None:
         (nb.float64[:], nb.float64[:], nb.float64[:], nb.float64[:, :]),
     ],
 )
-def reduce_vals(w, x0, x1, data) -> None:
-    for i in range(len(w)):
-        _push.push_val(w[i], x0[i], x1[i], data)
+def reduce_vals(
+    x0: NDArray[T_Float],
+    x1: NDArray[T_Float],
+    w: NDArray[T_Float],
+    out: NDArray[T_Float],
+) -> None:
+    for i in range(len(x0)):
+        _push.push_val(x0[i], x1[i], w[i], out)
 
 
 @_decorator(
@@ -44,8 +61,8 @@ def reduce_vals(w, x0, x1, data) -> None:
         (nb.float64[:, :], nb.float64[:, :]),
     ],
 )
-def push_data(other, data) -> None:
-    _push.push_data(other, data)
+def push_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
+    _push.push_data(data, out)
 
 
 @_decorator(
@@ -55,9 +72,9 @@ def push_data(other, data) -> None:
         (nb.float64[:, :, :], nb.float64[:, :]),
     ],
 )
-def reduce_data(other, data) -> None:
-    for i in range(other.shape[0]):
-        _push.push_data(other[i, :, :], data)
+def reduce_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
+    for i in range(data.shape[0]):
+        _push.push_data(data[i, :, :], out)
 
 
 @_decorator(
@@ -68,7 +85,7 @@ def reduce_data(other, data) -> None:
     ],
     writable=None,
 )
-def reduce_data_fromzero(other, data) -> None:
-    data[...] = 0.0
-    for i in range(other.shape[0]):
-        _push.push_data(other[i, :, :], data)
+def reduce_data_fromzero(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
+    out[...] = 0.0
+    for i in range(data.shape[0]):
+        _push.push_data(data[i, :, :], out)

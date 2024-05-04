@@ -6,22 +6,31 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 from __future__ import annotations
 
 from itertools import starmap
-from math import prod
 
 # if TYPE_CHECKING:
-from typing import TYPE_CHECKING, Any, Hashable, Literal, Sequence, cast
+from typing import TYPE_CHECKING
 
 import numpy as np
-import xarray as xr
+from numpy.typing import NDArray
+
+from cmomy.new.utils import (
+    parallel_heuristic,
+    prepare_data_for_reduction,
+    prepare_values_for_reduction,
+    raise_if_wrong_shape,
+    validate_mom_and_mom_ndim,
+    validate_mom_ndim,
+)
 
 from .docstrings import docfiller
 from .random import validate_rng
-from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import ArrayLike, NDArray
 
-    from .typing import ArrayOrder, Mom_NDim, Moments, NDArrayAny
+    from .typing import ArrayOrder, LongIntDType, Mom_NDim, Moments, NDArrayAny
+    from .typing import T_FloatDType as T_Float
+    from .typing import T_IntDType as T_Int
 
 
 ##############################################################################
@@ -29,8 +38,8 @@ if TYPE_CHECKING:
 ###############################################################################
 @docfiller.decorate
 def freq_to_indices(
-    freq: NDArrayAny, shuffle: bool = True, rng: np.random.Generator | None = None
-) -> NDArrayAny:
+    freq: NDArray[T_Int], shuffle: bool = True, rng: np.random.Generator | None = None
+) -> NDArray[T_Int]:
     """
     Convert a frequency array to indices array.
 
@@ -64,7 +73,7 @@ def freq_to_indices(
         indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))
         indices_all.append(indices)
 
-    out = np.array(indices_all)
+    out = np.array(indices_all, dtype=freq.dtype)
 
     if shuffle:
         rng = validate_rng(rng)
@@ -73,14 +82,14 @@ def freq_to_indices(
     return out
 
 
-def indices_to_freq(indices: NDArrayAny, ndat: int | None = None) -> NDArrayAny:
+def indices_to_freq(indices: NDArray[T_Int], ndat: int | None = None) -> NDArray[T_Int]:
     """
     Convert indices to frequency array.
 
     It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp == ndat``.
     For cases that ``nsamp != ndat``, pass in ``ndat``.
     """
-    from ._lib.resample import (
+    from ._lib.utils import (
         randsamp_indices_to_freq,  # pyright: ignore[reportUnknownVariableType]
     )
 
@@ -192,7 +201,7 @@ def randsamp_freq(
     freq: ArrayLike | None = None,
     check: bool = False,
     rng: np.random.Generator | None = None,
-) -> NDArrayAny:
+) -> NDArray[LongIntDType]:
     """
     Produce a random sample for bootstrapping.
 
@@ -251,18 +260,23 @@ def randsamp_freq(
     return freq
 
 
+def _check_freq(freq: NDArrayAny, ndat: int) -> None:
+    if freq.shape[1] != ndat:
+        msg = f"{freq.shape[1]=} != {ndat=}"
+        raise ValueError(msg)
+
+
 @docfiller.decorate
-def resample_data(  # noqa: PLR0914
-    data: ArrayLike,
-    freq: ArrayLike,
-    mom: Moments,
-    axis: int = 0,
-    dtype: DTypeLike | None = None,
+def resample_data(
+    data: NDArray[T_Float],
+    freq: NDArray[LongIntDType],
+    mom_ndim: Mom_NDim,
+    axis: int = -1,
+    *,
     order: ArrayOrder = None,
-    parallel: bool = True,
+    parallel: bool | None = True,
     out: NDArrayAny | None = None,
-    fromzero: bool = True,
-) -> NDArrayAny:
+) -> NDArray[T_Float]:
     """
     Resample data according to frequency table.
 
@@ -272,376 +286,90 @@ def resample_data(  # noqa: PLR0914
         central mom array to be resampled
     {freq}
     {mom}
+    {order}
     {parallel}
-    out : ndarray, optional
-        optional output array.
+    {out}
 
     Returns
     -------
-    output : array
-        output shape is `(nrep,) + shape + mom`, where shape is
-        the shape of data less axis, and mom is the shape of the resulting mom.
+    out : ndarray
+        Resampled central moments. ``out.shape = (..., shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``,
+        where ``shape = data.shape`` and ``nrep = freq.shape[0]``.
     """
-    from ._lib.resample import factory_resample_data
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    _check_freq(freq, data.shape[axis])
 
-    if isinstance(mom, int):
-        mom = (mom,)
+    data = prepare_data_for_reduction(data, axis=axis, mom_ndim=mom_ndim, order=order)
 
-    # check inputs
-    data = np.asarray(data, dtype=dtype, order=order)
-    freq = np.asarray(freq, dtype=np.int64, order=order)
+    from ._lib.factory import factory_resample_data
 
-    # TODO(wpk): Can refactor this...
-    # Overlaps with indexed.reduce_by_index
-    if dtype is None:
-        dtype = data.dtype
-
-    nrep, ndat = freq.shape
-    ndim = data.ndim - len(mom)
-    if axis < 0:
-        axis += ndim
-    if not 0 <= axis < ndim:  # pragma: no cover
-        raise ValueError
-
-    if axis != 0:
-        data = np.moveaxis(data, axis, 0)
-
-    shape: tuple[int, ...] = data.shape[1 : -len(mom)]
-    mom_shape = tuple(x + 1 for x in mom)
-
-    target_shape = (ndat, *shape, *mom_shape)
-    if data.shape != target_shape:
-        msg = f"{data.shape=} != {target_shape}"
-        raise ValueError(msg)
-
-    # output
-    out_shape = (nrep,) + data.shape[1:]
-    if out is None:
-        out = np.empty(out_shape, dtype=dtype)
-    elif out.shape != out_shape:
-        msg = f"{out.shape=} != {out_shape}"
-        raise ValueError(msg)
-    else:  # make sure out is in correct order
-        out = np.asarray(out, dtype=dtype, order="C")
-
-    meta_reshape: tuple[int, ...]
-    meta_reshape = mom_shape if shape == () else (prod(shape), *mom_shape)
-
-    data_reshape = (ndat, *meta_reshape)
-    out_reshape = (nrep, *meta_reshape)
-
-    datar = data.reshape(data_reshape)
-    outr = out.reshape(out_reshape)
-
-    resample = factory_resample_data(
-        cov=len(mom) > 1,
-        vec=len(shape) > 0,
-        parallel=parallel,
-        fromzero=fromzero,
+    _resample = factory_resample_data(
+        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
     )
 
-    outr.fill(0.0)
-    resample(datar, freq, outr)
-
-    return outr.reshape(out.shape)
+    if out is not None:
+        return _resample(data, freq, out)
+    return _resample(data, freq)
 
 
 @docfiller.decorate
-def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
-    x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
-    freq: NDArrayAny,
+def resample_vals(
+    *args: NDArray[T_Float],
+    freq: NDArray[LongIntDType],
     mom: Moments,
-    axis: int = 0,
-    w: NDArrayAny | None = None,
-    mom_ndim: Mom_NDim | None = None,
-    broadcast: bool = False,
-    dtype: DTypeLike | None = None,
+    weight: ArrayLike | None = None,
+    axis: int = -1,
     order: ArrayOrder = None,
-    parallel: bool = True,
-    out: NDArrayAny | None = None,
-) -> NDArrayAny:
+    parallel: bool | None = None,
+    out: NDArray[T_Float] | None = None,
+) -> NDArray[T_Float]:
     """
     Resample data according to frequency table.
 
     Parameters
     ----------
-    x : ndarray or tuple of ndarray
-        Input values.
+    *args : ndarray
+        Values to analyze.
     {freq}
     {mom}
     {axis}
-    w :
-        Weights array.
-    {mom_ndim}
-    {broadcast}
-    {dtype}
-    order :
-        Parameter ``order`` to :func:`numpy.asarray`.
+    {weight}
+    {order}
     {parallel}
-    out : ndarray
-        Optional output array.
+    {out}
 
     Returns
     -------
-    ndarray
-        Resampled central moments array.
+    out : ndarray
+        Resampled Central moments array. ``out.shape = (...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``
+        where ``shape = args[0].shape``. and ``nrep = freq.shape[0]``.
     """
-    from ._lib.resample import factory_resample_vals
+    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    _check_freq(freq, args[0].shape[axis])
 
-    if isinstance(mom, int):
-        mom = (mom,)
-    elif not isinstance(mom, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
-        raise TypeError
-
-    if mom_ndim is None:
-        mom_ndim = len(mom)  # type: ignore[assignment]
-    if len(mom) != mom_ndim:
-        raise ValueError
-    mom_shape = tuple(x + 1 for x in mom)
-
-    if mom_ndim == 1:
-        y = None
-    elif mom_ndim == 2:
-        x, y = x
-    else:
-        msg = "only mom_ndim <= 2 supported"
+    if len(args) != mom_ndim:
+        msg = f"Number of arrays {len(args)} != {mom_ndim=}"
         raise ValueError(msg)
 
-    # check input data
-    freq = np.asarray(freq, dtype=np.int64)
-    nrep, ndat = freq.shape
+    weight = 1.0 if weight is None else weight
+    x0, *x1, w = prepare_values_for_reduction(*args, weight, axis=axis, order=order)
 
-    x = np.asarray(x, dtype=dtype, order=order)
-    if dtype is None:
-        dtype = x.dtype
-    if w is None:
-        w = np.ones_like(x)
-    else:
-        w = axis_expand_broadcast(
-            w, shape=x.shape, axis=axis, roll=False, dtype=dtype, order=order
-        )
-
-    if y is not None:
-        y = axis_expand_broadcast(
-            y,
-            shape=x.shape,
-            axis=axis,
-            roll=False,
-            broadcast=broadcast,
-            dtype=dtype,
-            order=order,
-        )
-
-    if axis != 0:
-        x = np.moveaxis(x, axis, 0)
-        w = np.moveaxis(w, axis, 0)
-        if y is not None:
-            y = np.moveaxis(y, axis, 0)
-
-    if len(x) != ndat:
-        raise ValueError
-
-    # output
-    shape = x.shape[1:]
-    out_shape = (nrep, *shape, *mom_shape)
+    out_shape: tuple[int, ...] = (
+        *x0.shape[:-1],
+        freq.shape[0],
+        *(m + 1 for m in mom_validated),
+    )  # type: ignore[has-type]
     if out is None:
-        out = np.empty(out_shape, dtype=dtype)
-    elif out.shape != out_shape:
-        raise ValueError
+        out = np.zeros(out_shape, dtype=x0.dtype)
     else:
-        out = np.asarray(out, dtype=dtype, order="C")
+        raise_if_wrong_shape(out, out_shape)
+        out.fill(0.0)
 
-    # reshape
-    data_reshape: tuple[int, ...] = (ndat,)
-    out_reshape: tuple[int, ...] = (nrep,)
-    if shape == ():
-        pass
-    else:
-        meta_reshape: tuple[int, ...] = (prod(shape),)
-        data_reshape += meta_reshape
-        out_reshape += meta_reshape
-    out_reshape += mom_shape
+    from ._lib.factory import factory_resample_vals
 
-    xr = x.reshape(data_reshape)
-    wr = w.reshape(data_reshape)
-    outr = out.reshape(out_reshape)
-    # if cov:
-    #     yr = y.reshape(data_reshape)
+    factory_resample_vals(  # type: ignore[call-arg, type-var]
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
+    )(x0, *x1, w, freq, out)  # type: ignore[arg-type] # pyright: ignore[reportCallIssue]
 
-    resample = factory_resample_vals(
-        cov=y is not None, vec=len(shape) > 0, parallel=parallel
-    )
-    outr.fill(0.0)
-    if y is not None:
-        yr = y.reshape(data_reshape)
-        resample(wr, xr, yr, freq, outr)
-    else:
-        resample(wr, xr, freq, outr)
-
-    return outr.reshape(out.shape)
-
-
-# TODO(wpk): add coverage for these
-def bootstrap_confidence_interval(  # pragma: no cover
-    distribution: NDArrayAny,
-    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
-    axis: int = 0,
-    alpha: float = 0.05,
-    style: Literal[None, "delta", "pm"] = None,
-    **kwargs: Any,
-) -> NDArrayAny:
-    """
-    Calculate the error bounds.
-
-    Parameters
-    ----------
-    distribution : array-like
-        distribution of values to consider
-    stats_val : array-like, {None, 'mean','median'}, optional
-        * array: perform pivotal error bounds (correct) with this as `value`.
-        * percentile: percentiles, with value as median
-        * mean: pivotal error bounds with mean as value
-        * median: pivotal error bounds with median as value
-    axis : int, default=0
-        axis to analyze along
-    alpha : float
-        alpha value for confidence interval.
-        Percent confidence = `100 * (1 - alpha)`
-    style : {None, 'delta', 'pm'}
-        controls style of output
-    **kwargs
-        extra arguments to `numpy.percentile`
-
-    Returns
-    -------
-    out : array
-        fist dimension will be statistics.  Other dimensions
-        have shape of input less axis reduced over.
-        Depending on `style` first dimension will be
-        (note val is either stats_val or median):
-
-        * None: [val, low, high]
-        * delta:  [val, val-low, high - val]
-        * pm : [val, (high - low) / 2]
-
-    """
-    if stats_val is None:
-        p_low = 100 * (alpha / 2.0)
-        p_mid = 50
-        p_high = 100 - p_low
-        val, low, high = np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kwargs
-        )
-
-    else:
-        if isinstance(stats_val, str):
-            if stats_val == "mean":
-                sv = np.mean(distribution, axis=axis)
-            elif stats_val == "median":
-                sv = np.median(distribution, axis=axis)
-            else:
-                msg = "stats val should be None, mean, median, or an array"
-                raise ValueError(msg)
-
-        else:
-            sv = stats_val
-
-        q_high = 100 * (alpha / 2.0)
-        q_low = 100 - q_high
-        val = sv
-        # fmt: off
-        low = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_low, axis=axis, **kwargs
-        )
-        high = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_high, axis=axis, **kwargs
-        )
-        # fmt: on
-
-    if style is None:
-        out = np.array([val, low, high])
-    elif style == "delta":
-        out = np.array([val, val - low, high - val])
-    elif style == "pm":
-        out = np.array([val, (high - low) / 2.0])
     return out
-
-
-def xbootstrap_confidence_interval(  # pragma: no cover
-    x: xr.DataArray,
-    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
-    axis: int = 0,
-    dim: Hashable | None = None,
-    alpha: float = 0.05,
-    style: Literal[None, "delta", "pm"] = None,
-    bootstrap_dim: Hashable | None = "bootstrap",
-    bootstrap_coords: str | Sequence[str] | None = None,
-    **kwargs: Any,
-) -> xr.DataArray:
-    """
-    Bootstrap xarray object.
-
-    Parameters
-    ----------
-    dim : str
-        if passed, use reduce along this dimension
-    bootstrap_dim : str, default='bootstrap'
-        name of new dimension.  If `bootstrap_dim` conflicts, then
-        `new_name = dim + new_name`
-    bootstrap_coords : array-like or str
-        coords of new dimension.
-        If `None`, use default names
-        If string, use this for the 'values' name
-    """
-    if dim is not None:
-        axis = cast(int, x.get_axis_num(dim))  # type: ignore[redundant-cast, unused-ignore]
-    else:
-        dim = x.dims[axis]
-
-    template = x.isel(indexers={dim: 0})
-
-    if bootstrap_dim is None:
-        bootstrap_dim = "bootstrap"
-
-    if bootstrap_dim in template.dims:
-        bootstrap_dim = f"{dim}_{bootstrap_dim}"
-    dims = (bootstrap_dim, *template.dims)
-
-    if bootstrap_coords is None:
-        bootstrap_coords = stats_val if isinstance(stats_val, str) else "stats_val"
-
-    if isinstance(bootstrap_coords, str):
-        if style is None:
-            bootstrap_coords = [bootstrap_coords, "low", "high"]
-        elif style == "delta":
-            bootstrap_coords = [bootstrap_coords, "err_low", "err_high"]
-        elif style == "pm":
-            bootstrap_coords = [bootstrap_coords, "err"]
-        else:
-            msg = f"unknown style={style}"
-            raise ValueError(msg)
-
-    if not isinstance(stats_val, str):
-        stats_val = np.array(stats_val)
-
-    out = bootstrap_confidence_interval(
-        x.to_numpy(),  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
-        stats_val=stats_val,
-        axis=axis,
-        alpha=alpha,
-        style=style,
-        **kwargs,
-    )
-
-    out_xr = xr.DataArray(
-        out,
-        dims=dims,
-        coords=template.coords,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-        attrs=template.attrs,
-        name=template.name,
-        # indexes=template.indexes,
-    )
-
-    out_xr.coords[bootstrap_dim] = bootstrap_coords  # pyright: ignore[reportUnknownMemberType]
-
-    return out_xr

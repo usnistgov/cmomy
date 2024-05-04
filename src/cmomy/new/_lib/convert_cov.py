@@ -1,14 +1,20 @@
-# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """Convert between central and raw moments"""
 
 from __future__ import annotations
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numba as nb
 
 from .decorators import myguvectorize
 from .utils import BINOMIAL_FACTOR
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from ..typing import T_FloatDType as T_Float
+
 
 _PARALLEL = False
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
@@ -22,7 +28,7 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
     ],
     writable=None,
 )
-def central_to_raw(central, raw) -> None:
+def central_to_raw(central: NDArray[T_Float], raw: NDArray[T_Float]) -> None:
     ave0 = central[1, 0]
     ave1 = central[0, 1]
 
@@ -65,7 +71,7 @@ def central_to_raw(central, raw) -> None:
     ],
     writable=None,
 )
-def raw_to_central(raw, central) -> None:
+def raw_to_central(raw: NDArray[T_Float], central: NDArray[T_Float]) -> None:
     ave0 = raw[1, 0]
     ave1 = raw[0, 1]
 

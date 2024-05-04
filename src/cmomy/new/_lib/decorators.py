@@ -67,7 +67,7 @@ def myguvectorize(
     parallel: bool = False,
     cache: bool | None = None,
     fastmath: bool | None = None,
-    writable: str | Iterable[str] | None = "data",
+    writable: str | Iterable[str] | None = "out",
     **kwargs: Any,
 ) -> Callable[[F], F]:
     target = _get_target(parallel)

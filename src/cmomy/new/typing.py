@@ -19,6 +19,8 @@ from typing import (
     Union,
 )
 
+import numpy as np
+
 # import numba as nb
 # put outside to get autodoc typehints working...
 import pandas as pd
@@ -34,6 +36,18 @@ if TYPE_CHECKING:
 DTypeAny: TypeAlias = Any
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
 ArrayOrder = Literal["C", "F", "A", "K", None]
+
+T_FloatDType = TypeVar("T_FloatDType", np.float32, np.float64)
+# Note: At least for now, only use np.int64...
+# T_IntDType = TypeVar("T_IntDType", np.int32, np.int64)  # array of ints
+T_IntDType: TypeAlias = np.int64
+FloatDTypes = Union[np.float32, np.float64]
+LongIntDType: TypeAlias = np.int64
+
+
+NDArrayFloats = NDArray[FloatDTypes]
+NDArrayInt = NDArray[LongIntDType]
+NDGeneric: TypeAlias = Union[T_FloatDType, NDArray[T_FloatDType]]
 
 # Numba types
 # NumbaType = Union[nb.typing.Integer, nb.typing.Array]
@@ -82,6 +96,8 @@ KeepAttrs: TypeAlias = Union[
     bool,
     None,
 ]
+
+ConvertStyle = Literal["central", "raw"]
 
 
 # pushing arrays

@@ -1,12 +1,19 @@
-# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """Low level scalar pushers.  These will be wrapped by guvectorize methods."""
 
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numba as nb
 
 from .decorators import myjit
 from .utils import BINOMIAL_FACTOR
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from ..typing import NDGeneric
+    from ..typing import T_FloatDType as T_Float
 
 
 @myjit(
@@ -16,20 +23,22 @@ from .utils import BINOMIAL_FACTOR
     ],
     inline=True,
 )
-def push_val(w, x, data) -> None:
+def push_val(
+    x: NDGeneric[T_Float], w: NDGeneric[T_Float], out: NDArray[T_Float]
+) -> None:
     if w == 0.0:
         return
 
-    order = data.shape[0] - 1
+    order = out.shape[0] - 1
 
-    data[0] += w
-    alpha = w / data[0]
+    out[0] += w
+    alpha = w / out[0]
     one_alpha = 1.0 - alpha
 
-    delta = x - data[1]
+    delta = x - out[1]
     incr = delta * alpha
 
-    data[1] += incr
+    out[1] += incr
     if order == 1:
         return
 
@@ -45,7 +54,7 @@ def push_val(w, x, data) -> None:
             tmp += (
                 BINOMIAL_FACTOR[a, b]
                 * delta_b
-                * (minus_b * alpha_b * one_alpha * data[c])
+                * (minus_b * alpha_b * one_alpha * out[c])
             )
             delta_b *= delta
             alpha_b *= alpha
@@ -54,9 +63,9 @@ def push_val(w, x, data) -> None:
 
         tmp += delta * alpha * one_alpha * delta_b * (-minus_b * alpha_b + one_alpha_b)
 
-        data[a] = tmp
+        out[a] = tmp
 
-    data[2] = one_alpha * (data[2] + delta * incr)
+    out[2] = one_alpha * (out[2] + delta * incr)
 
 
 # NOTE: Marginally faster to have separate push_stat, push_data, push_data_scale
@@ -67,25 +76,25 @@ def push_val(w, x, data) -> None:
     ],
     inline=True,
 )
-def push_data(other, data) -> None:
+def push_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
     # w : weight
-    # other[1]a : average
+    # data[1]a : average
     # v[i] : <dx**(i+2)>
 
-    w = other[0]
+    w = data[0]
     if w == 0:
         return
 
-    order = data.shape[0] - 1
+    order = out.shape[0] - 1
 
-    data[0] += w
+    out[0] += w
 
-    alpha = w / data[0]
+    alpha = w / out[0]
     one_alpha = 1.0 - alpha
-    delta = other[1] - data[1]
+    delta = data[1] - out[1]
     incr = delta * alpha
 
-    data[1] += incr
+    out[1] += incr
 
     if order == 1:
         return
@@ -102,8 +111,8 @@ def push_data(other, data) -> None:
                 BINOMIAL_FACTOR[a1, b]
                 * delta_b
                 * (
-                    minus_b * alpha_b * one_alpha * data[c]
-                    + one_alpha_b * alpha * other[c]
+                    minus_b * alpha_b * one_alpha * out[c]
+                    + one_alpha_b * alpha * data[c]
                 )
             )
             delta_b *= delta
@@ -113,9 +122,9 @@ def push_data(other, data) -> None:
 
         # think I can scrap this?
         tmp += delta * alpha * one_alpha * delta_b * (-minus_b * alpha_b + one_alpha_b)
-        data[a1] = tmp
+        out[a1] = tmp
 
-    data[2] = other[2] * alpha + one_alpha * (data[2] + delta * incr)
+    out[2] = data[2] * alpha + one_alpha * (out[2] + delta * incr)
 
 
 @myjit(
@@ -125,25 +134,27 @@ def push_data(other, data) -> None:
     ],
     inline=True,
 )
-def push_data_scale(other, scale, data) -> None:
+def push_data_scale(
+    data: NDArray[T_Float], scale: NDGeneric[T_Float], out: NDArray[T_Float]
+) -> None:
     # w : weight
-    # other[1]a : average
+    # data[1]a : average
     # v[i] : <dx**(i+2)>
 
-    w = other[0] * scale
+    w = data[0] * scale
     if w == 0:
         return
 
-    order = data.shape[0] - 1
+    order = out.shape[0] - 1
 
-    data[0] += w
+    out[0] += w
 
-    alpha = w / data[0]
+    alpha = w / out[0]
     one_alpha = 1.0 - alpha
-    delta = other[1] - data[1]
+    delta = data[1] - out[1]
     incr = delta * alpha
 
-    data[1] += incr
+    out[1] += incr
 
     if order == 1:
         return
@@ -160,8 +171,8 @@ def push_data_scale(other, scale, data) -> None:
                 BINOMIAL_FACTOR[a1, b]
                 * delta_b
                 * (
-                    minus_b * alpha_b * one_alpha * data[c]
-                    + one_alpha_b * alpha * other[c]
+                    minus_b * alpha_b * one_alpha * out[c]
+                    + one_alpha_b * alpha * data[c]
                 )
             )
             delta_b *= delta
@@ -173,36 +184,41 @@ def push_data_scale(other, scale, data) -> None:
         c = 0
         b = a1 - c
         tmp += delta * alpha * one_alpha * delta_b * (-minus_b * alpha_b + one_alpha_b)
-        data[a1] = tmp
+        out[a1] = tmp
 
-    data[2] = other[2] * alpha + one_alpha * (data[2] + delta * incr)
+    out[2] = data[2] * alpha + one_alpha * (out[2] + delta * incr)
 
 
 @myjit(
     signature=[
-        (nb.float32, nb.float32, nb.float32[:], nb.float32[:]),
-        (nb.float64, nb.float64, nb.float64[:], nb.float64[:]),
+        (nb.float32, nb.float32[:], nb.float32, nb.float32[:]),
+        (nb.float64, nb.float64[:], nb.float64, nb.float64[:]),
     ],
     inline=True,
 )
-def push_stat(w, a, v, data) -> None:
-    # w : weight
+def push_stat(
+    a: NDGeneric[T_Float],
+    v: NDArray[T_Float],
+    w: NDGeneric[T_Float],
+    out: NDArray[T_Float],
+) -> None:
     # a : average
     # v[i] : <dx**(i+2)>
+    # w : weight
 
     if w == 0:
         return
 
-    order = data.shape[0] - 1
+    order = out.shape[0] - 1
 
-    data[0] += w
+    out[0] += w
 
-    alpha = w / data[0]
+    alpha = w / out[0]
     one_alpha = 1.0 - alpha
-    delta = a - data[1]
+    delta = a - out[1]
     incr = delta * alpha
 
-    data[1] += incr
+    out[1] += incr
 
     if order == 1:
         return
@@ -219,7 +235,7 @@ def push_stat(w, a, v, data) -> None:
                 BINOMIAL_FACTOR[a1, b]
                 * delta_b
                 * (
-                    minus_b * alpha_b * one_alpha * data[c]
+                    minus_b * alpha_b * one_alpha * out[c]
                     + one_alpha_b * alpha * v[c - 2]
                 )
             )
@@ -232,6 +248,6 @@ def push_stat(w, a, v, data) -> None:
         c = 0
         b = a1 - c
         tmp += delta * alpha * one_alpha * delta_b * (-minus_b * alpha_b + one_alpha_b)
-        data[a1] = tmp
+        out[a1] = tmp
 
-    data[2] = v[0] * alpha + one_alpha * (data[2] + delta * incr)
+    out[2] = v[0] * alpha + one_alpha * (out[2] + delta * incr)

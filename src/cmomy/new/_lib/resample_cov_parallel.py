@@ -1,14 +1,19 @@
-# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """Vectorized pushers."""
 
 from __future__ import annotations
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numba as nb
 
 from . import _push_cov as _push
 from .decorators import myguvectorize
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from ..typing import T_FloatDType as T_Float
 
 _PARALLEL = True  # Auto generated from resample_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
@@ -28,14 +33,16 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
     ],
     writable=None,
 )
-def resample_data_fromzero(other, freq, data) -> None:
+def resample_data_fromzero(
+    data: NDArray[T_Float], freq: NDArray[T_Float], out: NDArray[T_Float]
+) -> None:
     nrep, nsamp = freq.shape
 
-    assert other.shape[1:] == data.shape[1:]
-    assert other.shape[0] == nsamp
-    assert data.shape[0] == nrep
+    assert data.shape[1:] == out.shape[1:]
+    assert data.shape[0] == nsamp
+    assert out.shape[0] == nrep
 
-    data[...] = 0.0
+    out[...] = 0.0
 
     for irep in range(nrep):
         first_nonzero = nsamp
@@ -43,14 +50,14 @@ def resample_data_fromzero(other, freq, data) -> None:
             f = freq[irep, isamp]
             if f != 0:
                 first_nonzero = isamp
-                data[irep, :, :] = other[isamp, :, :]
-                data[irep, 0, 0] *= f
+                out[irep, :, :] = data[isamp, :, :]
+                out[irep, 0, 0] *= f
                 break
 
         for isamp in range(first_nonzero + 1, nsamp):
             f = freq[irep, isamp]
             if f != 0:
-                _push.push_data_scale(other[isamp, ...], f, data[irep, ...])
+                _push.push_data_scale(data[isamp, ...], f, out[irep, ...])
 
 
 @_vectorize(
@@ -72,20 +79,26 @@ def resample_data_fromzero(other, freq, data) -> None:
         ),
     ],
 )
-def resample_vals(w, x0, x1, freq, data) -> None:
+def resample_vals(
+    x0: NDArray[T_Float],
+    x1: NDArray[T_Float],
+    w: NDArray[T_Float],
+    freq: NDArray[T_Float],
+    out: NDArray[T_Float],
+) -> None:
     nrep, nsamp = freq.shape
 
     assert len(w) == nsamp
     assert len(x0) == nsamp
     assert len(x1) == nsamp
-    assert data.shape[0] == nrep
+    assert out.shape[0] == nrep
 
     for irep in range(freq.shape[0]):
         for isamp in range(freq.shape[1]):
             f = freq[irep, isamp]
             if f == 0:
                 continue
-            _push.push_val(w[isamp] * f, x0[isamp], x1[isamp], data[irep, ...])
+            _push.push_val(x0[isamp], x1[isamp], w[isamp] * f, out[irep, ...])
 
 
 # * Other routines
@@ -97,19 +110,19 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #         (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
 #     ],
 # )
-# def resample_data(other, freq, data) -> None:
+# def resample_data(data, freq, out) -> None:
 #     nrep, nsamp = freq.shape
 
-#     assert other.shape[1:] == data.shape[1:]
-#     assert other.shape[0] == nsamp
-#     assert data.shape[0] == nrep
+#     assert data.shape[1:] == out.shape[1:]
+#     assert data.shape[0] == nsamp
+#     assert out.shape[0] == nrep
 
 #     for irep in range(nrep):
 #         for isamp in range(nsamp):
 #             f = freq[irep, isamp]
 #             if f == 0:
 #                 continue
-#             _push.push_data_scale(other[isamp, ...], f, data[irep, ...])
+#             _push.push_data_scale(data[isamp, ...], f, out[irep, ...])
 
 
 # @_jit(
@@ -119,13 +132,13 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #         (nb.float64[:, :, :, :], nb.float64[:, :], nb.float64[:, :, :, :]),
 #     ],
 # )
-# def resample_data_jit(other, freq, data) -> None:
+# def resample_data_jit(data, freq, out) -> None:
 #     nrep, nsamp = freq.shape
-#     nval = other.shape[1]
+#     nval = data.shape[1]
 
-#     assert other.shape[1:] == data.shape[1:]
-#     assert other.shape[0] == nsamp
-#     assert data.shape[0] == nrep
+#     assert data.shape[1:] == out.shape[1:]
+#     assert data.shape[0] == nsamp
+#     assert out.shape[0] == nrep
 
 #     for irep in nb.prange(nrep):
 #         for isamp in range(nsamp):
@@ -133,7 +146,7 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #             if f == 0:
 #                 continue
 #             for k in range(nval):
-#                 _push.push_data_scale(other[isamp, k, ...], f, data[irep, k, ...])
+#                 _push.push_data_scale(data[isamp, k, ...], f, out[irep, k, ...])
 
 
 # @_jit(
@@ -143,15 +156,15 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #         (nb.float64[:, :, :, :], nb.float64[:, :], nb.float64[:, :, :, :]),
 #     ],
 # )
-# def resample_data_fromzero_jit(other, freq, data) -> None:
+# def resample_data_fromzero_jit(data, freq, out) -> None:
 #     nrep, nsamp = freq.shape
-#     nval = other.shape[1]
+#     nval = data.shape[1]
 
-#     assert other.shape[1:] == data.shape[1:]
-#     assert other.shape[0] == nsamp
-#     assert data.shape[0] == nrep
+#     assert data.shape[1:] == out.shape[1:]
+#     assert data.shape[0] == nsamp
+#     assert out.shape[0] == nrep
 
-#     data[...] = 0.0
+#     out[...] = 0.0
 
 #     for irep in nb.prange(nrep):
 #         first_nonzero = nsamp
@@ -160,8 +173,8 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #             if f != 0:
 #                 first_nonzero = isamp
 #                 for k in range(nval):
-#                     data[irep, k, :, :] = other[isamp, k, :, :]
-#                     data[irep, k, 0, 0] *= f
+#                     out[irep, k, :, :] = data[isamp, k, :, :]
+#                     out[irep, k, 0, 0] *= f
 #                 break
 
 #         for isamp in range(first_nonzero + 1, nsamp):
@@ -169,7 +182,7 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #             if f == 0:
 #                 continue
 #             for k in range(nval):
-#                 _push.push_data_scale(other[isamp, k, ...], f, data[irep, k, ...])
+#                 _push.push_data_scale(data[isamp, k, ...], f, out[irep, k, ...])
 
 
 # @_jit(
@@ -191,15 +204,15 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #         ),
 #     ],
 # )
-# def resample_vals_jit(w, x0, x1, freq, data):
+# def resample_vals_jit(x0, x1, w, freq, out):
 #     nrep, nsamp = freq.shape
 #     nval = w.shape[1]
 
 #     assert w.shape == x0.shape
 #     assert x0.shape == x1.shape
 #     assert w.shape[0] == nsamp
-#     assert data.shape[0] == nrep
-#     assert data.shape[1] == nval
+#     assert out.shape[0] == nrep
+#     assert out.shape[1] == nval
 
 #     for irep in nb.prange(nrep):
 #         for isamp in range(nsamp):
@@ -208,5 +221,5 @@ def resample_vals(w, x0, x1, freq, data) -> None:
 #                 continue
 #             for k in range(nval):
 #                 _push.push_val(
-#                     w[isamp, k] * f, x0[isamp, k], x1[isamp, k], data[irep, k, ...]
+#                     x0[isamp, k], x1[isamp, k], w[isamp, k] * f, out[irep, k, ...]
 #                 )

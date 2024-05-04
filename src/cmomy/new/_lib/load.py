@@ -71,7 +71,7 @@ def load(
     _covs = ["", "_cov"] if include_cov else [""]
     _parallels = ["", "_parallel"] if include_parallel else [""]
 
-    _modules = ["_push"]
+    _modules = ["utils", "_push"]
     if include_vec:
         _modules.append("push")
     if include_resample:
@@ -82,7 +82,6 @@ def load(
         _modules.append("convert")
 
     mods = itertools.chain(
-        # (f"_push{cov}" for cov in _covs),
         (
             f"{mod}{cov}{parallel}"
             for mod in _modules
@@ -93,6 +92,8 @@ def load(
 
     # filter to those that exist
     root = Path(__file__).parent
-    mods = filter(lambda name: (root / name).with_suffix(".py").exists(), mods)
 
-    time_modules(*mods, prefix="cmomy.new._lib")
+    def _filter(name: str) -> bool:
+        return (root / name).with_suffix(".py").exists()
+
+    time_modules(*filter(_filter, mods), prefix="cmomy.new._lib")

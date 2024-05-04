@@ -1,14 +1,22 @@
-# mypy: disable-error-code="no-untyped-call,no-untyped-def"
 """Vectorized pushers."""
 
 from __future__ import annotations
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numba as nb
 
 from . import _push_cov as _push
 from .decorators import myguvectorize, myjit
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+if TYPE_CHECKING:
+    from ..typing import LongIntDType
+    from ..typing import T_FloatDType as T_Float
+
 
 _PARALLEL = True  # Auto generated from indexed_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
@@ -30,13 +38,15 @@ _jit = partial(myjit, parallel=_PARALLEL)
         ),
     ],
 )
-def reduce_data_grouped(other, group_idx, data) -> None:
-    assert other.shape[1:] == data.shape[1:]
-    assert group_idx.max() < data.shape[0]
-    for s in range(other.shape[0]):
+def reduce_data_grouped(
+    data: NDArray[T_Float], group_idx: NDArray[LongIntDType], out: NDArray[T_Float]
+) -> None:
+    assert data.shape[1:] == out.shape[1:]
+    assert group_idx.max() < out.shape[0]
+    for s in range(data.shape[0]):
         group = group_idx[s]
         if group >= 0:
-            _push.push_data(other[s, ...], data[group, ...])
+            _push.push_data(data[s, ...], out[group, ...])
 
 
 @_vectorize(
@@ -62,16 +72,21 @@ def reduce_data_grouped(other, group_idx, data) -> None:
     writable=None,
 )
 def reduce_data_indexed_fromzero(
-    other, index, group_start, group_end, scale, data
+    data: NDArray[T_Float],
+    index: NDArray[LongIntDType],
+    group_start: NDArray[LongIntDType],
+    group_end: NDArray[LongIntDType],
+    scale: NDArray[T_Float],
+    out: NDArray[T_Float],
 ) -> None:
     ngroup = len(group_start)
 
-    assert other.shape[1:] == data.shape[1:]
+    assert data.shape[1:] == out.shape[1:]
     assert index.shape == scale.shape
     assert len(group_end) == ngroup
-    assert data.shape[0] == ngroup
+    assert out.shape[0] == ngroup
 
-    data[...] = 0.0
+    out[...] = 0.0
 
     for group in range(ngroup):
         start = group_start[group]
@@ -80,13 +95,13 @@ def reduce_data_indexed_fromzero(
             # assume start from zero
             s = index[start]
             f = scale[start]
-            data[group, :, :] = other[s, :, :]
-            data[group, 0, 0] *= f
+            out[group, :, :] = data[s, :, :]
+            out[group, 0, 0] *= f
 
             for i in range(start + 1, end):
                 s = index[i]
                 f = scale[i]
-                _push.push_data_scale(other[s, ...], f, data[group, ...])
+                _push.push_data_scale(data[s, ...], f, out[group, ...])
 
 
 # * Other routines
@@ -111,13 +126,13 @@ def reduce_data_indexed_fromzero(
 #         ),
 #     ],
 # )
-# def reduce_data_indexed(other, index, group_start, group_end, scale, data) -> None:
+# def reduce_data_indexed(data, index, group_start, group_end, scale, out) -> None:
 #     ngroup = len(group_start)
 
-#     assert other.shape[1:] == data.shape[1:]
+#     assert data.shape[1:] == out.shape[1:]
 #     assert index.shape == scale.shape
 #     assert len(group_end) == ngroup
-#     assert data.shape[0] == ngroup
+#     assert out.shape[0] == ngroup
 
 #     for group in range(ngroup):
 #         start = group_start[group]
@@ -126,11 +141,11 @@ def reduce_data_indexed_fromzero(
 #             for i in range(start, end):
 #                 s = index[i]
 #                 f = scale[i]
-#                 _push.push_data_scale(other[s, ...], f, data[group, ...])
+#                 _push.push_data_scale(data[s, ...], f, out[group, ...])
 
 
 # @_jit(
-#     # other[sample,val,mom0,mom1],index[index],start[group],end[group],scale[index],data[group,val,mom0,mom1]
+#     # data[sample,val,mom0,mom1],index[index],start[group],end[group],scale[index],out[group,val,mom0,mom1]
 #     [
 #         (
 #             nb.float32[:, :, :, :],
@@ -150,14 +165,14 @@ def reduce_data_indexed_fromzero(
 #         ),
 #     ],
 # )
-# def reduce_data_indexed_jit(other, index, group_start, group_end, scale, data) -> None:
+# def reduce_data_indexed_jit(data, index, group_start, group_end, scale, out) -> None:
 #     ngroup = len(group_start)
-#     nval = other.shape[1]
+#     nval = data.shape[1]
 
-#     assert other.shape[1:] == data.shape[1:]
+#     assert data.shape[1:] == out.shape[1:]
 #     assert index.shape == scale.shape
 #     assert len(group_end) == ngroup
-#     assert data.shape[0] == ngroup
+#     assert out.shape[0] == ngroup
 
 #     for group in nb.prange(ngroup):
 #         start = group_start[group]
@@ -166,11 +181,11 @@ def reduce_data_indexed_fromzero(
 #             s = index[start]
 #             f = scale[start]
 #             for k in range(nval):
-#                 data[group, k, :, :] = other[s, k, :, :]
-#                 data[group, k, 0, 0] *= f
+#                 out[group, k, :, :] = data[s, k, :, :]
+#                 out[group, k, 0, 0] *= f
 
 #             for i in range(start + 1, end):
 #                 s = index[i]
 #                 f = scale[i]
 #                 for k in range(nval):
-#                     _push.push_data_scale(other[s, k, ...], f, data[group, k, ...])
+#                     _push.push_data_scale(data[s, k, ...], f, out[group, k, ...])
