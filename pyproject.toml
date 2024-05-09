@@ -39,7 +39,7 @@ dependencies = [
     "module-utilities >= 0.6",
     "numba >= 0.50",
     "numpy >= 1.21",
-    "typing-extensions;python_version<'3.11'",
+    "typing-extensions;python_version<'3.12'",
     "xarray >= 0.16",
 ]
 [project.optional-dependencies]
@@ -301,7 +301,14 @@ strict = [
     "src/cmomy/xcentral.py",
     "noxfile.py",
     "tools/*.py",
-    "src/cmomy/new/*.py",
+    "src/cmomy/new/convert.py",
+    "src/cmomy/new/docstrings.py",
+    "src/cmomy/new/options.py",
+    "src/cmomy/new/random.py",
+    "src/cmomy/new/reduce.py",
+    "src/cmomy/new/resample.py",
+    "src/cmomy/new/typing.py",
+    "src/cmomy/new/utils.py",
     "src/cmomy/new/_lib/factory.py",
 ]
 exclude = ["**/__pycache__", ".tox/**", ".nox/**", ".venv/**", "**/.mypy_cache", "**/.numba_cache"]

@@ -15,7 +15,6 @@ from typing import (
     Optional,
     Sequence,
     Tuple,
-    TypeVar,
     Union,
 )
 
@@ -27,23 +26,33 @@ import pandas as pd
 import xarray as xr
 from numpy.typing import ArrayLike, NDArray
 
+from ._typing_compat import TypeVar
+
 if TYPE_CHECKING:
     from ._typing_compat import TypeAlias
-    from .abstract_central import CentralMomentsABC
+    # from .central_abc import CentralMomentsABC
 
 
 # Arrays
 DTypeAny: TypeAlias = Any
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
 ArrayOrder = Literal["C", "F", "A", "K", None]
+ArrayOrderCF = Literal["C", "F", None]
 
-T_FloatDType = TypeVar("T_FloatDType", np.float32, np.float64)
+T_FloatDType = TypeVar("T_FloatDType", np.float32, np.float64, default=np.float64)
+T_FloatDType_co = TypeVar(
+    "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
+)
+T_FloatDType2 = TypeVar("T_FloatDType2", np.float32, np.float64, default=np.float64)
+
+# T_FloatArray = TypeVar("T_FloatArray", NDArray[np.float32], NDArray[np.float64])
+# T_NDArray = TypeVar("T_NDArray", bound=NDArray[Any])
+T_Scalar = TypeVar("T_Scalar", bound=np.generic)
 # Note: At least for now, only use np.int64...
 # T_IntDType = TypeVar("T_IntDType", np.int32, np.int64)  # array of ints
 T_IntDType: TypeAlias = np.int64
 FloatDTypes = Union[np.float32, np.float64]
 LongIntDType: TypeAlias = np.int64
-
 
 NDArrayFloats = NDArray[FloatDTypes]
 NDArrayInt = NDArray[LongIntDType]
@@ -60,8 +69,21 @@ MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
 # Generic array
-T_Array = TypeVar("T_Array", NDArrayAny, xr.DataArray)
-T_CentralMoments = TypeVar("T_CentralMoments", bound="CentralMomentsABC[DTypeAny]")
+T_Array = TypeVar(
+    "T_Array",
+    NDArray[np.float32],
+    NDArray[np.float64],
+    xr.DataArray,
+    default=NDArray[np.float64],
+)
+T_Array2 = TypeVar(
+    "T_Array2",
+    NDArray[np.float32],
+    NDArray[np.float64],
+    xr.DataArray,
+    default=NDArray[np.float64],
+)
+# T_CentralMoments = TypeVar("T_CentralMoments", bound="CentralMomentsABC[DTypeAny]")
 
 # Dummy function
 FuncType = Callable[..., Any]
@@ -69,6 +91,7 @@ F = TypeVar("F", bound=FuncType)
 
 # xarray specific stuff
 MomDims = Union[Hashable, Tuple[Hashable], Tuple[Hashable, Hashable]]
+MomDimsStrict = Union[Tuple[Hashable], Tuple[Hashable, Hashable]]
 
 # fix if using autodoc typehints...
 if TYPE_CHECKING:

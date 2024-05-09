@@ -314,9 +314,10 @@ def resample_data(
 
 @docfiller.decorate
 def resample_vals(
-    *args: NDArray[T_Float],
-    freq: NDArray[LongIntDType],
+    x: NDArray[T_Float],
+    *y: ArrayLike,
     mom: Moments,
+    freq: NDArray[LongIntDType],
     weight: ArrayLike | None = None,
     axis: int = -1,
     order: ArrayOrder = None,
@@ -328,8 +329,10 @@ def resample_vals(
 
     Parameters
     ----------
-    *args : ndarray
-        Values to analyze.
+    x : ndarray
+        Value to analyze
+    *y:  array-like, optional.
+        Second value needed if len(mom)==2.
     {freq}
     {mom}
     {axis}
@@ -345,20 +348,22 @@ def resample_vals(
         where ``shape = args[0].shape``. and ``nrep = freq.shape[0]``.
     """
     mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    _check_freq(freq, args[0].shape[axis])
-
-    if len(args) != mom_ndim:
-        msg = f"Number of arrays {len(args)} != {mom_ndim=}"
-        raise ValueError(msg)
+    _check_freq(freq, x.shape[axis])
 
     weight = 1.0 if weight is None else weight
-    x0, *x1, w = prepare_values_for_reduction(*args, weight, axis=axis, order=order)
+    x0, *x1, w = prepare_values_for_reduction(
+        x, *y, weight, axis=axis, order=order, narrays=mom_ndim + 1
+    )
 
+    val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
+        :-1
+    ]
+    mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom_validated)
     out_shape: tuple[int, ...] = (
-        *x0.shape[:-1],
+        *val_shape,
         freq.shape[0],
-        *(m + 1 for m in mom_validated),
-    )  # type: ignore[has-type]
+        *mom_shape,
+    )
     if out is None:
         out = np.zeros(out_shape, dtype=x0.dtype)
     else:

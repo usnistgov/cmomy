@@ -157,14 +157,14 @@ class PusherTotal(TypedDict):
 
 
 @lru_cache
-def factory_pushers(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> PusherTotal:
+def factory_pusher(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Pusher:
     """Factory method to get pusher functions."""
     parallel = parallel and supports_parallel()
 
-    if mom_ndim == 1:
+    if mom_ndim == 1 and parallel:
         from . import push
 
-        out_serial = Pusher(
+        return Pusher(
             val=push.push_val,
             vals=push.reduce_vals,
             data=push.push_data,
@@ -172,20 +172,10 @@ def factory_pushers(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> PusherTota
             stat=push.push_stat,
             stats=push.reduce_stats,
         )
-    else:
-        from . import push_cov
-
-        out_serial = Pusher(
-            val=push_cov.push_val,
-            vals=push_cov.reduce_vals,
-            data=push_cov.push_data,
-            datas=push_cov.reduce_data,
-        )
-
-    if parallel and mom_ndim == 1:
+    if parallel:
         from . import push_parallel
 
-        out_parallel = Pusher(
+        Pusher(
             val=push_parallel.push_val,
             vals=push_parallel.reduce_vals,
             data=push_parallel.push_data,
@@ -194,20 +184,24 @@ def factory_pushers(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> PusherTota
             stats=push_parallel.reduce_stats,
         )
 
-    elif parallel:
+    if mom_ndim == 1 and parallel:
         from . import push_cov_parallel
 
-        out_parallel = Pusher(
+        return Pusher(
             val=push_cov_parallel.push_val,
             vals=push_cov_parallel.reduce_vals,
             data=push_cov_parallel.push_data,
             datas=push_cov_parallel.reduce_data,
         )
 
-    else:
-        out_parallel = out_serial
+    from . import push_cov
 
-    return PusherTotal(serial=out_serial, parallel=out_parallel)
+    return Pusher(
+        val=push_cov.push_val,
+        vals=push_cov.reduce_vals,
+        data=push_cov.push_data,
+        datas=push_cov.reduce_data,
+    )
 
 
 # * Resample

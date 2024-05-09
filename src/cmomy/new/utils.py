@@ -6,18 +6,30 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
+import xarray as xr
 
 from ._lib.utils import supports_parallel
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
-    from typing import Iterable, Sequence
+    from typing import Any, Hashable, Iterable, Mapping, Sequence
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from ._typing_compat import TypeGuard
-    from .typing import ArrayOrder, Mom_NDim, Moments, MomentsStrict, NDArrayAny
-    from .typing import T_FloatDType as T_Float
+
+    # from .typing import T_FloatDType as T_Float
+    # from .typing import T_FloatDType_co as T_Float_co
+    from .typing import (
+        ArrayOrder,
+        Mom_NDim,
+        MomDims,
+        MomDimsStrict,
+        Moments,
+        MomentsStrict,
+        NDArrayAny,
+        T_Scalar,
+    )
 
 
 def normalize_axis_index(axis: int, ndim: int) -> int:
@@ -27,6 +39,7 @@ def normalize_axis_index(axis: int, ndim: int) -> int:
     return ma.normalize_axis_index(axis, ndim)  # type: ignore[no-any-return,attr-defined]
 
 
+# * Old utils -----------------------------------------------------------------
 def shape_insert_axis(
     *,
     shape: Sequence[int],
@@ -94,7 +107,7 @@ def axis_expand_broadcast(
     return x
 
 
-# * Moment validation
+# * Moment validation ---------------------------------------------------------
 def is_mom_ndim(mom_ndim: int) -> TypeGuard[Mom_NDim]:
     """Validate mom_ndim."""
     return mom_ndim in {1, 2}
@@ -236,7 +249,7 @@ def select_mom_ndim(*, mom: Moments | None, mom_ndim: Mom_NDim | None) -> Mom_ND
     return validate_mom_ndim(mom_ndim)
 
 
-# * New helpers
+# * New helpers ---------------------------------------------------------------
 def parallel_heuristic(parallel: bool | None, size: int, cutoff: int = 10000) -> bool:
     """Default parallel."""
     if parallel is not None:
@@ -245,13 +258,14 @@ def parallel_heuristic(parallel: bool | None, size: int, cutoff: int = 10000) ->
 
 
 def _prepare_secondary_value_for_reduction(
-    target: NDArray[T_Float],
+    target: NDArray[T_Scalar],
     x: ArrayLike,
     axis: int,
     move_axis: bool,
+    nsamp: int,
     *,
     order: ArrayOrder = None,
-) -> NDArray[T_Float]:
+) -> NDArray[T_Scalar]:
     """
     Prepare value array (x1, w) for reduction.
 
@@ -270,7 +284,7 @@ def _prepare_secondary_value_for_reduction(
         passed through `_prepare_target_value_for_reduction`
 
     """
-    out: NDArray[T_Float] = np.asarray(x, dtype=target.dtype, order=order)
+    out: NDArray[T_Scalar] = np.asarray(x, dtype=target.dtype, order=order)
     if out.ndim == target.ndim:
         if move_axis:
             out = np.moveaxis(out, axis, -1)
@@ -279,27 +293,54 @@ def _prepare_secondary_value_for_reduction(
         return out
 
     if out.ndim == 0:
-        return np.broadcast_to(out, target.shape[-1])
+        return np.broadcast_to(out, nsamp)
 
-    if out.ndim == 1 and len(out) != target.shape[-1]:
-        msg = f"For 1D secondary values, {len(out)=} must be same as target.shape[axis]={target.shape[-1]}"
+    if out.ndim == 1 and len(out) != nsamp:
+        msg = f"For 1D secondary values, {len(out)=} must be same as target.shape[axis]={nsamp}"
         raise ValueError(msg)
-
     return out
 
 
-def prepare_values_for_reduction(
-    target: NDArray[T_Float],
-    *args: ArrayLike,
-    axis: int = -1,
+def _xprepare_secondary_value_for_reduction(
+    target: xr.DataArray,
+    x: xr.DataArray,
+    # axis: int,
+    # dim: Hashable,
+    # move_axis: bool,
+    *,
     order: ArrayOrder = None,
-    ndim: int | None = None,
-) -> tuple[NDArray[T_Float], ...]:
-    """Convert input value arrays to correct form for reduction."""
-    ndim = ndim or target.ndim
-    axis = normalize_axis_index(axis, ndim)
+) -> xr.DataArray:
+    # assume ordering will be handled by apply_ufunc
+    if order or x.dtype != target.dtype:  # pyright: ignore[reportUnknownMemberType]
+        x = x.astype(dtype=target.dtype, copy=False, order=order)  # pyright: ignore[reportUnknownMemberType]
+    return x
 
-    move_axis = (target.ndim > 1) and (axis != ndim - 1)
+
+def prepare_values_for_reduction(
+    target: NDArray[T_Scalar],
+    *args: ArrayLike,
+    narrays: int,
+    axis: int | None,
+    order: ArrayOrder = None,
+) -> tuple[NDArray[T_Scalar], ...]:
+    """
+    Convert input value arrays to correct form for reduction.
+
+    Parameters
+    ----------
+        narrays : int
+        The total number of expected arrays.  len(args) + 1 must equal narrays.
+    """
+    if len(args) + 1 != narrays:
+        msg = f"Number of arrays {len(args) + 1} != {narrays}"
+        raise ValueError(msg)
+
+    if axis is None:
+        msg = "Must specify axis"
+        raise ValueError(msg)
+
+    axis = normalize_axis_index(axis, target.ndim)
+    move_axis = (target.ndim > 1) and (axis != target.ndim - 1)
 
     if move_axis:
         target = np.moveaxis(target, axis, -1)
@@ -307,22 +348,103 @@ def prepare_values_for_reduction(
     if order:
         target = np.asarray(target, order=order)
 
-    others: Iterable[NDArray[T_Float]] = (
+    others: Iterable[NDArray[T_Scalar]] = (
         _prepare_secondary_value_for_reduction(
-            target=target, x=x, axis=axis, move_axis=move_axis, order=order
+            target=target,
+            x=x,
+            axis=axis,
+            move_axis=move_axis,
+            order=order,
+            nsamp=target.shape[-1],
         )
         for x in args
     )
-    return target, *others  # type: ignore[arg-type]
+    return target, *others
+
+
+def xprepare_values_for_reduction(
+    target: xr.DataArray,
+    *args: ArrayLike | xr.DataArray,
+    narrays: int,
+    dim: Hashable | None,
+    axis: int | None,
+    order: ArrayOrder = None,
+) -> tuple[list[list[Hashable]], tuple[xr.DataArray | NDArrayAny, ...]]:
+    """
+    Convert input value arrays to correct form for reduction.
+
+    Parameters
+    ----------
+        narrays : int
+        The total number of expected arrays.  len(args) + 1 must equal narrays.
+
+    Returns
+    -------
+    input_core_dims : list[list[Hashable]]
+    tuple_of_arrays : tuple of DataArray or ndarray
+    """
+    if len(args) + 1 != narrays:
+        msg = f"Number of arrays {len(args) + 1} != {narrays}"
+        raise ValueError(msg)
+
+    if not isinstance(target, xr.DataArray):  # pyright: ignore[reportUnnecessaryIsInstance]
+        msg = "First value must be DataArray.  Received type {type(target)}"
+        raise TypeError(msg)
+
+    axis, dim = select_axis_dim(
+        dims=target.dims,
+        axis=axis,
+        dim=dim,
+    )
+
+    move_axis = (target.ndim > 1) and (axis != target.ndim - 1)
+
+    # go ahead and do the move in case we want to order...
+    if move_axis:
+        target = target.transpose(..., dim)
+    if order:
+        target = target.astype(dtype=None, order=order, copy=False)
+    nsamp = target.shape[-1]
+
+    # nsamp = target.shape[axis]
+
+    others: list[NDArrayAny | xr.DataArray] = []
+    for x in args:
+        if isinstance(x, xr.DataArray):
+            others.append(
+                _xprepare_secondary_value_for_reduction(
+                    target=target,
+                    x=x,
+                    order=order,  # axis=axis, dim=dim, move_axis=move_axis, order=order
+                )
+            )
+        else:
+            others.append(
+                _prepare_secondary_value_for_reduction(  # pyright: ignore[reportUnknownArgumentType]
+                    target=target.values,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                    x=x,
+                    axis=axis,
+                    move_axis=move_axis,
+                    order=order,
+                    nsamp=nsamp,
+                )
+            )
+
+    input_core_dims = [[dim]] * (len(others) + 1)
+    return input_core_dims, (target, *others)
 
 
 def prepare_data_for_reduction(
-    data: NDArray[T_Float],
-    axis: int,
+    data: NDArray[T_Scalar],
+    axis: int | None,
     mom_ndim: Mom_NDim,
     order: ArrayOrder = None,
-) -> NDArray[T_Float]:
+) -> NDArray[T_Scalar]:
     """Convert central moments array to correct form for reduction."""
+    if axis is None:
+        msg = "Must specify axis"
+        raise ValueError(msg)
+
     ndim = data.ndim - mom_ndim
     axis = normalize_axis_index(axis, ndim)
     last_dim = ndim - 1
@@ -335,6 +457,43 @@ def prepare_data_for_reduction(
     return data
 
 
+def xprepare_data_for_reduction(
+    data: xr.DataArray,
+    axis: int | None,
+    dim: Hashable | None,
+    mom_ndim: Mom_NDim,
+    order: ArrayOrder = None,
+    dtype: DTypeLike = None,
+) -> tuple[Hashable, xr.DataArray]:
+    """Prepare DataArray for reduction."""
+    ndim = data.ndim - mom_ndim
+    if axis is not None:
+        axis = normalize_axis_index(axis, ndim)
+    axis, dim = select_axis_dim(dims=data.dims, axis=axis, dim=dim)
+
+    last_dim = ndim - 1
+    if (ndim > 1) and axis != last_dim:
+        data = data.transpose(..., dim, *data.dims[-mom_ndim:])
+    if order or dtype:
+        data = data.astype(dtype, order=order, copy=False)
+
+    return dim, data
+
+
+def prepare_values_for_push_val(
+    target: NDArray[T_Scalar],
+    *args: ArrayLike,
+    order: ArrayOrder | None = None,
+) -> tuple[NDArray[T_Scalar], ...]:
+    """Get values ready for push"""
+    if order:
+        target = np.asarray(target, order=order)
+    others: Iterable[NDArray[T_Scalar]] = (
+        np.asarray(x, dtype=target.dtype, order=order) for x in args
+    )
+    return target, *others
+
+
 def raise_if_wrong_shape(
     array: NDArrayAny, shape: tuple[int, ...], name: str | None = None
 ) -> None:
@@ -343,3 +502,124 @@ def raise_if_wrong_shape(
         name = "out" if name is None else name
         msg = f"name.shape={array.shape=} != required shape {shape}"
         raise ValueError(msg)
+
+
+# * Xarray utilities ----------------------------------------------------------
+def validate_mom_dims(
+    mom_dims: Hashable | Sequence[Hashable] | None, mom_ndim: Mom_NDim
+) -> MomDimsStrict:
+    """Validate mom_dims to correct form."""
+    if mom_dims is None:
+        if mom_ndim == 1:
+            return ("mom_0",)
+        return ("mom_0", "mom_1")
+
+    out: tuple[Hashable, ...]
+    if isinstance(mom_dims, str):
+        out = (mom_dims,)
+    elif isinstance(mom_dims, (tuple, list)):
+        out = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+    else:
+        msg = f"Unknown {type(mom_dims)=}.  Expected str or Sequence[str]"
+        raise TypeError(msg)
+
+    if len(out) != mom_ndim:
+        msg = f"mom_ndim={out} inconsistent with {mom_ndim=}"
+        raise ValueError(msg)
+    return cast("MomDimsStrict", out)
+
+
+def select_axis_dim(
+    dims: tuple[Hashable, ...],
+    axis: int | None = None,
+    dim: Hashable | None = None,
+    default_axis: int | None = None,
+    default_dim: Hashable | None = None,
+) -> tuple[int, Hashable]:
+    """Produce axis/dim from input."""
+    if axis is None and dim is None:
+        if default_axis is not None and default_dim is None:
+            axis = default_axis
+        elif default_axis is None and default_dim is not None:
+            dim = default_dim
+        else:
+            msg = "Must specify axis or dim, or one of default_axis or default_dim"
+            raise ValueError(msg)
+
+    elif axis is not None and dim is not None:
+        msg = "Can only specify one of axis or dim"
+        raise ValueError(msg)
+
+    if dim is not None:
+        axis = dims.index(dim)
+    elif axis is not None:
+        if isinstance(axis, str):
+            msg = f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}"
+            raise ValueError(msg)
+        dim = dims[axis]
+    else:  # pragma: no cover
+        msg = f"Unknown dim {dim} and axis {axis}"
+        raise TypeError(msg)
+
+    return axis, dim
+
+
+def move_mom_dims_to_end(
+    x: xr.DataArray, mom_dims: MomDims, mom_ndim: Mom_NDim | None = None
+) -> xr.DataArray:
+    """Move moment dimensions to end"""
+    if mom_dims is not None:
+        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]
+
+        if mom_ndim is not None and len(mom_dims) != mom_ndim:
+            msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
+            raise ValueError(msg)
+
+        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+
+    return x
+
+
+def replace_coords_from_isel(
+    da_original: xr.DataArray,
+    da_selected: xr.DataArray,
+    indexers: Mapping[Any, Any] | None = None,
+    drop: bool = False,
+    **indexers_kwargs: Any,
+) -> xr.DataArray:
+    """
+    Replace coords in da_selected with coords from coords from da_original.isel(...).
+
+    This assumes that `da_selected` is the result of soe operation, and that indexeding
+    ``da_original`` will give the correct coordinates/indexed.
+
+    Useful for adding back coordinates to reduced object.
+    """
+    from xarray.core.indexes import isel_indexes
+    from xarray.core.indexing import is_fancy_indexer
+
+    # Would prefer to import from actual source by old xarray error.
+    from xarray.core.utils import either_dict_or_kwargs  # type: ignore[attr-defined]
+
+    indexers = either_dict_or_kwargs(indexers, indexers_kwargs, "isel")
+    if any(is_fancy_indexer(idx) for idx in indexers.values()):
+        msg = "no fancy indexers for this"
+        raise ValueError(msg)
+
+    indexes, index_variables = isel_indexes(da_original.xindexes, indexers)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+
+    coords = {}
+    for coord_name, coord_value in da_original._coords.items():  # noqa: SLF001  # pyright: ignore[reportPrivateUsage]
+        if coord_name in index_variables:
+            coord_value = index_variables[coord_name]  # noqa: PLW2901
+        else:
+            coord_indexers = {
+                k: v for k, v in indexers.items() if k in coord_value.dims
+            }
+            if coord_indexers:
+                coord_value = coord_value.isel(coord_indexers)  # noqa: PLW2901
+                if drop and coord_value.ndim == 0:
+                    continue
+        coords[coord_name] = coord_value
+
+    return da_selected._replace(coords=coords, indexes=indexes)  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]

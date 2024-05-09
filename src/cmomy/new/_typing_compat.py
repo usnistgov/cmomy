@@ -12,8 +12,15 @@ else:
     from typing import Self
 
 
+if sys.version_info < (3, 12):
+    from typing_extensions import TypeVar
+else:
+    from typing import TypeVar
+
+
 __all__ = [
     "Self",
     "TypeAlias",
     "TypeGuard",
+    "TypeVar",
 ]
