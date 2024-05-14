@@ -129,6 +129,13 @@ def _dummy_docstrings() -> None:
         Optional weights. Can be scalar, 1d array of length
         ``args[0].shape[axis]`` or array of same form as ``args[0]``.
 
+    keep_attrs : {"drop", "identical", "no_conflicts", "drop_conflicts", "override"} or bool, optional
+        - 'drop' or False: empty attrs on returned xarray object.
+        - 'identical': all attrs must be the same on every object.
+        - 'no_conflicts': attrs from all objects are combined, any that have the same name must also have the same value.
+        - 'drop_conflicts': attrs from all objects are combined, any that have the same name but different values are dropped.
+        - 'override' or True: skip comparing and copy attrs from the first object to the result.
+
     """
 
 

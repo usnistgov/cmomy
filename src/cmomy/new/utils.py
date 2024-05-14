@@ -40,71 +40,71 @@ def normalize_axis_index(axis: int, ndim: int) -> int:
 
 
 # * Old utils -----------------------------------------------------------------
-def shape_insert_axis(
-    *,
-    shape: Sequence[int],
-    axis: int | None,
-    new_size: int,
-) -> tuple[int, ...]:
-    """Get new shape, given shape, with size put in position axis."""
-    if axis is None:
-        msg = "must specify integre axis"
-        raise ValueError(msg)
+# def shape_insert_axis(
+#     *,
+#     shape: Sequence[int],
+#     axis: int | None,
+#     new_size: int,
+# ) -> tuple[int, ...]:
+#     """Get new shape, given shape, with size put in position axis."""
+#     if axis is None:
+#         msg = "must specify integre axis"
+#         raise ValueError(msg)
 
-    axis = normalize_axis_index(axis, len(shape) + 1)
-    shape = tuple(shape)
-    return shape[:axis] + (new_size,) + shape[axis:]
-
-
-def shape_reduce(*, shape: tuple[int, ...], axis: int) -> tuple[int, ...]:
-    """Give shape shape after reducing along axis."""
-    shape_list = list(shape)
-    shape_list.pop(axis)
-    return tuple(shape_list)
+#     axis = normalize_axis_index(axis, len(shape) + 1)
+#     shape = tuple(shape)
+#     return shape[:axis] + (new_size,) + shape[axis:]
 
 
-def axis_expand_broadcast(
-    x: ArrayLike,
-    *,
-    shape: tuple[int, ...],
-    axis: int | None,
-    verify: bool = True,
-    expand: bool = True,
-    broadcast: bool = True,
-    roll: bool = True,
-    dtype: DTypeLike | None = None,
-    order: ArrayOrder = None,
-) -> NDArrayAny:
-    """
-    Broadcast x to shape.
+# def shape_reduce(*, shape: tuple[int, ...], axis: int) -> tuple[int, ...]:
+#     """Give shape shape after reducing along axis."""
+#     shape_list = list(shape)
+#     shape_list.pop(axis)
+#     return tuple(shape_list)
 
-    If x is 1d, and shape is n-d, but len(x) is same as shape[axis],
-    broadcast x across all dimensions
-    """
-    if verify is True:
-        x = np.asarray(x, dtype=dtype, order=order)
-    elif not isinstance(x, np.ndarray):
-        msg = f"{type(x)=} must be np.ndarray"
-        raise TypeError(msg)
-    x = cast("NDArrayAny", x)
 
-    # if array, and 1d with size same as shape[axis]
-    # broadcast from here
-    if expand and x.ndim == 1 and x.ndim != len(shape):
-        if axis is None:
-            msg = "trying to expand an axis with axis==None"
-            raise ValueError(msg)
-        if len(x) == shape[axis]:
-            # reshape for broadcasting
-            reshape = (1,) * (len(shape) - 1)
-            reshape = shape_insert_axis(shape=reshape, axis=axis, new_size=-1)
-            x = x.reshape(*reshape)
+# def axis_expand_broadcast(
+#     x: ArrayLike,
+#     *,
+#     shape: tuple[int, ...],
+#     axis: int | None,
+#     verify: bool = True,
+#     expand: bool = True,
+#     broadcast: bool = True,
+#     roll: bool = True,
+#     dtype: DTypeLike | None = None,
+#     order: ArrayOrder = None,
+# ) -> NDArrayAny:
+#     """
+#     Broadcast x to shape.
 
-    if broadcast and x.shape != shape:
-        x = np.broadcast_to(x, shape)
-    if roll and axis is not None and axis != 0:
-        x = np.moveaxis(x, axis, 0)
-    return x
+#     If x is 1d, and shape is n-d, but len(x) is same as shape[axis],
+#     broadcast x across all dimensions
+#     """
+#     if verify is True:
+#         x = np.asarray(x, dtype=dtype, order=order)
+#     elif not isinstance(x, np.ndarray):
+#         msg = f"{type(x)=} must be np.ndarray"
+#         raise TypeError(msg)
+#     x = cast("NDArrayAny", x)
+
+#     # if array, and 1d with size same as shape[axis]
+#     # broadcast from here
+#     if expand and x.ndim == 1 and x.ndim != len(shape):
+#         if axis is None:
+#             msg = "trying to expand an axis with axis==None"
+#             raise ValueError(msg)
+#         if len(x) == shape[axis]:
+#             # reshape for broadcasting
+#             reshape = (1,) * (len(shape) - 1)
+#             reshape = shape_insert_axis(shape=reshape, axis=axis, new_size=-1)
+#             x = x.reshape(*reshape)
+
+#     if broadcast and x.shape != shape:
+#         x = np.broadcast_to(x, shape)
+#     if roll and axis is not None and axis != 0:
+#         x = np.moveaxis(x, axis, 0)
+#     return x
 
 
 # * Moment validation ---------------------------------------------------------
@@ -115,7 +115,7 @@ def is_mom_ndim(mom_ndim: int) -> TypeGuard[Mom_NDim]:
 
 def is_mom_tuple(mom: tuple[int, ...]) -> TypeGuard[MomentsStrict]:
     """Validate moment tuple"""
-    return len(mom) in {1, 2}
+    return len(mom) in {1, 2} and all(m > 0 for m in mom)
 
 
 def validate_mom_ndim(mom_ndim: int) -> Mom_NDim:
@@ -143,7 +143,7 @@ def validate_mom(mom: int | Sequence[int]) -> MomentsStrict:
     if is_mom_tuple(mom):
         return mom
 
-    msg = f"{len(mom)=} must be either 1 or 2"
+    msg = f"{mom=} must be an integer, or tuple of length 1 or 2, with positive values."
     raise ValueError(msg)
 
 
@@ -293,11 +293,20 @@ def _prepare_secondary_value_for_reduction(
         return out
 
     if out.ndim == 0:
-        return np.broadcast_to(out, nsamp)
+        out = np.broadcast_to(out, nsamp)
+        if order:
+            out = np.asarray(out, order=order)
+        return out
 
     if out.ndim == 1 and len(out) != nsamp:
         msg = f"For 1D secondary values, {len(out)=} must be same as target.shape[axis]={nsamp}"
         raise ValueError(msg)
+
+    # At least check that last dimension has correct shape.
+    if out.shape[-1] != target.shape[-1]:
+        msg = f"{out.shape=} will not broadcast to {target.shape=}"
+        raise ValueError(msg)
+
     return out
 
 
@@ -403,7 +412,7 @@ def xprepare_values_for_reduction(
     if move_axis:
         target = target.transpose(..., dim)
     if order:
-        target = target.astype(dtype=None, order=order, copy=False)
+        target = target.astype(dtype=target.dtype, order=order, copy=False)
     nsamp = target.shape[-1]
 
     # nsamp = target.shape[axis]
@@ -475,7 +484,7 @@ def xprepare_data_for_reduction(
     if (ndim > 1) and axis != last_dim:
         data = data.transpose(..., dim, *data.dims[-mom_ndim:])
     if order or dtype:
-        data = data.astype(dtype, order=order, copy=False)
+        data = data.astype(dtype or data.dtype, order=order, copy=False)
 
     return dim, data
 
@@ -602,7 +611,7 @@ def replace_coords_from_isel(
     from xarray.core.utils import either_dict_or_kwargs  # type: ignore[attr-defined]
 
     indexers = either_dict_or_kwargs(indexers, indexers_kwargs, "isel")
-    if any(is_fancy_indexer(idx) for idx in indexers.values()):
+    if any(is_fancy_indexer(idx) for idx in indexers.values()):  # pragma: no cover
         msg = "no fancy indexers for this"
         raise ValueError(msg)
 

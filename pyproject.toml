@@ -210,7 +210,7 @@ max-public-methods = 30
 
 [tool.ruff.lint.extend-per-file-ignores]
 # Project specific ignores (avoid changing per-file-ignores directly)
-"tests/*.py" = ["ANN", "N802", "N806", "PT011", "PLC2701", "PLR2004", "SLF001"]
+"tests/**/*.py" = ["ANN", "N802", "N806", "PT011", "PLC2701", "PLR2004", "SLF001", "TD003", "FIX002"]
 "src/**/_{formatting,testing}.py" = ["ANN"]
 "src/**/_formatting.py" = ["SLF001"]
 "src/**/_testing.py" = ["S101"]

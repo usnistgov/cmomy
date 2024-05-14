@@ -13,7 +13,7 @@ from .decorators import myguvectorize, myjit
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import LongIntDType
+    from ..typing import NDArrayInt
     from ..typing import T_FloatDType as T_Float
 
 _PARALLEL = True  # Auto generated from indexed.py
@@ -37,7 +37,7 @@ _jit = partial(myjit, parallel=_PARALLEL)
     ],
 )
 def reduce_data_grouped(
-    data: NDArray[T_Float], group_idx: NDArray[LongIntDType], out: NDArray[T_Float]
+    data: NDArray[T_Float], group_idx: NDArrayInt, out: NDArray[T_Float]
 ) -> None:
     assert data.shape[1:] == out.shape[1:]
     assert group_idx.max() < out.shape[0]
@@ -71,9 +71,9 @@ def reduce_data_grouped(
 )
 def reduce_data_indexed_fromzero(
     data: NDArray[T_Float],
-    index: NDArray[LongIntDType],
-    group_start: NDArray[LongIntDType],
-    group_end: NDArray[LongIntDType],
+    index: NDArrayInt,
+    group_start: NDArrayInt,
+    group_end: NDArrayInt,
     scale: NDArray[T_Float],
     out: NDArray[T_Float],
 ) -> None:

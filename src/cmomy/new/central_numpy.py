@@ -35,6 +35,7 @@ if TYPE_CHECKING:
         MomDims,
         Moments,
         NDArrayAny,
+        NDArrayInt,
         XArrayAttrsType,
         XArrayCoordsType,
         XArrayDimsType,
@@ -42,7 +43,7 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import ArrayOrderCF, LongIntDType
+from .typing import ArrayOrderCF
 from .typing import T_FloatDType as T_Float
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
@@ -83,7 +84,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         *,
         copy: bool = False,
         order: ArrayOrder = None,
-        verify: bool = False,
+        verify: bool = True,
         **kwargs: Any,
     ) -> Self:
         """
@@ -107,8 +108,11 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         """
         if data is None:
-            data = np.zeros_like(self._data, order=order or "C")
-            copy = verify = False
+            return type(self)(
+                data=np.zeros_like(self.data, order=order or "C", dtype=self.dtype),
+                mom_ndim=self._mom_ndim,
+                fastpath=True,
+            )
 
         if verify and data.shape != self.shape:
             msg = f"{data.shape=} != {self.shape=}"
@@ -379,7 +383,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: NDArray[T_Float],
+        x: NDArray[T_Float] | float,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
         order: ArrayOrder = None,
@@ -479,7 +483,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     def resample_and_reduce(
         self,
         *,
-        freq: NDArray[LongIntDType],
+        freq: NDArrayInt,
         axis: int | None = None,
         parallel: bool = True,
         order: ArrayOrder = None,
@@ -531,7 +535,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     @docfiller.decorate
     def resample(
         self,
-        indices: NDArray[LongIntDType],
+        indices: NDArrayInt,
         *,
         axis: int | None = None,
         last: bool = True,
@@ -554,7 +558,8 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         -------
         output : object
             Instance of calling class. The new object will have shape
-            ``(..., shape[axis-1], nrep, shape[axis], ...)``.
+            ``(..., shape[axis-1], nrep, nsamp, shape[axis+1], ...)``,
+            where ``shape=self.data`` and ``nrep, nsamp = indices.shape``.
 
 
         See Also
@@ -602,9 +607,11 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         Returns
         -------
         output : object
-            New instance of calling class
-            Shape of output will be
-            `(nblock,) + self.shape[:axis] + self.shape[axis+1:]`.
+            Block averaged data of shape
+            ``(..., shape[axis-1],shape[axis+1], ..., nblock, mom_0, ...)``
+            Where ``shape=self.shape``.  That is, the blocked coordinates are
+            last.
+
 
         Notes
         -----
@@ -618,11 +625,21 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         """
         self._raise_if_scalar()
 
-        if block_size is None:
-            return self.reduce(axis=axis, order=order, parallel=parallel)
+        # if block_size is None:
+        #     block_size = s
+        #     new_shape = self.shape
+
+        #     return (
+        #         self.reduce(axis=axis, order=order, parallel=parallel)
+        #         # should have single dimension
+        #         .reshape()
 
         axis = self._wrap_axis(axis)
         n = self.shape[axis]
+
+        if block_size is None:
+            block_size = n
+
         nblock = n // block_size
 
         by = np.arange(nblock).repeat(block_size)
@@ -725,6 +742,10 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         -------
         result : CentralMoments
             CentralMoments object with with moved axes. This array is a view of the input array.
+
+        Notes
+        -----
+        Both ``source`` and ``destination`` are relative to ``self.val_shape``.
 
 
         Examples
@@ -910,7 +931,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         x: NDArray[T_Float],
         *y: ArrayLike,
         mom: Moments,
-        freq: NDArray[LongIntDType],
+        freq: NDArrayInt,
         weight: ArrayLike | None = None,
         axis: int | None = None,
         order: ArrayOrder = None,
@@ -1070,7 +1091,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
     # ** mom_ndim == 1 specific ----------------------------------------------------
     @staticmethod
-    def _raise_if_not_1d(mom_ndim: Mom_NDim) -> None:
+    def _raise_if_cov(mom_ndim: Mom_NDim) -> None:
         if mom_ndim != 1:
             msg = "only available for mom_ndim == 1"
             raise NotImplementedError(msg)
@@ -1078,16 +1099,21 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     # special, 1d only methods
     def push_stat(
         self,
-        a: NDArray[T_Float],
+        a: ArrayLike,
         v: ArrayLike = 0.0,
         weight: ArrayLike | None = None,
         parallel: bool | None = False,
     ) -> Self:
         """Push statistics onto self."""
-        self._raise_if_not_1d(self.mom_ndim)
+        self._raise_if_cov(self.mom_ndim)
 
         w = 1.0 if weight is None else weight
+        a = np.asarray(a, dtype=self.dtype)
         a, v, w = prepare_values_for_push_val(a, v, w)
+
+        v = np.atleast_1d(v)
+        if v.ndim == a.ndim:
+            v = v[..., None]
 
         self._pusher(parallel).stat(a, v, w, self._data)  # type: ignore[misc]
         return self
@@ -1101,7 +1127,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     #     broadcast: bool = True,
     # ) -> Self:
     #     """Push multiple statistics onto self."""
-    #     self._raise_if_not_1d(self.mom_ndim)
+    #     self._raise_if_cov(self.mom_ndim)
 
     #     ar, target = self._check_vals(x=a, target="vals", axis=axis)
     #     vr = self._check_vars(v=v, target=target, axis=axis, broadcast=broadcast)
@@ -1123,7 +1149,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     # ) -> Self:
     #     """Create object from single weight, average, variance/covariance."""
     #     mom_ndim = mom_to_mom_ndim(mom)
-    #     cls._raise_if_not_1d(mom_ndim)
+    #     cls._raise_if_cov(mom_ndim)
 
     #     a = np.asarray(a, dtype=dtype, order=order)
 
@@ -1156,7 +1182,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     #     axis.
     #     """
     #     mom_ndim = mom_to_mom_ndim(mom)
-    #     cls._raise_if_not_1d(mom_ndim)
+    #     cls._raise_if_cov(mom_ndim)
 
     #     a = np.asarray(a, dtype=dtype, order=order)
 

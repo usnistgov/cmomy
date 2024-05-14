@@ -28,7 +28,7 @@ from .random import validate_rng
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, NDArray
 
-    from .typing import ArrayOrder, LongIntDType, Mom_NDim, Moments, NDArrayAny
+    from .typing import ArrayOrder, Mom_NDim, Moments, NDArrayAny, NDArrayInt
     from .typing import T_FloatDType as T_Float
     from .typing import T_IntDType as T_Int
 
@@ -201,7 +201,7 @@ def randsamp_freq(
     freq: ArrayLike | None = None,
     check: bool = False,
     rng: np.random.Generator | None = None,
-) -> NDArray[LongIntDType]:
+) -> NDArrayInt:
     """
     Produce a random sample for bootstrapping.
 
@@ -269,7 +269,7 @@ def _check_freq(freq: NDArrayAny, ndat: int) -> None:
 @docfiller.decorate
 def resample_data(
     data: NDArray[T_Float],
-    freq: NDArray[LongIntDType],
+    freq: NDArrayInt,
     mom_ndim: Mom_NDim,
     axis: int = -1,
     *,
@@ -317,7 +317,7 @@ def resample_vals(
     x: NDArray[T_Float],
     *y: ArrayLike,
     mom: Moments,
-    freq: NDArray[LongIntDType],
+    freq: NDArrayInt,
     weight: ArrayLike | None = None,
     axis: int = -1,
     order: ArrayOrder = None,

@@ -30,10 +30,10 @@ if TYPE_CHECKING:
     from ._typing_compat import Self
     from .typing import (
         ArrayOrder,
-        LongIntDType,
         Mom_NDim,
         Moments,
         MomentsStrict,
+        NDArrayInt,
     )
 
 
@@ -88,6 +88,16 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         # other checks
         if self.ndim < self.mom_ndim:
             msg = f"{self.ndim=} < {self.mom_ndim=}"
+            raise ValueError(msg)
+
+        # must have positive moments
+        if any(m <= 0 for m in self.mom):
+            msg = "moments must be positive"
+            raise ValueError(msg)
+
+        # only float32 or float64 allowed
+        if self.dtype.type not in {np.float32, np.float64}:
+            msg = "{self.dtype=} not supported. Must be float32 or float64"
             raise ValueError(msg)
 
     # ** Basic access -------------------------------------------------------------
@@ -223,7 +233,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         data : {t_array}
             data for new object
         {copy}
-        {copy_kws}
         {order}
         {verify}
         strict : bool, default=False
@@ -259,7 +268,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         return self.new_like()
 
     @docfiller.decorate
-    def copy(self, **copy_kws: Any) -> Self:
+    def copy(self) -> Self:
         """
         Create a new object with copy of data.
 
@@ -284,7 +293,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             data=self.to_values(),
             verify=False,
             copy=True,
-            copy_kws=copy_kws,
+            # copy_kws=copy_kws,
         )
 
     # ** Access to underlying statistics ------------------------------------------
@@ -648,7 +657,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
     def _push_val_numpy(
         self,
-        x: NDArray[T_Float],
+        x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
         order: ArrayOrder = None,
@@ -657,9 +666,11 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         self._check_y(y, self.mom_ndim)
 
         weight = 1.0 if weight is None else weight
+
+        x = np.asarray(x, dtype=self.dtype, order=order)
         x0, *x1, weight = prepare_values_for_push_val(x, *y, weight, order=order)
 
-        self._pusher(parallel).vals(
+        self._pusher(parallel).val(
             x0,
             *x1,
             weight,
@@ -669,7 +680,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
     def _push_vals_numpy(
         self,
-        x: NDArray[T_Float],
+        x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
         axis: int | None = None,
@@ -679,6 +690,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         self._check_y(y, self.mom_ndim)
 
         weight = 1.0 if weight is None else weight
+        x = np.asarray(x, dtype=self.dtype, order=order)
         x0, *x1, weight = prepare_values_for_reduction(
             x,
             *y,
@@ -754,7 +766,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     @docfiller.decorate
     def push_val(
         self,
-        x: T_Array,
+        x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
         order: ArrayOrder = None,
@@ -772,6 +784,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         weight : int, float, array-like, optional
             Weight of each sample.  If scalar, broadcast `w.shape` to `x0.shape`.
         {order}
+        {parallel}
 
         Returns
         -------
@@ -788,7 +801,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     @docfiller.decorate
     def push_vals(
         self,
-        x: T_Array,
+        x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
         axis: int | None = None,
@@ -807,6 +820,8 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         weight : int, float, array-like, optional
             Weight of each sample.  If scalar, broadcast to `x0.shape`
         {axis_and_dim}
+        {order}
+        {parallel}
 
         Returns
         -------
@@ -819,7 +834,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     # @docfiller.decorate
     # def resample(
     #     self,
-    #     indices: NDArray[LongIntDType],
+    #     indices: NDArrayInt,
     #     *,
     #     axis: int | None = None,
     #     # # *,
@@ -871,7 +886,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     def resample_and_reduce(
         self,
         *,
-        freq: NDArray[LongIntDType],
+        freq: NDArrayInt,
         axis: int | None = None,
         parallel: bool = True,
         order: ArrayOrder = None,
@@ -924,6 +939,8 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         {by}
         {order}
         {parallel}
+        **kwargs
+            Extra arguments.
 
         Returns
         -------
@@ -1012,8 +1029,8 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
                 msg = "to specify order, must have attribute `mom_dims`"
                 raise AttributeError(msg)
 
-        if _check_mom and values.shape[-self.mom_ndim] != self.mom_shape:
-            msg = f"{values.shape[-self.mom_ndim]=} != {self.mom_shape=}"
+        if _check_mom and values.shape[-self.mom_ndim :] != self.mom_shape:
+            msg = f"{values.shape[-self.mom_ndim:]=} != {self.mom_shape=}"
             raise ValueError(msg)
 
         _kws = {} if _kws is None else dict(_kws)
@@ -1030,7 +1047,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     def _raise_if_scalar(self, message: str | None = None) -> None:
         if not self._is_vector:
             if message is None:  # pragma: no cover
-                message = "not implemented for scalar"
+                message = "Not implemented for scalar"
             raise ValueError(message)
 
     # ** Operators ----------------------------------------------------------------
@@ -1200,6 +1217,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         {mom_ndim}
         {axis_data_and_dim}
         {order}
+        {parallel}
 
         Returns
         -------
@@ -1229,17 +1247,17 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
         Parameters
         ----------
-        x : array-like or tuple of array-like
-            For moments, pass single array-like objects `x=x0`.
-            For comoments, pass tuple of array-like objects `x=(x0, x1)`.
-        w : scalar or array-like, optional
+        x : ndarray
+            Values to reduce.
+        *y : array-like
+            Additional values (needed if ``len(mom)==2``).
+        weight : scalar or array-like, optional
             Optional weights.  If scalar or array, attempt to
             broadcast to `x0.shape`
         {axis_and_dim}
         {mom}
-        {val_shape}
-        {broadcast}
-        {kwargs}
+        {order}
+        {parallel}
 
         Returns
         -------
@@ -1258,7 +1276,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         x: T_Array,
         *y: ArrayLike,
         mom: Moments,
-        freq: NDArray[LongIntDType],
+        freq: NDArrayInt,
         weight: ArrayLike | None = None,
         axis: int | None = None,
         order: ArrayOrder = None,

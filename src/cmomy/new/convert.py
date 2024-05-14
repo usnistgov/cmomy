@@ -77,6 +77,6 @@ def convert(
     mom_ndim = validate_mom_ndim(mom_ndim)
     _input_to_output = factory_convert(mom_ndim=mom_ndim, to=to)
 
-    if out:
+    if out is not None:
         return _input_to_output(values_in, out)
     return _input_to_output(values_in)

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING, NamedTuple, TypedDict, cast, overload
+from typing import TYPE_CHECKING, NamedTuple, cast, overload
 
 from numpy.typing import NDArray
 
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from ..typing import ConvertStyle, LongIntDType, Mom_NDim
+    from ..typing import ConvertStyle, Mom_NDim, NDArrayInt
     from ..typing import T_FloatDType as T_Float
 
     # Resample signature
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
             self,
             x: NDArray[T_Float],
             w: NDArray[T_Float],
-            freq: NDArray[LongIntDType],
+            freq: NDArrayInt,
             out: NDArray[T_Float],
             /,
         ) -> tuple[()]: ...
@@ -35,7 +35,7 @@ if TYPE_CHECKING:
             x0: NDArray[T_Float],
             x1: NDArray[T_Float],
             w: NDArray[T_Float],
-            freq: NDArray[LongIntDType],
+            freq: NDArrayInt,
             out: NDArray[T_Float],
             /,
         ) -> tuple[()]: ...
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     #     [
     #         NDArray[T_Float], # x
     #         NDArray[T_Float], # w
-    #         NDArray[LongIntDType], # freq
+    #         NDArrayInt, # freq
     #         NDArray[T_Float], # out
     #     ],
     #     None
@@ -54,7 +54,7 @@ if TYPE_CHECKING:
     #         NDArray[T_Float], # x0
     #         NDArray[T_Float], # x1
     #         NDArray[T_Float], # w
-    #         NDArray[LongIntDType], # freq
+    #         NDArrayInt, # freq
     #         NDArray[T_Float], # out
     #     ],
     #     None
@@ -64,7 +64,7 @@ if TYPE_CHECKING:
         def __call__(
             self,
             data: NDArray[T_Float],
-            freq: NDArray[LongIntDType],
+            freq: NDArrayInt,
             out: NDArray[T_Float] | None = None,
             /,
         ) -> NDArray[T_Float]: ...
@@ -113,7 +113,7 @@ if TYPE_CHECKING:
         def __call__(
             self,
             data: NDArray[T_Float],
-            group_idx: NDArray[LongIntDType],
+            group_idx: NDArrayInt,
             out: NDArray[T_Float],
             /,
         ) -> tuple[()]: ...
@@ -123,9 +123,9 @@ if TYPE_CHECKING:
         def __call__(
             self,
             data: NDArray[T_Float],
-            index: NDArray[LongIntDType],
-            group_start: NDArray[LongIntDType],
-            group_end: NDArray[LongIntDType],
+            index: NDArrayInt,
+            group_start: NDArrayInt,
+            group_end: NDArrayInt,
             scale: NDArray[T_Float],
             out: NDArray[T_Float] | None = None,
             /,
@@ -149,19 +149,24 @@ class Pusher(NamedTuple):
     stats: Callable[..., None] | None = None
 
 
-class PusherTotal(TypedDict):
-    """Collection of pushers."""
-
-    serial: Pusher
-    parallel: Pusher
-
-
 @lru_cache
 def factory_pusher(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Pusher:
     """Factory method to get pusher functions."""
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
+        from . import push_parallel
+
+        return Pusher(
+            val=push_parallel.push_val,
+            vals=push_parallel.reduce_vals,
+            data=push_parallel.push_data,
+            datas=push_parallel.reduce_data,
+            stat=push_parallel.push_stat,
+            stats=push_parallel.reduce_stats,
+        )
+
+    if mom_ndim == 1:
         from . import push
 
         return Pusher(
@@ -172,19 +177,8 @@ def factory_pusher(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Pusher:
             stat=push.push_stat,
             stats=push.reduce_stats,
         )
-    if parallel:
-        from . import push_parallel
 
-        Pusher(
-            val=push_parallel.push_val,
-            vals=push_parallel.reduce_vals,
-            data=push_parallel.push_data,
-            datas=push_parallel.reduce_data,
-            stat=push_parallel.push_stat,
-            stats=push_parallel.reduce_stats,
-        )
-
-    if mom_ndim == 1 and parallel:
+    if mom_ndim == 2 and parallel:
         from . import push_cov_parallel
 
         return Pusher(
