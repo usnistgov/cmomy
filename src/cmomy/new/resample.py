@@ -8,9 +8,10 @@ from __future__ import annotations
 from itertools import starmap
 
 # if TYPE_CHECKING:
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
+import xarray as xr
 from numpy.typing import NDArray
 
 from cmomy.new.utils import (
@@ -19,16 +20,30 @@ from cmomy.new.utils import (
     prepare_values_for_reduction,
     raise_if_wrong_shape,
     validate_mom_and_mom_ndim,
+    validate_mom_dims,
     validate_mom_ndim,
+    xprepare_data_for_reduction,
+    xprepare_values_for_reduction,
 )
+from cmomy.typing import MomentsStrict
 
 from .docstrings import docfiller
 from .random import validate_rng
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike, NDArray
+    from typing import Any, Hashable, Literal, Sequence
 
-    from .typing import ArrayOrder, Mom_NDim, Moments, NDArrayAny, NDArrayInt
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
+
+    from .typing import (
+        ArrayOrder,
+        Mom_NDim,
+        MomDims,
+        Moments,
+        MomentsStrict,
+        NDArrayAny,
+        NDArrayInt,
+    )
     from .typing import T_FloatDType as T_Float
     from .typing import T_IntDType as T_Int
 
@@ -266,17 +281,78 @@ def _check_freq(freq: NDArrayAny, ndat: int) -> None:
         raise ValueError(msg)
 
 
-@docfiller.decorate
-def resample_data(
+# * Low level resamplers
+def _resample_data(
     data: NDArray[T_Float],
     freq: NDArrayInt,
-    mom_ndim: Mom_NDim,
-    axis: int = -1,
     *,
-    order: ArrayOrder = None,
-    parallel: bool | None = True,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None = None,
     out: NDArrayAny | None = None,
 ) -> NDArray[T_Float]:
+    """Resample prepared data."""
+    _check_freq(freq, data.shape[-(mom_ndim + 1)])
+
+    from ._lib.factory import factory_resample_data
+
+    _resample = factory_resample_data(
+        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
+    )
+    if out is not None:
+        return _resample(data, freq, out)
+    return _resample(data, freq)
+
+
+# @docfiller.decorate
+# def resample_data(
+#     data: NDArray[T_Float],
+#     *,
+#     freq: NDArrayInt,
+#     mom_ndim: Mom_NDim,
+#     axis: int = -1,
+#     order: ArrayOrder = None,
+#     parallel: bool | None = True,
+#     out: NDArrayAny | None = None,
+# ) -> NDArray[T_Float]:
+#     """
+#     Resample data according to frequency table.
+
+#     Parameters
+#     ----------
+#     data : array-like
+#         central mom array to be resampled
+#     {freq}
+#     {mom}
+#     {order}
+#     {parallel}
+#     {out}
+
+#     Returns
+#     -------
+#     out : ndarray
+#         Resampled central moments. ``out.shape = (..., shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``,
+#         where ``shape = data.shape`` and ``nrep = freq.shape[0]``.
+#     """
+#     mom_ndim = validate_mom_ndim(mom_ndim)
+#     data = prepare_data_for_reduction(data, axis=axis, mom_ndim=mom_ndim, order=order)
+#     return _resample_data(data=data, freq=freq, mom_ndim=mom_ndim, parallel=parallel, out=out)
+
+
+@docfiller.decorate
+def resample_data(
+    data: NDArray[T_Float] | xr.DataArray,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int | None = None,
+    dim: Hashable | None = None,
+    rep_dim: str = "rep",
+    order: ArrayOrder = None,
+    parallel: bool | None = True,
+    dtype: DTypeLike = None,
+    out: NDArrayAny | None = None,
+    keep_attrs: bool = True,
+) -> NDArray[T_Float] | xr.DataArray:
     """
     Resample data according to frequency table.
 
@@ -285,10 +361,14 @@ def resample_data(
     data : array-like
         central mom array to be resampled
     {freq}
-    {mom}
-    {order}
+    {mom_ndim}
+    {axis}
+    {dim}
+    {rep_dim}
     {parallel}
+    {order}
     {out}
+    {keep_attrs}
 
     Returns
     -------
@@ -297,68 +377,54 @@ def resample_data(
         where ``shape = data.shape`` and ``nrep = freq.shape[0]``.
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
-    _check_freq(freq, data.shape[axis])
 
+    if isinstance(data, xr.DataArray):
+        dim, data = xprepare_data_for_reduction(
+            data,
+            axis=axis,
+            dim=dim,
+            mom_ndim=mom_ndim,
+            order=order,
+            dtype=dtype,
+        )
+        core_dims = data.dims[-(mom_ndim + 1) :]
+        return xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _resample_data,
+            data,
+            freq,
+            input_core_dims=[core_dims, [rep_dim, dim]],
+            output_core_dims=[[rep_dim, *core_dims[1:]]],
+            kwargs={
+                "mom_ndim": mom_ndim,
+                "parallel": parallel,
+                "out": out,
+                # "freq": freq
+            },
+            keep_attrs=keep_attrs,
+        )
+
+    # numpy array
     data = prepare_data_for_reduction(data, axis=axis, mom_ndim=mom_ndim, order=order)
-
-    from ._lib.factory import factory_resample_data
-
-    _resample = factory_resample_data(
-        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
+    return _resample_data(
+        data=data, freq=freq, mom_ndim=mom_ndim, parallel=parallel, out=out
     )
 
-    if out is not None:
-        return _resample(data, freq, out)
-    return _resample(data, freq)
 
-
-@docfiller.decorate
-def resample_vals(
-    x: NDArray[T_Float],
-    *y: ArrayLike,
-    mom: Moments,
+def _resample_vals(
+    x0: NDArray[T_Float],
+    w: NDArray[T_Float],
     freq: NDArrayInt,
-    weight: ArrayLike | None = None,
-    axis: int = -1,
-    order: ArrayOrder = None,
+    *x1: NDArray[T_Float],
+    mom: MomentsStrict,
     parallel: bool | None = None,
     out: NDArray[T_Float] | None = None,
 ) -> NDArray[T_Float]:
-    """
-    Resample data according to frequency table.
-
-    Parameters
-    ----------
-    x : ndarray
-        Value to analyze
-    *y:  array-like, optional.
-        Second value needed if len(mom)==2.
-    {freq}
-    {mom}
-    {axis}
-    {weight}
-    {order}
-    {parallel}
-    {out}
-
-    Returns
-    -------
-    out : ndarray
-        Resampled Central moments array. ``out.shape = (...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``
-        where ``shape = args[0].shape``. and ``nrep = freq.shape[0]``.
-    """
-    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    _check_freq(freq, x.shape[axis])
-
-    weight = 1.0 if weight is None else weight
-    x0, *x1, w = prepare_values_for_reduction(
-        x, *y, weight, axis=axis, order=order, narrays=mom_ndim + 1
-    )
+    _check_freq(freq, x0.shape[-1])
 
     val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
         :-1
     ]
-    mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom_validated)
+    mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom)
     out_shape: tuple[int, ...] = (
         *val_shape,
         freq.shape[0],
@@ -373,8 +439,251 @@ def resample_vals(
     from ._lib.factory import factory_resample_vals
 
     factory_resample_vals(  # type: ignore[call-arg, type-var]
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
+        mom_ndim=len(mom),
+        parallel=parallel_heuristic(parallel, x0.size * len(mom)),
     )(x0, *x1, w, freq, out)  # type: ignore[arg-type] # pyright: ignore[reportCallIssue]
 
     return out
+
+
+@docfiller.decorate
+def resample_vals(
+    x: NDArray[T_Float] | xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | xr.DataArray | None = None,
+    axis: int | None = None,
+    dim: Hashable | None = None,
+    mom_dims: MomDims | None = None,
+    rep_dim: str | None = "rep",
+    keep_attrs: bool = True,
+    order: ArrayOrder = None,
+    parallel: bool | None = None,
+    out: NDArray[T_Float] | None = None,
+) -> NDArray[T_Float] | xr.DataArray:
+    """
+    Resample data according to frequency table.
+
+    Parameters
+    ----------
+    x : ndarray
+        Value to analyze
+    *y:  array-like, optional.
+        Second value needed if len(mom)==2.
+    {freq}
+    {mom}
+    {weight}
+    {axis}
+    {dim}
+    {mom_dims}
+    {rep_dim}
+    {keep_attrs}
+    {order}
+    {parallel}
+    {out}
+
+    Returns
+    -------
+    out : ndarray
+        Resampled Central moments array. ``out.shape = (...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``
+        where ``shape = args[0].shape``. and ``nrep = freq.shape[0]``.
+    """
+    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    weight = 1.0 if weight is None else weight
+
+    if isinstance(x, xr.DataArray):
+        input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
+            x, weight, *y, axis=axis, dim=dim, order=order, narrays=mom_ndim + 1
+        )
+
+        mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+
+        # add in freq dims:
+        input_core_dims.insert(2, [rep_dim, input_core_dims[0][0]])
+
+        return xr.apply_ufunc(  # type: ignore[no-any-return]
+            _resample_vals,
+            x0,
+            w,
+            freq,
+            *x1,
+            input_core_dims=input_core_dims,
+            output_core_dims=[[rep_dim, *mom_dims_strict]],
+            kwargs={"mom": mom_validated, "parallel": parallel, "out": out},
+            keep_attrs=keep_attrs,
+        )
+
+    x0, *x1, w = prepare_values_for_reduction(
+        x, *y, weight, axis=axis, order=order, narrays=mom_ndim + 1
+    )
+
+    return _resample_vals(
+        x0, w, freq, *x1, mom=mom_validated, parallel=parallel, out=out
+    )
+
+
+# TODO(wpk): add coverage for these
+def bootstrap_confidence_interval(  # pragma: no cover
+    distribution: NDArrayAny,
+    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
+    axis: int = 0,
+    alpha: float = 0.05,
+    style: Literal[None, "delta", "pm"] = None,
+    **kwargs: Any,
+) -> NDArrayAny:
+    """
+    Calculate the error bounds.
+
+    Parameters
+    ----------
+    distribution : array-like
+        distribution of values to consider
+    stats_val : array-like, {None, 'mean','median'}, optional
+        * array: perform pivotal error bounds (correct) with this as `value`.
+        * percentile: percentiles, with value as median
+        * mean: pivotal error bounds with mean as value
+        * median: pivotal error bounds with median as value
+    axis : int, default=0
+        axis to analyze along
+    alpha : float
+        alpha value for confidence interval.
+        Percent confidence = `100 * (1 - alpha)`
+    style : {None, 'delta', 'pm'}
+        controls style of output
+    **kwargs
+        extra arguments to `numpy.percentile`
+
+    Returns
+    -------
+    out : array
+        fist dimension will be statistics.  Other dimensions
+        have shape of input less axis reduced over.
+        Depending on `style` first dimension will be
+        (note val is either stats_val or median):
+
+        * None: [val, low, high]
+        * delta:  [val, val-low, high - val]
+        * pm : [val, (high - low) / 2]
+
+    """
+    if stats_val is None:
+        p_low = 100 * (alpha / 2.0)
+        p_mid = 50
+        p_high = 100 - p_low
+        val, low, high = np.percentile(  # pyright: ignore[reportUnknownMemberType]
+            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kwargs
+        )
+
+    else:
+        if isinstance(stats_val, str):
+            if stats_val == "mean":
+                sv = np.mean(distribution, axis=axis)
+            elif stats_val == "median":
+                sv = np.median(distribution, axis=axis)
+            else:
+                msg = "stats val should be None, mean, median, or an array"
+                raise ValueError(msg)
+
+        else:
+            sv = stats_val
+
+        q_high = 100 * (alpha / 2.0)
+        q_low = 100 - q_high
+        val = sv
+        # fmt: off
+        low = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
+            a=distribution, q=q_low, axis=axis, **kwargs
+        )
+        high = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
+            a=distribution, q=q_high, axis=axis, **kwargs
+        )
+        # fmt: on
+
+    if style is None:
+        out = np.array([val, low, high])
+    elif style == "delta":
+        out = np.array([val, val - low, high - val])
+    elif style == "pm":
+        out = np.array([val, (high - low) / 2.0])
+    return out
+
+
+def xbootstrap_confidence_interval(  # pragma: no cover
+    x: xr.DataArray,
+    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
+    axis: int = 0,
+    dim: Hashable | None = None,
+    alpha: float = 0.05,
+    style: Literal[None, "delta", "pm"] = None,
+    bootstrap_dim: Hashable | None = "bootstrap",
+    bootstrap_coords: str | Sequence[str] | None = None,
+    **kwargs: Any,
+) -> xr.DataArray:
+    """
+    Bootstrap xarray object.
+
+    Parameters
+    ----------
+    dim : str
+        if passed, use reduce along this dimension
+    bootstrap_dim : str, default='bootstrap'
+        name of new dimension.  If `bootstrap_dim` conflicts, then
+        `new_name = dim + new_name`
+    bootstrap_coords : array-like or str
+        coords of new dimension.
+        If `None`, use default names
+        If string, use this for the 'values' name
+    """
+    if dim is not None:
+        axis = cast(int, x.get_axis_num(dim))  # type: ignore[redundant-cast, unused-ignore]
+    else:
+        dim = x.dims[axis]
+
+    template = x.isel(indexers={dim: 0})
+
+    if bootstrap_dim is None:
+        bootstrap_dim = "bootstrap"
+
+    if bootstrap_dim in template.dims:
+        bootstrap_dim = f"{dim}_{bootstrap_dim}"
+    dims = (bootstrap_dim, *template.dims)
+
+    if bootstrap_coords is None:
+        bootstrap_coords = stats_val if isinstance(stats_val, str) else "stats_val"
+
+    if isinstance(bootstrap_coords, str):
+        if style is None:
+            bootstrap_coords = [bootstrap_coords, "low", "high"]
+        elif style == "delta":
+            bootstrap_coords = [bootstrap_coords, "err_low", "err_high"]
+        elif style == "pm":
+            bootstrap_coords = [bootstrap_coords, "err"]
+        else:
+            msg = f"unknown style={style}"
+            raise ValueError(msg)
+
+    if not isinstance(stats_val, str):
+        stats_val = np.array(stats_val)
+
+    out = bootstrap_confidence_interval(
+        x.to_numpy(),  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
+        stats_val=stats_val,
+        axis=axis,
+        alpha=alpha,
+        style=style,
+        **kwargs,
+    )
+
+    out_xr = xr.DataArray(
+        out,
+        dims=dims,
+        coords=template.coords,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+        attrs=template.attrs,
+        name=template.name,
+        # indexes=template.indexes,
+    )
+
+    out_xr.coords[bootstrap_dim] = bootstrap_coords  # pyright: ignore[reportUnknownMemberType]
+
+    return out_xr

@@ -25,7 +25,7 @@ def rng():
     return default_rng
 
 
-class Data:  # noqa: PLR0904
+class Data:
     """wrapper around stuff for generic testing."""
 
     # _count = 0

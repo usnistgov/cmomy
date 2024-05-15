@@ -97,7 +97,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
         # only float32 or float64 allowed
         if self.dtype.type not in {np.float32, np.float64}:
-            msg = "{self.dtype=} not supported. Must be float32 or float64"
+            msg = f"{self.dtype=} not supported. Must be float32 or float64"
             raise ValueError(msg)
 
     # ** Basic access -------------------------------------------------------------
@@ -222,8 +222,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         copy: bool = False,
         order: ArrayOrder | None = None,
         verify: bool = False,
-        # strict: bool = False,
-        **kwargs: Any,
+        dtype: DTypeLike | None = None,
     ) -> Self:
         """
         Create new object like self, with new data.
@@ -235,10 +234,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         {copy}
         {order}
         {verify}
-        strict : bool, default=False
-            If True, verify that `data` has correct shape
-        {kwargs}
-            arguments to classmethod :meth:`from_data`
+        {dtype}
 
         Returns
         -------
@@ -1324,7 +1320,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         """
 
     @classmethod
-    @abstractmethod
     @docfiller.decorate
     def from_raw(
         cls,
@@ -1344,9 +1339,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         raw : ndarray
             Raw moment array.
         {mom_ndim}
-        {order}
-        **kwargs
-            Extra arguments to :meth:`from_data`
 
         Returns
         -------
@@ -1363,8 +1355,12 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         -----
         Weights are taken from ``raw[...,0, 0]``.
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
-
         """
+        from .convert import convert
+
+        return cls(
+            data=convert(raw, mom_ndim=mom_ndim, to="central"), mom_ndim=mom_ndim
+        )
 
     @classmethod
     @abstractmethod

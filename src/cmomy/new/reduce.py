@@ -827,3 +827,35 @@ def reduce_data_indexed(  # noqa: PLR0913
         parallel=parallel,
         out=out,
     )
+
+
+# * For testing purposes
+def resample_data_indexed(
+    data: T_Array,
+    freq: NDArrayAny,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int = -1,
+    dtype: DTypeLike | None = None,
+    order: ArrayOrder = None,
+    parallel: bool = True,
+    out: NDArrayAny | None = None,
+) -> T_Array:
+    """Resample using indexed reduction."""
+    from ._lib.utils import freq_to_index_start_end_scales
+
+    index, start, end, scales = freq_to_index_start_end_scales(freq)
+
+    return reduce_data_indexed(
+        data=data,
+        mom_ndim=mom_ndim,
+        index=index,
+        group_start=start,
+        group_end=end,
+        scale=scales,
+        axis=axis,
+        dtype=dtype,
+        order=order,
+        parallel=parallel,
+        out=out,
+    )

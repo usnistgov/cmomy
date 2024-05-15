@@ -23,8 +23,6 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from typing import Any
-
     from numpy.typing import ArrayLike, DTypeLike
 
     from ._typing_compat import Self
@@ -85,7 +83,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         copy: bool = False,
         order: ArrayOrder = None,
         verify: bool = True,
-        **kwargs: Any,
+        dtype: DTypeLike | None = None,
     ) -> Self:
         """
         Examples
@@ -109,7 +107,9 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         """
         if data is None:
             return type(self)(
-                data=np.zeros_like(self.data, order=order or "C", dtype=self.dtype),
+                data=np.zeros_like(
+                    self.data, order=order or "C", dtype=dtype or self.dtype
+                ),
                 mom_ndim=self._mom_ndim,
                 fastpath=True,
             )
@@ -123,12 +123,12 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             copy=copy,
             mom_ndim=self.mom_ndim,
             order=order,
-            **kwargs,
+            dtype=dtype,
         )
 
     # * To/from xarray ------------------------------------------------------------
     @docfiller.decorate
-    def to_xarray(  # noqa: PLR0912
+    def to_dataarray(  # noqa: PLR0912
         self,
         *,
         dims: XArrayDimsType = None,
@@ -165,7 +165,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         Default constructor
 
-        >>> da.to_xarray()
+        >>> da.to_dataarray()
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
@@ -173,7 +173,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         Setting attributes
 
-        >>> da.to_xarray()
+        >>> da.to_dataarray()
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
@@ -253,7 +253,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         See Also
         --------
-        to_xarray
+        to_dataarray
 
         Examples
         --------
@@ -511,12 +511,15 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
-        **kwargs: Any,
     ) -> Self:
         self._raise_if_scalar()
         if by is None:
             return type(self).from_datas(
-                self._data, mom_ndim=self._mom_ndim, axis=axis, **kwargs
+                self._data,
+                mom_ndim=self._mom_ndim,
+                axis=axis,
+                order=order,
+                parallel=parallel,
             )
 
         from .reduce import reduce_data_grouped
@@ -559,6 +562,9 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         output : object
             Instance of calling class. The new object will have shape
             ``(..., shape[axis-1], nrep, nsamp, shape[axis+1], ...)``,
+            (if ``last=False``) or shape
+            ``(..., shape[axis-1], shape[axis+1], ..., nrep, nsamp, mom_0, ...)``
+            (if ``last=True``),
             where ``shape=self.data`` and ``nrep, nsamp = indices.shape``.
 
 
@@ -1032,10 +1038,10 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         >>> dy_cen.cmom()  # this matches above
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
         """
-        from .convert import convert
-
-        data = convert(raw, mom_ndim=mom_ndim, to="central")
-        return cls(data, mom_ndim)
+        return super().from_raw(raw=raw, mom_ndim=mom_ndim)
+        # from .convert import convert
+        # data = convert(raw, mom_ndim=mom_ndim, to="central")
+        # return cls(data, mom_ndim)
 
     @classmethod
     @docfiller_inherit_abc()
@@ -1049,10 +1055,6 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         parallel: bool | None = None,
     ) -> Self:
         """
-        Parameters
-        ----------
-        {axis_data}
-
         Examples
         --------
         >>> from cmomy.random import default_rng
@@ -1077,17 +1079,9 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         array([ 1.    ,  0.    ,  0.1033, -0.0114])
 
         """
-        from .convert import convert
-
-        data = convert(raws, mom_ndim=mom_ndim, to="central")
-
-        from .reduce import reduce_data
-
-        axis = -1 if axis is None else axis
-        data = reduce_data(
-            data, mom_ndim=mom_ndim, axis=axis, order=order, parallel=parallel
+        return cls.from_raw(raws, mom_ndim=mom_ndim).reduce(
+            axis=axis, order=order, parallel=parallel
         )
-        return cls(data, mom_ndim=mom_ndim)
 
     # ** mom_ndim == 1 specific ----------------------------------------------------
     @staticmethod

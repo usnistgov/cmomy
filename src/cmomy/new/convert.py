@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from numpy.typing import NDArray
+import xarray as xr
 
 from cmomy.new.utils import validate_mom_ndim
 
@@ -16,17 +16,17 @@ from .docstrings import docfiller
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .typing import ConvertStyle, Mom_NDim
+    from .typing import ConvertStyle, Mom_NDim, T_Array
     from .typing import T_FloatDType as T_Float
 
 
 @docfiller.decorate
 def convert(
-    values_in: NDArray[T_Float],
+    values_in: T_Array,
     mom_ndim: Mom_NDim,
     to: ConvertStyle = "central",
     out: NDArray[T_Float] | None = None,
-) -> NDArray[T_Float]:
+) -> T_Array:
     r"""
     Convert between central and raw moments.
 
@@ -76,6 +76,11 @@ def convert(
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     _input_to_output = factory_convert(mom_ndim=mom_ndim, to=to)
+
+    if isinstance(values_in, xr.DataArray):
+        return values_in.copy(
+            data=convert(values_in.to_numpy(), mom_ndim=mom_ndim, to=to, out=out)
+        )
 
     if out is not None:
         return _input_to_output(values_in, out)

@@ -116,30 +116,30 @@ def test_raises_from_data() -> None:
 #         CentralMoments.from_vals(x, val_shape=(2, 3), mom=2)
 
 
-def test_to_xarray() -> None:
+def test_to_dataarray() -> None:
     c = CentralMoments.zeros(mom=4, val_shape=(2, 3))
 
-    assert c.to_xarray(dims=("a", "b")).dims == ("a", "b", "mom_0")
-    assert c.to_xarray(dims=("a", "b"), mom_dims="mom").dims == ("a", "b", "mom")
+    assert c.to_dataarray(dims=("a", "b")).dims == ("a", "b", "mom_0")
+    assert c.to_dataarray(dims=("a", "b"), mom_dims="mom").dims == ("a", "b", "mom")
 
     with pytest.raises(ValueError):
-        c.to_xarray(dims=("a", "b"), mom_dims=("mom0", "mom1"))
+        c.to_dataarray(dims=("a", "b"), mom_dims=("mom0", "mom1"))
 
-    assert c.to_xarray(dims=("a", "b", "c")).dims == ("a", "b", "c")
-
-    with pytest.raises(ValueError):
-        c.to_xarray(dims=("a",))
+    assert c.to_dataarray(dims=("a", "b", "c")).dims == ("a", "b", "c")
 
     with pytest.raises(ValueError):
-        c.to_xarray(dims=("a", "b", "c", "d"))
+        c.to_dataarray(dims=("a",))
 
-    out = c.to_xarray(copy=True)
+    with pytest.raises(ValueError):
+        c.to_dataarray(dims=("a", "b", "c", "d"))
+
+    out = c.to_dataarray(copy=True)
 
     out[...] = 1
 
     np.testing.assert_allclose(out, c.data + 1)
 
-    out = c.to_xarray(copy=False)
+    out = c.to_dataarray(copy=False)
     out[...] = 1
 
     np.testing.assert_allclose(out, c.data)
@@ -160,12 +160,12 @@ def test_to_xarray() -> None:
         (2, ("a",), ("c", "d"), "error"),
     ],
 )
-def test_to_xarray2(mom_ndim, dims, mom_dims, dims_all) -> None:
+def test_to_dataarray2(mom_ndim, dims, mom_dims, dims_all) -> None:
     c = CentralMoments.zeros(mom=(3,) * mom_ndim, val_shape=(2, 3))
 
     if dims_all == "error":
         with pytest.raises(ValueError):
-            c.to_xarray(dims=dims, mom_dims=mom_dims)
+            c.to_dataarray(dims=dims, mom_dims=mom_dims)
 
     else:
         expected = xr.DataArray(
@@ -173,9 +173,11 @@ def test_to_xarray2(mom_ndim, dims, mom_dims, dims_all) -> None:
             dims=dims_all,
         )
 
-        xr.testing.assert_allclose(c.to_xarray(dims=dims, mom_dims=mom_dims), expected)
+        xr.testing.assert_allclose(
+            c.to_dataarray(dims=dims, mom_dims=mom_dims), expected
+        )
 
-        xr.testing.assert_allclose(c.to_xarray(template=expected), expected)
+        xr.testing.assert_allclose(c.to_dataarray(template=expected), expected)
 
 
 def test_raises_mom_ndim() -> None:

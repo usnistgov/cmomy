@@ -43,7 +43,7 @@ class DataContainer:
         self,
         axis: int,
         mom: int | tuple[int, ...],
-        # broadcast=None,
+        broadcast=None,  # noqa: ARG002
         cov: bool | None = None,
         **kws,
     ):

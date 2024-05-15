@@ -5,11 +5,13 @@ from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 import pytest
+import xarray as xr
 from module_utilities import cached
 
 import cmomy.new.random
 import cmomy.new.reduce
 import cmomy.new.resample
+from cmomy.new.central_dataarray import xCentralMoments
 
 # import cmomy
 # from cmomy import central, resample, xcentral
@@ -250,129 +252,134 @@ class Data:
     def freq(self) -> NDArrayAny:
         return cmomy.new.resample.randsamp_freq(indices=self.indices, ndat=self.ndat)
 
-    # @cached.prop
-    # def xdata_resamp(self) -> NDArrayAny:
-    #     xdata = self.xdata
+    @cached.prop
+    def xdata_resamp(self) -> NDArrayAny:
+        xdata = self.xdata
 
-    #     if self.axis != 0:
-    #         xdata = np.moveaxis(xdata, self.axis, 0)
+        if self.axis != 0:
+            xdata = np.moveaxis(xdata, self.axis, 0)
 
-    #     return np.take(xdata, self.indices, axis=0)
+        return np.take(xdata, self.indices, axis=0)
 
-    # @cached.prop
-    # def ydata_resamp(self) -> NDArrayAny:
-    #     ydata = self.ydata
+    @cached.prop
+    def ydata_resamp(self) -> NDArrayAny:
+        ydata = self.ydata
 
-    #     if self.style == "broadcast":
-    #         return np.take(ydata, self.indices, axis=0)
+        if self.style == "broadcast":
+            return np.take(ydata, self.indices, axis=0)
 
-    #     if self.axis != 0:
-    #         ydata = np.moveaxis(ydata, self.axis, 0)
-    #     return np.take(ydata, self.indices, axis=0)
+        if self.axis != 0:
+            ydata = np.moveaxis(ydata, self.axis, 0)
+        return np.take(ydata, self.indices, axis=0)
 
-    # @property
-    # def x_resamp(self) -> NDArrayAny | tuple[NDArrayAny, NDArrayAny]:
-    #     if self.cov:
-    #         return (self.xdata_resamp, self.ydata_resamp)
-    #     return self.xdata_resamp
+    @property
+    def xy_tuple_resamp(self) -> tuple[NDArrayAny] | tuple[NDArrayAny, NDArrayAny]:
+        if self.cov:
+            return (self.xdata_resamp, self.ydata_resamp)
+        return (self.xdata_resamp,)
 
-    # @cached.prop
-    # def w_resamp(self) -> NDArrayAny | None:
-    #     w = self.w
+    @cached.prop
+    def w_resamp(self) -> NDArrayAny | None:
+        w = self.w
 
-    #     if self.style is None:
-    #         return w
-    #     if self.style == "broadcast":
-    #         return np.take(w, self.indices, axis=0)  # type: ignore[arg-type]
-    #     if self.axis != 0:
-    #         w = np.moveaxis(w, self.axis, 0)  # type: ignore[arg-type]
-    #     return np.take(w, self.indices, axis=0)  # type: ignore[arg-type]
+        if self.style is None:
+            return w
+        if self.style == "broadcast":
+            return np.take(w, self.indices, axis=0)  # type: ignore[arg-type]
+        if self.axis != 0:
+            w = np.moveaxis(w, self.axis, 0)  # type: ignore[arg-type]
+        return np.take(w, self.indices, axis=0)  # type: ignore[arg-type]
 
-    # @cached.prop
-    # def data_test_resamp(self) -> NDArrayAny:
-    #     return central.central_moments(
-    #         x=self.x_resamp,
-    #         mom=self.mom,
-    #         w=self.w_resamp,
-    #         axis=1,
-    #         broadcast=self.broadcast,
-    #     )
+    @cached.prop
+    def data_test_resamp(self) -> NDArrayAny:
+        return np.moveaxis(
+            cmomy.new.reduce.reduce_vals(
+                *self.xy_tuple_resamp,
+                mom=self.mom,
+                weight=self.w_resamp,
+                axis=1,
+            ),
+            0,
+            -(self.mom_ndim + 1),
+        )
 
-    # # xcentral specific stuff
-    # @property
-    # def cls_xr(self):
-    #     return xcentral.xCentralMoments
+    # xcentral specific stuff
+    @property
+    def cls_xr(self):
+        return xCentralMoments
 
-    # @cached.prop
-    # def s_xr(self):
-    #     return self.cls_xr.from_vals(
-    #         x=self.x, w=self.w, axis=self.axis, mom=self.mom, broadcast=self.broadcast
-    #     )
+    @cached.prop
+    def s_xr(self) -> xCentralMoments:
+        return self.s.to_xcentralmoments()
 
-    # @cached.prop
-    # def xdata_xr(self):
-    #     dims = [f"dim_{i}" for i in range(len(self.shape) - 1)]
-    #     dims.insert(self.axis, "rec")
-    #     return xr.DataArray(self.xdata, dims=dims)
+    @cached.prop
+    def xdata_xr(self):
+        dims = [f"dim_{i}" for i in range(len(self.shape) - 1)]
+        dims.insert(self.axis, "rec")
+        return xr.DataArray(self.xdata, dims=dims)
 
-    # @cached.prop
-    # def ydata_xr(self):
-    #     if self.style is None or self.style == "total":
-    #         dims = self.xdata_xr.dims
-    #     else:
-    #         dims = "rec"
+    @cached.prop
+    def ydata_xr(self):
+        if self.style is None or self.style == "total":
+            dims = self.xdata_xr.dims
+        else:
+            dims = "rec"
+        return xr.DataArray(self.ydata, dims=dims)
 
-    #     return xr.DataArray(self.ydata, dims=dims)
+    @cached.prop
+    def w_xr(self):
+        if self.style is None:
+            return None
+        dims = "rec" if self.style == "broadcast" else self.xdata_xr.dims
+        return xr.DataArray(self.w, dims=dims)
 
-    # @cached.prop
-    # def w_xr(self):
-    #     if self.style is None:
-    #         return None
+    @property
+    def xy_tuple_xr(self) -> tuple[xr.DataArray, ...]:
+        if self.cov:
+            return (self.xdata_xr, self.ydata_xr)
+        return (self.xdata_xr,)
 
-    #     dims = "rec" if self.style == "broadcast" else self.xdata_xr.dims
+    @cached.prop
+    def data_test_xr(self):
+        assert isinstance(self.xy_tuple_xr[0], xr.DataArray)
+        return cmomy.new.reduce.reduce_vals(
+            *self.xy_tuple_xr,
+            mom=self.mom,
+            dim="rec",
+            weight=self.w_xr,
+        )
 
-    #     return xr.DataArray(self.w, dims=dims)
+    @cached.prop
+    def W_xr(self) -> Any:
+        if isinstance(self.w_xr, xr.DataArray):
+            dims = self.w_xr.dims
+            return [xr.DataArray(_, dims=dims) for _ in self.W]
+        return self.W
 
-    # @property
-    # def x_xr(self):
-    #     if self.cov:
-    #         return (self.xdata_xr, self.ydata_xr)
-    #     return self.xdata_xr
+    @cached.prop
+    def X_xr(self):
+        xdims = self.xdata_xr.dims
 
-    # @cached.prop
-    # def data_test_xr(self):
-    #     return xcentral.xcentral_moments(
-    #         x=self.x_xr, mom=self.mom, dim="rec", w=self.w_xr, broadcast=self.broadcast
-    #     )
+        if self.cov:
+            ydims = self.ydata_xr.dims
 
-    # @cached.prop
-    # def W_xr(self) -> Any:
-    #     if isinstance(self.w_xr, xr.DataArray):
-    #         dims = self.w_xr.dims
-    #         return [xr.DataArray(_, dims=dims) for _ in self.W]
-    #     return self.W
+            return [
+                (xr.DataArray(x, dims=xdims), xr.DataArray(y, dims=ydims))
+                for x, y in self.X
+            ]
+        return [(xr.DataArray(x[0], dims=xdims),) for x in self.X]
 
-    # @cached.prop
-    # def X_xr(self):
-    #     xdims = self.xdata_xr.dims
-
-    #     if self.cov:
-    #         ydims = self.ydata_xr.dims
-
-    #         return [
-    #             (xr.DataArray(x, dims=xdims), xr.DataArray(y, dims=ydims))
-    #             for x, y in self.X
-    #         ]
-    #     return [xr.DataArray(x, dims=xdims) for x in self.X]
-
-    # @cached.prop
-    # def S_xr(self):
-    #     return [
-    #         self.cls_xr.from_vals(
-    #             x=x, w=w, axis=self.axis, mom=self.mom, broadcast=self.broadcast
-    #         )
-    #         for w, x in zip(self.W, self.X)
-    #     ]
+    @cached.prop
+    def S_xr(self):
+        return [
+            self.cls_xr.from_vals(
+                *xy,
+                weight=w,
+                axis=self.axis,
+                mom=self.mom,
+            )
+            for w, xy in zip(self.W_xr, self.X_xr)
+        ]
 
 
 def get_params():
