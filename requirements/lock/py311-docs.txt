@@ -65,7 +65,7 @@ pytz==2024.1              # via pandas
 pyyaml==6.0.1             # via jupyter-cache, myst-nb, myst-parser
 pyzmq==25.1.2             # via ipykernel, jupyter-client
 referencing==0.34.0       # via jsonschema, jsonschema-specifications
-requests==2.31.0          # via sphinx
+requests==2.32.0          # via sphinx
 rpds-py==0.18.0           # via jsonschema, referencing
 six==1.16.0               # via asttokens, livereload, python-dateutil
 snowballstemmer==2.2.0    # via sphinx

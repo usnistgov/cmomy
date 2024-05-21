@@ -70,7 +70,7 @@ pytz==2024.1              # via pandas
 pyyaml==6.0.1             # via pre-commit
 pyzmq==25.1.2             # via ipykernel, jupyter-client
 referencing==0.34.0       # via jsonschema, jsonschema-specifications
-requests==2.31.0          # via scriv
+requests==2.32.0          # via scriv
 rpds-py==0.18.0           # via jsonschema, referencing
 scriv==1.5.1
 setuptools==69.3.0        # via nodeenv
