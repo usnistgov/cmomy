@@ -385,3 +385,29 @@ def test_resample_and_reduce(other, rng) -> None:
                 t1.to_dataarray(),
                 tx.block(dim=dim, block_size=None).to_dataarray().isel({dim: 0}),
             )
+
+
+@pytest.mark.parametrize(
+    "selector",
+    [
+        {"dim_0": [0, 1]},
+        {"dim_0": 0},
+        {"dim_0": [0]},
+        {"mom_0": 0},
+    ],
+)
+def test_isel(selector) -> None:
+    cx = CentralMoments.from_data(
+        np.arange(4 * 4 * 5 * 5).reshape(4, 4, 5, 5).astype(None), mom_ndim=2
+    ).to_x()
+
+    if any(key in cx.mom_dims for key in selector):
+        # check that this raises an error
+        with pytest.raises(ValueError, match=".*Moments changed.*"):
+            cx.isel(selector)
+
+    else:
+        xr.testing.assert_equal(
+            cx.isel(selector).to_values(),
+            cx.to_values().isel(selector),
+        )

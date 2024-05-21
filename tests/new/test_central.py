@@ -236,13 +236,13 @@ def test_pipe(rng) -> None:
 
     c1 = c.pipe(lambda x: x + 1, _reorder=False)
     c2 = c.pipe("__add__", 1, _reorder=False)
-    c3 = c.pipe("__add__", 1, _reorder=False, _check_mom=False)
+    # c3 = c.pipe("__add__", 1, _reorder=False, _check_mom=False)
 
-    for cc in [c1, c2, c3]:
+    for cc in [c1, c2]:
         np.testing.assert_allclose(cc.data, c.data + 1)
 
     with pytest.raises(AttributeError):
-        c3 = c.pipe(lambda x: x + 1, _reorder=True)
+        c.pipe(lambda x: x + 1, _reorder=True)
 
 
 def test_raise_if_scalar() -> None:

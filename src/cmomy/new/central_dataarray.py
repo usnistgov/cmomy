@@ -348,7 +348,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
         **dimensions_kwargs: Any,
     ) -> Self:
@@ -420,7 +419,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _order=_order,
             _copy=_copy,
-            _check_mom=_check_mom,
             _kws=_kws,
             **dimensions_kwargs,
         )
@@ -434,7 +432,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
     ) -> Self:
         """
@@ -457,7 +454,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _copy=_copy,
             _order=_order,
             _kws=_kws,
-            _check_mom=_check_mom,
             dim=dim,
             fill_value=fill_value,
             sparse=sparse,
@@ -471,7 +467,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
         **indexes_kwargs: Hashable | Sequence[Hashable],
     ) -> Self:
@@ -495,7 +490,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _copy=_copy,
             _order=_order,
             _kws=_kws,
-            _check_mom=_check_mom,
             indexes=indexes,
             append=append,
             **indexes_kwargs,
@@ -509,7 +503,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
     ) -> Self:
         """Interface to :meth:`xarray.DataArray.reset_index`."""
@@ -519,7 +512,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _copy=_copy,
             _order=_order,
             _kws=_kws,
-            _check_mom=_check_mom,
             dims_or_levels=dims_or_levels,
             drop=drop,
         )
@@ -532,7 +524,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
     ) -> Self:
         """Interface to :meth:`xarray.DataArray.drop_vars`"""
@@ -544,7 +535,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _copy=_copy,
             _order=_order,
             _kws=_kws,
-            _check_mom=_check_mom,
         )
 
     def swap_dims(
@@ -553,7 +543,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
         **dims_kwargs: Any,
     ) -> Self:
@@ -565,7 +554,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _copy=_copy,
             _order=_order,
             _kws=_kws,
-            _check_mom=_check_mom,
             **dims_kwargs,
         )
 
@@ -579,7 +567,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = False,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
         **indexers_kws: Any,
     ) -> Self:
@@ -655,7 +642,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _check_mom=_check_mom,
             _kws=_kws,
             indexers=indexers,
             method=method,
@@ -673,7 +659,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = False,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
         **indexers_kws: Any,
     ) -> Self:
@@ -695,7 +680,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _check_mom=_check_mom,
             _kws=_kws,
             indexers=indexers,
             drop=drop,
@@ -710,7 +694,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         missing_dims: xr_types.ErrorOptionsWithWarn = "raise",
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
     ) -> Self:
         """
@@ -737,7 +720,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=False,
             _copy=_copy,
             _order=_order,
-            _check_mom=_check_mom,
             _kws=_kws,
         )
 

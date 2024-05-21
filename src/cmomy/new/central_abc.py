@@ -1047,7 +1047,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _check_mom: bool = True,
         _kws: Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Self:
@@ -1071,9 +1070,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             This is passed as ``copy=_copy`` to :meth:`from_data`.
         _order : str, optional
             Array order to apply to output.
-        _check_mom: bool, default=True
-            If True, check the resulting object has the same moment shape as the
-            current object.
         _kws : Mapping, optional
             Extra arguments to :meth:`from_data`.
         *args
@@ -1110,8 +1106,8 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
                 msg = "to specify `_reorder`, must have attribute `mom_dims`"
                 raise AttributeError(msg)
 
-        if _check_mom and values.shape[-self.mom_ndim :] != self.mom_shape:
-            msg = f"{values.shape[-self.mom_ndim:]=} != {self.mom_shape=}"
+        if values.shape[-self.mom_ndim :] != self.mom_shape:
+            msg = f"{values.shape[-self.mom_ndim:]=} != {self.mom_shape=}. Moments changed."
             raise ValueError(msg)
 
         _kws = {} if _kws is None else dict(_kws)
