@@ -1,4 +1,5 @@
 # flake8: noqa
+from numpy.typing import ArrayLike
 import pytest
 
 
@@ -28,10 +29,23 @@ def pytest_addoption(parser) -> None:
     parser.addoption(
         "--run-slow", action="store_true", default=False, help="run slow tests"
     )
+    parser.addoption(
+        "--run-compile",
+        action="store_true",
+        help="""
+        Run full compile before testing.
+        This means all the numba modules will be pre-loaded before test run.
+        Makes timing/benchmarking consistent.
+        """,
+    )
 
 
 def pytest_configure(config) -> None:
     config.addinivalue_line("markers", "slow: mark test as slow to run")
+    if config.getoption("--run-compile"):
+        from cmomy.new.compile import load_numba_modules
+
+        load_numba_modules()
 
 
 def pytest_collection_modifyitems(config, items) -> None:

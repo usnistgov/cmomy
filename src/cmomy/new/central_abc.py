@@ -10,14 +10,16 @@ from module_utilities import cached
 
 from ._lib.factory import factory_pusher
 from .docstrings import docfiller
-from .typing import ArrayOrderCF, NDArrayAny, T_Array
+from .typing import DTypeLikeArg, T_Array
 from .typing import T_FloatDType as T_Float
+from .typing import T_FloatDType2 as T_Float2
 from .utils import (
     normalize_axis_index,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_push_val,
     prepare_values_for_reduction,
+    validate_floating_dtype,
     validate_mom_ndim,
 )
 
@@ -30,9 +32,12 @@ if TYPE_CHECKING:
     from ._typing_compat import Self
     from .typing import (
         ArrayOrder,
+        ArrayOrderCF,
+        DataCasting,
         Mom_NDim,
         Moments,
         MomentsStrict,
+        NDArrayAny,
         NDArrayInt,
     )
 
@@ -80,9 +85,11 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         self,
         data: T_Array,
         mom_ndim: Mom_NDim = 1,
+        *,
+        fastpath: bool = False,  # noqa: ARG002
     ) -> None:  # pragma: no cover
-        self._mom_ndim = validate_mom_ndim(mom_ndim)
         self._cache = {}
+        self._mom_ndim = validate_mom_ndim(mom_ndim)
         self.set_values(data)
 
         # other checks
@@ -96,9 +103,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             raise ValueError(msg)
 
         # only float32 or float64 allowed
-        if self.dtype.type not in {np.float32, np.float64}:
-            msg = f"{self.dtype=} not supported. Must be float32 or float64"
-            raise ValueError(msg)
+        _ = validate_floating_dtype(self.dtype)
 
     # ** Basic access -------------------------------------------------------------
     @property
@@ -106,9 +111,14 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         """Access underlying central moments array."""
         return self.to_values()
 
-    @values.setter
-    def values(self, values: T_Array) -> None:
-        self.set_values(values)
+    # @values.setter
+    # def values(self, values: T_Array) -> None:
+    #     self.set_values(values)
+
+    #     # Run additional data checks here
+    #     if self.dtype.type not in {np.float32, np.float64}:
+    #         msg = f"{self.dtype=} not supported. Must be float32 or float64"
+    #         raise ValueError(msg)
 
     @abstractmethod
     def set_values(self, values: T_Array) -> None:
@@ -125,7 +135,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
         By convention data has the following meaning for the moments indexes
 
-        * `data[...,i=0,j=0]`, weights
+        * `data[...,i=0,j=0]`, weight
         * `data[...,i=1,j=0]]`, if only one moment index is one and all others zero,
           then this is the average value of the variable with unit index.
         * all other cases, the central moments `<(x0-<x0>)**i0 * (x1 - <x1>)**i1 * ...>`
@@ -148,7 +158,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         return self._data.ndim
 
     @property
-    def dtype(self) -> np.dtype[Any]:
+    def dtype(self) -> np.dtype[T_Float]:
         """self.data.dtype."""
         # Not sure why I have to cast
         return self._data.dtype
@@ -187,15 +197,15 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         """Number of value dimensions."""  # D401
         return len(self.val_shape)
 
-    @property
-    def mom_shape_var(self) -> tuple[int, ...]:
-        """Shape of moment part of variance."""
-        return tuple(x - 1 for x in self.mom)
+    # @property
+    # def mom_shape_var(self) -> tuple[int, ...]:
+    #     """Shape of moment part of variance."""
+    #     return tuple(x - 1 for x in self.mom)
 
-    @property
-    def shape_var(self) -> tuple[int, ...]:
-        """Total variance shape."""
-        return self.val_shape + self.mom_shape_var
+    # @property
+    # def shape_var(self) -> tuple[int, ...]:
+    #     """Total variance shape."""
+    #     return self.val_shape + self.mom_shape_var
 
     def __repr__(self) -> str:
         """Repr for class."""
@@ -245,6 +255,65 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         --------
         from_data
         """
+
+    @abstractmethod
+    @docfiller.decorate
+    def astype(
+        self,
+        dtype: DTypeLikeArg[T_Float2] | None,
+        *,
+        order: ArrayOrder = None,
+        casting: DataCasting = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> Self:
+        """
+        Underlying data cast to specified type
+
+        Parameters
+        ----------
+        dtype : str or dtype
+            Typecode of data-type to cast the array data.  Note that a value of None will
+            upcast to ``np.float64``.  This is the same behaviour as :class:`~numpy.ndarray.asarray`.
+        {order}
+        casting : {{'no', 'equiv', 'safe', 'same_kind', 'unsafe'}}, optional
+            Controls what kind of data casting may occur.
+
+            * 'no' means the data types should not be cast at all.
+            * 'equiv' means only byte-order changes are allowed.
+            * 'safe' means only casts which can preserve values are allowed.
+            * 'same_kind' means only safe casts or casts within a kind,
+            like float64 to float32, are allowed.
+            * 'unsafe' (default) means any data conversions may be done.
+        subok : bool, optional
+            If True, then sub-classes will be passed-through, otherwise the
+            returned array will be forced to be a base-class array.
+        copy : bool, optional
+            By default, astype always returns a newly allocated array. If this
+            is set to False and the `dtype` requirement is satisfied, the input
+            array is returned insteadof a copy.
+
+
+        Notes
+        -----
+        Only ``numpy.float32`` and ``numpy.float64`` dtypes are supported.
+
+
+        See Also
+        --------
+        numpy.ndarray.astype
+        """
+        validate_floating_dtype(dtype)
+
+        kwargs = {"order": order, "casting": casting, "subok": subok, "copy": copy}
+        kwargs = {k: v for k, v in kwargs.items() if v is not None}
+
+        return type(self)(
+            data=self.to_values().astype(dtype=dtype, **kwargs),
+            mom_ndim=self.mom_ndim,
+            # Already validated dtype, so can use fastpath
+            fastpath=True,
+        )
 
     @docfiller.decorate
     def zeros_like(self) -> Self:
@@ -357,7 +426,12 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         .. math::
 
             \text{cmom[..., n, m]} =
-            \langle (x - \langle x \rangle^n) (y - \langle y \rangle^m) \rangle
+            \langle (x - \langle x \rangle)^n (y - \langle y \rangle)^m \rangle
+
+        where
+
+        .. math::
+            \langle x \rangle = \sum_i w_i x_i / \sum_i w_i
 
         Returns
         -------
@@ -370,7 +444,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         out[self._single_index(1)] = 0
         return self._wrap_like(out)
 
-    def to_raw(self, *, weights: float | NDArrayAny | None = None) -> T_Array:
+    def to_raw(self, *, weight: float | NDArrayAny | None = None) -> T_Array:
         r"""
         Raw moments accumulation array.
 
@@ -380,6 +454,12 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             \text{weight} & n = m = 0 \\
             \langle x^n y ^m \rangle & \text{otherwise}
             \end{cases}
+
+        where
+
+        .. math::
+            \langle x \rangle = \sum_i w_i x_i / \sum_i w_i
+
 
         Returns
         -------
@@ -391,9 +471,9 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         """
         from .convert import convert
 
-        out = convert(self.data, mom_ndim=self.mom_ndim, to="raw")
-        if weights is not None:
-            out[self._weight_index] = weights
+        out = convert(self._data, mom_ndim=self.mom_ndim, to="raw")
+        if weight is not None:
+            out[self._weight_index] = weight
         return self._wrap_like(out)
 
     def rmom(self) -> T_Array:
@@ -401,7 +481,13 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         Raw moments.
 
         .. math::
-            \text{rmom[..., n, m]} = \langle x^n y^m \rangle
+            \text{rmom[..., n, m]} = \langle x^n y^m  \rangle
+
+        where
+
+        .. math::
+            \langle x \rangle = \sum_i w_i x_i / \sum_i w_i
+
 
         Returns
         -------
@@ -412,7 +498,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         to_raw
         cmom
         """
-        return self.to_raw(weights=1.0)
+        return self.to_raw(weight=1.0)
 
     # ** Fill ---------------------------------------------------------------------
     def fill(self, value: Any = 0) -> Self:
@@ -791,7 +877,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         -----
         Array `x0` should have same shape as `self.val_shape`.
         """
-        return self
 
     @abstractmethod
     @docfiller.decorate
@@ -1022,7 +1107,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             if hasattr(self, "mom_dims"):
                 values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues, reportAttributeAccessIssue]
             else:
-                msg = "to specify order, must have attribute `mom_dims`"
+                msg = "to specify `_reorder`, must have attribute `mom_dims`"
                 raise AttributeError(msg)
 
         if _check_mom and values.shape[-self.mom_ndim :] != self.mom_shape:
@@ -1089,7 +1174,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         return new.push_data(self.to_values())
 
     def __mul__(self, scale: float) -> Self:
-        """New object with weights scaled by scale."""  # D401
+        """New object with weight scaled by scale."""  # D401
         scale = float(scale)
         new = self.copy()
         new._data[self._weight_index] *= scale
@@ -1248,7 +1333,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         *y : array-like
             Additional values (needed if ``len(mom)==2``).
         weight : scalar or array-like, optional
-            Optional weights.  If scalar or array, attempt to
+            Optional weight.  If scalar or array, attempt to
             broadcast to `x0.shape`
         {axis_and_dim}
         {mom}
@@ -1293,7 +1378,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         {mom}
         {freq}
         weight : scalar or array-like, optional
-            Optional weights.  If scalar or array, attempt to
+            Optional weight.  If scalar or array, attempt to
             broadcast to `x0.shape`
         {axis_and_dim}
         {full_output}

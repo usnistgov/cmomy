@@ -243,6 +243,7 @@ addopts = [
     "--doctest-glob=*.md",
     "--pyargs",
     "--cov-config=pyproject.toml",
+    # "--log-cli-level=INFO",
     # "-n",
     # "4",
 ]
@@ -258,7 +259,19 @@ branch = true
 [tool.coverage.report]
 # show_missing = true
 exclude_also = ["if TYPE_CHECKING:", "@overload"]
-omit = ["*/vendored/*", "*/_typing.py", "*/options.py"]
+omit = [
+    "*/vendored/*",
+    "*/_typing.py",
+    "*/options.py",
+    "*/_lib/_push*.py",
+    "*/_lib/push*.py",
+    "*/_lib/convert*.py",
+    "*/_lib/decorators.py",
+    "*/_lib/indexed*.py",
+    "*/_lib/make_parallel_files.py",
+    "*/_lib/resample*.py",
+    "*/_lib/utils.py",
+]
 include = ["src/*"]
 
 [tool.coverage.paths]

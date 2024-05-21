@@ -32,6 +32,12 @@ def test_bad_dtype(dtype, ok) -> None:
             CentralMoments(data, mom_ndim=1)
 
 
+def test_values() -> None:
+    c = CentralMoments.zeros(mom=3)
+
+    assert c.values is c.to_values()  # noqa: PD011
+
+
 def test_new_like() -> None:
     c = CentralMoments.zeros(val_shape=(2, 3), mom=2)
 
@@ -114,6 +120,20 @@ def test_raises_from_data() -> None:
 
 #     with pytest.raises(ValueError):
 #         CentralMoments.from_vals(x, val_shape=(2, 3), mom=2)
+
+
+def test_cmom(other) -> None:
+    expected = other.data_fix.copy()
+
+    if other.mom_ndim == 1:
+        expected[..., 0] = 1.0
+        expected[..., 1] = 0.0
+    else:
+        expected[..., 0, 0] = 1.0
+        expected[..., 1, 0] = 0.0
+        expected[..., 0, 1] = 0.0
+
+    np.testing.assert_allclose(other.s.cmom(), expected)
 
 
 def test_to_dataarray() -> None:
@@ -360,10 +380,11 @@ def test_push_vals_mult(other) -> None:
     other.test_values(t.to_values())
 
 
-def test_combine(other) -> None:
+@pytest.mark.parametrize("order", ["C", None])
+def test_combine(other, order) -> None:
     t = other.s.zeros_like()
     for s in other.S:
-        t.push_data(s.to_values())
+        t.push_data(s.to_values(), order=order)
     other.test_values(t.to_values())
 
 
@@ -637,3 +658,33 @@ def test_block_odd_size(rng) -> None:
     c1 = CentralMoments.from_vals(x[:9].reshape(3, -1), mom=2, axis=1)
 
     np.testing.assert_allclose(c0, c1)
+
+
+@pytest.mark.parametrize("dtype_base", [np.float32, np.float64])
+@pytest.mark.parametrize(
+    ("dtype", "expected"),
+    [
+        (np.float32, np.float32),
+        (np.dtype(np.float32), np.float32),
+        ("f4", np.float32),
+        (np.dtype("f4"), np.float32),
+        (np.float64, np.float64),
+        (np.dtype(np.float64), np.float64),
+        ("f8", np.float64),
+        (np.dtype("f8"), np.float64),
+        (None, np.float64),
+        (np.float16, "error"),
+    ],
+)
+def test_astype(dtype_base, dtype, expected) -> None:
+    c = CentralMoments.zeros(mom=3, val_shape=(2, 3), dtype=dtype_base)
+    cx = c.to_x()
+    cc = cx.to_c()
+
+    for obj in [c, cx, cc]:
+        assert obj.dtype.type == dtype_base
+        if expected == "error":
+            with pytest.raises(ValueError, match=".*not supported.*"):
+                obj.astype(dtype)
+        else:
+            assert obj.astype(dtype).dtype.type == expected

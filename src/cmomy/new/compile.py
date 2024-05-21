@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 FORMAT = "[%(name)s] %(message)s"
-logging.basicConfig(level=logging.INFO, format=FORMAT)
+logging.basicConfig(level=logging.WARNING, format=FORMAT)
 logger = logging.getLogger("cmomy.compile")
 
 
@@ -39,13 +39,13 @@ def _time_modules(
     out = []
     with _Catchtime() as total:
         for module in modules:
-            logger.info("loading mod %s", module)
+            logger.warning("loading mod %s", module)
             with _Catchtime() as t:
                 import_module(f"{prefix}{module}", package=package)
             out.append((t.time, module))
     for time, module in sorted(out, key=itemgetter(0), reverse=True):
-        logger.info("%7.1E sec %s", time, module)
-    logger.info("%7.1E sec total", total.time)
+        logger.warning("%7.1E sec %s", time, module)
+    logger.warning("%7.1E sec total", total.time)
 
 
 def load_numba_modules(

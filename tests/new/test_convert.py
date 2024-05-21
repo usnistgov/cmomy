@@ -20,6 +20,19 @@ def test_to_raw_moments(other) -> None:
 
         np.testing.assert_allclose(raw, other.s.to_raw())
 
+        # test with weights
+        for w in [10.0, 1.0]:
+            expected = raw.copy()
+            if other.mom_ndim == 1:
+                expected[..., 0] = w
+            else:
+                expected[..., 0, 0] = w
+
+            np.testing.assert_allclose(expected, other.s.to_raw(weight=w))
+
+            if w == 1.0:
+                np.testing.assert_allclose(expected, other.s.rmom())
+
 
 def test_raises_convert_moments() -> None:
     x = np.zeros(3)

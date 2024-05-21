@@ -250,6 +250,36 @@ def select_mom_ndim(*, mom: Moments | None, mom_ndim: Mom_NDim | None) -> Mom_ND
 
 
 # * New helpers ---------------------------------------------------------------
+@docfiller.decorate
+def validate_floating_dtype(dtype: DTypeLike) -> DTypeLike:
+    """
+    Validate that dtype is conformable float32 or float64.
+
+    Parameters
+    ----------
+    {dtype}
+
+    Returns
+    -------
+    `numpy.dtype` object or None
+        Note that if ``dtype == None``, ``None`` will be returned.
+        Otherwise, will return ``np.dtype(dtype)``.
+
+
+    """
+    if dtype is None:
+        # defaults to np.float64, but can have special properties
+        # e.g., to np.asarray(..., dtype=None) means infer...
+        return dtype
+
+    dtype = np.dtype(dtype)
+    if dtype.type in {np.float32, np.float64}:
+        return dtype
+
+    msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
+    raise ValueError(msg)
+
+
 def parallel_heuristic(parallel: bool | None, size: int, cutoff: int = 10000) -> bool:
     """Default parallel."""
     if parallel is not None:

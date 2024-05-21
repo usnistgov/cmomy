@@ -5,7 +5,7 @@ Central moments/comoments routines from :class:`np.ndarray` objects
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -41,8 +41,9 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import ArrayOrderCF
+from .typing import ArrayOrderCF, ArrayOrderCFA, DataCasting, DTypeLikeArg
 from .typing import T_FloatDType as T_Float
+from .typing import T_FloatDType2 as T_Float2
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
@@ -82,7 +83,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         *,
         copy: bool = False,
         order: ArrayOrder = None,
-        verify: bool = True,
+        verify: bool = False,
         dtype: DTypeLike | None = None,
     ) -> Self:
         """
@@ -117,6 +118,10 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         if verify and data.shape != self.shape:
             msg = f"{data.shape=} != {self.shape=}"
             raise ValueError(msg)
+        if data.shape[-self.mom_ndim :] != self.mom_shape:
+            # at a minimum, verify that mom_shape is unchanged.
+            msg = f"{data.shape=} has wrong mom_shape={self.mom_shape}"
+            raise ValueError(msg)
 
         return type(self).from_data(
             data=data,
@@ -124,6 +129,42 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             mom_ndim=self.mom_ndim,
             order=order,
             dtype=dtype,
+        )
+
+    @overload
+    def astype(
+        self,
+        dtype: DTypeLikeArg[T_Float2],
+        *,
+        order: ArrayOrder = None,
+        casting: DataCasting = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> CentralMoments[T_Float2]: ...
+
+    @overload
+    def astype(
+        self,
+        dtype: None,
+        *,
+        order: ArrayOrder = None,
+        casting: DataCasting = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> CentralMoments[np.float64]: ...
+
+    @docfiller_abc()
+    def astype(
+        self,
+        dtype: DTypeLikeArg[T_Float2] | None,
+        *,
+        order: ArrayOrder = None,
+        casting: DataCasting = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> CentralMoments[T_Float2] | CentralMoments[np.float64]:
+        return super().astype(
+            dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
 
     # * To/from xarray ------------------------------------------------------------
@@ -290,8 +331,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         """
         from .central_dataarray import xCentralMoments
 
-        return xCentralMoments.from_centralmoments(
-            obj=self,
+        data = self.to_dataarray(
             dims=dims,
             attrs=attrs,
             coords=coords,
@@ -301,18 +341,31 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             template=template,
             copy=copy,
         )
+        return xCentralMoments(data=data, mom_ndim=self.mom_ndim)  # , fastpath=True)
 
-        # data = self.to_xarray(
-        #     dims=dims,
-        #     attrs=attrs,
-        #     coords=coords,
-        #     name=name,
-        #     indexes=indexes,
-        #     mom_dims=mom_dims,
-        #     template=template,
-        #     copy=copy,
-        # )
-        # return xCentralMoments(data=data, mom_ndim=self.mom_ndim, fastpath=True)
+    def to_x(
+        self,
+        *,
+        dims: XArrayDimsType = None,
+        attrs: XArrayAttrsType = None,
+        coords: XArrayCoordsType = None,
+        name: XArrayNameType = None,
+        indexes: XArrayIndexesType = None,
+        mom_dims: MomDims | None = None,
+        template: xr.DataArray | None = None,
+        copy: bool = False,
+    ) -> xCentralMoments[T_Float]:
+        """Alias to :meth:`to_xcentralmoments`."""
+        return self.to_xcentralmoments(
+            dims=dims,
+            attrs=attrs,
+            coords=coords,
+            name=name,
+            indexes=indexes,
+            mom_dims=mom_dims,
+            template=template,
+            copy=copy,
+        )
 
     # * pushing routines ----------------------------------------------------------
     @docfiller_inherit_abc()
@@ -660,8 +713,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         self,
         shape: tuple[int, ...],
         *,
-        copy: bool = True,
-        order: ArrayOrder = None,
+        order: ArrayOrderCFA = None,
     ) -> Self:
         """
         Create a new object with reshaped data.
@@ -670,14 +722,16 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         ----------
         shape : tuple
             shape of values part of data.
-        {copy}
-        **kwargs
-            Parameters to :meth:`from_data`
+        order : {{"C", "F", "A"}}, optional
+            Parameter to :func:`numpy.reshape`. Note that this parameter has
+            nothing to do with the output data order. Rather, it is how the
+            data is read for the reshape.
 
         Returns
         -------
         output : CentralMoments
-            output object with reshaped data
+            Output object with reshaped data.  This will be a view if possilble;
+            otherwise, it will be  copy.
 
         See Also
         --------
@@ -714,23 +768,24 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         """
         self._raise_if_scalar()
         new_shape = shape + self.mom_shape
-        data = self._data.reshape(new_shape)
+        data = self._data.reshape(new_shape, order=order)
+        return self.new_like(data=data)
 
-        return type(self).from_data(
-            data=data,
-            mom_ndim=self.mom_ndim,
-            copy=copy,
-            order=order,
-        )
+        # return type(self).from_data(
+        #     data=data,
+        #     mom_ndim=self.mom_ndim,
+        #     copy=copy,
+        #     order=order,
+        # )
 
     @docfiller.decorate
     def moveaxis(
         self,
         source: int | tuple[int, ...],
         destination: int | tuple[int, ...],
-        *,
-        copy: bool = True,
-        order: ArrayOrder | None = None,
+        # *,
+        # copy: bool = True,
+        # order: ArrayOrder | None = None,
     ) -> Self:
         """
         Move axis from source to destination.
@@ -747,11 +802,13 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         Returns
         -------
         result : CentralMoments
-            CentralMoments object with with moved axes. This array is a view of the input array.
+            CentralMoments object with with moved axes. This array is a view of
+            the input array.
 
         Notes
         -----
         Both ``source`` and ``destination`` are relative to ``self.val_shape``.
+        So the moment dimensions will always remain as the last dimensions.
 
 
         Examples
@@ -783,14 +840,16 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         destination = _internal_check_val(destination)
         data = np.moveaxis(self.data, source, destination)
 
+        return self.new_like(data=data, verify=False)
+
         # use from data for extra checks
         # return self.new_like(data=data, copy=copy, *args, **kwargs)
-        return type(self).from_data(
-            data,
-            mom_ndim=self.mom_ndim,
-            copy=copy,
-            order=order,
-        )
+        # return type(self).from_data(
+        #     data,
+        #     mom_ndim=self.mom_ndim,
+        #     copy=copy,
+        #     order=order,
+        # )
 
     # ** Constructors ----------------------------------------------------------
     @classmethod

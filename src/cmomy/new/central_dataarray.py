@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 
@@ -43,6 +43,7 @@ if TYPE_CHECKING:
     from ._typing_compat import Self
     from .central_numpy import CentralMoments
     from .typing import (
+        DataCasting,
         Mom_NDim,
         MomDims,
         Moments,
@@ -55,8 +56,9 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import ArrayOrder, ArrayOrderCF
+from .typing import ArrayOrder, ArrayOrderCF, DTypeLikeArg
 from .typing import T_FloatDType as T_Float
+from .typing import T_FloatDType2 as T_Float2
 
 # * xCentralMoments -----------------------------------------------------------
 
@@ -224,6 +226,42 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
 
         return type(self).from_data(
             data=xdata, mom_ndim=self._mom_ndim, copy=copy, order=order, dtype=dtype
+        )
+
+    @overload
+    def astype(
+        self,
+        dtype: DTypeLikeArg[T_Float2],
+        *,
+        order: ArrayOrder = None,
+        casting: DataCasting = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> xCentralMoments[T_Float2]: ...
+
+    @overload
+    def astype(
+        self,
+        dtype: None,
+        *,
+        order: ArrayOrder = None,
+        casting: DataCasting = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> xCentralMoments[np.float64]: ...
+
+    @docfiller_abc()
+    def astype(
+        self,
+        dtype: DTypeLikeArg[T_Float2] | None,
+        *,
+        order: ArrayOrder = None,
+        casting: DataCasting = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> xCentralMoments[T_Float2] | xCentralMoments[np.float64]:
+        return super().astype(
+            dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
 
     # ** Access to underlying statistics ------------------------------------------
@@ -719,6 +757,10 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
 
         return CentralMoments(data=data, mom_ndim=self.mom_ndim)
 
+    def to_c(self, data: NDArray[T_Float] | None = None) -> CentralMoments[T_Float]:
+        """Alias to :meth:`to_centralmoments`"""
+        return self.to_centralmoments(data=data)
+
     @cached.prop
     def centralmoments_view(self) -> CentralMoments[T_Float]:
         """
@@ -767,7 +809,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         --------
         CentralMoments.to_xcentralmoments
         """
-        data = obj.to_dataarray(
+        return obj.to_xcentralmoments(
             dims=dims,
             attrs=attrs,
             coords=coords,
@@ -777,7 +819,18 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             template=template,
             copy=copy,
         )
-        return cls(data=data, mom_ndim=obj.mom_ndim)
+
+        # data = obj.to_dataarray(
+        #     dims=dims,
+        #     attrs=attrs,
+        #     coords=coords,
+        #     name=name,
+        #     indexes=indexes,
+        #     mom_dims=mom_dims,
+        #     template=template,
+        #     copy=copy,
+        # )
+        # return cls(data=data, mom_ndim=obj.mom_ndim)
 
     @classmethod
     def _wrap_centralmoments_method(
