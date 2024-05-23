@@ -6,7 +6,7 @@ import pytest
 
 from cmomy.new._lib.utils import factory_binomial
 from cmomy.new.central_numpy import CentralMoments
-from cmomy.new.reduce import reduce_vals
+from cmomy.new.reduction import reduce_vals
 
 
 def algo(vals, mom, norm=True):

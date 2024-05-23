@@ -1197,7 +1197,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
                 parallel=parallel,
             )
 
-        from .reduce import reduce_data_grouped
+        from .reduction import reduce_data_grouped
 
         out = reduce_data_grouped(
             self._xdata,
@@ -1440,7 +1440,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         Note that here, `dims` does not include the dimension reduced over.
         The dimensions are applied after the fact.
         """
-        from .reduce import reduce_data
+        from .reduction import reduce_data
 
         return cls(
             data=reduce_data(
@@ -1485,7 +1485,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         --------
         CentralMoments.from_vals
         """
-        from .reduce import reduce_vals
+        from .reduction import reduce_vals
 
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
 

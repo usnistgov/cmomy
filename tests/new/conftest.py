@@ -9,7 +9,7 @@ import xarray as xr
 from module_utilities import cached
 
 import cmomy.new.random
-import cmomy.new.reduce
+import cmomy.new.reduction
 import cmomy.new.resample
 from cmomy.new.central_dataarray import xCentralMoments
 
@@ -166,7 +166,7 @@ class Data:
 
     @cached.prop
     def data_test(self) -> NDArrayAny:
-        return cmomy.new.reduce.reduce_vals(
+        return cmomy.new.reduction.reduce_vals(
             *self.xy_tuple,
             mom=self.mom,
             weight=self.w,
@@ -293,7 +293,7 @@ class Data:
     @cached.prop
     def data_test_resamp(self) -> NDArrayAny:
         return np.moveaxis(
-            cmomy.new.reduce.reduce_vals(
+            cmomy.new.reduction.reduce_vals(
                 *self.xy_tuple_resamp,
                 mom=self.mom,
                 weight=self.w_resamp,
@@ -342,7 +342,7 @@ class Data:
     @cached.prop
     def data_test_xr(self):
         assert isinstance(self.xy_tuple_xr[0], xr.DataArray)
-        return cmomy.new.reduce.reduce_vals(
+        return cmomy.new.reduction.reduce_vals(
             *self.xy_tuple_xr,
             mom=self.mom,
             dim="rec",

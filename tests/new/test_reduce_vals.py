@@ -7,7 +7,7 @@ import pytest
 import xarray as xr
 
 # from cmomy.new import central_from_values
-from cmomy.new.reduce import reduce_vals
+from cmomy.new.reduction import reduce_vals
 
 from .._simple_cmom import get_cmom, get_comom
 

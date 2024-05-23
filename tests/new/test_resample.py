@@ -4,7 +4,7 @@ import pytest
 
 from cmomy.new import resample
 from cmomy.new.central_numpy import CentralMoments
-from cmomy.new.reduce import (
+from cmomy.new.reduction import (
     resample_data_indexed,
 )
 

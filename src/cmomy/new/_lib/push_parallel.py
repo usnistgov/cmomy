@@ -48,40 +48,40 @@ def reduce_vals(
         _push.push_val(x[i], w[i], out)
 
 
-@_decorator(
-    "(sample),(sample),(mom)",
-    [
-        (nb.float32[:], nb.float32[:], nb.float32[:]),
-        (nb.float64[:], nb.float64[:], nb.float64[:]),
-    ],
-)
-def reduce_vals_multipass(
-    x: NDArray[T_Float], w: NDArray[T_Float], out: NDArray[T_Float]
-) -> None:
-    # first calculate average
-    xave = 0.0
-    wsum = 0.0
-    for i in range(x.shape[0]):
-        ww = w[i]
-        xave += x[i] * ww
-        wsum += ww
+# @_decorator(
+#     "(sample),(sample),(mom)",
+#     [
+#         (nb.float32[:], nb.float32[:], nb.float32[:]),
+#         (nb.float64[:], nb.float64[:], nb.float64[:]),
+#     ],
+# )
+# def reduce_vals_multipass(
+#     x: NDArray[T_Float], w: NDArray[T_Float], out: NDArray[T_Float]
+# ) -> None:
+#     # first calculate average
+#     xave = 0.0
+#     wsum = 0.0
+#     for i in range(x.shape[0]):
+#         ww = w[i]
+#         xave += x[i] * ww
+#         wsum += ww
 
-    xave /= wsum
-    out[...] = 0.0
-    out[0] = wsum
-    out[1] = xave
+#     xave /= wsum
+#     out[...] = 0.0
+#     out[0] = wsum
+#     out[1] = xave
 
-    # sum other moments
-    nmom = out.shape[-1]
-    if nmom > 2:
-        for i in range(x.shape[0]):
-            xx = x[i]
-            ww = w[i]
-            for m in range(2, nmom):
-                out[m] += ww * (xx - xave) ** m
+#     # sum other moments
+#     nmom = out.shape[-1]
+#     if nmom > 2:
+#         for i in range(x.shape[0]):
+#             xx = x[i]
+#             ww = w[i]
+#             for m in range(2, nmom):
+#                 out[m] += ww * (xx - xave) ** m
 
-        for m in range(2, nmom):
-            out[m] /= wsum
+#         for m in range(2, nmom):
+#             out[m] /= wsum
 
 
 @_decorator(

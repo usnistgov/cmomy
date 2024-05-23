@@ -575,7 +575,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
                 parallel=parallel,
             )
 
-        from .reduce import reduce_data_grouped
+        from .reduction import reduce_data_grouped
 
         data = reduce_data_grouped(
             self._data,
@@ -938,7 +938,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         array([20.    ,  0.5124,  0.1033])
 
         """
-        from .reduce import reduce_data
+        from .reduction import reduce_data
 
         axis = -1 if axis is None else axis
 
@@ -976,7 +976,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         axis = -1 if axis is None else axis
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
 
-        from .reduce import reduce_vals
+        from .reduction import reduce_vals
 
         data = reduce_vals(
             x,

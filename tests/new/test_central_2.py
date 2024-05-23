@@ -47,7 +47,7 @@ class DataContainer:
         cov: bool | None = None,
         **kws,
     ):
-        from cmomy.new.reduce import reduce_vals
+        from cmomy.new.reduction import reduce_vals
 
         if cov is None:
             cov = isinstance(mom, tuple) and len(mom) == 2
