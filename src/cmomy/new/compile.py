@@ -111,9 +111,9 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
             self,
             option_strings: str,
             dest: str,
-            **kwargs: object,
+            **kwargs: str | None,
         ) -> None:
-            super().__init__(option_strings, dest, nargs=0, **kwargs)
+            super().__init__(option_strings, dest, nargs=0, **kwargs)  # type: ignore[arg-type]
 
         def __call__(
             self,
@@ -122,7 +122,13 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
             values: object,  # noqa: ARG002
             option_string: str | None = None,
         ) -> None:
-            setattr(namespace, self.dest, not option_string.startswith("--no"))
+            setattr(
+                namespace,
+                self.dest,
+                not option_string.startswith("--no")
+                if option_string is not None
+                else False,
+            )
 
     parser = ArgumentParser(description="Load numba modules.")
     msg = "Load or ignore {name} routines.  Default is to include if not `--no-all`. "

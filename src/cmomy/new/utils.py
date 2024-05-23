@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, cast
 import numpy as np
 import xarray as xr
 
-from ._lib.utils import supports_parallel
+from ._lib.utils import supports_parallel as supports_parallel  # noqa: PLC0414
 from .docstrings import docfiller
 
 if TYPE_CHECKING:

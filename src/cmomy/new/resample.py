@@ -37,6 +37,7 @@ if TYPE_CHECKING:
 
     from .typing import (
         ArrayOrder,
+        KeepAttrs,
         Mom_NDim,
         MomDims,
         Moments,
@@ -351,7 +352,7 @@ def resample_data(
     parallel: bool | None = True,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
-    keep_attrs: bool = True,
+    keep_attrs: KeepAttrs = None,
 ) -> NDArray[T_Float] | xr.DataArray:
     """
     Resample data according to frequency table.
@@ -387,8 +388,8 @@ def resample_data(
             order=order,
             dtype=dtype,
         )
-        core_dims = data.dims[-(mom_ndim + 1) :]
-        return xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        core_dims: tuple[Hashable, ...] = data.dims[-(mom_ndim + 1) :]
+        return xr.apply_ufunc(  # type: ignore[no-any-return] # pyright: ignore[reportUnknownMemberType]
             _resample_data,
             data,
             freq,
@@ -416,6 +417,7 @@ def _resample_vals(
     freq: NDArrayInt,
     *x1: NDArray[T_Float],
     mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
     parallel: bool | None = None,
     out: NDArray[T_Float] | None = None,
 ) -> NDArray[T_Float]:
@@ -438,9 +440,9 @@ def _resample_vals(
 
     from ._lib.factory import factory_resample_vals
 
-    factory_resample_vals(  # type: ignore[call-arg, type-var]
-        mom_ndim=len(mom),
-        parallel=parallel_heuristic(parallel, x0.size * len(mom)),
+    factory_resample_vals(  # type: ignore[call-arg]
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
     )(x0, *x1, w, freq, out)  # type: ignore[arg-type] # pyright: ignore[reportCallIssue]
 
     return out
@@ -457,7 +459,7 @@ def resample_vals(
     dim: Hashable | None = None,
     mom_dims: MomDims | None = None,
     rep_dim: str | None = "rep",
-    keep_attrs: bool = True,
+    keep_attrs: KeepAttrs = None,
     order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArray[T_Float] | None = None,
@@ -493,33 +495,50 @@ def resample_vals(
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
+        input_core_dims, (dx0, dw, *dx1) = xprepare_values_for_reduction(
             x, weight, *y, axis=axis, dim=dim, order=order, narrays=mom_ndim + 1
         )
 
-        mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
-
+        mom_dims_strict: tuple[Hashable, ...] = validate_mom_dims(
+            mom_dims=mom_dims, mom_ndim=mom_ndim
+        )
         # add in freq dims:
         input_core_dims.insert(2, [rep_dim, input_core_dims[0][0]])
 
         return xr.apply_ufunc(  # type: ignore[no-any-return]
             _resample_vals,
-            x0,
-            w,
+            dx0,
+            dw,
             freq,
-            *x1,
+            *dx1,
             input_core_dims=input_core_dims,
             output_core_dims=[[rep_dim, *mom_dims_strict]],
-            kwargs={"mom": mom_validated, "parallel": parallel, "out": out},
+            kwargs={
+                "mom": mom_validated,
+                "mom_ndim": mom_ndim,
+                "parallel": parallel,
+                "out": out,
+            },
             keep_attrs=keep_attrs,
         )
 
-    x0, *x1, w = prepare_values_for_reduction(
-        x, *y, weight, axis=axis, order=order, narrays=mom_ndim + 1
+    (
+        x0,
+        w,
+        *x1,
+    ) = prepare_values_for_reduction(
+        x, weight, *y, axis=axis, order=order, narrays=mom_ndim + 1
     )
 
     return _resample_vals(
-        x0, w, freq, *x1, mom=mom_validated, parallel=parallel, out=out
+        x0,
+        w,
+        freq,
+        *x1,  # type: ignore[has-type]
+        mom=mom_validated,
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        out=out,
     )
 
 

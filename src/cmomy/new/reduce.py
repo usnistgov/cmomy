@@ -458,7 +458,7 @@ def reduce_data_grouped(
     data: T_Array,
     *,
     mom_ndim: Mom_NDim,
-    by: Sequence[int],
+    by: ArrayLike,
     axis: int | None = None,
     order: ArrayOrder = None,
     parallel: bool | None = None,
@@ -623,8 +623,6 @@ def factor_by_to_index(
     Examples
     --------
     >>> factor_by_to_index([0, 1, 0, 1])
-    ([0, 1], array([0, 2, 1, 3]), array([0, 2]), array([2, 4]))
-
     This also works for non-integers
 
     >>> factor_by_to_index(["a", "b", "a", "b"])

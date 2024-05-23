@@ -256,7 +256,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         from_data
         """
 
-    @abstractmethod
     @docfiller.decorate
     def astype(
         self,
@@ -309,7 +308,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         return type(self)(
-            data=self.to_values().astype(dtype=dtype, **kwargs),
+            data=self.to_values().astype(dtype=dtype, **kwargs),  # type: ignore[arg-type]
             mom_ndim=self.mom_ndim,
             # Already validated dtype, so can use fastpath
             fastpath=True,
@@ -546,179 +545,32 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             parallel=self._use_parallel if parallel is None else parallel,
         )
 
-    # def _verify_arrays(
-    #         *args: MultiArray[T_Array]
-    # ) -> tuple[T_Array, ...]: ...
-
-    # def _check_weights(
-    #     self,
-    #     *,
-    #     w: MultiArray[T_Array] | None,
-    #     target: NDArrayAny | T_Array,
-    #     axis: int | None = None,
-    #     dim: Hashable | None = None,
-    # ) -> NDArrayAny:
-    #     if w is None:
-    #         w = 1.0
-    #     return self._verify_value(
-    #         x=w,
-    #         target=target,
-    #         shape_flat=self.val_shape_flat,
-    #         axis=axis,
-    #         dim=dim,
-    #         broadcast=True,
-    #         expand=True,
-    #     )[0]
-
-    # def _check_val(
-    #     self,
-    #     *,
-    #     x: MultiArray[T_Array],
-    #     target: str | NDArrayAny | T_Array,
-    #     broadcast: bool = False,
-    # ) -> tuple[NDArrayAny, NDArrayAny | T_Array]:
-    #     return self._verify_value(
-    #         x=x,
-    #         target=target,
-    #         shape_flat=self.val_shape_flat,
-    #         broadcast=broadcast,
-    #         expand=False,
-    #     )
-
-    # def _check_vals(
-    #     self,
-    #     *,
-    #     x: MultiArrayVals[T_Array],
-    #     target: str | NDArrayAny | T_Array,
-    #     axis: int | None,
-    #     broadcast: bool = False,
-    #     dim: Hashable | None = None,
-    # ) -> tuple[NDArrayAny, NDArrayAny | T_Array]:
-    #     return self._verify_value(
-    #         x=x,
-    #         target=target,
-    #         shape_flat=self.val_shape_flat,
-    #         axis=axis,
-    #         dim=dim,
-    #         broadcast=broadcast,
-    #         expand=broadcast,
-    #     )
-
-    # def _check_var(
-    #     self, *, v: MultiArray[T_Array], broadcast: bool = False
-    # ) -> NDArrayAny:
-    #     return self._verify_value(
-    #         x=v,
-    #         target="var",
-    #         shape_flat=self.shape_flat_var,
-    #         broadcast=broadcast,
-    #         expand=False,
-    #     )[0]
-
-    # def _check_vars(
-    #     self,
-    #     *,
-    #     v: MultiArrayVals[T_Array],
-    #     target: NDArrayAny | T_Array,
-    #     axis: int | None,
-    #     broadcast: bool = False,
-    #     dim: Hashable | None = None,
-    # ) -> NDArrayAny:
-    #     # assert isinstance(target, np.ndarray)
-    #     if not isinstance(target, np.ndarray):  # pragma: no cover
-    #         msg = f"{type(target)=} must be numpy.ndarray."
-    #         raise TypeError(msg)
-    #     return self._verify_value(
-    #         x=v,
-    #         target="vars",
-    #         shape_flat=self.shape_flat_var,
-    #         axis=axis,
-    #         dim=dim,
-    #         broadcast=broadcast,
-    #         expand=broadcast,
-    #         other=target,
-    #     )[0]
-
-    # def _check_data(self, *, data: MultiArrayVals[T_Array]) -> NDArrayAny:
-    #     return self._verify_value(
-    #         x=data,
-    #         target="data",
-    #         shape_flat=self.shape_flat,
-    #     )[0]
-
-    # def _check_datas(
-    #     self,
-    #     *,
-    #     datas: MultiArrayVals[T_Array],
-    #     axis: int | None = None,
-    #     dim: Hashable | None = None,
-    # ) -> NDArrayAny:
-    #     if axis is not None:
-    #         axis = normalize_axis_index(axis, self.val_ndim + 1)
-
-    #     return self._verify_value(
-    #         x=datas,
-    #         target="datas",
-    #         shape_flat=self.shape_flat,
-    #         axis=axis,
-    #         dim=dim,
-    #     )[0]
-
-    # @staticmethod
-    # def _class_array_to_numpy(*args: T_Array) -> tuple[NDArrayAny, ...]:
-    #     """Convert T_Array to numpy array"""
-    #     return cast("tuple[NDArrayAny, ...]", args)
-
     @staticmethod
     def _set_default_axis(axis: int | None, default: int = -1) -> int:
         return default if axis is None else axis
 
-    # use interface here so can override in xCentral
-    # @staticmethod
-    # def _prepare_values_for_reduction(
-    #     target: T_Array,
-    #     *args: ArrayLike,
-    #     mom_ndim: int,
-    #     axis: int = -1,
-    #     order: ArrayOrder = None,
-    # ) -> tuple[NDArrayAny, ...]:
-    #     return prepare_values_for_reduction(
-    #         target,
-    #         *args,
-    #         mom_ndim=mom_ndim,
-    #         axis=axis, order=order
-    #     )
-
-    # @staticmethod
-    # def _prepare_data_for_reduction(
-    #     target: T_Array,
-    #     axis: int,
-    #     mom_ndim: Mom_NDim,
-    # )
-
     # Low level pushers
     def _push_data_numpy(
         self,
-        data: NDArray[T_Float],
+        data: NDArrayAny,
         *,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
-        if order:
-            data = np.asarray(data, order=order)
+        data = np.asarray(data, order=order, dtype=self.dtype)
         self._pusher(parallel).data(data, self._data)
         return self
 
     def _push_datas_numpy(
         self,
-        datas: NDArray[T_Float],
+        datas: NDArrayAny,
         *,
         axis: int | None = None,
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
         datas = prepare_data_for_reduction(
-            data=datas,
+            data=datas.astype(self.dtype),
             axis=self._set_default_axis(axis),
             mom_ndim=self.mom_ndim,
             order=order,
@@ -969,7 +821,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         *,
         freq: NDArrayInt,
         axis: int | None = None,
-        parallel: bool = True,
+        parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
         """
@@ -1009,7 +861,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         by: ArrayLike | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
-        **kwargs: Any,
     ) -> Self:
         """
         Create new object reduce along axis.
@@ -1020,8 +871,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         {by}
         {order}
         {parallel}
-        **kwargs
-            Extra arguments.
 
         Returns
         -------
@@ -1057,6 +906,9 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         This is useful for calling any not implemented methods on :class:`numpy.ndarray` or
         :class:`xarray.DataArray` data.
 
+        Note that a ``ValueError`` will be raised if last dimension(s) do not have the
+        same shape as ``self.mom_shape``.
+
         Parameters
         ----------
         func_or_method : str or callable
@@ -1064,7 +916,8 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             *args, **kwargs)``. If string is passed, then ``values =
             getattr(self.to_values(), func_or_method)(*args, **kwargs)``.
         _reorder : bool, default=True
-            If True, reorder the data such that ``mom_dims`` are last.
+            If True, reorder the data such that ``mom_dims`` are last.  Only
+            applicable for ``DataArray`` functions.
         _copy : bool, default=False
             If True, copy the resulting data.  Otherwise, try to use a view.
             This is passed as ``copy=_copy`` to :meth:`from_data`.
@@ -1184,18 +1037,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
     # ** Constructors -------------------------------------------------------------
     # *** Utils
-    # @staticmethod
-    # def _datas_axis_to_first(
-    #     datas: NDArrayAny,
-    #     axis: int,
-    #     mom_ndim: Mom_NDim,
-    # ) -> tuple[NDArrayAny, int]:
-    #     """Move axis to first first position."""
-    #     axis = normalize_axis_index(axis, datas.ndim - mom_ndim)
-    #     if axis != 0:
-    #         datas = np.moveaxis(datas, axis, 0)
-    #     return datas, axis
-
     def _wrap_axis(
         self, axis: int | None, default: int = -1, ndim: int | None = None
     ) -> int:

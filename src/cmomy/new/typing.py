@@ -43,11 +43,11 @@ ArrayOrderCFA = Literal["C", "F", "A", None]
 ArrayOrderCF = Literal["C", "F", None]
 DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
 
-T_FloatDType = TypeVar("T_FloatDType", np.float32, np.float64, default=np.float64)
-T_FloatDType_co = TypeVar(
+T_FloatDType = TypeVar("T_FloatDType", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default
+T_FloatDType_co = TypeVar(  # type: ignore[misc]  # something off with default
     "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
 )
-T_FloatDType2 = TypeVar("T_FloatDType2", np.float32, np.float64, default=np.float64)
+T_FloatDType2 = TypeVar("T_FloatDType2", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default]
 
 # Dtype magic
 # need these to pass in dtype
@@ -98,14 +98,14 @@ MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
 # Generic array
-T_Array = TypeVar(
+T_Array = TypeVar(  # type: ignore[misc]  # something off with default
     "T_Array",
     NDArray[np.float32],
     NDArray[np.float64],
     xr.DataArray,
     default=NDArray[np.float64],
 )
-T_Array2 = TypeVar(
+T_Array2 = TypeVar(  # type: ignore[misc]  # something off with default
     "T_Array2",
     NDArray[np.float32],
     NDArray[np.float64],

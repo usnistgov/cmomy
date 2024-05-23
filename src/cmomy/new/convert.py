@@ -79,9 +79,9 @@ def convert(
 
     if isinstance(values_in, xr.DataArray):
         return values_in.copy(
-            data=convert(values_in.to_numpy(), mom_ndim=mom_ndim, to=to, out=out)
+            data=convert(values_in.to_numpy(), mom_ndim=mom_ndim, to=to, out=out)  # type: ignore[arg-type]
         )
 
     if out is not None:
-        return _input_to_output(values_in, out)
+        return _input_to_output(values_in, out)  # type: ignore[arg-type]
     return _input_to_output(values_in)

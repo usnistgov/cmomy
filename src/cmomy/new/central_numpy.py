@@ -131,7 +131,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             dtype=dtype,
         )
 
-    @overload
+    @overload  # type: ignore[override]
     def astype(
         self,
         dtype: DTypeLikeArg[T_Float2],
@@ -153,7 +153,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         copy: bool = False,
     ) -> CentralMoments[np.float64]: ...
 
-    @docfiller_abc()
+    @docfiller_abc()  # type: ignore[arg-type]
     def astype(
         self,
         dtype: DTypeLikeArg[T_Float2] | None,
@@ -163,7 +163,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         subok: bool | None = None,
         copy: bool = False,
     ) -> CentralMoments[T_Float2] | CentralMoments[np.float64]:
-        return super().astype(
+        return super().astype(  # type: ignore[return-value]
             dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
 
@@ -436,7 +436,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: NDArray[T_Float] | float,
+        x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
         order: ArrayOrder = None,
@@ -486,7 +486,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     @docfiller_inherit_abc()
     def push_vals(
         self,
-        x: NDArray[T_Float],
+        x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
         axis: int | None = None,
@@ -538,7 +538,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         *,
         freq: NDArrayInt,
         axis: int | None = None,
-        parallel: bool = True,
+        parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
         self._raise_if_scalar()
@@ -546,10 +546,10 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         axis = self._set_default_axis(axis)
 
-        data = resample_data(
-            self.data,
+        data: NDArray[T_Float] = resample_data(  # type: ignore[assignment]
+            self._data,
             freq=freq,
-            mom_ndim=self.mom_ndim,
+            mom_ndim=self._mom_ndim,
             axis=axis,
             order=order,
             parallel=parallel,
@@ -560,8 +560,8 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     def reduce(
         self,
         *,
-        by: ArrayLike | None = None,
         axis: int | None = None,
+        by: ArrayLike | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -1046,7 +1046,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             parallel=parallel,
         )
 
-        return cls(data=data, mom_ndim=mom_ndim)
+        return cls(data=data, mom_ndim=mom_ndim)  # type: ignore[arg-type]
 
     @classmethod
     @docfiller_inherit_abc()
@@ -1097,7 +1097,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         >>> dy_cen.cmom()  # this matches above
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
         """
-        return super().from_raw(raw=raw, mom_ndim=mom_ndim)
+        return super().from_raw(raw=raw, mom_ndim=mom_ndim)  # type: ignore[arg-type]
         # from .convert import convert
         # data = convert(raw, mom_ndim=mom_ndim, to="central")
         # return cls(data, mom_ndim)
@@ -1165,8 +1165,8 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         a, v, w = prepare_values_for_push_val(a, v, w)
 
         v = np.atleast_1d(v)
-        if v.ndim == a.ndim:
-            v = v[..., None]
+        if v.ndim == a.ndim:  # type: ignore[union-attr]
+            v = v[..., None]  # type: ignore[index, call-overload]
 
         self._pusher(parallel).stat(a, v, w, self._data)  # type: ignore[misc]
         return self
