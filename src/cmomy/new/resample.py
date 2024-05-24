@@ -19,6 +19,7 @@ from cmomy.new.utils import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
     raise_if_wrong_shape,
+    select_dtype,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
@@ -379,6 +380,8 @@ def resample_data(
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
 
+    dtype = select_dtype(data, out=out, dtype=dtype)
+
     if isinstance(data, xr.DataArray):
         dim, data = xprepare_data_for_reduction(
             data,
@@ -405,7 +408,9 @@ def resample_data(
         )
 
     # numpy array
-    data = prepare_data_for_reduction(data, axis=axis, mom_ndim=mom_ndim, order=order)
+    data = prepare_data_for_reduction(
+        data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
+    )
     return _resample_data(
         data=data, freq=freq, mom_ndim=mom_ndim, parallel=parallel, out=out
     )
@@ -460,6 +465,7 @@ def resample_vals(
     mom_dims: MomDims | None = None,
     rep_dim: str | None = "rep",
     keep_attrs: KeepAttrs = None,
+    dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArray[T_Float] | None = None,
@@ -494,9 +500,18 @@ def resample_vals(
     mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
 
+    dtype = select_dtype(x, out=out, dtype=dtype)
+
     if isinstance(x, xr.DataArray):
         input_core_dims, (dx0, dw, *dx1) = xprepare_values_for_reduction(
-            x, weight, *y, axis=axis, dim=dim, order=order, narrays=mom_ndim + 1
+            x,
+            weight,
+            *y,
+            axis=axis,
+            dim=dim,
+            dtype=dtype,
+            order=order,
+            narrays=mom_ndim + 1,
         )
 
         mom_dims_strict: tuple[Hashable, ...] = validate_mom_dims(
@@ -527,7 +542,7 @@ def resample_vals(
         w,
         *x1,
     ) = prepare_values_for_reduction(
-        x, weight, *y, axis=axis, order=order, narrays=mom_ndim + 1
+        x, weight, *y, axis=axis, dtype=dtype, order=order, narrays=mom_ndim + 1
     )
 
     return _resample_vals(

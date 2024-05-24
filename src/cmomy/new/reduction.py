@@ -5,11 +5,10 @@ Routines to perform central moments reduction (:mod:`~cmomy.reduce)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
-from numpy.typing import ArrayLike, NDArray
 
 from ._lib.factory import (
     factory_reduce_data,
@@ -24,6 +23,7 @@ from .utils import (
     prepare_values_for_reduction,
     raise_if_wrong_shape,
     replace_coords_from_isel,
+    select_dtype,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
@@ -36,7 +36,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.new.typing import CoordsPolicy, KeepAttrs
+    from cmomy.new.typing import CoordsPolicy, DTypeLikeArg, KeepAttrs
     from cmomy.typing import MomentsStrict
 
     from .typing import (
@@ -49,6 +49,7 @@ if TYPE_CHECKING:
         T_Array,
     )
     from .typing import T_FloatDType as T_Float
+    # from .typing import T_FloatDType2 as T_Float2
 
 
 # * Base reducers -------------------------------------------------------------
@@ -200,50 +201,98 @@ def _reduce_data_indexed(
 
 # * Array api -----------------------------------------------------------------
 # ** reduce vals
-# @overload
-# def reduce_vals(
-#     x: xr.DataArray,
-#     *y: ArrayLike | xr.DataArray,
-#     mom: Moments,
-#     weight: ArrayLike | xr.DataArray | None = ...,
-#     axis: int | None = ...,
-#     dim: Hashable | None = ...,
-#     mom_dims: MomDims | None = ...,
-#     order: ArrayOrder = ...,
-#     parallel: bool | None = ...,
-#     out: NDArray[T_Float] | None = ...,
-# ) -> xr.DataArray: ...
-
-
-# @overload
-# def reduce_vals(
-#     x: NDArray[T_Float],
-#     *y: ArrayLike | xr.DataArray,
-#     mom: Moments,
-#     weight: ArrayLike | xr.DataArray | None = ...,
-#     axis: int | None = ...,
-#     dim: Hashable | None = ...,
-#     mom_dims: MomDims | None = ...,
-#     order: ArrayOrder = ...,
-#     parallel: bool | None = ...,
-#     out: NDArray[T_Float] | None = ...,
-# ) -> NDArray[T_Float]: ...
+# NOTE: would like to go with T_Array, etc, but doesn't work with out and dtype...
+@overload
+def reduce_vals(
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike | None = ...,
+) -> xr.DataArray: ...
+@overload
+def reduce_vals(
+    x: NDArray[T_Float],
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    out: None = ...,
+    dtype: None = ...,
+) -> NDArray[T_Float]: ...
+@overload
+def reduce_vals(
+    x: NDArrayAny,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    out: NDArray[T_Float],
+    dtype: DTypeLike | None = ...,
+) -> NDArray[T_Float]: ...
+@overload
+def reduce_vals(
+    x: NDArrayAny,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[T_Float],
+) -> NDArray[T_Float]: ...
+@overload
+def reduce_vals(
+    x: NDArrayAny,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    mom_dims: MomDims | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    out: None,
+    dtype: None,
+) -> NDArray[np.float64]: ...
 
 
 @docfiller.decorate
 def reduce_vals(
-    x: T_Array,
+    x: xr.DataArray | NDArray[T_Float] | NDArrayAny,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: int | None = None,
     dim: Hashable | None = None,
-    mom_dims: MomDims | None = None,
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    out: NDArray[T_Float] | None = None,
+    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-) -> T_Array:
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike | None = None,
+) -> xr.DataArray | NDArray[T_Float] | NDArray[np.float64]:
     """
     Reduce values to central (co)moments.
 
@@ -274,9 +323,18 @@ def reduce_vals(
     mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
 
+    dtype = select_dtype(x, out=out, dtype=dtype)
+
     if isinstance(x, xr.DataArray):
         input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
-            x, weight, *y, axis=axis, dim=dim, order=order, narrays=mom_ndim + 1
+            x,
+            weight,
+            *y,
+            axis=axis,
+            dim=dim,
+            order=order,
+            narrays=mom_ndim + 1,
+            dtype=dtype,
         )
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
@@ -284,7 +342,7 @@ def reduce_vals(
             _reduce_vals,
             x0,
             w,
-            *x1,  # type: ignore[has-type]
+            *x1,
             input_core_dims=input_core_dims,
             output_core_dims=[mom_dims_strict],
             kwargs={"mom": mom_validated, "parallel": parallel, "out": out},
@@ -292,14 +350,17 @@ def reduce_vals(
         )
 
     _x0, _w, *_x1 = prepare_values_for_reduction(
-        x, weight, *y, axis=axis, order=order, narrays=mom_ndim + 1
+        x,
+        weight,
+        *y,
+        axis=axis,
+        order=order,
+        narrays=mom_ndim + 1,
+        dtype=dtype,
     )
-    return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)  # type: ignore[arg-type]
 
+    return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)  # type: ignore[has-type, arg-type]
 
-# reveal_type(reduce_vals(np.zeros(3, dtype=np.float32), mom=2))
-# reveal_type(reduce_vals(np.zeros(3, dtype=np.float64), mom=2))
-# reveal_type(reduce_vals(xr.DataArray(np.zeros(3, dtype=np.float64)), mom=2))
 
 # ** reduce data
 # @overload
@@ -330,8 +391,6 @@ def reduce_vals(
 # ) -> xr.DataArray: ...
 
 
-# NOTE: might be easier to use T_Array, but
-# then have to change other functions...
 @docfiller.decorate
 def reduce_data(
     data: T_Array,
@@ -366,6 +425,9 @@ def reduce_data(
         Same type as input ``data``.
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
+
+    dtype = select_dtype(data, out=out, dtype=dtype)
+
     if isinstance(data, xr.DataArray):
         dim, data = xprepare_data_for_reduction(
             data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype
@@ -380,7 +442,9 @@ def reduce_data(
         )
 
     return _reduce_data(  # pyright: ignore[reportReturnType]
-        prepare_data_for_reduction(data, axis=axis, mom_ndim=mom_ndim, order=order),  # pyright: ignore[reportArgumentType]
+        prepare_data_for_reduction(
+            data, axis=axis, mom_ndim=mom_ndim, order=order, dtype=dtype
+        ),  # type: ignore[arg-type] # pyright: ignore[reportArgumentType]
         mom_ndim=mom_ndim,
         parallel=parallel,
         out=out,
@@ -463,9 +527,9 @@ def reduce_data_grouped(
     order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArrayAny | None = None,  # TODO(wpk): check that I can have T_Float on this.
+    dtype: DTypeLike | None = None,
     # xarray specific
     dim: Hashable | None = None,
-    dtype: DTypeLike | None = None,
     group_dim: Hashable | None = None,
     groups: Sequence[Any] | None = None,
     keep_attrs: KeepAttrs = None,
@@ -551,6 +615,8 @@ def reduce_data_grouped(
     by_validated = np.asarray(by, dtype=np.int64)
     mom_ndim = validate_mom_ndim(mom_ndim)
 
+    dtype = select_dtype(data, out=out, dtype=dtype)
+
     if isinstance(data, xr.DataArray):
         dim, xdata = xprepare_data_for_reduction(
             data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype
@@ -580,6 +646,7 @@ def reduce_data_grouped(
             axis=axis,
             mom_ndim=mom_ndim,
             order=order,
+            dtype=dtype,  # type: ignore[arg-type]
         ),
         mom_ndim=mom_ndim,
         by=by_validated,
@@ -671,9 +738,9 @@ def reduce_data_indexed(  # noqa: PLR0913
     order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArrayAny | None = None,
+    dtype: DTypeLike | None = None,
     # xarray specific...
     dim: Hashable | None = None,
-    dtype: DTypeLike | None = None,
     coords_policy: CoordsPolicy | Literal["group"] = "first",
     group_dim: Hashable | None = None,
     groups: Sequence[Any] | None = None,
@@ -753,6 +820,8 @@ def reduce_data_indexed(  # noqa: PLR0913
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
 
+    dtype = select_dtype(data, out=out, dtype=dtype)
+
     if isinstance(data, xr.DataArray):
         dim, xdata = xprepare_data_for_reduction(
             data=data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype
@@ -806,6 +875,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         axis=axis,
         mom_ndim=mom_ndim,
         order=order,
+        dtype=dtype,  # type: ignore[arg-type]
     )
 
     _index, _start, _end = _validate_index(

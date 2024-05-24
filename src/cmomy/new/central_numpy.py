@@ -1162,7 +1162,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         w = 1.0 if weight is None else weight
         a = np.asarray(a, dtype=self.dtype)
-        a, v, w = prepare_values_for_push_val(a, v, w)
+        a, v, w = prepare_values_for_push_val(a, v, w, dtype=self.dtype)
 
         v = np.atleast_1d(v)
         if v.ndim == a.ndim:  # type: ignore[union-attr]

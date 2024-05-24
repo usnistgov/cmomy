@@ -1,12 +1,16 @@
 # import xarray as xr
-from typing import TYPE_CHECKING, assert_type  # , reveal_type
+from typing import TYPE_CHECKING, Any, assert_type  # , reveal_type
 
 import numpy as np
 
 from cmomy.new.central_numpy import CentralMoments
 
 if TYPE_CHECKING:
+    import xarray as xr
+    from numpy.typing import NDArray
+
     from cmomy.new.central_dataarray import xCentralMoments
+    from cmomy.new.reduction import reduce_vals
 
 
 def test_astype() -> None:
@@ -78,3 +82,43 @@ def test_astype() -> None:
         assert_type(cc64.astype(None), CentralMoments[np.float64])
         assert_type(cc32.astype(cc32.dtype), CentralMoments[np.float32])
         assert_type(cc64.astype(cc64.dtype), CentralMoments[np.float64])
+
+
+def test_reduce_vals() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+
+    if TYPE_CHECKING:
+        assert_type(reduce_vals(x32, mom=3), NDArray[np.float32])
+        assert_type(reduce_vals(x64, mom=3), NDArray[np.float64])
+
+        assert_type(reduce_vals(x32, mom=3, dtype=np.float64), NDArray[np.float64])
+        assert_type(reduce_vals(x64, mom=3, dtype=np.float32), NDArray[np.float32])
+
+        assert_type(reduce_vals(x32, mom=3, out=out64), NDArray[np.float64])
+        assert_type(reduce_vals(x64, mom=3, out=out32), NDArray[np.float32])
+
+        assert_type(
+            reduce_vals(x32, mom=3, out=out64, dtype=np.float32), NDArray[np.float64]
+        )
+        assert_type(
+            reduce_vals(x64, mom=3, out=out32, dtype=np.float64), NDArray[np.float32]
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(reduce_vals(xc, mom=3), NDArray[Any])
+        assert_type(reduce_vals(xc, mom=3, dtype=np.float32), NDArray[np.float32])
+        # assert_type(reduce_vals([1,2,3], mom=3, dtype=np.float32), NDArray[np.float32])
+        # assert_type(reduce_vals([1,2,3], mom=3, dtype=np.float64), NDArray[np.float64])
+
+        # reveal_type(reduce_vals([1,2,3], mom=3))
+        # reveal_type(reduce_vals([1,2,3], mom=3, dtype=np.float32))
+
+        xx = xr.DataArray(x32)
+        assert_type(reduce_vals(xx, mom=3), xr.DataArray)

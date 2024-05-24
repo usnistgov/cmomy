@@ -573,6 +573,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             data=datas.astype(self.dtype),
             axis=self._set_default_axis(axis),
             mom_ndim=self.mom_ndim,
+            dtype=self.dtype,
             order=order,
         )
 
@@ -602,7 +603,9 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         weight = 1.0 if weight is None else weight
 
         x = np.asarray(x, dtype=self.dtype, order=order)
-        x0, *x1, weight = prepare_values_for_push_val(x, *y, weight, order=order)
+        x0, *x1, weight = prepare_values_for_push_val(
+            x, *y, weight, dtype=self.dtype, order=order
+        )
 
         self._pusher(parallel).val(
             x0,
@@ -630,6 +633,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             *y,
             weight,
             axis=self._set_default_axis(axis),
+            dtype=self.dtype,
             order=order,
             narrays=self._mom_ndim + 1,
         )

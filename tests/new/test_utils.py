@@ -214,7 +214,13 @@ def test_prepare_values_for_reduction(
     w = wv if wshape == () else np.full(wshape, fill_value=wv, dtype=int)
     with pytest.raises(ValueError, match=r"Number of arrays .*"):
         utils.prepare_values_for_reduction(
-            target, y, w, narrays=2, axis=axis, order=order
+            target,
+            y,
+            w,
+            narrays=2,
+            axis=axis,
+            order=order,
+            dtype=dtype,
         )
 
     # with pytest.raises(ValueError, match=r"Must specify axis.*"):
@@ -223,12 +229,18 @@ def test_prepare_values_for_reduction(
     if xshape2 == "error":
         with pytest.raises(ValueError):
             utils.prepare_values_for_reduction(
-                target, y, w, narrays=3, axis=axis, order=order
+                target, y, w, narrays=3, axis=axis, dtype=dtype, order=order
             )
 
     else:
         x, y, w = utils.prepare_values_for_reduction(
-            target, y, w, narrays=3, axis=axis, order=order
+            target,
+            y,
+            w,
+            narrays=3,
+            axis=axis,
+            order=order,
+            dtype=dtype,
         )
 
         for xx, vv, ss in zip([x, y, w], [xv, yv, wv], [xshape2, yshape2, wshape2]):
@@ -265,12 +277,20 @@ def test_prepare_data_for_reduction(
     if shape2 == "error":
         with pytest.raises(ValueError):
             out = utils.prepare_data_for_reduction(
-                data, axis=axis, mom_ndim=mom_ndim, order=order
+                data,
+                axis=axis,
+                mom_ndim=mom_ndim,
+                order=order,
+                dtype=dtype,
             )
 
     else:
         out = utils.prepare_data_for_reduction(
-            data, axis=axis, mom_ndim=mom_ndim, order=order
+            data,
+            axis=axis,
+            mom_ndim=mom_ndim,
+            order=order,
+            dtype=dtype,
         )
 
         assert out.shape == shape2
@@ -286,7 +306,7 @@ def test_prepare_values_for_push_val(dtype, order) -> None:
     x = np.ones((2, 3, 4), dtype=dtype, order="F")
     w = 1.0
 
-    for arg in utils.prepare_values_for_push_val(x, w, order=order):
+    for arg in utils.prepare_values_for_push_val(x, w, order=order, dtype=dtype):
         if order == "C":
             assert arg.flags["C_CONTIGUOUS"]
         assert arg.dtype == np.dtype(dtype or np.float64)
@@ -296,23 +316,36 @@ def test_prepare_values_for_push_val(dtype, order) -> None:
 # @dtype_mark
 # @order_mark
 def test_xprepare_values_for_reduction_0():
+    dtype = None
     target = xr.DataArray(np.ones((2, 3, 4)))
     other = np.full((3, 4), fill_value=2)
 
     # wrong number of arrays
     with pytest.raises(ValueError):
         utils.xprepare_values_for_reduction(
-            target, other, narrays=3, axis=None, dim="rec"
+            target,
+            other,
+            narrays=3,
+            axis=None,
+            dim="rec",
+            dtype=dtype,
         )
 
     # no axis or dim
     with pytest.raises(ValueError):
         utils.xprepare_values_for_reduction(
-            target, other, narrays=2, axis=None, dim=None
+            target,
+            other,
+            narrays=2,
+            axis=None,
+            dim=None,
+            dtype=dtype,
         )
 
     with pytest.raises(TypeError):
-        utils.xprepare_values_for_reduction(other, other, narrays=2, axis=0, dim=None)
+        utils.xprepare_values_for_reduction(
+            other, other, narrays=2, axis=0, dim=None, dtype=dtype
+        )
 
 
 @pytest.mark.parametrize(
@@ -333,7 +366,13 @@ def test_xprepare_values_for_reduction_1(
     other = np.ones(yshape, dtype=np.float32)
 
     core_dims, (x, y) = utils.xprepare_values_for_reduction(
-        target, other, narrays=2, axis=None, dim=dim, order=order
+        target,
+        other,
+        narrays=2,
+        axis=None,
+        dim=dim,
+        order=order,
+        dtype=dtype,
     )
 
     assert core_dims == [[dim]] * 2
@@ -351,7 +390,13 @@ def test_xprepare_values_for_reduction_1(
         # also do xr test
         other = xr.DataArray(other)
         core_dims, (x, y) = utils.xprepare_values_for_reduction(
-            target, other, narrays=2, axis=None, dim=dim, order=order
+            target,
+            other,
+            narrays=2,
+            axis=None,
+            dim=dim,
+            order=order,
+            dtype=dtype,
         )
 
         assert core_dims == [[dim]] * 2

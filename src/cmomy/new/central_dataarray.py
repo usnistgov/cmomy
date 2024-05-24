@@ -914,7 +914,14 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         weight = 1.0 if weight is None else weight
 
         input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
-            x, weight, *y, axis=axis, dim=dim, order=order, narrays=self.mom_ndim + 1
+            x,
+            weight,
+            *y,
+            axis=axis,
+            dim=dim,
+            dtype=self.dtype,
+            order=order,
+            narrays=self.mom_ndim + 1,
         )
 
         def func(

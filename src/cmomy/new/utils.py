@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     # from .typing import T_FloatDType_co as T_Float_co
     from .typing import (
         ArrayOrder,
+        DTypeLikeArg,
         Mom_NDim,
         MomDims,
         MomDimsStrict,
@@ -251,7 +252,9 @@ def select_mom_ndim(*, mom: Moments | None, mom_ndim: Mom_NDim | None) -> Mom_ND
 
 # * New helpers ---------------------------------------------------------------
 @docfiller.decorate
-def validate_floating_dtype(dtype: DTypeLike) -> DTypeLike:
+def validate_floating_dtype(
+    dtype: DTypeLike,
+) -> None | np.dtype[np.float32] | np.dtype[np.float64]:
     """
     Validate that dtype is conformable float32 or float64.
 
@@ -274,7 +277,7 @@ def validate_floating_dtype(dtype: DTypeLike) -> DTypeLike:
 
     dtype = np.dtype(dtype)
     if dtype.type in {np.float32, np.float64}:
-        return dtype
+        return dtype  # type: ignore[return-value]
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
@@ -356,10 +359,11 @@ def _xprepare_secondary_value_for_reduction(
 
 
 def prepare_values_for_reduction(
-    target: NDArray[T_Scalar],
+    target: ArrayLike,
     *args: ArrayLike,
     narrays: int,
     axis: int | None,
+    dtype: DTypeLikeArg[T_Scalar],
     order: ArrayOrder = None,
 ) -> tuple[NDArray[T_Scalar], ...]:
     """
@@ -378,12 +382,12 @@ def prepare_values_for_reduction(
         msg = "Must specify axis"
         raise ValueError(msg)
 
+    target = np.asarray(target, dtype=dtype)
     axis = normalize_axis_index(axis, target.ndim)
     move_axis = (target.ndim > 1) and (axis != target.ndim - 1)
 
     if move_axis:
         target = np.moveaxis(target, axis, -1)
-
     if order:
         target = np.asarray(target, order=order)
 
@@ -407,6 +411,7 @@ def xprepare_values_for_reduction(
     narrays: int,
     dim: Hashable | None,
     axis: int | None,
+    dtype: DTypeLike,
     order: ArrayOrder = None,
 ) -> tuple[list[list[Hashable]], tuple[xr.DataArray | NDArrayAny, ...]]:
     """
@@ -441,8 +446,8 @@ def xprepare_values_for_reduction(
     # go ahead and do the move in case we want to order...
     if move_axis:
         target = target.transpose(..., dim)
-    if order:
-        target = target.astype(dtype=target.dtype, order=order, copy=False)
+    target = target.astype(dtype=dtype, order=order, copy=False)  # pyright: ignore[reportUnknownMemberType]
+
     nsamp = target.shape[-1]
 
     # nsamp = target.shape[axis]
@@ -474,15 +479,18 @@ def xprepare_values_for_reduction(
 
 
 def prepare_data_for_reduction(
-    data: NDArray[T_Scalar],
+    data: ArrayLike,
     axis: int | None,
     mom_ndim: Mom_NDim,
+    dtype: DTypeLikeArg[T_Scalar],
     order: ArrayOrder = None,
 ) -> NDArray[T_Scalar]:
     """Convert central moments array to correct form for reduction."""
     if axis is None:
         msg = "Must specify axis"
         raise ValueError(msg)
+
+    data = np.asarray(data, dtype=dtype)
 
     ndim = data.ndim - mom_ndim
     axis = normalize_axis_index(axis, ndim)
@@ -493,6 +501,7 @@ def prepare_data_for_reduction(
 
     if order:
         data = np.asarray(data, order=order)
+
     return data
 
 
@@ -514,19 +523,19 @@ def xprepare_data_for_reduction(
     if (ndim > 1) and axis != last_dim:
         data = data.transpose(..., dim, *data.dims[-mom_ndim:])
     if order or dtype:
-        data = data.astype(dtype or data.dtype, order=order, copy=False)
+        data = data.astype(dtype or data.dtype, order=order, copy=False)  # pyright: ignore[reportUnknownMemberType]
 
     return dim, data
 
 
 def prepare_values_for_push_val(
-    target: NDArray[T_Scalar],
+    target: ArrayLike,
     *args: ArrayLike,
+    dtype: DTypeLikeArg[T_Scalar],
     order: ArrayOrder | None = None,
 ) -> tuple[NDArray[T_Scalar], ...]:
     """Get values ready for push"""
-    if order:
-        target = np.asarray(target, order=order)
+    target = np.asarray(target, order=order, dtype=dtype)
     others: Iterable[NDArray[T_Scalar]] = (
         np.asarray(x, dtype=target.dtype, order=order) for x in args
     )
@@ -543,6 +552,28 @@ def raise_if_wrong_shape(
         raise ValueError(msg)
 
 
+def select_dtype(
+    x: xr.DataArray | ArrayLike,
+    out: NDArrayAny | None,
+    dtype: DTypeLike | None,
+) -> np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
+    """Select a dtype from, in order, out, dtype, or passed array."""
+    if out is not None:
+        dtype = out.dtype
+    elif dtype is not None:
+        dtype = np.dtype(dtype)
+    elif hasattr(x, "dtype"):
+        dtype = x.dtype  # pyright: ignore[reportUnknownMemberType]
+    else:
+        dtype = np.dtype(np.float64)
+
+    if dtype.type in {np.float32, np.float64}:
+        return dtype
+
+    msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
+    raise ValueError(msg)
+
+
 # * Xarray utilities ----------------------------------------------------------
 def validate_mom_dims(
     mom_dims: Hashable | Sequence[Hashable] | None, mom_ndim: Mom_NDim
@@ -557,12 +588,12 @@ def validate_mom_dims(
     if isinstance(mom_dims, str):
         out = (mom_dims,)
     elif isinstance(mom_dims, (tuple, list)):
-        out = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        out = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
     else:
         msg = f"Unknown {type(mom_dims)=}.  Expected str or Sequence[str]"
         raise TypeError(msg)
 
-    if len(out) != mom_ndim:
+    if len(out) != mom_ndim:  # pyright: ignore[reportUnknownArgumentType]
         msg = f"mom_ndim={out} inconsistent with {mom_ndim=}"
         raise ValueError(msg)
     return cast("MomDimsStrict", out)

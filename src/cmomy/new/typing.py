@@ -35,36 +35,45 @@ if TYPE_CHECKING:
     # from .central_abc import CentralMomentsABC
 
 
-# Arrays
+# * Numpy Arrays
+# ** Aliases
 DTypeAny: TypeAlias = Any
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
-ArrayOrder = Literal["C", "F", "A", "K", None]
-ArrayOrderCFA = Literal["C", "F", "A", None]
-ArrayOrderCF = Literal["C", "F", None]
-DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
+FloatDTypes = Union[np.float32, np.float64]
+LongIntDType: TypeAlias = np.int64
 
+NDArrayFloats = NDArray[FloatDTypes]
+NDArrayInt = NDArray[LongIntDType]
+
+
+# ** Types
 T_FloatDType = TypeVar("T_FloatDType", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default
-T_FloatDType_co = TypeVar(  # type: ignore[misc]  # something off with default
-    "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
-)
 T_FloatDType2 = TypeVar("T_FloatDType2", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default]
+# T_FloatDType_co = TypeVar(  # type: ignore[misc]  # something off with default
+#     "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
+# )
 
-# Dtype magic
-# need these to pass in dtype
-T_NPScalar = TypeVar("T_NPScalar", bound=np.generic)
-DType_co = TypeVar("DType_co", covariant=True, bound=np.dtype[Any])
+T_DType_co = TypeVar("T_DType_co", covariant=True, bound=np.dtype[Any])
+T_Scalar = TypeVar("T_Scalar", bound=np.generic)
+# T_FloatArray = TypeVar("T_FloatArray", NDArray[np.float32], NDArray[np.float64])
+# T_NDArray = TypeVar("T_NDArray", bound=NDArray[Any])
+# Note: At least for now, only use np.int64...
+# T_IntDType = TypeVar("T_IntDType", np.int32, np.int64)  # array of ints
+T_IntDType: TypeAlias = np.int64
+NDGeneric: TypeAlias = Union[T_FloatDType, NDArray[T_FloatDType]]
 
 
+# ** Dtype
 @runtime_checkable
-class _SupportsDType(Protocol[DType_co]):
+class _SupportsDType(Protocol[T_DType_co]):
     @property
-    def dtype(self) -> DType_co: ...
+    def dtype(self) -> T_DType_co: ...
 
 
 DTypeLikeArg = Union[
-    np.dtype[T_NPScalar],
-    type[T_NPScalar],
-    _SupportsDType[np.dtype[T_NPScalar]],
+    np.dtype[T_Scalar],
+    type[T_Scalar],
+    _SupportsDType[np.dtype[T_Scalar]],
 ]
 
 DTypeFloatArg = Union[
@@ -74,30 +83,41 @@ DTypeFloatArg = Union[
 ]
 
 
-# T_FloatArray = TypeVar("T_FloatArray", NDArray[np.float32], NDArray[np.float64])
-# T_NDArray = TypeVar("T_NDArray", bound=NDArray[Any])
-T_Scalar = TypeVar("T_Scalar", bound=np.generic)
-# Note: At least for now, only use np.int64...
-# T_IntDType = TypeVar("T_IntDType", np.int32, np.int64)  # array of ints
-T_IntDType: TypeAlias = np.int64
-FloatDTypes = Union[np.float32, np.float64]
-LongIntDType: TypeAlias = np.int64
+# ** ArrayLike
+from ._typing_nested_sequence import (
+    _NestedSequence,  # pyright: ignore[reportPrivateUsage]
+)
 
-NDArrayFloats = NDArray[FloatDTypes]
-NDArrayInt = NDArray[LongIntDType]
-NDGeneric: TypeAlias = Union[T_FloatDType, NDArray[T_FloatDType]]
 
-# Numba types
+@runtime_checkable
+class _SupportsArray(Protocol[T_DType_co]):
+    def __array__(self) -> np.ndarray[Any, T_DType_co]: ...  # noqa: PLW3201
+
+
+ArrayLikeArg = Union[
+    _SupportsArray[np.dtype[T_Scalar]],
+    _NestedSequence[_SupportsArray[np.dtype[T_Scalar]]],
+]
+
+
+# ** Literals
+ArrayOrder = Literal["C", "F", "A", "K", None]
+ArrayOrderCFA = Literal["C", "F", "A", None]
+ArrayOrderCF = Literal["C", "F", None]
+DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
+
+
+# * Numba types
 # NumbaType = Union[nb.typing.Integer, nb.typing.Array]
 # The above isn't working for pyright.  Just using any for now...
 NumbaType = Any
 
-# Moments
+# * Moments
 Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
-# Generic array
+# * Generic array
 T_Array = TypeVar(  # type: ignore[misc]  # something off with default
     "T_Array",
     NDArray[np.float32],
@@ -105,20 +125,19 @@ T_Array = TypeVar(  # type: ignore[misc]  # something off with default
     xr.DataArray,
     default=NDArray[np.float64],
 )
-T_Array2 = TypeVar(  # type: ignore[misc]  # something off with default
-    "T_Array2",
-    NDArray[np.float32],
-    NDArray[np.float64],
-    xr.DataArray,
-    default=NDArray[np.float64],
-)
-# T_CentralMoments = TypeVar("T_CentralMoments", bound="CentralMomentsABC[DTypeAny]")
+# T_Array2 = TypeVar(  # type: ignore[misc]  # something off with default
+#     "T_Array2",
+#     NDArray[np.float32],
+#     NDArray[np.float64],
+#     xr.DataArray,
+#     default=NDArray[np.float64],
+# )
 
-# Dummy function
+# * Dummy function
 FuncType = Callable[..., Any]
 F = TypeVar("F", bound=FuncType)
 
-# xarray specific stuff
+# * Xarray specific stuff
 MomDims = Union[Hashable, Tuple[Hashable], Tuple[Hashable, Hashable]]
 MomDimsStrict = Union[Tuple[Hashable], Tuple[Hashable, Hashable]]
 
