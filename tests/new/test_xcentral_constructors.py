@@ -138,20 +138,22 @@ def test_from_raws(dc, dcx) -> None:
     for axis in range(dc.val_ndim):
         # first test from raws
         raws = dc.to_raw()
-        t = CentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
+        t = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis)
         r = dc.reduce(axis=axis)
 
         np.testing.assert_allclose(t.to_numpy(), r.to_numpy())
 
         # test xCentral
-        o1 = CentralMoments.from_raws(
-            raws, axis=axis, mom_ndim=mom_ndim
-        ).to_xcentralmoments()
+        o1 = (
+            CentralMoments.from_raw(raws, mom_ndim=mom_ndim)
+            .reduce(axis=axis)
+            .to_xcentralmoments()
+        )
 
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = xCentralMoments.from_raws(dcx.to_raw(), dim=dim, mom_ndim=mom_ndim)
+        o2 = xCentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim).reduce(dim=dim)
 
         np.testing.assert_allclose(t, o2)
 

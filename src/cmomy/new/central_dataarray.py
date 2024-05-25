@@ -1566,29 +1566,3 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             ),
             mom_ndim=mom_ndim,
         )
-
-    @classmethod
-    @docfiller_inherit_abc()
-    def from_raws(
-        cls,
-        raws: xr.DataArray,
-        *,
-        mom_ndim: Mom_NDim,
-        axis: int | None = None,
-        dim: Hashable | None = None,
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-        keep_attrs: bool = False,
-    ) -> Self:
-        """
-        See Also
-        --------
-        CentralMoments.from_raw
-        """
-        return cls.from_raw(raws, mom_ndim=mom_ndim).reduce(
-            axis=axis,
-            dim=dim,
-            order=order,
-            parallel=parallel,
-            keep_attrs=keep_attrs,
-        )

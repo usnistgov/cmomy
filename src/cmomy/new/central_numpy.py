@@ -1098,49 +1098,6 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
         """
         return super().from_raw(raw=raw, mom_ndim=mom_ndim)  # type: ignore[arg-type]
-        # from .convert import convert
-        # data = convert(raw, mom_ndim=mom_ndim, to="central")
-        # return cls(data, mom_ndim)
-
-    @classmethod
-    @docfiller_inherit_abc()
-    def from_raws(
-        cls,
-        raws: NDArrayAny,
-        *,
-        mom_ndim: Mom_NDim,
-        axis: int | None = None,
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-    ) -> Self:
-        """
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> x = rng.random((10, 2))
-        >>> raws = (x[..., None] ** np.arange(4)).mean(axis=0)
-        >>> raws
-        array([[1.    , 0.6207, 0.45  , 0.3412],
-               [1.    , 0.404 , 0.2817, 0.2226]])
-        >>> dx = CentralMoments.from_raws(raws, axis=0, mom_ndim=1)
-        >>> dx.mean()
-        0.5123518678291825
-        >>> dx.cmom()
-        array([ 1.    ,  0.    ,  0.1033, -0.0114])
-
-        This is equivalent to
-
-        >>> da = CentralMoments.from_vals(x.reshape(-1), axis=0, mom=3)
-        >>> da.mean()
-        0.5123518678291825
-        >>> da.cmom()
-        array([ 1.    ,  0.    ,  0.1033, -0.0114])
-
-        """
-        return cls.from_raw(raws, mom_ndim=mom_ndim).reduce(
-            axis=axis, order=order, parallel=parallel
-        )
 
     # ** mom_ndim == 1 specific ----------------------------------------------------
     @staticmethod
