@@ -90,24 +90,29 @@ def test_from_data(dc, dcx) -> None:
     xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
-def test_from_datas(dc, dcx) -> None:
+def test_from_data_reduce(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
     for axis in range(dc.val_ndim):
-        t = CentralMoments.from_datas(dc.data, axis=axis, mom_ndim=mom_ndim)
+        t = CentralMoments.from_data(dc.data, mom_ndim=mom_ndim).reduce(axis=axis)
 
         dims = dcx.dims[:axis] + dcx.dims[axis + 1 :]
 
-        o1 = CentralMoments.from_datas(
-            dc.data,
-            axis=axis,
-            mom_ndim=mom_ndim,
-        ).to_xcentralmoments(dims=dims)
+        o1 = (
+            CentralMoments.from_data(
+                dc.data,
+                mom_ndim=mom_ndim,
+            )
+            .reduce(axis=axis)
+            .to_xcentralmoments(dims=dims)
+        )
 
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = xCentralMoments.from_datas(dcx.to_dataarray(), dim=dim, mom_ndim=mom_ndim)
+        o2 = xCentralMoments.from_data(dcx.to_dataarray(), mom_ndim=mom_ndim).reduce(
+            dim=dim
+        )
 
         xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 

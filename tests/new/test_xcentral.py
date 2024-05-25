@@ -258,7 +258,7 @@ def test_from_data() -> None:
     #     xCentralMoments.from_data(data, mom_ndim=3)
 
 
-def test_from_datas(other) -> None:
+def test_from_data_reduce(other) -> None:
     # set the rng for reproduciblility right now:
     import cmomy.new.random
 
@@ -267,21 +267,11 @@ def test_from_datas(other) -> None:
     datas = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
     datas = scramble_xr(datas)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
-    t = other.cls_xr.from_datas(
+    t = other.cls_xr.from_data(
         datas,
         mom_ndim=other.mom_ndim,
-        dim="rec",
-    )
+    ).reduce(dim="rec")
     xtest(other.data_test_xr, t.to_dataarray())
-
-    # not using this anymore
-    # with pytest.raises(ValueError):
-    #     t = other.cls_xr.from_datas(
-    #         datas,
-    #         mom=other.mom,
-    #         dim="rec",
-    #         val_shape=(2, 3, 4, 5, 6, 7),
-    #     )
 
 
 def test_push_datas(other) -> None:

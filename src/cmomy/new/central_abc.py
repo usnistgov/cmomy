@@ -888,8 +888,8 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
         See Also
         --------
-        from_datas
-        .indexed.reduce_by_group_idx
+        .reduction.reduce_data
+        .reduction.reduce_data_grouped
         """
 
     # ** Manipulation -------------------------------------------------------------
@@ -1112,42 +1112,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         -------
         out : {klass}
             Same type as calling class.
-        """
-
-    @classmethod
-    @abstractmethod
-    @docfiller.decorate
-    def from_datas(
-        cls,
-        datas: T_Array,
-        *,
-        mom_ndim: Mom_NDim,
-        axis: int | None = None,
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-        # **kwargs: Any,
-    ) -> Self:
-        """
-        Create object from multiple data arrays.
-
-        Parameters
-        ----------
-        datas : ndarray
-            Array of multiple Moment arrays.
-            datas[..., i, ...] is the ith data array, where i is
-            in position `axis`.
-        {mom_ndim}
-        {axis_data_and_dim}
-        {order}
-        {parallel}
-
-        Returns
-        -------
-        output : {klass}
-
-        See Also
-        --------
-        from_data
         """
 
     @classmethod

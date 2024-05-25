@@ -388,9 +388,9 @@ def test_combine(other, order) -> None:
     other.test_values(t.to_values())
 
 
-def test_from_datas(other) -> None:
+def test_from_data_reduce(other) -> None:
     datas = np.array([s.to_numpy() for s in other.S])
-    t = other.cls.from_datas(datas, mom_ndim=other.mom_ndim, axis=0)
+    t = other.cls.from_data(datas, mom_ndim=other.mom_ndim).reduce(axis=0)
     other.test_values(t.to_values())
 
 
@@ -565,8 +565,8 @@ def test_reduce(other) -> None:
         for axis in range(ndim):
             t = other.s.reduce(axis=axis)
 
-            f = other.cls.from_datas(
-                other.data_test, axis=axis, mom_ndim=other.mom_ndim
+            f = other.cls.from_data(other.data_test, mom_ndim=other.mom_ndim).reduce(
+                axis=axis
             )
             np.testing.assert_allclose(t.data, f.data)
 

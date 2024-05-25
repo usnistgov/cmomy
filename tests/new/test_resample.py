@@ -265,9 +265,11 @@ def test_resample_data(other, parallel, rng) -> None:
             if axis != 0:
                 data = np.rollaxis(data, axis, 0)
             data = np.take(data, idx, axis=0)
-            data_ref = other.cls.from_datas(
-                data, mom_ndim=other.mom_ndim, axis=1
-            ).moveaxis(0, -1)
+            data_ref = (
+                other.cls.from_data(data, mom_ndim=other.mom_ndim)
+                .reduce(axis=1)
+                .moveaxis(0, -1)
+            )
 
             t = other.s.resample_and_reduce(
                 freq=freq,

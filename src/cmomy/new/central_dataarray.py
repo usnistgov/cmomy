@@ -1116,6 +1116,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
 
         return type(self)(data=data, mom_ndim=self.mom_ndim)  # type: ignore[arg-type]
 
+    @docfiller_inherit_abc()
     def reduce(
         self,
         *,
@@ -1125,7 +1126,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         parallel: bool | None = None,
         # xarray specific
         dim: Hashable | None = None,
-        dtype: DTypeLike | None = None,
         group_dim: Hashable | None = None,
         groups: Sequence[Any] | None = None,
         keep_attrs: KeepAttrs = None,
@@ -1133,8 +1133,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         """
         Parameters
         ----------
-        {dim}
-        {axis}
         by : ndarray or DataArray or str or iterable of str, optional
             If ``None``, reduce over entire ``dim``. Otherwise, reduce by
             group. If :class:`~numpy.ndarray`, use the unique values. If
@@ -1149,23 +1147,12 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             * 'last': select last value of coordinate for each block.
             * 'group': Assign unique groups from ``group_idx`` to ``dim``
             * None: drop any coordinates.
-        group_name : str, optional
-            If supplied, add the unique groups to this coordinate. Ignored if
-            ``coords_policy == "group"`.
-        rename_dim : hashable, optional
-            Optional name for the output dimension (rename ``dim`` to
-            ``rename_dim``).
-        reduce_kws : mapping, optional
-            Optional parameters to :func:`.indexed.reduce_by_index`.
-        **kwargs
-            Extra arguments to :meth:`from_datas` if ``group_idx`` is ``None``,
-            or to :meth:`from_data` otherwise
+        group_dim : str, optional
+            Name of the output group dimension.  Defaults to ``dim``.
+        groups: Sequence, optional
+            Array of values of length ``by.max() + 1`` to assign as coordinates for ``group_dim``.
+        {keep_attrs}
 
-        Returns
-        -------
-        output : {klass}
-            If ``group_idx`` is ``None``, reduce over all samples in ``dim`` or
-            ``axis``. Otherwise, reduce for each unique value of ``group_idx``.
 
         Notes
         -----
@@ -1177,8 +1164,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
 
         See Also
         --------
-        from_datas
-        .indexed.reduce_by_group_idx
+        .reduction.reduce_data
+        .reduction.reduce_data_grouped
 
         Examples
         --------
@@ -1195,32 +1182,35 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         """
         self._raise_if_scalar()
         if by is None:
-            return type(self).from_datas(
+            from .reduction import reduce_data
+
+            data = reduce_data(
                 self._xdata,
                 mom_ndim=self._mom_ndim,
                 axis=axis,
                 dim=dim,
                 order=order,
                 parallel=parallel,
+                keep_attrs=keep_attrs,
+                dtype=self.dtype,
             )
+        else:
+            from .reduction import reduce_data_grouped
 
-        from .reduction import reduce_data_grouped
-
-        out = reduce_data_grouped(
-            self._xdata,
-            mom_ndim=self._mom_ndim,
-            by=by,
-            axis=axis,
-            dim=dim,
-            order=order,
-            parallel=parallel,
-            dtype=dtype,
-            group_dim=group_dim,
-            groups=groups,
-            keep_attrs=keep_attrs,
-        )
-
-        return type(self)(data=out, mom_ndim=self.mom_ndim)
+            data = reduce_data_grouped(
+                self._xdata,
+                mom_ndim=self._mom_ndim,
+                by=by,
+                axis=axis,
+                dim=dim,
+                order=order,
+                parallel=parallel,
+                dtype=self.dtype,
+                group_dim=group_dim,
+                groups=groups,
+                keep_attrs=keep_attrs,
+            )
+        return type(self)(data=data, mom_ndim=self._mom_ndim, fastpath=True)
 
     @docfiller.decorate
     def block(
@@ -1409,56 +1399,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
     ) -> Self:
         return cls(
             data=data.astype(dtype or data.dtype, copy=copy, order=order),
-            mom_ndim=mom_ndim,
-        )
-
-    @classmethod
-    @docfiller_inherit_abc()
-    def from_datas(
-        cls,
-        datas: xr.DataArray,
-        *,
-        mom_ndim: Mom_NDim,
-        axis: int | None = None,
-        dim: Hashable | None = None,
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-        keep_attrs: bool = True,
-    ) -> Self:
-        """
-
-        Parameters
-        ----------
-        datas : DataArray
-            If pass in a DataArray, use it's attributes in new object.
-            If ndarray, use `dim`, `attrs`, etc, to wrap resulting data.
-        {dim}
-        {xr_params}
-
-
-        See Also
-        --------
-        CentralMoments.from_datas
-        CentralMoments.to_xcentralmoments
-
-        Notes
-        -----
-        If pass in :class:`xarray.DataArray`, then dims, etc, are ignored.
-        Note that here, `dims` does not include the dimension reduced over.
-        The dimensions are applied after the fact.
-        """
-        from .reduction import reduce_data
-
-        return cls(
-            data=reduce_data(
-                data=datas,
-                mom_ndim=mom_ndim,
-                axis=axis,
-                dim=dim,
-                order=order,
-                parallel=parallel,
-                keep_attrs=keep_attrs,
-            ),
             mom_ndim=mom_ndim,
         )
 

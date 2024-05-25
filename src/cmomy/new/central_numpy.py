@@ -567,26 +567,29 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     ) -> Self:
         self._raise_if_scalar()
         if by is None:
-            return type(self).from_datas(
+            from .reduction import reduce_data
+
+            data = reduce_data(
                 self._data,
                 mom_ndim=self._mom_ndim,
-                axis=axis,
+                axis=self._set_default_axis(axis),
                 order=order,
                 parallel=parallel,
+                dtype=self.dtype,
             )
+        else:
+            from .reduction import reduce_data_grouped
 
-        from .reduction import reduce_data_grouped
-
-        data = reduce_data_grouped(
-            self._data,
-            mom_ndim=self._mom_ndim,
-            by=by,
-            axis=self._set_default_axis(axis),
-            order=order,
-            parallel=parallel,
-        )
-
-        return type(self)(data=data, mom_ndim=self._mom_ndim)
+            data = reduce_data_grouped(
+                self._data,
+                mom_ndim=self._mom_ndim,
+                by=by,
+                axis=self._set_default_axis(axis),
+                order=order,
+                parallel=parallel,
+                dtype=self.dtype,
+            )
+        return type(self)(data=data, mom_ndim=self._mom_ndim, fastpath=True)
 
     @docfiller.decorate
     def resample(
@@ -660,8 +663,6 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         block_size : int
             number of consecutive records to combine
         {axis}
-        **kwargs
-            Extra key word arguments to :meth:`from_datas` method
 
         Returns
         -------
@@ -905,46 +906,6 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         """
         if order or dtype or copy:
             data = np.array(data, dtype=dtype, order=order, copy=copy)
-        return cls(data=data, mom_ndim=mom_ndim)
-
-    @classmethod
-    @docfiller_inherit_abc()
-    def from_datas(
-        cls,
-        datas: NDArray[T_Float],
-        *,
-        mom_ndim: Mom_NDim,
-        axis: int | None = None,
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-        # dtype: DTypeLike | None = None,
-        # **kwargs: Any,
-    ) -> Self:
-        """
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> x = rng.random((10, 2))
-        >>> datas = central_moments(x=x, mom=2, axis=0)
-        >>> datas
-        array([[10.    ,  0.6207,  0.0647],
-               [10.    ,  0.404 ,  0.1185]])
-
-        Reduce along a dimension
-        >>> da = CentralMoments.from_datas(datas, axis=0, mom=2)
-        >>> da
-        <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.    ,  0.5124,  0.1033])
-
-        """
-        from .reduction import reduce_data
-
-        axis = -1 if axis is None else axis
-
-        data = reduce_data(
-            data=datas, mom_ndim=mom_ndim, axis=axis, order=order, parallel=parallel
-        )
         return cls(data=data, mom_ndim=mom_ndim)
 
     @classmethod
