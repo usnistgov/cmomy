@@ -14,8 +14,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 if TYPE_CHECKING:
-    from ..typing import NDArrayInt
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import NDArrayInt, T_Float
 
 
 _PARALLEL = False

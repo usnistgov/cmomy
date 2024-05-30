@@ -8,7 +8,7 @@ from __future__ import annotations
 from itertools import starmap
 
 # if TYPE_CHECKING:
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import xarray as xr
@@ -37,7 +37,9 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
+        ArrayLikeArg,
         ArrayOrder,
+        DTypeLikeArg,
         KeepAttrs,
         Mom_NDim,
         MomDims,
@@ -45,14 +47,12 @@ if TYPE_CHECKING:
         MomentsStrict,
         NDArrayAny,
         NDArrayInt,
+        T_Float,
     )
-    from .typing import T_FloatDType as T_Float
     from .typing import T_IntDType as T_Int
 
 
-##############################################################################
-# resampling
-###############################################################################
+# * Resampling utilities ------------------------------------------------------
 @docfiller.decorate
 def freq_to_indices(
     freq: NDArray[T_Int], shuffle: bool = True, rng: np.random.Generator | None = None
@@ -87,7 +87,7 @@ def freq_to_indices(
         raise ValueError(msg)
 
     for f in freq:
-        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))
+        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))  # pyright: ignore[reportUnknownArgumentType]
         indices_all.append(indices)
 
     out = np.array(indices_all, dtype=freq.dtype)
@@ -283,7 +283,8 @@ def _check_freq(freq: NDArrayAny, ndat: int) -> None:
         raise ValueError(msg)
 
 
-# * Low level resamplers
+# * Resample data
+# ** Low level resamplers
 def _resample_data(
     data: NDArray[T_Float],
     freq: NDArrayInt,
@@ -305,44 +306,108 @@ def _resample_data(
     return _resample(data, freq)
 
 
-# @docfiller.decorate
-# def resample_data(
-#     data: NDArray[T_Float],
-#     *,
-#     freq: NDArrayInt,
-#     mom_ndim: Mom_NDim,
-#     axis: int = -1,
-#     order: ArrayOrder = None,
-#     parallel: bool | None = True,
-#     out: NDArrayAny | None = None,
-# ) -> NDArray[T_Float]:
-#     """
-#     Resample data according to frequency table.
+# ** overloads
+@overload
+def resample_data(  # type: ignore[overload-overlap]
+    data: xr.DataArray,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> xr.DataArray: ...
+# array no out or dtype
+@overload
+def resample_data(
+    data: ArrayLikeArg[T_Float],
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[T_Float]: ...
+# array fallback
+@overload
+def resample_data(
+    data: ArrayLike,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArrayAny: ...
+# out
+@overload
+def resample_data(
+    data: Any,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArray[T_Float],
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[T_Float]: ...
+# dtype
+@overload
+def resample_data(
+    data: Any,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLikeArg[T_Float],
+    out: None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[T_Float]: ...
+# fallback
+@overload
+def resample_data(
+    data: Any,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int | None = ...,
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike,
+    out: None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArrayAny: ...
 
-#     Parameters
-#     ----------
-#     data : array-like
-#         central mom array to be resampled
-#     {freq}
-#     {mom}
-#     {order}
-#     {parallel}
-#     {out}
 
-#     Returns
-#     -------
-#     out : ndarray
-#         Resampled central moments. ``out.shape = (..., shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``,
-#         where ``shape = data.shape`` and ``nrep = freq.shape[0]``.
-#     """
-#     mom_ndim = validate_mom_ndim(mom_ndim)
-#     data = prepare_data_for_reduction(data, axis=axis, mom_ndim=mom_ndim, order=order)
-#     return _resample_data(data=data, freq=freq, mom_ndim=mom_ndim, parallel=parallel, out=out)
-
-
+# ** Public api
 @docfiller.decorate
 def resample_data(
-    data: NDArray[T_Float] | xr.DataArray,
+    data: xr.DataArray | ArrayLike,
     freq: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
@@ -354,7 +419,7 @@ def resample_data(
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
     keep_attrs: KeepAttrs = None,
-) -> NDArray[T_Float] | xr.DataArray:
+) -> xr.DataArray | NDArrayAny:
     """
     Resample data according to frequency table.
 
@@ -369,6 +434,7 @@ def resample_data(
     {rep_dim}
     {parallel}
     {order}
+    {dtype}
     {out}
     {keep_attrs}
 
@@ -416,6 +482,8 @@ def resample_data(
     )
 
 
+# * Resample vals
+# ** low level
 def _resample_vals(
     x0: NDArray[T_Float],
     w: NDArray[T_Float],
@@ -453,23 +521,141 @@ def _resample_vals(
     return out
 
 
+# ** overloads
+@overload
+def resample_vals(  # type: ignore[overload-overlap]
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    axis: int | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> xr.DataArray: ...
+# array
+@overload
+def resample_vals(
+    x: ArrayLikeArg[T_Float],
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[T_Float]: ...
+# array fallback
+@overload
+def resample_vals(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArrayAny: ...
+# out
+@overload
+def resample_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArray[T_Float],
+    # xarray specific
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[T_Float]: ...
+# dtype
+@overload
+def resample_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLikeArg[T_Float],
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[T_Float]: ...
+# dtype fallback
+@overload
+def resample_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: int | None = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike,
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArrayAny: ...
+
+
+# ** public api
 @docfiller.decorate
 def resample_vals(
-    x: NDArray[T_Float] | xr.DataArray,
+    x: ArrayLike | xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: int | None = None,
-    dim: Hashable | None = None,
-    mom_dims: MomDims | None = None,
-    rep_dim: str | None = "rep",
-    keep_attrs: KeepAttrs = None,
-    dtype: DTypeLike | None = None,
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    out: NDArray[T_Float] | None = None,
-) -> NDArray[T_Float] | xr.DataArray:
+    dtype: DTypeLike = None,
+    out: NDArrayAny | None = None,
+    # xarray specific
+    dim: Hashable | None = None,
+    rep_dim: str = "rep",
+    mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
+) -> NDArrayAny | xr.DataArray:
     """
     Resample data according to frequency table.
 
@@ -483,13 +669,14 @@ def resample_vals(
     {mom}
     {weight}
     {axis}
-    {dim}
-    {mom_dims}
-    {rep_dim}
-    {keep_attrs}
     {order}
     {parallel}
+    {dtype}
     {out}
+    {dim}
+    {rep_dim}
+    {mom_dims}
+    {keep_attrs}
 
     Returns
     -------
@@ -549,7 +736,7 @@ def resample_vals(
         x0,
         w,
         freq,
-        *x1,  # type: ignore[has-type]
+        *x1,
         mom=mom_validated,
         mom_ndim=mom_ndim,
         parallel=parallel,

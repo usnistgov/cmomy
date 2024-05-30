@@ -30,8 +30,32 @@ dtypes_mark = pytest.mark.parametrize(
         (None, np.float32, None, np.float32),
         (None, None, np.float32, np.float32),
         (None, np.float64, np.float32, np.float32),
+        # errors
+        (np.float16, None, None, "error"),
+        (None, np.float16, None, "error"),
+        (None, np.float32, np.float16, "error"),
     ],
 )
+
+
+def _do_test(func, vals, dtype, out, result_dtype) -> None:
+    if result_dtype == "error":
+        with pytest.raises(ValueError, match=".*not supported.*"):
+            func(vals, dtype=dtype, out=out)
+
+    else:
+        r = func(vals, dtype=dtype, out=out)
+
+        assert isinstance(r, np.ndarray)
+        assert r.dtype.type == result_dtype
+
+        rx = func(
+            xr.DataArray(vals),
+            dtype=dtype,
+            out=out,
+        )
+        assert isinstance(rx, xr.DataArray)
+        assert rx.dtype.type == result_dtype
 
 
 @dtypes_mark
@@ -70,20 +94,58 @@ def test_reduce_dtype(
     out = np.zeros(out_shape, dtype=out_dtype) if out_dtype is not None else None
     vals = x_vals.tolist() if dtype_in is None else x_vals.astype(dtype_in)
 
-    r = func_reduce(
-        vals,
-        dtype=dtype,
-        out=out,
-    )
-    assert isinstance(r, np.ndarray)
-    assert r.dtype.type == result_dtype
+    _do_test(func_reduce, vals, dtype, out, result_dtype)
 
-    # xarray
 
-    rx = func_reduce(
-        xr.DataArray(vals),
-        dtype=dtype,
-        out=out,
-    )
-    assert isinstance(rx, xr.DataArray)
-    assert rx.dtype.type == result_dtype
+@dtypes_mark
+@pytest.mark.parametrize("style", ["grouped", "indexed"])
+def test_reduce_data_grouped_indexed_dtype(
+    x_vals: NDArray[np.float64],
+    dtype_in,
+    dtype,
+    out_dtype,
+    result_dtype,
+    style,
+    rng,
+) -> None:
+    ngroup = 3
+    by = rng.choice(ngroup, size=x_vals.shape[0])
+
+    out_shape = (*x_vals.shape[1:-1], ngroup, *x_vals.shape[-1:])
+    out = np.zeros(out_shape, dtype=out_dtype) if out_dtype is not None else None
+    vals = x_vals.tolist() if dtype_in is None else x_vals.astype(dtype_in)
+
+    if style == "grouped":
+        func = partial(reduction.reduce_data_grouped, mom_ndim=1, by=by, axis=0)
+    else:
+        _, index, start, end = reduction.factor_by_to_index(by, exclude_missing=False)
+        func = partial(
+            reduction.reduce_data_indexed,
+            mom_ndim=1,
+            index=index,
+            group_start=start,
+            group_end=end,
+            axis=0,
+        )
+
+    _do_test(func, vals, dtype, out, result_dtype)
+
+
+@pytest.mark.parametrize("to", ["central", "raw"])
+@dtypes_mark
+def test_convert(
+    x_vals,
+    dtype_in,
+    dtype,
+    out_dtype,
+    result_dtype,
+    to,
+) -> None:
+    from cmomy.new.convert import convert
+
+    func = partial(convert, mom_ndim=1, to=to)
+
+    out = np.zeros_like(x_vals, dtype=out_dtype) if out_dtype is not None else None
+    vals = x_vals.tolist() if dtype_in is None else x_vals.astype(dtype_in)
+
+    _do_test(func, vals, dtype, out, result_dtype)

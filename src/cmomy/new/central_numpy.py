@@ -18,11 +18,10 @@ from cmomy.utils import validate_mom_and_mom_ndim
 
 from .central_abc import CentralMomentsABC
 from .docstrings import docfiller_central as docfiller
-from .utils import (
-    prepare_values_for_push_val,
-)
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from numpy.typing import ArrayLike, DTypeLike
 
     from ._typing_compat import Self
@@ -41,16 +40,22 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import ArrayOrderCF, ArrayOrderCFA, DataCasting, DTypeLikeArg
-from .typing import T_FloatDType as T_Float
-from .typing import T_FloatDType2 as T_Float2
+from .typing import (
+    ArrayLikeArg,
+    ArrayOrderCF,
+    ArrayOrderCFA,
+    DataCasting,
+    DTypeLikeArg,
+    T_Float,
+    T_Float2,
+)
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 # * CentralMoments ------------------------------------------------------------
-@docfiller(CentralMomentsABC)
+@docfiller(CentralMomentsABC)  # noqa: PLR0904
 class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ignore[type-var] # noqa: D101
     def __init__(
         self,
@@ -76,6 +81,47 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         return self._data
 
     # * top level creation/copy/new -----------------------------------------------
+    @overload  # type: ignore[override]
+    def new_like(
+        self,
+        data: NDArray[T_Float2],
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: None = ...,
+    ) -> CentralMoments[T_Float2]: ...
+    @overload
+    def new_like(
+        self,
+        data: NDArrayAny,
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: DTypeLikeArg[T_Float2],
+    ) -> CentralMoments[T_Float2]: ...
+    @overload
+    def new_like(
+        self,
+        data: None = ...,
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: DTypeLikeArg[T_Float2],
+    ) -> CentralMoments[T_Float2]: ...
+    @overload
+    def new_like(
+        self,
+        data: None = ...,
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: None = ...,
+    ) -> Self: ...
+
     @docfiller_abc()
     def new_like(
         self,
@@ -84,8 +130,8 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         copy: bool = False,
         order: ArrayOrder = None,
         verify: bool = False,
-        dtype: DTypeLike | None = None,
-    ) -> Self:
+        dtype: DTypeLike = None,
+    ) -> CentralMoments[Any] | Self:
         """
         Examples
         --------
@@ -141,7 +187,6 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         subok: bool | None = None,
         copy: bool = False,
     ) -> CentralMoments[T_Float2]: ...
-
     @overload
     def astype(
         self,
@@ -371,7 +416,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     @docfiller_inherit_abc()
     def push_data(
         self,
-        data: NDArray[T_Float],
+        data: ArrayLike,
         *,
         order: ArrayOrder = None,
         parallel: bool | None = False,
@@ -406,7 +451,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     @docfiller_inherit_abc()
     def push_datas(
         self,
-        datas: NDArray[T_Float],
+        datas: ArrayLike,
         *,
         axis: int | None = None,
         order: ArrayOrder = None,
@@ -546,7 +591,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         axis = self._set_default_axis(axis)
 
-        data: NDArray[T_Float] = resample_data(  # type: ignore[assignment]
+        data: NDArray[T_Float] = resample_data(
             self._data,
             freq=freq,
             mom_ndim=self._mom_ndim,
@@ -599,7 +644,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         axis: int | None = None,
         last: bool = True,
         order: ArrayOrder = None,
-    ) -> Self:
+    ) -> CentralMoments[T_Float]:
         """
         Create a new object sampled from index.
 
@@ -711,11 +756,11 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     # ** Manipulation -------------------------------------------------------------
     @docfiller.decorate
     def reshape(
-        self,
+        self: CentralMoments[T_Float2],
         shape: tuple[int, ...],
         *,
         order: ArrayOrderCFA = None,
-    ) -> Self:
+    ) -> CentralMoments[T_Float2]:
         """
         Create a new object with reshaped data.
 
@@ -772,22 +817,15 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         data = self._data.reshape(new_shape, order=order)
         return self.new_like(data=data)
 
-        # return type(self).from_data(
-        #     data=data,
-        #     mom_ndim=self.mom_ndim,
-        #     copy=copy,
-        #     order=order,
-        # )
-
     @docfiller.decorate
     def moveaxis(
-        self,
+        self: CentralMoments[T_Float2],
         source: int | tuple[int, ...],
         destination: int | tuple[int, ...],
         # *,
         # copy: bool = True,
         # order: ArrayOrder | None = None,
-    ) -> Self:
+    ) -> CentralMoments[T_Float2]:
         """
         Move axis from source to destination.
 
@@ -843,16 +881,40 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         return self.new_like(data=data, verify=False)
 
-        # use from data for extra checks
-        # return self.new_like(data=data, copy=copy, *args, **kwargs)
-        # return type(self).from_data(
-        #     data,
-        #     mom_ndim=self.mom_ndim,
-        #     copy=copy,
-        #     order=order,
-        # )
-
     # ** Constructors ----------------------------------------------------------
+    @overload  # type: ignore[override]
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | int | None = ...,
+        dtype: None = ...,
+        order: ArrayOrderCF | None = ...,
+    ) -> CentralMoments[np.float64]: ...
+
+    @overload
+    @classmethod
+    def zeros(  # pyright: ignore[reportOverlappingOverload]
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | int | None = ...,
+        dtype: DTypeLikeArg[T_Float2],
+        order: ArrayOrderCF | None = ...,
+    ) -> CentralMoments[T_Float2]: ...
+
+    @overload
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | int | None = ...,
+        dtype: DTypeLike,
+        order: ArrayOrderCF | None = ...,
+    ) -> CentralMoments[Any]: ...
+
     @classmethod
     @docfiller_abc()
     def zeros(
@@ -860,9 +922,9 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         *,
         mom: Moments,
         val_shape: tuple[int, ...] | int | None = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         order: ArrayOrderCF | None = None,
-    ) -> Self:
+    ) -> CentralMoments[Any]:
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
 
         vshape: tuple[int, ...]
@@ -881,16 +943,77 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         return cls(data=data, mom_ndim=mom_ndim)
 
     @classmethod
+    def test(cls, data: Any) -> Self:
+        return cls(data, mom_ndim=1)
+
+    @overload
+    @classmethod
+    def from_data(
+        cls,
+        data: ArrayLikeArg[T_Float2],
+        *,
+        mom_ndim: Mom_NDim,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: None = ...,
+    ) -> CentralMoments[T_Float2]: ...
+    @overload
+    @classmethod
+    def from_data(
+        cls,
+        data: Any,
+        *,
+        mom_ndim: Mom_NDim,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLikeArg[T_Float2],
+    ) -> CentralMoments[T_Float2]: ...
+    # fallback
+    @overload
+    @classmethod
+    def from_data(
+        cls,
+        data: ArrayLike,
+        *,
+        mom_ndim: Mom_NDim,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLike = ...,
+    ) -> CentralMoments[Any]: ...
+
+    @classmethod
+    # @overload
+    # @classmethod
+    # def from_data(
+    #     cls: type[CentralMoments[T_Float2]],
+    #     data: Any,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = ...,
+    #     order: ArrayOrder = ...,
+    #     dtype: DTypeLike = ...,
+    # ) -> CentralMoments[T_Float2]: ...
+    # @overload
+    # @classmethod
+    # def from_data(
+    #     cls: type[CentralMoments[Any]],
+    #     data: Any,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = ...,
+    #     order: ArrayOrder = ...,
+    #     dtype: DTypeLike = ...,
+    # ) -> CentralMoments[Any]: ...
     @docfiller_abc()
     def from_data(
         cls,
-        data: NDArray[T_Float],
+        data: ArrayLike,
         *,
         mom_ndim: Mom_NDim,
         copy: bool = False,
         order: ArrayOrder = None,
-        dtype: DTypeLike | None = None,
-    ) -> Self:
+        dtype: DTypeLike = None,
+    ) -> CentralMoments[Any] | Self:
         """
         Examples
         --------
@@ -904,23 +1027,78 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5124,  0.1033])
         """
-        if order or dtype or copy:
-            data = np.array(data, dtype=dtype, order=order, copy=copy)
+        data = np.array(data, dtype=dtype, order=order, copy=copy)
         return cls(data=data, mom_ndim=mom_ndim)
+
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLikeArg[T_Float2],
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: int | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: None = ...,
+    ) -> CentralMoments[T_Float2]: ...
+    # fallback
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: int | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: None = ...,
+    ) -> CentralMoments[Any]: ...
+    # dtype
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: int | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLikeArg[T_Float2],
+    ) -> CentralMoments[T_Float2]: ...
+    # dtype fallback
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: int | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLike,
+    ) -> CentralMoments[Any]: ...
 
     @classmethod
     @docfiller_inherit_abc()
     def from_vals(
         cls,
-        x: NDArray[T_Float],
+        x: ArrayLike,
         *y: ArrayLike,
         mom: Moments,
         weight: ArrayLike | None = None,
         axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
-        # **kwargs: Any,
-    ) -> Self:
+        dtype: DTypeLike = None,
+    ) -> CentralMoments[Any]:
         """
         Examples
         --------
@@ -947,14 +1125,58 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             axis=axis,
             order=order,
             parallel=parallel,
+            dtype=dtype,
         )
         return cls(data=data, mom_ndim=mom_ndim)
+
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: ArrayLikeArg[T_Float2],
+        *y: ArrayLike,
+        mom: Moments,
+        freq: NDArrayInt,
+        weight: ArrayLike | None = ...,
+        axis: int | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: None = ...,
+    ) -> CentralMoments[Any]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        freq: NDArrayInt,
+        weight: ArrayLike | None = ...,
+        axis: int | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLikeArg[T_Float2],
+    ) -> CentralMoments[T_Float2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        freq: NDArrayInt,
+        weight: ArrayLike | None = ...,
+        axis: int | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLike = ...,
+    ) -> CentralMoments[Any]: ...
 
     @classmethod
     @docfiller_inherit_abc()
     def from_resample_vals(
         cls,
-        x: NDArray[T_Float],
+        x: ArrayLike,
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
@@ -962,7 +1184,8 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
-    ) -> Self:
+        dtype: DTypeLike = None,
+    ) -> CentralMoments[Any]:
         """
         Examples
         --------
@@ -1005,9 +1228,10 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             weight=weight,
             order=order,
             parallel=parallel,
+            dtype=dtype,
         )
 
-        return cls(data=data, mom_ndim=mom_ndim)  # type: ignore[arg-type]
+        return cls(data=data, mom_ndim=mom_ndim)
 
     @classmethod
     @docfiller_inherit_abc()
@@ -1059,112 +1283,3 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
         """
         return super().from_raw(raw=raw, mom_ndim=mom_ndim)  # type: ignore[arg-type]
-
-    # ** mom_ndim == 1 specific ----------------------------------------------------
-    @staticmethod
-    def _raise_if_cov(mom_ndim: Mom_NDim) -> None:
-        if mom_ndim != 1:
-            msg = "only available for mom_ndim == 1"
-            raise NotImplementedError(msg)
-
-    # special, 1d only methods
-    def push_stat(
-        self,
-        a: ArrayLike,
-        v: ArrayLike = 0.0,
-        weight: ArrayLike | None = None,
-        parallel: bool | None = False,
-    ) -> Self:
-        """Push statistics onto self."""
-        self._raise_if_cov(self.mom_ndim)
-
-        w = 1.0 if weight is None else weight
-        a = np.asarray(a, dtype=self.dtype)
-        a, v, w = prepare_values_for_push_val(a, v, w, dtype=self.dtype)
-
-        v = np.atleast_1d(v)
-        if v.ndim == a.ndim:  # type: ignore[union-attr]
-            v = v[..., None]  # type: ignore[index, call-overload]
-
-        self._pusher(parallel).stat(a, v, w, self._data)  # type: ignore[misc]
-        return self
-
-    # def push_stats(
-    #     self,
-    #     a: MultiArrayVals[NDArrayAny],
-    #     v: MultiArray[NDArrayAny] = 0.0,
-    #     w: MultiArray[NDArrayAny] | None = None,
-    #     axis: int = 0,
-    #     broadcast: bool = True,
-    # ) -> Self:
-    #     """Push multiple statistics onto self."""
-    #     self._raise_if_cov(self.mom_ndim)
-
-    #     ar, target = self._check_vals(x=a, target="vals", axis=axis)
-    #     vr = self._check_vars(v=v, target=target, axis=axis, broadcast=broadcast)
-    #     wr = self._check_weights(w=w, target=target, axis=axis)
-    #     self._push.stats(self._data_flat, wr, ar, vr)  # type: ignore[misc]
-    #     return self
-
-    # @classmethod
-    # def from_stat(
-    #     cls,
-    #     a: ArrayLike | float,
-    #     v: NDArrayAny | float = 0.0,
-    #     w: NDArrayAny | float | None = None,
-    #     mom: Moments = 2,
-    #     val_shape: tuple[int, ...] | None = None,
-    #     dtype: DTypeLike | None = None,
-    #     order: ArrayOrder | None = None,
-    #     **kwargs: Any,
-    # ) -> Self:
-    #     """Create object from single weight, average, variance/covariance."""
-    #     mom_ndim = mom_to_mom_ndim(mom)
-    #     cls._raise_if_cov(mom_ndim)
-
-    #     a = np.asarray(a, dtype=dtype, order=order)
-
-    #     if val_shape is None:
-    #         val_shape = a.shape
-    #     if dtype is None:
-    #         dtype = a.dtype
-
-    #     return cls.zeros(val_shape=val_shape, mom=mom, dtype=dtype, **kwargs).push_stat(
-    #         w=w, a=a, v=v
-    #     )
-
-    # @classmethod
-    # def from_stats(
-    #     cls,
-    #     a: NDArrayAny,
-    #     v: NDArrayAny,
-    #     w: NDArrayAny | float | None = None,
-    #     axis: int = 0,
-    #     mom: Moments = 2,
-    #     val_shape: tuple[int, ...] | None = None,
-    #     dtype: DTypeLike | None = None,
-    #     order: ArrayOrder | None = None,
-    #     **kwargs: Any,
-    # ) -> Self:
-    #     """
-    #     Create object from several statistics.
-
-    #     Weights, averages, variances/covariances along
-    #     axis.
-    #     """
-    #     mom_ndim = mom_to_mom_ndim(mom)
-    #     cls._raise_if_cov(mom_ndim)
-
-    #     a = np.asarray(a, dtype=dtype, order=order)
-
-    #     # get val_shape
-    #     if val_shape is None:
-    #         val_shape = shape_reduce(shape=a.shape, axis=axis)
-    #     return cls.zeros(
-    #         val_shape=val_shape, dtype=dtype, mom=mom, **kwargs
-    #     ).push_stats(
-    #         a=a,
-    #         v=v,
-    #         w=w,
-    #         axis=axis,
-    #     )

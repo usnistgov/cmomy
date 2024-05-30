@@ -12,8 +12,7 @@ from .utils import BINOMIAL_FACTOR
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import NDGeneric
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import NDGeneric, T_Float
 
 
 @myjit(

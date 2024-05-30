@@ -13,7 +13,7 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import T_Float
 
 # NOTE: The parallel implementation is quite similar to the old
 # way of doing things (with reshape and njit), but the serial is slower.

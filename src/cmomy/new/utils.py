@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from ._typing_compat import TypeGuard
 
-    # from .typing import T_FloatDType as T_Float
+    # from .typing import T_Float
     # from .typing import T_FloatDType_co as T_Float_co
     from .typing import (
         ArrayOrder,
@@ -73,7 +73,7 @@ def normalize_axis_index(axis: int, ndim: int) -> int:
 #     expand: bool = True,
 #     broadcast: bool = True,
 #     roll: bool = True,
-#     dtype: DTypeLike | None = None,
+#     dtype: DTypeLike = None,
 #     order: ArrayOrder = None,
 # ) -> NDArrayAny:
 #     """
@@ -555,7 +555,7 @@ def raise_if_wrong_shape(
 def select_dtype(
     x: xr.DataArray | ArrayLike,
     out: NDArrayAny | None,
-    dtype: DTypeLike | None,
+    dtype: DTypeLike,
 ) -> np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
     """Select a dtype from, in order, out, dtype, or passed array."""
     if out is not None:

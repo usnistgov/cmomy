@@ -56,9 +56,7 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import ArrayOrder, ArrayOrderCF, DTypeLikeArg
-from .typing import T_FloatDType as T_Float
-from .typing import T_FloatDType2 as T_Float2
+from .typing import ArrayOrder, ArrayOrderCF, DTypeLikeArg, T_Float, T_Float2
 
 # * xCentralMoments -----------------------------------------------------------
 
@@ -202,6 +200,57 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         dim = {dim} if isinstance(dim, str) else set(dim)  # type: ignore[arg-type]
         return tuple(d for d in self.dims if d not in dim)
 
+    @overload
+    def new_like(
+        self,
+        data: NDArray[T_Float2],
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: None = ...,
+    ) -> xCentralMoments[T_Float2]: ...
+    @overload
+    def new_like(
+        self,
+        data: NDArrayAny | xr.DataArray,
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: DTypeLikeArg[T_Float2],
+    ) -> xCentralMoments[T_Float2]: ...
+    @overload
+    def new_like(
+        self,
+        data: xr.DataArray,
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: None = ...,
+    ) -> xCentralMoments[Any]: ...
+    @overload
+    def new_like(
+        self,
+        data: None = ...,
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: DTypeLikeArg[T_Float2],
+    ) -> xCentralMoments[T_Float2]: ...
+    @overload
+    def new_like(
+        self: xCentralMoments[T_Float2],
+        data: None = ...,
+        *,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        verify: bool = ...,
+        dtype: None = ...,
+    ) -> xCentralMoments[T_Float2]: ...
+
     @docfiller_abc()
     def new_like(
         self,
@@ -210,8 +259,8 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         copy: bool = False,
         order: ArrayOrder = None,
         verify: bool = False,
-        dtype: DTypeLike | None = None,
-    ) -> Self:
+        dtype: DTypeLike = None,
+    ) -> xCentralMoments[Any]:
         if isinstance(data, np.ndarray):
             xdata = self._xdata.copy(data=data)
         elif isinstance(data, xr.DataArray):
@@ -1015,7 +1064,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         )
 
     # ** Manipulation
-    # ** Reducetion -----------------------------------------------------------
+    # ** Reduction -----------------------------------------------------------
     @docfiller.decorate
     def resample_and_reduce(
         self,
@@ -1120,7 +1169,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
     def reduce(
         self,
         *,
-        by: ArrayLike | None = None,
+        by: str | ArrayLike | None = None,
         axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
@@ -1166,6 +1215,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         --------
         .reduction.reduce_data
         .reduction.reduce_data_grouped
+        .reduction.reduce_data_indexed
 
         Examples
         --------
@@ -1342,6 +1392,58 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         )
 
     # ** Constructors
+    @overload
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | None = ...,
+        dtype: None = ...,
+        order: ArrayOrderCF | None = ...,
+        dims: XArrayDimsType = ...,
+        mom_dims: MomDims | None = ...,
+        attrs: XArrayAttrsType = ...,
+        coords: XArrayCoordsType = ...,
+        name: XArrayNameType = ...,
+        indexes: XArrayIndexesType = ...,
+        template: xr.DataArray | None = ...,
+    ) -> xCentralMoments[np.float64]: ...
+    @overload
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | None = ...,
+        dtype: DTypeLikeArg[T_Float2] = ...,
+        order: ArrayOrderCF | None = ...,
+        dims: XArrayDimsType = ...,
+        mom_dims: MomDims | None = ...,
+        attrs: XArrayAttrsType = ...,
+        coords: XArrayCoordsType = ...,
+        name: XArrayNameType = ...,
+        indexes: XArrayIndexesType = ...,
+        template: xr.DataArray | None = ...,
+    ) -> xCentralMoments[T_Float2]: ...
+    @overload
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | None = ...,
+        dtype: DTypeLike,
+        order: ArrayOrderCF | None = ...,
+        dims: XArrayDimsType = ...,
+        mom_dims: MomDims | None = ...,
+        attrs: XArrayAttrsType = ...,
+        coords: XArrayCoordsType = ...,
+        name: XArrayNameType = ...,
+        indexes: XArrayIndexesType = ...,
+        template: xr.DataArray | None = ...,
+    ) -> xCentralMoments[Any]: ...
+
     @classmethod
     @docfiller_inherit_abc()
     def zeros(
@@ -1349,7 +1451,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         *,
         mom: Moments,
         val_shape: tuple[int, ...] | None = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         order: ArrayOrderCF | None = None,
         dims: XArrayDimsType = None,
         mom_dims: MomDims | None = None,
@@ -1358,7 +1460,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         name: XArrayNameType = None,
         indexes: XArrayIndexesType = None,
         template: xr.DataArray | None = None,
-    ) -> Self:
+    ) -> xCentralMoments[Any]:
         """
         Parameters
         ----------
@@ -1386,6 +1488,28 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             template=template,
         )
 
+    @overload
+    @classmethod
+    def from_data(
+        cls,
+        data: xr.DataArray,
+        *,
+        mom_ndim: Mom_NDim,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLikeArg[T_Float],
+    ) -> Self: ...
+    @overload
+    @classmethod
+    def from_data(
+        cls,
+        data: xr.DataArray,
+        *,
+        mom_ndim: Mom_NDim,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLike = ...,
+    ) -> xCentralMoments[Any]: ...
     @classmethod
     @docfiller_inherit_abc()
     def from_data(
@@ -1395,12 +1519,45 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         mom_ndim: Mom_NDim,
         copy: bool = False,
         order: ArrayOrder = None,
-        dtype: DTypeLike | None = None,
-    ) -> Self:
+        dtype: DTypeLike = None,
+    ) -> Self | xCentralMoments[Any]:
         return cls(
             data=data.astype(dtype or data.dtype, copy=copy, order=order),
             mom_ndim=mom_ndim,
         )
+
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: xr.DataArray,
+        *y: ArrayLike | xr.DataArray,
+        mom: Moments,
+        weight: ArrayLike | xr.DataArray | None = ...,
+        axis: int | None = ...,
+        dim: Hashable | None = ...,
+        mom_dims: MomDims | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLikeArg[T_Float],
+        keep_attrs: KeepAttrs = ...,
+    ) -> Self: ...
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: xr.DataArray,
+        *y: ArrayLike | xr.DataArray,
+        mom: Moments,
+        weight: ArrayLike | xr.DataArray | None = ...,
+        axis: int | None = ...,
+        dim: Hashable | None = ...,
+        mom_dims: MomDims | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLike = ...,
+        keep_attrs: KeepAttrs = ...,
+    ) -> xCentralMoments[Any]: ...
 
     @classmethod
     @docfiller_inherit_abc()
@@ -1415,8 +1572,9 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         mom_dims: MomDims | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
+        dtype: DTypeLike = None,
         keep_attrs: KeepAttrs = None,
-    ) -> Self:
+    ) -> Self | xCentralMoments[Any]:
         """
         Parameters
         ----------
@@ -1447,6 +1605,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
                 mom_dims=mom_dims,
                 order=order,
                 parallel=parallel,
+                dtype=dtype,
                 keep_attrs=keep_attrs,
             ),
             mom_ndim=mom_ndim,

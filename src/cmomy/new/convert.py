@@ -5,28 +5,90 @@ Routines to perform central moments reduction (:mod:`~cmomy.reduce)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
+import numpy as np
 import xarray as xr
 
-from cmomy.new.utils import validate_mom_ndim
+from cmomy.new.utils import select_dtype, validate_mom_ndim
 
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
-    from numpy.typing import NDArray
+    from typing import Any
 
-    from .typing import ConvertStyle, Mom_NDim, T_Array
-    from .typing import T_FloatDType as T_Float
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
+
+    from cmomy.new.typing import NDArrayAny
+
+    from .typing import ArrayLikeArg, ConvertStyle, DTypeLikeArg, Mom_NDim, T_Float
+
+
+@overload
+def convert(  # type: ignore[overload-overlap]
+    values_in: xr.DataArray,
+    *,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+) -> xr.DataArray: ...
+@overload
+def convert(
+    values_in: ArrayLikeArg[T_Float],
+    *,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle = ...,
+    out: None = ...,
+    dtype: None = ...,
+) -> NDArray[T_Float]: ...
+@overload
+def convert(
+    values_in: ArrayLike,
+    *,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle = ...,
+    out: None = ...,
+    dtype: None = ...,
+) -> NDArrayAny: ...
+@overload
+def convert(
+    values_in: Any,
+    *,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle = ...,
+    out: NDArray[T_Float],
+    dtype: DTypeLike = ...,
+) -> NDArray[T_Float]: ...
+@overload
+def convert(
+    values_in: Any,
+    *,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[T_Float],
+) -> NDArray[T_Float]: ...
+@overload
+def convert(
+    values_in: Any,
+    *,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle = ...,
+    out: None = ...,
+    dtype: DTypeLike,
+) -> NDArrayAny: ...
 
 
 @docfiller.decorate
 def convert(
-    values_in: T_Array,
+    values_in: ArrayLike | xr.DataArray,
+    *,
     mom_ndim: Mom_NDim,
     to: ConvertStyle = "central",
-    out: NDArray[T_Float] | None = None,
-) -> T_Array:
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+) -> NDArrayAny | xr.DataArray:
     r"""
     Convert between central and raw moments.
 
@@ -75,13 +137,19 @@ def convert(
     from ._lib.factory import factory_convert
 
     mom_ndim = validate_mom_ndim(mom_ndim)
+
     _input_to_output = factory_convert(mom_ndim=mom_ndim, to=to)
+
+    dtype = select_dtype(values_in, out=out, dtype=dtype)
 
     if isinstance(values_in, xr.DataArray):
         return values_in.copy(
-            data=convert(values_in.to_numpy(), mom_ndim=mom_ndim, to=to, out=out)  # type: ignore[arg-type]
+            data=convert(
+                values_in.to_numpy().astype(dtype), mom_ndim=mom_ndim, to=to, out=out
+            )  # pyright: ignore[reportUnknownMemberType]
         )
 
+    values_in = np.asarray(values_in, dtype=dtype)
     if out is not None:
-        return _input_to_output(values_in, out)  # type: ignore[arg-type]
+        return _input_to_output(values_in, out)
     return _input_to_output(values_in)

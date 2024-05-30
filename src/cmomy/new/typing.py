@@ -32,7 +32,9 @@ from ._typing_compat import TypeVar
 
 if TYPE_CHECKING:
     from ._typing_compat import TypeAlias
-    # from .central_abc import CentralMomentsABC
+    from .central_abc import CentralMomentsABC  # noqa: F401
+
+T_CentralMoments = TypeVar("T_CentralMoments", bound="CentralMomentsABC[Any, Any]")
 
 
 # * Numpy Arrays
@@ -47,8 +49,8 @@ NDArrayInt = NDArray[LongIntDType]
 
 
 # ** Types
-T_FloatDType = TypeVar("T_FloatDType", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default
-T_FloatDType2 = TypeVar("T_FloatDType2", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default]
+T_Float = TypeVar("T_Float", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default
+T_Float2 = TypeVar("T_Float2", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default]
 # T_FloatDType_co = TypeVar(  # type: ignore[misc]  # something off with default
 #     "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
 # )
@@ -60,7 +62,7 @@ T_Scalar = TypeVar("T_Scalar", bound=np.generic)
 # Note: At least for now, only use np.int64...
 # T_IntDType = TypeVar("T_IntDType", np.int32, np.int64)  # array of ints
 T_IntDType: TypeAlias = np.int64
-NDGeneric: TypeAlias = Union[T_FloatDType, NDArray[T_FloatDType]]
+NDGeneric: TypeAlias = Union[T_Float, NDArray[T_Float]]
 
 
 # ** Dtype
@@ -77,9 +79,9 @@ DTypeLikeArg = Union[
 ]
 
 DTypeFloatArg = Union[
-    np.dtype[T_FloatDType],
-    type[T_FloatDType],
-    _SupportsDType[np.dtype[T_FloatDType]],
+    np.dtype[T_Float],
+    type[T_Float],
+    _SupportsDType[np.dtype[T_Float]],
 ]
 
 

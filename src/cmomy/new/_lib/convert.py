@@ -13,7 +13,7 @@ from .utils import BINOMIAL_FACTOR
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import T_Float
 
 
 _PARALLEL = False

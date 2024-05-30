@@ -56,7 +56,7 @@ def axis_expand_broadcast(
     expand: bool = True,
     broadcast: bool = True,
     roll: bool = True,
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     order: ArrayOrder = None,
 ) -> NDArrayAny:
     """

@@ -401,12 +401,12 @@ def test_push_datas(other) -> None:
     other.test_values(t.to_values())
 
 
-def test_push_stat(other) -> None:
-    if other.s.mom_ndim == 1:
-        t = other.s.zeros_like()
-        for s in other.S:
-            t.push_stat(s.mean(), v=s.to_numpy()[..., 2:], weight=s.weight())
-        other.test_values(t.to_values())
+# def test_push_stat(other) -> None:
+#     if other.s.mom_ndim == 1:
+#         t = other.s.zeros_like()
+#         for s in other.S:
+#             t.push_stat(s.mean(), v=s.to_numpy()[..., 2:], weight=s.weight())
+#         other.test_values(t.to_values())
 
 
 # TODO(wpk): add this?
@@ -425,14 +425,8 @@ def test_push_zero_weight(val_shape, mom, rng) -> None:
     c = CentralMoments.zeros(mom=mom, val_shape=val_shape)
 
     v = rng.random(val_shape)
-    if not isinstance(mom, tuple):
-        var = np.atleast_1d(v)[..., None]
-        c.push_stat(v, var, weight=0.0)
-        np.testing.assert_allclose(c, 0.0)
 
-        v = (v,)
-    else:
-        v = (v, v)
+    v = (v, v) if isinstance(mom, tuple) else (v,)
 
     c.push_val(*v, weight=0.0)
     np.testing.assert_allclose(c, 0.0)
@@ -452,16 +446,14 @@ def test_push_order_1(val_shape, mom, rng) -> None:
     c1 = CentralMoments.zeros(mom=mom1, val_shape=val_shape)  # type: ignore[arg-type]
     c2 = CentralMoments.from_vals(*xx, axis=0, mom=mom)  # type: ignore[arg-type]
 
-    if not cov:
-        a = x.mean(axis=0)
-        v = x.var(axis=0)
+    # if not cov:
+    #     a = x.mean(axis=0)
+    #     v = x.var(axis=0)
+    #     c1.push_stat(a, v, weight=100.0)
+    #     np.testing.assert_allclose(c1.weight(), c2.weight())
+    #     np.testing.assert_allclose(c1.mean(), c2.mean())
 
-        c1.push_stat(a, v, weight=100.0)
-
-        np.testing.assert_allclose(c1.weight(), c2.weight())
-        np.testing.assert_allclose(c1.mean(), c2.mean())
-
-        c1.zero()
+    #     c1.zero()
 
     c1.push_vals(*xx, axis=0)  # type: ignore[arg-type]
     np.testing.assert_allclose(c1.weight(), c2.weight())
@@ -658,33 +650,3 @@ def test_block_odd_size(rng) -> None:
     c1 = CentralMoments.from_vals(x[:9].reshape(3, -1), mom=2, axis=1)
 
     np.testing.assert_allclose(c0, c1)
-
-
-@pytest.mark.parametrize("dtype_base", [np.float32, np.float64])
-@pytest.mark.parametrize(
-    ("dtype", "expected"),
-    [
-        (np.float32, np.float32),
-        (np.dtype(np.float32), np.float32),
-        ("f4", np.float32),
-        (np.dtype("f4"), np.float32),
-        (np.float64, np.float64),
-        (np.dtype(np.float64), np.float64),
-        ("f8", np.float64),
-        (np.dtype("f8"), np.float64),
-        (None, np.float64),
-        (np.float16, "error"),
-    ],
-)
-def test_astype(dtype_base, dtype, expected) -> None:
-    c = CentralMoments.zeros(mom=3, val_shape=(2, 3), dtype=dtype_base)
-    cx = c.to_x()
-    cc = cx.to_c()
-
-    for obj in [c, cx, cc]:
-        assert obj.dtype.type == dtype_base
-        if expected == "error":
-            with pytest.raises(ValueError, match=".*not supported.*"):
-                obj.astype(dtype)
-        else:
-            assert obj.astype(dtype).dtype.type == expected

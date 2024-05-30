@@ -101,7 +101,7 @@ def _convert_moments(
     axis: int | Sequence[int],
     target_axis: int | Sequence[int],
     func: Callable[..., Any],
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     order: ArrayOrder | None = None,
     out: NDArrayAny | None = None,
 ) -> NDArrayAny:
@@ -152,7 +152,7 @@ def _convert_moments(
 def to_raw_moments(
     x: NDArrayAny,
     axis: int | None = -1,
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     order: ArrayOrder | None = None,
     out: NDArrayAny | None = None,
 ) -> NDArrayAny:
@@ -193,7 +193,7 @@ def to_raw_moments(
 def to_raw_comoments(
     x: NDArrayAny,
     axis: tuple[int, int] | None = (-2, -1),
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     order: ArrayOrder | None = None,
     out: NDArrayAny | None = None,
 ) -> NDArrayAny:
@@ -234,7 +234,7 @@ def to_raw_comoments(
 def to_central_moments(
     x: NDArrayAny,
     axis: int | None = -1,
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     order: ArrayOrder | None = None,
     out: NDArrayAny | None = None,
 ) -> NDArrayAny:
@@ -275,7 +275,7 @@ def to_central_moments(
 def to_central_comoments(
     x: NDArrayAny,
     axis: tuple[int, int] | None = (-2, -1),
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     order: ArrayOrder | None = None,
     out: NDArrayAny | None = None,
 ) -> NDArrayAny:

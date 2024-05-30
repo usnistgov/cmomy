@@ -13,7 +13,7 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import T_Float
 
 _PARALLEL = True  # Auto generated from resample_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)

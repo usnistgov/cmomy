@@ -10,9 +10,7 @@ from module_utilities import cached
 
 from ._lib.factory import factory_pusher
 from .docstrings import docfiller
-from .typing import DTypeLikeArg, T_Array
-from .typing import T_FloatDType as T_Float
-from .typing import T_FloatDType2 as T_Float2
+from .typing import DTypeLikeArg, T_Array, T_Float, T_Float2
 from .utils import (
     normalize_axis_index,
     parallel_heuristic,
@@ -197,16 +195,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         """Number of value dimensions."""  # D401
         return len(self.val_shape)
 
-    # @property
-    # def mom_shape_var(self) -> tuple[int, ...]:
-    #     """Shape of moment part of variance."""
-    #     return tuple(x - 1 for x in self.mom)
-
-    # @property
-    # def shape_var(self) -> tuple[int, ...]:
-    #     """Total variance shape."""
-    #     return self.val_shape + self.mom_shape_var
-
     def __repr__(self) -> str:
         """Repr for class."""
         name = self.__class__.__name__
@@ -218,7 +206,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 
-    def __array__(self, dtype: DTypeLike | None = None) -> NDArray[T_Float]:  # noqa: PLW3201
+    def __array__(self, dtype: DTypeLike = None) -> NDArray[T_Float]:  # noqa: PLW3201
         """Used by np.array(self)."""  # D401
         return np.asarray(self.data, dtype=dtype)
 
@@ -232,7 +220,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         copy: bool = False,
         order: ArrayOrder | None = None,
         verify: bool = False,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
     ) -> Self:
         """
         Create new object like self, with new data.
@@ -552,7 +540,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     # Low level pushers
     def _push_data_numpy(
         self,
-        data: NDArrayAny,
+        data: ArrayLike,
         *,
         order: ArrayOrder = None,
         parallel: bool | None = None,
@@ -563,14 +551,14 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
     def _push_datas_numpy(
         self,
-        datas: NDArrayAny,
+        datas: ArrayLike,
         *,
         axis: int | None = None,
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
         datas = prepare_data_for_reduction(
-            data=datas.astype(self.dtype),
+            data=datas,
             axis=self._set_default_axis(axis),
             mom_ndim=self.mom_ndim,
             dtype=self.dtype,
@@ -650,7 +638,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     @docfiller.decorate
     def push_data(
         self,
-        data: T_Array,
+        data: Any,
         *,
         order: ArrayOrder = None,
         parallel: bool | None = False,
@@ -675,7 +663,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     @docfiller.decorate
     def push_datas(
         self,
-        datas: T_Array,
+        datas: Any,
         *,
         axis: int | None = None,
         order: ArrayOrder = None,
@@ -1061,7 +1049,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         *,
         mom: Moments,
         val_shape: tuple[int, ...] | None = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
     ) -> Self:
         """
@@ -1095,7 +1083,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         mom_ndim: Mom_NDim,
         copy: bool = True,
         order: ArrayOrder = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
     ) -> Self:
         """
         Create new object from `data` array with additional checks.
@@ -1249,5 +1237,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         from .convert import convert
 
         return cls(
-            data=convert(raw, mom_ndim=mom_ndim, to="central"), mom_ndim=mom_ndim
+            data=convert(raw, mom_ndim=mom_ndim, to="central"),
+            mom_ndim=mom_ndim,  # pyright: ignore[reportArgumentType]
         )

@@ -219,7 +219,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 
-    def __array__(self, dtype: DTypeLike | None = None) -> NDArrayAny:  # noqa: PLW3201
+    def __array__(self, dtype: DTypeLike = None) -> NDArrayAny:  # noqa: PLW3201
         """Used by np.array(self)."""  # D401
         return np.asarray(self.data, dtype=dtype)
 
@@ -1017,7 +1017,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         shape: tuple[int, ...] | None = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         zeros_kws: Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Self:
@@ -1064,7 +1064,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         copy: bool = True,
         copy_kws: Mapping[str, Any] | None = None,
         verify: bool = False,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
     ) -> Self:
         """
         Create new object from `data` array with additional checks.
@@ -1097,7 +1097,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom: Moments | None = None,
         mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         verify: bool = False,
         axis: int | None = 0,
         **kwargs: Any,
@@ -1139,7 +1139,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         *,
         w: Any = None,
         val_shape: tuple[int, ...] | None = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         broadcast: bool = False,
         axis: int | None = 0,
         **kwargs: Any,
@@ -1284,7 +1284,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom: Moments | None = None,
         mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         convert_kws: Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Self:
@@ -1336,7 +1336,7 @@ class CentralMomentsABC(ABC, Generic[T_Array]):
         mom_ndim: Mom_NDim | None = None,
         val_shape: tuple[int, ...] | None = None,
         axis: int | None = 0,
-        dtype: DTypeLike | None = None,
+        dtype: DTypeLike = None,
         convert_kws: Mapping[str, Any] | None = None,
         **kwargs: Any,
     ) -> Self:

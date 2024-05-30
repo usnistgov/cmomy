@@ -13,8 +13,7 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import NDGeneric
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import NDGeneric, T_Float
 
 
 _PARALLEL = True  # Auto generated from push.py

@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, overload
 
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 from ._lib.factory import (
@@ -49,13 +50,13 @@ if TYPE_CHECKING:
         NDArrayAny,
         NDArrayInt,
         T_Array,
+        T_Float,
     )
-    from .typing import T_FloatDType as T_Float
-    # from .typing import T_FloatDType2 as T_Float2
+    # from .typing import T_Float2
 
 
-# * Base reducers -------------------------------------------------------------
-#   These assume input data in correct form (core dimensions last)
+# * Reduce vals ---------------------------------------------------------------
+# ** low level
 def _reduce_vals(
     x0: NDArray[T_Float],
     w: NDArray[T_Float],
@@ -83,142 +84,24 @@ def _reduce_vals(
     return out
 
 
-def _reduce_data(
-    data: NDArray[T_Float],
-    *,
-    mom_ndim: Mom_NDim,
-    parallel: bool | None = None,
-    out: NDArrayAny | None = None,
-) -> NDArray[T_Float]:
-    _reduce = factory_reduce_data(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )
-    if out is None:
-        return _reduce(data)
-    return _reduce(data, out)
-
-
-def _reduce_data_grouped(
-    data: NDArray[T_Float],
-    by: NDArrayInt,
-    *,
-    mom_ndim: Mom_NDim,
-    parallel: bool | None = None,
-    out: NDArrayAny | None = None,
-) -> NDArray[T_Float]:
-    if len(by) != data.shape[-(mom_ndim + 1)]:
-        msg = f"{len(by)=} != data.shape[axis]={data.shape[-(mom_ndim + 1)]}"
-        raise ValueError(msg)
-
-    ngroup = by.max() + 1
-    out_shape = (*data.shape[: -(mom_ndim + 1)], ngroup, *data.shape[-mom_ndim:])
-    if out is None:
-        out = np.zeros(out_shape, dtype=data.dtype)
-    else:
-        raise_if_wrong_shape(out, out_shape)
-        out.fill(0.0)
-
-    factory_reduce_data_grouped(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )(data, by, out)
-
-    return out
-
-
-def _validate_index(
-    ndat: int,
-    index: ArrayLike,
-    group_start: ArrayLike,
-    group_end: ArrayLike,
-) -> tuple[NDArrayInt, NDArrayInt, NDArrayInt]:
-    def _validate(name: str, x: NDArrayInt, upper: int) -> None:
-        min_: int = x.min()
-        max_: int = x.max()
-        if min_ < 0:
-            msg = f"min({name}) = {min_} < 0"
-            raise ValueError(msg)
-        if max_ >= upper:
-            msg = f"max({name}) = {max_} > {upper}"
-            raise ValueError(msg)
-
-    index = np.asarray(index, dtype=np.int64)
-    group_start = np.asarray(group_start, dtype=np.int64)
-    group_end = np.asarray(group_end, dtype=np.int64)
-
-    # TODO(wpk): if nindex == 0, should just get out of here?
-    nindex = len(index)
-    if nindex == 0:
-        if (group_start != 0).any() or (group_end != 0).any():
-            msg = "no index start must equal end"
-            raise ValueError(msg)
-    else:
-        _validate("index", index, ndat)
-        _validate("group_start", group_start, nindex)
-        _validate("group_end", group_end, nindex + 1)
-
-    if len(group_start) != len(group_end):
-        msg = "len(start) != len(end)"
-        raise ValueError(msg)
-
-    if (group_end < group_start).any():
-        msg = "Found end < start"
-        raise ValueError(msg)
-
-    return index, group_start, group_end
-
-
-def _reduce_data_indexed(
-    data: NDArray[T_Float],
-    *,
-    mom_ndim: Mom_NDim,
-    index: NDArrayInt,
-    group_start: NDArrayInt,
-    group_end: NDArrayInt,
-    scale: ArrayLike | None = None,
-    parallel: bool | None = None,
-    out: NDArrayAny | None = None,
-) -> NDArray[T_Float]:
-    """Get reduced_data, index, start, end."""
-    if scale is None:
-        scale_ = np.ones(len(index), dtype=data.dtype)
-    else:
-        scale_ = np.asarray(scale, dtype=data.dtype)
-        if len(scale_) != len(index):
-            msg = f"{len(scale_)=} != {len(index)=}"
-            raise ValueError(msg)
-
-    _reduce = factory_reduce_data_indexed(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )
-
-    return (
-        _reduce(data, index, group_start, group_end, scale_)
-        if out is None
-        else _reduce(data, index, group_start, group_end, scale_, out)
-    )
-
-
-# * Reduce vals
-# NOTE: would like to go with T_Array, etc, but doesn't work with out and dtype...
+# ** overloads
 @overload
-def reduce_vals(  # type: ignore[overload-overlap]  # DataArray overlaps some of below...
+def reduce_vals(
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: int | None = ...,
-    dim: Hashable | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike | None = ...,
 ) -> xr.DataArray: ...
-# array no out or dtype
+# array
 @overload
 def reduce_vals(
     x: ArrayLikeArg[T_Float],
@@ -226,31 +109,33 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: int | None = ...,
-    dim: Hashable | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
-    out: None = ...,
-    dtype: None = ...,
 ) -> NDArray[T_Float]: ...
-# fallback no out or dtype
+# array fallback
 @overload
 def reduce_vals(
-    x: ArrayLike,  # changed from numpy overload of object to arraylike...
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: int | None = ...,
-    dim: Hashable | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
-    out: None = ...,
-    dtype: None = ...,
 ) -> NDArrayAny: ...
-# with out
+# out
 @overload
 def reduce_vals(
     x: Any,
@@ -258,15 +143,16 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: int | None = ...,
-    dim: Hashable | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
+    dtype: DTypeLike = ...,
     out: NDArray[T_Float],
-    dtype: DTypeLike | None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# with dtype
+# dtype
 @overload
 def reduce_vals(
     x: Any,
@@ -274,13 +160,14 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: int | None = ...,
-    dim: Hashable | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
+    dtype: DTypeLikeArg[T_Float],
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
-    out: None = ...,
-    dtype: DTypeLikeArg[T_Float],
 ) -> NDArray[T_Float]: ...
 # dtype fallback
 @overload
@@ -290,31 +177,34 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: int | None = ...,
-    dim: Hashable | None = ...,
-    mom_dims: MomDims | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    out: None,
     dtype: DTypeLike,
+    out: None = ...,
+    # xarray specific
+    dim: Hashable | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
 ) -> NDArrayAny: ...
 
 
+# ** public
 @docfiller.decorate
 def reduce_vals(
-    x: xr.DataArray | ArrayLike,
+    x: ArrayLike | xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: int | None = None,
-    dim: Hashable | None = None,
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    dtype: DTypeLike = None,
+    out: NDArrayAny | None = None,
+    # xarray specific
+    dim: Hashable | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    out: NDArrayAny | None = None,
-    dtype: DTypeLike | None = None,
-) -> xr.DataArray | NDArrayAny:
+) -> NDArrayAny | xr.DataArray:
     """
     Reduce values to central (co)moments.
 
@@ -328,11 +218,12 @@ def reduce_vals(
     weight : scalar or array-like or DataArray
         Weights for each point.
     {axis}
-    {dim}
-    {mom_dims}
     {order}
     {parallel}
+    {dtype}
     {out}
+    {dim}
+    {mom_dims}
     {keep_attrs}
 
     Returns
@@ -384,7 +275,25 @@ def reduce_vals(
     return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)
 
 
-# * Reduce data
+# * Reduce data ---------------------------------------------------------------
+# ** low level
+def _reduce_data(
+    data: NDArray[T_Float],
+    *,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None = None,
+    out: NDArrayAny | None = None,
+) -> NDArray[T_Float]:
+    _reduce = factory_reduce_data(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+    )
+    if out is None:
+        return _reduce(data)
+    return _reduce(data, out)
+
+
+# ** overload
 @overload
 def reduce_data(  # type: ignore[overload-overlap]
     data: xr.DataArray,
@@ -438,7 +347,7 @@ def reduce_data(
     parallel: bool | None = ...,
     keep_attrs: KeepAttrs = ...,
     out: NDArray[T_Float],
-    dtype: DTypeLike | None = ...,
+    dtype: DTypeLike = ...,
 ) -> NDArray[T_Float]: ...
 # dtype
 @overload
@@ -470,6 +379,7 @@ def reduce_data(
 ) -> NDArrayAny: ...
 
 
+# ** public
 @docfiller.decorate
 def reduce_data(
     data: xr.DataArray | ArrayLike,
@@ -536,12 +446,12 @@ def reduce_data(
     )
 
 
-# * Grouped
-# ** Utils
+# * Grouped -------------------------------------------------------------------
+# ** utilities
 def factor_by(
     by: Sequence[Any],
     sort: bool = True,
-) -> tuple[list[Any], NDArrayInt]:
+) -> tuple[list[Any] | pd.Index[Any] | pd.MultiIndex, NDArrayInt]:
     """
     Factor by to codes and groups.
 
@@ -588,19 +498,55 @@ def factor_by(
     from pandas import factorize  # pyright: ignore[reportUnknownVariableType]
 
     # filter None and negative -> None
-    _by = np.array(
-        [None if isinstance(x, int) and x < 0 else x for x in by], dtype=object
-    )
+    if isinstance(by, pd.Index):
+        _by = by
+    else:
+        _by = np.array(
+            [None if isinstance(x, int) and x < 0 else x for x in by], dtype=object
+        )
 
     codes, groups = factorize(_by, sort=sort)  # type: ignore[call-overload] # pyright: ignore[reportCallIssue]
 
-    # return list(groups) to handle multiple possible types...
-    return list(groups), codes.astype(np.int64)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportUnknownArgumentType]
+    if isinstance(_by, pd.Index):
+        groups.names = _by.names
+    else:
+        groups = list(groups)
+
+    return groups, codes.astype(np.int64)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportUnknownArgumentType]
 
 
-# ** reduce
+# ** low level
+def _reduce_data_grouped(
+    data: NDArray[T_Float],
+    by: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None = None,
+    out: NDArrayAny | None = None,
+) -> NDArray[T_Float]:
+    if len(by) != data.shape[-(mom_ndim + 1)]:
+        msg = f"{len(by)=} != data.shape[axis]={data.shape[-(mom_ndim + 1)]}"
+        raise ValueError(msg)
+
+    ngroup = by.max() + 1
+    out_shape = (*data.shape[: -(mom_ndim + 1)], ngroup, *data.shape[-mom_ndim:])
+    if out is None:
+        out = np.zeros(out_shape, dtype=data.dtype)
+    else:
+        raise_if_wrong_shape(out, out_shape)
+        out.fill(0.0)
+
+    factory_reduce_data_grouped(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+    )(data, by, out)
+
+    return out
+
+
+# ** overload
 @overload
-def reduce_data_grouped(
+def reduce_data_grouped(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
@@ -609,7 +555,7 @@ def reduce_data_grouped(
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
-    dtype: DTypeLike | None = ...,
+    dtype: DTypeLike = ...,
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
@@ -663,7 +609,7 @@ def reduce_data_grouped(
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArray[T_Float],
-    dtype: DTypeLike | None = ...,
+    dtype: DTypeLike = ...,
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
@@ -708,6 +654,7 @@ def reduce_data_grouped(
 ) -> NDArrayAny: ...
 
 
+# ** public
 @docfiller.decorate
 def reduce_data_grouped(
     data: xr.DataArray | ArrayLike,
@@ -718,7 +665,7 @@ def reduce_data_grouped(
     order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArrayAny | None = None,
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     # xarray specific
     dim: Hashable | None = None,
     # coords_policy: CoordsPolicy | Literal["group"] = "first",
@@ -804,12 +751,15 @@ def reduce_data_grouped(
 
 
     """
-    by_validated = np.asarray(by, dtype=np.int64)
     mom_ndim = validate_mom_ndim(mom_ndim)
 
     dtype = select_dtype(data, out=out, dtype=dtype)
+    by_validated = np.asarray(by, dtype=np.int64)
 
     if isinstance(data, xr.DataArray):
+        # handling by
+        # if isinstance(by, str) or isinstance(by, Sequence) and isinstance(by[0], str):
+
         dim, xdata = xprepare_data_for_reduction(
             data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype
         )
@@ -826,7 +776,7 @@ def reduce_data_grouped(
             keep_attrs=keep_attrs,
         )
 
-        if groups:
+        if groups is not None:
             xdata = xdata.assign_coords({dim: (dim, groups)})
         if group_dim:
             xdata = xdata.rename({dim: group_dim})
@@ -838,7 +788,7 @@ def reduce_data_grouped(
             axis=axis,
             mom_ndim=mom_ndim,
             order=order,
-            dtype=dtype,  # type: ignore[arg-type]
+            dtype=dtype,
         ),
         mom_ndim=mom_ndim,
         by=by_validated,
@@ -847,8 +797,8 @@ def reduce_data_grouped(
     )
 
 
-# * Indexed
-# ** Utils
+# * Indexed -------------------------------------------------------------------
+# ** utils
 @docfiller.decorate
 def factor_by_to_index(
     group_idx: Sequence[Any] | NDArray[np.object_],
@@ -918,9 +868,84 @@ def factor_by_to_index(
     return list(groups), indexes_sorted, n_start, n_end
 
 
-# ** reduce
+def _validate_index(
+    ndat: int,
+    index: ArrayLike,
+    group_start: ArrayLike,
+    group_end: ArrayLike,
+) -> tuple[NDArrayInt, NDArrayInt, NDArrayInt]:
+    def _validate(name: str, x: NDArrayInt, upper: int) -> None:
+        min_: int = x.min()
+        max_: int = x.max()
+        if min_ < 0:
+            msg = f"min({name}) = {min_} < 0"
+            raise ValueError(msg)
+        if max_ >= upper:
+            msg = f"max({name}) = {max_} > {upper}"
+            raise ValueError(msg)
+
+    index = np.asarray(index, dtype=np.int64)
+    group_start = np.asarray(group_start, dtype=np.int64)
+    group_end = np.asarray(group_end, dtype=np.int64)
+
+    # TODO(wpk): if nindex == 0, should just get out of here?
+    nindex = len(index)
+    if nindex == 0:
+        if (group_start != 0).any() or (group_end != 0).any():
+            msg = "no index start must equal end"
+            raise ValueError(msg)
+    else:
+        _validate("index", index, ndat)
+        _validate("group_start", group_start, nindex)
+        _validate("group_end", group_end, nindex + 1)
+
+    if len(group_start) != len(group_end):
+        msg = "len(start) != len(end)"
+        raise ValueError(msg)
+
+    if (group_end < group_start).any():
+        msg = "Found end < start"
+        raise ValueError(msg)
+
+    return index, group_start, group_end
+
+
+# ** low level
+def _reduce_data_indexed(
+    data: NDArray[T_Float],
+    *,
+    mom_ndim: Mom_NDim,
+    index: NDArrayInt,
+    group_start: NDArrayInt,
+    group_end: NDArrayInt,
+    scale: ArrayLike | None = None,
+    parallel: bool | None = None,
+    out: NDArrayAny | None = None,
+) -> NDArray[T_Float]:
+    """Get reduced_data, index, start, end."""
+    if scale is None:
+        scale_ = np.ones(len(index), dtype=data.dtype)
+    else:
+        scale_ = np.asarray(scale, dtype=data.dtype)
+        if len(scale_) != len(index):
+            msg = f"{len(scale_)=} != {len(index)=}"
+            raise ValueError(msg)
+
+    _reduce = factory_reduce_data_indexed(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+    )
+
+    return (
+        _reduce(data, index, group_start, group_end, scale_)
+        if out is None
+        else _reduce(data, index, group_start, group_end, scale_, out)
+    )
+
+
+# ** overload
 @overload
-def reduce_data_indexed(
+def reduce_data_indexed(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
@@ -932,7 +957,7 @@ def reduce_data_indexed(
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
-    dtype: DTypeLike | None = ...,
+    dtype: DTypeLike = ...,
     # xarray specific...
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,
@@ -998,7 +1023,7 @@ def reduce_data_indexed(
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArray[T_Float],
-    dtype: DTypeLike | None = ...,
+    dtype: DTypeLike = ...,
     # xarray specific...
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,
@@ -1052,6 +1077,7 @@ def reduce_data_indexed(
 ) -> NDArrayAny: ...
 
 
+# ** public
 @docfiller.decorate
 def reduce_data_indexed(  # noqa: PLR0913
     data: xr.DataArray | ArrayLike,
@@ -1065,7 +1091,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArrayAny | None = None,
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     # xarray specific...
     dim: Hashable | None = None,
     coords_policy: CoordsPolicy | Literal["group"] = "first",
@@ -1202,7 +1228,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         axis=axis,
         mom_ndim=mom_ndim,
         order=order,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=dtype,
     )
 
     _index, _start, _end = _validate_index(
@@ -1234,7 +1260,7 @@ def resample_data_indexed(
     order: ArrayOrder = None,
     parallel: bool = True,
     out: NDArrayAny | None = None,
-    dtype: DTypeLike | None = None,
+    dtype: DTypeLike = None,
     # xarray specific
     dim: Hashable | None = None,
     coords_policy: CoordsPolicy | Literal["group"] = "first",
@@ -1247,7 +1273,7 @@ def resample_data_indexed(
 
     index, start, end, scales = freq_to_index_start_end_scales(freq)
 
-    return reduce_data_indexed(
+    return reduce_data_indexed(  # pyright: ignore[reportCallIssue]
         data=data,
         mom_ndim=mom_ndim,
         index=index,
@@ -1257,7 +1283,7 @@ def resample_data_indexed(
         axis=axis,
         order=order,
         parallel=parallel,
-        out=out,
+        out=out,  # pyright: ignore[reportArgumentType]
         dtype=dtype,
         dim=dim,
         coords_policy=coords_policy,

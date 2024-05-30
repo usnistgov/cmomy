@@ -13,8 +13,7 @@ from .decorators import myguvectorize, myjit
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import NDArrayInt
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import NDArrayInt, T_Float
 
 _PARALLEL = True  # Auto generated from indexed.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)

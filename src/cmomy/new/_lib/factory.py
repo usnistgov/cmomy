@@ -14,8 +14,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from ..typing import ConvertStyle, Mom_NDim, NDArrayInt
-    from ..typing import T_FloatDType as T_Float
+    from ..typing import ConvertStyle, Mom_NDim, NDArrayInt, T_Float
 
     # Resample signature
     # These don't play well with pyright and overloading...
