@@ -1262,6 +1262,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         from .convert import convert
 
         return cls(
-            data=convert(raw, mom_ndim=mom_ndim, to="central"),
-            mom_ndim=mom_ndim,  # pyright: ignore[reportArgumentType]
+            data=convert(raw, mom_ndim=mom_ndim, to="central"),  # pyright: ignore[reportArgumentType]
+            mom_ndim=mom_ndim,
         )

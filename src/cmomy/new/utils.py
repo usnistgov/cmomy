@@ -552,6 +552,9 @@ def raise_if_wrong_shape(
         raise ValueError(msg)
 
 
+_ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
+
+
 def select_dtype(
     x: xr.DataArray | ArrayLike,
     out: NDArrayAny | None,
@@ -562,13 +565,11 @@ def select_dtype(
         dtype = out.dtype
     elif dtype is not None:
         dtype = np.dtype(dtype)
-    elif hasattr(x, "dtype"):
-        dtype = x.dtype  # pyright: ignore[reportUnknownMemberType]
     else:
-        dtype = np.dtype(np.float64)
+        dtype = getattr(x, "dtype", np.dtype(np.float64))
 
-    if dtype.type in {np.float32, np.float64}:
-        return dtype
+    if dtype in _ALLOWED_FLOAT_DTYPES:
+        return dtype  # type: ignore[return-value]
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
@@ -665,7 +666,9 @@ def replace_coords_from_isel(
 
     Useful for adding back coordinates to reduced object.
     """
-    from xarray.core.indexes import isel_indexes
+    from xarray.core.indexes import (
+        isel_indexes,  # pyright: ignore[reportUnknownVariableType]
+    )
     from xarray.core.indexing import is_fancy_indexer
 
     # Would prefer to import from actual source by old xarray error.

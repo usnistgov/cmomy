@@ -27,12 +27,18 @@ if TYPE_CHECKING:
     from ._typing_compat import Self
     from .central_dataarray import xCentralMoments
     from .typing import (
+        ArrayLikeArg,
         ArrayOrder,
+        ArrayOrderCF,
+        ArrayOrderCFA,
+        DataCasting,
+        DTypeLikeArg,
         Mom_NDim,
         MomDims,
         Moments,
         NDArrayAny,
         NDArrayInt,
+        T_Float2,
         XArrayAttrsType,
         XArrayCoordsType,
         XArrayDimsType,
@@ -41,14 +47,11 @@ if TYPE_CHECKING:
     )
 
 from .typing import (
-    ArrayLikeArg,
-    ArrayOrderCF,
-    ArrayOrderCFA,
-    DataCasting,
-    DTypeLikeArg,
     T_Float,
-    T_Float2,
 )
+
+# from ._typing_compat import TypeVar
+
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
@@ -57,6 +60,12 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 # * CentralMoments ------------------------------------------------------------
 @docfiller(CentralMomentsABC)  # noqa: PLR0904
 class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ignore[type-var] # noqa: D101
+    # TODO(wpk):  I think something like this would solve some of my typing issues.
+    # see https://mypy.readthedocs.io/en/stable/more_types.html#precise-typing-of-alternative-constructors
+    # But pyright isn't going to support it (see https://github.com/microsoft/pyright/issues/3497)
+    #
+    # _CentralT = TypeVar("_CentralT", bound="CentralMoments[T_Float]")
+
     def __init__(
         self,
         data: NDArray[T_Float],
@@ -787,12 +796,12 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         -------
         output : CentralMoments
             Output object with reshaped data.  This will be a view if possilble;
-            otherwise, it will be  copy.
+            otherwise, it will be copy.
 
         See Also
         --------
         numpy.reshape
-        from_data
+        new_like
 
         Examples
         --------

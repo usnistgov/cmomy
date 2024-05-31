@@ -145,8 +145,11 @@ def convert(
     if isinstance(values_in, xr.DataArray):
         return values_in.copy(
             data=convert(
-                values_in.to_numpy().astype(dtype), mom_ndim=mom_ndim, to=to, out=out
-            )  # pyright: ignore[reportUnknownMemberType]
+                values_in.to_numpy().astype(dtype),  # pyright: ignore[reportUnknownMemberType]
+                mom_ndim=mom_ndim,
+                to=to,
+                out=out,
+            )
         )
 
     values_in = np.asarray(values_in, dtype=dtype)

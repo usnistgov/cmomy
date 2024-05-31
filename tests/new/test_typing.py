@@ -845,6 +845,8 @@ def test_centralmoments_newlike() -> None:
     c64 = CentralMoments.zeros(mom=3, dtype=np.float64)
 
     if TYPE_CHECKING:
+        assert_type(c32, CentralMoments[np.float32])
+        assert_type(c64, CentralMoments[np.float64])
         assert_type(c32.new_like(), CentralMoments[np.float32])
         assert_type(c32.new_like(dtype=np.float64), CentralMoments[np.float64])
         assert_type(c64.new_like(), CentralMoments[np.float64])

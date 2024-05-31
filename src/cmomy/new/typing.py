@@ -49,15 +49,13 @@ NDArrayInt = NDArray[LongIntDType]
 
 
 # ** Types
-T_Float = TypeVar(
-    "T_Float", np.float32, np.float64, default=Any
-)  # , default=np.float64)  # type: ignore[misc]  # something off with default
-T_Float2 = TypeVar(
-    "T_Float2", np.float32, np.float64
-)  # , default=T_Float)#, default=Any) #, default=np.float64)  # type: ignore[misc]  # something off with default]
-T_Float3 = TypeVar(
-    "T_Float3", np.float32, np.float64
-)  # , default=Any) #, default=np.float64)  # type: ignore[misc]  # something off with default]
+T_Float = TypeVar(  # type: ignore[misc]
+    "T_Float",
+    np.float32,
+    np.float64,
+    default=Any,  # pyright: ignore[reportGeneralTypeIssues]
+)
+T_Float2 = TypeVar("T_Float2", np.float32, np.float64)
 # T_FloatDType_co = TypeVar(  # type: ignore[misc]  # something off with default
 #     "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
 # )
@@ -127,12 +125,12 @@ MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
 # * Generic array
-T_Array = TypeVar(  # type: ignore[misc]  # something off with default
+T_Array = TypeVar(
     "T_Array",
     NDArray[np.float32],
     NDArray[np.float64],
     xr.DataArray,
-    default=NDArray[np.float64],
+    # default=NDArray[np.float64],
 )
 # T_Array2 = TypeVar(  # type: ignore[misc]  # something off with default
 #     "T_Array2",
