@@ -71,35 +71,33 @@ def test_CS(dc, dcx) -> None:
     np.testing.assert_allclose(dc, dcx)
 
 
-def test_from_data(dc, dcx) -> None:
+def test_init(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    t = CentralMoments.from_data(dc.data, mom_ndim=mom_ndim)
+    t = CentralMoments(dc.data, mom_ndim=mom_ndim)
 
     dims = [f"hello_{i}" for i in range(len(dc.data.shape))]
-    o1 = CentralMoments.from_data(dc.data, mom_ndim=mom_ndim).to_xcentralmoments(
-        dims=dims
-    )
+    o1 = CentralMoments(dc.data, mom_ndim=mom_ndim).to_xcentralmoments(dims=dims)
 
     np.testing.assert_allclose(t, o1)
 
     # create from xarray?
-    o2 = xCentralMoments.from_data(
+    o2 = xCentralMoments(
         dcx.to_dataarray().rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
     )
     xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
-def test_from_data_reduce(dc, dcx) -> None:
+def test_init_reduce(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
     for axis in range(dc.val_ndim):
-        t = CentralMoments.from_data(dc.data, mom_ndim=mom_ndim).reduce(axis=axis)
+        t = CentralMoments(dc.data, mom_ndim=mom_ndim).reduce(axis=axis)
 
         dims = dcx.dims[:axis] + dcx.dims[axis + 1 :]
 
         o1 = (
-            CentralMoments.from_data(
+            CentralMoments(
                 dc.data,
                 mom_ndim=mom_ndim,
             )
@@ -110,9 +108,7 @@ def test_from_data_reduce(dc, dcx) -> None:
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = xCentralMoments.from_data(dcx.to_dataarray(), mom_ndim=mom_ndim).reduce(
-            dim=dim
-        )
+        o2 = xCentralMoments(dcx.to_dataarray(), mom_ndim=mom_ndim).reduce(dim=dim)
 
         xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 

@@ -76,29 +76,58 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
 
     __slots__ = ("_xdata",)
 
+    @overload
     def __init__(
         self,
         data: xr.DataArray,
-        mom_ndim: Mom_NDim = 1,
         *,
+        mom_ndim: Mom_NDim = ...,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLikeArg[T_Float],
+        fastpath: bool = ...,
+    ) -> None: ...
+    @overload
+    def __init__(
+        self,
+        data: xr.DataArray,
+        *,
+        mom_ndim: Mom_NDim = ...,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLike = ...,
+        fastpath: bool = ...,
+    ) -> None: ...
+
+    def __init__(
+        self,
+        data: xr.DataArray,
+        *,
+        mom_ndim: Mom_NDim = 1,
+        copy: bool = False,
+        order: ArrayOrder = None,
+        dtype: DTypeLike = None,
         fastpath: bool = False,
     ) -> None:
+        if not isinstance(data, xr.DataArray):  # pyright: ignore[reportUnnecessaryIsInstance]
+            msg = (
+                "data must be a xarray.DataArray. "
+                "See CentralMoments.to_xcentralmoments for wrapping numpy arrays"
+            )
+            raise TypeError(msg)
+
         if fastpath:
             self._cache = {}
             self._xdata = data
             self._data = self._xdata.data
             self._mom_ndim = mom_ndim
         else:
-            super().__init__(data=data, mom_ndim=mom_ndim)
+            super().__init__(
+                data=data.astype(dtype or data.dtype, copy=copy, order=order),
+                mom_ndim=mom_ndim,
+            )
 
     def set_values(self, values: xr.DataArray) -> None:
-        if not isinstance(values, xr.DataArray):  # pyright: ignore[reportUnnecessaryIsInstance]
-            msg = (
-                "data must be a xarray.DataArray. "
-                "See xCentralMoments.from_data for wrapping numpy arrays"
-            )
-            raise TypeError(msg)
-
         # Ensure we have a numpy array underlying DataArray.
         self._data = values.to_numpy()
         self._xdata = values.copy(data=self._data)
@@ -273,7 +302,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             msg = f"{xdata.shape=} != {self.shape=}"
             raise ValueError(msg)
 
-        return type(self).from_data(
+        return type(self)(
             data=xdata, mom_ndim=self._mom_ndim, copy=copy, order=order, dtype=dtype
         )
 
@@ -1497,43 +1526,43 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             template=template,
         )
 
-    @overload
-    @classmethod
-    def from_data(
-        cls,
-        data: xr.DataArray,
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: DTypeLikeArg[T_Float2],
-    ) -> xCentralMoments[T_Float2]: ...
-    @overload
-    @classmethod
-    def from_data(
-        cls,
-        data: xr.DataArray,
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: DTypeLike = ...,
-    ) -> Self: ...
-    @classmethod
-    @docfiller_inherit_abc()
-    def from_data(
-        cls,
-        data: xr.DataArray,
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = False,
-        order: ArrayOrder = None,
-        dtype: DTypeLike = None,
-    ) -> xCentralMoments[Any] | Self:
-        return cls(
-            data=data.astype(dtype or data.dtype, copy=copy, order=order),
-            mom_ndim=mom_ndim,
-        )
+    # @overload
+    # @classmethod
+    # def from_data(
+    #     cls,
+    #     data: xr.DataArray,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = ...,
+    #     order: ArrayOrder = ...,
+    #     dtype: DTypeLikeArg[T_Float2],
+    # ) -> xCentralMoments[T_Float2]: ...
+    # @overload
+    # @classmethod
+    # def from_data(
+    #     cls,
+    #     data: xr.DataArray,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = ...,
+    #     order: ArrayOrder = ...,
+    #     dtype: DTypeLike = ...,
+    # ) -> Self: ...
+    # @classmethod
+    # @docfiller_inherit_abc()
+    # def from_data(
+    #     cls,
+    #     data: xr.DataArray,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = False,
+    #     order: ArrayOrder = None,
+    #     dtype: DTypeLike = None,
+    # ) -> xCentralMoments[Any] | Self:
+    #     return cls(
+    #         data=data.astype(dtype or data.dtype, copy=copy, order=order),
+    #         mom_ndim=mom_ndim,
+    #     )
 
     @overload
     @classmethod

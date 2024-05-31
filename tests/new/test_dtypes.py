@@ -59,7 +59,7 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
 @cls_mark
 @dtype_base_mark
 @dtype_mark
-def test_from_data(cls, dtype_base, dtype, expected) -> None:
+def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2, 3, 4), dtype=dtype_base)
 
     if cls == xCentralMoments:
@@ -67,9 +67,9 @@ def test_from_data(cls, dtype_base, dtype, expected) -> None:
 
     if expected == "error":
         with pytest.raises(ValueError, match=".*not supported.*"):
-            cls.from_data(data, mom_ndim=1, dtype=dtype)
+            cls(data, mom_ndim=1, dtype=dtype)
     else:
-        c = cls.from_data(data, mom_ndim=1, dtype=dtype)
+        c = cls(data, mom_ndim=1, dtype=dtype)
 
         if dtype is None:
             assert c.dtype.type == dtype_base

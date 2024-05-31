@@ -66,19 +66,62 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     #
     # _CentralT = TypeVar("_CentralT", bound="CentralMoments[T_Float]")
 
+    @overload
     def __init__(
         self,
-        data: NDArray[T_Float],
-        mom_ndim: Mom_NDim = 1,
+        data: ArrayLikeArg[T_Float],
         *,
+        mom_ndim: Mom_NDim = ...,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: None = ...,
+        fastpath: bool = ...,
+    ) -> None: ...
+    @overload
+    def __init__(
+        self,
+        data: Any,
+        *,
+        mom_ndim: Mom_NDim = ...,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLikeArg[T_Float],
+        fastpath: bool = ...,
+    ) -> None: ...
+    @overload
+    def __init__(
+        self,
+        data: Any,
+        *,
+        mom_ndim: Mom_NDim = ...,
+        copy: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLike = ...,
+        fastpath: bool = ...,
+    ) -> None: ...
+
+    def __init__(
+        self,
+        data: ArrayLike,
+        *,
+        mom_ndim: Mom_NDim = 1,
+        copy: bool = False,
+        order: ArrayOrder = None,
+        dtype: DTypeLike = None,
         fastpath: bool = False,
     ) -> None:
         if fastpath:
+            if not isinstance(data, np.ndarray):
+                msg = "Must pass ndarray with fastpath"
+                raise TypeError(msg)
             self._cache = {}
             self._data = data
             self._mom_ndim = mom_ndim
         else:
-            super().__init__(data=data, mom_ndim=mom_ndim)  # type: ignore[arg-type]
+            super().__init__(
+                data=np.array(data, dtype=dtype, order=order, copy=copy),
+                mom_ndim=mom_ndim,
+            )
 
     def set_values(self, values: NDArray[T_Float]) -> None:
         if not isinstance(values, np.ndarray):
@@ -178,7 +221,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             msg = f"{data.shape=} has wrong mom_shape={self.mom_shape}"
             raise ValueError(msg)
 
-        return type(self).from_data(
+        return type(self)(
             data=data,
             copy=copy,
             mom_ndim=self.mom_ndim,
@@ -447,7 +490,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
         >>> rng = default_rng(0)
         >>> xs = rng.random((2, 10))
         >>> datas = [central_moments(x=x, mom=2) for x in xs]
-        >>> da = CentralMoments.from_data(datas[0], mom_ndim=1)
+        >>> da = CentralMoments(datas[0], mom_ndim=1)
         >>> da
         <CentralMoments(val_shape=(), mom=(2,))>
         array([10.    ,  0.5505,  0.1014])
@@ -688,9 +731,6 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
             where ``shape=self.data`` and ``nrep, nsamp = indices.shape``.
 
 
-        See Also
-        --------
-        from_data
         """
         self._raise_if_scalar()
         axis = self._set_default_axis(axis)
@@ -703,7 +743,7 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         out = np.take(data, indices, axis=axis)  # pyright: ignore[reportUnknownMemberType]
 
-        return type(self).from_data(
+        return type(self)(
             data=out,
             mom_ndim=self.mom_ndim,
             copy=False,  # pyright: ignore[reportUnknownMemberType]
@@ -968,67 +1008,67 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
     # def test2(cls: type[CentralMoments[T_Float2]], data: Any) -> CentralMoments[T_Float2]:
     #     return cls(data, mom_ndim=1)
 
-    @overload
-    @classmethod
-    def from_data(
-        cls,
-        data: ArrayLikeArg[T_Float2],
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: None = ...,
-    ) -> CentralMoments[T_Float2]: ...
-    @overload
-    @classmethod
-    def from_data(
-        cls,
-        data: Any,
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: DTypeLikeArg[T_Float2],
-    ) -> CentralMoments[T_Float2]: ...
-    # fallback
-    @overload
-    @classmethod
-    def from_data(
-        cls,
-        data: Any,
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: DTypeLike = ...,
-    ) -> Self: ...
+    # @overload
+    # @classmethod
+    # def from_data(
+    #     cls,
+    #     data: ArrayLikeArg[T_Float2],
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = ...,
+    #     order: ArrayOrder = ...,
+    #     dtype: None = ...,
+    # ) -> CentralMoments[T_Float2]: ...
+    # @overload
+    # @classmethod
+    # def from_data(
+    #     cls,
+    #     data: Any,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = ...,
+    #     order: ArrayOrder = ...,
+    #     dtype: DTypeLikeArg[T_Float2],
+    # ) -> CentralMoments[T_Float2]: ...
+    # # fallback
+    # @overload
+    # @classmethod
+    # def from_data(
+    #     cls,
+    #     data: Any,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = ...,
+    #     order: ArrayOrder = ...,
+    #     dtype: DTypeLike = ...,
+    # ) -> Self: ...
 
-    @classmethod
-    @docfiller_abc()
-    def from_data(
-        cls,
-        data: ArrayLike,
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = False,
-        order: ArrayOrder = None,
-        dtype: DTypeLike = None,
-    ) -> CentralMoments[Any] | Self:
-        """
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> x = rng.random(20)
-        >>> data = central_moments(x=x, mom=2)
+    # @classmethod
+    # @docfiller_abc()
+    # def from_data(
+    #     cls,
+    #     data: ArrayLike,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = False,
+    #     order: ArrayOrder = None,
+    #     dtype: DTypeLike = None,
+    # ) -> CentralMoments[Any] | Self:
+    #     """
+    #     Examples
+    #     --------
+    #     >>> from cmomy.random import default_rng
+    #     >>> rng = default_rng(0)
+    #     >>> x = rng.random(20)
+    #     >>> data = central_moments(x=x, mom=2)
 
-        >>> da = CentralMoments.from_data(data=data, mom_ndim=1)
-        >>> da
-        <CentralMoments(val_shape=(), mom=(2,))>
-        array([20.    ,  0.5124,  0.1033])
-        """
-        data = np.array(data, dtype=dtype, order=order, copy=copy)
-        return cls(data=data, mom_ndim=mom_ndim)
+    #     >>> da = CentralMoments.from_data(data=data, mom_ndim=1)
+    #     >>> da
+    #     <CentralMoments(val_shape=(), mom=(2,))>
+    #     array([20.    ,  0.5124,  0.1033])
+    #     """
+    #     data = np.array(data, dtype=dtype, order=order, copy=copy)
+    #     return cls(data=data, mom_ndim=mom_ndim)
 
     @overload
     @classmethod

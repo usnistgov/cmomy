@@ -73,7 +73,7 @@ def test_new_like2() -> None:
     assert x1.shape == (2, 3, 3)
     assert x1.dims == ("a", "b", "mom")
 
-    x2 = CentralMoments.from_data(np.zeros((2, 3, 4)), mom_ndim=1).to_xcentralmoments(
+    x2 = CentralMoments(np.zeros((2, 3, 4)), mom_ndim=1).to_xcentralmoments(
         dims=("a", "b", "mom")
     )
 
@@ -85,15 +85,13 @@ def test_new_like2() -> None:
 
 
 def test__single_index_selector() -> None:
-    c = CentralMoments.from_data(
-        np.arange(3), mom_ndim=1, dtype=np.float64
-    ).to_xcentralmoments()
+    c = CentralMoments(np.arange(3), mom_ndim=1, dtype=np.float64).to_xcentralmoments()
 
     xr.testing.assert_allclose(c._single_index_dataarray(0), xr.DataArray(0))
     xr.testing.assert_allclose(c._single_index_dataarray(1), xr.DataArray(1))
     xr.testing.assert_allclose(c._single_index_dataarray(2), xr.DataArray(2))
 
-    c = CentralMoments.from_data(
+    c = CentralMoments(
         np.arange(3 * 3).reshape(3, 3), mom_ndim=2, dtype=np.float64
     ).to_xcentralmoments()
 
@@ -233,10 +231,10 @@ def test_combine(other) -> None:
     xtest(other.data_test_xr, t.to_dataarray())
 
 
-def test_from_data() -> None:
+def test_init() -> None:
     data = np.zeros((2, 3, 4))
 
-    c = CentralMoments.from_data(
+    c = CentralMoments(
         data,
         mom_ndim=1,
     ).to_xcentralmoments(dims=("a", "b", "mom"))
@@ -245,20 +243,17 @@ def test_from_data() -> None:
     assert c.mom == (3,)
 
     with pytest.raises(TypeError):
-        xCentralMoments.from_data(data, mom_ndim=1)
+        xCentralMoments(data, mom_ndim=1)
 
     data = xr.DataArray(np.zeros((2, 3, 4)), dims=("a", "b", "mom"))  # type: ignore[assignment]
 
-    c = xCentralMoments.from_data(data, mom_ndim=1)
+    c = xCentralMoments(data, mom_ndim=1)
 
     assert c.dims == ("a", "b", "mom")
     assert c.mom == (3,)
 
-    # with pytest.raises(ValueError):
-    #     xCentralMoments.from_data(data, mom_ndim=3)
 
-
-def test_from_data_reduce(other) -> None:
+def test_init_reduce(other) -> None:
     # set the rng for reproduciblility right now:
     import cmomy.new.random
 
@@ -267,7 +262,7 @@ def test_from_data_reduce(other) -> None:
     datas = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
     datas = scramble_xr(datas)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
-    t = other.cls_xr.from_data(
+    t = other.cls_xr(
         datas,
         mom_ndim=other.mom_ndim,
     ).reduce(dim="rec")
@@ -387,7 +382,7 @@ def test_resample_and_reduce(other, rng) -> None:
     ],
 )
 def test_isel(selector) -> None:
-    cx = CentralMoments.from_data(
+    cx = CentralMoments(
         np.arange(4 * 4 * 5 * 5).reshape(4, 4, 5, 5).astype(None), mom_ndim=2
     ).to_x()
 

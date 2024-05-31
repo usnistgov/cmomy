@@ -78,7 +78,9 @@ def test_raises_centralmoments_init() -> None:
     with pytest.raises(ValueError):
         CentralMoments(np.zeros((2, 3, 4)), mom_ndim=3)  # type: ignore[arg-type]
 
-    with pytest.raises(TypeError):
+    # with pytest.raises(TypeError):
+    #     CentralMoments([1, 2, 3], mom_ndim=1)  # type: ignore[arg-type]
+    with pytest.raises(ValueError):
         CentralMoments([1, 2, 3], mom_ndim=1)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
@@ -93,40 +95,14 @@ def test_raises_zeros() -> None:
     ).shape == (2, 3)
 
 
-def test_raises_from_data() -> None:
+def test_raises_init() -> None:
     data = np.zeros((1, 2, 3))
 
-    c = CentralMoments.from_data(data, mom_ndim=1, copy=False)
+    c = CentralMoments(data, mom_ndim=1, copy=False)
     assert np.shares_memory(data, c.data)
 
-    c = CentralMoments.from_data(data, mom_ndim=1, copy=True)
+    c = CentralMoments(data, mom_ndim=1, copy=True)
     assert not np.shares_memory(data, c.data)
-
-
-# def test_raises_from_datas() -> None:
-#     datas = np.zeros((10, 2, 3))
-
-#     c = CentralMoments.from_datas(datas, mom_ndim=1, dtype=np.float32)
-#     assert c.shape == (2, 3)
-#     assert c.dtype == np.dtype(np.float32)
-
-#     with pytest.raises(ValueError):
-#         CentralMoments.from_datas(datas, mom=3, val_shape=(4, 5))
-
-
-# def test_raises_from_vals(rng) -> None:
-#     x = rng.random(10)
-
-#     a = CentralMoments.from_vals(x, dtype=np.float32, mom=2)
-#     b = CentralMoments.from_vals(x, mom=2)
-
-#     assert a.dtype == np.dtype(np.float32)
-#     assert b.dtype == np.dtype(np.float64)
-
-#     np.testing.assert_allclose(a.data, b.data, rtol=1e-5)
-
-#     with pytest.raises(ValueError):
-#         CentralMoments.from_vals(x, val_shape=(2, 3), mom=2)
 
 
 def test_cmom(other) -> None:
@@ -395,9 +371,9 @@ def test_combine(other, order) -> None:
     other.test_values(t.to_values())
 
 
-def test_from_data_reduce(other) -> None:
+def test_init_reduce(other) -> None:
     datas = np.array([s.to_numpy() for s in other.S])
-    t = other.cls.from_data(datas, mom_ndim=other.mom_ndim).reduce(axis=0)
+    t = other.cls(datas, mom_ndim=other.mom_ndim).reduce(axis=0)
     other.test_values(t.to_values())
 
 
@@ -564,9 +540,7 @@ def test_reduce(other) -> None:
         for axis in range(ndim):
             t = other.s.reduce(axis=axis)
 
-            f = other.cls.from_data(other.data_test, mom_ndim=other.mom_ndim).reduce(
-                axis=axis
-            )
+            f = other.cls(other.data_test, mom_ndim=other.mom_ndim).reduce(axis=axis)
             np.testing.assert_allclose(t.data, f.data)
 
 
@@ -611,8 +585,8 @@ def test_block(rng, mom_ndim: int) -> None:
         y = rng.random((10, 10, 10))
         c = CentralMoments.from_vals(x, y, axis=0, mom=mom)
 
-    c1 = CentralMoments.from_data(c.data[::2, ...], mom_ndim=mom_ndim)
-    c2 = CentralMoments.from_data(c.data[1::2, ...], mom_ndim=mom_ndim)
+    c1 = CentralMoments(c.data[::2, ...], mom_ndim=mom_ndim)
+    c2 = CentralMoments(c.data[1::2, ...], mom_ndim=mom_ndim)
 
     # make axis last dimension before moments
     c3 = (c1 + c2).moveaxis(0, -1)
@@ -629,8 +603,8 @@ def test_block(rng, mom_ndim: int) -> None:
         c.block(2, axis=0).to_numpy(),
     )
 
-    c1 = CentralMoments.from_data(c.data[:, ::2, ...], mom_ndim=mom_ndim)
-    c2 = CentralMoments.from_data(c.data[:, 1::2, ...], mom_ndim=mom_ndim)
+    c1 = CentralMoments(c.data[:, ::2, ...], mom_ndim=mom_ndim)
+    c2 = CentralMoments(c.data[:, 1::2, ...], mom_ndim=mom_ndim)
 
     # move to last dimension
     c3 = (c1 + c2).moveaxis(1, -1)
@@ -652,7 +626,7 @@ def test_block_odd_size(rng) -> None:
     data[:, 1] = x
     data[:, 2] = 0
 
-    c0 = CentralMoments.from_data(data, mom_ndim=1).block(3, axis=0)
+    c0 = CentralMoments(data, mom_ndim=1).block(3, axis=0)
 
     c1 = CentralMoments.from_vals(x[:9].reshape(3, -1), mom=2, axis=1)
 

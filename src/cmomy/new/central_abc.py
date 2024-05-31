@@ -239,9 +239,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         {klass}
             New {klass} object with zerod out data.
 
-        See Also
-        --------
-        from_data
         """
 
     @docfiller.decorate
@@ -315,7 +312,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         See Also
         --------
         new_like
-        from_data
         """
         return self.new_like()
 
@@ -783,9 +779,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     #         Instance of calling class. The new object will have shape
     #         ``(..., shape[axis-1], nrep, shape[axis], ...)``.
 
-    #     See Also
-    #     --------
-    #     from_data
     #     """
     #     # self._raise_if_scalar()
     #     # axis = self._set_default_axis(axis)
@@ -937,7 +930,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             applicable for ``DataArray`` functions.
         _copy : bool, default=False
             If True, copy the resulting data.  Otherwise, try to use a view.
-            This is passed as ``copy=_copy`` to :meth:`from_data`.
         _order : str, optional
             Array order to apply to output.
         _kws : Mapping, optional
@@ -960,9 +952,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         clashes.
 
 
-        See Also
-        --------
-        from_data
         """
         if isinstance(func_or_method, str):
             values = getattr(self.to_values(), func_or_method)(*args, **kwargs)
@@ -985,7 +974,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         _kws.setdefault("order", _order)
         _kws.setdefault("mom_ndim", self.mom_ndim)
 
-        return type(self).from_data(data=values, **_kws)
+        return type(self)(data=values, **_kws)
 
     @property
     def _is_vector(self) -> bool:
@@ -1094,38 +1083,37 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
 
         See Also
         --------
-        from_data
         numpy.zeros
         """
 
-    @classmethod
-    @abstractmethod
-    @docfiller.decorate
-    def from_data(
-        cls,
-        data: T_Array,
-        *,
-        mom_ndim: Mom_NDim,
-        copy: bool = True,
-        order: ArrayOrder = None,
-        dtype: DTypeLike = None,
-    ) -> Self:
-        """
-        Create new object from `data` array with additional checks.
+    # @classmethod
+    # @abstractmethod
+    # @docfiller.decorate
+    # def from_data(
+    #     cls,
+    #     data: T_Array,
+    #     *,
+    #     mom_ndim: Mom_NDim,
+    #     copy: bool = True,
+    #     order: ArrayOrder = None,
+    #     dtype: DTypeLike = None,
+    # ) -> Self:
+    #     """
+    #     Create new object from `data` array with additional checks.
 
-        Parameters
-        ----------
-        data : array-like
-            central moments accumulation array.
-        {mom_ndim}
-        {copy}
-        {copy_kws}
+    #     Parameters
+    #     ----------
+    #     data : array-like
+    #         central moments accumulation array.
+    #     {mom_ndim}
+    #     {copy}
+    #     {copy_kws}
 
-        Returns
-        -------
-        out : {klass}
-            Same type as calling class.
-        """
+    #     Returns
+    #     -------
+    #     out : {klass}
+    #         Same type as calling class.
+    #     """
 
     @classmethod
     @abstractmethod

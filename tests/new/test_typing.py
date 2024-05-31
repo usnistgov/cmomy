@@ -20,6 +20,71 @@ if TYPE_CHECKING:
     )
 
 
+def test_centralmoments_init() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    if TYPE_CHECKING:
+        assert_type(CentralMoments(x32, mom_ndim=1), CentralMoments[np.float32])
+        assert_type(CentralMoments(x64, mom_ndim=1), CentralMoments[np.float64])
+        assert_type(
+            CentralMoments(x64, mom_ndim=1, dtype=np.float32),
+            CentralMoments[np.float32],
+        )
+        assert_type(
+            CentralMoments(x32, mom_ndim=1, dtype=np.float64),
+            CentralMoments[np.float64],
+        )
+        assert_type(CentralMoments([1, 2, 3], mom_ndim=1), CentralMoments[Any])
+        assert_type(
+            CentralMoments([1, 2, 3], mom_ndim=1, dtype=np.float32),
+            CentralMoments[np.float32],
+        )
+        assert_type(
+            CentralMoments([1, 2, 3], mom_ndim=1, dtype=np.dtype("f8")),
+            CentralMoments[np.float64],
+        )
+        assert_type(
+            CentralMoments([1, 2, 3], mom_ndim=1, dtype="f8"), CentralMoments[Any]
+        )
+
+        assert_type(CentralMoments[np.float32]([1, 2, 3]), CentralMoments[np.float32])
+        assert_type(CentralMoments[np.float64]([1, 2, 3]), CentralMoments[np.float64])
+
+
+def test_xcentralmoments_init() -> None:
+    data32 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float32))
+    data64 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float64))
+
+    if TYPE_CHECKING:
+        assert_type(xCentralMoments(data32, mom_ndim=1), xCentralMoments[Any])
+        assert_type(xCentralMoments(data64, mom_ndim=1), xCentralMoments[Any])
+        assert_type(
+            xCentralMoments[np.float32](data32, mom_ndim=1), xCentralMoments[np.float32]
+        )
+        assert_type(
+            xCentralMoments[np.float64](data64, mom_ndim=1), xCentralMoments[np.float64]
+        )
+
+        assert_type(
+            xCentralMoments(data32, mom_ndim=1, dtype=np.float32),
+            xCentralMoments[np.float32],
+        )
+
+        assert_type(
+            xCentralMoments(data32, mom_ndim=1, dtype=np.float64),
+            xCentralMoments[np.float64],
+        )
+        assert_type(
+            xCentralMoments(data32, mom_ndim=1, dtype=np.dtype("f8")),
+            xCentralMoments[np.float64],
+        )
+        assert_type(
+            xCentralMoments(data32, mom_ndim=1, dtype="f8"),
+            xCentralMoments[Any],
+        )
+
+
 def test_astype() -> None:
     x32 = np.array([1, 2, 3], dtype=np.float32)
     x64 = np.array([1, 2, 3], dtype=np.float64)
@@ -700,88 +765,88 @@ def test_xcentralmoments_zeros() -> None:
         )
 
 
-def test_centralmoments_from_data() -> None:
-    data32 = np.zeros((10, 3, 4), dtype=np.float32)
-    data64 = np.zeros((10, 3, 4), dtype=np.float64)
+# def test_centralmoments_from_data() -> None:
+#     data32 = np.zeros((10, 3, 4), dtype=np.float32)
+#     data64 = np.zeros((10, 3, 4), dtype=np.float64)
 
-    if TYPE_CHECKING:
-        assert_type(
-            CentralMoments.from_data(data32, mom_ndim=1), CentralMoments[np.float32]
-        )
-        assert_type(
-            CentralMoments.from_data(data64, mom_ndim=1), CentralMoments[np.float64]
-        )
-        assert_type(
-            CentralMoments.from_data(data32, mom_ndim=1, dtype=np.float64),
-            CentralMoments[np.float64],
-        )
-        assert_type(
-            CentralMoments.from_data(data32, mom_ndim=1, dtype=np.dtype("f8")),
-            CentralMoments[np.float64],
-        )
-        assert_type(
-            CentralMoments.from_data(data32, mom_ndim=1, dtype="f8"),
-            CentralMoments[Any],
-        )
-        assert_type(
-            CentralMoments.from_data([1, 2, 3], mom_ndim=1), CentralMoments[Any]
-        )
-        assert_type(
-            CentralMoments.from_data([1, 2, 3], mom_ndim=1, dtype="f8"),
-            CentralMoments[Any],
-        )
-        assert_type(
-            CentralMoments.from_data([1, 2, 3], mom_ndim=1, dtype=np.float32),
-            CentralMoments[np.float32],
-        )
+#     if TYPE_CHECKING:
+#         assert_type(
+#             CentralMoments.from_data(data32, mom_ndim=1), CentralMoments[np.float32]
+#         )
+#         assert_type(
+#             CentralMoments.from_data(data64, mom_ndim=1), CentralMoments[np.float64]
+#         )
+#         assert_type(
+#             CentralMoments.from_data(data32, mom_ndim=1, dtype=np.float64),
+#             CentralMoments[np.float64],
+#         )
+#         assert_type(
+#             CentralMoments.from_data(data32, mom_ndim=1, dtype=np.dtype("f8")),
+#             CentralMoments[np.float64],
+#         )
+#         assert_type(
+#             CentralMoments.from_data(data32, mom_ndim=1, dtype="f8"),
+#             CentralMoments[Any],
+#         )
+#         assert_type(
+#             CentralMoments.from_data([1, 2, 3], mom_ndim=1), CentralMoments[Any]
+#         )
+#         assert_type(
+#             CentralMoments.from_data([1, 2, 3], mom_ndim=1, dtype="f8"),
+#             CentralMoments[Any],
+#         )
+#         assert_type(
+#             CentralMoments.from_data([1, 2, 3], mom_ndim=1, dtype=np.float32),
+#             CentralMoments[np.float32],
+#         )
 
-        # z = np.array([1, 2, 3])
-        # reveal_type(z)
-        # reveal_type(CentralMoments(z, mom_ndim=1))
-        # reveal_type(CentralMoments[np.float32](z, mom_ndim=1))
+#         # z = np.array([1, 2, 3])
+#         # reveal_type(z)
+#         # reveal_type(CentralMoments(z, mom_ndim=1))
+#         # reveal_type(CentralMoments[np.float32](z, mom_ndim=1))
 
-        # reveal_type(CentralMoments.from_data(z, mom_ndim=1))
-        # reveal_type(CentralMoments.from_data(z, mom_ndim=1, dtype=np.float32))
-        # reveal_type(CentralMoments.from_data(z, mom_ndim=1, dtype=np.float64))
+#         # reveal_type(CentralMoments.from_data(z, mom_ndim=1))
+#         # reveal_type(CentralMoments.from_data(z, mom_ndim=1, dtype=np.float32))
+#         # reveal_type(CentralMoments.from_data(z, mom_ndim=1, dtype=np.float64))
 
-        # reveal_type(CentralMoments[np.float32].from_data(z, mom_ndim=1))
-        # reveal_type(CentralMoments[np.float64].from_data(z, mom_ndim=1))
+#         # reveal_type(CentralMoments[np.float32].from_data(z, mom_ndim=1))
+#         # reveal_type(CentralMoments[np.float64].from_data(z, mom_ndim=1))
 
-        # reveal_type(CentralMoments[np.float32].from_data([1,2,3], mom_ndim=1))
-        # reveal_type(CentralMoments[np.float64].from_data([1,2,3], mom_ndim=1))
+#         # reveal_type(CentralMoments[np.float32].from_data([1,2,3], mom_ndim=1))
+#         # reveal_type(CentralMoments[np.float64].from_data([1,2,3], mom_ndim=1))
 
-        # # reveal_type(CentralMoments[np.float32].from_data(z, dtype=np.float32))
-        # # reveal_type(CentralMoments.test(z))
-        # reveal_type(CentralMoments.test2(z))
-        # reveal_type(CentralMoments[np.float32].test(z))
-        # reveal_type(CentralMoments[np.float64].test2(z))
+#         # # reveal_type(CentralMoments[np.float32].from_data(z, dtype=np.float32))
+#         # # reveal_type(CentralMoments.test(z))
+#         # reveal_type(CentralMoments.test2(z))
+#         # reveal_type(CentralMoments[np.float32].test(z))
+#         # reveal_type(CentralMoments[np.float64].test2(z))
 
 
-def test_xcentralmoments_from_data() -> None:
-    data32 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float32))
-    data64 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float64))
+# def test_xcentralmoments_from_data() -> None:
+#     data32 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float32))
+#     data64 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float64))
 
-    if TYPE_CHECKING:
-        assert_type(xCentralMoments.from_data(data32, mom_ndim=1), xCentralMoments[Any])
-        # assert_type(xCentralMoments[np.float32].from_data(data32, mom_ndim=1), xCentralMoments[np.float32])
-        assert_type(xCentralMoments.from_data(data64, mom_ndim=1), xCentralMoments[Any])
-        assert_type(
-            xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.float32),
-            xCentralMoments[np.float32],
-        )
+#     if TYPE_CHECKING:
+#         assert_type(xCentralMoments.from_data(data32, mom_ndim=1), xCentralMoments[Any])
+#         # assert_type(xCentralMoments[np.float32].from_data(data32, mom_ndim=1), xCentralMoments[np.float32])
+#         assert_type(xCentralMoments.from_data(data64, mom_ndim=1), xCentralMoments[Any])
+#         assert_type(
+#             xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.float32),
+#             xCentralMoments[np.float32],
+#         )
 
-        assert_type(
-            xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.float64),
-            xCentralMoments[np.float64],
-        )
-        assert_type(
-            xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.dtype("f8")),
-            xCentralMoments[np.float64],
-        )
-        assert_type(
-            xCentralMoments.from_data(data32, mom_ndim=1, dtype="f8"),
-            xCentralMoments[Any],
-        )
+#         assert_type(
+#             xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.float64),
+#             xCentralMoments[np.float64],
+#         )
+#         assert_type(
+#             xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.dtype("f8")),
+#             xCentralMoments[np.float64],
+#         )
+#         assert_type(
+#             xCentralMoments.from_data(data32, mom_ndim=1, dtype="f8"),
+#             xCentralMoments[Any],
+#         )
 
 
 def test_centralmoments_from_vals() -> None:
