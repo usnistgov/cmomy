@@ -52,6 +52,15 @@ parallel_parametrize = pytest.mark.parametrize(
 fromzero_parametrize = pytest.mark.parametrize("fromzero", [False, True])
 
 
+def test_central_randsamp_freq():
+    c = CentralMoments.zeros(mom=4, val_shape=(10, 4))
+
+    freq0 = resample.randsamp_freq(nrep=10, ndat=10, rng=np.random.default_rng(0))
+    freq1 = c.randsamp_freq(nrep=10, axis=0, rng=np.random.default_rng(0))
+
+    np.testing.assert_allclose(freq0, freq1)
+
+
 @parallel_parametrize
 @pytest.mark.parametrize("mom", [2, (2, 2)])
 def test_resample_vec(parallel, mom, rng):
@@ -70,7 +79,7 @@ def test_resample_vec(parallel, mom, rng):
 
     np.testing.assert_allclose(c1.data, c2.data[:, 0, ...])
 
-    freq = resample.randsamp_freq(nrep=10, ndat=10)
+    freq = c1.randsamp_freq(nrep=10, axis=0)
 
     cc1 = c1.resample_and_reduce(
         freq=freq,
@@ -152,7 +161,7 @@ def test_resample_resample_data(rng) -> None:
 
     c = CentralMoments.from_vals(x, mom=3, axis=0)
 
-    freq = resample.random_freq(nrep=5, ndat=10, rng=rng)
+    freq = c.randsamp_freq(nrep=5, axis=0, rng=rng)
 
     with pytest.raises(ValueError):
         out = resample.resample_data(

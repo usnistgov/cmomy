@@ -338,22 +338,6 @@ def resample_data(
     out: None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# array fallback
-@overload
-def resample_data(
-    data: ArrayLike,
-    freq: NDArrayInt,
-    *,
-    mom_ndim: Mom_NDim,
-    axis: int | None = ...,
-    dim: Hashable | None = ...,
-    rep_dim: str = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dtype: None = ...,
-    out: None = ...,
-    keep_attrs: KeepAttrs = ...,
-) -> NDArrayAny: ...
 # out
 @overload
 def resample_data(
@@ -398,7 +382,7 @@ def resample_data(
     rep_dim: str = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
     out: None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArrayAny: ...
@@ -447,6 +431,7 @@ def resample_data(
     mom_ndim = validate_mom_ndim(mom_ndim)
 
     dtype = select_dtype(data, out=out, dtype=dtype)
+    freq = freq.astype(dtype)
 
     if isinstance(data, xr.DataArray):
         dim, data = xprepare_data_for_reduction(
@@ -559,25 +544,6 @@ def resample_vals(
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# array fallback
-@overload
-def resample_vals(
-    x: ArrayLike,
-    *y: ArrayLike,
-    mom: Moments,
-    freq: NDArrayInt,
-    weight: ArrayLike | None = ...,
-    axis: int | None = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dtype: None = ...,
-    out: None = ...,
-    # xarray specific
-    dim: Hashable | None = ...,
-    rep_dim: str = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-) -> NDArrayAny: ...
 # out
 @overload
 def resample_vals(
@@ -616,7 +582,7 @@ def resample_vals(
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# dtype fallback
+# fallback
 @overload
 def resample_vals(
     x: Any,
@@ -627,7 +593,7 @@ def resample_vals(
     axis: int | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
     out: None = ...,
     # xarray specific
     dim: Hashable | None = ...,
@@ -688,6 +654,8 @@ def resample_vals(
     weight = 1.0 if weight is None else weight
 
     dtype = select_dtype(x, out=out, dtype=dtype)
+
+    freq = freq.astype(dtype)
 
     if isinstance(x, xr.DataArray):
         input_core_dims, (dx0, dw, *dx1) = xprepare_values_for_reduction(

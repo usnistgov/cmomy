@@ -51,6 +51,13 @@ def test_new_like() -> None:
     with pytest.raises(ValueError):
         c.new_like(np.zeros((2, 3, 4)), verify=True)
 
+    # this should work fine without verify
+    assert c.new_like(np.zeros((3, 3)), verify=False).shape == (3, 3)
+
+    # no verify by wrong mom shape
+    with pytest.raises(ValueError):
+        c.new_like(np.zeros((3, 4)), verify=False)
+
 
 def test_zeros() -> None:
     c = CentralMoments.zeros(val_shape=2, mom=2)

@@ -10,7 +10,7 @@ from module_utilities import cached
 
 from ._lib.factory import factory_pusher
 from .docstrings import docfiller
-from .typing import DTypeLikeArg, T_Array, T_Float, T_Float2
+from .typing import T_Array, T_Float
 from .utils import (
     normalize_axis_index,
     parallel_heuristic,
@@ -247,7 +247,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     @docfiller.decorate
     def astype(
         self,
-        dtype: DTypeLikeArg[T_Float2] | None,
+        dtype: DTypeLike,
         *,
         order: ArrayOrder = None,
         casting: DataCasting = None,
@@ -806,6 +806,31 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     #     #     **kwargs,
     #     # )
 
+    def randsamp_freq(
+        self,
+        *,
+        axis: int | None = None,
+        nrep: int | None = None,
+        nsamp: int | None = None,
+        indices: ArrayLike | None = None,
+        freq: ArrayLike | None = None,
+        check: bool = False,
+        rng: np.random.Generator | None = None,
+    ) -> NDArrayInt:
+        """Interface to :func:`.resample.randsamp_freq`"""
+        from .resample import randsamp_freq
+
+        axis = self._wrap_axis(axis)
+        return randsamp_freq(
+            ndat=self.shape[axis],
+            nrep=nrep,
+            nsamp=nsamp,
+            indices=indices,
+            freq=freq,
+            check=check,
+            rng=rng,
+        )
+
     @abstractmethod
     @docfiller.decorate
     def resample_and_reduce(
@@ -1033,7 +1058,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         self, axis: int | None, default: int = -1, ndim: int | None = None
     ) -> int:
         """Wrap axis to positive value and check."""
-        if axis is None:
+        if axis is None:  # pragma: no cover
             axis = default
         if ndim is None:
             ndim = self.val_ndim
@@ -1048,7 +1073,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | None = None,
+        val_shape: tuple[int, ...] | int | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
     ) -> Self:

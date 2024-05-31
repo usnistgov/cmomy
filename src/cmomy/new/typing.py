@@ -49,8 +49,15 @@ NDArrayInt = NDArray[LongIntDType]
 
 
 # ** Types
-T_Float = TypeVar("T_Float", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default
-T_Float2 = TypeVar("T_Float2", np.float32, np.float64, default=np.float64)  # type: ignore[misc]  # something off with default]
+T_Float = TypeVar(
+    "T_Float", np.float32, np.float64, default=Any
+)  # , default=np.float64)  # type: ignore[misc]  # something off with default
+T_Float2 = TypeVar(
+    "T_Float2", np.float32, np.float64
+)  # , default=T_Float)#, default=Any) #, default=np.float64)  # type: ignore[misc]  # something off with default]
+T_Float3 = TypeVar(
+    "T_Float3", np.float32, np.float64
+)  # , default=Any) #, default=np.float64)  # type: ignore[misc]  # something off with default]
 # T_FloatDType_co = TypeVar(  # type: ignore[misc]  # something off with default
 #     "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
 # )

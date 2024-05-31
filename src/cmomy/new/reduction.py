@@ -86,7 +86,7 @@ def _reduce_vals(
 
 # ** overloads
 @overload
-def reduce_vals(
+def reduce_vals(  # type: ignore[overload-overlap]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -118,23 +118,6 @@ def reduce_vals(
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# array fallback
-@overload
-def reduce_vals(
-    x: ArrayLike,
-    *y: ArrayLike,
-    mom: Moments,
-    weight: ArrayLike | None = ...,
-    axis: int | None = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dtype: None = ...,
-    out: None = ...,
-    # xarray specific
-    dim: Hashable | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-) -> NDArrayAny: ...
 # out
 @overload
 def reduce_vals(
@@ -169,7 +152,7 @@ def reduce_vals(
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# dtype fallback
+# fallback
 @overload
 def reduce_vals(
     x: Any,
@@ -179,7 +162,7 @@ def reduce_vals(
     axis: int | None = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
     out: None = ...,
     # xarray specific
     dim: Hashable | None = ...,
@@ -321,20 +304,6 @@ def reduce_data(
     out: None = ...,
     dtype: None = ...,
 ) -> NDArray[T_Float]: ...
-# fallback
-@overload
-def reduce_data(
-    data: ArrayLike,
-    *,
-    mom_ndim: Mom_NDim,
-    dim: Hashable | None = ...,
-    axis: int | None = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    out: None = ...,
-    dtype: None = ...,
-) -> NDArrayAny: ...
 # out
 @overload
 def reduce_data(
@@ -363,7 +332,7 @@ def reduce_data(
     out: None = ...,
     dtype: DTypeLikeArg[T_Float],
 ) -> NDArray[T_Float]: ...
-# dtype fallback
+# fallback
 @overload
 def reduce_data(
     data: Any,
@@ -375,7 +344,7 @@ def reduce_data(
     parallel: bool | None = ...,
     keep_attrs: KeepAttrs = ...,
     out: None = ...,
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
 ) -> NDArrayAny: ...
 
 
@@ -580,24 +549,6 @@ def reduce_data_grouped(
     groups: Sequence[Any] | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# fallback
-@overload
-def reduce_data_grouped(
-    data: ArrayLike,
-    *,
-    mom_ndim: Mom_NDim,
-    by: ArrayLike,
-    axis: int | None = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    out: None = ...,
-    dtype: None = ...,
-    # xarray specific
-    dim: Hashable | None = ...,
-    group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
-    keep_attrs: KeepAttrs = ...,
-) -> NDArrayAny: ...
 # out
 @overload
 def reduce_data_grouped(
@@ -634,7 +585,7 @@ def reduce_data_grouped(
     groups: Sequence[Any] | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# dtype fallback
+# fallback
 @overload
 def reduce_data_grouped(
     data: Any,
@@ -645,7 +596,7 @@ def reduce_data_grouped(
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
@@ -987,28 +938,6 @@ def reduce_data_indexed(
     groups: Sequence[Any] | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# fallback
-@overload
-def reduce_data_indexed(
-    data: ArrayLike,
-    *,
-    mom_ndim: Mom_NDim,
-    index: ArrayLike,
-    group_start: ArrayLike,
-    group_end: ArrayLike,
-    scale: ArrayLike | None = ...,
-    axis: int | None = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    out: None = ...,
-    dtype: None = ...,
-    # xarray specific...
-    dim: Hashable | None = ...,
-    coords_policy: CoordsPolicy | Literal["group"] = ...,
-    group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
-    keep_attrs: KeepAttrs = ...,
-) -> NDArrayAny: ...
 # out
 @overload
 def reduce_data_indexed(
@@ -1053,7 +982,7 @@ def reduce_data_indexed(
     groups: Sequence[Any] | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
-# dtype fallback
+# fallback
 @overload
 def reduce_data_indexed(
     data: Any,
@@ -1067,7 +996,7 @@ def reduce_data_indexed(
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
     # xarray specific...
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,

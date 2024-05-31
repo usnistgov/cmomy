@@ -6,6 +6,7 @@ import xarray as xr
 
 from cmomy.new.central_dataarray import xCentralMoments
 from cmomy.new.central_numpy import CentralMoments
+from cmomy.new.resample import random_freq, resample_vals
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -45,6 +46,7 @@ def test_astype() -> None:
         assert_type(c64.astype(np.float32), CentralMoments[np.float32])
         assert_type(c32.astype(np.dtype("f8")), CentralMoments[np.float64])
         assert_type(c64.astype(np.dtype("f4")), CentralMoments[np.float32])
+        assert_type(c64.astype("f4"), CentralMoments[Any])
 
         assert_type(c32.astype(None), CentralMoments[np.float64])
         assert_type(c64.astype(None), CentralMoments[np.float64])
@@ -64,6 +66,7 @@ def test_astype() -> None:
         assert_type(cx64.astype(np.float32), xCentralMoments[np.float32])
         assert_type(cx32.astype(np.dtype("f8")), xCentralMoments[np.float64])
         assert_type(cx64.astype(np.dtype("f4")), xCentralMoments[np.float32])
+        assert_type(cx64.astype("f4"), xCentralMoments[Any])
 
         assert_type(cx32.astype(None), xCentralMoments[np.float64])
         assert_type(cx64.astype(None), xCentralMoments[np.float64])
@@ -83,6 +86,7 @@ def test_astype() -> None:
         assert_type(cc64.astype(np.float32), CentralMoments[np.float32])
         assert_type(cc32.astype(np.dtype("f8")), CentralMoments[np.float64])
         assert_type(cc64.astype(np.dtype("f4")), CentralMoments[np.float32])
+        assert_type(cc64.astype("f4"), CentralMoments[Any])
 
         assert_type(cc32.astype(None), CentralMoments[np.float64])
         assert_type(cc64.astype(None), CentralMoments[np.float64])
@@ -130,6 +134,13 @@ def test_reduce_vals() -> None:
             reduce_vals([1, 2, 3], mom=3, dtype=np.float64), NDArray[np.float64]
         )
 
+        assert_type(
+            reduce_vals([1, 2, 3], mom=3, dtype=np.dtype("f8")), NDArray[np.float64]
+        )
+
+        # unknown dtype
+        assert_type(reduce_vals(x32, mom=3, dtype="f8"), NDArray[Any])
+        assert_type(reduce_vals([1, 2, 3], mom=3, dtype="f8"), NDArray[Any])
         assert_type(reduce_vals([1.0, 2.0, 3.0], mom=3), NDArray[Any])
 
         # reveal_type(reduce_vals([1,2,3], mom=3))
@@ -177,6 +188,14 @@ def test_reduce_data() -> None:
             reduce_data([1, 2, 3], mom_ndim=1, dtype=np.float64), NDArray[np.float64]
         )
 
+        assert_type(
+            reduce_data(x32, mom_ndim=1, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            reduce_data([1, 2, 3], mom_ndim=1, dtype="f8"),
+            NDArray[Any],
+        )
         assert_type(reduce_data([1.0, 2.0, 3.0], mom_ndim=1), NDArray[Any])
 
         # reveal_type(reduce_data([1,2,3], mom_ndim=1))
@@ -222,6 +241,19 @@ def test_convert() -> None:
         )
         assert_type(
             convert([1, 2, 3], mom_ndim=1, dtype=np.float64), NDArray[np.float64]
+        )
+
+        assert_type(
+            convert([1, 2, 3], mom_ndim=1, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            convert(x32, mom_ndim=1, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            convert(xc, mom_ndim=1, dtype="f8"),
+            NDArray[Any],
         )
 
         assert_type(convert([1.0, 2.0, 3.0], mom_ndim=1), NDArray[Any])
@@ -289,6 +321,9 @@ def test_reduce_data_grouped() -> None:
             NDArray[np.float64],
         )
 
+        assert_type(
+            reduce_data_grouped(x64, mom_ndim=1, by=by, dtype="f8"), NDArray[Any]
+        )
         assert_type(
             reduce_data_grouped([1.0, 2.0, 3.0], mom_ndim=1, by=by), NDArray[Any]
         )
@@ -463,8 +498,17 @@ def test_reduce_data_indexed() -> None:
             NDArray[Any],
         )
 
-        # reveal_type(reduce_data_indexed([1,2,3], mom_ndim=1, index=index, group_start=group_start, group_end=group_end))
-        # reveal_type(reduce_data_indexed([1,2,3], mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=np.float32))
+        assert_type(
+            reduce_data_indexed(
+                x32,
+                mom_ndim=1,
+                index=index,
+                group_start=group_start,
+                group_end=group_end,
+                dtype="f8",
+            ),
+            NDArray[Any],
+        )
 
         xx = xr.DataArray(x32)
         assert_type(
@@ -538,6 +582,7 @@ def test_resample_data() -> None:
         )
 
         assert_type(resample_data([1.0, 2.0, 3.0], freq=freq, mom_ndim=1), NDArray[Any])
+        assert_type(resample_data(x32, freq=freq, mom_ndim=1, dtype="f8"), NDArray[Any])
 
         # reveal_type(resample_data([1,2,3], freq=freq, mom_ndim=1))
         # reveal_type(resample_data([1,2,3], freq=freq, mom_ndim=1, dtype=np.float32))
@@ -547,8 +592,6 @@ def test_resample_data() -> None:
 
 
 def test_resample_vals() -> None:
-    from cmomy.new.resample import random_freq, resample_vals
-
     x32 = np.zeros((10, 3, 3), dtype=np.float32)
     x64 = np.zeros((10, 3, 3), dtype=np.float64)
 
@@ -602,6 +645,7 @@ def test_resample_vals() -> None:
         )
 
         assert_type(resample_vals([1.0, 2.0, 3.0], freq=freq, mom=3), NDArray[Any])
+        assert_type(resample_vals(x32, freq=freq, mom=3, dtype="f8"), NDArray[Any])
 
         # reveal_type(resample_vals([1,2,3], freq=freq, mom=3))
         # reveal_type(resample_vals([1,2,3], freq=freq, mom=3, dtype=np.float32))
@@ -622,8 +666,37 @@ def test_centralmoments_zeros() -> None:
             CentralMoments[np.float64],
         )
         assert_type(
+            CentralMoments.zeros(mom=3, dtype="f8"),
+            CentralMoments[Any],
+        )
+
+        assert_type(
             CentralMoments.zeros(mom=3, dtype=np.dtype("f4")),
             CentralMoments[np.float32],
+        )
+
+
+def test_xcentralmoments_zeros() -> None:
+    if TYPE_CHECKING:
+        assert_type(xCentralMoments.zeros(mom=3), xCentralMoments[np.float64])
+        assert_type(
+            xCentralMoments.zeros(mom=3, dtype=None), xCentralMoments[np.float64]
+        )
+        assert_type(
+            xCentralMoments.zeros(mom=3, dtype=np.float32), xCentralMoments[np.float32]
+        )
+        assert_type(
+            xCentralMoments.zeros(mom=3, dtype=np.dtype("f8")),
+            xCentralMoments[np.float64],
+        )
+        assert_type(
+            xCentralMoments.zeros(mom=3, dtype="f8"),
+            xCentralMoments[Any],
+        )
+
+        assert_type(
+            xCentralMoments.zeros(mom=3, dtype=np.dtype("f4")),
+            xCentralMoments[np.float32],
         )
 
 
@@ -646,7 +719,10 @@ def test_centralmoments_from_data() -> None:
             CentralMoments.from_data(data32, mom_ndim=1, dtype=np.dtype("f8")),
             CentralMoments[np.float64],
         )
-
+        assert_type(
+            CentralMoments.from_data(data32, mom_ndim=1, dtype="f8"),
+            CentralMoments[Any],
+        )
         assert_type(
             CentralMoments.from_data([1, 2, 3], mom_ndim=1), CentralMoments[Any]
         )
@@ -659,12 +735,26 @@ def test_centralmoments_from_data() -> None:
             CentralMoments[np.float32],
         )
 
-        np.array([1, 2, 3])
+        # z = np.array([1, 2, 3])
         # reveal_type(z)
         # reveal_type(CentralMoments(z, mom_ndim=1))
         # reveal_type(CentralMoments[np.float32](z, mom_ndim=1))
-        # reveal_type(CentralMoments[np.float32].from_data(z))
+
+        # reveal_type(CentralMoments.from_data(z, mom_ndim=1))
+        # reveal_type(CentralMoments.from_data(z, mom_ndim=1, dtype=np.float32))
+        # reveal_type(CentralMoments.from_data(z, mom_ndim=1, dtype=np.float64))
+
+        # reveal_type(CentralMoments[np.float32].from_data(z, mom_ndim=1))
+        # reveal_type(CentralMoments[np.float64].from_data(z, mom_ndim=1))
+
+        # reveal_type(CentralMoments[np.float32].from_data([1,2,3], mom_ndim=1))
+        # reveal_type(CentralMoments[np.float64].from_data([1,2,3], mom_ndim=1))
+
+        # # reveal_type(CentralMoments[np.float32].from_data(z, dtype=np.float32))
+        # # reveal_type(CentralMoments.test(z))
+        # reveal_type(CentralMoments.test2(z))
         # reveal_type(CentralMoments[np.float32].test(z))
+        # reveal_type(CentralMoments[np.float64].test2(z))
 
 
 def test_xcentralmoments_from_data() -> None:
@@ -675,6 +765,11 @@ def test_xcentralmoments_from_data() -> None:
         assert_type(xCentralMoments.from_data(data32, mom_ndim=1), xCentralMoments[Any])
         # assert_type(xCentralMoments[np.float32].from_data(data32, mom_ndim=1), xCentralMoments[np.float32])
         assert_type(xCentralMoments.from_data(data64, mom_ndim=1), xCentralMoments[Any])
+        assert_type(
+            xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.float32),
+            xCentralMoments[np.float32],
+        )
+
         assert_type(
             xCentralMoments.from_data(data32, mom_ndim=1, dtype=np.float64),
             xCentralMoments[np.float64],
@@ -727,6 +822,12 @@ def test_xcentralmoments_from_vals() -> None:
             xCentralMoments.from_vals(data32, mom=3, dtype=np.float64),
             xCentralMoments[np.float64],
         )
+
+        assert_type(
+            xCentralMoments.from_vals(data64, mom=3, dtype=np.float32),
+            xCentralMoments[np.float32],
+        )
+
         assert_type(
             xCentralMoments.from_vals(data32, mom=3, dtype=np.dtype("f8")),
             xCentralMoments[np.float64],
@@ -756,6 +857,9 @@ def test_centralmoments_newlike() -> None:
         assert_type(c32.new_like(data32, dtype=np.float64), CentralMoments[np.float64])
         assert_type(c32.new_like(data64, dtype=np.float32), CentralMoments[np.float32])
         assert_type(c64.new_like(data32, dtype=np.float64), CentralMoments[np.float64])
+
+        assert_type(c64.new_like(data64, dtype="f4"), CentralMoments[Any])
+        assert_type(c64.new_like(dtype="f4"), CentralMoments[Any])
 
         # assert_type(c32.new_like(np.array([1,2,3], dtype=np.float64)), CentralMoments[np.float64])
         # assert_type(c32.new_like(np.array([1,2,3], dtype=np.float32), dtype=np.float64), np.float64)
@@ -799,21 +903,105 @@ def test_xcentralmoments_newlike() -> None:
             c64.new_like(xdata32, dtype=np.float64), xCentralMoments[np.float64]
         )
 
+        assert_type(c64.new_like(data64, dtype="f4"), xCentralMoments[Any])
+        assert_type(c64.new_like(dtype="f4"), xCentralMoments[Any])
 
-def test_xcentralmoments_zeros() -> None:
+
+def test_central_resample_vals() -> None:
+    x32 = np.zeros((10, 3, 3), dtype=np.float32)
+    x64 = np.zeros((10, 3, 3), dtype=np.float64)
+
+    freq = random_freq(20, 10)
+
     if TYPE_CHECKING:
-        assert_type(xCentralMoments.zeros(mom=3), xCentralMoments[np.float64])
         assert_type(
-            xCentralMoments.zeros(mom=3, dtype=None), xCentralMoments[np.float64]
+            CentralMoments.from_resample_vals(x32, freq=freq, mom=3),
+            CentralMoments[np.float32],
         )
         assert_type(
-            xCentralMoments.zeros(mom=3, dtype=np.float32), xCentralMoments[np.float32]
+            CentralMoments.from_resample_vals(x64, freq=freq, mom=3),
+            CentralMoments[np.float64],
+        )
+
+        assert_type(
+            CentralMoments.from_resample_vals(x32, freq=freq, mom=3, dtype=np.float64),
+            CentralMoments[np.float64],
         )
         assert_type(
-            xCentralMoments.zeros(mom=3, dtype=np.dtype("f8")),
+            CentralMoments.from_resample_vals(x64, freq=freq, mom=3, dtype=np.float32),
+            CentralMoments[np.float32],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(
+            CentralMoments.from_resample_vals(xc, freq=freq, mom=3), CentralMoments[Any]
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(xc, freq=freq, mom=3, dtype=np.float32),
+            CentralMoments[np.float32],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(
+                [1, 2, 3], freq=freq, mom=3, dtype=np.float32
+            ),
+            CentralMoments[np.float32],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals([1, 2, 3], freq=freq, mom=3),
+            CentralMoments[Any],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(
+                [1, 2, 3], freq=freq, mom=3, dtype=np.float64
+            ),
+            CentralMoments[np.float64],
+        )
+
+        assert_type(
+            CentralMoments.from_resample_vals([1.0, 2.0, 3.0], freq=freq, mom=3),
+            CentralMoments[Any],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(
+                [1.0, 2.0, 3.0], freq=freq, mom=3, dtype="f4"
+            ),
+            CentralMoments[Any],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(x32, freq=freq, mom=3, dtype="f4"),
+            CentralMoments[Any],
+        )
+
+
+def test_xcentral_resample_vals() -> None:
+    x32 = xr.DataArray(np.zeros((10, 3, 3), dtype=np.float32))
+    x64 = xr.DataArray(np.zeros((10, 3, 3), dtype=np.float64))
+
+    freq = random_freq(20, 10)
+
+    if TYPE_CHECKING:
+        assert_type(
+            xCentralMoments.from_resample_vals(x32, freq=freq, mom=3),
+            xCentralMoments[Any],
+        )
+        assert_type(
+            xCentralMoments.from_resample_vals(x64, freq=freq, mom=3),
+            xCentralMoments[Any],
+        )
+
+        assert_type(
+            xCentralMoments.from_resample_vals(x32, freq=freq, mom=3, dtype=np.float64),
             xCentralMoments[np.float64],
         )
         assert_type(
-            xCentralMoments.zeros(mom=3, dtype=np.dtype("f4")),
+            xCentralMoments.from_resample_vals(x64, freq=freq, mom=3, dtype=np.float32),
             xCentralMoments[np.float32],
+        )
+
+        assert_type(
+            xCentralMoments.from_resample_vals(x64, freq=freq, mom=3, dtype="f8"),
+            xCentralMoments[Any],
         )

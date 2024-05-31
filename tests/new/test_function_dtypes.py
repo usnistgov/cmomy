@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy.new import reduction
+from cmomy.new import reduction, resample
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -127,6 +127,33 @@ def test_reduce_data_grouped_indexed_dtype(
             group_end=end,
             axis=0,
         )
+
+    _do_test(func, vals, dtype, out, result_dtype)
+
+
+@dtypes_mark
+@pytest.mark.parametrize("style", ["data", "vals"])
+def test_resample_data(
+    x_vals: NDArray[np.float64],
+    dtype_in,
+    dtype,
+    out_dtype,
+    result_dtype,
+    style,
+) -> None:
+    ndat = x_vals.shape[0]
+    nrep = 10
+    freq = resample.random_freq(nrep=nrep, ndat=ndat)
+
+    if style == "data":
+        out_shape = (*x_vals.shape[1:-1], nrep, *x_vals.shape[-1:])
+        func = partial(resample.resample_data, freq=freq, mom_ndim=1, axis=0)
+    else:
+        out_shape = (*x_vals.shape[1:], nrep, 4)
+        func = partial(resample.resample_vals, freq=freq, mom=3, axis=0)
+
+    out = np.zeros(out_shape, dtype=out_dtype) if out_dtype is not None else None
+    vals = x_vals.tolist() if dtype_in is None else x_vals.astype(dtype_in)
 
     _do_test(func, vals, dtype, out, result_dtype)
 
