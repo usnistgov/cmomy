@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, NamedTuple, cast, overload
 
 from numpy.typing import NDArray
 
-from cmomy.new._lib.utils import supports_parallel
+from .utils import supports_parallel
 
 if TYPE_CHECKING:
     from typing import Callable, Literal, Protocol
@@ -39,26 +39,6 @@ if TYPE_CHECKING:
             /,
         ) -> tuple[()]: ...
 
-    # ResampleVals = Callable[
-    #     [
-    #         NDArray[T_Float], # x
-    #         NDArray[T_Float], # w
-    #         NDArrayInt, # freq
-    #         NDArray[T_Float], # out
-    #     ],
-    #     None
-    # ]
-    # ResampleValsCov = Callable[
-    #     [
-    #         NDArray[T_Float], # x0
-    #         NDArray[T_Float], # x1
-    #         NDArray[T_Float], # w
-    #         NDArrayInt, # freq
-    #         NDArray[T_Float], # out
-    #     ],
-    #     None
-    # ]
-
     class ResampleData(Protocol):
         def __call__(
             self,
@@ -83,24 +63,6 @@ if TYPE_CHECKING:
             out: NDArray[T_Float],
             /,
         ) -> tuple[()]: ...
-
-    # ReduceVals = Callable[
-    #     [
-    #         NDArray[T_Float], # x
-    #         NDArray[T_Float], # w
-    #         NDArray[T_Float], # out
-    #     ],
-    #     tuple[()]
-    # ]
-    # ReduceValsCov = Callable[
-    #     [
-    #         NDArray[T_Float], # x0
-    #         NDArray[T_Float], # x1
-    #         NDArray[T_Float], # w
-    #         NDArray[T_Float], # out
-    #     ],
-    #     tuple[()]
-    # ]
 
     class ReduceData(Protocol):
         def __call__(

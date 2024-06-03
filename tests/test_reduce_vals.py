@@ -6,15 +6,15 @@ import numpy as np
 import pytest
 import xarray as xr
 
-# from cmomy.new import central_from_values
-from cmomy.new.reduction import reduce_vals
+# from cmomy import central_from_values
+from cmomy.reduction import reduce_vals
 
-from .._simple_cmom import get_cmom, get_comom
+from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
 
-    from cmomy.new.typing import ArrayOrder, Mom_NDim, NDArrayAny
+    from cmomy.typing import ArrayOrder, Mom_NDim, NDArrayAny
 
 
 @pytest.fixture(scope="module", params=[(), (2,), (2, 3)])

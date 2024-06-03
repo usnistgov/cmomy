@@ -1,16 +1,12 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
 import numpy as np
 import pytest
 
-# from cmomy import central_moments
-from .._simple_cmom import get_cmom, get_comom
+from cmomy import central_moments
 
-if TYPE_CHECKING:
-    from cmomy.new.typing import NDArrayAny
+from ._simple_cmom import get_cmom, get_comom
 
 
 class DataContainer:
@@ -19,10 +15,10 @@ class DataContainer:
         self.y = y
         self.w = w
 
-    def xy(self, cov: bool) -> tuple[NDArrayAny, ...]:
+    def xy(self, cov):
         if cov:
             return (self.x, self.y)
-        return (self.x,)
+        return self.x
 
     def result_expected(self, axis, mom, broadcast=None, cov=None):
         if cov is None:
@@ -39,23 +35,15 @@ class DataContainer:
             broadcast=broadcast,  # pyright: ignore[reportArgumentType]
         )
 
-    def result_central_moments(
-        self,
-        axis: int,
-        mom: int | tuple[int, ...],
-        broadcast=None,  # noqa: ARG002
-        cov: bool | None = None,
-        **kws,
-    ):
-        from cmomy.new.reduction import reduce_vals
-
+    def result_central_moments(self, axis, mom, broadcast=None, cov=None, **kws):
         if cov is None:
             cov = isinstance(mom, tuple) and len(mom) == 2
-        return reduce_vals(
-            *self.xy(cov),
-            weight=self.w,
+        return central_moments(
+            x=self.xy(cov),
+            w=self.w,
             mom=mom,
             axis=axis,
+            broadcast=broadcast,  # pyright: ignore[reportArgumentType]
             **kws,  # pyright: ignore[reportArgumentType]
         )
 
@@ -63,7 +51,9 @@ class DataContainer:
     def from_params(cls, shape, axis, style, rng):
         if isinstance(shape, int):
             shape = (shape,)
+
         x = rng.random(shape)
+
         if style is None:
             y = rng.random(shape)
             w = None
@@ -180,7 +170,7 @@ def test_result(result_container) -> None:
     r = result_container
     a = r.result_expected()
     b = r.result_central_moments()
-    np.testing.assert_allclose(a, b, rtol=1e-10, atol=1e-10)
+    np.testing.assert_allclose(a, b)
 
 
 # @pytest.fixture(scope="module")

@@ -9,7 +9,11 @@ import numpy as np
 import pytest
 import xarray as xr
 
-import cmomy
+from cmomy import resample
+from cmomy.central_dataarray import xCentralMoments
+
+# import cmomy
+from cmomy.central_numpy import CentralMoments
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -50,12 +54,12 @@ def xy(shape, mom_tuple, rng):
     if len(mom_tuple) == 2:
         y = rng.random(shape)
         return (x, y)
-    return x
+    return (x,)
 
 
 @my_fixture()
 def dc(xy, mom, axis):
-    return cmomy.CentralMoments.from_vals(xy, mom=mom, w=None, axis=axis)
+    return CentralMoments.from_vals(*xy, mom=mom, weight=None, axis=axis)
 
 
 @my_fixture()
@@ -67,41 +71,44 @@ def test_CS(dc, dcx) -> None:
     np.testing.assert_allclose(dc, dcx)
 
 
-def test_from_data(dc, dcx) -> None:
+def test_init(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    t = cmomy.CentralMoments.from_data(dc.data, mom_ndim=mom_ndim)
+    t = CentralMoments(dc.data, mom_ndim=mom_ndim)
 
     dims = [f"hello_{i}" for i in range(len(dc.data.shape))]
-    o1 = cmomy.xCentralMoments.from_data(dc.data, dims=dims, mom_ndim=mom_ndim)
+    o1 = CentralMoments(dc.data, mom_ndim=mom_ndim).to_xcentralmoments(dims=dims)
 
     np.testing.assert_allclose(t, o1)
 
     # create from xarray?
-    o2 = cmomy.xCentralMoments.from_data(
+    o2 = xCentralMoments(
         dcx.to_dataarray().rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
     )
     xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
-def test_from_datas(dc, dcx) -> None:
+def test_init_reduce(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
     for axis in range(dc.val_ndim):
-        t = cmomy.CentralMoments.from_datas(dc.data, axis=axis, mom_ndim=mom_ndim)
+        t = CentralMoments(dc.data, mom_ndim=mom_ndim).reduce(axis=axis)
 
         dims = dcx.dims[:axis] + dcx.dims[axis + 1 :]
 
-        o1 = cmomy.xCentralMoments.from_datas(
-            dc.data, axis=axis, mom_ndim=mom_ndim, dims=dims
+        o1 = (
+            CentralMoments(
+                dc.data,
+                mom_ndim=mom_ndim,
+            )
+            .reduce(axis=axis)
+            .to_xcentralmoments(dims=dims)
         )
 
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = cmomy.xCentralMoments.from_datas(
-            dcx.to_dataarray(), dim=dim, mom_ndim=mom_ndim
-        )
+        o2 = xCentralMoments(dcx.to_dataarray(), mom_ndim=mom_ndim).reduce(dim=dim)
 
         xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
@@ -109,22 +116,21 @@ def test_from_datas(dc, dcx) -> None:
 def test_from_raw(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    t = cmomy.CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim)
+    t = CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim)
 
-    o1 = cmomy.xCentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim)
+    o1 = CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim).to_xcentralmoments()
 
     np.testing.assert_allclose(t, o1)
 
-    o2 = cmomy.xCentralMoments.from_raw(
+    o2 = xCentralMoments.from_raw(
         dcx.to_raw(),
         mom_ndim=mom_ndim,
-        convert_kws={"axis": -1 if mom_ndim == 1 else (-2, -1)},
     )
     xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
     if mom_ndim == 2:
         with pytest.raises(ValueError):
-            o2 = cmomy.xCentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim + 1)  # pyright: ignore[reportArgumentType]
+            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim + 1)  # pyright: ignore[reportArgumentType]
 
 
 def test_from_raws(dc, dcx) -> None:
@@ -133,39 +139,45 @@ def test_from_raws(dc, dcx) -> None:
     for axis in range(dc.val_ndim):
         # first test from raws
         raws = dc.to_raw()
-        t = cmomy.CentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
+        t = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis)
         r = dc.reduce(axis=axis)
 
         np.testing.assert_allclose(t.to_numpy(), r.to_numpy())
 
         # test xCentral
-        o1 = cmomy.xCentralMoments.from_raws(raws, axis=axis, mom_ndim=mom_ndim)
+        o1 = (
+            CentralMoments.from_raw(raws, mom_ndim=mom_ndim)
+            .reduce(axis=axis)
+            .to_xcentralmoments()
+        )
 
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        cmomy.xCentralMoments.from_raws(dcx.to_raw(), dim=dim, mom_ndim=mom_ndim)
+        o2 = xCentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim).reduce(dim=dim)
+
+        np.testing.assert_allclose(t, o2)
 
 
 def test_from_vals(xy, shape, mom) -> None:
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
-    xy_xr: xr.DataArray | tuple[xr.DataArray, xr.DataArray]
-    if isinstance(xy, tuple):
-        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
-    else:
-        xy_xr = xr.DataArray(xy, dims=dims)
+    xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
 
     for axis in range(len(shape)):
-        t = cmomy.xCentralMoments.from_vals(xy, axis=axis, mom=mom)
+        t = CentralMoments.from_vals(*xy, axis=axis, mom=mom).to_xcentralmoments()
 
         # dims of output
-        o1 = cmomy.xCentralMoments.from_vals(
-            xy, axis=axis, mom=mom, dims=dims[:axis] + dims[axis + 1 :]
-        )
+        o1 = CentralMoments.from_vals(
+            *xy,
+            axis=axis,
+            mom=mom,
+        ).to_xcentralmoments(dims=dims[:axis] + dims[axis + 1 :])
         np.testing.assert_allclose(t, o1)
 
-        o2 = cmomy.xCentralMoments.from_vals(
-            xy_xr, dim=dims[axis], mom=mom, dtype=np.float64
+        o2 = xCentralMoments.from_vals(
+            *xy_xr,
+            dim=dims[axis],
+            mom=mom,
         )
 
         xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
@@ -173,25 +185,27 @@ def test_from_vals(xy, shape, mom) -> None:
 
 def test_from_resample_vals(xy, shape, mom) -> None:
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
-    xy_xr: xr.DataArray | tuple[xr.DataArray, xr.DataArray]
-    if isinstance(xy, tuple):
-        xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
-    else:
-        xy_xr = xr.DataArray(xy, dims=dims)
+    xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
 
     for axis in range(len(shape)):
-        t, freq = cmomy.xCentralMoments.from_resample_vals(
-            xy, nrep=10, full_output=True, axis=axis, mom=mom
-        )  # type : ignore
+        freq = resample.random_freq(nrep=10, ndat=xy[0].shape[axis])
+
+        t = CentralMoments.from_resample_vals(
+            *xy, freq=freq, axis=axis, mom=mom
+        ).to_xcentralmoments()  # type : ignore
 
         # dims of output
-        o1 = cmomy.xCentralMoments.from_resample_vals(
-            xy, axis=axis, mom=mom, freq=freq, dims=dims[:axis] + dims[axis + 1 :]
-        )
+        o1 = CentralMoments.from_resample_vals(
+            *xy,
+            axis=axis,
+            mom=mom,
+            freq=freq,
+        ).to_xcentralmoments(dims=(*dims[:axis], *dims[axis + 1 :], "rep"))
+
         np.testing.assert_allclose(t, o1)
 
-        o2 = cmomy.xCentralMoments.from_resample_vals(
-            xy_xr,
+        o2 = xCentralMoments.from_resample_vals(
+            *xy_xr,
             dim=dims[axis],
             mom=mom,
             freq=freq,  # w=xr.DataArray(1.0)  # NOTE: had this for coverage, but ignoring anyway...
@@ -200,49 +214,77 @@ def test_from_resample_vals(xy, shape, mom) -> None:
         xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
 
 
-def test_from_resample_vals2() -> None:
+keep_attrs_mark = pytest.mark.parametrize("keep_attrs", [False, True])
+
+
+@keep_attrs_mark
+def test_from_resample_vals2(keep_attrs) -> None:
     coords = {"a": [1], "b": [2, 3]}
     attrs = {"hello": "there"}
     x = xr.DataArray(np.zeros((10, 1, 2)), dims=("rec", "a", "b"))
     xc = x.assign_coords(coords).rename("hello").assign_attrs(attrs)
 
-    t = cmomy.xCentralMoments.from_resample_vals(xc, dim="rec", mom=2, nrep=10)
+    freq = resample.random_freq(nrep=10, ndat=xc.sizes["rec"])
 
+    t = xCentralMoments.from_resample_vals(
+        xc, dim="rec", mom=2, freq=freq, keep_attrs=keep_attrs
+    )
     xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
     assert t.name == "hello"
-    assert t.attrs == attrs
+    assert t.attrs == (attrs if keep_attrs else {})
 
-    t = cmomy.xCentralMoments.from_resample_vals(
-        x, dim="rec", mom=2, nrep=10, coords=coords, name="hello", attrs=attrs
+    t = (
+        xCentralMoments.from_resample_vals(
+            x,
+            dim="rec",
+            mom=2,
+            freq=freq,
+        )
+        .assign_coords(coords)
+        .assign_attrs(attrs)
+        .rename("hello")
     )
     xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
     assert t.name == "hello"
     assert t.attrs == attrs
 
 
-def test_from_vals2() -> None:
+@keep_attrs_mark
+def test_from_vals2(keep_attrs) -> None:
     coords = {"a": [1], "b": [2, 3]}
+    attrs = {"hello": "there"}
     x = xr.DataArray(np.zeros((10, 1, 2)), dims=("rec", "a", "b"))
-    xc = x.assign_coords(coords).rename("hello")
+    xc = x.assign_coords(coords).rename("hello").assign_attrs(attrs)
 
-    t = cmomy.xCentralMoments.from_vals(xc, dim="rec", mom=2)
+    t = xCentralMoments.from_vals(xc, dim="rec", mom=2, keep_attrs=keep_attrs)
 
     xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
     assert t.name == "hello"
+    assert t.attrs == (attrs if keep_attrs else {})
 
-    t = cmomy.xCentralMoments.from_vals(
-        x, dim="rec", mom=2, coords=coords, name="hello"
+    t = (
+        xCentralMoments.from_vals(
+            x,
+            dim="rec",
+            mom=2,
+        )
+        .assign_coords(coords)
+        .assign_attrs(attrs)
+        .rename("hello")
     )
     xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
     assert t.name == "hello"
+    assert t.attrs == attrs
 
 
-def test_resample_and_reduce(dc, dcx) -> None:
+@pytest.mark.parametrize("parallel", [None])
+def test_resample_and_reduce(dc, dcx, parallel) -> None:
     for axis in range(dc.val_ndim):
-        t, freq = dc.resample_and_reduce(nrep=10, full_output=True, axis=axis)
-
-        o = dcx.resample_and_reduce(freq=freq, dim=dcx.dims[axis])
+        freq = resample.random_freq(nrep=10, ndat=dc.val_shape[axis])
+        t = dc.resample_and_reduce(freq=freq, axis=axis, parallel=parallel)
+        o = dcx.resample_and_reduce(freq=freq, dim=dcx.dims[axis], parallel=parallel)
 
         np.testing.assert_allclose(t.data, o.data)
 
-        assert o.val_dims == ("rep",) + dcx.val_dims[:axis] + dcx.val_dims[axis + 1 :]
+        dims = dcx.val_dims
+        assert o.val_dims == (*dims[:axis], *dims[axis + 1 :], "rep")

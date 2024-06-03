@@ -1,314 +1,198 @@
-# mypy: disable-error-code="no-untyped-call,no-untyped-def"
-"""Routines to perform resampling."""
+"""Vectorized pushers."""
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
+import numba as nb
+
+from . import _push
+from .decorators import myguvectorize
+
 if TYPE_CHECKING:
-    from typing import Any, Callable, Hashable
+    from numpy.typing import NDArray
 
-from numba import prange
+    from ..typing import T_Float
 
-from .pushers import (
-    push_datas_scale,
-    push_datas_scale_cov,
-    push_datas_scale_cov_vec,
-    # fromzero
-    push_datas_scale_fromzero,
-    push_datas_scale_fromzero_cov,
-    push_datas_scale_fromzero_cov_vec,
-    push_datas_scale_fromzero_vec,
-    push_datas_scale_vec,
-    # vals
-    push_vals_scale,
-    push_vals_scale_cov,
-    push_vals_scale_cov_vec,
-    push_vals_scale_vec,
+# NOTE: The parallel implementation is quite similar to the old
+# way of doing things (with reshape and njit), but the serial is slower.
+# Still, this is way simpler...
+
+
+_PARALLEL = False
+_vectorize = partial(myguvectorize, parallel=_PARALLEL)
+# _jit = partial(myjit, parallel=_PARALLEL)
+
+
+@_vectorize(
+    "(sample,mom),(replicate,sample) -> (replicate,mom)",
+    [
+        (nb.float32[:, :], nb.float32[:, :], nb.float32[:, :]),
+        (nb.float64[:, :], nb.float64[:, :], nb.float64[:, :]),
+    ],
+    writable=None,
 )
-from .utils import myjit
+def resample_data_fromzero(
+    data: NDArray[T_Float], freq: NDArray[T_Float], out: NDArray[T_Float]
+) -> None:
+    nrep, nsamp = freq.shape
 
-# --- * Utilities ------------------------------------------------------------------------
-# put these here to avoid slow load up
+    assert data.shape[1:] == out.shape[1:]
+    assert data.shape[0] == nsamp
+    assert out.shape[0] == nrep
+
+    out[...] = 0.0
+
+    for irep in range(nrep):
+        first_nonzero = nsamp
+        for isamp in range(nsamp):
+            f = freq[irep, isamp]
+            if f != 0:
+                first_nonzero = isamp
+                out[irep, :] = data[isamp, :]
+                out[irep, 0] *= f
+                break
+
+        for isamp in range(first_nonzero + 1, nsamp):
+            f = freq[irep, isamp]
+            if f != 0:
+                _push.push_data_scale(data[isamp, ...], f, out[irep, ...])
 
 
-@myjit()
-def randsamp_indices_to_freq(indices, freqs) -> None:
-    # allowed to pass in different number of samples than ndat.
-    nrep, ndat = freqs.shape
+@_vectorize(
+    "(sample),(sample),(replicate,sample),(replicate,mom)",
+    [
+        (nb.float32[:], nb.float32[:], nb.float32[:, :], nb.float32[:, :]),
+        (nb.float64[:], nb.float64[:], nb.float64[:, :], nb.float64[:, :]),
+    ],
+)
+def resample_vals(
+    x: NDArray[T_Float],
+    w: NDArray[T_Float],
+    freq: NDArray[T_Float],
+    out: NDArray[T_Float],
+) -> None:
+    nrep, nsamp = freq.shape
 
-    assert indices.shape[0] == nrep
-    assert indices.max() < ndat
+    assert len(w) == nsamp
+    assert x.shape == w.shape
+    assert out.shape[0] == nrep
 
-    nsamp = indices.shape[1]
+    for irep in range(nrep):
+        for isamp in range(nsamp):
+            f = freq[irep, isamp]
+            if f == 0:
+                continue
+            _push.push_val(x[isamp], w[isamp] * f, out[irep, ...])
 
-    for r in range(nrep):
-        for d in range(nsamp):
-            idx = indices[r, d]
-            freqs[r, idx] += 1
 
-
-# NOTE: this is all due to closures not being cache-able with numba
-# used to use the following
+# * Other routines
+# Some of these are faster (especially jitted), but not worth it.
 #
-# @lru_cache(10)
-# def _factory_resample(push_datas_scale, fastmath=True, parallel=False):
-#     @njit(fastmath=fastmath, parallel=parallel)
-#     def resample(data, freqs, out):
-#         nrep = freqs.shape[0]
-#         for irep in prange(nrep):
-#             push_datas_scale(out[irep, ...], data, freqs[irep, ...])
-
-#     return resample
-
-# @lru_cache(10)
-# def _factory_resample_vals(push_vals_scale, fastmath=True, parallel=False):
-#     @njit(fastmath=fastmath, parallel=parallel)
-#     def resample(w_s, x_s, freqs, out):
-#         nrep = freqs.shape[0]
-#         for irep in prange(nrep):
-#             push_vals_scale(out[irep, ...], w_s, x_s, freqs[irep, ...])
-
-#     return resample
-
-
-# @lru_cache(10)
-# def _factory_resample_vals_cov(push_vals_scale, fastmath=True, parallel=False):
-#     @njit(fastmath=fastmath, parallel=parallel)
-#     def resample(w_s, x_s, Y, freqs, out):
-#         nrep = freqs.shape[0]
-#         for irep in prange(nrep):
-#             push_vals_scale(out[irep, ...], w_s, x_s, Y, freqs[irep, ...])
-
-#     return resample
-
-
-# * resample data
-# ** mom/scalar
-@myjit()
-def _resample_data(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale(out[irep, ...], data, freqs[irep, ...])
-
-
-# ** mom/vector
-@myjit()
-def _resample_data_vec(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_vec_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-# ** cov/vector
-@myjit()
-def _resample_data_cov(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_cov(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_cov_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_cov(out[irep, ...], data, freqs[irep, ...])
-
-
-# ** cov/vector
-@myjit()
-def _resample_data_cov_vec(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_cov_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_cov_vec_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_cov_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-# * From zero data
-@myjit()
-def _resample_data_fromzero(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_fromzero_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero(out[irep, ...], data, freqs[irep, ...])
-
-
-# ** mom/vector
-@myjit()
-def _resample_data_fromzero_vec(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_fromzero_vec_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-# ** cov/vector
-@myjit()
-def _resample_data_fromzero_cov(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero_cov(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_fromzero_cov_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero_cov(out[irep, ...], data, freqs[irep, ...])
-
-
-# ** cov/vector
-@myjit()
-def _resample_data_fromzero_cov_vec(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero_cov_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_data_fromzero_cov_vec_parallel(data, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_datas_scale_fromzero_cov_vec(out[irep, ...], data, freqs[irep, ...])
-
-
-_RESAMPLE_DATA_DICT: dict[Hashable, Callable[..., Any]] = {
-    # cov, vec, parallel, fromzero
-    (False, False, False, False): _resample_data,
-    (False, False, True, False): _resample_data_parallel,
-    (False, True, False, False): _resample_data_vec,
-    (False, True, True, False): _resample_data_vec_parallel,
-    (True, False, False, False): _resample_data_cov,
-    (True, False, True, False): _resample_data_cov_parallel,
-    (True, True, False, False): _resample_data_cov_vec,
-    (True, True, True, False): _resample_data_cov_vec_parallel,
-    (False, False, False, True): _resample_data_fromzero,
-    (False, False, True, True): _resample_data_fromzero_parallel,
-    (False, True, False, True): _resample_data_fromzero_vec,
-    (False, True, True, True): _resample_data_fromzero_vec_parallel,
-    (True, False, False, True): _resample_data_fromzero_cov,
-    (True, False, True, True): _resample_data_fromzero_cov_parallel,
-    (True, True, False, True): _resample_data_fromzero_cov_vec,
-    (True, True, True, True): _resample_data_fromzero_cov_vec_parallel,
-}
-
-
-def factory_resample_data(
-    cov: bool, vec: bool, parallel: bool, fromzero: bool
-) -> Callable[..., Any]:
-    """Get resampler functions(s)."""
-    return _RESAMPLE_DATA_DICT[cov, vec, parallel, fromzero]
-
-
-######################################################################
-# resample values
-
-
-# mom/scalar
-@myjit()
-def _resample_vals(w_s, x_s, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale(out[irep, ...], w_s, x_s, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_vals_parallel(w_s, x_s, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale(out[irep, ...], w_s, x_s, freqs[irep, ...])
-
-
-# mom/vec
-@myjit()
-def _resample_vals_vec(w_s, x_s, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale_vec(out[irep, ...], w_s, x_s, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_vals_vec_parallel(w_s, x_s, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale_vec(out[irep, ...], w_s, x_s, freqs[irep, ...])
-
-
-# cov/scalar
-@myjit()
-def _resample_vals_cov(w_s, x_s, Y, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale_cov(out[irep, ...], w_s, x_s, Y, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_vals_cov_parallel(w_s, x_s, Y, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale_cov(out[irep, ...], w_s, x_s, Y, freqs[irep, ...])
-
-
-# cov/vec
-@myjit()
-def _resample_vals_cov_vec(w_s, x_s, Y, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale_cov_vec(out[irep, ...], w_s, x_s, Y, freqs[irep, ...])
-
-
-@myjit(parallel=True)
-def _resample_vals_cov_vec_parallel(w_s, x_s, Y, freqs, out) -> None:
-    nrep = freqs.shape[0]
-    for irep in prange(nrep):
-        push_vals_scale_cov_vec(out[irep, ...], w_s, x_s, Y, freqs[irep, ...])
-
-
-_RESAMPLE_VALS_DICT: dict[Hashable, Callable[..., Any]] = {
-    # cov, vec, parallel
-    (False, False, False): _resample_vals,
-    (False, False, True): _resample_vals_parallel,
-    (False, True, False): _resample_vals_vec,
-    (False, True, True): _resample_vals_vec_parallel,
-    (True, False, False): _resample_vals_cov,
-    (True, False, True): _resample_vals_cov_parallel,
-    (True, True, False): _resample_vals_cov_vec,
-    (True, True, True): _resample_vals_cov_vec_parallel,
-}
-
-
-def factory_resample_vals(cov: bool, vec: bool, parallel: bool) -> Callable[..., Any]:
-    """Get resample vals functions."""
-    return _RESAMPLE_VALS_DICT[cov, vec, parallel]
+# This one can accumulate.  Not sure where this would be needed?
+# @_vectorize(
+#     "(sample,mom),(replicate,sample),(replicate,mom)",
+#     [
+#         (nb.float32[:, :], nb.float32[:, :], nb.float32[:, :]),
+#         (nb.float64[:, :], nb.float64[:, :], nb.float64[:, :]),
+#     ],
+# )
+# def resample_data(data, freq, out) -> None:
+#     nrep, nsamp = freq.shape
+
+#     assert data.shape[1:] == out.shape[1:]
+#     assert data.shape[0] == nsamp
+#     assert out.shape[0] == nrep
+
+#     for irep in range(nrep):
+#         for isamp in range(nsamp):
+#             f = freq[irep, isamp]
+#             if f == 0:
+#                 continue
+#             _push.push_data_scale(data[isamp, ...], f, out[irep, ...])
+
+
+# @_jit(
+#     # out[samp, value, mom], freq[rep, samp], out[rep, value, mom]
+#     [
+#         (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
+#         (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
+#     ],
+# )
+# def resample_data_jit(data, freq, out):
+#     nrep, nsamp = freq.shape
+#     nval = data.shape[1]
+
+#     assert data.shape[1:] == out.shape[1:]
+#     assert data.shape[0] == nsamp
+#     assert out.shape[0] == nrep
+
+#     for irep in nb.prange(nrep):
+#         for isamp in range(nsamp):
+#             f = freq[irep, isamp]
+#             if f == 0:
+#                 continue
+#             for k in range(nval):
+#                 _push.push_data_scale(data[isamp, k, ...], f, out[irep, k, ...])
+
+
+# @_jit(
+#     # out[samp, value, mom], freq[rep, samp], out[rep, value, mom]
+#     [
+#         (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
+#         (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
+#     ],
+# )
+# def resample_data_fromzero_jit(data, freq, out):
+#     nrep, nsamp = freq.shape
+#     nval = data.shape[1]
+
+#     assert data.shape[1:] == out.shape[1:]
+#     assert data.shape[0] == nsamp
+#     assert out.shape[0] == nrep
+
+#     out[...] = 0.0
+
+#     for irep in nb.prange(nrep):
+#         first_nonzero = nsamp
+#         for isamp in range(nsamp):
+#             f = freq[irep, isamp]
+#             if f != 0:
+#                 first_nonzero = isamp
+#                 for k in range(nval):
+#                     out[irep, k, :] = data[isamp, k, :]
+#                     out[irep, k, 0] *= f
+#                 break
+
+#         for isamp in range(first_nonzero + 1, nsamp):
+#             f = freq[irep, isamp]
+#             if f == 0:
+#                 continue
+#             for k in range(nval):
+#                 _push.push_data_scale(data[isamp, k, ...], f, out[irep, k, ...])
+
+
+# @_jit(
+#     # x[samp, value], w[samp, value], freq[rep, samp], out[rep, value, mom]
+#     [
+#         (nb.float32[:, :], nb.float32[:, :], nb.float32[:, :], nb.float32[:, :, :]),
+#         (nb.float64[:, :], nb.float64[:, :], nb.float64[:, :], nb.float64[:, :, :]),
+#     ],
+# )
+# def resample_vals_jit(x, w, freq, out):
+#     nrep, nsamp = freq.shape
+#     nval = w.shape[1]
+
+#     assert w.shape == x.shape
+#     assert w.shape[0] == nsamp
+#     assert out.shape[0] == nrep
+#     assert out.shape[1] == nval
+
+#     for irep in nb.prange(nrep):
+#         for isamp in range(nsamp):
+#             f = freq[irep, isamp]
+#             if f == 0:
+#                 continue
+#             for k in range(nval):
+#                 _push.push_val(x[isamp, k], w[isamp, k] * f, out[irep, k, ...])

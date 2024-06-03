@@ -1,9 +1,9 @@
 import sys
 
 if sys.version_info < (3, 10):
-    from typing_extensions import TypeAlias
+    from typing_extensions import TypeAlias, TypeGuard
 else:
-    from typing import TypeAlias
+    from typing import TypeAlias, TypeGuard
 
 
 if sys.version_info < (3, 11):
@@ -12,7 +12,15 @@ else:
     from typing import Self
 
 
+if sys.version_info < (3, 12):
+    from typing_extensions import TypeVar
+else:
+    from typing import TypeVar
+
+
 __all__ = [
     "Self",
     "TypeAlias",
+    "TypeGuard",
+    "TypeVar",
 ]

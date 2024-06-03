@@ -211,6 +211,7 @@ max-public-methods = 30
 [tool.ruff.lint.extend-per-file-ignores]
 # Project specific ignores (avoid changing per-file-ignores directly)
 "tests/**/*.py" = ["ANN", "N802", "N806", "PT011", "PLC2701", "PLR2004", "SLF001", "TD003", "FIX002", "PLR0904"]
+"classic_tests/**/*.py" = ["ANN", "N802", "N806", "PT011", "PLC2701", "PLR2004", "SLF001", "TD003", "FIX002", "PLR0904", "D", "S101"]
 "src/**/_{formatting,testing}.py" = ["ANN"]
 "src/**/_formatting.py" = ["SLF001"]
 "src/**/_testing.py" = ["S101"]
@@ -300,29 +301,29 @@ module = []
 [tool.pyright]
 include = ["src", "tests"]
 strict = [
-    "src/cmomy/__init__.py",
-    "src/cmomy/_compat.py",
-    "src/cmomy/abstract_central.py",
-    "src/cmomy/central.py",
+    "src/cmomy/classic/__init__.py",
+    "src/cmomy/classic/_compat.py",
+    "src/cmomy/classic/abstract_central.py",
+    "src/cmomy/classic/central.py",
+    "src/cmomy/classic/convert.py",
+    "src/cmomy/classic/docstrings.py",
+    "src/cmomy/classic/options.py",
+    "src/cmomy/classic/random.py",
+    "src/cmomy/classic/resample.py",
+    "src/cmomy/classic/typing.py",
+    "src/cmomy/classic/utils.py",
+    "src/cmomy/classic/xcentral.py",
+    "noxfile.py",
+    "tools/*.py",
     "src/cmomy/convert.py",
     "src/cmomy/docstrings.py",
     "src/cmomy/options.py",
     "src/cmomy/random.py",
+    "src/cmomy/reduce.py",
     "src/cmomy/resample.py",
     "src/cmomy/typing.py",
     "src/cmomy/utils.py",
-    "src/cmomy/xcentral.py",
-    "noxfile.py",
-    "tools/*.py",
-    "src/cmomy/new/convert.py",
-    "src/cmomy/new/docstrings.py",
-    "src/cmomy/new/options.py",
-    "src/cmomy/new/random.py",
-    "src/cmomy/new/reduce.py",
-    "src/cmomy/new/resample.py",
-    "src/cmomy/new/typing.py",
-    "src/cmomy/new/utils.py",
-    "src/cmomy/new/_lib/factory.py",
+    "src/cmomy/_lib/factory.py",
 ]
 exclude = ["**/__pycache__", ".tox/**", ".nox/**", ".venv/**", "**/.mypy_cache", "**/.numba_cache"]
 # strict = ["src", "tests", "noxfile.py", "tools/*.py"]

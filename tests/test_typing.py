@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING, Any, assert_type  # , reveal_type
 import numpy as np
 import xarray as xr
 
-from cmomy.new.central_dataarray import xCentralMoments
-from cmomy.new.central_numpy import CentralMoments
-from cmomy.new.resample import random_freq, resample_vals
+from cmomy.central_dataarray import xCentralMoments
+from cmomy.central_numpy import CentralMoments
+from cmomy.resample import random_freq, resample_vals
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from cmomy.new.convert import convert
-    from cmomy.new.reduction import (
+    from cmomy.convert import convert
+    from cmomy.reduction import (
         reduce_data,
         reduce_data_grouped,
         reduce_data_indexed,
@@ -589,7 +589,7 @@ def test_reduce_data_indexed() -> None:
 
 
 def test_resample_data() -> None:
-    from cmomy.new.resample import random_freq, resample_data
+    from cmomy.resample import random_freq, resample_data
 
     x32 = np.zeros((10, 3, 3), dtype=np.float32)
     x64 = np.zeros((10, 3, 3), dtype=np.float64)

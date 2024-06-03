@@ -4,8 +4,9 @@
 import numpy as np
 import pytest
 
-import cmomy
 from cmomy._lib.utils import factory_binomial
+from cmomy.central_numpy import CentralMoments
+from cmomy.reduction import reduce_vals
 
 
 def algo(vals, mom, norm=True):
@@ -52,8 +53,8 @@ def test_stability() -> None:
     x = rng.random(10000)
 
     mom = 5
-    moments = cmomy.central_moments(x, mom=mom)
-    c = cmomy.CentralMoments.from_vals(x, mom=mom)
+    moments = reduce_vals(x, mom=mom, axis=0)
+    c = CentralMoments.from_vals(x, mom=mom, axis=0)
     test = algo(x, mom=mom)
     test2 = algo2(x, mom=mom)
 
@@ -76,16 +77,16 @@ def test_stability() -> None:
     moments_test[2:] *= a ** np.arange(2, mom + 1)
 
     # calculated
-    moments_shift = cmomy.central_moments(x * a + b, mom=5)
-    c_shift = cmomy.CentralMoments.from_vals(x * a + b, mom=5)
+    moments_shift = reduce_vals(x * a + b, mom=5, axis=0)
+    c_shift = CentralMoments.from_vals(x * a + b, mom=5, axis=0)
     test_shift = algo(x * a + b, mom=5)
     test2_shift = algo2(x * a + b, mom=5)
 
     np.testing.assert_allclose(moments_test, c_shift.to_numpy())
     np.testing.assert_allclose(moments_test, test_shift)
 
-    with pytest.raises(AssertionError):
-        np.testing.assert_allclose(moments_test, moments_shift)
+    # with pytest.raises(AssertionError):
+    np.testing.assert_allclose(moments_test, moments_shift)
 
     with pytest.raises(AssertionError):
         np.testing.assert_allclose(moments_test, test2_shift)

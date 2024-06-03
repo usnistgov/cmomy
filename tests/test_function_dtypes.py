@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy.new import reduction, resample
+from cmomy import reduction, resample
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -168,7 +168,7 @@ def test_convert(
     result_dtype,
     to,
 ) -> None:
-    from cmomy.new.convert import convert
+    from cmomy.convert import convert
 
     func = partial(convert, mom_ndim=1, to=to)
 

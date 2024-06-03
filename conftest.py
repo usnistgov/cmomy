@@ -30,7 +30,7 @@ def pytest_addoption(parser) -> None:
         "--run-slow", action="store_true", default=False, help="run slow tests"
     )
     parser.addoption(
-        "--run-compile",
+        "--compile",
         action="store_true",
         help="""
         Run full compile before testing.
@@ -42,8 +42,8 @@ def pytest_addoption(parser) -> None:
 
 def pytest_configure(config) -> None:
     config.addinivalue_line("markers", "slow: mark test as slow to run")
-    if config.getoption("--run-compile"):
-        from cmomy.new.compile import load_numba_modules
+    if config.getoption("--compile"):
+        from cmomy.compile import load_numba_modules
 
         load_numba_modules()
 
