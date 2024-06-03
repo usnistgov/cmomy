@@ -784,7 +784,7 @@ def factor_by_to_index(
     Examples
     --------
     >>> factor_by_to_index([0, 1, 0, 1])
-    This also works for non-integers
+    ([0, 1], array([0, 2, 1, 3]), array([0, 2]), array([2, 4]))
 
     >>> factor_by_to_index(["a", "b", "a", "b"])
     (['a', 'b'], array([0, 2, 1, 3]), array([0, 2]), array([2, 4]))

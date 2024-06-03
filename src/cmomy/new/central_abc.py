@@ -22,7 +22,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Mapping
+    from typing import Any, Callable
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
@@ -42,7 +42,7 @@ if TYPE_CHECKING:
 
 # * Main class ----------------------------------------------------------------
 @docfiller.decorate  # noqa: PLR0904
-class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
+class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
     r"""
     Wrapper to calculate central moments.
 
@@ -82,8 +82,11 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     def __init__(
         self,
         data: T_Array,
-        mom_ndim: Mom_NDim = 1,
         *,
+        mom_ndim: Mom_NDim = 1,
+        copy: bool = False,  # noqa: ARG002
+        order: ArrayOrder = None,  # noqa: ARG002
+        dtype: DTypeLike = None,  # noqa: ARG002
         fastpath: bool = False,  # noqa: ARG002
     ) -> None:  # pragma: no cover
         self._cache = {}
@@ -108,15 +111,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
     def values(self) -> T_Array:
         """Access underlying central moments array."""
         return self.to_values()
-
-    # @values.setter
-    # def values(self, values: T_Array) -> None:
-    #     self.set_values(values)
-
-    #     # Run additional data checks here
-    #     if self.dtype.type not in {np.float32, np.float64}:
-    #         msg = f"{self.dtype=} not supported. Must be float32 or float64"
-    #         raise ValueError(msg)
 
     @abstractmethod
     def set_values(self, values: T_Array) -> None:
@@ -337,6 +331,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         new_like
         zeros_like
         """
+        # return type(self)(data=self.to_values(), copy=True)
         return self.new_like(
             data=self.to_values(),
             verify=False,
@@ -906,7 +901,7 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
         **kwargs: Any,
     ) -> Self:
         """
@@ -925,6 +920,8 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             If callable, then apply ``values = func_or_method(self.to_values(),
             *args, **kwargs)``. If string is passed, then ``values =
             getattr(self.to_values(), func_or_method)(*args, **kwargs)``.
+        *args
+            Extra positional arguments to `func_or_method`
         _reorder : bool, default=True
             If True, reorder the data such that ``mom_dims`` are last.  Only
             applicable for ``DataArray`` functions.
@@ -932,24 +929,21 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
             If True, copy the resulting data.  Otherwise, try to use a view.
         _order : str, optional
             Array order to apply to output.
-        _kws : Mapping, optional
-            Extra arguments to :meth:`from_data`.
-        *args
-            Extra positional arguments to `func_or_method`
+        _verify : bool, default=False,
         **kwargs
             Extra keyword arguments to `func_or_method`
 
         Returns
         -------
-        output : :class:`cmomy.xCentralMoments`
-            New :class:`cmomy.xCentralMoments` object after `func_or_method` is
+        output : object
+            New object after `func_or_method` is
             applies to `self.to_values()`
 
 
         Notes
         -----
-        Use leading underscore for `_order`, `_copy` to avoid name possible name
-        clashes.
+        Use leading underscore for `_order`, `_copy`, etc to avoid name possible name
+        clashes with ``func_or_method``.
 
 
         """
@@ -965,16 +959,12 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
                 msg = "to specify `_reorder`, must have attribute `mom_dims`"
                 raise AttributeError(msg)
 
-        if values.shape[-self.mom_ndim :] != self.mom_shape:
-            msg = f"{values.shape[-self.mom_ndim:]=} != {self.mom_shape=}. Moments changed."
-            raise ValueError(msg)
-
-        _kws = {} if _kws is None else dict(_kws)
-        _kws.setdefault("copy", _copy)
-        _kws.setdefault("order", _order)
-        _kws.setdefault("mom_ndim", self.mom_ndim)
-
-        return type(self)(data=values, **_kws)
+        return self.new_like(
+            data=values,
+            copy=_copy,
+            order=_order,
+            verify=_verify,
+        )
 
     @property
     def _is_vector(self) -> bool:
@@ -1085,35 +1075,6 @@ class CentralMomentsABC(ABC, Generic[T_Array, T_Float]):
         --------
         numpy.zeros
         """
-
-    # @classmethod
-    # @abstractmethod
-    # @docfiller.decorate
-    # def from_data(
-    #     cls,
-    #     data: T_Array,
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = True,
-    #     order: ArrayOrder = None,
-    #     dtype: DTypeLike = None,
-    # ) -> Self:
-    #     """
-    #     Create new object from `data` array with additional checks.
-
-    #     Parameters
-    #     ----------
-    #     data : array-like
-    #         central moments accumulation array.
-    #     {mom_ndim}
-    #     {copy}
-    #     {copy_kws}
-
-    #     Returns
-    #     -------
-    #     out : {klass}
-    #         Same type as calling class.
-    #     """
 
     @classmethod
     @abstractmethod

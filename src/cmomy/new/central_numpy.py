@@ -5,7 +5,7 @@ Central moments/comoments routines from :class:`np.ndarray` objects
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, Generic, overload
 
 import numpy as np
 import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -59,7 +59,7 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 # * CentralMoments ------------------------------------------------------------
 @docfiller(CentralMomentsABC)  # noqa: PLR0904
-class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ignore[type-var] # noqa: D101
+class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Float]):  # type: ignore[type-var] # noqa: D101
     # TODO(wpk):  I think something like this would solve some of my typing issues.
     # see https://mypy.readthedocs.io/en/stable/more_types.html#precise-typing-of-alternative-constructors
     # But pyright isn't going to support it (see https://github.com/microsoft/pyright/issues/3497)
@@ -205,13 +205,12 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         """
         if data is None:
-            return type(self)(
-                data=np.zeros_like(
-                    self.data, order=order or "C", dtype=dtype or self.dtype
-                ),
-                mom_ndim=self._mom_ndim,
-                fastpath=True,
+            data = np.zeros(
+                self.shape,
+                order=order if order in {"C", "F"} else None,  # type: ignore[arg-type]
+                dtype=dtype or self.dtype,  # type: ignore[arg-type]
             )
+            copy = verify = False
 
         if verify and data.shape != self.shape:
             msg = f"{data.shape=} != {self.shape=}"
@@ -998,77 +997,6 @@ class CentralMoments(CentralMomentsABC[NDArray[T_Float], T_Float]):  # type: ign
 
         data = np.zeros(shape, dtype=dtype, order=order)
         return cls(data=data, mom_ndim=mom_ndim)
-
-    # playing around with typing
-    # @classmethod
-    # def test(cls, data: Any) -> Self:
-    #     return cls(data, mom_ndim=1)
-
-    # @classmethod
-    # def test2(cls: type[CentralMoments[T_Float2]], data: Any) -> CentralMoments[T_Float2]:
-    #     return cls(data, mom_ndim=1)
-
-    # @overload
-    # @classmethod
-    # def from_data(
-    #     cls,
-    #     data: ArrayLikeArg[T_Float2],
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = ...,
-    #     order: ArrayOrder = ...,
-    #     dtype: None = ...,
-    # ) -> CentralMoments[T_Float2]: ...
-    # @overload
-    # @classmethod
-    # def from_data(
-    #     cls,
-    #     data: Any,
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = ...,
-    #     order: ArrayOrder = ...,
-    #     dtype: DTypeLikeArg[T_Float2],
-    # ) -> CentralMoments[T_Float2]: ...
-    # # fallback
-    # @overload
-    # @classmethod
-    # def from_data(
-    #     cls,
-    #     data: Any,
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = ...,
-    #     order: ArrayOrder = ...,
-    #     dtype: DTypeLike = ...,
-    # ) -> Self: ...
-
-    # @classmethod
-    # @docfiller_abc()
-    # def from_data(
-    #     cls,
-    #     data: ArrayLike,
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = False,
-    #     order: ArrayOrder = None,
-    #     dtype: DTypeLike = None,
-    # ) -> CentralMoments[Any] | Self:
-    #     """
-    #     Examples
-    #     --------
-    #     >>> from cmomy.random import default_rng
-    #     >>> rng = default_rng(0)
-    #     >>> x = rng.random(20)
-    #     >>> data = central_moments(x=x, mom=2)
-
-    #     >>> da = CentralMoments.from_data(data=data, mom_ndim=1)
-    #     >>> da
-    #     <CentralMoments(val_shape=(), mom=(2,))>
-    #     array([20.    ,  0.5124,  0.1033])
-    #     """
-    #     data = np.array(data, dtype=dtype, order=order, copy=copy)
-    #     return cls(data=data, mom_ndim=mom_ndim)
 
     @overload
     @classmethod

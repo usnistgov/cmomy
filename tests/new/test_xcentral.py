@@ -388,7 +388,7 @@ def test_isel(selector) -> None:
 
     if any(key in cx.mom_dims for key in selector):
         # check that this raises an error
-        with pytest.raises(ValueError, match=".*Moments changed.*"):
+        with pytest.raises(ValueError, match=".*has wrong mom_shape.*"):
             cx.isel(selector)
 
     else:

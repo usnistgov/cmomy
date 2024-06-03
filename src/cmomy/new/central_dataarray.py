@@ -65,7 +65,7 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller(CentralMomentsABC)  # noqa: PLR0904
-class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
+class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
     """
     Notes
     -----
@@ -290,16 +290,20 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         verify: bool = False,
         dtype: DTypeLike = None,
     ) -> xCentralMoments[Any] | Self:
-        if isinstance(data, np.ndarray):
-            xdata = self._xdata.copy(data=data)
+        if data is None:
+            xdata = xr.zeros_like(self._xdata, dtype=dtype or self.dtype)  # type: ignore[arg-type]  # pyright: ignore[reportUnknownMemberType] # needed for python=3.8
+            copy = verify = False
         elif isinstance(data, xr.DataArray):
             xdata = data
         else:
-            xdata = xr.zeros_like(self._xdata, dtype=dtype or self.dtype)  # type: ignore[arg-type]  # pyright: ignore[reportUnknownMemberType] # needed for python=3.8
-            copy = verify = False
+            xdata = self._xdata.copy(data=data)
 
         if verify and xdata.shape != self.shape:
             msg = f"{xdata.shape=} != {self.shape=}"
+            raise ValueError(msg)
+        if xdata.shape[-self.mom_ndim :] != self.mom_shape:
+            # at a minimum, verify that mom_shape is unchanged.
+            msg = f"{xdata.shape=} has wrong mom_shape={self.mom_shape}"
             raise ValueError(msg)
 
         return type(self)(
@@ -435,7 +439,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
         **dimensions_kwargs: Any,
     ) -> Self:
         """
@@ -506,7 +510,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _order=_order,
             _copy=_copy,
-            _kws=_kws,
+            _verify=_verify,
             **dimensions_kwargs,
         )
 
@@ -519,7 +523,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
     ) -> Self:
         """
         Unstack dimensions.
@@ -540,7 +544,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
             dim=dim,
             fill_value=fill_value,
             sparse=sparse,
@@ -554,7 +558,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
         **indexes_kwargs: Hashable | Sequence[Hashable],
     ) -> Self:
         """
@@ -576,7 +580,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
             indexes=indexes,
             append=append,
             **indexes_kwargs,
@@ -590,7 +594,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
     ) -> Self:
         """Interface to :meth:`xarray.DataArray.reset_index`."""
         return self.pipe(
@@ -598,7 +602,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
             dims_or_levels=dims_or_levels,
             drop=drop,
         )
@@ -611,7 +615,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
     ) -> Self:
         """Interface to :meth:`xarray.DataArray.drop_vars`"""
         return self.pipe(
@@ -621,7 +625,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
         )
 
     def swap_dims(
@@ -630,7 +634,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = True,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
         **dims_kwargs: Any,
     ) -> Self:
         """Interface to :meth:`xarray.DataArray.swap_dims`."""
@@ -640,7 +644,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
             **dims_kwargs,
         )
 
@@ -654,7 +658,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = False,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
         **indexers_kws: Any,
     ) -> Self:
         """
@@ -729,7 +733,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
             indexers=indexers,
             method=method,
             tolerance=tolerance,
@@ -746,7 +750,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         _reorder: bool = False,
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
         **indexers_kws: Any,
     ) -> Self:
         """
@@ -767,7 +771,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=_reorder,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
             indexers=indexers,
             drop=drop,
             missing_dims=missing_dims,
@@ -781,7 +785,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
         missing_dims: xr_types.ErrorOptionsWithWarn = "raise",
         _copy: bool = False,
         _order: ArrayOrder = None,
-        _kws: Mapping[str, Any] | None = None,
+        _verify: bool = False,
     ) -> Self:
         """
         Transpose dimensions of data.
@@ -807,7 +811,7 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             _reorder=False,
             _copy=_copy,
             _order=_order,
-            _kws=_kws,
+            _verify=_verify,
         )
 
     # ** To/from CentralMoments
@@ -1525,44 +1529,6 @@ class xCentralMoments(CentralMomentsABC[xr.DataArray, T_Float]):  # noqa: N801
             mom_dims=mom_dims,
             template=template,
         )
-
-    # @overload
-    # @classmethod
-    # def from_data(
-    #     cls,
-    #     data: xr.DataArray,
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = ...,
-    #     order: ArrayOrder = ...,
-    #     dtype: DTypeLikeArg[T_Float2],
-    # ) -> xCentralMoments[T_Float2]: ...
-    # @overload
-    # @classmethod
-    # def from_data(
-    #     cls,
-    #     data: xr.DataArray,
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = ...,
-    #     order: ArrayOrder = ...,
-    #     dtype: DTypeLike = ...,
-    # ) -> Self: ...
-    # @classmethod
-    # @docfiller_inherit_abc()
-    # def from_data(
-    #     cls,
-    #     data: xr.DataArray,
-    #     *,
-    #     mom_ndim: Mom_NDim,
-    #     copy: bool = False,
-    #     order: ArrayOrder = None,
-    #     dtype: DTypeLike = None,
-    # ) -> xCentralMoments[Any] | Self:
-    #     return cls(
-    #         data=data.astype(dtype or data.dtype, copy=copy, order=order),
-    #         mom_ndim=mom_ndim,
-    #     )
 
     @overload
     @classmethod
