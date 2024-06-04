@@ -32,6 +32,7 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         DataCasting,
+        Groups,
         Mom_NDim,
         Moments,
         MomentsStrict,
@@ -863,7 +864,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         self,
         *,
         axis: int | None = None,
-        by: ArrayLike | None = None,
+        by: Groups | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:

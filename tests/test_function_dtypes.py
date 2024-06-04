@@ -118,7 +118,7 @@ def test_reduce_data_grouped_indexed_dtype(
     if style == "grouped":
         func = partial(reduction.reduce_data_grouped, mom_ndim=1, by=by, axis=0)
     else:
-        _, index, start, end = reduction.factor_by_to_index(by, exclude_missing=False)
+        _, index, start, end = reduction.factor_by_to_index(by)
         func = partial(
             reduction.reduce_data_indexed,
             mom_ndim=1,

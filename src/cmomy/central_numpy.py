@@ -33,6 +33,7 @@ if TYPE_CHECKING:
         ArrayOrderCFA,
         DataCasting,
         DTypeLikeArg,
+        Groups,
         Mom_NDim,
         MomDims,
         Moments,
@@ -485,10 +486,10 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         """
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
         >>> xs = rng.random((2, 10))
-        >>> datas = [central_moments(x=x, mom=2) for x in xs]
+        >>> datas = [cmomy.reduce_vals(x, mom=2, axis=0) for x in xs]
         >>> da = CentralMoments(datas[0], mom_ndim=1)
         >>> da
         <CentralMoments(val_shape=(), mom=(2,))>
@@ -521,10 +522,10 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         """
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
         >>> xs = rng.random((2, 10))
-        >>> datas = np.array([central_moments(x=x, mom=2) for x in xs])
+        >>> datas = cmomy.reduce_vals(xs, axis=1, mom=2)
         >>> da = CentralMoments.zeros(mom=2)
         >>> da.push_datas(datas, axis=0)
         <CentralMoments(val_shape=(), mom=(2,))>
@@ -533,7 +534,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
 
         Which is equivalent to
 
-        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2)
+        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2, axis=0)
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5124,  0.1033])
         """
@@ -551,15 +552,15 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         """
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
         >>> x = rng.random((10, 2))
         >>> y = rng.random(10)
         >>> w = rng.random(10)
 
         >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
         >>> for xx, yy, ww in zip(x, y, w):
-        ...     _ = da.push_val(x=(xx, yy), w=ww, broadcast=True)
+        ...     _ = da.push_val(xx, yy, weight=ww)
 
         >>> da
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
@@ -574,7 +575,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
 
         Which is the same as
 
-        >>> CentralMoments.from_vals(x=(x, y), w=w, mom=(2, 2), broadcast=True)
+        >>> CentralMoments.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
@@ -602,14 +603,14 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         """
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
         >>> x = rng.random((10, 2))
         >>> y = rng.random(10)
         >>> w = rng.random(10)
 
         >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
-        >>> da.push_vals(x=(x, y), w=w, broadcast=True)
+        >>> da.push_vals(x, y, weight=w, axis=0)
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
@@ -622,7 +623,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
 
         Which is the same as
 
-        >>> CentralMoments.from_vals(x=(x, y), w=w, mom=(2, 2), broadcast=True)
+        >>> CentralMoments.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
         <CentralMoments(val_shape=(2,), mom=(2, 2))>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
@@ -667,7 +668,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         *,
         axis: int | None = None,
-        by: ArrayLike | None = None,
+        by: Groups | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -848,27 +849,63 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         >>> rng = default_rng(0)
         >>> da = CentralMoments.from_vals(rng.random((10, 2, 3)), mom=2)
         >>> da
-        <CentralMoments(val_shape=(2, 3), mom=(2,))>
-        array([[[10.    ,  0.5205,  0.0452],
-                [10.    ,  0.4438,  0.0734],
-                [10.    ,  0.5038,  0.1153]],
+        <CentralMoments(val_shape=(10, 2), mom=(2,))>
+        array([[[3.    , 0.3159, 0.0603],
+                [3.    , 0.5809, 0.1609]],
         <BLANKLINE>
-               [[10.    ,  0.5238,  0.1272],
-                [10.    ,  0.628 ,  0.0524],
-                [10.    ,  0.412 ,  0.0865]]])
+               [[3.    , 0.6266, 0.006 ],
+                [3.    , 0.5846, 0.1716]],
+        <BLANKLINE>
+               [[3.    , 0.5402, 0.1311],
+                [3.    , 0.5268, 0.0789]],
+        <BLANKLINE>
+               [[3.    , 0.2502, 0.0271],
+                [3.    , 0.4807, 0.0636]],
+        <BLANKLINE>
+               [[3.    , 0.6654, 0.064 ],
+                [3.    , 0.7723, 0.022 ]],
+        <BLANKLINE>
+               [[3.    , 0.4042, 0.0511],
+                [3.    , 0.519 , 0.0282]],
+        <BLANKLINE>
+               [[3.    , 0.7698, 0.0406],
+                [3.    , 0.4171, 0.0121]],
+        <BLANKLINE>
+               [[3.    , 0.4413, 0.0122],
+                [3.    , 0.5802, 0.0742]],
+        <BLANKLINE>
+               [[3.    , 0.5679, 0.1174],
+                [3.    , 0.3915, 0.1231]],
+        <BLANKLINE>
+               [[3.    , 0.3122, 0.0153],
+                [3.    , 0.3597, 0.1007]]])
 
                [[10.        ,  0.53720667,  0.05909394],
                 [10.        ,  0.42622908,  0.08434857],
                 [10.        ,  0.47326641,  0.05907737]]])
 
         >>> da.reshape(shape=(-1,))
-        <CentralMoments(val_shape=(6,), mom=(2,))>
-        array([[10.    ,  0.5205,  0.0452],
-               [10.    ,  0.4438,  0.0734],
-               [10.    ,  0.5038,  0.1153],
-               [10.    ,  0.5238,  0.1272],
-               [10.    ,  0.628 ,  0.0524],
-               [10.    ,  0.412 ,  0.0865]])
+        <CentralMoments(val_shape=(20,), mom=(2,))>
+        array([[3.    , 0.3159, 0.0603],
+               [3.    , 0.5809, 0.1609],
+               [3.    , 0.6266, 0.006 ],
+               [3.    , 0.5846, 0.1716],
+               [3.    , 0.5402, 0.1311],
+               [3.    , 0.5268, 0.0789],
+               [3.    , 0.2502, 0.0271],
+               [3.    , 0.4807, 0.0636],
+               [3.    , 0.6654, 0.064 ],
+               [3.    , 0.7723, 0.022 ],
+               [3.    , 0.4042, 0.0511],
+               [3.    , 0.519 , 0.0282],
+               [3.    , 0.7698, 0.0406],
+               [3.    , 0.4171, 0.0121],
+               [3.    , 0.4413, 0.0122],
+               [3.    , 0.5802, 0.0742],
+               [3.    , 0.5679, 0.1174],
+               [3.    , 0.3915, 0.1231],
+               [3.    , 0.3122, 0.0153],
+               [3.    , 0.3597, 0.1007]])
         """
         self._raise_if_scalar()
         new_shape = shape + self.mom_shape
@@ -1144,12 +1181,12 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         Examples
         --------
         >>> from cmomy.random import default_rng
+        >>> from cmomy.resample import random_freq
         >>> rng = default_rng(0)
         >>> ndat, nrep = 10, 3
         >>> x = rng.random(ndat)
-        >>> da, freq = CentralMoments.from_resample_vals(
-        ...     x, nrep=nrep, axis=0, full_output=True, mom=2
-        ... )
+        >>> freq = random_freq(nrep=nrep, ndat=ndat)
+        >>> da = CentralMoments.from_resample_vals(x, freq=freq, axis=0, mom=2)
         >>> da
         <CentralMoments(val_shape=(3,), mom=(2,))>
         array([[10.    ,  0.5397,  0.0757],

@@ -43,7 +43,9 @@ if TYPE_CHECKING:
     from ._typing_compat import Self
     from .central_numpy import CentralMoments
     from .typing import (
+        CoordsPolicy,
         DataCasting,
+        Groups,
         Mom_NDim,
         MomDims,
         Moments,
@@ -457,9 +459,10 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
+        >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
+        >>> da = xCentralMoments.from_vals(vals, mom=2, dim="rec")
         >>> da
         <xCentralMoments(val_shape=(2, 3), mom=(2,))>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
@@ -675,11 +678,11 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = xCentralMoments.from_vals(
-        ...     rng.random((10, 3)), axis=0, dims="x", coords=dict(x=list("abc")), mom=2
-        ... )
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
+        >>> da = cmomy.CentralMoments.from_vals(
+        ...     rng.random((10, 3)), axis=0, mom=2
+        ... ).to_x(dims="x", coords=dict(x=list("abc")))
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(2,))>
         <xarray.DataArray (x: 3, mom_0: 3)> Size: 72B
@@ -1107,6 +1110,35 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
     # ** Manipulation
     # ** Reduction -----------------------------------------------------------
+    @docfiller_inherit_abc()
+    def randsamp_freq(
+        self,
+        *,
+        axis: int | None = None,
+        dim: Hashable | None = None,
+        nrep: int | None = None,
+        nsamp: int | None = None,
+        indices: ArrayLike | None = None,
+        freq: ArrayLike | None = None,
+        check: bool = False,
+        rng: np.random.Generator | None = None,
+    ) -> NDArrayInt:
+        axis, dim = select_axis_dim(
+            dims=self.dims,
+            axis=axis,
+            dim=dim,
+        )
+
+        return super().randsamp_freq(
+            axis=axis,
+            nrep=nrep,
+            nsamp=nsamp,
+            indices=indices,
+            freq=freq,
+            check=check,
+            rng=rng,
+        )
+
     @docfiller.decorate
     def resample_and_reduce(
         self,
@@ -1142,11 +1174,13 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = xCentralMoments.from_vals(
-        ...     rng.random((10, 3)), mom=3, axis=0, dims="rec"
-        ... )
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
+        >>> da = cmomy.CentralMoments.from_vals(
+        ...     rng.random((10, 3)),
+        ...     mom=3,
+        ...     axis=0,
+        ... ).to_x(dims="rec")
         >>> da
         <xCentralMoments(val_shape=(3,), mom=(3,))>
         <xarray.DataArray (rec: 3, mom_0: 4)> Size: 96B
@@ -1158,11 +1192,10 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         Note that for reproducible results, must set numba random
         seed as well
 
-        >>> da_resamp, freq = da.resample_and_reduce(
-        ...     nrep=5,
+        >>> freq = da.randsamp_freq(dim="rec", nrep=5)
+        >>> da_resamp = da.resample_and_reduce(
         ...     dim="rec",
-        ...     full_output=True,
-        ...     rng=rng,
+        ...     freq=freq,
         ... )
         >>> da_resamp
         <xCentralMoments(val_shape=(5,), mom=(3,))>
@@ -1176,8 +1209,7 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         Alternatively, we can resample and reduce
 
-        >>> from cmomy.resample import freq_to_indices
-        >>> indices = freq_to_indices(freq)
+        >>> indices = cmomy.resample.freq_to_indices(freq)
         >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
         <xCentralMoments(val_shape=(5,), mom=(3,))>
         <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
@@ -1211,15 +1243,16 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
     def reduce(
         self,
         *,
-        by: str | ArrayLike | None = None,
+        by: str | Groups | None = None,
         axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         # xarray specific
         dim: Hashable | None = None,
         group_dim: Hashable | None = None,
-        groups: Sequence[Any] | None = None,
+        groups: Groups | None = None,
         keep_attrs: KeepAttrs = None,
+        coords_policy: CoordsPolicy | Literal["group"] = "first",
     ) -> Self:
         """
         Parameters
@@ -1261,9 +1294,10 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = xCentralMoments.from_vals(rng.random((10, 2, 3)), axis=0, mom=2)
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
+        >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
+        >>> da = xCentralMoments.from_vals(vals, dim="rec", mom=2)
         >>> da.reduce(dim="dim_0")
         <xCentralMoments(val_shape=(3,), mom=(2,))>
         <xarray.DataArray (dim_1: 3, mom_0: 3)> Size: 72B
@@ -1276,23 +1310,38 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         if by is None:
             from .reduction import reduce_data
 
-            data = reduce_data(
-                self._xdata,
+            return type(self)(
+                data=reduce_data(
+                    self._xdata,
+                    mom_ndim=self._mom_ndim,
+                    axis=axis,
+                    dim=dim,
+                    order=order,
+                    parallel=parallel,
+                    keep_attrs=keep_attrs,
+                    dtype=self.dtype,
+                ),
                 mom_ndim=self._mom_ndim,
-                axis=axis,
-                dim=dim,
-                order=order,
-                parallel=parallel,
-                keep_attrs=keep_attrs,
-                dtype=self.dtype,
+                fastpath=True,
             )
-        else:
+
+        if coords_policy == "group":
             from .reduction import reduce_data_grouped
+
+            codes: ArrayLike
+            if isinstance(by, str):
+                from .reduction import factor_by
+
+                _groups, codes = factor_by(self._xdata[by].to_numpy())
+                if groups is None:
+                    groups = _groups
+            else:
+                codes = by
 
             data = reduce_data_grouped(
                 self._xdata,
                 mom_ndim=self._mom_ndim,
-                by=by,
+                by=codes,
                 axis=axis,
                 dim=dim,
                 order=order,
@@ -1302,6 +1351,36 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
                 groups=groups,
                 keep_attrs=keep_attrs,
             )
+
+        else:
+            from .reduction import factor_by_to_index, reduce_data_indexed
+
+            if isinstance(by, str):
+                _groups, index, group_start, group_end = factor_by_to_index(
+                    self._xdata[
+                        by
+                    ].to_numpy()  # indexes[by] if by in self.indexes else self._xdata[by]
+                )
+            else:
+                _groups, index, group_start, group_end = factor_by_to_index(by)
+
+            data = reduce_data_indexed(
+                self._xdata,
+                mom_ndim=self._mom_ndim,
+                index=index,
+                group_start=group_start,
+                group_end=group_end,
+                axis=axis,
+                dim=dim,
+                order=order,
+                parallel=parallel,
+                dtype=self.dtype,
+                coords_policy=coords_policy,
+                group_dim=group_dim,
+                groups=groups,
+                keep_attrs=keep_attrs,
+            )
+
         return type(self)(data=data, mom_ndim=self._mom_ndim, fastpath=True)
 
     @docfiller.decorate
@@ -1314,6 +1393,7 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         order: ArrayOrder = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
+        coords_policy: CoordsPolicy | Literal["group"] = "first",
     ) -> Self:
         """
         Parameters
@@ -1350,10 +1430,10 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
         >>> x = rng.random((10, 10))
-        >>> da = xCentralMoments.from_vals(x, mom=2)
+        >>> da = cmomy.CentralMoments.from_vals(x, mom=2, axis=0).to_x()
         >>> da
         <xCentralMoments(val_shape=(10,), mom=(2,))>
         <xarray.DataArray (dim_0: 10, mom_0: 3)> Size: 240B
@@ -1378,7 +1458,7 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         This is equivalent to
 
-        >>> xCentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1)
+        >>> cmomy.CentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1).to_x()
         <xCentralMoments(val_shape=(2,), mom=(2,))>
         <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5268,  0.0849],
@@ -1431,6 +1511,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
             parallel=parallel,
             group_dim=block_dim,
             keep_attrs=keep_attrs,
+            coords_policy=coords_policy,
+            groups=range(nblock),
         )
 
     # ** Constructors

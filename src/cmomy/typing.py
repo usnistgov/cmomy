@@ -150,12 +150,12 @@ MomDimsStrict = Union[Tuple[Hashable], Tuple[Hashable, Hashable]]
 
 # fix if using autodoc typehints...
 if TYPE_CHECKING:
-    _Index: TypeAlias = "pd.Index[Any]"  # type: ignore[type-arg,unused-ignore]  # py38 type error
+    IndexAny: TypeAlias = "pd.Index[Any]"  # type: ignore[type-arg,unused-ignore]  # py38 type error
 else:
-    _Index: TypeAlias = pd.Index
+    IndexAny: TypeAlias = pd.Index
 
 XArrayCoordsType: TypeAlias = Union[
-    Sequence[Union[Sequence[Any], _Index, xr.DataArray]],
+    Sequence[Union[Sequence[Any], IndexAny, xr.DataArray]],
     Mapping[Any, Any],
     None,
 ]
@@ -176,6 +176,8 @@ KeepAttrs: TypeAlias = Union[
 ]
 
 ConvertStyle = Literal["central", "raw"]
+
+Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 
 
 # pushing arrays

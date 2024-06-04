@@ -33,7 +33,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from typing import Any, Hashable, Literal, Sequence
+    from typing import Any, Hashable, Literal
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
@@ -42,6 +42,8 @@ if TYPE_CHECKING:
         ArrayOrder,
         CoordsPolicy,
         DTypeLikeArg,
+        Groups,
+        IndexAny,
         KeepAttrs,
         Mom_NDim,
         MomDims,
@@ -418,16 +420,18 @@ def reduce_data(
 # * Grouped -------------------------------------------------------------------
 # ** utilities
 def factor_by(
-    by: Sequence[Any],
+    by: Groups,
     sort: bool = True,
-) -> tuple[list[Any] | pd.Index[Any] | pd.MultiIndex, NDArrayInt]:
+) -> tuple[list[Any] | IndexAny | pd.MultiIndex, NDArrayInt]:
     """
     Factor by to codes and groups.
 
     Parameters
     ----------
     by : Sequence
-        Values to group by.  Negative or ``None`` values indicate to skip this value.
+        Values to group by. Negative or ``None`` values indicate to skip this
+        value. Note that if ``by`` is a pandas :class:`pandas.Index` object,
+        missing values should be marked with ``None`` only.
     sort : bool, default=True
         If ``True`` (default), sort ``groups``.
         If ``False``, return groups in order of first appearance.
@@ -463,23 +467,36 @@ def factor_by(
     ['a', 'c']
     >>> codes
     array([ 0,  0, -1,  1,  1, -1])
+
+
+    And for :class:`pandas.Index` objects
+    >>> import pandas as pd
+    >>> by = pd.Index(["a", "a", None, "c", "c", None])
+    >>> groups, codes = factor_by(by)
+    >>> groups
+    Index(['a', 'c'], dtype='object')
+    >>> codes
+    array([ 0,  0, -1,  1,  1, -1])
+
     """
     from pandas import factorize  # pyright: ignore[reportUnknownVariableType]
 
     # filter None and negative -> None
+    _by: Groups
     if isinstance(by, pd.Index):
         _by = by
     else:
-        _by = np.array(
-            [None if isinstance(x, int) and x < 0 else x for x in by], dtype=object
+        _by = np.fromiter(
+            (None if isinstance(x, (int, np.integer)) and x < 0 else x for x in by),
+            dtype=object,
         )
 
-    codes, groups = factorize(_by, sort=sort)  # type: ignore[call-overload] # pyright: ignore[reportCallIssue]
+    codes, groups = factorize(_by, sort=sort)  # type: ignore[arg-type] # pyright: ignore[reportCallIssue]
 
     if isinstance(_by, pd.Index):
         groups.names = _by.names
     else:
-        groups = list(groups)
+        groups = list(groups)  # type: ignore[assignment]
 
     return groups, codes.astype(np.int64)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportUnknownArgumentType]
 
@@ -528,7 +545,7 @@ def reduce_data_grouped(  # type: ignore[overload-overlap]
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> xr.DataArray: ...
 # Array no output or dtype
@@ -546,7 +563,7 @@ def reduce_data_grouped(
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
 # out
@@ -564,7 +581,7 @@ def reduce_data_grouped(
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
 # dtype
@@ -582,7 +599,7 @@ def reduce_data_grouped(
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
 # fallback
@@ -600,7 +617,7 @@ def reduce_data_grouped(
     # xarray specific
     dim: Hashable | None = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArrayAny: ...
 
@@ -621,7 +638,7 @@ def reduce_data_grouped(
     dim: Hashable | None = None,
     # coords_policy: CoordsPolicy | Literal["group"] = "first",
     group_dim: Hashable | None = None,
-    groups: Sequence[Any] | None = None,
+    groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
 ) -> xr.DataArray | NDArrayAny:
     """
@@ -752,9 +769,8 @@ def reduce_data_grouped(
 # ** utils
 @docfiller.decorate
 def factor_by_to_index(
-    group_idx: Sequence[Any] | NDArray[np.object_],
-    exclude_missing: bool = True,
-) -> tuple[list[Any], NDArrayInt, NDArrayInt, NDArrayInt]:
+    by: Groups,
+) -> tuple[list[Any] | IndexAny | pd.MultiIndex, NDArrayInt, NDArrayInt, NDArrayInt]:
     """
     Transform group_idx to quantities to be used with :func:`reduce_data_indexed`.
 
@@ -780,6 +796,7 @@ def factor_by_to_index(
     See Also
     --------
     reduce_data_indexed
+    factor_by
 
     Examples
     --------
@@ -789,34 +806,42 @@ def factor_by_to_index(
     >>> factor_by_to_index(["a", "b", "a", "b"])
     (['a', 'b'], array([0, 2, 1, 3]), array([0, 2]), array([2, 4]))
 
-    Also, by default, missing values (None or negative) are excluded:
+    Also, missing values (None or negative) are excluded:
 
     >>> factor_by_to_index([None, "a", None, "b"])
     (['a', 'b'], array([1, 3]), array([0, 1]), array([1, 2]))
 
+    You can also pass :class:`pandas.Index` objects:
+
+    >>> factor_by_to_index(pd.Index([None, "a", None, "b"], name="my_index"))
+    (Index(['a', 'b'], dtype='object', name='my_index'), array([1, 3]), array([0, 1]), array([1, 2]))
+
     """
-    by = np.asarray(group_idx, dtype=object)
+    # factorize by to groups and codes
+    groups, codes = factor_by(by, sort=True)
 
-    if exclude_missing:
-        keep = ~np.array([(isinstance(x, int) and x < 0) or (x is None) for x in by])
+    # exclude missing
+    keep = codes >= 0
+    if not np.all(keep):
+        index = np.where(keep)[0]
+        codes = codes[keep]
+    else:
+        index = None
 
-        if not np.all(keep):
-            index = np.where(keep)[0]
-
-            groups, indexes_sorted, n_start, n_end = factor_by_to_index(
-                by[keep],
-                exclude_missing=False,
-            )
-            return groups, index[indexes_sorted], n_start, n_end
-
-    indexes_sorted = np.argsort(by)
-    group_idx_sorted = by[indexes_sorted]
-    groups, n_start, count = np.unique(
+    indexes_sorted = np.argsort(codes)
+    group_idx_sorted = codes[indexes_sorted]
+    _groups, n_start, count = np.unique(
         group_idx_sorted, return_index=True, return_counts=True
     )
     n_end = n_start + count
 
-    return list(groups), indexes_sorted, n_start, n_end
+    if groups is None:
+        groups = list(_groups)
+
+    if index is not None:
+        indexes_sorted = index[indexes_sorted]
+
+    return groups, indexes_sorted, n_start, n_end
 
 
 def _validate_index(
@@ -913,7 +938,7 @@ def reduce_data_indexed(  # type: ignore[overload-overlap]
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> xr.DataArray: ...
 # Array no out or dtype
@@ -935,7 +960,7 @@ def reduce_data_indexed(
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
 # out
@@ -957,7 +982,7 @@ def reduce_data_indexed(
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
 # dtype
@@ -979,7 +1004,7 @@ def reduce_data_indexed(
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[T_Float]: ...
 # fallback
@@ -1001,7 +1026,7 @@ def reduce_data_indexed(
     dim: Hashable | None = ...,
     coords_policy: CoordsPolicy | Literal["group"] = ...,
     group_dim: Hashable | None = ...,
-    groups: Sequence[Any] | None = ...,
+    groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArrayAny: ...
 
@@ -1025,7 +1050,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     dim: Hashable | None = None,
     coords_policy: CoordsPolicy | Literal["group"] = "first",
     group_dim: Hashable | None = None,
-    groups: Sequence[Any] | None = None,
+    groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
 ) -> xr.DataArray | NDArrayAny:
     """
@@ -1194,7 +1219,7 @@ def resample_data_indexed(
     dim: Hashable | None = None,
     coords_policy: CoordsPolicy | Literal["group"] = "first",
     group_dim: Hashable | None = None,
-    groups: Sequence[Any] | None = None,
+    groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
 ) -> T_Array:
     """Resample using indexed reduction."""
