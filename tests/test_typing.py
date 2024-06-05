@@ -36,6 +36,7 @@ def test_centralmoments_init() -> None:
             CentralMoments[np.float64],
         )
         assert_type(CentralMoments([1, 2, 3], mom_ndim=1), CentralMoments[Any])
+
         assert_type(
             CentralMoments([1, 2, 3], mom_ndim=1, dtype=np.float32),
             CentralMoments[np.float32],

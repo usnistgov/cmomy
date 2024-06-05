@@ -36,7 +36,9 @@ def test_astype(dtype_base, dtype, expected) -> None:
     cx = c.to_x()
     cc = cx.to_c()
 
-    for obj in [c, cx, cc]:
+    objs: list[CentralMoments | xCentralMoments] = [c, cx, cc]
+
+    for obj in objs:
         assert obj.dtype.type == dtype_base
         if expected == "error":
             with pytest.raises(ValueError, match=".*not supported.*"):
@@ -63,7 +65,7 @@ def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2, 3, 4), dtype=dtype_base)
 
     if cls == xCentralMoments:
-        data = xr.DataArray(data)
+        data = xr.DataArray(data)  # type: ignore[assignment]
 
     if expected == "error":
         with pytest.raises(ValueError, match=".*not supported.*"):
@@ -84,7 +86,7 @@ def test_from_vals(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2, 3, 4), dtype=dtype_base)
 
     if cls == xCentralMoments:
-        data = xr.DataArray(data)
+        data = xr.DataArray(data)  # type: ignore[assignment]
 
     if expected == "error":
         with pytest.raises(ValueError, match=".*not supported.*"):

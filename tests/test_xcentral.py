@@ -243,11 +243,11 @@ def test_init() -> None:
     assert c.mom == (3,)
 
     with pytest.raises(TypeError):
-        xCentralMoments(data, mom_ndim=1)
+        xCentralMoments(data, mom_ndim=1)  # type: ignore[call-overload]
 
     data = xr.DataArray(np.zeros((2, 3, 4)), dims=("a", "b", "mom"))  # type: ignore[assignment]
 
-    c = xCentralMoments(data, mom_ndim=1)
+    c = xCentralMoments(data, mom_ndim=1)  # type: ignore[call-overload]
 
     assert c.dims == ("a", "b", "mom")
     assert c.mom == (3,)

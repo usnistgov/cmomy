@@ -135,9 +135,9 @@ class Data:
             X = list(zip(X, Y))  # type: ignore[arg-type]
 
         else:
-            X = [(x,) for x in X]
+            X = [(x,) for x in X]  # type: ignore[misc]
 
-        return W, X  # pyright: ignore[reportReturnType]
+        return W, X  # type: ignore[return-value] # pyright: ignore[reportReturnType]
 
     @property
     def W(self) -> list[NDArrayAny] | list[None]:
@@ -153,18 +153,18 @@ class Data:
             return get_comom(  # type: ignore[no-any-return]
                 w=self.w,
                 x=self.xy_tuple[0],
-                y=self.xy_tuple[1],
+                y=self.xy_tuple[1],  # type: ignore[misc]
                 moments=self.mom,
                 axis=self.axis,
                 broadcast=self.broadcast,
             )
-        return get_cmom(
+        return get_cmom(  # type: ignore[no-any-return]
             w=self.w, x=self.xy_tuple[0], moments=self.mom, axis=self.axis, last=True
-        )  # type: ignore[no-any-return]
+        )
 
     @cached.prop
     def data_test(self) -> NDArrayAny:
-        return cmomy.reduction.reduce_vals(
+        return cmomy.reduction.reduce_vals(  # type: ignore[return-value]
             *self.xy_tuple,
             mom=self.mom,
             weight=self.w,
@@ -179,7 +179,7 @@ class Data:
 
     @cached.prop
     def S(self) -> CentralMoments:
-        return [
+        return [  # type: ignore[return-value]
             self.cls.from_vals(
                 *xx,
                 weight=ww,
@@ -210,7 +210,7 @@ class Data:
             if not self.cov:
                 raw = np.array(
                     [
-                        np.average(self.xdata**i, weights=self.w, axis=self.axis)  # type: ignore[operator]
+                        np.average(self.xdata**i, weights=self.w, axis=self.axis)
                         for i in range(self.mom + 1)  # type: ignore[operator]
                     ]
                 )
@@ -221,7 +221,7 @@ class Data:
             else:
                 raw = np.zeros_like(self.data_test)
                 for i in range(self.mom[0] + 1):  # type: ignore[index]
-                    for j in range(self.mom[1] + 1):  # type: ignore[index, misc]
+                    for j in range(self.mom[1] + 1):  # type: ignore[index]
                         raw[..., i, j] = np.average(
                             self.xdata**i * self.ydata**j,
                             weights=self.w,
@@ -291,7 +291,7 @@ class Data:
     @cached.prop
     def data_test_resamp(self) -> NDArrayAny:
         return np.moveaxis(
-            cmomy.reduction.reduce_vals(
+            cmomy.reduction.reduce_vals(  # type: ignore[arg-type]
                 *self.xy_tuple_resamp,
                 mom=self.mom,
                 weight=self.w_resamp,

@@ -130,7 +130,7 @@ def test_from_raw(dc, dcx) -> None:
 
     if mom_ndim == 2:
         with pytest.raises(ValueError):
-            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim + 1)  # pyright: ignore[reportArgumentType]
+            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim + 1)  # type: ignore[assignment] # pyright: ignore[reportArgumentType]
 
 
 def test_from_raws(dc, dcx) -> None:
@@ -161,7 +161,7 @@ def test_from_raws(dc, dcx) -> None:
 
 def test_from_vals(xy, shape, mom) -> None:
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
-    xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
+    xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)
 
     for axis in range(len(shape)):
         t = CentralMoments.from_vals(*xy, axis=axis, mom=mom).to_xcentralmoments()
@@ -185,7 +185,7 @@ def test_from_vals(xy, shape, mom) -> None:
 
 def test_from_resample_vals(xy, shape, mom) -> None:
     dims = tuple(f"hello_{i}" for i in range(len(shape)))
-    xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)  # type: ignore[assignment]
+    xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)
 
     for axis in range(len(shape)):
         freq = resample.random_freq(nrep=10, ndat=xy[0].shape[axis])

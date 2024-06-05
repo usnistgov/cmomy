@@ -1,3 +1,4 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 from __future__ import annotations
 
 import numpy as np
@@ -79,12 +80,12 @@ def test_validate_mom_and_mom_ndim_2() -> None:
         utils.validate_mom_and_mom_ndim(mom=None, mom_ndim=2, shape=(2,))
 
     with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=None, mom_ndim=3, shape=(2, 3, 4))  # type: ignore[arg-type]
+        utils.validate_mom_and_mom_ndim(mom=None, mom_ndim=3, shape=(2, 3, 4))
 
     assert utils.validate_mom_and_mom_ndim(mom=(2, 2), mom_ndim=None) == ((2, 2), 2)
 
     with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=(2, 2, 2), mom_ndim=None)  # type: ignore[arg-type]
+        utils.validate_mom_and_mom_ndim(mom=(2, 2, 2), mom_ndim=None)
 
     with pytest.raises(ValueError):
         utils.validate_mom_and_mom_ndim(mom=(2, 2), mom_ndim=1)
@@ -95,10 +96,10 @@ def test_mom_to_mom_ndim() -> None:
     assert utils.mom_to_mom_ndim((2, 2)) == 2
 
     with pytest.raises(ValueError):
-        utils.mom_to_mom_ndim((2, 2, 2))  # type: ignore[arg-type]
+        utils.mom_to_mom_ndim((2, 2, 2))
 
     # this should be fine
-    utils.mom_to_mom_ndim([2, 2])  # type: ignore[arg-type]
+    utils.mom_to_mom_ndim([2, 2])
 
 
 def test_select_mom_ndim() -> None:
@@ -113,7 +114,7 @@ def test_select_mom_ndim() -> None:
 
     assert utils.select_mom_ndim(mom=None, mom_ndim=1) == 1
     with pytest.raises(ValueError):
-        utils.select_mom_ndim(mom=None, mom_ndim=3)  # type: ignore[arg-type]
+        utils.select_mom_ndim(mom=None, mom_ndim=3)
 
 
 @pytest.mark.parametrize(
@@ -170,8 +171,8 @@ def test_prepare_values_for_reduction(
     with pytest.raises(ValueError, match=r"Number of arrays .*"):
         utils.prepare_values_for_reduction(
             target,
-            y,
-            w,
+            y,  # type: ignore[arg-type]
+            w,  # type: ignore[arg-type]
             narrays=2,
             axis=axis,
             order=order,
@@ -186,14 +187,20 @@ def test_prepare_values_for_reduction(
 
         with pytest.raises(error):
             utils.prepare_values_for_reduction(
-                target, y, w, narrays=3, axis=axis, dtype=dtype, order=order
+                target,
+                y,  # type: ignore[arg-type]
+                w,  # type: ignore[arg-type]
+                narrays=3,
+                axis=axis,
+                dtype=dtype,
+                order=order,
             )
 
     else:
         x, y, w = utils.prepare_values_for_reduction(
             target,
-            y,
-            w,
+            y,  # type: ignore[arg-type]
+            w,  # type: ignore[arg-type]
             narrays=3,
             axis=axis,
             order=order,
@@ -303,7 +310,12 @@ def test_xprepare_values_for_reduction_0():
 
     with pytest.raises(TypeError):
         utils.xprepare_values_for_reduction(
-            other, other, narrays=2, axis=0, dim=None, dtype=dtype
+            other,  # type: ignore[arg-type]
+            other,
+            narrays=2,
+            axis=0,
+            dim=None,
+            dtype=dtype,
         )
 
 
@@ -342,12 +354,12 @@ def test_xprepare_values_for_reduction_1(
     assert y.dtype == np.dtype(dtype or np.float64)
 
     if order == "C":
-        assert x.data.flags["C_CONTIGUOUS"]
+        assert x.data.flags["C_CONTIGUOUS"]  # type: ignore[union-attr]
         assert y.flags["C_CONTIGUOUS"]
 
     if xshape == yshape:
         # also do xr test
-        other = xr.DataArray(other)
+        other = xr.DataArray(other)  # type: ignore[assignment]
         core_dims, (x, y) = utils.xprepare_values_for_reduction(
             target,
             other,
@@ -366,8 +378,8 @@ def test_xprepare_values_for_reduction_1(
         assert y.dtype == np.dtype(dtype or np.float64)
 
         if order == "C":
-            assert x.data.flags["C_CONTIGUOUS"]
-            assert y.data.flags["C_CONTIGUOUS"]
+            assert x.data.flags["C_CONTIGUOUS"]  # type: ignore[union-attr]
+            assert y.data.flags["C_CONTIGUOUS"]  # type: ignore[union-attr]
 
 
 @pytest.mark.parametrize(
@@ -391,9 +403,9 @@ def test_xprepare_data_for_reduction_0(
     if isinstance(dim_or_axis, str):
         dim, axis = dim_or_axis, utils.MISSING
     else:
-        dim, axis = utils.MISSING, dim_or_axis
+        dim, axis = utils.MISSING, dim_or_axis  # type: ignore[assignment]
 
-    dim, out = utils.xprepare_data_for_reduction(
+    dim, out = utils.xprepare_data_for_reduction(  # type: ignore[assignment]
         data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype
     )
     assert out.shape == shape2

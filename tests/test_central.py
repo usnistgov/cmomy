@@ -81,7 +81,7 @@ def test_zeros() -> None:
 # exceptions
 def test_raises_centralmoments_init() -> None:
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((2, 3, 4)), mom_ndim=3)  # type: ignore[call-overload]
+        CentralMoments(np.zeros((2, 3, 4)), mom_ndim=3)
 
     with pytest.raises(ValueError):
         CentralMoments([1, 2, 3], mom_ndim=1)
@@ -188,10 +188,10 @@ def test_to_dataarray2(mom_ndim, dims, mom_dims, dims_all) -> None:
 
 def test_raises_mom_ndim() -> None:
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((4, 4)), mom_ndim=0)  # type: ignore[call-overload]
+        CentralMoments(np.zeros((4, 4)), mom_ndim=0)
 
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((4, 4)), mom_ndim=3)  # type: ignore[arg-type]
+        CentralMoments(np.zeros((4, 4)), mom_ndim=3)
 
 
 def test_raises_data_ndim() -> None:
@@ -264,7 +264,7 @@ def test_raises_operations(rng) -> None:
     data = CentralMoments.from_vals(v, mom=2, axis=0).data
 
     with pytest.raises(TypeError):
-        c0 + data  # type: ignore[operator]
+        _ = c0 + data
 
     c1 = CentralMoments.from_vals(v, mom=3, axis=0)
     with pytest.raises(ValueError):
@@ -429,8 +429,8 @@ def test_push_order_1(val_shape, mom, rng) -> None:
     mom1 = (1, 1) if cov else 1
     xx = (x, x) if cov else (x,)
 
-    c1 = CentralMoments.zeros(mom=mom1, val_shape=val_shape)  # type: ignore[arg-type]
-    c2 = CentralMoments.from_vals(*xx, axis=0, mom=mom)  # type: ignore[arg-type]
+    c1 = CentralMoments.zeros(mom=mom1, val_shape=val_shape)  # type: ignore[call-overload]
+    c2 = CentralMoments.from_vals(*xx, axis=0, mom=mom)
 
     # if not cov:
     #     a = x.mean(axis=0)
@@ -441,7 +441,7 @@ def test_push_order_1(val_shape, mom, rng) -> None:
 
     #     c1.zero()
 
-    c1.push_vals(*xx, axis=0)  # type: ignore[arg-type]
+    c1.push_vals(*xx, axis=0)
     np.testing.assert_allclose(c1.weight(), c2.weight())
     np.testing.assert_allclose(c1.mean(), c2.mean())
 

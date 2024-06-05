@@ -1,4 +1,8 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+from __future__ import annotations
+
+from typing import Any
+
 import numpy as np
 import pytest
 
@@ -66,6 +70,9 @@ def test_central_randsamp_freq():
 def test_resample_vec(parallel, mom, rng):
     x = rng.random((100, 10))
     xx = x[..., None]
+
+    xy: tuple[Any, ...]
+    xxyy: tuple[Any, ...]
 
     if isinstance(mom, tuple):
         xy = (x, x)
@@ -203,10 +210,10 @@ def test_resample_resample_vals(rng) -> None:
     np.testing.assert_allclose(c.data, out)
 
     with pytest.raises(TypeError):
-        resample.resample_vals(x, freq=freq, mom=[3])  # type: ignore[arg-type]  # this is on purpose for testing
+        resample.resample_vals(x, freq=freq, mom=[3])
 
     with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq, mom=(3, 3, 3), axis=0)  # type: ignore[arg-type]
+        resample.resample_vals(x, freq=freq, mom=(3, 3, 3), axis=0)
 
     with pytest.raises(ValueError):
         resample.resample_vals(x, freq=freq[:, :-1], mom=3, axis=0)
