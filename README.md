@@ -107,7 +107,7 @@ array([ 1.    ,  0.    ,  0.0919, -0.0061])
 # unequal chunks
 >>> x0, x1, x2 = x[:20], x[20:60], x[60:]
 
->>> cs = [cmomy.CentralMoments.from_vals(_, mom=3) for _ in (x0, x1, x2)]
+>>> cs = [cmomy.CentralMoments.from_vals(_, mom=3, axis=0) for _ in (x0, x1, x2)]
 
 >>> c = cs[0] + cs[1] + cs[2]
 

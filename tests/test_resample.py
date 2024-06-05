@@ -165,7 +165,7 @@ def test_resample_resample_data(rng) -> None:
 
     with pytest.raises(ValueError):
         out = resample.resample_data(
-            c.data, freq=freq, mom_ndim=1, out=np.zeros((10, 3, 4))
+            c.data, freq=freq, mom_ndim=1, out=np.zeros((10, 3, 4)), axis=0
         )
 
     c2 = c.resample_and_reduce(freq=freq, axis=0)
@@ -202,7 +202,7 @@ def test_resample_resample_vals(rng) -> None:
     )
     np.testing.assert_allclose(c.data, out)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         resample.resample_vals(x, freq=freq, mom=[3])  # type: ignore[arg-type]  # this is on purpose for testing
 
     with pytest.raises(ValueError):

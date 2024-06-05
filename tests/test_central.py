@@ -1,11 +1,16 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 import xarray as xr
 
 from cmomy.central_numpy import CentralMoments
+
+if TYPE_CHECKING:
+    from cmomy.typing import Mom_NDim
 
 
 # Tests
@@ -208,14 +213,14 @@ def test_raises_push_cov_bad_x() -> None:
     # vals
     x = [1.0, 2.0]  # type: ignore[assignment]
     with pytest.raises(ValueError):
-        c.push_vals(x)
-    c.push_vals(x, x)
+        c.push_vals(x, axis=0)
+    c.push_vals(x, x, axis=0)
 
 
 def test_pipe(rng) -> None:
     x = rng.random(10)
 
-    c = CentralMoments.from_vals(x, mom=3)
+    c = CentralMoments.from_vals(x, mom=3, axis=0)
 
     c1 = c.pipe(lambda x: x + 1, _reorder=False)
     c2 = c.pipe("__add__", 1, _reorder=False)
@@ -233,7 +238,7 @@ def test_raise_if_scalar() -> None:
 
     match = r"Not implemented for scalar"
     with pytest.raises(ValueError, match=match):
-        c.block()
+        c.block(None, axis=0)
 
     indices = np.zeros((10, 10), dtype=np.int64)
     with pytest.raises(ValueError, match=match):
@@ -256,14 +261,14 @@ def test_raise_if_scalar() -> None:
 def test_raises_operations(rng) -> None:
     v = rng.random(10)
 
-    c0 = CentralMoments.from_vals(v, mom=2)
+    c0 = CentralMoments.from_vals(v, mom=2, axis=0)
 
-    data = CentralMoments.from_vals(v, mom=2).data
+    data = CentralMoments.from_vals(v, mom=2, axis=0).data
 
     with pytest.raises(TypeError):
         c0 + data  # type: ignore[operator]
 
-    c1 = CentralMoments.from_vals(v, mom=3)
+    c1 = CentralMoments.from_vals(v, mom=3, axis=0)
     with pytest.raises(ValueError):
         _ = c0 + c1
 
@@ -573,7 +578,7 @@ def test_moveaxis(other) -> None:
 
 
 @pytest.mark.parametrize("mom_ndim", [1, 2])
-def test_block(rng, mom_ndim: int) -> None:
+def test_block(rng, mom_ndim: Mom_NDim) -> None:
     x = rng.random((10, 10, 10))
 
     mom: tuple[int] | tuple[int, int]
@@ -612,7 +617,7 @@ def test_block(rng, mom_ndim: int) -> None:
     np.testing.assert_allclose(c3.data, c.block(2, axis=1))
 
     np.testing.assert_allclose(
-        c.block(axis=0).moveaxis(-1, 0).data[0, ...], c.reduce(axis=0)
+        c.block(None, axis=0).moveaxis(-1, 0).data[0, ...], c.reduce(axis=0)
     )
     np.testing.assert_allclose(
         c.reduce(by=group_idx, axis=1).to_numpy(), c.block(2, axis=1).to_numpy()

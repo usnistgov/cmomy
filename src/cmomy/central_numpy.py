@@ -14,7 +14,7 @@ import xarray as xr
 # pandas needed for autdoc typehints
 from numpy.typing import NDArray
 
-from cmomy.utils import validate_mom_and_mom_ndim
+from cmomy.utils import validate_axis, validate_mom_and_mom_ndim
 
 from .central_abc import CentralMomentsABC
 from .docstrings import docfiller_central as docfiller
@@ -31,6 +31,7 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         ArrayOrderCFA,
+        AxisReduce,
         DataCasting,
         DTypeLikeArg,
         Groups,
@@ -47,9 +48,7 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import (
-    T_Float,
-)
+from .typing import T_Float
 
 # from ._typing_compat import TypeVar
 
@@ -503,7 +502,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
 
         Which is equivalent to
 
-        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2)
+        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2, axis=0)
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5124,  0.1033])
 
@@ -515,7 +514,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         datas: ArrayLike,
         *,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -595,8 +594,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         x: ArrayLike,
         *y: ArrayLike,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -644,14 +643,12 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         *,
         freq: NDArrayInt,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
         self._raise_if_scalar()
         from .resample import resample_data
-
-        axis = self._set_default_axis(axis)
 
         data: NDArray[T_Float] = resample_data(
             self._data,
@@ -667,7 +664,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
     def reduce(
         self,
         *,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         by: Groups | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
@@ -679,7 +676,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
             data = reduce_data(
                 self._data,
                 mom_ndim=self._mom_ndim,
-                axis=self._set_default_axis(axis),
+                axis=axis,
                 order=order,
                 parallel=parallel,
                 dtype=self.dtype,
@@ -691,7 +688,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
                 self._data,
                 mom_ndim=self._mom_ndim,
                 by=by,
-                axis=self._set_default_axis(axis),
+                axis=axis,
                 order=order,
                 parallel=parallel,
                 dtype=self.dtype,
@@ -703,7 +700,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         indices: NDArrayInt,
         *,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         last: bool = True,
         order: ArrayOrder = None,
     ) -> CentralMoments[T_Float]:
@@ -733,7 +730,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
 
         """
         self._raise_if_scalar()
-        axis = self._set_default_axis(axis)
+        axis = validate_axis(axis)
 
         data = self.data
         last_dim = self.val_ndim - 1
@@ -753,8 +750,9 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
     @docfiller.decorate
     def block(
         self,
-        block_size: int | None = None,
-        axis: int | None = None,
+        block_size: int | None,
+        *,
+        axis: AxisReduce = -1,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         # **kwargs: Any,
@@ -788,15 +786,6 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         :meth:`reduce`
         """
         self._raise_if_scalar()
-
-        # if block_size is None:
-        #     block_size = s
-        #     new_shape = self.shape
-
-        #     return (
-        #         self.reduce(axis=axis, order=order, parallel=parallel)
-        #         # should have single dimension
-        #         .reshape()
 
         axis = self._wrap_axis(axis)
         n = self.shape[axis]
@@ -847,65 +836,25 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralMoments.from_vals(rng.random((10, 2, 3)), mom=2)
+        >>> da = CentralMoments.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
         >>> da
-        <CentralMoments(val_shape=(10, 2), mom=(2,))>
-        array([[[3.    , 0.3159, 0.0603],
-                [3.    , 0.5809, 0.1609]],
+        <CentralMoments(val_shape=(2, 3), mom=(2,))>
+        array([[[10.    ,  0.5205,  0.0452],
+                [10.    ,  0.4438,  0.0734],
+                [10.    ,  0.5038,  0.1153]],
         <BLANKLINE>
-               [[3.    , 0.6266, 0.006 ],
-                [3.    , 0.5846, 0.1716]],
-        <BLANKLINE>
-               [[3.    , 0.5402, 0.1311],
-                [3.    , 0.5268, 0.0789]],
-        <BLANKLINE>
-               [[3.    , 0.2502, 0.0271],
-                [3.    , 0.4807, 0.0636]],
-        <BLANKLINE>
-               [[3.    , 0.6654, 0.064 ],
-                [3.    , 0.7723, 0.022 ]],
-        <BLANKLINE>
-               [[3.    , 0.4042, 0.0511],
-                [3.    , 0.519 , 0.0282]],
-        <BLANKLINE>
-               [[3.    , 0.7698, 0.0406],
-                [3.    , 0.4171, 0.0121]],
-        <BLANKLINE>
-               [[3.    , 0.4413, 0.0122],
-                [3.    , 0.5802, 0.0742]],
-        <BLANKLINE>
-               [[3.    , 0.5679, 0.1174],
-                [3.    , 0.3915, 0.1231]],
-        <BLANKLINE>
-               [[3.    , 0.3122, 0.0153],
-                [3.    , 0.3597, 0.1007]]])
-
-               [[10.        ,  0.53720667,  0.05909394],
-                [10.        ,  0.42622908,  0.08434857],
-                [10.        ,  0.47326641,  0.05907737]]])
+               [[10.    ,  0.5238,  0.1272],
+                [10.    ,  0.628 ,  0.0524],
+                [10.    ,  0.412 ,  0.0865]]])
 
         >>> da.reshape(shape=(-1,))
-        <CentralMoments(val_shape=(20,), mom=(2,))>
-        array([[3.    , 0.3159, 0.0603],
-               [3.    , 0.5809, 0.1609],
-               [3.    , 0.6266, 0.006 ],
-               [3.    , 0.5846, 0.1716],
-               [3.    , 0.5402, 0.1311],
-               [3.    , 0.5268, 0.0789],
-               [3.    , 0.2502, 0.0271],
-               [3.    , 0.4807, 0.0636],
-               [3.    , 0.6654, 0.064 ],
-               [3.    , 0.7723, 0.022 ],
-               [3.    , 0.4042, 0.0511],
-               [3.    , 0.519 , 0.0282],
-               [3.    , 0.7698, 0.0406],
-               [3.    , 0.4171, 0.0121],
-               [3.    , 0.4413, 0.0122],
-               [3.    , 0.5802, 0.0742],
-               [3.    , 0.5679, 0.1174],
-               [3.    , 0.3915, 0.1231],
-               [3.    , 0.3122, 0.0153],
-               [3.    , 0.3597, 0.1007]])
+        <CentralMoments(val_shape=(6,), mom=(2,))>
+        array([[10.    ,  0.5205,  0.0452],
+               [10.    ,  0.4438,  0.0734],
+               [10.    ,  0.5038,  0.1153],
+               [10.    ,  0.5238,  0.1272],
+               [10.    ,  0.628 ,  0.0524],
+               [10.    ,  0.412 ,  0.0865]])
         """
         self._raise_if_scalar()
         new_shape = shape + self.mom_shape
@@ -1042,8 +991,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         x: ArrayLikeArg[T_Float2],
         *y: ArrayLike,
         mom: Moments,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = ...,
-        axis: int | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: None = ...,
@@ -1056,8 +1005,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         x: Any,
         *y: ArrayLike,
         mom: Moments,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = ...,
-        axis: int | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLikeArg[T_Float2],
@@ -1070,8 +1019,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         x: Any,
         *y: ArrayLike,
         mom: Moments,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = ...,
-        axis: int | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
@@ -1084,8 +1033,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         x: ArrayLike,
         *y: ArrayLike,
         mom: Moments,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
@@ -1103,7 +1052,6 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
                [1.0000e+02, 5.5355e-01, 7.1942e-02],
                [1.0000e+02, 5.1413e-01, 1.0407e-01]])
         """
-        axis = -1 if axis is None else axis
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
 
         from .reduction import reduce_vals
@@ -1128,8 +1076,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
+        axis: AxisReduce = ...,
         weight: ArrayLike | None = ...,
-        axis: int | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: None = ...,
@@ -1142,8 +1090,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
+        axis: AxisReduce = ...,
         weight: ArrayLike | None = ...,
-        axis: int | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLikeArg[T_Float2],
@@ -1156,8 +1104,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
+        axis: AxisReduce = ...,
         weight: ArrayLike | None = ...,
-        axis: int | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
@@ -1171,8 +1119,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
@@ -1209,7 +1157,6 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         from .resample import resample_vals
 
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        axis = -1 if axis is None else axis
         data = resample_vals(
             x,
             *y,

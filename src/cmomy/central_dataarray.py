@@ -14,6 +14,7 @@ from module_utilities import cached
 from .central_abc import CentralMomentsABC
 from .docstrings import docfiller_xcentral as docfiller
 from .utils import (
+    MISSING,
     replace_coords_from_isel,
     select_axis_dim,
     validate_mom_and_mom_ndim,
@@ -43,14 +44,22 @@ if TYPE_CHECKING:
     from ._typing_compat import Self
     from .central_numpy import CentralMoments
     from .typing import (
+        ArrayOrder,
+        ArrayOrderCF,
+        AxisReduce,
         CoordsPolicy,
         DataCasting,
+        Dims,
+        DimsReduce,
+        DTypeLikeArg,
         Groups,
+        MissingType,
         Mom_NDim,
         MomDims,
         Moments,
         NDArrayAny,
         NDArrayInt,
+        T_Float2,
         XArrayAttrsType,
         XArrayCoordsType,
         XArrayDimsType,
@@ -58,10 +67,9 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import ArrayOrder, ArrayOrderCF, DTypeLikeArg, T_Float, T_Float2
+from .typing import T_Float
 
 # * xCentralMoments -----------------------------------------------------------
-
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
@@ -205,10 +213,10 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
     def _check_reduce_axis_dim(
         self,
         *,
-        axis: int | None = None,
-        dim: Hashable | None = None,
-        default_axis: int | None = None,
-        default_dim: Hashable | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
+        default_axis: AxisReduce | MissingType = MISSING,
+        default_dim: DimsReduce | MissingType = MISSING,
     ) -> tuple[int, Hashable]:
         self._raise_if_scalar()
 
@@ -226,10 +234,10 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
         return axis, dim
 
-    def _remove_dim(self, dim: Hashable | Iterable[Hashable]) -> tuple[Hashable, ...]:
-        """Return self.dims with dim removed"""
-        dim = {dim} if isinstance(dim, str) else set(dim)  # type: ignore[arg-type]
-        return tuple(d for d in self.dims if d not in dim)
+    # def _remove_dim(self, dim: Hashable | Iterable[Hashable]) -> tuple[Hashable, ...]:
+    #     """Return self.dims with dim removed"""
+    #     dim = {dim} if isinstance(dim, str) else set(dim)  # type: ignore[arg-type]
+    #     return tuple(d for d in self.dims if d not in dim)
 
     @overload
     def new_like(
@@ -519,7 +527,7 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
 
     def unstack(
         self,
-        dim: Hashable | Sequence[Hashable] | None = None,
+        dim: Dims = None,
         fill_value: Any = np.nan,
         *,
         sparse: bool = False,
@@ -933,8 +941,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         self,
         datas: xr.DataArray,
         *,
-        axis: int | None,
-        dim: Hashable | None,
+        axis: AxisReduce | MissingType,
+        dim: DimsReduce | MissingType,
         parallel: bool | None,
         order: ArrayOrder,
     ) -> Self:
@@ -998,8 +1006,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         x: xr.DataArray,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
-        dim: Hashable | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -1053,8 +1061,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         self,
         datas: NDArray[T_Float] | xr.DataArray,
         *,
-        axis: int | None = None,
-        dim: Hashable | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -1088,8 +1096,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         x: ArrayLike | xr.DataArray,
         *y: ArrayLike | xr.DataArray,
         weight: ArrayLike | xr.DataArray | None = None,
-        axis: int | None = None,
-        dim: Hashable | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -1114,8 +1122,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
     def randsamp_freq(
         self,
         *,
-        axis: int | None = None,
-        dim: Hashable | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
         nrep: int | None = None,
         nsamp: int | None = None,
         indices: ArrayLike | None = None,
@@ -1128,7 +1136,6 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
             axis=axis,
             dim=dim,
         )
-
         return super().randsamp_freq(
             axis=axis,
             nrep=nrep,
@@ -1144,8 +1151,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         self,
         *,
         freq: NDArrayInt,
-        dim: Hashable | None = None,
-        axis: int | None = None,
+        dim: DimsReduce | MissingType = MISSING,
+        axis: AxisReduce | MissingType = MISSING,
         rep_dim: str = "rep",
         parallel: bool | None = None,
         order: ArrayOrder = None,
@@ -1244,12 +1251,12 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         self,
         *,
         by: str | Groups | None = None,
-        axis: int | None = None,
+        axis: AxisReduce | MissingType = MISSING,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         # xarray specific
-        dim: Hashable | None = None,
-        group_dim: Hashable | None = None,
+        dim: DimsReduce | MissingType = MISSING,
+        group_dim: str | None = None,
         groups: Groups | None = None,
         keep_attrs: KeepAttrs = None,
         coords_policy: CoordsPolicy | Literal["group"] = "first",
@@ -1387,8 +1394,9 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
     def block(
         self,
         block_size: int | None,
-        dim: Hashable | None = None,
-        axis: int | None = None,
+        *,
+        dim: DimsReduce | MissingType = MISSING,
+        axis: AxisReduce | MissingType = MISSING,
         block_dim: str | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
@@ -1620,8 +1628,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         *y: ArrayLike | xr.DataArray,
         mom: Moments,
         weight: ArrayLike | xr.DataArray | None = ...,
-        axis: int | None = ...,
-        dim: Hashable | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
         mom_dims: MomDims | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
@@ -1636,8 +1644,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         *y: ArrayLike | xr.DataArray,
         mom: Moments,
         weight: ArrayLike | xr.DataArray | None = ...,
-        axis: int | None = ...,
-        dim: Hashable | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
         mom_dims: MomDims | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
@@ -1653,8 +1661,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         *y: ArrayLike | xr.DataArray,
         mom: Moments,
         weight: ArrayLike | xr.DataArray | None = None,
-        axis: int | None = None,
-        dim: Hashable | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
         mom_dims: MomDims | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
@@ -1706,8 +1714,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         mom: Moments,
         freq: NDArrayInt,
         weight: ArrayLike | xr.DataArray | None = ...,
-        axis: int | None = ...,
-        dim: Hashable | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLikeArg[T_Float2],
@@ -1724,8 +1732,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         mom: Moments,
         freq: NDArrayInt,
         weight: ArrayLike | xr.DataArray | None = ...,
-        axis: int | None = ...,
-        dim: Hashable | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
@@ -1743,8 +1751,8 @@ class xCentralMoments(CentralMomentsABC[T_Float, xr.DataArray]):  # noqa: N801
         mom: Moments,
         freq: NDArrayInt,
         weight: ArrayLike | xr.DataArray | None = None,
-        axis: int | None = None,
-        dim: Hashable | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,

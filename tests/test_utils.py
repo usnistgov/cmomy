@@ -182,7 +182,9 @@ def test_prepare_values_for_reduction(
     #     utils.prepare_values_for_reduction(target, y, w, narrays=3, axis=None, order=order)
 
     if xshape2 == "error":
-        with pytest.raises(ValueError):
+        error = TypeError if axis is None else ValueError
+
+        with pytest.raises(error):
             utils.prepare_values_for_reduction(
                 target, y, w, narrays=3, axis=axis, dtype=dtype, order=order
             )
@@ -230,7 +232,9 @@ def test_prepare_data_for_reduction(
     data = np.ones(shape, dtype=dtype)
 
     if shape2 == "error":
-        with pytest.raises(ValueError):
+        error = TypeError if axis is None else ValueError
+
+        with pytest.raises(error):
             out = utils.prepare_data_for_reduction(
                 data,
                 axis=axis,
@@ -276,7 +280,7 @@ def test_xprepare_values_for_reduction_0():
     other = np.full((3, 4), fill_value=2)
 
     # wrong number of arrays
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=".*Number of arrays.*"):
         utils.xprepare_values_for_reduction(
             target,
             other,
@@ -292,8 +296,8 @@ def test_xprepare_values_for_reduction_0():
             target,
             other,
             narrays=2,
-            axis=None,
-            dim=None,
+            axis=utils.MISSING,
+            dim=utils.MISSING,
             dtype=dtype,
         )
 
@@ -324,7 +328,7 @@ def test_xprepare_values_for_reduction_1(
         target,
         other,
         narrays=2,
-        axis=None,
+        axis=utils.MISSING,
         dim=dim,
         order=order,
         dtype=dtype,
@@ -348,7 +352,7 @@ def test_xprepare_values_for_reduction_1(
             target,
             other,
             narrays=2,
-            axis=None,
+            axis=utils.MISSING,
             dim=dim,
             order=order,
             dtype=dtype,
@@ -385,9 +389,9 @@ def test_xprepare_data_for_reduction_0(
     data = xr.DataArray(np.ones(shape, dtype=np.float32))
 
     if isinstance(dim_or_axis, str):
-        dim, axis = dim_or_axis, None
+        dim, axis = dim_or_axis, utils.MISSING
     else:
-        dim, axis = None, dim_or_axis
+        dim, axis = utils.MISSING, dim_or_axis
 
     dim, out = utils.xprepare_data_for_reduction(
         data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype

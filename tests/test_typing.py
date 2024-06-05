@@ -1,5 +1,5 @@
 # import xarray as xr
-from typing import TYPE_CHECKING, Any, assert_type  # , reveal_type
+from typing import TYPE_CHECKING, Any, assert_type
 
 import numpy as np
 import xarray as xr
@@ -854,23 +854,30 @@ def test_centralmoments_from_vals() -> None:
     data64 = np.zeros((10, 3, 4), dtype=np.float64)
 
     if TYPE_CHECKING:
-        assert_type(CentralMoments.from_vals(data32, mom=3), CentralMoments[np.float32])
-        assert_type(CentralMoments.from_vals(data64, mom=3), CentralMoments[np.float64])
         assert_type(
-            CentralMoments.from_vals(data32, mom=3, dtype=np.float64),
+            CentralMoments.from_vals(data32, mom=3, axis=0), CentralMoments[np.float32]
+        )
+        assert_type(
+            CentralMoments.from_vals(data64, mom=3, axis=0), CentralMoments[np.float64]
+        )
+        assert_type(
+            CentralMoments.from_vals(data32, mom=3, axis=0, dtype=np.float64),
             CentralMoments[np.float64],
         )
         assert_type(
-            CentralMoments.from_vals(data32, mom=3, dtype=np.dtype("f8")),
+            CentralMoments.from_vals(data32, mom=3, axis=0, dtype=np.dtype("f8")),
             CentralMoments[np.float64],
         )
 
-        assert_type(CentralMoments.from_vals([1, 2, 3], mom=3), CentralMoments[Any])
         assert_type(
-            CentralMoments.from_vals([1, 2, 3], mom=3, dtype="f8"), CentralMoments[Any]
+            CentralMoments.from_vals([1, 2, 3], mom=3, axis=0), CentralMoments[Any]
         )
         assert_type(
-            CentralMoments.from_vals([1, 2, 3], mom=3, dtype=np.float32),
+            CentralMoments.from_vals([1, 2, 3], mom=3, axis=0, dtype="f8"),
+            CentralMoments[Any],
+        )
+        assert_type(
+            CentralMoments.from_vals([1, 2, 3], mom=3, axis=0, dtype=np.float32),
             CentralMoments[np.float32],
         )
 
@@ -880,25 +887,30 @@ def test_xcentralmoments_from_vals() -> None:
     data64 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float64))
 
     if TYPE_CHECKING:
-        assert_type(xCentralMoments.from_vals(data32, mom=3), xCentralMoments[Any])
-        # assert_type(xCentralMoments[np.float32].from_vals(data32, mom=3), xCentralMoments[np.float32])
-        assert_type(xCentralMoments.from_vals(data64, mom=3), xCentralMoments[Any])
         assert_type(
-            xCentralMoments.from_vals(data32, mom=3, dtype=np.float64),
+            xCentralMoments.from_vals(data32, mom=3, axis=0), xCentralMoments[Any]
+        )
+        # assert_type(xCentralMoments[np.float32].from_vals(data32, mom=3, axis=0), xCentralMoments[np.float32])
+        assert_type(
+            xCentralMoments.from_vals(data64, mom=3, axis=0), xCentralMoments[Any]
+        )
+        assert_type(
+            xCentralMoments.from_vals(data32, mom=3, axis=0, dtype=np.float64),
             xCentralMoments[np.float64],
         )
 
         assert_type(
-            xCentralMoments.from_vals(data64, mom=3, dtype=np.float32),
+            xCentralMoments.from_vals(data64, mom=3, axis=0, dtype=np.float32),
             xCentralMoments[np.float32],
         )
 
         assert_type(
-            xCentralMoments.from_vals(data32, mom=3, dtype=np.dtype("f8")),
+            xCentralMoments.from_vals(data32, mom=3, axis=0, dtype=np.dtype("f8")),
             xCentralMoments[np.float64],
         )
         assert_type(
-            xCentralMoments.from_vals(data32, mom=3, dtype="f8"), xCentralMoments[Any]
+            xCentralMoments.from_vals(data32, mom=3, axis=0, dtype="f8"),
+            xCentralMoments[Any],
         )
 
 
@@ -982,20 +994,24 @@ def test_central_resample_vals() -> None:
 
     if TYPE_CHECKING:
         assert_type(
-            CentralMoments.from_resample_vals(x32, freq=freq, mom=3),
+            CentralMoments.from_resample_vals(x32, freq=freq, mom=3, axis=0),
             CentralMoments[np.float32],
         )
         assert_type(
-            CentralMoments.from_resample_vals(x64, freq=freq, mom=3),
+            CentralMoments.from_resample_vals(x64, freq=freq, mom=3, axis=0),
             CentralMoments[np.float64],
         )
 
         assert_type(
-            CentralMoments.from_resample_vals(x32, freq=freq, mom=3, dtype=np.float64),
+            CentralMoments.from_resample_vals(
+                x32, freq=freq, mom=3, axis=0, dtype=np.float64
+            ),
             CentralMoments[np.float64],
         )
         assert_type(
-            CentralMoments.from_resample_vals(x64, freq=freq, mom=3, dtype=np.float32),
+            CentralMoments.from_resample_vals(
+                x64, freq=freq, mom=3, axis=0, dtype=np.float32
+            ),
             CentralMoments[np.float32],
         )
 
@@ -1004,41 +1020,48 @@ def test_central_resample_vals() -> None:
 
         # Would like this to default to np.float64
         assert_type(
-            CentralMoments.from_resample_vals(xc, freq=freq, mom=3), CentralMoments[Any]
-        )
-        assert_type(
-            CentralMoments.from_resample_vals(xc, freq=freq, mom=3, dtype=np.float32),
-            CentralMoments[np.float32],
-        )
-        assert_type(
-            CentralMoments.from_resample_vals(
-                [1, 2, 3], freq=freq, mom=3, dtype=np.float32
-            ),
-            CentralMoments[np.float32],
-        )
-        assert_type(
-            CentralMoments.from_resample_vals([1, 2, 3], freq=freq, mom=3),
+            CentralMoments.from_resample_vals(xc, freq=freq, mom=3, axis=0),
             CentralMoments[Any],
         )
         assert_type(
             CentralMoments.from_resample_vals(
-                [1, 2, 3], freq=freq, mom=3, dtype=np.float64
+                xc, freq=freq, mom=3, axis=0, dtype=np.float32
+            ),
+            CentralMoments[np.float32],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(
+                [1, 2, 3], freq=freq, mom=3, axis=0, dtype=np.float32
+            ),
+            CentralMoments[np.float32],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals([1, 2, 3], freq=freq, mom=3, axis=0),
+            CentralMoments[Any],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(
+                [1, 2, 3], freq=freq, mom=3, axis=0, dtype=np.float64
             ),
             CentralMoments[np.float64],
         )
 
         assert_type(
-            CentralMoments.from_resample_vals([1.0, 2.0, 3.0], freq=freq, mom=3),
-            CentralMoments[Any],
-        )
-        assert_type(
             CentralMoments.from_resample_vals(
-                [1.0, 2.0, 3.0], freq=freq, mom=3, dtype="f4"
+                [1.0, 2.0, 3.0], freq=freq, mom=3, axis=0
             ),
             CentralMoments[Any],
         )
         assert_type(
-            CentralMoments.from_resample_vals(x32, freq=freq, mom=3, dtype="f4"),
+            CentralMoments.from_resample_vals(
+                [1.0, 2.0, 3.0], freq=freq, mom=3, axis=0, dtype="f4"
+            ),
+            CentralMoments[Any],
+        )
+        assert_type(
+            CentralMoments.from_resample_vals(
+                x32, freq=freq, mom=3, axis=0, dtype="f4"
+            ),
             CentralMoments[Any],
         )
 

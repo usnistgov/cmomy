@@ -9,6 +9,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
+    Collection,
     Hashable,
     Literal,
     Mapping,
@@ -29,25 +30,35 @@ import xarray as xr
 from numpy.typing import ArrayLike, NDArray
 
 from ._typing_compat import TypeVar
+from ._typing_nested_sequence import (
+    _NestedSequence,  # pyright: ignore[reportPrivateUsage]
+)
 
 if TYPE_CHECKING:
     from ._typing_compat import TypeAlias
-    from .central_abc import CentralMomentsABC  # noqa: F401
 
-T_CentralMoments = TypeVar("T_CentralMoments", bound="CentralMomentsABC[Any, Any]")
+    # from .central_abc import CentralMomentsABC
+    from .utils import _Missing  # pyright: ignore[reportPrivateUsage]
 
+    # Missing value type
+    MissingType: TypeAlias = Literal[_Missing.MISSING]
+
+
+# Axis/Dim reduction type
+AxisReduce = Union[int, None]
+DimsReduce = Union[Hashable, None]
+
+# Central moments type
+# T_CentralMoments = TypeVar("T_CentralMoments", bound="CentralMomentsABC[Any, Any]")
 
 # * Numpy Arrays
 # ** Aliases
 DTypeAny: TypeAlias = Any
-NDArrayAny: TypeAlias = NDArray[DTypeAny]
 FloatDTypes = Union[np.float32, np.float64]
 LongIntDType: TypeAlias = np.int64
-
+NDArrayAny: TypeAlias = NDArray[DTypeAny]
 NDArrayFloats = NDArray[FloatDTypes]
 NDArrayInt = NDArray[LongIntDType]
-
-
 # ** Types
 T_Float = TypeVar(  # type: ignore[misc]
     "T_Float",
@@ -56,16 +67,8 @@ T_Float = TypeVar(  # type: ignore[misc]
     default=Any,  # pyright: ignore[reportGeneralTypeIssues]
 )
 T_Float2 = TypeVar("T_Float2", np.float32, np.float64)
-# T_FloatDType_co = TypeVar(  # type: ignore[misc]  # something off with default
-#     "T_FloatDType_co", np.float32, np.float64, covariant=True, default=np.float64
-# )
-
 T_DType_co = TypeVar("T_DType_co", covariant=True, bound=np.dtype[Any])
 T_Scalar = TypeVar("T_Scalar", bound=np.generic)
-# T_FloatArray = TypeVar("T_FloatArray", NDArray[np.float32], NDArray[np.float64])
-# T_NDArray = TypeVar("T_NDArray", bound=NDArray[Any])
-# Note: At least for now, only use np.int64...
-# T_IntDType = TypeVar("T_IntDType", np.int32, np.int64)  # array of ints
 T_IntDType: TypeAlias = np.int64
 NDGeneric: TypeAlias = Union[T_Float, NDArray[T_Float]]
 
@@ -83,19 +86,8 @@ DTypeLikeArg = Union[
     _SupportsDType[np.dtype[T_Scalar]],
 ]
 
-DTypeFloatArg = Union[
-    np.dtype[T_Float],
-    type[T_Float],
-    _SupportsDType[np.dtype[T_Float]],
-]
-
 
 # ** ArrayLike
-from ._typing_nested_sequence import (
-    _NestedSequence,  # pyright: ignore[reportPrivateUsage]
-)
-
-
 @runtime_checkable
 class _SupportsArray(Protocol[T_DType_co]):
     def __array__(self) -> np.ndarray[Any, T_DType_co]: ...  # noqa: PLW3201
@@ -132,14 +124,6 @@ T_Array = TypeVar(
     xr.DataArray,
     # default=NDArray[np.float64],
 )
-# T_Array2 = TypeVar(  # type: ignore[misc]  # something off with default
-#     "T_Array2",
-#     NDArray[np.float32],
-#     NDArray[np.float64],
-#     xr.DataArray,
-#     default=NDArray[np.float64],
-# )
-
 # * Dummy function
 FuncType = Callable[..., Any]
 F = TypeVar("F", bound=FuncType)
@@ -165,6 +149,7 @@ XArrayNameType: TypeAlias = Optional[Hashable]
 XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
 XArrayIndexesType: TypeAlias = Any
 
+Dims = Union[str, Collection[Hashable], ellipsis, None]  # noqa: F821
 
 # literals
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]

@@ -10,13 +10,13 @@ from module_utilities import cached
 
 from ._lib.factory import factory_pusher
 from .docstrings import docfiller
-from .typing import T_Array, T_Float
 from .utils import (
     normalize_axis_index,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_push_val,
     prepare_values_for_reduction,
+    validate_axis,
     validate_floating_dtype,
     validate_mom_ndim,
 )
@@ -31,14 +31,18 @@ if TYPE_CHECKING:
     from .typing import (
         ArrayOrder,
         ArrayOrderCF,
+        AxisReduce,
         DataCasting,
         Groups,
+        MissingType,
         Mom_NDim,
         Moments,
         MomentsStrict,
         NDArrayAny,
         NDArrayInt,
     )
+
+from .typing import T_Array, T_Float
 
 
 # * Main class ----------------------------------------------------------------
@@ -514,6 +518,22 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         """
         return self.fill(value=0.0)
 
+    # ** Utils
+    def _wrap_axis(
+        self,
+        axis: int | None,
+        ndim: int | None = None,
+    ) -> int:
+        """Wrap axis to positive value and check."""
+        if ndim is None:
+            ndim = self.val_ndim
+
+        return normalize_axis_index(validate_axis(axis), ndim)
+
+    # @staticmethod
+    # def _set_default_axis(axis: int | None, default: int = -1) -> int:
+    #     return default if axis is None else axis
+
     # ** pushing routines ---------------------------------------------------------
     @cached.prop
     def _use_parallel(self) -> bool:
@@ -524,10 +544,6 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
             mom_ndim=self._mom_ndim,
             parallel=self._use_parallel if parallel is None else parallel,
         )
-
-    @staticmethod
-    def _set_default_axis(axis: int | None, default: int = -1) -> int:
-        return default if axis is None else axis
 
     # Low level pushers
     def _push_data_numpy(
@@ -545,13 +561,13 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         self,
         datas: ArrayLike,
         *,
-        axis: int | None = None,
+        axis: AxisReduce | MissingType,
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
         datas = prepare_data_for_reduction(
             data=datas,
-            axis=self._set_default_axis(axis),
+            axis=axis,
             mom_ndim=self.mom_ndim,
             dtype=self.dtype,
             order=order,
@@ -599,8 +615,8 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         self,
         x: ArrayLike,
         *y: ArrayLike,
+        axis: AxisReduce | MissingType,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -612,7 +628,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
             x,
             *y,
             weight,
-            axis=self._set_default_axis(axis),
+            axis=axis,
             dtype=self.dtype,
             order=order,
             narrays=self._mom_ndim + 1,
@@ -657,7 +673,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         self,
         datas: Any,
         *,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -720,8 +736,8 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         self,
         x: ArrayLike,
         *y: ArrayLike,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -747,58 +763,10 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         """
 
     # * Reduction -----------------------------------------------------------------
-    # @abstractmethod
-    # @docfiller.decorate
-    # def resample(
-    #     self,
-    #     indices: NDArrayInt,
-    #     *,
-    #     axis: int | None = None,
-    #     # # *,
-    #     # last: bool = True,
-    #     # order: ArrayOrder = None,
-    #     # # first: bool = True,
-    #     # # verify: bool = False,
-    #     # **kwargs: Any,
-    # ) -> Self:
-    #     """
-    #     Create a new object sampled from index.
-
-    #     Parameters
-    #     ----------
-    #     {indices}
-    #     {axis_data_and_dim}
-
-    #     Returns
-    #     -------
-    #     output : object
-    #         Instance of calling class. The new object will have shape
-    #         ``(..., shape[axis-1], nrep, shape[axis], ...)``.
-
-    #     """
-    #     # self._raise_if_scalar()
-    #     # axis = self._set_default_axis(axis)
-
-    #     # data = self.data
-    #     # last_dim = self.val_ndim - 1
-    #     # if last and axis != last_dim:
-    #     #     data = np.moveaxis(data, axis, last_dim)
-    #     #     axis = last_dim
-
-    #     # out = np.take(data, indices, axis=axis)  # pyright: ignore[reportUnknownMemberType]
-
-    #     # return type(self).from_data(
-    #     #     data=out,
-    #     #     mom_ndim=self.mom_ndim,
-    #     #     copy=False,  # pyright: ignore[reportUnknownMemberType]
-    #     #     order=order,
-    #     #     **kwargs,
-    #     # )
-
     def randsamp_freq(
         self,
         *,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         nrep: int | None = None,
         nsamp: int | None = None,
         indices: ArrayLike | None = None,
@@ -826,7 +794,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         self,
         *,
         freq: NDArrayInt,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
@@ -863,7 +831,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
     def reduce(
         self,
         *,
-        axis: int | None = None,
+        axis: AxisReduce = -1,
         by: Groups | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
@@ -1033,19 +1001,6 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         return self
 
     # ** Constructors -------------------------------------------------------------
-    # *** Utils
-    def _wrap_axis(
-        self, axis: int | None, default: int = -1, ndim: int | None = None
-    ) -> int:
-        """Wrap axis to positive value and check."""
-        if axis is None:  # pragma: no cover
-            axis = default
-        if ndim is None:
-            ndim = self.val_ndim
-
-        return normalize_axis_index(axis, ndim)
-
-    # *** Core
     @classmethod
     @abstractmethod
     @docfiller.decorate
@@ -1085,8 +1040,8 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         x: T_Array,
         *y: ArrayLike,
         mom: Moments,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         # **kwargs: Any,
@@ -1126,8 +1081,8 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
+        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        axis: int | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
