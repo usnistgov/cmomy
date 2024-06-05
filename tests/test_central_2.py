@@ -139,8 +139,8 @@ def shape_axis(request):
     return request.param
 
 
-@pytest.fixture(scope="module")  # noqa: FURB118
-def shape(shape_axis):
+@pytest.fixture(scope="module")
+def shape(shape_axis):  # noqa: FURB118
     return shape_axis[0]
 
 
@@ -151,8 +151,8 @@ def shape_tuple(shape):
     return shape
 
 
-@pytest.fixture(scope="module")  # noqa: FURB118
-def axis(shape_axis):
+@pytest.fixture(scope="module")
+def axis(shape_axis):  # noqa: FURB118
     return shape_axis[1]
 
 
