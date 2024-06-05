@@ -21,32 +21,32 @@ if TYPE_CHECKING:
 
     from cmomy.typing import NDArrayAny
 
-    from .typing import ArrayLikeArg, ConvertStyle, DTypeLikeArg, Mom_NDim, T_Float
+    from .typing import ArrayLikeArg, ConvertStyle, DTypeLikeArg, FloatT
 
 
 @overload
 def convert(  # type: ignore[overload-overlap]
     values_in: xr.DataArray,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: int,
     to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
 ) -> xr.DataArray: ...
 @overload
 def convert(
-    values_in: ArrayLikeArg[T_Float],
+    values_in: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: int,
     to: ConvertStyle = ...,
     out: None = ...,
     dtype: None = ...,
-) -> NDArray[T_Float]: ...
+) -> NDArray[FloatT]: ...
 @overload
 def convert(
     values_in: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: int,
     to: ConvertStyle = ...,
     out: None = ...,
     dtype: None = ...,
@@ -55,25 +55,25 @@ def convert(
 def convert(
     values_in: Any,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: int,
     to: ConvertStyle = ...,
-    out: NDArray[T_Float],
+    out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-) -> NDArray[T_Float]: ...
+) -> NDArray[FloatT]: ...
 @overload
 def convert(
     values_in: Any,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: int,
     to: ConvertStyle = ...,
     out: None = ...,
-    dtype: DTypeLikeArg[T_Float],
-) -> NDArray[T_Float]: ...
+    dtype: DTypeLikeArg[FloatT],
+) -> NDArray[FloatT]: ...
 @overload
 def convert(
     values_in: Any,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: int,
     to: ConvertStyle = ...,
     out: None = ...,
     dtype: DTypeLike,
@@ -84,7 +84,7 @@ def convert(
 def convert(
     values_in: ArrayLike | xr.DataArray,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: int,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,

@@ -13,7 +13,7 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import NDGeneric, T_Float
+    from ..typing import FloatT, NDGeneric
 
 
 _PARALLEL = False
@@ -28,10 +28,10 @@ _decorator = partial(myguvectorize, parallel=_PARALLEL)
     ],
 )
 def push_val(
-    x0: NDGeneric[T_Float],
-    x1: NDGeneric[T_Float],
-    w: NDGeneric[T_Float],
-    out: NDArray[T_Float],
+    x0: NDGeneric[FloatT],
+    x1: NDGeneric[FloatT],
+    w: NDGeneric[FloatT],
+    out: NDArray[FloatT],
 ) -> None:
     _push.push_val(x0, x1, w, out)
 
@@ -44,10 +44,10 @@ def push_val(
     ],
 )
 def reduce_vals(
-    x0: NDArray[T_Float],
-    x1: NDArray[T_Float],
-    w: NDArray[T_Float],
-    out: NDArray[T_Float],
+    x0: NDArray[FloatT],
+    x1: NDArray[FloatT],
+    w: NDArray[FloatT],
+    out: NDArray[FloatT],
 ) -> None:
     for i in range(len(x0)):
         _push.push_val(x0[i], x1[i], w[i], out)
@@ -60,7 +60,7 @@ def reduce_vals(
         (nb.float64[:, :], nb.float64[:, :]),
     ],
 )
-def push_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
+def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     _push.push_data(data, out)
 
 
@@ -71,7 +71,7 @@ def push_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
         (nb.float64[:, :, :], nb.float64[:, :]),
     ],
 )
-def reduce_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
+def reduce_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     for i in range(data.shape[0]):
         _push.push_data(data[i, :, :], out)
 
@@ -84,7 +84,7 @@ def reduce_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
     ],
     writable=None,
 )
-def reduce_data_fromzero(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
+def reduce_data_fromzero(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     out[...] = 0.0
     for i in range(data.shape[0]):
         _push.push_data(data[i, :, :], out)

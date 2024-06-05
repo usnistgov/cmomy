@@ -68,11 +68,11 @@ extensions = [
 
 nitpicky = True
 nitpicky_ignore_regex = [
-    (r"py:.*", r".*\.T_Array.*"),
+    (r"py:.*", r".*\.ArrayT.*"),
     (r"py:.*", r"numpy\._typing.*"),
 ]
 # nitpicky_ignore = [
-#     ("py:obj", "cmomy.typing.T_Array"),
+#     ("py:obj", "cmomy.typing.ArrayT"),
 #     # ("py:class", "numpy._typing.*"),
 # ]
 autosectionlabel_prefix_document = True

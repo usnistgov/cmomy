@@ -13,7 +13,7 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import T_Float
+    from ..typing import FloatT
 
 _PARALLEL = True  # Auto generated from resample_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
@@ -34,7 +34,7 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
     writable=None,
 )
 def resample_data_fromzero(
-    data: NDArray[T_Float], freq: NDArray[T_Float], out: NDArray[T_Float]
+    data: NDArray[FloatT], freq: NDArray[FloatT], out: NDArray[FloatT]
 ) -> None:
     nrep, nsamp = freq.shape
 
@@ -80,11 +80,11 @@ def resample_data_fromzero(
     ],
 )
 def resample_vals(
-    x0: NDArray[T_Float],
-    x1: NDArray[T_Float],
-    w: NDArray[T_Float],
-    freq: NDArray[T_Float],
-    out: NDArray[T_Float],
+    x0: NDArray[FloatT],
+    x1: NDArray[FloatT],
+    w: NDArray[FloatT],
+    freq: NDArray[FloatT],
+    out: NDArray[FloatT],
 ) -> None:
     nrep, nsamp = freq.shape
 

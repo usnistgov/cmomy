@@ -27,7 +27,7 @@ import numpy as np
 # put outside to get autodoc typehints working...
 import pandas as pd
 import xarray as xr
-from numpy.typing import ArrayLike, NDArray
+from numpy.typing import NDArray
 
 from ._typing_compat import TypeVar
 from ._typing_nested_sequence import (
@@ -60,42 +60,42 @@ NDArrayAny: TypeAlias = NDArray[DTypeAny]
 NDArrayFloats = NDArray[FloatDTypes]
 NDArrayInt = NDArray[LongIntDType]
 # ** Types
-T_Float = TypeVar(  # type: ignore[misc]
-    "T_Float",
+FloatT = TypeVar(  # type: ignore[misc]
+    "FloatT",
     np.float32,
     np.float64,
     default=Any,  # pyright: ignore[reportGeneralTypeIssues]
 )
-T_Float2 = TypeVar("T_Float2", np.float32, np.float64)
-T_DType_co = TypeVar("T_DType_co", covariant=True, bound=np.dtype[Any])
-T_Scalar = TypeVar("T_Scalar", bound=np.generic)
-T_IntDType: TypeAlias = np.int64
-NDGeneric: TypeAlias = Union[T_Float, NDArray[T_Float]]
+FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
+DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound=np.dtype[Any])
+ScalarT = TypeVar("ScalarT", bound=np.generic)
+IntDTypeT: TypeAlias = np.int64
+NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 
 
 # ** Dtype
 @runtime_checkable
-class _SupportsDType(Protocol[T_DType_co]):
+class _SupportsDType(Protocol[DTypeT_co]):
     @property
-    def dtype(self) -> T_DType_co: ...
+    def dtype(self) -> DTypeT_co: ...
 
 
 DTypeLikeArg = Union[
-    np.dtype[T_Scalar],
-    type[T_Scalar],
-    _SupportsDType[np.dtype[T_Scalar]],
+    np.dtype[ScalarT],
+    type[ScalarT],
+    _SupportsDType[np.dtype[ScalarT]],
 ]
 
 
 # ** ArrayLike
 @runtime_checkable
-class _SupportsArray(Protocol[T_DType_co]):
-    def __array__(self) -> np.ndarray[Any, T_DType_co]: ...  # noqa: PLW3201
+class _SupportsArray(Protocol[DTypeT_co]):
+    def __array__(self) -> np.ndarray[Any, DTypeT_co]: ...  # noqa: PLW3201
 
 
 ArrayLikeArg = Union[
-    _SupportsArray[np.dtype[T_Scalar]],
-    _NestedSequence[_SupportsArray[np.dtype[T_Scalar]]],
+    _SupportsArray[np.dtype[ScalarT]],
+    _NestedSequence[_SupportsArray[np.dtype[ScalarT]]],
 ]
 
 
@@ -112,13 +112,13 @@ DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
 NumbaType = Any
 
 # * Moments
-Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
+Moments: TypeAlias = Union[int, Sequence[int]]
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
 # * Generic array
-T_Array = TypeVar(
-    "T_Array",
+ArrayT = TypeVar(
+    "ArrayT",
     NDArray[np.float32],
     NDArray[np.float64],
     xr.DataArray,
@@ -149,7 +149,7 @@ XArrayNameType: TypeAlias = Optional[Hashable]
 XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
 XArrayIndexesType: TypeAlias = Any
 
-Dims = Union[str, Collection[Hashable], ellipsis, None]  # noqa: F821
+Dims = Union[str, Collection[Hashable], "ellipsis", None]  # noqa: F821
 
 # literals
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
@@ -162,11 +162,6 @@ KeepAttrs: TypeAlias = Union[
 
 ConvertStyle = Literal["central", "raw"]
 
+
+# For indexed reducetion
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
-
-
-# pushing arrays
-MultiArray = Union[float, ArrayLike, T_Array]
-"""Generic array."""
-MultiArrayVals = Union[ArrayLike, T_Array]
-"""Generic value array."""

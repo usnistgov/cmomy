@@ -11,8 +11,7 @@ from .decorators import is_in_unsafe_thread_pool, myjit
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
 
-    from ..typing import NDArrayAny
-    from ..typing import T_IntDType as T_Int
+    from ..typing import IntDTypeT, NDArrayAny
 
 
 # * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
@@ -63,7 +62,9 @@ BINOMIAL_FACTOR = factory_binomial(OPTIONS["nmax"])
         (nb.int64[:, :], nb.int64[:, :]),
     ]
 )
-def randsamp_indices_to_freq(indices: NDArray[T_Int], freqs: NDArray[T_Int]) -> None:
+def randsamp_indices_to_freq(
+    indices: NDArray[IntDTypeT], freqs: NDArray[IntDTypeT]
+) -> None:
     nrep, ndat = freqs.shape
 
     assert indices.shape[0] == nrep
@@ -83,8 +84,10 @@ def randsamp_indices_to_freq(indices: NDArray[T_Int], freqs: NDArray[T_Int]) -> 
     ]
 )
 def freq_to_index_start_end_scales(
-    freq: NDArray[T_Int],
-) -> tuple[NDArray[T_Int], NDArray[T_Int], NDArray[T_Int], NDArray[T_Int]]:
+    freq: NDArray[IntDTypeT],
+) -> tuple[
+    NDArray[IntDTypeT], NDArray[IntDTypeT], NDArray[IntDTypeT], NDArray[IntDTypeT]
+]:
     ngroup = freq.shape[0]
     ndat = freq.shape[1]
 

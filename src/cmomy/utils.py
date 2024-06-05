@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
     from ._typing_compat import TypeGuard, TypeVar
 
-    # from .typing import T_Float
+    # from .typing import FloatT
     # from .typing import T_FloatDType_co as T_Float_co
     from .typing import (
         ArrayOrder,
@@ -32,7 +32,7 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         NDArrayAny,
-        T_Scalar,
+        ScalarT,
     )
 
     T = TypeVar("T")
@@ -114,7 +114,7 @@ def validate_mom(mom: int | Sequence[int]) -> MomentsStrict:
 def validate_mom_and_mom_ndim(
     *,
     mom: Moments | None = None,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: int | None = None,
     shape: tuple[int, ...] | None = None,
 ) -> tuple[MomentsStrict, Mom_NDim]:
     """
@@ -185,7 +185,7 @@ def mom_to_mom_ndim(mom: Moments) -> Mom_NDim:
 
 
 @docfiller.decorate
-def select_mom_ndim(*, mom: Moments | None, mom_ndim: Mom_NDim | None) -> Mom_NDim:
+def select_mom_ndim(*, mom: Moments | None, mom_ndim: int | None) -> Mom_NDim:
     """
     Select a mom_ndim from mom or mom_ndim
 
@@ -320,14 +320,14 @@ def select_axis_dim(
 
 # ** Prepare for push/reduction
 def _prepare_secondary_value_for_reduction(
-    target: NDArray[T_Scalar],
+    target: NDArray[ScalarT],
     x: ArrayLike,
     axis: int,
     move_axis: bool,
     nsamp: int,
     *,
     order: ArrayOrder = None,
-) -> NDArray[T_Scalar]:
+) -> NDArray[ScalarT]:
     """
     Prepare value array (x1, w) for reduction.
 
@@ -346,7 +346,7 @@ def _prepare_secondary_value_for_reduction(
         passed through `_prepare_target_value_for_reduction`
 
     """
-    out: NDArray[T_Scalar] = np.asarray(x, dtype=target.dtype, order=order)
+    out: NDArray[ScalarT] = np.asarray(x, dtype=target.dtype, order=order)
     if out.ndim == target.ndim:
         if move_axis:
             out = np.moveaxis(out, axis, -1)
@@ -389,9 +389,9 @@ def prepare_values_for_reduction(
     *args: ArrayLike,
     narrays: int,
     axis: int | None | MissingType = MISSING,
-    dtype: DTypeLikeArg[T_Scalar],
+    dtype: DTypeLikeArg[ScalarT],
     order: ArrayOrder = None,
-) -> tuple[NDArray[T_Scalar], ...]:
+) -> tuple[NDArray[ScalarT], ...]:
     """
     Convert input value arrays to correct form for reduction.
 
@@ -415,7 +415,7 @@ def prepare_values_for_reduction(
     if order:
         target = np.asarray(target, order=order)
 
-    others: Iterable[NDArray[T_Scalar]] = (
+    others: Iterable[NDArray[ScalarT]] = (
         _prepare_secondary_value_for_reduction(
             target=target,
             x=x,
@@ -506,9 +506,9 @@ def prepare_data_for_reduction(
     data: ArrayLike,
     axis: int | None | MissingType,
     mom_ndim: Mom_NDim,
-    dtype: DTypeLikeArg[T_Scalar],
+    dtype: DTypeLikeArg[ScalarT],
     order: ArrayOrder = None,
-) -> NDArray[T_Scalar]:
+) -> NDArray[ScalarT]:
     """Convert central moments array to correct form for reduction."""
     data = np.asarray(data, dtype=dtype)
     axis = validate_axis(axis)
@@ -550,12 +550,12 @@ def xprepare_data_for_reduction(
 def prepare_values_for_push_val(
     target: ArrayLike,
     *args: ArrayLike,
-    dtype: DTypeLikeArg[T_Scalar],
+    dtype: DTypeLikeArg[ScalarT],
     order: ArrayOrder | None = None,
-) -> tuple[NDArray[T_Scalar], ...]:
+) -> tuple[NDArray[ScalarT], ...]:
     """Get values ready for push"""
     target = np.asarray(target, order=order, dtype=dtype)
-    others: Iterable[NDArray[T_Scalar]] = (
+    others: Iterable[NDArray[ScalarT]] = (
         np.asarray(x, dtype=target.dtype, order=order) for x in args
     )
     return target, *others

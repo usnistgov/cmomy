@@ -5,7 +5,7 @@ Central moments/comoments routines from :class:`np.ndarray` objects
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, overload
+from typing import TYPE_CHECKING, Generic, cast, overload
 
 import numpy as np
 import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -34,13 +34,13 @@ if TYPE_CHECKING:
         AxisReduce,
         DataCasting,
         DTypeLikeArg,
+        FloatT2,
         Groups,
         Mom_NDim,
         MomDims,
         Moments,
         NDArrayAny,
         NDArrayInt,
-        T_Float2,
         XArrayAttrsType,
         XArrayCoordsType,
         XArrayDimsType,
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
         XArrayNameType,
     )
 
-from .typing import T_Float
+from .typing import FloatT
 
 # from ._typing_compat import TypeVar
 
@@ -59,19 +59,19 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 # * CentralMoments ------------------------------------------------------------
 @docfiller(CentralMomentsABC)  # noqa: PLR0904
-class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Float]):  # type: ignore[type-var] # noqa: D101
+class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]):  # type: ignore[type-var] # noqa: D101
     # TODO(wpk):  I think something like this would solve some of my typing issues.
     # see https://mypy.readthedocs.io/en/stable/more_types.html#precise-typing-of-alternative-constructors
     # But pyright isn't going to support it (see https://github.com/microsoft/pyright/issues/3497)
     #
-    # _CentralT = TypeVar("_CentralT", bound="CentralMoments[T_Float]")
+    # _CentralT = TypeVar("_CentralT", bound="CentralMoments[FloatT]")
 
     @overload
     def __init__(
         self,
-        data: ArrayLikeArg[T_Float],
+        data: ArrayLikeArg[FloatT],
         *,
-        mom_ndim: Mom_NDim = ...,
+        mom_ndim: int = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
         dtype: None = ...,
@@ -82,10 +82,10 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         data: Any,
         *,
-        mom_ndim: Mom_NDim = ...,
+        mom_ndim: int = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
-        dtype: DTypeLikeArg[T_Float],
+        dtype: DTypeLikeArg[FloatT],
         fastpath: bool = ...,
     ) -> None: ...
     @overload
@@ -93,7 +93,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         data: Any,
         *,
-        mom_ndim: Mom_NDim = ...,
+        mom_ndim: int = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLike = ...,
@@ -104,7 +104,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self,
         data: ArrayLike,
         *,
-        mom_ndim: Mom_NDim = 1,
+        mom_ndim: int = 1,
         copy: bool = False,
         order: ArrayOrder = None,
         dtype: DTypeLike = None,
@@ -116,33 +116,33 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
                 raise TypeError(msg)
             self._cache = {}
             self._data = data
-            self._mom_ndim = mom_ndim
+            self._mom_ndim = cast("Mom_NDim", mom_ndim)
         else:
             super().__init__(
                 data=np.array(data, dtype=dtype, order=order, copy=copy),
                 mom_ndim=mom_ndim,
             )
 
-    def set_values(self, values: NDArray[T_Float]) -> None:
+    def set_values(self, values: NDArray[FloatT]) -> None:
         if not isinstance(values, np.ndarray):
             msg = f"Must pass numpy.ndarray as data.  Not {type(values)=}"
             raise TypeError(msg)
         self._data = values
 
-    def to_values(self) -> NDArray[T_Float]:
+    def to_values(self) -> NDArray[FloatT]:
         return self._data
 
     # * top level creation/copy/new -----------------------------------------------
     @overload
     def new_like(
         self,
-        data: NDArray[T_Float2],
+        data: NDArray[FloatT2],
         *,
         copy: bool = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
-    ) -> CentralMoments[T_Float2]: ...
+    ) -> CentralMoments[FloatT2]: ...
     @overload
     def new_like(
         self,
@@ -151,8 +151,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         copy: bool = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
-        dtype: DTypeLikeArg[T_Float2],
-    ) -> CentralMoments[T_Float2]: ...
+        dtype: DTypeLikeArg[FloatT2],
+    ) -> CentralMoments[FloatT2]: ...
     @overload
     def new_like(
         self,
@@ -231,13 +231,13 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
     @overload
     def astype(
         self,
-        dtype: DTypeLikeArg[T_Float2],
+        dtype: DTypeLikeArg[FloatT2],
         *,
         order: ArrayOrder = None,
         casting: DataCasting = None,
         subok: bool | None = None,
         copy: bool = False,
-    ) -> CentralMoments[T_Float2]: ...
+    ) -> CentralMoments[FloatT2]: ...
     @overload
     def astype(
         self,
@@ -385,7 +385,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> xCentralMoments[T_Float]:
+    ) -> xCentralMoments[FloatT]:
         """
         Create an :class:`xarray.DataArray` representation of underlying data.
 
@@ -460,7 +460,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> xCentralMoments[T_Float]:
+    ) -> xCentralMoments[FloatT]:
         """Alias to :meth:`to_xcentralmoments`."""
         return self.to_xcentralmoments(
             dims=dims,
@@ -650,7 +650,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         self._raise_if_scalar()
         from .resample import resample_data
 
-        data: NDArray[T_Float] = resample_data(
+        data: NDArray[FloatT] = resample_data(
             self._data,
             freq=freq,
             mom_ndim=self._mom_ndim,
@@ -703,7 +703,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         axis: AxisReduce = -1,
         last: bool = True,
         order: ArrayOrder = None,
-    ) -> CentralMoments[T_Float]:
+    ) -> CentralMoments[FloatT]:
         """
         Create a new object sampled from index.
 
@@ -804,11 +804,11 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
     # ** Manipulation -------------------------------------------------------------
     @docfiller.decorate
     def reshape(
-        self: CentralMoments[T_Float2],
+        self: CentralMoments[FloatT2],
         shape: tuple[int, ...],
         *,
         order: ArrayOrderCFA = None,
-    ) -> CentralMoments[T_Float2]:
+    ) -> CentralMoments[FloatT2]:
         """
         Create a new object with reshaped data.
 
@@ -863,13 +863,13 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
 
     @docfiller.decorate
     def moveaxis(
-        self: CentralMoments[T_Float2],
+        self: CentralMoments[FloatT2],
         source: int | tuple[int, ...],
         destination: int | tuple[int, ...],
         # *,
         # copy: bool = True,
         # order: ArrayOrder | None = None,
-    ) -> CentralMoments[T_Float2]:
+    ) -> CentralMoments[FloatT2]:
         """
         Move axis from source to destination.
 
@@ -943,9 +943,9 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         *,
         mom: Moments,
         val_shape: tuple[int, ...] | int | None = ...,
-        dtype: DTypeLikeArg[T_Float2],
+        dtype: DTypeLikeArg[FloatT2],
         order: ArrayOrderCF | None = ...,
-    ) -> CentralMoments[T_Float2]: ...
+    ) -> CentralMoments[FloatT2]: ...
     @overload
     @classmethod
     def zeros(
@@ -988,7 +988,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
     @classmethod
     def from_vals(
         cls,
-        x: ArrayLikeArg[T_Float2],
+        x: ArrayLikeArg[FloatT2],
         *y: ArrayLike,
         mom: Moments,
         axis: AxisReduce = -1,
@@ -996,7 +996,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: None = ...,
-    ) -> CentralMoments[T_Float2]: ...
+    ) -> CentralMoments[FloatT2]: ...
     # dtype
     @overload
     @classmethod
@@ -1009,8 +1009,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         weight: ArrayLike | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
-        dtype: DTypeLikeArg[T_Float2],
-    ) -> CentralMoments[T_Float2]: ...
+        dtype: DTypeLikeArg[FloatT2],
+    ) -> CentralMoments[FloatT2]: ...
     # fallback
     @overload
     @classmethod
@@ -1072,7 +1072,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
     @classmethod
     def from_resample_vals(
         cls,
-        x: ArrayLikeArg[T_Float2],
+        x: ArrayLikeArg[FloatT2],
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
@@ -1081,7 +1081,7 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: None = ...,
-    ) -> CentralMoments[T_Float2]: ...
+    ) -> CentralMoments[FloatT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -1094,8 +1094,8 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
         weight: ArrayLike | None = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
-        dtype: DTypeLikeArg[T_Float2],
-    ) -> CentralMoments[T_Float2]: ...
+        dtype: DTypeLikeArg[FloatT2],
+    ) -> CentralMoments[FloatT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -1175,9 +1175,9 @@ class CentralMoments(CentralMomentsABC[T_Float, NDArray[T_Float]], Generic[T_Flo
     @docfiller_inherit_abc()
     def from_raw(
         cls,
-        raw: NDArray[T_Float],
+        raw: NDArray[FloatT],
         *,
-        mom_ndim: Mom_NDim,
+        mom_ndim: int,
     ) -> Self:
         """
         Examples

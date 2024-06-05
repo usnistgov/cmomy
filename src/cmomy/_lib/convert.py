@@ -13,7 +13,7 @@ from .utils import BINOMIAL_FACTOR
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import T_Float
+    from ..typing import FloatT
 
 
 _PARALLEL = False
@@ -28,7 +28,7 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
     ],
     writable=None,
 )
-def central_to_raw(central: NDArray[T_Float], raw: NDArray[T_Float]) -> None:
+def central_to_raw(central: NDArray[FloatT], raw: NDArray[FloatT]) -> None:
     ave = central[1]
     raw[0] = central[0]
     raw[1] = ave
@@ -55,7 +55,7 @@ def central_to_raw(central: NDArray[T_Float], raw: NDArray[T_Float]) -> None:
     ],
     writable=None,
 )
-def raw_to_central(raw: NDArray[T_Float], central: NDArray[T_Float]) -> None:
+def raw_to_central(raw: NDArray[FloatT], central: NDArray[FloatT]) -> None:
     ave = raw[1]
     central[0] = raw[0]
     central[1] = ave

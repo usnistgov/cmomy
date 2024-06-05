@@ -42,12 +42,12 @@ if TYPE_CHECKING:
         NDArrayInt,
     )
 
-from .typing import T_Array, T_Float
+from .typing import ArrayT, FloatT
 
 
 # * Main class ----------------------------------------------------------------
 @docfiller.decorate  # noqa: PLR0904
-class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
+class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     r"""
     Wrapper to calculate central moments.
 
@@ -75,7 +75,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
     """
 
     _cache: dict[str, Any]
-    _data: NDArray[T_Float]
+    _data: NDArray[FloatT]
     _mom_ndim: Mom_NDim
 
     __slots__ = (
@@ -86,9 +86,9 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
 
     def __init__(
         self,
-        data: T_Array,
+        data: ArrayT,
         *,
-        mom_ndim: Mom_NDim = 1,
+        mom_ndim: int = 1,
         copy: bool = False,  # noqa: ARG002
         order: ArrayOrder = None,  # noqa: ARG002
         dtype: DTypeLike = None,  # noqa: ARG002
@@ -113,20 +113,20 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
 
     # ** Basic access -------------------------------------------------------------
     @property
-    def values(self) -> T_Array:
+    def values(self) -> ArrayT:
         """Access underlying central moments array."""
         return self.to_values()
 
     @abstractmethod
-    def set_values(self, values: T_Array) -> None:
+    def set_values(self, values: ArrayT) -> None:
         """Set values."""
 
     @abstractmethod
-    def to_values(self) -> T_Array:
+    def to_values(self) -> ArrayT:
         """Access underlying values"""
 
     @property
-    def data(self) -> NDArray[T_Float]:
+    def data(self) -> NDArray[FloatT]:
         """
         Accessor to numpy array underlying data.
 
@@ -140,7 +140,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         """
         return self._data
 
-    def to_numpy(self) -> NDArray[T_Float]:
+    def to_numpy(self) -> NDArray[FloatT]:
         """Access to numpy array underlying class."""
         return self._data
 
@@ -155,7 +155,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         return self._data.ndim
 
     @property
-    def dtype(self) -> np.dtype[T_Float]:
+    def dtype(self) -> np.dtype[FloatT]:
         """self.data.dtype."""
         # Not sure why I have to cast
         return self._data.dtype
@@ -205,7 +205,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 
-    def __array__(self, dtype: DTypeLike = None) -> NDArray[T_Float]:  # noqa: PLW3201
+    def __array__(self, dtype: DTypeLike = None) -> NDArray[FloatT]:  # noqa: PLW3201
         """Used by np.array(self)."""  # D401
         return np.asarray(self.data, dtype=dtype)
 
@@ -214,7 +214,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
     @docfiller.decorate
     def new_like(
         self,
-        data: T_Array | None = None,
+        data: ArrayT | None = None,
         *,
         copy: bool = False,
         order: ArrayOrder | None = None,
@@ -372,35 +372,35 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
             return (..., *index)  # pyright: ignore[reportUnknownVariableType]
         return tuple(index)
 
-    def _wrap_like(self, x: NDArrayAny) -> T_Array:  # noqa: PLR6301
+    def _wrap_like(self, x: NDArrayAny) -> ArrayT:  # noqa: PLR6301
         return x  # type: ignore[return-value]
 
-    def weight(self) -> float | T_Array:
+    def weight(self) -> float | ArrayT:
         """Weight data."""
         return cast(
-            "float | T_Array",
+            "float | ArrayT",
             self.to_values()[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
-    def mean(self) -> float | T_Array:
+    def mean(self) -> float | ArrayT:
         """Mean (first moment)."""
         return cast(
-            "float | T_Array",
+            "float | ArrayT",
             self.to_values()[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
-    def var(self) -> float | T_Array:
+    def var(self) -> float | ArrayT:
         """Variance (second central moment)."""
         return cast(
-            "float | T_Array",
+            "float | ArrayT",
             self.to_values()[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
         )
 
-    def std(self) -> float | T_Array:
+    def std(self) -> float | ArrayT:
         """Standard deviation."""  # D401
-        return cast("float | T_Array", np.sqrt(self.var()))
+        return cast("float | ArrayT", np.sqrt(self.var()))
 
-    def cmom(self) -> T_Array:
+    def cmom(self) -> ArrayT:
         r"""
         Central moments.
 
@@ -427,7 +427,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
         out[self._single_index(1)] = 0
         return self._wrap_like(out)
 
-    def to_raw(self, *, weight: float | NDArrayAny | None = None) -> T_Array:
+    def to_raw(self, *, weight: float | NDArrayAny | None = None) -> ArrayT:
         r"""
         Raw moments accumulation array.
 
@@ -459,7 +459,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
             out[self._weight_index] = weight
         return self._wrap_like(out)
 
-    def rmom(self) -> T_Array:
+    def rmom(self) -> ArrayT:
         r"""
         Raw moments.
 
@@ -1037,7 +1037,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
     @docfiller.decorate
     def from_vals(
         cls,
-        x: T_Array,
+        x: ArrayT,
         *y: ArrayLike,
         mom: Moments,
         axis: AxisReduce = -1,
@@ -1077,7 +1077,7 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
     @docfiller.decorate
     def from_resample_vals(
         cls,
-        x: T_Array,
+        x: ArrayT,
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
@@ -1131,9 +1131,9 @@ class CentralMomentsABC(ABC, Generic[T_Float, T_Array]):
     @docfiller.decorate
     def from_raw(
         cls,
-        raw: T_Array,
+        raw: ArrayT,
         *,
-        mom_ndim: Mom_NDim,
+        mom_ndim: int,
     ) -> Self:
         """
         Create object from raw moment data.

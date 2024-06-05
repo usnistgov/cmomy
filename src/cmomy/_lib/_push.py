@@ -12,7 +12,7 @@ from .utils import BINOMIAL_FACTOR
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import NDGeneric, T_Float
+    from ..typing import FloatT, NDGeneric
 
 
 @myjit(
@@ -22,9 +22,7 @@ if TYPE_CHECKING:
     ],
     inline=True,
 )
-def push_val(
-    x: NDGeneric[T_Float], w: NDGeneric[T_Float], out: NDArray[T_Float]
-) -> None:
+def push_val(x: NDGeneric[FloatT], w: NDGeneric[FloatT], out: NDArray[FloatT]) -> None:
     if w == 0.0:
         return
 
@@ -75,7 +73,7 @@ def push_val(
     ],
     inline=True,
 )
-def push_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
+def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     # w : weight
     # data[1]a : average
     # v[i] : <dx**(i+2)>
@@ -134,7 +132,7 @@ def push_data(data: NDArray[T_Float], out: NDArray[T_Float]) -> None:
     inline=True,
 )
 def push_data_scale(
-    data: NDArray[T_Float], scale: NDGeneric[T_Float], out: NDArray[T_Float]
+    data: NDArray[FloatT], scale: NDGeneric[FloatT], out: NDArray[FloatT]
 ) -> None:
     # w : weight
     # data[1]a : average
@@ -196,10 +194,10 @@ def push_data_scale(
     inline=True,
 )
 def push_stat(
-    a: NDGeneric[T_Float],
-    v: NDArray[T_Float],
-    w: NDGeneric[T_Float],
-    out: NDArray[T_Float],
+    a: NDGeneric[FloatT],
+    v: NDArray[FloatT],
+    w: NDGeneric[FloatT],
+    out: NDArray[FloatT],
 ) -> None:
     # a : average
     # v[i] : <dx**(i+2)>

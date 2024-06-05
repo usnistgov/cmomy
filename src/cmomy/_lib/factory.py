@@ -14,68 +14,68 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from ..typing import ConvertStyle, Mom_NDim, NDArrayInt, T_Float
+    from ..typing import ConvertStyle, FloatT, Mom_NDim, NDArrayInt
 
     # Resample signature
     # These don't play well with pyright and overloading...
     class ResampleVals(Protocol):
         def __call__(
             self,
-            x: NDArray[T_Float],
-            w: NDArray[T_Float],
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
             freq: NDArrayInt,
-            out: NDArray[T_Float],
+            out: NDArray[FloatT],
             /,
         ) -> tuple[()]: ...
 
     class ResampleValsCov(Protocol):
         def __call__(
             self,
-            x0: NDArray[T_Float],
-            x1: NDArray[T_Float],
-            w: NDArray[T_Float],
+            x0: NDArray[FloatT],
+            x1: NDArray[FloatT],
+            w: NDArray[FloatT],
             freq: NDArrayInt,
-            out: NDArray[T_Float],
+            out: NDArray[FloatT],
             /,
         ) -> tuple[()]: ...
 
     class ResampleData(Protocol):
         def __call__(
             self,
-            data: NDArray[T_Float],
+            data: NDArray[FloatT],
             freq: NDArrayInt,
-            out: NDArray[T_Float] | None = None,
+            out: NDArray[FloatT] | None = None,
             /,
-        ) -> NDArray[T_Float]: ...
+        ) -> NDArray[FloatT]: ...
 
     # Reduce
     class ReduceVals(Protocol):
         def __call__(
-            self, x: NDArray[T_Float], w: NDArray[T_Float], out: NDArray[T_Float], /
+            self, x: NDArray[FloatT], w: NDArray[FloatT], out: NDArray[FloatT], /
         ) -> tuple[()]: ...
 
     class ReduceValsCov(Protocol):
         def __call__(
             self,
-            x0: NDArray[T_Float],
-            x1: NDArray[T_Float],
-            w: NDArray[T_Float],
-            out: NDArray[T_Float],
+            x0: NDArray[FloatT],
+            x1: NDArray[FloatT],
+            w: NDArray[FloatT],
+            out: NDArray[FloatT],
             /,
         ) -> tuple[()]: ...
 
     class ReduceData(Protocol):
         def __call__(
-            self, data: NDArray[T_Float], out: NDArray[T_Float] | None = None, /
-        ) -> NDArray[T_Float]: ...
+            self, data: NDArray[FloatT], out: NDArray[FloatT] | None = None, /
+        ) -> NDArray[FloatT]: ...
 
     # Grouped
     class ReduceDataGrouped(Protocol):
         def __call__(
             self,
-            data: NDArray[T_Float],
+            data: NDArray[FloatT],
             group_idx: NDArrayInt,
-            out: NDArray[T_Float],
+            out: NDArray[FloatT],
             /,
         ) -> tuple[()]: ...
 
@@ -83,20 +83,20 @@ if TYPE_CHECKING:
     class ReduceDataIndexed(Protocol):
         def __call__(
             self,
-            data: NDArray[T_Float],
+            data: NDArray[FloatT],
             index: NDArrayInt,
             group_start: NDArrayInt,
             group_end: NDArrayInt,
-            scale: NDArray[T_Float],
-            out: NDArray[T_Float] | None = None,
+            scale: NDArray[FloatT],
+            out: NDArray[FloatT] | None = None,
             /,
-        ) -> NDArray[T_Float]: ...
+        ) -> NDArray[FloatT]: ...
 
     # convert
     class Convert(Protocol):
         def __call__(
-            self, values_in: NDArray[T_Float], out: NDArray[T_Float] | None = None, /
-        ) -> NDArray[T_Float]: ...
+            self, values_in: NDArray[FloatT], out: NDArray[FloatT] | None = None, /
+        ) -> NDArray[FloatT]: ...
 
 
 class Pusher(NamedTuple):
