@@ -25,6 +25,8 @@ from cmomy._lib import (
 if TYPE_CHECKING:
     from typing import Any, Callable
 
+    from cmomy.typing import Mom_NDim
+
     Func = Callable[..., Any]
 
 
@@ -82,7 +84,7 @@ if TYPE_CHECKING:
     ],
 )
 def test_factory_pusher(
-    mom_ndim: int, parallel: bool, expected: tuple[Func | None, ...]
+    mom_ndim: Mom_NDim, parallel: bool, expected: tuple[Func | None, ...]
 ) -> None:
     assert factory.factory_pusher(mom_ndim, parallel) == expected
 
@@ -96,7 +98,11 @@ def test_factory_pusher(
         (2, True, resample_cov_parallel.resample_vals),
     ],
 )
-def test_factory_resample_vals(mom_ndim: int, parallel: bool, expected: Func) -> None:
+def test_factory_resample_vals(
+    mom_ndim: Mom_NDim,
+    parallel: bool,
+    expected: factory.ResampleVals | factory.ResampleValsCov,
+) -> None:
     assert factory.factory_resample_vals(mom_ndim, parallel) == expected
 
 
@@ -109,7 +115,9 @@ def test_factory_resample_vals(mom_ndim: int, parallel: bool, expected: Func) ->
         (2, True, resample_cov_parallel.resample_data_fromzero),
     ],
 )
-def test_factory_data(mom_ndim: int, parallel: bool, expected: Func) -> None:
+def test_factory_data(
+    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ResampleData
+) -> None:
     assert factory.factory_resample_data(mom_ndim, parallel) == expected
 
 
@@ -122,7 +130,11 @@ def test_factory_data(mom_ndim: int, parallel: bool, expected: Func) -> None:
         (2, True, push_cov_parallel.reduce_vals),
     ],
 )
-def test_reduce_vals(mom_ndim: int, parallel: bool, expected: Func) -> None:
+def test_reduce_vals(
+    mom_ndim: Mom_NDim,
+    parallel: bool,
+    expected: factory.ReduceVals | factory.ReduceValsCov,
+) -> None:
     assert factory.factory_reduce_vals(mom_ndim, parallel) == expected
 
 
@@ -135,7 +147,9 @@ def test_reduce_vals(mom_ndim: int, parallel: bool, expected: Func) -> None:
         (2, True, push_cov_parallel.reduce_data_fromzero),
     ],
 )
-def test_reduce_data(mom_ndim: int, parallel: bool, expected: Func) -> None:
+def test_reduce_data(
+    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ReduceData
+) -> None:
     assert factory.factory_reduce_data(mom_ndim, parallel) == expected
 
 
@@ -148,7 +162,9 @@ def test_reduce_data(mom_ndim: int, parallel: bool, expected: Func) -> None:
         (2, True, indexed_cov_parallel.reduce_data_grouped),
     ],
 )
-def test_reduce_data_grouped(mom_ndim: int, parallel: bool, expected: Func) -> None:
+def test_reduce_data_grouped(
+    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ReduceDataGrouped
+) -> None:
     assert factory.factory_reduce_data_grouped(mom_ndim, parallel) == expected
 
 
@@ -161,7 +177,9 @@ def test_reduce_data_grouped(mom_ndim: int, parallel: bool, expected: Func) -> N
         (2, True, indexed_cov_parallel.reduce_data_indexed_fromzero),
     ],
 )
-def test_reduce_data_indexed(mom_ndim: int, parallel: bool, expected: Func) -> None:
+def test_reduce_data_indexed(
+    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ReduceDataIndexed
+) -> None:
     assert factory.factory_reduce_data_indexed(mom_ndim, parallel) == expected
 
 
@@ -174,5 +192,5 @@ def test_reduce_data_indexed(mom_ndim: int, parallel: bool, expected: Func) -> N
         (2, "raw", convert_cov.central_to_raw),
     ],
 )
-def test_reduce_convert(mom_ndim: int, to: str, expected: Func) -> None:
+def test_reduce_convert(mom_ndim: Mom_NDim, to: str, expected: factory.Convert) -> None:
     assert factory.factory_convert(mom_ndim, to) == expected

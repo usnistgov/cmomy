@@ -12,29 +12,29 @@ from cmomy.reduction import reduce_vals
 from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import DTypeLike
 
     from cmomy.typing import ArrayOrder, Mom_NDim, NDArrayAny
 
 
 @pytest.fixture(scope="module", params=[(), (2,), (2, 3)])
 def val_shape(request: pytest.FixtureRequest) -> tuple[int, ...]:
-    return request.param
+    return request.param  # type: ignore[no-any-return]
 
 
 @pytest.fixture(scope="module", params=[100])
 def nsamp(request: pytest.FixtureRequest) -> int:
-    return request.param
+    return request.param  # type: ignore[no-any-return]
 
 
 @pytest.fixture(scope="module")
-def axes(val_shape) -> list[int]:
+def axes(val_shape: tuple[int, ...]) -> list[int]:
     return list(range(len(val_shape) + 1))
 
 
 @pytest.fixture(scope="module")
 def val_shapes(
-    val_shape: tuple[int, ...], axes: int, nsamp: int
+    val_shape: tuple[int, ...], axes: list[int], nsamp: int
 ) -> list[tuple[int, ...]]:
     out = []
     for axis in axes:
@@ -80,7 +80,7 @@ def y_values(
     val_shapes: list[tuple[int, ...]],
     nsamp: int,
     rng: np.random.Generator,
-) -> list[NDArray | None]:
+) -> list[NDArrayAny | None]:
     return [
         _v_to_value(rng, request.param, nsamp=nsamp, val_shape=val_shape)
         for val_shape in val_shapes
@@ -101,13 +101,13 @@ def dims_values(
 
 @pytest.fixture(scope="module")
 def dx_values(
-    x_values: list[NDArray], dims_values: list[tuple[str, ...]]
+    x_values: list[NDArrayAny], dims_values: list[tuple[str, ...]]
 ) -> list[xr.DataArray]:
     return [xr.DataArray(_x, dims=_dims) for _x, _dims in zip(x_values, dims_values)]
 
 
 def _v_to_dv(values: list[Any], dims_values: list[tuple[str, ...]]) -> list[Any]:
-    out = []
+    out: list[Any] = []
     for _v, _dims in zip(values, dims_values):
         if _v is None:
             out.append(_v)
@@ -137,7 +137,7 @@ mom_central = pytest.mark.parametrize("mom", [2, 5])
 def test_central_moments(
     mom: Mom_NDim,
     axes: list[int],
-    x_values: list[NDArray],
+    x_values: list[NDArrayAny],
     w_values: list[Any],
     dx_values: list[xr.DataArray],
     dw_values: list[Any],
@@ -150,7 +150,7 @@ def test_central_moments(
         dx,
         dw,
     ) in zip(axes, x_values, w_values, dx_values, dw_values):
-        expected = get_cmom(w, x, mom, axis=axis)
+        expected = get_cmom(w, x, mom, axis=axis)  # type: ignore[no-untyped-call]
 
         for xx, ww in [(x, w), (dx, dw)]:
             if out_style is None:
@@ -167,13 +167,13 @@ def test_central_moments(
 def test_central_moments_dtype_order(
     mom: Mom_NDim,
     axes: list[int],
-    x_values: list[NDArray],
+    x_values: list[NDArrayAny],
     w_values: list[Any],
     dtype: DTypeLike,
     order: ArrayOrder,
 ) -> None:
     for axis, x, w in zip(axes, x_values, w_values):
-        expected = get_cmom(
+        expected = get_cmom(  # type: ignore[no-untyped-call]
             w if w is None else w.astype(dtype), x.astype(dtype), mom, axis=axis
         )
         out = reduce_vals(x.astype(dtype), mom=mom, weight=w, axis=axis, order=order)
@@ -182,7 +182,7 @@ def test_central_moments_dtype_order(
         np.testing.assert_allclose(out, expected)
 
 
-def test_central_moments_raises():
+def test_central_moments_raises() -> None:
     x = np.ones((10, 20))
     out = np.ones((2, 3))
     with pytest.raises(ValueError):
@@ -198,7 +198,7 @@ comom_central = pytest.mark.parametrize("mom", [(2, 2), (4, 4)])
 def test_central_comoments(
     mom: Mom_NDim,
     axes: list[int],
-    x_values: list[NDArray],
+    x_values: list[NDArrayAny],
     y_values: list[Any],
     w_values: list[Any],
     dx_values: list[xr.DataArray],
@@ -209,7 +209,7 @@ def test_central_comoments(
     for axis, x, y, w, dx, dy, dw in zip(
         axes, x_values, y_values, w_values, dx_values, dy_values, dw_values
     ):
-        expected = get_comom(w, x, y=y, moments=mom, axis=axis)
+        expected = get_comom(w, x, y=y, moments=mom, axis=axis)  # type: ignore[no-untyped-call]
 
         for xx, yy, ww in [(x, y, w), (dx, dy, dw)]:
             if out_style is None:

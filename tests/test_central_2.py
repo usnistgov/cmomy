@@ -10,7 +10,7 @@ import pytest
 from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
-    from cmomy.typing import NDArrayAny
+    from cmomy.typing import Mom_NDim, NDArrayAny
 
 
 class DataContainer:
@@ -42,7 +42,7 @@ class DataContainer:
     def result_central_moments(
         self,
         axis: int,
-        mom: int | tuple[int, ...],
+        mom: Mom_NDim,
         broadcast=None,  # noqa: ARG002
         cov: bool | None = None,
         **kws,

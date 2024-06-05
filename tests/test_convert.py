@@ -39,7 +39,7 @@ def test_raises_convert_moments() -> None:
 
     for to in ["raw", "central"]:
         with pytest.raises(ValueError):
-            convert(x, mom_ndim=2, to=to)
+            convert(x, mom_ndim=2, to=to)  # type: ignore[call-overload]
 
 
 def test_to_central_moments(other) -> None:

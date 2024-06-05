@@ -81,12 +81,10 @@ def test_zeros() -> None:
 # exceptions
 def test_raises_centralmoments_init() -> None:
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((2, 3, 4)), mom_ndim=3)  # type: ignore[arg-type]
+        CentralMoments(np.zeros((2, 3, 4)), mom_ndim=3)  # type: ignore[call-overload]
 
-    # with pytest.raises(TypeError):
-    #     CentralMoments([1, 2, 3], mom_ndim=1)  # type: ignore[arg-type]
     with pytest.raises(ValueError):
-        CentralMoments([1, 2, 3], mom_ndim=1)  # type: ignore[arg-type]
+        CentralMoments([1, 2, 3], mom_ndim=1)
 
     with pytest.raises(ValueError):
         CentralMoments(np.zeros((1, 1)), mom_ndim=1)
@@ -190,7 +188,7 @@ def test_to_dataarray2(mom_ndim, dims, mom_dims, dims_all) -> None:
 
 def test_raises_mom_ndim() -> None:
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((4, 4)), mom_ndim=0)  # type: ignore[arg-type]
+        CentralMoments(np.zeros((4, 4)), mom_ndim=0)  # type: ignore[call-overload]
 
     with pytest.raises(ValueError):
         CentralMoments(np.zeros((4, 4)), mom_ndim=3)  # type: ignore[arg-type]
