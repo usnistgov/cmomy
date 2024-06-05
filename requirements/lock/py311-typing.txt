@@ -9,13 +9,13 @@ numba==0.59.1
 numpy==1.26.4             # via numba, pandas, pandas-stubs, xarray
 packaging==24.0           # via lazy-loader, pytest, xarray
 pandas==2.2.2             # via xarray
-pandas-stubs==2.2.1.240316
-pluggy==1.4.0             # via pytest
-pytest==8.1.1
+pandas-stubs==2.2.2.240603
+pluggy==1.5.0             # via pytest
+pytest==8.2.2
 python-dateutil==2.9.0.post0  # via pandas
 pytz==2024.1              # via pandas
 six==1.16.0               # via python-dateutil
-types-pytz==2024.1.0.20240203  # via pandas-stubs
-typing-extensions==4.11.0  # via module-utilities
+types-pytz==2024.1.0.20240417  # via pandas-stubs
+typing-extensions==4.12.1  # via module-utilities
 tzdata==2024.1            # via pandas
-xarray==2024.3.0
+xarray==2024.5.0

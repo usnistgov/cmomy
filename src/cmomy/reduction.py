@@ -494,14 +494,17 @@ def factor_by(
             dtype=object,
         )
 
-    codes, groups = factorize(_by, sort=sort)  # type: ignore[arg-type] # pyright: ignore[reportCallIssue]
+    codes, groups = factorize(_by, sort=sort)  # pyright: ignore[reportCallIssue]
 
-    if isinstance(_by, pd.Index):
+    codes = codes.astype(np.int64)
+    if isinstance(_by, (pd.Index, pd.MultiIndex)):
+        if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # pragma: no cover
+            msg = f"{type(groups)=} should be instance of pd.Index"
+            raise TypeError(msg)
         groups.names = _by.names
-    else:
-        groups = list(groups)  # type: ignore[assignment]
+        return groups, codes
 
-    return groups, codes.astype(np.int64)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportUnknownArgumentType]
+    return list(groups), codes
 
 
 # ** low level

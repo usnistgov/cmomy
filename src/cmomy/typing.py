@@ -117,12 +117,12 @@ MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
 # * Generic array
-ArrayT = TypeVar(
+ArrayT = TypeVar(  # type: ignore[misc]
     "ArrayT",
     NDArray[np.float32],
     NDArray[np.float64],
     xr.DataArray,
-    # default=NDArray[np.float64],
+    default=NDArray[np.float64],
 )
 # * Dummy function
 FuncType = Callable[..., Any]

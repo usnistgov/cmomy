@@ -494,6 +494,7 @@ default_envs = [
 [tool.pyproject2conda.dependencies]
 pytest-accept = { pip = true }
 scriv = { pip = true }
+lazy-loader = { skip = true, packages = "lazy_loader" }
 
 [tool.pyproject2conda.envs.build]
 extras = "build-system.requires"
