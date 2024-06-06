@@ -286,7 +286,7 @@ def _reduce_data(
 def reduce_data(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -300,7 +300,7 @@ def reduce_data(  # type: ignore[overload-overlap]
 def reduce_data(
     data: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -314,7 +314,7 @@ def reduce_data(
 def reduce_data(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -328,7 +328,7 @@ def reduce_data(
 def reduce_data(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -342,7 +342,7 @@ def reduce_data(
 def reduce_data(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -358,7 +358,7 @@ def reduce_data(
 def reduce_data(
     data: xr.DataArray | ArrayLike,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     dim: DimsReduce | MissingType = MISSING,
     axis: AxisReduce | MissingType = MISSING,
     order: ArrayOrder = None,
@@ -490,21 +490,21 @@ def factor_by(
         _by = by
     else:
         _by = np.fromiter(
-            (None if isinstance(x, (int, np.integer)) and x < 0 else x for x in by),
+            (None if isinstance(x, (int, np.integer)) and x < 0 else x for x in by),  # pyright: ignore[reportUnknownArgumentType]
             dtype=object,
         )
 
-    codes, groups = factorize(_by, sort=sort)  # pyright: ignore[reportCallIssue]
+    codes, groups = factorize(_by, sort=sort)  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
 
     codes = codes.astype(np.int64)
     if isinstance(_by, (pd.Index, pd.MultiIndex)):
         if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # pragma: no cover
-            msg = f"{type(groups)=} should be instance of pd.Index"
+            msg = f"{type(groups)=} should be instance of pd.Index"  # pyright: ignore[reportUnknownArgumentType]
             raise TypeError(msg)
         groups.names = _by.names
-        return groups, codes
+        return groups, codes  # pyright: ignore[reportUnknownVariableType]
 
-    return list(groups), codes
+    return list(groups), codes  # pyright: ignore[reportUnknownArgumentType]
 
 
 # ** low level
@@ -541,7 +541,7 @@ def _reduce_data_grouped(
 def reduce_data_grouped(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     by: ArrayLike,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -559,7 +559,7 @@ def reduce_data_grouped(  # type: ignore[overload-overlap]
 def reduce_data_grouped(
     data: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     by: ArrayLike,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -577,7 +577,7 @@ def reduce_data_grouped(
 def reduce_data_grouped(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     by: ArrayLike,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -595,7 +595,7 @@ def reduce_data_grouped(
 def reduce_data_grouped(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     by: ArrayLike,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -613,7 +613,7 @@ def reduce_data_grouped(
 def reduce_data_grouped(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     by: ArrayLike,
     axis: AxisReduce | MissingType = ...,
     order: ArrayOrder = ...,
@@ -633,7 +633,7 @@ def reduce_data_grouped(
 def reduce_data_grouped(
     data: xr.DataArray | ArrayLike,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     by: ArrayLike,
     axis: AxisReduce | MissingType = MISSING,
     order: ArrayOrder = None,
@@ -841,9 +841,6 @@ def factor_by_to_index(
     )
     n_end = n_start + count
 
-    if groups is None:
-        groups = list(_groups)
-
     if index is not None:
         indexes_sorted = index[indexes_sorted]
 
@@ -930,7 +927,7 @@ def _reduce_data_indexed(
 def reduce_data_indexed(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
@@ -952,7 +949,7 @@ def reduce_data_indexed(  # type: ignore[overload-overlap]
 def reduce_data_indexed(
     data: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
@@ -974,7 +971,7 @@ def reduce_data_indexed(
 def reduce_data_indexed(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
@@ -996,7 +993,7 @@ def reduce_data_indexed(
 def reduce_data_indexed(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
@@ -1018,7 +1015,7 @@ def reduce_data_indexed(
 def reduce_data_indexed(
     data: Any,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
@@ -1042,7 +1039,7 @@ def reduce_data_indexed(
 def reduce_data_indexed(  # noqa: PLR0913
     data: xr.DataArray | ArrayLike,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
@@ -1215,7 +1212,7 @@ def resample_data_indexed(
     data: ArrayT,
     freq: NDArrayAny,
     *,
-    mom_ndim: int,
+    mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = MISSING,
     order: ArrayOrder = None,
     parallel: bool = True,
@@ -1233,7 +1230,7 @@ def resample_data_indexed(
 
     index, start, end, scales = freq_to_index_start_end_scales(freq)
 
-    return reduce_data_indexed(  # pyright: ignore[reportCallIssue]
+    return reduce_data_indexed(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
         data=data,
         mom_ndim=mom_ndim,
         index=index,

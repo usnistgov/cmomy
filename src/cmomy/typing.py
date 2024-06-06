@@ -112,7 +112,10 @@ DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
 NumbaType = Any
 
 # * Moments
-Moments: TypeAlias = Union[int, Sequence[int]]
+# NOTE: using the strict form for Moments
+# Passing in integer or Sequence[int] will work in almost all cases,
+# but will be flagged by typechecker...
+Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 

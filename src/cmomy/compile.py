@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import argparse
-    from typing import Sequence
+    from typing import Any, Sequence
 
     from ._typing_compat import Self
 
@@ -36,7 +36,7 @@ def _time_modules(
 
     prefix = "" if prefix is None else f"{prefix}."
 
-    out = []
+    out: list[tuple[Any, Any]] = []
     with _Catchtime() as total:
         for module in modules:
             logger.warning("loading mod %s", module)

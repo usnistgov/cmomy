@@ -88,7 +88,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         data: ArrayT,
         *,
-        mom_ndim: int = 1,
+        mom_ndim: Mom_NDim = 1,
         copy: bool = False,  # noqa: ARG002
         order: ArrayOrder = None,  # noqa: ARG002
         dtype: DTypeLike = None,  # noqa: ARG002
@@ -1133,7 +1133,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         cls,
         raw: ArrayT,
         *,
-        mom_ndim: int,
+        mom_ndim: Mom_NDim,
     ) -> Self:
         """
         Create object from raw moment data.

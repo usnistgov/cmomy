@@ -1,4 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
 from typing import Any
@@ -210,10 +211,10 @@ def test_resample_resample_vals(rng) -> None:
     np.testing.assert_allclose(c.data, out)
 
     with pytest.raises(TypeError):
-        resample.resample_vals(x, freq=freq, mom=[3])
+        resample.resample_vals(x, freq=freq, mom=[3])  # type: ignore[call-overload]
 
     with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq, mom=(3, 3, 3), axis=0)
+        resample.resample_vals(x, freq=freq, mom=(3, 3, 3), axis=0)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
         resample.resample_vals(x, freq=freq[:, :-1], mom=3, axis=0)

@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     # from .typing import T_FloatDType_co as T_Float_co
     from .typing import (
         ArrayOrder,
+        ArrayOrderCF,
         DTypeLikeArg,
         MissingType,
         Mom_NDim,
@@ -68,6 +69,19 @@ def normalize_axis_index(axis: int, ndim: int) -> int:
     import numpy.core.multiarray as ma
 
     return ma.normalize_axis_index(axis, ndim)  # type: ignore[no-any-return,attr-defined]
+
+
+# * Array order
+def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
+    """Convert general array order to C/F/None"""
+    if order is None:
+        return order
+
+    order_ = order.upper()
+    if order_ in {"C", "F"}:
+        return cast("ArrayOrderCF", order_)
+
+    return None
 
 
 # * Moment validation ---------------------------------------------------------

@@ -1,4 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
 import numpy as np
@@ -85,7 +86,7 @@ def test_validate_mom_and_mom_ndim_2() -> None:
     assert utils.validate_mom_and_mom_ndim(mom=(2, 2), mom_ndim=None) == ((2, 2), 2)
 
     with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=(2, 2, 2), mom_ndim=None)
+        utils.validate_mom_and_mom_ndim(mom=(2, 2, 2), mom_ndim=None)  # type: ignore[arg-type]
 
     with pytest.raises(ValueError):
         utils.validate_mom_and_mom_ndim(mom=(2, 2), mom_ndim=1)
@@ -96,10 +97,10 @@ def test_mom_to_mom_ndim() -> None:
     assert utils.mom_to_mom_ndim((2, 2)) == 2
 
     with pytest.raises(ValueError):
-        utils.mom_to_mom_ndim((2, 2, 2))
+        utils.mom_to_mom_ndim((2, 2, 2))  # type: ignore[arg-type]
 
     # this should be fine
-    utils.mom_to_mom_ndim([2, 2])
+    utils.mom_to_mom_ndim([2, 2])  # type: ignore[arg-type]
 
 
 def test_select_mom_ndim() -> None:

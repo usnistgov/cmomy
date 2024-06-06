@@ -5,7 +5,7 @@ Central moments/comoments routines from :class:`np.ndarray` objects
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, cast, overload
+from typing import TYPE_CHECKING, Generic, overload
 
 import numpy as np
 import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
@@ -18,6 +18,7 @@ from cmomy.utils import validate_axis, validate_mom_and_mom_ndim
 
 from .central_abc import CentralMomentsABC
 from .docstrings import docfiller_central as docfiller
+from .utils import arrayorder_to_arrayorder_cf
 
 if TYPE_CHECKING:
     from typing import Any
@@ -71,7 +72,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: ArrayLikeArg[FloatT],
         *,
-        mom_ndim: int = ...,
+        mom_ndim: Mom_NDim = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
         dtype: None = ...,
@@ -82,7 +83,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: Any,
         *,
-        mom_ndim: int = ...,
+        mom_ndim: Mom_NDim = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLikeArg[FloatT],
@@ -93,7 +94,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: Any,
         *,
-        mom_ndim: int = ...,
+        mom_ndim: Mom_NDim = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLike = ...,
@@ -104,7 +105,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: ArrayLike,
         *,
-        mom_ndim: int = 1,
+        mom_ndim: Mom_NDim = 1,
         copy: bool = False,
         order: ArrayOrder = None,
         dtype: DTypeLike = None,
@@ -116,7 +117,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 raise TypeError(msg)
             self._cache = {}
             self._data = data
-            self._mom_ndim = cast("Mom_NDim", mom_ndim)
+            self._mom_ndim = mom_ndim
         else:
             super().__init__(
                 data=np.array(data, dtype=dtype, order=order, copy=copy),
@@ -124,7 +125,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             )
 
     def set_values(self, values: NDArray[FloatT]) -> None:
-        if not isinstance(values, np.ndarray):
+        if not isinstance(values, np.ndarray):  # pyright: ignore[reportUnnecessaryIsInstance]
             msg = f"Must pass numpy.ndarray as data.  Not {type(values)=}"
             raise TypeError(msg)
         self._data = values
@@ -207,8 +208,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         if data is None:
             data = np.zeros(
                 self.shape,
-                order=order if order in {"C", "F"} else None,  # type: ignore[arg-type]
-                dtype=dtype or self.dtype,  # type: ignore[arg-type]
+                order=arrayorder_to_arrayorder_cf(order),
+                dtype=dtype or self.dtype,
             )
             copy = verify = False
 
@@ -1177,7 +1178,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         cls,
         raw: NDArray[FloatT],
         *,
-        mom_ndim: int,
+        mom_ndim: Mom_NDim,
     ) -> Self:
         """
         Examples

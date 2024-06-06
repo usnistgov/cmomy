@@ -1,4 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -81,7 +82,7 @@ def test_zeros() -> None:
 # exceptions
 def test_raises_centralmoments_init() -> None:
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((2, 3, 4)), mom_ndim=3)
+        CentralMoments(np.zeros((2, 3, 4)), mom_ndim=3)  # type: ignore[call-overload]
 
     with pytest.raises(ValueError):
         CentralMoments([1, 2, 3], mom_ndim=1)
@@ -188,10 +189,10 @@ def test_to_dataarray2(mom_ndim, dims, mom_dims, dims_all) -> None:
 
 def test_raises_mom_ndim() -> None:
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((4, 4)), mom_ndim=0)
+        CentralMoments(np.zeros((4, 4)), mom_ndim=0)  # type: ignore[call-overload]
 
     with pytest.raises(ValueError):
-        CentralMoments(np.zeros((4, 4)), mom_ndim=3)
+        CentralMoments(np.zeros((4, 4)), mom_ndim=3)  # type: ignore[call-overload]
 
 
 def test_raises_data_ndim() -> None:

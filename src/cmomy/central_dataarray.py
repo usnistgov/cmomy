@@ -91,7 +91,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: xr.DataArray,
         *,
-        mom_ndim: int = ...,
+        mom_ndim: Mom_NDim = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLikeArg[FloatT],
@@ -102,7 +102,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: xr.DataArray,
         *,
-        mom_ndim: int = ...,
+        mom_ndim: Mom_NDim = ...,
         copy: bool = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLike = ...,
@@ -113,7 +113,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: xr.DataArray,
         *,
-        mom_ndim: int = 1,
+        mom_ndim: Mom_NDim = 1,
         copy: bool = False,
         order: ArrayOrder = None,
         dtype: DTypeLike = None,
@@ -130,16 +130,16 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             self._cache = {}
             self._xdata = data
             self._data = self._xdata.data
-            self._mom_ndim = cast("Mom_NDim", mom_ndim)
+            self._mom_ndim = mom_ndim
         else:
             super().__init__(
-                data=data.astype(dtype or data.dtype, copy=copy, order=order),
+                data=data.astype(dtype or data.dtype, copy=copy, order=order),  # pyright: ignore[reportUnknownMemberType]
                 mom_ndim=mom_ndim,
             )
 
     def set_values(self, values: xr.DataArray) -> None:
         # Ensure we have a numpy array underlying DataArray.
-        self._data = values.to_numpy()
+        self._data = values.to_numpy()  # pyright: ignore[reportUnknownMemberType]
         self._xdata = values.copy(data=self._data)
 
     def to_values(self) -> xr.DataArray:
@@ -300,24 +300,36 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         verify: bool = False,
         dtype: DTypeLike = None,
     ) -> xCentralMoments[Any] | Self:
+        xdata: xr.DataArray
         if data is None:
-            xdata = xr.zeros_like(self._xdata, dtype=dtype or self.dtype)  # type: ignore[arg-type]  # pyright: ignore[reportUnknownMemberType] # needed for python=3.8
+            xdata = cast(  # type: ignore[redundant-cast] # needed by pyright...
+                xr.DataArray,
+                xr.zeros_like(
+                    self._xdata,
+                    dtype=dtype or self.dtype,  # type: ignore[arg-type]
+                ),
+            )  # pyright: ignore[reportCallIssue, reportArgumentType]
             copy = verify = False
         elif isinstance(data, xr.DataArray):
             xdata = data
         else:
             xdata = self._xdata.copy(data=data)
 
-        if verify and xdata.shape != self.shape:
-            msg = f"{xdata.shape=} != {self.shape=}"
+        shape: tuple[int, ...] = xdata.shape
+        if verify and shape != self.shape:
+            msg = f"{shape=} != {self.shape=}"
             raise ValueError(msg)
-        if xdata.shape[-self.mom_ndim :] != self.mom_shape:
+        if shape[-self.mom_ndim :] != self.mom_shape:
             # at a minimum, verify that mom_shape is unchanged.
-            msg = f"{xdata.shape=} has wrong mom_shape={self.mom_shape}"
+            msg = f"{shape=} has wrong mom_shape={self.mom_shape}"
             raise ValueError(msg)
 
         return type(self)(
-            data=xdata, mom_ndim=self._mom_ndim, copy=copy, order=order, dtype=dtype
+            data=xdata,
+            mom_ndim=self._mom_ndim,
+            copy=copy,
+            order=order,
+            dtype=dtype,
         )
 
     @overload
@@ -928,7 +940,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         # pass self._data to func as a test for broadcasting,
         # But then will use `self._data` as is for `out` parameter.
         # Also, but `out` first so things are transposed relative to that...
-        _ = xr.apply_ufunc(
+        _ = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._xdata,
             data,
@@ -961,7 +973,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         )
 
         datas_dims = [*self.val_dims, dim, *self.mom_dims]
-        _ = xr.apply_ufunc(
+        _ = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._xdata,
             datas,
@@ -989,8 +1001,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             return self._data
 
         weight = 1.0 if weight is None else weight
-        core_dims = [self.mom_dims, *([[]] * (2 + len(y)))]
-        _ = xr.apply_ufunc(
+        core_dims: list[Any] = [self.mom_dims, *([[]] * (2 + len(y)))]
+        _ = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._xdata,
             x,
@@ -1033,7 +1045,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             self._pusher(parallel).vals(x0, *x1, w, self._data)
             return self._data
 
-        _ = xr.apply_ufunc(
+        _ = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._xdata,
             x0,
@@ -1339,7 +1351,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             if isinstance(by, str):
                 from .reduction import factor_by
 
-                _groups, codes = factor_by(self._xdata[by].to_numpy())
+                _groups, codes = factor_by(self._xdata[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                 if groups is None:
                     groups = _groups
             else:
@@ -1364,7 +1376,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
 
             if isinstance(by, str):
                 _groups, index, group_start, group_end = factor_by_to_index(
-                    self._xdata[
+                    self._xdata[  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                         by
                     ].to_numpy()  # indexes[by] if by in self.indexes else self._xdata[by]
                 )
