@@ -157,7 +157,7 @@ stack-data==0.6.3
     # via ipython
 termcolor==2.4.0
     # via pytest-sugar
-tornado==6.4
+tornado==6.4.1
     # via
     #   ipykernel
     #   jupyter-client

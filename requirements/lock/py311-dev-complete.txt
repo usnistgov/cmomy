@@ -77,7 +77,7 @@ setuptools==69.3.0        # via nodeenv
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar
-tornado==6.4              # via ipykernel, jupyter-client
+tornado==6.4.1              # via ipykernel, jupyter-client
 traitlets==5.14.2         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 types-pytz==2024.1.0.20240203  # via pandas-stubs
 typing-extensions==4.11.0  # via ipython, module-utilities

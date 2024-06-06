@@ -85,7 +85,7 @@ sphinxcontrib-spelling==8.0.0
 sqlalchemy==2.0.29        # via jupyter-cache
 stack-data==0.6.3         # via ipython
 tabulate==0.9.0           # via jupyter-cache
-tornado==6.4              # via ipykernel, jupyter-client, livereload
+tornado==6.4.1              # via ipykernel, jupyter-client, livereload
 traitlets==5.14.2         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 typing-extensions==4.11.0  # via ipython, module-utilities, myst-nb, pydata-sphinx-theme, sqlalchemy
 tzdata==2024.1            # via pandas
