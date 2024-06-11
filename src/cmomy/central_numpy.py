@@ -59,8 +59,10 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 # * CentralMoments ------------------------------------------------------------
-@docfiller(CentralMomentsABC)  # noqa: PLR0904
-class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]):  # type: ignore[type-var] # noqa: D101
+@docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
+class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]):  # type: ignore[type-var]
+    """Wrapper of :class:`numpy.ndarray` based central moments data."""
+
     # TODO(wpk):  I think something like this would solve some of my typing issues.
     # see https://mypy.readthedocs.io/en/stable/more_types.html#precise-typing-of-alternative-constructors
     # But pyright isn't going to support it (see https://github.com/microsoft/pyright/issues/3497)
@@ -780,9 +782,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
         See Also
         --------
-        reshape
-        `moveaxis
-        :meth:`reduce`
+        reduce
         """
         self._raise_if_scalar()
 

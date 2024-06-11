@@ -1,6 +1,6 @@
 """
-Routines to perform central moments reduction (:mod:`~cmomy.reduce)
-===================================================================
+Convert between raw and central moments
+=======================================
 """
 
 from __future__ import annotations

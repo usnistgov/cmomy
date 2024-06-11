@@ -73,13 +73,9 @@ docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
-@docfiller(CentralMomentsABC)  # noqa: PLR0904
+@docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
 class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
-    """
-    Notes
-    -----
-    Most methods are wrapped to accept :class:`xarray.DataArray` object.
-    """
+    """Wrapper of :class:`xarray.DataArray` based central moments data."""
 
     _xdata: xr.DataArray
 
@@ -1398,7 +1394,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             Number of observations to include in a given block.
         {dim}
         {axis}
-        block_dim : str, default=None,
+        block_dim : str, optional
             Name of blocked dimension.  Defaults to ``dim``.
         {order}
         {parallel}

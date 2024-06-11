@@ -1,4 +1,15 @@
-"""Load submodules for building."""
+"""
+Pre-compile ``numba`` based core routines (:mod:`cmomy.compile`)
+===================================================================
+
+This can be called from python using :func:``load_numba_modules`` or from
+the command line with
+
+.. code-block:: console
+
+    python -m cmomy.compile [--help]
+
+"""
 
 from __future__ import annotations
 
@@ -57,7 +68,16 @@ def load_numba_modules(
     include_indexed: bool | None = None,
     include_convert: bool | None = None,
 ) -> None:
-    """Compile numba modules by loading them."""
+    """
+    Compile numba modules by loading them.
+
+    Default is to include all submodules. To override, set
+    ``include_all=False``, and select other packages manually. For example, to
+    only load resampling with with co-moments, use
+    ``load_numba_modules(include_all=False, include_cov=True,
+    include_resample=True)``.
+
+    """
     from pathlib import Path
 
     from .utils import supports_parallel

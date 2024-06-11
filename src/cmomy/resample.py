@@ -636,7 +636,7 @@ def resample_vals(
     ----------
     x : ndarray
         Value to analyze
-    *y:  array-like, optional.
+    *y:  array-like, optional
         Second value needed if len(mom)==2.
     {freq}
     {mom}

@@ -1,7 +1,7 @@
-"""
-Top level API (:mod:`cmomy`)
-============================
-"""
+"""Public api for :mod:`cmomy`"""
+# Top level API (:mod:`cmomy`)
+# ============================
+# """
 
 from typing import TYPE_CHECKING
 
@@ -9,9 +9,9 @@ if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
     # submodules
     from . import random, reduction, resample  # noqa: TCH004
+    from ._convert import convert  # noqa: TCH004
     from .central_dataarray import xCentralMoments  # noqa: TCH004
     from .central_numpy import CentralMoments  # noqa: TCH004
-    from .convert import convert  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (
         indices_to_freq,  # noqa: TCH004
@@ -35,7 +35,7 @@ else:
         submod_attrs={
             "central_numpy": ["CentralMoments"],
             "central_dataarray": ["xCentralMoments"],
-            "convert": ["convert"],
+            "_convert": ["convert"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
                 "indices_to_freq",

@@ -93,7 +93,7 @@ def _dummy_docstrings() -> None:
         Moment collection array
     data_numpy | data : ndarray
         Moments collection array.  It is assumed moment dimensions are last.
-    data_numpy_or_dataarray | data : ndarray or xr.DataArray
+    data_numpy_or_dataarray | data : ndarray or DataArray
         Moments collection array.  It is assumed moment dimensions are last.
     parallel : bool, default=True
         flags to `numba.njit`
@@ -102,7 +102,7 @@ def _dummy_docstrings() -> None:
     kwargs | **kwargs
         Extra keyword arguments.
 
-    coords_policy : {{'first', 'last', 'group', None}}
+    coords_policy : {'first', 'last', 'group', None}
         Policy for handling coordinates along ``dim`` if ``by`` is specified
         for :class:`~xarray.DataArray` data.
         If no coordinates do nothing, otherwise use:

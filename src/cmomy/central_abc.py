@@ -51,17 +51,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     r"""
     Wrapper to calculate central moments.
 
-    Base data has the form
-
-    .. math::
-
-        {{\rm data}}[..., i, j] = \begin{{cases}}
-             \text{{weight}} & i = j = 0 \\
-            \langle x \rangle & i = 1, j = 0 \\
-            \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j)
-            \rangle & i + j > 0
-        \end{{cases}}
-
     Parameters
     ----------
     data : {t_array}
@@ -72,6 +61,18 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     data_flat : ndarray
         For internal use.
 
+    Notes
+    -----
+    Base data has the form
+
+    .. math::
+
+        {{\rm data}}[..., i, j] = \begin{{cases}}
+             \text{{weight}} & i = j = 0 \\
+            \langle x \rangle & i = 1, j = 0 \\
+            \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j)
+            \rangle & i + j > 0
+        \end{{cases}}
     """
 
     _cache: dict[str, Any]
@@ -257,7 +258,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         ----------
         dtype : str or dtype
             Typecode of data-type to cast the array data.  Note that a value of None will
-            upcast to ``np.float64``.  This is the same behaviour as :class:`~numpy.ndarray.asarray`.
+            upcast to ``np.float64``.  This is the same behaviour as :func:`~numpy.asarray`.
         {order}
         casting : {{'no', 'equiv', 'safe', 'same_kind', 'unsafe'}}, optional
             Controls what kind of data casting may occur.
@@ -266,8 +267,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             * 'equiv' means only byte-order changes are allowed.
             * 'safe' means only casts which can preserve values are allowed.
             * 'same_kind' means only safe casts or casts within a kind,
-            like float64 to float32, are allowed.
+              like float64 to float32, are allowed.
             * 'unsafe' (default) means any data conversions may be done.
+
+
         subok : bool, optional
             If True, then sub-classes will be passed-through, otherwise the
             returned array will be forced to be a base-class array.
@@ -451,8 +454,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         See Also
         --------
         from_raw
+        .convert
         """
-        from .convert import convert
+        from ._convert import convert
 
         out = convert(self._data, mom_ndim=self.mom_ndim, to="raw")
         if weight is not None:
@@ -479,6 +483,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         See Also
         --------
         to_raw
+        .convert
         cmom
         """
         return self.to_raw(weight=1.0)
@@ -818,7 +823,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         See Also
         --------
-        resample
         reduce
         ~cmomy.resample.randsamp_freq : random frequency sample
         ~cmomy.resample.freq_to_indices : convert frequency sample to index sample
@@ -858,8 +862,8 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         See Also
         --------
-        .reduction.reduce_data
-        .reduction.reduce_data_grouped
+        ~.reduction.reduce_data
+        ~.reduction.reduce_data_grouped
         """
 
     # ** Manipulation -------------------------------------------------------------
@@ -898,7 +902,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             If True, copy the resulting data.  Otherwise, try to use a view.
         _order : str, optional
             Array order to apply to output.
-        _verify : bool, default=False,
+        _verify : bool, default=False
         **kwargs
             Extra keyword arguments to `func_or_method`
 
@@ -1156,15 +1160,14 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         --------
         to_raw
         rmom
-        ~cmomy.convert.convert
-        ~cmomy.convert.convert
+        .convert
 
         Notes
         -----
         Weights are taken from ``raw[...,0, 0]``.
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
         """
-        from .convert import convert
+        from ._convert import convert
 
         return cls(
             data=convert(raw, mom_ndim=mom_ndim, to="central"),  # pyright: ignore[reportArgumentType]

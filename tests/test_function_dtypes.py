@@ -169,7 +169,7 @@ def test_convert(
     result_dtype,
     to,
 ) -> None:
-    from cmomy.convert import convert
+    from cmomy import convert
 
     func = partial(convert, mom_ndim=1, to=to)
 

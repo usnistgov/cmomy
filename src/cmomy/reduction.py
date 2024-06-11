@@ -1,6 +1,6 @@
 """
-Routines to perform central moments reduction (:mod:`~cmomy.reduce)
-===================================================================
+Routines to perform central moments reduction (:mod:`~cmomy.reduction`)
+=======================================================================
 """
 
 from __future__ import annotations
@@ -385,7 +385,7 @@ def reduce_data(
 
     Returns
     -------
-    out : ndarray or DataArray.
+    out : ndarray or DataArray
         Reduced data array with shape ``data.shape`` with ``axis`` removed.
         Same type as input ``data``.
     """
@@ -441,7 +441,7 @@ def factor_by(
 
     Returns
     -------
-    groups : list of groups
+    groups : list or :class:`pandas.Index`
         Unique group names (excluding negative or ``None`` Values.)
     codes : ndarray of int
         Indexer into ``groups``.
@@ -667,7 +667,7 @@ def reduce_data_grouped(
 
     Returns
     -------
-    out : ndarray or DataArray.
+    out : ndarray or DataArray
         Reduced data of same type as input ``data``. The last dimensions are
         "group", followed by moments. ``out.shape = (..., shape[axis-1],
         shape[axis+1], ..., ngroup, mom0, ...)`` where ``shape = data.shape`` and
@@ -786,7 +786,7 @@ def factor_by_to_index(
 
     Returns
     -------
-    groups : list[Any]
+    groups : list or :class:`pandas.Index`
         Unique groups in `group_idx` (excluding Negative or ``None`` values in
         ``group_idx`` if ``exclude_negative`` is ``True``).
     index : ndarray

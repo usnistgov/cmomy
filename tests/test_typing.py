@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from cmomy.convert import convert
+    from cmomy import convert
     from cmomy.reduction import (
         reduce_data,
         reduce_data_grouped,

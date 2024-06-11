@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 # import cmomy.central as central
-from cmomy.convert import convert
+from cmomy import convert
 
 
 def test_to_raw_moments(other) -> None:
