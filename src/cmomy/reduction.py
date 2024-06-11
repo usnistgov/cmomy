@@ -34,7 +34,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from typing import Any, Literal
+    from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
@@ -642,7 +642,6 @@ def reduce_data_grouped(
     dtype: DTypeLike = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
-    # coords_policy: CoordsPolicy | Literal["group"] = "first",
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
@@ -660,12 +659,10 @@ def reduce_data_grouped(
     {order}
     {parallel}
     {out}
-    {dim}
     {dtype}
-    group_dim : str, optional
-        Name of the output group dimension.  Defaults to ``dim``.
-    groups: Sequence, optional
-        Array of values of length ``by.max() + 1`` to assign as coordinates for ``group_dim``.
+    {dim}
+    {group_dim}
+    {groups}
     {keep_attrs}
 
     Returns
@@ -782,7 +779,8 @@ def factor_by_to_index(
 
     Parameters
     ----------
-    {group_idx}
+    by: array-like
+        Values to factor.
     exclude_missing : bool, default=True
         If ``True`` (default), filter Negative and ``None`` values from ``group_idx``.
 
@@ -871,7 +869,7 @@ def _validate_index(
     nindex = len(index)
     if nindex == 0:
         if (group_start != 0).any() or (group_end != 0).any():
-            msg = "no index start must equal end"
+            msg = "With zero length index, group_start = group_stop = 0"
             raise ValueError(msg)
     else:
         _validate("index", index, ndat)
@@ -939,7 +937,7 @@ def reduce_data_indexed(  # type: ignore[overload-overlap]
     dtype: DTypeLike = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
-    coords_policy: CoordsPolicy | Literal["group"] = ...,
+    coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -961,7 +959,7 @@ def reduce_data_indexed(
     dtype: None = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
-    coords_policy: CoordsPolicy | Literal["group"] = ...,
+    coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -983,7 +981,7 @@ def reduce_data_indexed(
     dtype: DTypeLike = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
-    coords_policy: CoordsPolicy | Literal["group"] = ...,
+    coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -1005,7 +1003,7 @@ def reduce_data_indexed(
     dtype: DTypeLikeArg[FloatT],
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
-    coords_policy: CoordsPolicy | Literal["group"] = ...,
+    coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -1027,7 +1025,7 @@ def reduce_data_indexed(
     dtype: DTypeLike = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
-    coords_policy: CoordsPolicy | Literal["group"] = ...,
+    coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -1051,7 +1049,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     dtype: DTypeLike = None,
     # xarray specific...
     dim: DimsReduce | MissingType = MISSING,
-    coords_policy: CoordsPolicy | Literal["group"] = "first",
+    coords_policy: CoordsPolicy = "first",
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
@@ -1075,6 +1073,12 @@ def reduce_data_indexed(  # noqa: PLR0913
     {order}
     {parallel}
     {out}
+    {dtype}
+    {dim}
+    {coords_policy}
+    {group_dim}
+    {groups}
+    {keep_attrs}
 
     Returns
     -------
@@ -1124,9 +1128,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     Coordinates:
       * group    (group) <U1 12B 'a' 'b' 'c'
     Dimensions without coordinates: mom
-
-
-
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
 
@@ -1220,7 +1221,7 @@ def resample_data_indexed(
     dtype: DTypeLike = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
-    coords_policy: CoordsPolicy | Literal["group"] = "first",
+    coords_policy: CoordsPolicy = "first",
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,

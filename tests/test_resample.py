@@ -164,6 +164,21 @@ def test_randsamp_freq() -> None:
         resample.randsamp_freq(ndat=10)
 
 
+def test_randsamp_freq_2() -> None:
+    nrep = 200
+    ndat = 100
+
+    freq = resample.randsamp_freq(nrep=nrep, ndat=ndat)
+
+    np.testing.assert_allclose(
+        freq, resample.randsamp_freq(ndat=ndat, nrep=nrep, freq=freq, check=True)
+    )
+
+    # bad ndata
+    with pytest.raises(ValueError, match=".*has wrong ndat.*"):
+        _ = resample.randsamp_freq(ndat=10, nrep=nrep, freq=freq, check=True)
+
+
 def test_resample_resample_data(rng) -> None:
     x = rng.random((100, 10, 3))
 

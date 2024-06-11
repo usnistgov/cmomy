@@ -30,12 +30,12 @@ import xarray as xr
 from numpy.typing import NDArray
 
 from ._typing_compat import TypeVar
-from ._typing_nested_sequence import (
-    _NestedSequence,  # pyright: ignore[reportPrivateUsage]
-)
 
 if TYPE_CHECKING:
     from ._typing_compat import TypeAlias
+    from ._typing_nested_sequence import (
+        _NestedSequence,  # pyright: ignore[reportPrivateUsage]
+    )
 
     # from .central_abc import CentralMomentsABC
     from .utils import _Missing  # pyright: ignore[reportPrivateUsage]
@@ -67,7 +67,7 @@ FloatT = TypeVar(  # type: ignore[misc]
     default=Any,  # pyright: ignore[reportGeneralTypeIssues]
 )
 FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
-DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound=np.dtype[Any])
+DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 ScalarT = TypeVar("ScalarT", bound=np.generic)
 IntDTypeT: TypeAlias = np.int64
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
@@ -77,25 +77,25 @@ NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 @runtime_checkable
 class _SupportsDType(Protocol[DTypeT_co]):
     @property
-    def dtype(self) -> DTypeT_co: ...
+    def dtype(self) -> DTypeT_co: ...  # pragma: no cover
 
 
 DTypeLikeArg = Union[
-    np.dtype[ScalarT],
-    type[ScalarT],
-    _SupportsDType[np.dtype[ScalarT]],
+    "np.dtype[ScalarT]",
+    "type[ScalarT]",
+    "_SupportsDType[np.dtype[ScalarT]]",
 ]
 
 
 # ** ArrayLike
 @runtime_checkable
 class _SupportsArray(Protocol[DTypeT_co]):
-    def __array__(self) -> np.ndarray[Any, DTypeT_co]: ...  # noqa: PLW3201
+    def __array__(self) -> np.ndarray[Any, DTypeT_co]: ...  # noqa: PLW3201  # pragma: no cover
 
 
 ArrayLikeArg = Union[
-    _SupportsArray[np.dtype[ScalarT]],
-    _NestedSequence[_SupportsArray[np.dtype[ScalarT]]],
+    "_SupportsArray[np.dtype[ScalarT]]",
+    "_NestedSequence[_SupportsArray[np.dtype[ScalarT]]]",
 ]
 
 
@@ -152,11 +152,11 @@ XArrayNameType: TypeAlias = Optional[Hashable]
 XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
 XArrayIndexesType: TypeAlias = Any
 
-Dims = Union[str, Collection[Hashable], "ellipsis", None]  # noqa: F821
+Dims = Union[str, Collection[Hashable], "ellipsis", None]  # noqa: F821  # pyright: ignore[reportGeneralTypeIssues]
 
 # literals
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
-CoordsPolicy: TypeAlias = Literal["first", "last", None]
+CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
 KeepAttrs: TypeAlias = Union[
     Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
     bool,

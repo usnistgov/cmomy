@@ -1,10 +1,14 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import resample
 from cmomy.central_dataarray import xCentralMoments
 from cmomy.central_numpy import CentralMoments
@@ -12,6 +16,9 @@ from cmomy.central_numpy import CentralMoments
 # import cmomy
 # from cmomy import xcentral
 from cmomy.random import default_rng
+
+if TYPE_CHECKING:
+    from cmomy.typing import Mom_NDim
 
 
 def xtest(a, b) -> None:
@@ -80,8 +87,29 @@ def test_new_like2() -> None:
     assert x2.shape == (2, 3, 4)
     assert x2.dims == ("a", "b", "mom")
 
-    with pytest.raises(ValueError):
-        c.new_like(np.zeros((2, 3, 4)), verify=True)
+    with pytest.raises(ValueError, match=r".*has wrong mom_shape.*"):
+        c.new_like(xr.DataArray(np.zeros((2, 3, 4))))
+
+    with pytest.raises(ValueError, match=r".*shape.*"):
+        c.new_like(xr.DataArray(np.zeros((2, 2, 3, 3))), verify=True)
+
+    assert (
+        c.new_like(np.zeros((2, 3, 3), dtype=np.float32), verify=True).dtype.type
+        == np.float32
+    )
+
+
+def test_from_centralmoments() -> None:
+    c = CentralMoments.zeros(mom=2, val_shape=(2, 3))
+
+    cx0 = c.to_x()
+
+    cx1 = xCentralMoments.from_centralmoments(c)
+
+    xr.testing.assert_allclose(
+        cx0.to_values(),
+        cx1.to_values(),
+    )
 
 
 def test__single_index_selector() -> None:
@@ -146,6 +174,49 @@ def test_zeros() -> None:
 
     assert new.shape == (2, 3, 4)
     assert new.dims == ("a", "b", "mom")
+
+
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_xarray_methods(mom_ndim: Mom_NDim) -> None:
+    xdata = xr.DataArray(np.zeros((2, 3, 4)), dims=["a", "b", "c"])
+
+    a_coords = ("a", list("ab"))
+    b_coords = ("b", list("xyz"))
+    c_coords = ("c", range(4))
+
+    x_coords = ("a", [1, 2])
+    y_coords = ("a", ["x", "y"])
+
+    c = xCentralMoments(xdata, mom_ndim=mom_ndim)
+
+    xr.testing.assert_equal(
+        c.assign_coords({"a": a_coords}).to_values(),
+        xdata.assign_coords({"a": a_coords}),
+    )
+
+    xdata2 = xdata.assign_coords(a=a_coords, b=b_coords, c=c_coords)
+    c2 = c.assign_coords(a=a_coords, b=b_coords, c=c_coords)
+    xr.testing.assert_equal(c2.to_values(), xdata2)
+
+    # set_index
+    c3 = c2.assign_coords(x=x_coords, y=y_coords).set_index(a=["x", "y"])
+    xdata3 = xdata2.assign_coords(x=x_coords, y=y_coords).set_index(a=["x", "y"])
+
+    xr.testing.assert_allclose(
+        c3.to_values(),
+        xdata3,
+    )
+
+    # reset_index
+    xr.testing.assert_allclose(c3.reset_index("a").to_values(), xdata3.reset_index("a"))
+
+    # drop_vars
+    xr.testing.assert_allclose(c3.drop_vars("x").to_values(), xdata3.drop_vars("x"))
+
+    # swap_dims
+    xr.testing.assert_allclose(
+        c3.swap_dims(a="hello").to_values(), xdata3.swap_dims(a="hello")
+    )
 
 
 def test_from_vals(other) -> None:
@@ -227,7 +298,12 @@ def test_push_vals_mult(other) -> None:
 def test_combine(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
-        t.push_data(scramble_xr(s.to_dataarray())[0])
+        t.push_data(scramble_xr(s.to_dataarray())[0], order="c")
+    xtest(other.data_test_xr, t.to_dataarray())
+
+    t = other.s_xr.zeros_like()
+    for s in other.S_xr:
+        t.push_data(s.to_numpy())
     xtest(other.data_test_xr, t.to_dataarray())
 
 
@@ -270,12 +346,18 @@ def test_init_reduce(other) -> None:
 
 
 def test_push_datas(other) -> None:
-    datas = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
+    datas_orig = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
 
-    datas = scramble_xr(datas)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
+    datas = scramble_xr(datas_orig)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
+    # push xarrays
     t = other.s_xr.zeros_like()
     t.push_datas(datas, dim="rec")
+    xtest(other.data_test_xr, t.to_dataarray())
+
+    # push numpy arrays
+    t = other.s_xr.zeros_like()
+    t.push_datas(datas_orig.to_numpy(), axis=datas_orig.get_axis_num("rec"))
     xtest(other.data_test_xr, t.to_dataarray())
 
 
@@ -370,6 +452,95 @@ def test_resample_and_reduce(other, rng) -> None:
                 t1.to_dataarray(),
                 tx.block(dim=dim, block_size=None).to_dataarray().isel({dim: 0}),
             )
+
+
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+@pytest.mark.parametrize("block_size", [6, 9])
+def test_block_simple(rng, mom_ndim, block_size) -> None:
+    data = rng.random((10, 4, 4))
+    c = cmomy.CentralMoments(data, mom_ndim=mom_ndim)
+
+    c0 = cmomy.CentralMoments(data[:block_size, ...], mom_ndim=mom_ndim)
+
+    cc = c.block(block_size, axis=0).pipe(np.squeeze, _reorder=False)
+    cc0 = c0.reduce(axis=0)
+
+    np.testing.assert_allclose(cc, cc0)
+
+    cx = c.to_x()
+    c0x = c0.to_x()
+    xr.testing.assert_equal(
+        cx.block(block_size, dim="dim_0").isel(dim_0=0).values,
+        c0x.reduce(dim="dim_0").values,
+    )
+
+
+# simplest case....
+@pytest.mark.parametrize("nsamp", [100])
+def test_reduce_groupby(rng, nsamp) -> None:  # noqa: PLR0914
+    x = rng.random(nsamp)
+    a = rng.choice(4, nsamp)
+    b = rng.choice(4, nsamp)
+
+    # using pandas
+    dataframe = pd.DataFrame({"a": a, "b": b, "x": x})
+    g = dataframe.groupby(["a", "b"])
+
+    mean_ = g.mean()["x"].to_numpy()
+    var_ = g.var(ddof=0)["x"].to_numpy()
+
+    # compare to stats
+    data = np.empty((nsamp, 3))
+    data[:, 0] = 1.0
+    data[:, 1] = x
+    data[:, 2] = 0.0
+
+    c = cmomy.CentralMoments(data, mom_ndim=1)
+    groups, codes = cmomy.reduction.factor_by(dataframe.set_index(["a", "b"]).index)
+
+    out = c.reduce(axis=0, by=codes).to_numpy()
+
+    np.testing.assert_allclose(out[:, 1], mean_)
+    np.testing.assert_allclose(out[:, 2], var_)
+
+    # xarray
+    cx = c.to_x(
+        dims=["x", "mom"]
+    )  # , coords={"a": ("x", a), "b": ("x", b)}).set_index(x=['a','b'])
+
+    # using groups
+    cx_group = cx.reduce(dim="x", by=codes, coords_policy="group", groups=groups)
+
+    np.testing.assert_allclose(cx_group.data[:, 1], mean_)
+    np.testing.assert_allclose(cx_group.data[:, 2], var_)
+
+    # using index
+    cx_index = cx.assign_coords({"a": ("x", a), "b": ("x", b)}).set_index(x=["a", "b"])
+
+    cx_group2 = cx_index.reduce(dim="x", by="x", coords_policy="group")
+    np.testing.assert_allclose(cx_group2.data[:, 1], mean_)
+    np.testing.assert_allclose(cx_group2.data[:, 2], var_)
+
+    with pytest.raises(AssertionError):
+        # different coords
+        xr.testing.assert_allclose(cx_group.values, cx_group2.values)
+
+    cx_group3 = cx_index.reduce(dim="x", by="x", coords_policy="group", groups=groups)
+    np.testing.assert_allclose(cx_group2.data[:, 1], mean_)
+    np.testing.assert_allclose(cx_group2.data[:, 2], var_)
+    xr.testing.assert_allclose(cx_group.values, cx_group3.values)
+
+    cx_first = cx_index.reduce(dim="x", by="x", coords_policy="first")
+
+    np.testing.assert_allclose(cx_first.data[:, 1], mean_)
+    np.testing.assert_allclose(cx_first.data[:, 2], var_)
+    xr.testing.assert_allclose(cx_group.values, cx_first.values)
+
+    cx_last = cx_index.reduce(dim="x", by="x", coords_policy="last", groups=groups)
+
+    np.testing.assert_allclose(cx_last.data[:, 1], mean_)
+    np.testing.assert_allclose(cx_last.data[:, 2], var_)
+    xr.testing.assert_allclose(cx_group.values, cx_last.values)
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,7 @@
 # import xarray as xr
-from typing import TYPE_CHECKING, Any, assert_type
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
 import xarray as xr
@@ -9,6 +11,9 @@ from cmomy.central_numpy import CentralMoments
 from cmomy.resample import random_freq, resample_vals
 
 if TYPE_CHECKING:
+    import sys
+    from typing import Any
+
     from numpy.typing import NDArray
 
     from cmomy.convert import convert
@@ -18,6 +23,11 @@ if TYPE_CHECKING:
         reduce_data_indexed,
         reduce_vals,
     )
+
+    if sys.version_info < (3, 11):
+        from typing_extensions import assert_type
+    else:
+        from typing import assert_type
 
 
 def test_centralmoments_init() -> None:

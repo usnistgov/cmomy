@@ -483,7 +483,7 @@ def xprepare_values_for_reduction(
 
     # go ahead and do the move in case we want to order...
     if move_axis:
-        target = target.transpose(..., dim)
+        target = target.transpose(..., dim)  # pyright: ignore[reportUnknownArgumentType]
     target = target.astype(dtype=dtype, order=order, copy=False)  # pyright: ignore[reportUnknownMemberType]
 
     nsamp = target.shape[-1]
@@ -552,9 +552,13 @@ def xprepare_data_for_reduction(
         axis = normalize_axis_index(axis, ndim)
     axis, dim = select_axis_dim(dims=data.dims, axis=axis, dim=dim)
 
+    if axis >= ndim:
+        msg = f"Cannot reduce over moment dimension.  {axis=}, {dim=}."
+        raise ValueError(msg)
+
     last_dim = ndim - 1
     if (ndim > 1) and axis != last_dim:
-        data = data.transpose(..., dim, *data.dims[-mom_ndim:])
+        data = data.transpose(..., dim, *data.dims[-mom_ndim:])  # pyright: ignore[reportUnknownArgumentType]
     if order or dtype:
         data = data.astype(dtype or data.dtype, order=order, copy=False)  # pyright: ignore[reportUnknownMemberType]
 

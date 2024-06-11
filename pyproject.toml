@@ -355,6 +355,7 @@ omit = [
     "*/_lib/make_parallel_files.py",
     "*/_lib/resample*.py",
     "*/_lib/utils.py",
+    "*/_typing_nested_sequence.py",
 ]
 include = [
     "src/*",
@@ -392,7 +393,6 @@ strict = true
 ignore_missing_imports = true
 module = [
     "numba.*",
-    "custom_inherit.*",
 ]
 
 [[tool.mypy.overrides]]

@@ -56,7 +56,7 @@ def pytest_collection_modifyitems(config, items) -> None:
             item.add_marker(skip_slow)
 
 
-def pytest_ignore_collect(collection_path, path, config) -> None:
+def pytest_ignore_collect(collection_path) -> None:
     import sys
 
     if sys.version_info < (3, 9):

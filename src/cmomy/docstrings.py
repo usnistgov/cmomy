@@ -102,29 +102,30 @@ def _dummy_docstrings() -> None:
     kwargs | **kwargs
         Extra keyword arguments.
 
-    group_idx : ndarray
-        Array of integers.  Each value corresponds to a unique group.
-
-    coords_policy : {'first', 'last', None}
-        Policy for handling coordinates along `axis`.
+    coords_policy : {{'first', 'last', 'group', None}}
+        Policy for handling coordinates along ``dim`` if ``by`` is specified
+        for :class:`~xarray.DataArray` data.
         If no coordinates do nothing, otherwise use:
 
         * 'first': select first value of coordinate for each block.
         * 'last': select last value of coordinate for each block.
+        * 'group': Assign unique groups from ``group_idx`` to ``dim``
         * None: drop any coordinates.
 
+        Note that if ``coords_policy`` is one of ``first`` or ``last``, parameter ``groups``
+        will be ignored.
     by : array-like of int
         Groupby values of same length as ``data`` along sampled dimension.
         Negative values indicate no group (i.e., skip this index).
-    factor : bool
-        If ``True`` factorize the passed group values.
-    sort_groups : bool
-        If ``True``, sort the groups.
+    group_dim : str, optional
+        Name of the output group dimension.  Defaults to ``dim``.
+    groups : Sequence, optional
+        Sequence of length ``by.max() + 1`` to assign as coordinates for ``group_dim``.
     out : ndarray
         Optional output array. If specified, output will be a reference to this
         array.
     order : {"C", "F", "A", "K"}, optional
-        Order parameter to :func:`numpy.asarray`.
+        Order argument to :func:`numpy.asarray`.
     weight : array-like, optional
         Optional weights. Can be scalar, 1d array of length
         ``args[0].shape[axis]`` or array of same form as ``args[0]``.

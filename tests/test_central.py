@@ -57,6 +57,10 @@ def test_new_like() -> None:
     with pytest.raises(ValueError):
         c.new_like(np.zeros((2, 3, 4)), verify=True)
 
+    # veirfy correct mom_shape, incorrect leading shape
+    with pytest.raises(ValueError):
+        c.new_like(np.zeros((3, 3, 3)), verify=True)
+
     # this should work fine without verify
     assert c.new_like(np.zeros((3, 3)), verify=False).shape == (3, 3)
 
@@ -89,6 +93,10 @@ def test_raises_centralmoments_init() -> None:
 
     with pytest.raises(ValueError):
         CentralMoments(np.zeros((1, 1)), mom_ndim=1)
+
+    # fastpath with wrong type
+    with pytest.raises(TypeError, match="Must pass ndarray.*"):
+        CentralMoments([1, 2, 3], mom_ndim=1, fastpath=True)
 
 
 def test_raises_zeros() -> None:

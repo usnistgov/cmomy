@@ -9,13 +9,12 @@ import numpy as np
 # pandas needed for autdoc typehints
 import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import xarray as xr
-from module_utilities import cached
 
 from .central_abc import CentralMomentsABC
 from .docstrings import docfiller_xcentral as docfiller
 from .utils import (
     MISSING,
-    replace_coords_from_isel,
+    # replace_coords_from_isel,
     select_axis_dim,
     validate_mom_and_mom_ndim,
     xprepare_data_for_reduction,
@@ -194,45 +193,45 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     def _wrap_like(self, x: NDArrayAny) -> xr.DataArray:
         return self._xdata.copy(data=x)
 
-    def _replace_coords_isel(
-        self,
-        da_selected: xr.DataArray,
-        indexers: Mapping[Any, Any] | None = None,
-        drop: bool = False,
-        **indexers_kwargs: Any,
-    ) -> xr.DataArray:
-        """Update coords when reducing."""
-        return replace_coords_from_isel(
-            da_original=self._xdata,
-            da_selected=da_selected,
-            indexers=indexers,
-            drop=drop,
-            **indexers_kwargs,
-        )
+    # def _replace_coords_isel(
+    #     self,
+    #     da_selected: xr.DataArray,
+    #     indexers: Mapping[Any, Any] | None = None,
+    #     drop: bool = False,
+    #     **indexers_kwargs: Any,
+    # ) -> xr.DataArray:
+    #     """Update coords when reducing."""
+    #     return replace_coords_from_isel(
+    #         da_original=self._xdata,
+    #         da_selected=da_selected,
+    #         indexers=indexers,
+    #         drop=drop,
+    #         **indexers_kwargs,
+    #     )
 
-    def _check_reduce_axis_dim(
-        self,
-        *,
-        axis: AxisReduce | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        default_axis: AxisReduce | MissingType = MISSING,
-        default_dim: DimsReduce | MissingType = MISSING,
-    ) -> tuple[int, Hashable]:
-        self._raise_if_scalar()
+    # def _check_reduce_axis_dim(
+    #     self,
+    #     *,
+    #     axis: AxisReduce | MissingType = MISSING,
+    #     dim: DimsReduce | MissingType = MISSING,
+    #     default_axis: AxisReduce | MissingType = MISSING,
+    #     default_dim: DimsReduce | MissingType = MISSING,
+    # ) -> tuple[int, Hashable]:
+    #     self._raise_if_scalar()
 
-        axis, dim = select_axis_dim(
-            dims=self.dims,
-            axis=axis,
-            dim=dim,
-            default_axis=default_axis,
-            default_dim=default_dim,
-        )
+    #     axis, dim = select_axis_dim(
+    #         dims=self.dims,
+    #         axis=axis,
+    #         dim=dim,
+    #         default_axis=default_axis,
+    #         default_dim=default_dim,
+    #     )
 
-        if dim in self.mom_dims:
-            msg = f"Can only reduce over value dimensions {self.val_dims}. Passed moment dimension {dim}."
-            raise ValueError(msg)
+    #     if dim in self.mom_dims:
+    #         msg = f"Can only reduce over value dimensions {self.val_dims}. Passed moment dimension {dim}."
+    #         raise ValueError(msg)
 
-        return axis, dim
+    #     return axis, dim
 
     # def _remove_dim(self, dim: Hashable | Iterable[Hashable]) -> tuple[Hashable, ...]:
     #     """Return self.dims with dim removed"""
@@ -309,20 +308,20 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                     dtype=dtype or self.dtype,  # type: ignore[arg-type]
                 ),
             )  # pyright: ignore[reportCallIssue, reportArgumentType]
-            copy = verify = False
-        elif isinstance(data, xr.DataArray):
-            xdata = data
         else:
-            xdata = self._xdata.copy(data=data)
+            if isinstance(data, xr.DataArray):
+                xdata = data
+            else:
+                xdata = self._xdata.copy(data=data)
 
-        shape: tuple[int, ...] = xdata.shape
-        if verify and shape != self.shape:
-            msg = f"{shape=} != {self.shape=}"
-            raise ValueError(msg)
-        if shape[-self.mom_ndim :] != self.mom_shape:
-            # at a minimum, verify that mom_shape is unchanged.
-            msg = f"{shape=} has wrong mom_shape={self.mom_shape}"
-            raise ValueError(msg)
+            shape: tuple[int, ...] = xdata.shape
+            if shape[-self.mom_ndim :] != self.mom_shape:
+                # at a minimum, verify that mom_shape is unchanged.
+                msg = f"{shape=} has wrong mom_shape={self.mom_shape}"
+                raise ValueError(msg)
+            if verify and shape != self.shape:
+                msg = f"{shape=} != {self.shape=}"
+                raise ValueError(msg)
 
         return type(self)(
             data=xdata,
@@ -662,7 +661,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     ) -> Self:
         """Interface to :meth:`xarray.DataArray.swap_dims`."""
         return self.pipe(
-            "drop_vars",
+            "swap_dims",
             dims_dict=dims_dict,
             _reorder=_reorder,
             _copy=_copy,
@@ -838,39 +837,34 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         )
 
     # ** To/from CentralMoments
-    def to_centralmoments(
-        self, data: NDArray[FloatT] | None = None
-    ) -> CentralMoments[FloatT]:
+    def to_centralmoments(self, copy: bool = False) -> CentralMoments[FloatT]:
         """Create a CentralMoments object from xCentralMoments."""
         from .central_numpy import CentralMoments
 
-        if data is None:
-            return CentralMoments(
-                data=self._data,
-                mom_ndim=self.mom_ndim,
-                fastpath=True,
-            )
+        return CentralMoments(
+            data=self._data.copy() if copy else self._data,
+            mom_ndim=self.mom_ndim,
+            fastpath=True,
+        )
 
-        return CentralMoments(data=data, mom_ndim=self.mom_ndim)
-
-    def to_c(self, data: NDArray[FloatT] | None = None) -> CentralMoments[FloatT]:
+    def to_c(self, copy: bool = False) -> CentralMoments[FloatT]:
         """Alias to :meth:`to_centralmoments`"""
-        return self.to_centralmoments(data=data)
+        return self.to_centralmoments(copy=copy)
 
-    @cached.prop
-    def centralmoments_view(self) -> CentralMoments[FloatT]:
-        """
-        Create CentralMoments view.
+    # @cached.prop
+    # def centralmoments_view(self) -> CentralMoments[FloatT]:
+    #     """
+    #     Create CentralMoments view.
 
-        This object has the same underlying data as `self`, but no
-        DataArray attributes.  Useful for some function calls.
+    #     This object has the same underlying data as `self`, but no
+    #     DataArray attributes.  Useful for some function calls.
 
-        See Also
-        --------
-        CentralMoments.to_xcentralmoments
-        xCentralMoments.from_centralmoments
-        """
-        return self.to_centralmoments()
+    #     See Also
+    #     --------
+    #     CentralMoments.to_xcentralmoments
+    #     xCentralMoments.from_centralmoments
+    #     """
+    #     return self._to_centralmoments(copy=False)
 
     @classmethod
     @docfiller.decorate
@@ -917,11 +911,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         )
 
     # ** Pushing --------------------------------------------------------------
-    def _check_out_shape(self, out: NDArrayAny) -> None:
-        if out.shape != self.shape:
-            msg = f"Trying to reshape from {self.shape=} to {out.shape=}."
-            raise ValueError(msg)
-
     def _push_data_dataarray(
         self,
         data: xr.DataArray,
@@ -929,17 +918,16 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
-        def func(out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:
-            self._check_out_shape(out)
+        def func(_out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:
             if order:
                 data = np.asarray(data, order=order)
             self._pusher(parallel).data(data, self._data)
             return self._data
 
         # NOTE:  Use this pattern here and below
-        # pass self._data to func as a test for broadcasting,
+        # pass self._xdata to func for broadcasting/alignment.
         # But then will use `self._data` as is for `out` parameter.
-        # Also, but `out` first so things are transposed relative to that...
+        # Also, put `out` first so things are transposed relative to that...
         _ = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._xdata,
@@ -959,7 +947,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         order: ArrayOrder,
     ) -> Self:
         def func(_out: NDArrayAny, _datas: NDArrayAny) -> NDArrayAny:
-            self._check_out_shape(_out)
             self._pusher(parallel).datas(_datas, self._data)
             return self._data
 
@@ -994,9 +981,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self._check_y(y, self.mom_ndim)
 
         def func(
-            out: NDArrayAny, x0: NDArrayAny, w: NDArrayAny, *x1: NDArrayAny
+            _out: NDArrayAny, x0: NDArrayAny, w: NDArrayAny, *x1: NDArrayAny
         ) -> NDArrayAny:
-            self._check_out_shape(out)
             self._pusher(parallel).val(x0, *x1, w, self._data)
             return self._data
 
@@ -1039,9 +1025,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         )
 
         def func(
-            out: NDArrayAny, x0: NDArrayAny, w: NDArrayAny, *x1: NDArrayAny
+            _out: NDArrayAny, x0: NDArrayAny, w: NDArrayAny, *x1: NDArrayAny
         ) -> NDArrayAny:
-            self._check_out_shape(out)
             self._pusher(parallel).vals(x0, *x1, w, self._data)
             return self._data
 
@@ -1267,11 +1252,11 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         order: ArrayOrder = None,
         parallel: bool | None = None,
         # xarray specific
+        coords_policy: CoordsPolicy = "first",
         dim: DimsReduce | MissingType = MISSING,
         group_dim: str | None = None,
         groups: Groups | None = None,
         keep_attrs: KeepAttrs = None,
-        coords_policy: CoordsPolicy | Literal["group"] = "first",
     ) -> Self:
         """
         Parameters
@@ -1282,18 +1267,9 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             :class:`~xarray.DataArray`, use unique values and rename dimension
             ``by.name``. If str or Iterable of str, Create grouper from these
             named coordinates.
-        coords_policy : {{'first', 'last', 'group', None}}
-            Policy for handling coordinates along ``dim`` by ``by`` is specified.
-            If no coordinates do nothing, otherwise use:
-
-            * 'first': select first value of coordinate for each block.
-            * 'last': select last value of coordinate for each block.
-            * 'group': Assign unique groups from ``group_idx`` to ``dim``
-            * None: drop any coordinates.
-        group_dim : str, optional
-            Name of the output group dimension.  Defaults to ``dim``.
-        groups: Sequence, optional
-            Array of values of length ``by.max() + 1`` to assign as coordinates for ``group_dim``.
+        {coords_policy}
+        {group_dim}
+        {groups}
         {keep_attrs}
 
 
@@ -1352,8 +1328,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 from .reduction import factor_by
 
                 _groups, codes = factor_by(self._xdata[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-                if groups is None:
-                    groups = _groups
+                # if groups is None:  # have to exclicitly pass groups...
+                #     groups = _groups
             else:
                 codes = by
 
@@ -1413,7 +1389,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         order: ArrayOrder = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
-        coords_policy: CoordsPolicy | Literal["group"] = "first",
+        coords_policy: CoordsPolicy = "first",
     ) -> Self:
         """
         Parameters
@@ -1424,19 +1400,10 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         {axis}
         block_dim : str, default=None,
             Name of blocked dimension.  Defaults to ``dim``.
-        coords_policy : {{'first', 'last', None}}
-            Policy for handling coordinates along `axis`.
-            If no coordinates do nothing, otherwise use:
-
-            * 'first': select first value of coordinate for each block.
-            * 'last': select last value of coordinate for each block.
-            * None: drop any coordinates.
-
-
-
+        {order}
+        {parallel}
+        {keep_attrs}
         {coords_policy}
-        **kwargs
-            Extra arguments to :meth:`CentralMoments.block`
 
         Returns
         -------
@@ -1446,6 +1413,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         See Also
         --------
         CentralMoments.block
+        reduce
 
 
         Examples
@@ -1513,7 +1481,11 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         Dimensions without coordinates: dim_0, mom_0
 
         """
-        axis, dim = self._check_reduce_axis_dim(axis=axis, dim=dim, default_axis=0)
+        axis, dim = select_axis_dim(
+            dims=self.dims,
+            axis=axis,
+            dim=dim,
+        )
 
         n = self.sizes[dim]
         if block_size is None:
@@ -1787,6 +1759,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         See Also
         --------
         CentralMoments.from_resample_vals
+        .resample.resample_vals
         """
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
 

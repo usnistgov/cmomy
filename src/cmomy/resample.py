@@ -14,7 +14,6 @@ import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
-from cmomy.typing import MomentsStrict
 from cmomy.utils import (
     parallel_heuristic,
     prepare_data_for_reduction,

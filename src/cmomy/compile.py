@@ -140,7 +140,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         help="Load all numba modules",
     )
     parser.add_argument(
-        "--co",
+        "--cov",
         "--no-cov",
         dest="include_cov",
         action=BooleanAction,
@@ -166,7 +166,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--resample",
         "--no-resample",
-        dest="include_vec",
+        dest="include_resample",
         action=BooleanAction,
         default=None,
         help=msg.format(name="resample"),
@@ -174,7 +174,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--indexed",
         "--no-indexed",
-        dest="include_vec",
+        dest="include_indexed",
         action=BooleanAction,
         default=None,
         help=msg.format(name="indexed"),
@@ -182,7 +182,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--convert",
         "--no-convert",
-        dest="include_vec",
+        dest="include_convert",
         action=BooleanAction,
         default=None,
         help=msg.format(name="convert"),
@@ -197,7 +197,7 @@ def _main(args: Sequence[str] | None = None) -> int:
     return 0
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     import sys
 
     sys.exit(_main())

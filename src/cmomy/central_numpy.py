@@ -67,6 +67,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
     #
     # _CentralT = TypeVar("_CentralT", bound="CentralMoments[FloatT]")
 
+    # TODO(wpk):  make these all with fastpath: Literal[False] = ...,
+    # and ad a single fastpath = Literal[False].
     @overload
     def __init__(
         self,
@@ -112,11 +114,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         fastpath: bool = False,
     ) -> None:
         if fastpath:
-            if not isinstance(data, np.ndarray):
-                msg = "Must pass ndarray with fastpath"
-                raise TypeError(msg)
+            self.set_values(data)
             self._cache = {}
-            self._data = data
             self._mom_ndim = mom_ndim
         else:
             super().__init__(
@@ -126,7 +125,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
     def set_values(self, values: NDArray[FloatT]) -> None:
         if not isinstance(values, np.ndarray):  # pyright: ignore[reportUnnecessaryIsInstance]
-            msg = f"Must pass numpy.ndarray as data.  Not {type(values)=}"
+            msg = f"Must pass ndarray as data.  Not {type(values)=}"
             raise TypeError(msg)
         self._data = values
 
@@ -211,15 +210,14 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 order=arrayorder_to_arrayorder_cf(order),
                 dtype=dtype or self.dtype,
             )
-            copy = verify = False
-
-        if verify and data.shape != self.shape:
-            msg = f"{data.shape=} != {self.shape=}"
-            raise ValueError(msg)
-        if data.shape[-self.mom_ndim :] != self.mom_shape:
-            # at a minimum, verify that mom_shape is unchanged.
-            msg = f"{data.shape=} has wrong mom_shape={self.mom_shape}"
-            raise ValueError(msg)
+        else:
+            if data.shape[-self.mom_ndim :] != self.mom_shape:
+                # at a minimum, verify that mom_shape is unchanged.
+                msg = f"{data.shape=} has wrong mom_shape={self.mom_shape}"
+                raise ValueError(msg)
+            if verify and data.shape != self.shape:
+                msg = f"{data.shape=} != {self.shape=}"
+                raise ValueError(msg)
 
         return type(self)(
             data=data,

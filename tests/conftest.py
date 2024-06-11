@@ -221,7 +221,7 @@ class Data:
             else:
                 raw = np.zeros_like(self.data_test)
                 for i in range(self.mom[0] + 1):  # type: ignore[index]
-                    for j in range(self.mom[1] + 1):  # type: ignore[index]
+                    for j in range(self.mom[1] + 1):  # type: ignore[index,misc]
                         raw[..., i, j] = np.average(
                             self.xdata**i * self.ydata**j,
                             weights=self.w,

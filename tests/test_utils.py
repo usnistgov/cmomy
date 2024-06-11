@@ -9,6 +9,39 @@ import xarray as xr
 from cmomy import utils
 
 
+# * Order validation
+@pytest.mark.parametrize(
+    ("order", "expected"),
+    [
+        ("c", "C"),
+        ("F", "F"),
+        (None, None),
+        ("k", None),
+        ("anything", None),
+    ],
+)
+def test_arrayorder_to_arrayorder_cf(order, expected) -> None:
+    assert utils.arrayorder_to_arrayorder_cf(order) == expected
+
+
+# * validate not none
+@pytest.mark.parametrize(
+    ("x", "expected"),
+    [
+        (None, "error"),
+        ("a", "a"),
+        (1, 1),
+    ],
+)
+def test_validate_not_none(x, expected) -> None:
+    if expected == "error":
+        with pytest.raises(TypeError, match=".*is not supported.*"):
+            utils.validate_not_none(x)
+
+    else:
+        assert utils.validate_not_none(x) == expected
+
+
 # * Moment validation
 @pytest.mark.parametrize(("mom_ndim", "expected"), [(0, -1), (1, 1), (2, 2), (3, -1)])
 def test_validate_mom_ndim(mom_ndim: int, expected: int) -> None:

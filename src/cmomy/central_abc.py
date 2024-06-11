@@ -187,7 +187,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         That is shape less moments dimensions.
         """
-        return self.data.shape[: -self.mom_ndim]
+        return self._data.shape[: -self.mom_ndim]
 
     @property
     def val_ndim(self) -> int:
@@ -207,7 +207,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
     def __array__(self, dtype: DTypeLike = None) -> NDArray[FloatT]:  # noqa: PLW3201
         """Used by np.array(self)."""  # D401
-        return np.asarray(self.data, dtype=dtype)
+        return np.asarray(self._data, dtype=dtype)
 
     # ** top level creation/copy/new ----------------------------------------------
     @abstractmethod
@@ -293,7 +293,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         return type(self)(
             data=self.to_values().astype(dtype=dtype, **kwargs),  # type: ignore[arg-type]
-            mom_ndim=self.mom_ndim,
+            mom_ndim=self._mom_ndim,
             # Already validated dtype, so can use fastpath
             fastpath=True,
         )

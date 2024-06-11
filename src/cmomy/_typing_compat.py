@@ -14,7 +14,7 @@ else:
 
 if sys.version_info < (3, 12):
     from typing_extensions import TypeVar
-else:
+else:  # pragma: no cover
     from typing import TypeVar
 
 
