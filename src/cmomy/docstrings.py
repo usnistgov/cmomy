@@ -25,11 +25,17 @@ def _dummy_docstrings() -> None:
     shape : tuple
         Total shape.  ``shape = val_shape + tuple(m+1 for m in mom)``
     dtype : dtype
-        Optional ``dtype`` for output data.
+        Optional :class:`~numpy.dtype` for output data.
     zeros_kws : mapping
         Optional parameters to :func:`numpy.zeros`
     axis : int
         Axis to reduce along.
+    axis_data | axis : int, optional
+        Axis to reduce along. Note that negative values are relative to
+        ``data.ndim - mom_ndim``. It is assumed that the last dimensions are
+        for moments. For example, if ``data.shape == (1,2,3)`` with
+        ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
+        Defaults to ``axis=-1``.
     broadcast : bool
         If True, and ``x=(x0, x1)``, then perform 'smart' broadcasting.
         In this case, if ``x1.ndim = 1`` and ``len(x1) == x0.shape[axis]``, then
@@ -85,12 +91,52 @@ def _dummy_docstrings() -> None:
         Name of dimension for 'records', i.e., multiple observations.
     data : DataArray or ndarray
         Moment collection array
+    data_numpy | data : ndarray
+        Moments collection array.  It is assumed moment dimensions are last.
+    data_numpy_or_dataarray | data : ndarray or DataArray
+        Moments collection array.  It is assumed moment dimensions are last.
     parallel : bool, default=True
         flags to `numba.njit`
     rng : :class:`~numpy.random.Generator`
         Random number generator object.  Defaults to output of :func:`~cmomy.random.default_rng`.
     kwargs | **kwargs
         Extra keyword arguments.
+
+    coords_policy : {'first', 'last', 'group', None}
+        Policy for handling coordinates along ``dim`` if ``by`` is specified
+        for :class:`~xarray.DataArray` data.
+        If no coordinates do nothing, otherwise use:
+
+        * 'first': select first value of coordinate for each block.
+        * 'last': select last value of coordinate for each block.
+        * 'group': Assign unique groups from ``group_idx`` to ``dim``
+        * None: drop any coordinates.
+
+        Note that if ``coords_policy`` is one of ``first`` or ``last``, parameter ``groups``
+        will be ignored.
+    by : array-like of int
+        Groupby values of same length as ``data`` along sampled dimension.
+        Negative values indicate no group (i.e., skip this index).
+    group_dim : str, optional
+        Name of the output group dimension.  Defaults to ``dim``.
+    groups : Sequence, optional
+        Sequence of length ``by.max() + 1`` to assign as coordinates for ``group_dim``.
+    out : ndarray
+        Optional output array. If specified, output will be a reference to this
+        array.
+    order : {"C", "F", "A", "K"}, optional
+        Order argument to :func:`numpy.asarray`.
+    weight : array-like, optional
+        Optional weights. Can be scalar, 1d array of length
+        ``args[0].shape[axis]`` or array of same form as ``args[0]``.
+
+    keep_attrs : {"drop", "identical", "no_conflicts", "drop_conflicts", "override"} or bool, optional
+        - 'drop' or False: empty attrs on returned xarray object.
+        - 'identical': all attrs must be the same on every object.
+        - 'no_conflicts': attrs from all objects are combined, any that have the same name must also have the same value.
+        - 'drop_conflicts': attrs from all objects are combined, any that have the same name but different values are dropped.
+        - 'override' or True: skip comparing and copy attrs from the first object to the result.
+
     """
 
 
@@ -127,6 +173,7 @@ docfiller = (
         klass="object", t_array=":class:`numpy.ndarray` or :class:`xarray.DataArray`"
     )
     .assign_combined_key("axis_and_dim", ["axis"])
+    .assign_combined_key("axis_data_and_dim", ["axis_data"])
 )
 
 
@@ -142,6 +189,7 @@ docfiller_central = (
         t_array=":class:`numpy.ndarray`",
     )
     .assign_combined_key("axis_and_dim", ["axis"])
+    .assign_combined_key("axis_data_and_dim", ["axis_data"])
 )
 
 
@@ -157,6 +205,7 @@ docfiller_xcentral = (
         t_array=":class:`xarray.DataArray`",
     )
     .assign_combined_key("axis_and_dim", ["axis", "dim"])
+    .assign_combined_key("axis_data_and_dim", ["axis_data", "dim"])
 )
 
 

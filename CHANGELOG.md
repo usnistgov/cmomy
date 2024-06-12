@@ -18,6 +18,48 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.11.0 — 2024-06-12
+
+### Changed
+
+- Switch to underlying numba functions using `guvectorize`. This significantly
+  simplifies the code. Previously, we had separate functions for "vector" vs
+  "scalar" moments. To handle arbitrary vector dimensions, the arrays were
+  reshaped behind the scenes (to a single "meta" dimension). Now, this is all
+  handled by the `gufunc` based library code.
+- Typing support improved.
+- Added `(x)CentralMoments.astype`
+- Added `(x)CentralMoments.`
+- Added alias `CentralMoments.to_x` which is the same as
+  `CentralMoments.to_xcentralmoments`.
+- Added alias `xCentralMoments.to_c` which is the same as
+  `xCentralMoments.to_centralmoments`.
+- Most constructors now accept `order` and `dtype` arguments.
+- Most routines that process central moments accept a `parallel` parameter.
+- Instead of complicated internal validation routines in `(x)CentralMoments`,
+  most of this is now handled by `cmomy.reduction` or similar routines.
+- Now using `xr.apply_ufunc` for most of the `xarray.DataArray` based
+  calculations.
+
+### Deprecated
+
+- Removed classmethods `(x)CentralMoments.from_raws`. Instead, use
+  `(x)CentralMoments.from_raw(...).reduce(...)`.
+- Removed classmethods `(x)CentralMoments.from_datas`. Instead, use
+  `(x)CentralMoments.from_data(...).reduce(...)`.
+- Removed classmethod `(x)CentralMoments.from_data`. Instead, use
+  `(x)CentralMoments(....)`.
+- Removed ability to create `xCentralMoments` objects directly from
+  `numpy.ndarray` objects. (e.g., passing in array-like to
+  `xCentralmoments.from_vals` doesn't work anymore). Instead use
+  `CentralMoments.from_vals(....).to_xcentralmoments(...)`, etc.
+- Removed methods `push_stat`, `push_stats`, `from_stat`, `from_stats`. Instead
+  use, for example, `numpy.concatenate`, to combine weights, average, and
+  variance into a `data` array. A helper function may be added if called for.
+- `(x)CentralMoments.resample_and_reduce` and
+  `(x)CentralMoments.from_resample_vals` no longer accept `nrep=...` or
+  `indices=...`. They only accept `freq=...`.
+
 ## v0.9.0 — 2024-04-10
 
 ### Changed

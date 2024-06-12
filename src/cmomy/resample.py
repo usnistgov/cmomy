@@ -6,31 +6,61 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 from __future__ import annotations
 
 from itertools import starmap
-from math import prod
 
 # if TYPE_CHECKING:
-from typing import TYPE_CHECKING, Any, Hashable, Literal, Sequence, cast
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import xarray as xr
+from numpy.typing import NDArray
 
+from ._utils import (
+    MISSING,
+    parallel_heuristic,
+    prepare_data_for_reduction,
+    prepare_values_for_reduction,
+    raise_if_wrong_shape,
+    select_dtype,
+    validate_mom_and_mom_ndim,
+    validate_mom_dims,
+    validate_mom_ndim,
+    xprepare_data_for_reduction,
+    xprepare_values_for_reduction,
+)
 from .docstrings import docfiller
 from .random import validate_rng
-from .utils import axis_expand_broadcast
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike, DTypeLike
+    from typing import Any, Hashable, Literal, Sequence
 
-    from .typing import ArrayOrder, Mom_NDim, Moments, NDArrayAny
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
+
+    from .typing import (
+        ArrayLikeArg,
+        ArrayOrder,
+        AxisReduce,
+        DimsReduce,
+        DTypeLikeArg,
+        FloatT,
+        IntDTypeT,
+        KeepAttrs,
+        MissingType,
+        Mom_NDim,
+        MomDims,
+        Moments,
+        MomentsStrict,
+        NDArrayAny,
+        NDArrayInt,
+    )
 
 
-##############################################################################
-# resampling
-###############################################################################
+# * Resampling utilities ------------------------------------------------------
 @docfiller.decorate
 def freq_to_indices(
-    freq: NDArrayAny, shuffle: bool = True, rng: np.random.Generator | None = None
-) -> NDArrayAny:
+    freq: NDArray[IntDTypeT],
+    shuffle: bool = True,
+    rng: np.random.Generator | None = None,
+) -> NDArray[IntDTypeT]:
     """
     Convert a frequency array to indices array.
 
@@ -61,10 +91,10 @@ def freq_to_indices(
         raise ValueError(msg)
 
     for f in freq:
-        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))
+        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))  # pyright: ignore[reportUnknownArgumentType]
         indices_all.append(indices)
 
-    out = np.array(indices_all)
+    out = np.array(indices_all, dtype=freq.dtype)
 
     if shuffle:
         rng = validate_rng(rng)
@@ -73,14 +103,16 @@ def freq_to_indices(
     return out
 
 
-def indices_to_freq(indices: NDArrayAny, ndat: int | None = None) -> NDArrayAny:
+def indices_to_freq(
+    indices: NDArray[IntDTypeT], ndat: int | None = None
+) -> NDArray[IntDTypeT]:
     """
     Convert indices to frequency array.
 
     It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp == ndat``.
     For cases that ``nsamp != ndat``, pass in ``ndat``.
     """
-    from ._lib.resample import (
+    from ._lib.utils import (
         randsamp_indices_to_freq,  # pyright: ignore[reportUnknownVariableType]
     )
 
@@ -192,7 +224,7 @@ def randsamp_freq(
     freq: ArrayLike | None = None,
     check: bool = False,
     rng: np.random.Generator | None = None,
-) -> NDArrayAny:
+) -> NDArrayInt:
     """
     Produce a random sample for bootstrapping.
 
@@ -251,17 +283,133 @@ def randsamp_freq(
     return freq
 
 
-@docfiller.decorate
-def resample_data(  # noqa: PLR0914
-    data: ArrayLike,
-    freq: ArrayLike,
-    mom: Moments,
-    axis: int = 0,
-    dtype: DTypeLike | None = None,
-    order: ArrayOrder = None,
-    parallel: bool = True,
+def _check_freq(freq: NDArrayAny, ndat: int) -> None:
+    if freq.shape[1] != ndat:
+        msg = f"{freq.shape[1]=} != {ndat=}"
+        raise ValueError(msg)
+
+
+# * Resample data
+# ** Low level resamplers
+def _resample_data(
+    data: NDArray[FloatT],
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None = None,
     out: NDArrayAny | None = None,
-) -> NDArrayAny:
+) -> NDArray[FloatT]:
+    """Resample prepared data."""
+    _check_freq(freq, data.shape[-(mom_ndim + 1)])
+
+    from ._lib.factory import factory_resample_data
+
+    _resample = factory_resample_data(
+        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
+    )
+    if out is not None:
+        return _resample(data, freq, out)
+    return _resample(data, freq)
+
+
+# ** overloads
+@overload
+def resample_data(  # type: ignore[overload-overlap]
+    data: xr.DataArray,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> xr.DataArray: ...
+# array no out or dtype
+@overload
+def resample_data(
+    data: ArrayLikeArg[FloatT],
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def resample_data(
+    data: Any,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArray[FloatT],
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def resample_data(
+    data: Any,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    out: None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def resample_data(
+    data: Any,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArrayAny: ...
+
+
+# ** Public api
+@docfiller.decorate
+def resample_data(
+    data: xr.DataArray | ArrayLike,
+    freq: NDArrayInt,
+    *,
+    mom_ndim: Mom_NDim,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    rep_dim: str = "rep",
+    order: ArrayOrder = None,
+    parallel: bool | None = True,
+    dtype: DTypeLike = None,
+    out: NDArrayAny | None = None,
+    keep_attrs: KeepAttrs = None,
+) -> xr.DataArray | NDArrayAny:
     """
     Resample data according to frequency table.
 
@@ -270,209 +418,304 @@ def resample_data(  # noqa: PLR0914
     data : array-like
         central mom array to be resampled
     {freq}
-    {mom}
+    {mom_ndim}
+    {axis}
+    {dim}
+    {rep_dim}
     {parallel}
-    out : ndarray, optional
-        optional output array.
+    {order}
+    {dtype}
+    {out}
+    {keep_attrs}
 
     Returns
     -------
-    output : array
-        output shape is `(nrep,) + shape + mom`, where shape is
-        the shape of data less axis, and mom is the shape of the resulting mom.
+    out : ndarray
+        Resampled central moments. ``out.shape = (..., shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``,
+        where ``shape = data.shape`` and ``nrep = freq.shape[0]``.
     """
-    from ._lib.resample import factory_resample_data
+    mom_ndim = validate_mom_ndim(mom_ndim)
 
-    if isinstance(mom, int):
-        mom = (mom,)
+    dtype = select_dtype(data, out=out, dtype=dtype)
+    freq = freq.astype(dtype)
 
-    # check inputs
-    data = np.asarray(data, dtype=dtype, order=order)
-    freq = np.asarray(freq, dtype=np.int64, order=order)
+    if isinstance(data, xr.DataArray):
+        dim, data = xprepare_data_for_reduction(
+            data,
+            axis=axis,
+            dim=dim,
+            mom_ndim=mom_ndim,
+            order=order,
+            dtype=dtype,
+        )
+        core_dims: tuple[Hashable, ...] = data.dims[-(mom_ndim + 1) :]
+        return xr.apply_ufunc(  # type: ignore[no-any-return] # pyright: ignore[reportUnknownMemberType]
+            _resample_data,
+            data,
+            freq,
+            input_core_dims=[core_dims, [rep_dim, dim]],
+            output_core_dims=[[rep_dim, *core_dims[1:]]],
+            kwargs={
+                "mom_ndim": mom_ndim,
+                "parallel": parallel,
+                "out": out,
+                # "freq": freq
+            },
+            keep_attrs=keep_attrs,
+        )
 
-    if dtype is None:
-        dtype = data.dtype
-
-    nrep, ndat = freq.shape
-    ndim = data.ndim - len(mom)
-    if axis < 0:
-        axis += ndim
-    if not 0 <= axis < ndim:  # pragma: no cover
-        raise ValueError
-
-    if axis != 0:
-        data = np.moveaxis(data, axis, 0)
-
-    shape: tuple[int, ...] = data.shape[1 : -len(mom)]
-    mom_shape = tuple(x + 1 for x in mom)
-
-    target_shape = (ndat, *shape, *mom_shape)
-    if data.shape != target_shape:
-        msg = f"{data.shape=} != {target_shape}"
-        raise ValueError(msg)
-
-    # output
-    out_shape = (nrep,) + data.shape[1:]
-    if out is None:
-        out = np.empty(out_shape, dtype=dtype)
-    elif out.shape != out_shape:
-        msg = f"{out.shape=} != {out_shape}"
-        raise ValueError(msg)
-    else:  # make sure out is in correct order
-        out = np.asarray(out, dtype=dtype, order="C")
-
-    meta_reshape: tuple[int, ...]
-    meta_reshape = mom_shape if shape == () else (prod(shape), *mom_shape)
-
-    data_reshape = (ndat, *meta_reshape)
-    out_reshape = (nrep, *meta_reshape)
-
-    datar = data.reshape(data_reshape)
-    outr = out.reshape(out_reshape)
-
-    resample = factory_resample_data(
-        cov=len(mom) > 1, vec=len(shape) > 0, parallel=parallel
+    # numpy array
+    data = prepare_data_for_reduction(
+        data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
+    )
+    return _resample_data(
+        data=data, freq=freq, mom_ndim=mom_ndim, parallel=parallel, out=out
     )
 
-    outr.fill(0.0)
-    resample(datar, freq, outr)
 
-    return outr.reshape(out.shape)
+# * Resample vals
+# ** low level
+def _resample_vals(
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    freq: NDArrayInt,
+    *x1: NDArray[FloatT],
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None = None,
+    out: NDArray[FloatT] | None = None,
+) -> NDArray[FloatT]:
+    _check_freq(freq, x0.shape[-1])
+
+    val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
+        :-1
+    ]
+    mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom)
+    out_shape: tuple[int, ...] = (
+        *val_shape,
+        freq.shape[0],
+        *mom_shape,
+    )
+    if out is None:
+        out = np.zeros(out_shape, dtype=x0.dtype)
+    else:
+        raise_if_wrong_shape(out, out_shape)
+        out.fill(0.0)
+
+    from ._lib.factory import factory_resample_vals
+
+    factory_resample_vals(  # type: ignore[call-arg]
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
+    )(x0, *x1, w, freq, out)  # type: ignore[arg-type] # pyright: ignore[reportCallIssue]
+
+    return out
 
 
-@docfiller.decorate
-def resample_vals(  # noqa: C901,PLR0912,PLR0914,PLR0915
-    x: NDArrayAny | tuple[NDArrayAny, NDArrayAny],
-    freq: NDArrayAny,
+# ** overloads
+@overload
+def resample_vals(  # type: ignore[overload-overlap]
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
     mom: Moments,
-    axis: int = 0,
-    w: NDArrayAny | None = None,
-    mom_ndim: Mom_NDim | None = None,
-    broadcast: bool = False,
-    dtype: DTypeLike | None = None,
+    freq: NDArrayInt,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> xr.DataArray: ...
+# array
+@overload
+def resample_vals(
+    x: ArrayLikeArg[FloatT],
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def resample_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArray[FloatT],
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def resample_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    out: None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def resample_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArrayAny: ...
+
+
+# ** public api
+@docfiller.decorate
+def resample_vals(
+    x: ArrayLike | xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    freq: NDArrayInt,
+    weight: ArrayLike | xr.DataArray | None = None,
+    axis: AxisReduce | MissingType = MISSING,
     order: ArrayOrder = None,
-    parallel: bool = True,
+    parallel: bool | None = None,
+    dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
-) -> NDArrayAny:
+    # xarray specific
+    dim: DimsReduce | MissingType = MISSING,
+    rep_dim: str = "rep",
+    mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
+) -> NDArrayAny | xr.DataArray:
     """
     Resample data according to frequency table.
 
     Parameters
     ----------
-    x : ndarray or tuple of ndarray
-        Input values.
+    x : ndarray
+        Value to analyze
+    *y:  array-like, optional
+        Second value needed if len(mom)==2.
     {freq}
     {mom}
+    {weight}
     {axis}
-    w :
-        Weights array.
-    {mom_ndim}
-    {broadcast}
-    {dtype}
-    order :
-        Parameter ``order`` to :func:`numpy.asarray`.
+    {order}
     {parallel}
-    out : ndarray
-        Optional output array.
+    {dtype}
+    {out}
+    {dim}
+    {rep_dim}
+    {mom_dims}
+    {keep_attrs}
 
     Returns
     -------
-    ndarray
-        Resampled central moments array.
+    out : ndarray
+        Resampled Central moments array. ``out.shape = (...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``
+        where ``shape = args[0].shape``. and ``nrep = freq.shape[0]``.
     """
-    from ._lib.resample import factory_resample_vals
+    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    weight = 1.0 if weight is None else weight
 
-    if isinstance(mom, int):
-        mom = (mom,)
-    elif not isinstance(mom, tuple):  # pyright: ignore[reportUnnecessaryIsInstance]
-        raise TypeError
+    dtype = select_dtype(x, out=out, dtype=dtype)
 
-    if mom_ndim is None:
-        mom_ndim = len(mom)  # type: ignore[assignment]
-    if len(mom) != mom_ndim:
-        raise ValueError
-    mom_shape = tuple(x + 1 for x in mom)
+    freq = freq.astype(dtype)
 
-    if mom_ndim == 1:
-        y = None
-    elif mom_ndim == 2:
-        x, y = x
-    else:
-        msg = "only mom_ndim <= 2 supported"
-        raise ValueError(msg)
-
-    # check input data
-    freq = np.asarray(freq, dtype=np.int64)
-    nrep, ndat = freq.shape
-
-    x = np.asarray(x, dtype=dtype, order=order)
-    if dtype is None:
-        dtype = x.dtype
-    if w is None:
-        w = np.ones_like(x)
-    else:
-        w = axis_expand_broadcast(
-            w, shape=x.shape, axis=axis, roll=False, dtype=dtype, order=order
-        )
-
-    if y is not None:
-        y = axis_expand_broadcast(
-            y,
-            shape=x.shape,
+    if isinstance(x, xr.DataArray):
+        input_core_dims, (dx0, dw, *dx1) = xprepare_values_for_reduction(
+            x,
+            weight,
+            *y,
             axis=axis,
-            roll=False,
-            broadcast=broadcast,
+            dim=dim,
             dtype=dtype,
             order=order,
+            narrays=mom_ndim + 1,
         )
 
-    if axis != 0:
-        x = np.moveaxis(x, axis, 0)
-        w = np.moveaxis(w, axis, 0)
-        if y is not None:
-            y = np.moveaxis(y, axis, 0)
+        mom_dims_strict: tuple[Hashable, ...] = validate_mom_dims(
+            mom_dims=mom_dims, mom_ndim=mom_ndim
+        )
+        # add in freq dims:
+        input_core_dims.insert(2, [rep_dim, input_core_dims[0][0]])
 
-    if len(x) != ndat:
-        raise ValueError
+        return xr.apply_ufunc(  # type: ignore[no-any-return]
+            _resample_vals,
+            dx0,
+            dw,
+            freq,
+            *dx1,
+            input_core_dims=input_core_dims,
+            output_core_dims=[[rep_dim, *mom_dims_strict]],
+            kwargs={
+                "mom": mom_validated,
+                "mom_ndim": mom_ndim,
+                "parallel": parallel,
+                "out": out,
+            },
+            keep_attrs=keep_attrs,
+        )
 
-    # output
-    shape = x.shape[1:]
-    out_shape = (nrep, *shape, *mom_shape)
-    if out is None:
-        out = np.empty(out_shape, dtype=dtype)
-    elif out.shape != out_shape:
-        raise ValueError
-    else:
-        out = np.asarray(out, dtype=dtype, order="C")
-
-    # reshape
-    data_reshape: tuple[int, ...] = (ndat,)
-    out_reshape: tuple[int, ...] = (nrep,)
-    if shape == ():
-        pass
-    else:
-        meta_reshape: tuple[int, ...] = (prod(shape),)
-        data_reshape += meta_reshape
-        out_reshape += meta_reshape
-    out_reshape += mom_shape
-
-    xr = x.reshape(data_reshape)
-    wr = w.reshape(data_reshape)
-    outr = out.reshape(out_reshape)
-    # if cov:
-    #     yr = y.reshape(data_reshape)
-
-    resample = factory_resample_vals(
-        cov=y is not None, vec=len(shape) > 0, parallel=parallel
+    (
+        x0,
+        w,
+        *x1,
+    ) = prepare_values_for_reduction(
+        x, weight, *y, axis=axis, dtype=dtype, order=order, narrays=mom_ndim + 1
     )
-    outr.fill(0.0)
-    if y is not None:
-        yr = y.reshape(data_reshape)
-        resample(wr, xr, yr, freq, outr)
-    else:
-        resample(wr, xr, freq, outr)
 
-    return outr.reshape(out.shape)
+    return _resample_vals(
+        x0,
+        w,
+        freq,
+        *x1,
+        mom=mom_validated,
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        out=out,
+    )
 
 
 # TODO(wpk): add coverage for these
@@ -565,7 +808,7 @@ def xbootstrap_confidence_interval(  # pragma: no cover
     x: xr.DataArray,
     stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
     axis: int = 0,
-    dim: Hashable | None = None,
+    dim: DimsReduce | MissingType = MISSING,
     alpha: float = 0.05,
     style: Literal[None, "delta", "pm"] = None,
     bootstrap_dim: Hashable | None = "bootstrap",

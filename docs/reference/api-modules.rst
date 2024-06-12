@@ -2,6 +2,15 @@
    :toctree: generated/
    :template: autodocsumm/module-inherit.rst
 
-   cmomy.random
+   cmomy.reduction
    cmomy.resample
-   cmomy.convert
+   cmomy.random
+   cmomy.compile
+
+
+
+.. autosummary::
+   :toctree: generated/
+   :template: autodocsumm/module.rst
+
+   cmomy.typing

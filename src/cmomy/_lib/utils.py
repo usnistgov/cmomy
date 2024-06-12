@@ -1,45 +1,35 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
+import numba as nb
 import numpy as np
-from numba import njit
 
 from ..options import OPTIONS
+from .decorators import is_in_unsafe_thread_pool, myjit
 
 if TYPE_CHECKING:
-    from typing import Any, Callable
+    from numpy.typing import DTypeLike, NDArray
 
-    from numpy.typing import DTypeLike
-
-    from ..typing import F, NDArrayAny
+    from ..typing import IntDTypeT, NDArrayAny
 
 
-def myjit(
-    signature: str | list[str] | None = None,
-    *,
-    parallel: bool = False,
-    inline: bool | None = None,
-    **kws: Any,
-) -> Callable[[F], F]:
-    """Perform jitting."""
-    if signature is not None:  # pragma: no cover
-        kws["signature_or_function"] = signature  # pragma: no cover
+# * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
+def supports_parallel() -> bool:
+    """
+    Checks if system supports parallel numba functions.
 
-    if parallel:
-        kws["parallel"] = parallel
-    if inline is not None:
-        if inline:  # pragma: no cover
-            kws["inline"] = "always"
-        else:  # pragma: no cover
-            kws["inline"] = "never"
+    If an unsafe thread pool is detected, return ``False``.
 
-    return cast(  # pyright: ignore[reportReturnType]
-        "Callable[[F], F]",
-        njit(fastmath=OPTIONS["fastmath"], cache=OPTIONS["cache"], **kws),
-    )
+    Returns
+    -------
+    bool :
+        ``True`` if supports parallel.  ``False`` otherwise.
+    """
+    return not is_in_unsafe_thread_pool()
 
 
+# * Binomial factors
 def _binom(n: int, k: int) -> float:
     import math
 
@@ -62,3 +52,64 @@ def factory_binomial(order: int, dtype: DTypeLike = np.float64) -> NDArrayAny:
 
 
 BINOMIAL_FACTOR = factory_binomial(OPTIONS["nmax"])
+
+
+# * resampling
+@myjit(
+    # indices[rep, nsamp], freqs[rep, ndat]
+    signature=[
+        # (nb.int32[:, :], nb.int32[:, :]),
+        (nb.int64[:, :], nb.int64[:, :]),
+    ]
+)
+def randsamp_indices_to_freq(
+    indices: NDArray[IntDTypeT], freqs: NDArray[IntDTypeT]
+) -> None:
+    nrep, ndat = freqs.shape
+
+    assert indices.shape[0] == nrep
+    assert indices.max() < ndat
+
+    nsamp = indices.shape[1]
+    for r in range(nrep):
+        for d in range(nsamp):
+            idx = indices[r, d]
+            freqs[r, idx] += 1
+
+
+@myjit(
+    [
+        # (nb.int32[:, :],),
+        (nb.int64[:, :],),
+    ]
+)
+def freq_to_index_start_end_scales(
+    freq: NDArray[IntDTypeT],
+) -> tuple[
+    NDArray[IntDTypeT], NDArray[IntDTypeT], NDArray[IntDTypeT], NDArray[IntDTypeT]
+]:
+    ngroup = freq.shape[0]
+    ndat = freq.shape[1]
+
+    start = np.empty(ngroup, dtype=freq.dtype)
+    end = np.empty(ngroup, dtype=freq.dtype)
+
+    size = np.count_nonzero(freq)
+
+    index = np.empty(size, dtype=freq.dtype)
+    scale = np.empty(size, dtype=freq.dtype)
+
+    idx = 0
+    for group in range(ngroup):
+        start[group] = idx
+        count = 0
+        for k in range(ndat):
+            f = freq[group, k]
+            if f > 0:
+                index[idx] = k
+                scale[idx] = f
+                idx += 1
+                count += 1
+        end[group] = start[group] + count
+
+    return index, start, end, scale

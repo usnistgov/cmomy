@@ -10,7 +10,7 @@
 docstring-inheritance
 ipykernel
 ipython
-lazy_loader
+lazy-loader
 module-utilities>=0.6
 nbclient>=0.10.0
 nbval
@@ -27,5 +27,5 @@ pytest-cov
 pytest-sugar
 pytest-xdist
 scriv
-typing-extensions;python_version<"3.11"
+typing-extensions;python_version<"3.12"
 xarray>=0.16
