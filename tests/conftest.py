@@ -8,8 +8,10 @@ import pytest
 import xarray as xr
 from module_utilities import cached
 
-import cmomy
-from cmomy import central, resample, xcentral
+import cmomy.random
+import cmomy.reduction
+import cmomy.resample
+from cmomy import CentralMoments, xCentralMoments
 
 from ._simple_cmom import get_cmom, get_comom
 
@@ -25,7 +27,7 @@ def rng():
     return default_rng
 
 
-class Data:  # noqa: PLR0904
+class Data:
     """wrapper around stuff for generic testing."""
 
     # _count = 0
@@ -66,8 +68,8 @@ class Data:  # noqa: PLR0904
         return self.style == "broadcast"
 
     @property
-    def cls(self) -> type[central.CentralMoments]:
-        return central.CentralMoments
+    def cls(self) -> type[CentralMoments]:
+        return CentralMoments
 
     @cached.prop
     def val_shape(self) -> tuple[int, ...]:
@@ -98,13 +100,15 @@ class Data:  # noqa: PLR0904
         return self._get_data(style=self.style)
 
     @cached.prop
-    def x(self) -> NDArrayAny | tuple[NDArrayAny, NDArrayAny]:
+    def xy_tuple(self) -> tuple[NDArrayAny] | tuple[NDArrayAny, NDArrayAny]:
         if self.cov:
             return (self.xdata, self.ydata)
-        return self.xdata
+        return (self.xdata,)
 
     @cached.prop
-    def split_data(self) -> tuple[list[NDArrayAny] | list[None], list[NDArrayAny]]:
+    def split_data(
+        self,
+    ) -> tuple[list[NDArrayAny] | list[None], list[tuple[NDArrayAny, ...]]]:
         v = self.xdata.shape[self.axis] // self.nsplit
         splits = [v * i for i in range(1, self.nsplit)]
         X = np.split(self.xdata, splits, axis=self.axis)
@@ -126,14 +130,17 @@ class Data:  # noqa: PLR0904
             # pack X, Y
             X = list(zip(X, Y))  # type: ignore[arg-type]
 
-        return W, X  # pyright: ignore[reportReturnType]
+        else:
+            X = [(x,) for x in X]  # type: ignore[misc]
+
+        return W, X  # type: ignore[return-value] # pyright: ignore[reportReturnType]
 
     @property
     def W(self) -> list[NDArrayAny] | list[None]:
         return self.split_data[0]
 
     @property
-    def X(self) -> list[NDArrayAny]:
+    def X(self) -> list[tuple[NDArrayAny, ...]]:
         return self.split_data[1]
 
     @cached.prop
@@ -141,36 +148,39 @@ class Data:  # noqa: PLR0904
         if self.cov:
             return get_comom(  # type: ignore[no-any-return]
                 w=self.w,
-                x=self.x[0],
-                y=self.x[1],
+                x=self.xy_tuple[0],
+                y=self.xy_tuple[1],  # type: ignore[misc]
                 moments=self.mom,
                 axis=self.axis,
                 broadcast=self.broadcast,
             )
-        return get_cmom(w=self.w, x=self.x, moments=self.mom, axis=self.axis, last=True)  # type: ignore[no-any-return]
-
-    @cached.prop
-    def data_test(self) -> NDArrayAny:
-        return central.central_moments(
-            x=self.x,
-            mom=self.mom,
-            w=self.w,
-            axis=self.axis,
-            last=True,
-            broadcast=self.broadcast,
+        return get_cmom(  # type: ignore[no-any-return]
+            w=self.w, x=self.xy_tuple[0], moments=self.mom, axis=self.axis, last=True
         )
 
     @cached.prop
-    def s(self) -> central.CentralMoments:
+    def data_test(self) -> NDArrayAny:
+        return cmomy.reduction.reduce_vals(  # type: ignore[return-value]
+            *self.xy_tuple,
+            mom=self.mom,
+            weight=self.w,
+            axis=self.axis,
+        )
+
+    @cached.prop
+    def s(self) -> CentralMoments:
         s = self.cls.zeros(val_shape=self.val_shape, mom=self.mom)
-        s.push_vals(x=self.x, w=self.w, axis=self.axis, broadcast=self.broadcast)
+        s.push_vals(*self.xy_tuple, weight=self.w, axis=self.axis)
         return s
 
     @cached.prop
-    def S(self) -> list[central.CentralMoments]:
-        return [
+    def S(self) -> CentralMoments:
+        return [  # type: ignore[return-value]
             self.cls.from_vals(
-                x=xx, w=ww, axis=self.axis, mom=self.mom, broadcast=self.broadcast
+                *xx,
+                weight=ww,
+                axis=self.axis,
+                mom=self.mom,
             )
             for ww, xx in zip(self.W, self.X)
         ]
@@ -196,7 +206,7 @@ class Data:  # noqa: PLR0904
             if not self.cov:
                 raw = np.array(
                     [
-                        np.average(self.x**i, weights=self.w, axis=self.axis)  # type: ignore[operator]
+                        np.average(self.xdata**i, weights=self.w, axis=self.axis)
                         for i in range(self.mom + 1)  # type: ignore[operator]
                     ]
                 )
@@ -207,9 +217,9 @@ class Data:  # noqa: PLR0904
             else:
                 raw = np.zeros_like(self.data_test)
                 for i in range(self.mom[0] + 1):  # type: ignore[index]
-                    for j in range(self.mom[1] + 1):  # type: ignore[index, misc]
+                    for j in range(self.mom[1] + 1):  # type: ignore[index,misc]
                         raw[..., i, j] = np.average(
-                            self.x[0] ** i * self.x[1] ** j,
+                            self.xdata**i * self.ydata**j,
                             weights=self.w,
                             axis=self.axis,
                         )
@@ -234,7 +244,7 @@ class Data:  # noqa: PLR0904
 
     @cached.prop
     def freq(self) -> NDArrayAny:
-        return resample.randsamp_freq(indices=self.indices, ndat=self.ndat)
+        return cmomy.resample.randsamp_freq(indices=self.indices, ndat=self.ndat)
 
     @cached.prop
     def xdata_resamp(self) -> NDArrayAny:
@@ -257,10 +267,10 @@ class Data:  # noqa: PLR0904
         return np.take(ydata, self.indices, axis=0)
 
     @property
-    def x_resamp(self) -> NDArrayAny | tuple[NDArrayAny, NDArrayAny]:
+    def xy_tuple_resamp(self) -> tuple[NDArrayAny] | tuple[NDArrayAny, NDArrayAny]:
         if self.cov:
             return (self.xdata_resamp, self.ydata_resamp)
-        return self.xdata_resamp
+        return (self.xdata_resamp,)
 
     @cached.prop
     def w_resamp(self) -> NDArrayAny | None:
@@ -276,24 +286,25 @@ class Data:  # noqa: PLR0904
 
     @cached.prop
     def data_test_resamp(self) -> NDArrayAny:
-        return central.central_moments(
-            x=self.x_resamp,
-            mom=self.mom,
-            w=self.w_resamp,
-            axis=1,
-            broadcast=self.broadcast,
+        return np.moveaxis(
+            cmomy.reduction.reduce_vals(  # type: ignore[arg-type]
+                *self.xy_tuple_resamp,
+                mom=self.mom,
+                weight=self.w_resamp,
+                axis=1,
+            ),
+            0,
+            -(self.mom_ndim + 1),
         )
 
     # xcentral specific stuff
     @property
     def cls_xr(self):
-        return xcentral.xCentralMoments
+        return xCentralMoments
 
     @cached.prop
-    def s_xr(self):
-        return self.cls_xr.from_vals(
-            x=self.x, w=self.w, axis=self.axis, mom=self.mom, broadcast=self.broadcast
-        )
+    def s_xr(self) -> xCentralMoments:
+        return self.s.to_xcentralmoments()
 
     @cached.prop
     def xdata_xr(self):
@@ -307,28 +318,29 @@ class Data:  # noqa: PLR0904
             dims = self.xdata_xr.dims
         else:
             dims = "rec"
-
         return xr.DataArray(self.ydata, dims=dims)
 
     @cached.prop
     def w_xr(self):
         if self.style is None:
             return None
-
         dims = "rec" if self.style == "broadcast" else self.xdata_xr.dims
-
         return xr.DataArray(self.w, dims=dims)
 
     @property
-    def x_xr(self):
+    def xy_tuple_xr(self) -> tuple[xr.DataArray, ...]:
         if self.cov:
             return (self.xdata_xr, self.ydata_xr)
-        return self.xdata_xr
+        return (self.xdata_xr,)
 
     @cached.prop
     def data_test_xr(self):
-        return xcentral.xcentral_moments(
-            x=self.x_xr, mom=self.mom, dim="rec", w=self.w_xr, broadcast=self.broadcast
+        assert isinstance(self.xy_tuple_xr[0], xr.DataArray)
+        return cmomy.reduction.reduce_vals(
+            *self.xy_tuple_xr,
+            mom=self.mom,
+            dim="rec",
+            weight=self.w_xr,
         )
 
     @cached.prop
@@ -349,29 +361,21 @@ class Data:  # noqa: PLR0904
                 (xr.DataArray(x, dims=xdims), xr.DataArray(y, dims=ydims))
                 for x, y in self.X
             ]
-        return [xr.DataArray(x, dims=xdims) for x in self.X]
+        return [(xr.DataArray(x[0], dims=xdims),) for x in self.X]
 
     @cached.prop
     def S_xr(self):
         return [
             self.cls_xr.from_vals(
-                x=x, w=w, axis=self.axis, mom=self.mom, broadcast=self.broadcast
+                *xy,
+                weight=w,
+                axis=self.axis,
+                mom=self.mom,
             )
-            for w, x in zip(self.W, self.X)
+            for w, xy in zip(self.W_xr, self.X_xr)
         ]
 
 
-# Fixture
-# def get_params():
-#     for shape, axis in [(20, 0), ((20, 2, 3), 0), ((2, 20, 3), 1), ((2, 3, 20), 2)]:
-#         for style in [None, "total", "broadcast"]:
-#             for mom in [4, (3, 3)]:
-#                 yield Data(shape, axis, style, mom)
-
-
-# @pytest.fixture(params=get_params(), scope="module")
-# def other(request):
-#     return request.param
 def get_params():
     for shape, axis in [(10, 0), ((10, 2, 3), 0), ((2, 10, 3), 1), ((2, 3, 10), 2)]:
         for style in [None, "total", "broadcast"]:

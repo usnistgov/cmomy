@@ -8,7 +8,7 @@
 # Instead edit the corresponding pyproject.toml file.
 #
 docstring-inheritance
-lazy_loader
+lazy-loader
 module-utilities>=0.6
 nbval
 numba>=0.50
@@ -17,5 +17,5 @@ pytest
 pytest-cov
 pytest-sugar
 pytest-xdist
-typing-extensions;python_version<"3.11"
+typing-extensions;python_version<"3.12"
 xarray>=0.16

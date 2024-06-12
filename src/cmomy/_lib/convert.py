@@ -1,137 +1,77 @@
-# mypy: disable-error-code="no-untyped-def"
-"""Numba functions to convert between raw and central moments."""
+"""Convert between central and raw moments"""
 
-from .utils import BINOMIAL_FACTOR, myjit
+from __future__ import annotations
 
+from functools import partial
+from typing import TYPE_CHECKING
 
-@myjit()
-def central_to_raw_moments(central, raw) -> None:
-    nv = central.shape[0]
-    order = central.shape[1] - 1
+import numba as nb
 
-    for v in range(nv):
-        ave = central[v, 1]
+from .decorators import myguvectorize
+from .utils import BINOMIAL_FACTOR
 
-        raw[v, 0] = central[v, 0]
-        raw[v, 1] = ave
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
 
-        for n in range(2, order + 1):
-            tmp = 0.0
-            ave_i = 1.0
-            for i in range(n - 1):
-                tmp += central[v, n - i] * ave_i * BINOMIAL_FACTOR[n, i]
-                ave_i *= ave
-
-            # last two
-            # <dx> = 0 so skip i = n-1
-            # i = n
-            tmp += ave_i * ave
-            raw[v, n] = tmp
+    from ..typing import FloatT
 
 
-@myjit()
-def raw_to_central_moments(raw, central) -> None:
-    nv = central.shape[0]
-    order = central.shape[1] - 1
-
-    for v in range(nv):
-        ave = raw[v, 1]
-
-        central[v, 0] = raw[v, 0]
-        central[v, 1] = ave
-
-        for n in range(2, order + 1):
-            tmp = 0.0
-            ave_i = 1.0
-            for i in range(n - 1):
-                tmp += raw[v, n - i] * ave_i * BINOMIAL_FACTOR[n, i]
-                ave_i *= -ave
-
-            # last two
-            # right now, ave_i = (-ave)**(n-1)
-            # i = n-1
-            # ave * ave_i * n
-            # i = n
-            # 1 * (-ave) * ave_i
-            tmp += ave * ave_i * (n - 1)
-            central[v, n] = tmp
+_PARALLEL = False
+_vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 
-# comoments
-@myjit()
-def central_to_raw_comoments(central, raw) -> None:
-    nv = central.shape[0]
-    order0 = central.shape[1] - 1
-    order1 = central.shape[2] - 1
+@_vectorize(
+    "(mom) -> (mom)",
+    [
+        (nb.float32[:], nb.float32[:]),
+        (nb.float64[:], nb.float64[:]),
+    ],
+    writable=None,
+)
+def central_to_raw(central: NDArray[FloatT], raw: NDArray[FloatT]) -> None:
+    ave = central[1]
+    raw[0] = central[0]
+    raw[1] = ave
 
-    for v in range(nv):
-        ave0 = central[v, 1, 0]
-        ave1 = central[v, 0, 1]
+    for n in range(2, central.shape[0]):
+        tmp = 0.0
+        ave_i = 1.0
+        for i in range(n - 1):
+            tmp += central[n - i] * ave_i * BINOMIAL_FACTOR[n, i]
+            ave_i *= ave
 
-        for n in range(order0 + 1):
-            for m in range(order1 + 1):
-                nm = n + m
-                if nm <= 1:
-                    raw[v, n, m] = central[v, n, m]
-                else:
-                    tmp = 0.0
-                    ave_i = 1.0
-                    for i in range(n + 1):
-                        ave_j = 1.0
-                        for j in range(m + 1):
-                            nm_ij = nm - (i + j)
-                            if nm_ij == 0:
-                                # both zero order
-                                tmp += ave_i * ave_j
-                            elif nm_ij == 1:
-                                # <dx**0 * dy**1> = 0
-                                pass
-                            else:
-                                tmp += (
-                                    central[v, n - i, m - j]
-                                    * ave_i
-                                    * ave_j
-                                    * BINOMIAL_FACTOR[n, i]
-                                    * BINOMIAL_FACTOR[m, j]
-                                )
-                            ave_j *= ave1
-                        ave_i *= ave0
-                    raw[v, n, m] = tmp
+        # last two
+        # <dx> = 0 so skip i = n-1
+        # i = n
+        tmp += ave_i * ave
+        raw[n] = tmp
 
 
-@myjit()
-def raw_to_central_comoments(raw, central) -> None:
-    nv = central.shape[0]
-    order0 = central.shape[1] - 1
-    order1 = central.shape[2] - 1
+@_vectorize(
+    "(mom) -> (mom)",
+    [
+        (nb.float32[:], nb.float32[:]),
+        (nb.float64[:], nb.float64[:]),
+    ],
+    writable=None,
+)
+def raw_to_central(raw: NDArray[FloatT], central: NDArray[FloatT]) -> None:
+    ave = raw[1]
+    central[0] = raw[0]
+    central[1] = ave
 
-    for v in range(nv):
-        ave0 = raw[v, 1, 0]
-        ave1 = raw[v, 0, 1]
+    for n in range(2, raw.shape[0]):
+        tmp = 0.0
+        ave_i = 1.0
+        for i in range(n - 1):
+            tmp += raw[n - i] * ave_i * BINOMIAL_FACTOR[n, i]
+            ave_i *= -ave
 
-        for n in range(order0 + 1):
-            for m in range(order1 + 1):
-                nm = n + m
-                if nm <= 1:
-                    central[v, n, m] = raw[v, n, m]
-                else:
-                    tmp = 0.0
-                    ave_i = 1.0
-                    for i in range(n + 1):
-                        ave_j = 1.0
-                        for j in range(m + 1):
-                            nm_ij = nm - (i + j)
-                            if nm_ij == 0:
-                                # both zero order
-                                tmp += ave_i * ave_j
-                            else:
-                                tmp += (
-                                    raw[v, n - i, m - j]
-                                    * ave_i
-                                    * ave_j
-                                    * BINOMIAL_FACTOR[n, i]
-                                    * BINOMIAL_FACTOR[m, j]
-                                )
-                            ave_j *= -ave1
-                        ave_i *= -ave0
-                    central[v, n, m] = tmp
+        # last two
+        # right now, ave_i = (-ave)**(n-1)
+        # i = n-1
+        # ave * ave_i * n
+        # i = n
+        # 1 * (-ave) * ave_i
+        tmp += ave * ave_i * (n - 1)
+        central[n] = tmp

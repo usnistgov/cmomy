@@ -1,28 +1,49 @@
-"""
-Top level API (:mod:`cmomy`)
-============================
-"""
+"""Public api for :mod:`cmomy`"""
+# Top level API (:mod:`cmomy`)
+# ============================
+# """
 
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
-    from . import convert, random, resample  # noqa: TCH004
-    from .central import CentralMoments, central_moments  # noqa: TCH004
-    from .xcentral import xcentral_moments, xCentralMoments  # noqa: TCH004
+    # submodules
+    from . import random, reduction, resample  # noqa: TCH004
+    from ._central_dataarray import xCentralMoments  # noqa: TCH004
+    from ._central_numpy import CentralMoments  # noqa: TCH004
+    from ._convert import convert  # noqa: TCH004
+    from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
+    from .resample import (
+        indices_to_freq,  # noqa: TCH004
+        random_freq,  # noqa: TCH004
+        random_indices,  # noqa: TCH004
+        resample_data,  # noqa: TCH004
+        resample_vals,  # noqa: TCH004
+    )
+
+
 else:
     import lazy_loader as lazy
 
     __getattr__, __dir__, _ = lazy.attach(
         __name__,
         submodules=[
-            "convert",
             "random",
+            "reduction",
             "resample",
         ],
         submod_attrs={
-            "central": ["CentralMoments", "central_moments"],
-            "xcentral": ["xCentralMoments", "xcentral_moments"],
+            "_central_numpy": ["CentralMoments"],
+            "_central_dataarray": ["xCentralMoments"],
+            "_convert": ["convert"],
+            "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
+            "resample": [
+                "indices_to_freq",
+                "random_freq",
+                "random_indices",
+                "resample_data",
+                "resample_vals",
+            ],
         },
     )
 
@@ -40,10 +61,17 @@ __email__ = "wpk@nist.gov"
 __all__ = [
     "CentralMoments",
     "__version__",
-    "central_moments",
     "convert",
+    "indices_to_freq",
     "random",
+    "random_freq",
+    "random_indices",
+    "reduce_data",
+    "reduce_data_grouped",
+    "reduce_vals",
+    "reduction",
     "resample",
+    "resample_data",
+    "resample_vals",
     "xCentralMoments",
-    "xcentral_moments",
 ]

@@ -142,6 +142,17 @@ typecheck: ## Run mypy and pyright
 typecheck-tools:
 	$(PIPXRUN) $(PIPXRUN_OPTS) -c "mypy --strict" -c pyright -- noxfile.py tools/*.py
 
+
+
+mypy-typing-tests: ## Run mypy
+	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy tmp/typing-tests/*.py
+pyright-typing-tests: ## Run pyright
+	$(PIPXRUN) $(PIPXRUN_OPTS) -c pyright tmp/typing-tests/*.py
+typecheck-typing-tests: ## Run mypy and pyright
+	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy -c pyright tmp/typing-tests/*.py
+
+
+
 ################################################################################
 # * NOX
 ###############################################################################

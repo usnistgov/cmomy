@@ -1,6 +1,6 @@
 """
-Routines to set common :class:`~numpy.random.Generator` (:mod:`cmomy.random`)
-=============================================================================
+Internal :class:`numpy.random.Generator` (:mod:`cmomy.random`)
+==============================================================
 
 :mod:`cmomy` is setup to use :class:`numpy.random.Generator` objects, as
 opposed to using the "classic" :mod:`numpy.random` interface. For simplicity,
@@ -8,11 +8,6 @@ you can set a shared :class:`~numpy.random.Generator` object using the routine
 :func:`default_rng`. You can set the seed of this random number generator (rng)
 used across routines. You can also pass :class:`~numpy.random.Generator`
 objects to routines that require random number.
-
-
-
-
-
 """
 
 from __future__ import annotations

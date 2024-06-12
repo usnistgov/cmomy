@@ -7,7 +7,7 @@ import numpy as np
 def get_cmom(w, x, moments, axis=0, last=True):
     """Calculate central moments"""
     if w is None:
-        w = np.array(1.0)
+        w = np.array(1.0, dtype=x.dtype)
 
     if w.ndim == 1 and w.ndim != x.ndim and len(w) == x.shape[axis]:
         shape = [1] * x.ndim
@@ -35,7 +35,7 @@ def get_cmom(w, x, moments, axis=0, last=True):
         y = (w * dx**n).sum(axis) * wsum_inv
         data.append(y)
 
-    data_array = np.array(data)
+    data_array = np.array(data, dtype=x.dtype)
     if last:
         data_array = np.moveaxis(data_array, 0, -1)
     return data_array
@@ -44,7 +44,7 @@ def get_cmom(w, x, moments, axis=0, last=True):
 def get_comom(w, x, y, moments, axis=0, broadcast=True):
     """Calculate central co-moments."""
     if w is None:
-        w = np.array(1.0)
+        w = np.array(1.0, dtype=x.dtype)
 
     if w.ndim == 1 and w.ndim != x.ndim and len(w) == x.shape[axis]:
         shape_list = [1] * x.ndim
