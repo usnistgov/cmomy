@@ -19,17 +19,13 @@
    .. rubric:: Methods
    .. autosummary::
    
+      ~CentralMoments.astype
       ~CentralMoments.block
       ~CentralMoments.cmom
       ~CentralMoments.copy
       ~CentralMoments.fill
-      ~CentralMoments.from_data
-      ~CentralMoments.from_datas
       ~CentralMoments.from_raw
-      ~CentralMoments.from_raws
       ~CentralMoments.from_resample_vals
-      ~CentralMoments.from_stat
-      ~CentralMoments.from_stats
       ~CentralMoments.from_vals
       ~CentralMoments.mean
       ~CentralMoments.moveaxis
@@ -37,20 +33,21 @@
       ~CentralMoments.pipe
       ~CentralMoments.push_data
       ~CentralMoments.push_datas
-      ~CentralMoments.push_stat
-      ~CentralMoments.push_stats
       ~CentralMoments.push_val
       ~CentralMoments.push_vals
+      ~CentralMoments.randsamp_freq
       ~CentralMoments.reduce
       ~CentralMoments.resample
       ~CentralMoments.resample_and_reduce
       ~CentralMoments.reshape
       ~CentralMoments.rmom
+      ~CentralMoments.set_values
       ~CentralMoments.std
+      ~CentralMoments.to_dataarray
       ~CentralMoments.to_numpy
       ~CentralMoments.to_raw
       ~CentralMoments.to_values
-      ~CentralMoments.to_xarray
+      ~CentralMoments.to_x
       ~CentralMoments.to_xcentralmoments
       ~CentralMoments.var
       ~CentralMoments.weight
@@ -73,15 +70,10 @@
       ~CentralMoments.mom
       ~CentralMoments.mom_ndim
       ~CentralMoments.mom_shape
-      ~CentralMoments.mom_shape_var
       ~CentralMoments.ndim
       ~CentralMoments.shape
-      ~CentralMoments.shape_flat
-      ~CentralMoments.shape_flat_var
-      ~CentralMoments.shape_var
       ~CentralMoments.val_ndim
       ~CentralMoments.val_shape
-      ~CentralMoments.val_shape_flat
       ~CentralMoments.values
    
    

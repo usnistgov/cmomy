@@ -1,6 +1,6 @@
 ﻿
 
-.. automodule:: cmomy.convert
+.. automodule:: cmomy.compile
    :autosummary:
    :show-inheritance:
    :inherited-members:

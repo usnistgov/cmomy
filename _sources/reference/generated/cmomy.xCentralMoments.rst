@@ -21,15 +21,14 @@
    
       ~xCentralMoments.assign_attrs
       ~xCentralMoments.assign_coords
+      ~xCentralMoments.astype
       ~xCentralMoments.block
       ~xCentralMoments.cmom
       ~xCentralMoments.copy
+      ~xCentralMoments.drop_vars
       ~xCentralMoments.fill
       ~xCentralMoments.from_centralmoments
-      ~xCentralMoments.from_data
-      ~xCentralMoments.from_datas
       ~xCentralMoments.from_raw
-      ~xCentralMoments.from_raws
       ~xCentralMoments.from_resample_vals
       ~xCentralMoments.from_vals
       ~xCentralMoments.isel
@@ -40,14 +39,19 @@
       ~xCentralMoments.push_datas
       ~xCentralMoments.push_val
       ~xCentralMoments.push_vals
+      ~xCentralMoments.randsamp_freq
       ~xCentralMoments.reduce
       ~xCentralMoments.rename
-      ~xCentralMoments.resample
       ~xCentralMoments.resample_and_reduce
+      ~xCentralMoments.reset_index
       ~xCentralMoments.rmom
       ~xCentralMoments.sel
+      ~xCentralMoments.set_index
+      ~xCentralMoments.set_values
       ~xCentralMoments.stack
       ~xCentralMoments.std
+      ~xCentralMoments.swap_dims
+      ~xCentralMoments.to_c
       ~xCentralMoments.to_centralmoments
       ~xCentralMoments.to_dataarray
       ~xCentralMoments.to_numpy
@@ -72,7 +76,6 @@
    .. autosummary::
    
       ~xCentralMoments.attrs
-      ~xCentralMoments.centralmoments_view
       ~xCentralMoments.coords
       ~xCentralMoments.data
       ~xCentralMoments.dims
@@ -82,18 +85,13 @@
       ~xCentralMoments.mom_dims
       ~xCentralMoments.mom_ndim
       ~xCentralMoments.mom_shape
-      ~xCentralMoments.mom_shape_var
       ~xCentralMoments.name
       ~xCentralMoments.ndim
       ~xCentralMoments.shape
-      ~xCentralMoments.shape_flat
-      ~xCentralMoments.shape_flat_var
-      ~xCentralMoments.shape_var
       ~xCentralMoments.sizes
       ~xCentralMoments.val_dims
       ~xCentralMoments.val_ndim
       ~xCentralMoments.val_shape
-      ~xCentralMoments.val_shape_flat
       ~xCentralMoments.values
    
    
