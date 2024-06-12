@@ -6,3 +6,11 @@
    cmomy.resample
    cmomy.random
    cmomy.compile
+
+
+
+.. autosummary::
+   :toctree: generated/
+   :template: autodocsumm/module.rst
+
+   cmomy.typing

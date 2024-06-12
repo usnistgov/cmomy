@@ -1,3 +1,7 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pyright: reportCallIssue=false, reportArgumentType=false
+
+
 import itertools
 from unittest.mock import call, patch
 
@@ -87,7 +91,7 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
     covs = ["", "_cov"] if cov else [""]
     parallels = ["", "_parallel"] if parallel else [""]
 
-    modules = itertools.chain(
+    modules = itertools.chain(  # type: ignore[assignment]
         f"{m}{c}{p}" for m in modules for c in covs for p in parallels
     )
 

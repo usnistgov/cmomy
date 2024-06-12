@@ -9,9 +9,7 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy import resample
-from cmomy.central_dataarray import xCentralMoments
-from cmomy.central_numpy import CentralMoments
+from cmomy import CentralMoments, resample, xCentralMoments
 
 # import cmomy
 # from cmomy import xcentral

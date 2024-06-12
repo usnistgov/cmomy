@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from cmomy.central_dataarray import xCentralMoments
-from cmomy.central_numpy import CentralMoments
+from cmomy import CentralMoments, xCentralMoments
 from cmomy.resample import random_freq, resample_vals
 
 if TYPE_CHECKING:

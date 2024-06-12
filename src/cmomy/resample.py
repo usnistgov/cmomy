@@ -14,7 +14,8 @@ import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
-from cmomy.utils import (
+from ._utils import (
+    MISSING,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -26,10 +27,8 @@ from cmomy.utils import (
     xprepare_data_for_reduction,
     xprepare_values_for_reduction,
 )
-
 from .docstrings import docfiller
 from .random import validate_rng
-from .utils import MISSING
 
 if TYPE_CHECKING:
     from typing import Any, Hashable, Literal, Sequence

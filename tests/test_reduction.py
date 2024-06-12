@@ -65,7 +65,7 @@ def test__validate_index() -> None:
         _ = cmomy.reduction._validate_index(4, index, group_start, [10])
 
 
-def test_indexed(rng) -> None:
+def test_indexed(rng: np.random.Generator) -> None:
     data = rng.random((10, 2, 3))
 
     by = [0] * 5 + [1] * 5

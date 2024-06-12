@@ -25,7 +25,7 @@ def _dummy_docstrings() -> None:
     shape : tuple
         Total shape.  ``shape = val_shape + tuple(m+1 for m in mom)``
     dtype : dtype
-        Optional ``dtype`` for output data.
+        Optional :class:`~numpy.dtype` for output data.
     zeros_kws : mapping
         Optional parameters to :func:`numpy.zeros`
     axis : int

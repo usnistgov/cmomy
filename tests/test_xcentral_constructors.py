@@ -9,11 +9,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy import resample
-from cmomy.central_dataarray import xCentralMoments
-
-# import cmomy
-from cmomy.central_numpy import CentralMoments
+from cmomy import CentralMoments, resample, xCentralMoments
 
 if TYPE_CHECKING:
     from typing import Callable

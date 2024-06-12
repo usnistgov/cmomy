@@ -10,8 +10,7 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 import xarray as xr
 
-from cmomy.utils import select_dtype, validate_mom_ndim
-
+from ._utils import select_dtype, validate_mom_ndim
 from .docstrings import docfiller
 
 if TYPE_CHECKING:

@@ -9,9 +9,9 @@ if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
     # submodules
     from . import random, reduction, resample  # noqa: TCH004
+    from ._central_dataarray import xCentralMoments  # noqa: TCH004
+    from ._central_numpy import CentralMoments  # noqa: TCH004
     from ._convert import convert  # noqa: TCH004
-    from .central_dataarray import xCentralMoments  # noqa: TCH004
-    from .central_numpy import CentralMoments  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (
         indices_to_freq,  # noqa: TCH004
@@ -33,8 +33,8 @@ else:
             "resample",
         ],
         submod_attrs={
-            "central_numpy": ["CentralMoments"],
-            "central_dataarray": ["xCentralMoments"],
+            "_central_numpy": ["CentralMoments"],
+            "_central_dataarray": ["xCentralMoments"],
             "_convert": ["convert"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [

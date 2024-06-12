@@ -10,9 +10,8 @@ import numpy as np
 import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import xarray as xr
 
-from .central_abc import CentralMomentsABC
-from .docstrings import docfiller_xcentral as docfiller
-from .utils import (
+from ._central_abc import CentralMomentsABC
+from ._utils import (
     MISSING,
     # replace_coords_from_isel,
     select_axis_dim,
@@ -20,6 +19,7 @@ from .utils import (
     xprepare_data_for_reduction,
     xprepare_values_for_reduction,
 )
+from .docstrings import docfiller_xcentral as docfiller
 
 if TYPE_CHECKING:
     from typing import (
@@ -40,8 +40,8 @@ if TYPE_CHECKING:
 
     from cmomy.typing import KeepAttrs
 
+    from ._central_numpy import CentralMoments
     from ._typing_compat import Self
-    from .central_numpy import CentralMoments
     from .typing import (
         ArrayOrder,
         ArrayOrderCF,
@@ -835,7 +835,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     # ** To/from CentralMoments
     def to_centralmoments(self, copy: bool = False) -> CentralMoments[FloatT]:
         """Create a CentralMoments object from xCentralMoments."""
-        from .central_numpy import CentralMoments
+        from ._central_numpy import CentralMoments
 
         return CentralMoments(
             data=self._data.copy() if copy else self._data,
@@ -1124,6 +1124,12 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         check: bool = False,
         rng: np.random.Generator | None = None,
     ) -> NDArrayInt:
+        """
+        Parameters
+        ----------
+        dim : str
+            Dimension that will be resampled.
+        """
         axis, dim = select_axis_dim(
             dims=self.dims,
             axis=axis,
@@ -1139,7 +1145,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             rng=rng,
         )
 
-    @docfiller.decorate
+    @docfiller_inherit_abc()
     def resample_and_reduce(
         self,
         *,
@@ -1152,25 +1158,10 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         keep_attrs: KeepAttrs = None,
     ) -> Self:
         """
-
         Parameters
         ----------
-        {freq}
-        {dim}
-        {axis}
         {rep_dim}
-        {parallel}
-        {order}
         {keep_attrs}
-
-        Returns
-        -------
-        output : {klass}
-
-        See Also
-        --------
-        .resample.resample_data
-        .resample.randsamp_freq
 
         Examples
         --------
@@ -1557,7 +1548,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     ) -> Self: ...
 
     @classmethod
-    @docfiller_inherit_abc()
+    @docfiller.decorate
     def zeros(
         cls,
         *,
@@ -1574,16 +1565,27 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         template: xr.DataArray | None = None,
     ) -> xCentralMoments[Any] | Self:
         """
+        Create a new base object.
+
         Parameters
         ----------
+        {mom}
+        {val_shape}
+        {dtype}
+        {order}
         {xr_params}
-        {mom_dims}
+
+        Returns
+        -------
+        output : {klass}
+            New instance with zero values.
+
 
         See Also
         --------
-        CentralMoments.to_xcentralmoments
+        numpy.zeros
         """
-        from .central_numpy import CentralMoments
+        from ._central_numpy import CentralMoments
 
         return CentralMoments.zeros(
             mom=mom,
@@ -1634,7 +1636,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     ) -> Self: ...
 
     @classmethod
-    @docfiller_inherit_abc()
+    @docfiller.decorate
     def from_vals(
         cls,
         x: xr.DataArray,
@@ -1650,19 +1652,34 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         keep_attrs: KeepAttrs = None,
     ) -> Self | xCentralMoments[Any]:
         """
+        Create from observations/values.
+
         Parameters
         ----------
-        x : array, tuple of array, DataArray, or tuple of DataArray
-            For moments, `x=x0`.  For comoments, `x=(x0, x1)`.
-            If pass DataArray, inherit attributes from `x0`.  If pass
-            ndarray, use `dims`, `attrs`, etc to wrap final result
-        {dim}
+        x : DataArray
+            Values to reduce.
+        *y : array-like or DataArray
+            Additional values (needed if ``len(mom)==2``).
+        weight : scalar or array-like or DataArray, optional
+            Optional weight.  If scalar or array, attempt to
+            broadcast to `x0.shape`
+        {axis_and_dim}
+        {mom}
+        {order}
+        {parallel}
+        {dtype}
         {mom_dims}
         {keep_attrs}
 
+        Returns
+        -------
+        output: {klass}
+
         See Also
         --------
+        push_vals
         CentralMoments.from_vals
+        CentralMoments.to_x
         """
         from .reduction import reduce_vals
 
@@ -1723,7 +1740,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     ) -> Self: ...
 
     @classmethod
-    @docfiller_inherit_abc()
+    @docfiller.decorate
     def from_resample_vals(
         cls,
         x: xr.DataArray,
@@ -1740,6 +1757,40 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         rep_dim: str = "rep",
         keep_attrs: bool = True,
     ) -> xCentralMoments[Any] | Self:
+        """
+        Create from resample observations/values.
+
+        This effectively resamples `x`.
+
+        Parameters
+        ----------
+        x : DataArray
+            For moments, pass single array-like objects `x=x0`.
+            For comoments, pass tuple of array-like objects `x=(x0, x1)`.
+        *y : array-like or DataArray
+            Additional values (needed if ``len(mom) > 1``).
+        {mom}
+        {freq}
+        {weight}
+        {axis_and_dim}
+        {full_output}
+        {order}
+        {parallel}
+        {dtype}
+
+        Returns
+        -------
+        out : {klass}
+            Instance of calling class
+
+
+        See Also
+        --------
+        cmomy.resample.resample_vals
+        cmomy.resample.randsamp_freq
+        cmomy.resample.freq_to_indices
+        cmomy.resample.indices_to_freq
+        """
         """
         Parameters
         ----------
@@ -1779,3 +1830,13 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             ),
             mom_ndim=mom_ndim,
         )
+
+    @classmethod
+    @docfiller_abc()
+    def from_raw(
+        cls,
+        raw: xr.DataArray,
+        *,
+        mom_ndim: Mom_NDim,
+    ) -> Self:
+        return super().from_raw(raw=raw, mom_ndim=mom_ndim)

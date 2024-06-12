@@ -80,7 +80,7 @@ def load_numba_modules(
     """
     from pathlib import Path
 
-    from .utils import supports_parallel
+    from ._utils import supports_parallel
 
     def _set_default(x: bool | None) -> bool:
         return include_all if x is None else x

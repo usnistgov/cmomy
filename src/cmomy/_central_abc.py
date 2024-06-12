@@ -9,8 +9,7 @@ import numpy as np
 from module_utilities import cached
 
 from ._lib.factory import factory_pusher
-from .docstrings import docfiller
-from .utils import (
+from ._utils import (
     normalize_axis_index,
     parallel_heuristic,
     prepare_data_for_reduction,
@@ -20,6 +19,7 @@ from .utils import (
     validate_floating_dtype,
     validate_mom_ndim,
 )
+from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -54,11 +54,12 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     Parameters
     ----------
     data : {t_array}
-        Moment collection array
+        Central moments array.
     {mom_ndim}
+    {copy}
+    {order}
+    {dtype}
     fastpath : bool
-        For internal use.
-    data_flat : ndarray
         For internal use.
 
     Notes
@@ -779,7 +780,29 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         check: bool = False,
         rng: np.random.Generator | None = None,
     ) -> NDArrayInt:
-        """Interface to :func:`.resample.randsamp_freq`"""
+        """
+        Interface to :func:`.resample.randsamp_freq`
+
+
+        Parameters
+        ----------
+        axis : int
+            Axis that will be resampled.  This is used to
+            calculate ``ndat``.
+        {nrep}
+        {nsamp}
+        {freq}
+        {indices}
+        check : bool, default=False
+            If ``True``, perform sanity checks.
+        {rng}
+
+        Returns
+        -------
+        freq : ndarray
+            Frequency array
+
+        """
         from .resample import randsamp_freq
 
         axis = self._wrap_axis(axis)
@@ -897,7 +920,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             Extra positional arguments to `func_or_method`
         _reorder : bool, default=True
             If True, reorder the data such that ``mom_dims`` are last.  Only
-            applicable for ``DataArray`` functions.
+            applicable for ``DataArray`` like underlying data.
         _copy : bool, default=False
             If True, copy the resulting data.  Otherwise, try to use a view.
         _order : str, optional
@@ -915,7 +938,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         Notes
         -----
-        Use leading underscore for `_order`, `_copy`, etc to avoid name possible name
+        Use leading underscore for `_order`, `_copy`, etc to avoid possible name
         clashes with ``func_or_method``.
 
 
@@ -925,12 +948,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         else:
             values = func_or_method(self.to_values(), *args, **kwargs)
 
-        if _reorder:
-            if hasattr(self, "mom_dims"):
-                values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues, reportAttributeAccessIssue]
-            else:
-                msg = "to specify `_reorder`, must have attribute `mom_dims`"
-                raise AttributeError(msg)
+        if _reorder and hasattr(self, "mom_dims"):
+            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues, reportAttributeAccessIssue]
+            # else:
+            #     msg = "to specify `_reorder`, must have attribute `mom_dims`"
+            #     raise AttributeError(msg)
 
         return self.new_like(
             data=values,
@@ -1024,6 +1046,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         {mom}
         {val_shape}
         {dtype}
+        {order}
 
         Returns
         -------
@@ -1048,6 +1071,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         weight: ArrayLike | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
+        dtype: DTypeLike = None,
         # **kwargs: Any,
     ) -> Self:
         """
@@ -1066,6 +1090,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         {mom}
         {order}
         {parallel}
+        {dtype}
 
         Returns
         -------
@@ -1089,6 +1114,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         weight: ArrayLike | None = None,
         order: ArrayOrder = None,
         parallel: bool | None = None,
+        dtype: DTypeLike = None,
     ) -> Self:
         """
         Create from resample observations/values.
@@ -1104,23 +1130,17 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             Additional values (needed if ``len(mom) > 1``).
         {mom}
         {freq}
-        weight : scalar or array-like, optional
-            Optional weight.  If scalar or array, attempt to
-            broadcast to `x0.shape`
+        {weight}
         {axis_and_dim}
         {full_output}
         {order}
         {parallel}
-        {resample_kws}
-        **kwargs
-            Extra arguments to CentralMoments.from_data
+        {dtype}
 
         Returns
         -------
         out : {klass}
             Instance of calling class
-        freq : ndarray, optional
-            If `full_output` is True, also return `freq` array
 
 
         See Also
@@ -1148,7 +1168,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         Parameters
         ----------
-        raw : ndarray
+        raw : {t_array}
             Raw moment array.
         {mom_ndim}
 
@@ -1160,7 +1180,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         --------
         to_raw
         rmom
-        .convert
+        cmomy.convert
 
         Notes
         -----

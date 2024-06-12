@@ -5,8 +5,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy.central_dataarray import xCentralMoments
-from cmomy.central_numpy import CentralMoments
+from cmomy import CentralMoments, xCentralMoments
 
 # * Dtypes
 dtype_mark = pytest.mark.parametrize(

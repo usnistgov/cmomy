@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy import utils
+from cmomy import _utils as utils
 
 
 # * Order validation

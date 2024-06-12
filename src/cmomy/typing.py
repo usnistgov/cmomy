@@ -36,9 +36,7 @@ if TYPE_CHECKING:
     from ._typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
     )
-
-    # from .central_abc import CentralMomentsABC
-    from .utils import _Missing  # pyright: ignore[reportPrivateUsage]
+    from ._utils import _Missing  # pyright: ignore[reportPrivateUsage]
 
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]
@@ -47,9 +45,6 @@ if TYPE_CHECKING:
 # Axis/Dim reduction type
 AxisReduce = Union[int, None]
 DimsReduce = Union[Hashable, None]
-
-# Central moments type
-# T_CentralMoments = TypeVar("T_CentralMoments", bound="CentralMomentsABC[Any, Any]")
 
 # * Numpy Arrays
 # ** Aliases
@@ -66,6 +61,8 @@ FloatT = TypeVar(  # type: ignore[misc]
     np.float64,
     default=Any,  # pyright: ignore[reportGeneralTypeIssues]
 )
+"""TypeVar of floating point precision (np.float32, np.float64, default=Any)"""
+
 FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
 DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 ScalarT = TypeVar("ScalarT", bound=np.generic)
@@ -127,6 +124,8 @@ ArrayT = TypeVar(  # type: ignore[misc]
     xr.DataArray,
     default=NDArray[np.float64],
 )
+"""TypeVar of array type."""
+
 # * Dummy function
 FuncType = Callable[..., Any]
 F = TypeVar("F", bound=FuncType)

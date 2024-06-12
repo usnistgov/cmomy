@@ -7,8 +7,7 @@ from typing import Any
 import numpy as np
 import pytest
 
-from cmomy import resample
-from cmomy.central_numpy import CentralMoments
+from cmomy import CentralMoments, resample
 from cmomy.reduction import (
     resample_data_indexed,
 )

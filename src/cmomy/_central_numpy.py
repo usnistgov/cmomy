@@ -14,19 +14,21 @@ import xarray as xr
 # pandas needed for autdoc typehints
 from numpy.typing import NDArray
 
-from cmomy.utils import validate_axis, validate_mom_and_mom_ndim
-
-from .central_abc import CentralMomentsABC
+from ._central_abc import CentralMomentsABC
+from ._utils import (
+    arrayorder_to_arrayorder_cf,
+    validate_axis,
+    validate_mom_and_mom_ndim,
+)
 from .docstrings import docfiller_central as docfiller
-from .utils import arrayorder_to_arrayorder_cf
 
 if TYPE_CHECKING:
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike
 
+    from ._central_dataarray import xCentralMoments
     from ._typing_compat import Self
-    from .central_dataarray import xCentralMoments
     from .typing import (
         ArrayLikeArg,
         ArrayOrder,
@@ -116,7 +118,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         fastpath: bool = False,
     ) -> None:
         if fastpath:
-            self.set_values(data)
+            self.set_values(data)  # type: ignore[arg-type]
             self._cache = {}
             self._mom_ndim = mom_ndim
         else:
@@ -436,7 +438,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 [10.    ,  0.404 ,  0.1185]]])
 
         """
-        from .central_dataarray import xCentralMoments
+        from ._central_dataarray import xCentralMoments
 
         data = self.to_dataarray(
             dims=dims,
@@ -1026,7 +1028,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
     ) -> Self: ...
 
     @classmethod
-    @docfiller_inherit_abc()
+    @docfiller_abc()
     def from_vals(
         cls,
         x: ArrayLike,
@@ -1111,7 +1113,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
     ) -> Self: ...
 
     @classmethod
-    @docfiller_inherit_abc()
+    @docfiller_abc()
     def from_resample_vals(
         cls,
         x: ArrayLike,
@@ -1171,7 +1173,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         return cls(data=data, mom_ndim=mom_ndim)
 
     @classmethod
-    @docfiller_inherit_abc()
+    @docfiller_abc()
     def from_raw(
         cls,
         raw: NDArray[FloatT],

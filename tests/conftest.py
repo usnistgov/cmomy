@@ -11,11 +11,7 @@ from module_utilities import cached
 import cmomy.random
 import cmomy.reduction
 import cmomy.resample
-from cmomy.central_dataarray import xCentralMoments
-
-# import cmomy
-# from cmomy import central, resample, xcentral
-from cmomy.central_numpy import CentralMoments
+from cmomy import CentralMoments, xCentralMoments
 
 from ._simple_cmom import get_cmom, get_comom
 

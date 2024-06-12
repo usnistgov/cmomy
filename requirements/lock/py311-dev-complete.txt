@@ -46,7 +46,7 @@ nodeenv==1.9.1            # via pre-commit
 nox==2024.4.15
 numba==0.59.1
 numpy==1.26.4             # via numba, pandas, pandas-stubs, xarray
-packaging==24.0           # via ipykernel, lazy-loader, nox, pipx, pytest, pytest-sugar, xarray
+packaging==24.1           # via ipykernel, lazy-loader, nox, pipx, pytest, pytest-sugar, xarray
 pandas==2.2.2             # via xarray
 pandas-stubs==2.2.2.240603
 parso==0.8.4              # via jedi
@@ -55,7 +55,7 @@ pipx==1.6.0
 platformdirs==4.2.2       # via jupyter-core, pipx, virtualenv
 pluggy==1.5.0             # via pytest
 pre-commit==3.7.1
-prompt-toolkit==3.0.46    # via ipython
+prompt-toolkit==3.0.47    # via ipython
 psutil==5.9.8             # via ipykernel
 ptyprocess==0.7.0         # via pexpect
 pure-eval==0.2.2          # via stack-data
@@ -76,10 +76,10 @@ scriv==1.5.1
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar
-tornado==6.4              # via ipykernel, jupyter-client
+tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 types-pytz==2024.1.0.20240417  # via pandas-stubs
-typing-extensions==4.12.1  # via ipython, module-utilities
+typing-extensions==4.12.2  # via ipython, module-utilities
 tzdata==2024.1            # via pandas
 urllib3==2.2.1            # via requests
 userpath==1.9.2           # via pipx

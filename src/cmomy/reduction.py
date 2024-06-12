@@ -17,8 +17,7 @@ from ._lib.factory import (
     factory_reduce_data_indexed,
     factory_reduce_vals,
 )
-from .docstrings import docfiller
-from .utils import (
+from ._utils import (
     MISSING,
     parallel_heuristic,
     prepare_data_for_reduction,
@@ -32,6 +31,7 @@ from .utils import (
     xprepare_data_for_reduction,
     xprepare_values_for_reduction,
 )
+from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from typing import Any

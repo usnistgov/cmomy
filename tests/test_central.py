@@ -8,7 +8,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy.central_numpy import CentralMoments
+from cmomy import CentralMoments
 
 if TYPE_CHECKING:
     from cmomy.typing import Mom_NDim
@@ -236,8 +236,7 @@ def test_pipe(rng) -> None:
     for cc in [c1, c2]:
         np.testing.assert_allclose(cc.data, c.data + 1)
 
-    with pytest.raises(AttributeError):
-        c.pipe(lambda x: x + 1, _reorder=True)
+    np.testing.assert_allclose(cc.data, c.pipe(lambda x: x + 1))
 
 
 def test_raise_if_scalar() -> None:
