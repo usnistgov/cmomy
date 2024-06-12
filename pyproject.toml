@@ -314,7 +314,14 @@ toplevel = [
 src_dir = [
     "src",
 ]
-# package_omit = [".*", "*.pyc", "*.pyo", "*.nbc", "__pycache__/*", "*.egg-info"]
+package_omit = [
+    ".*",
+    "*.pyc",
+    "*.pyo",
+    "*.nbc",
+    "__pycache__/*",
+    "*.egg-info",
+]
 
 # * Testing --------------------------------------------------------------------
 
