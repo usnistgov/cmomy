@@ -15,7 +15,7 @@ module-utilities>=0.6
 nbclient>=0.10.0
 nbval
 nox>=2024.4.15
-numba>=0.50
+numba>=0.58
 numpy>=1.21
 packaging
 pandas-stubs
@@ -27,5 +27,5 @@ pytest-cov
 pytest-sugar
 pytest-xdist
 scriv
-typing-extensions;python_version<"3.12"
+typing-extensions;python_version<"3.13"
 xarray>=0.16

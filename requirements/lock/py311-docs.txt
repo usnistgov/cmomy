@@ -35,7 +35,7 @@ jupyter-cache==1.0.0      # via myst-nb
 jupyter-client==8.6.2     # via ipykernel, nbclient
 jupyter-core==5.7.2       # via ipykernel, jupyter-client, nbclient, nbformat
 lazy-loader==0.4          # via -r requirements/docs.txt
-llvmlite==0.42.0          # via numba
+llvmlite==0.43.0          # via numba
 markdown-it-py==3.0.0     # via mdit-py-plugins, myst-parser
 markupsafe==2.1.5         # via jinja2
 matplotlib-inline==0.1.7  # via ipykernel, ipython
@@ -47,7 +47,7 @@ myst-parser==3.0.1        # via myst-nb
 nbclient==0.10.0          # via jupyter-cache, myst-nb
 nbformat==5.10.4          # via jupyter-cache, myst-nb, nbclient
 nest-asyncio==1.6.0       # via ipykernel
-numba==0.59.1             # via -r requirements/docs.txt
+numba==0.60.0             # via -r requirements/docs.txt
 numpy==1.26.4             # via numba, pandas, xarray, -r requirements/docs.txt
 packaging==24.1           # via ipykernel, lazy-loader, pydata-sphinx-theme, sphinx, xarray
 pandas==2.2.2             # via xarray
@@ -97,5 +97,5 @@ uvicorn==0.30.1           # via sphinx-autobuild
 watchfiles==0.22.0        # via sphinx-autobuild
 wcwidth==0.2.13           # via prompt-toolkit
 websockets==12.0          # via sphinx-autobuild
-xarray==2024.5.0          # via -r requirements/docs.txt
+xarray==2024.6.0          # via -r requirements/docs.txt
 zipp==3.19.2              # via importlib-metadata

@@ -11,11 +11,11 @@ docstring-inheritance
 lazy-loader
 module-utilities>=0.6
 nbval
-numba>=0.50
+numba>=0.58
 numpy>=1.21
 pytest
 pytest-cov
 pytest-sugar
 pytest-xdist
-typing-extensions;python_version<"3.12"
+typing-extensions;python_version<"3.13"
 xarray>=0.16

@@ -32,7 +32,7 @@ jsonschema-specifications==2023.12.1  # via jsonschema
 jupyter-client==8.6.2     # via ipykernel, nbclient, nbval
 jupyter-core==5.7.2       # via ipykernel, jupyter-client, nbclient, nbformat
 lazy-loader==0.4          # via -r requirements/dev-complete.txt
-llvmlite==0.42.0          # via numba
+llvmlite==0.43.0          # via numba
 markdown-it-py==3.0.0     # via scriv
 markupsafe==2.1.5         # via jinja2
 matplotlib-inline==0.1.7  # via ipykernel, ipython
@@ -44,7 +44,7 @@ nbval==0.11.0             # via -r requirements/dev-complete.txt
 nest-asyncio==1.6.0       # via ipykernel
 nodeenv==1.9.1            # via pre-commit
 nox==2024.4.15            # via -r requirements/dev-complete.txt
-numba==0.59.1             # via -r requirements/dev-complete.txt
+numba==0.60.0             # via -r requirements/dev-complete.txt
 numpy==1.26.4             # via numba, pandas, pandas-stubs, xarray, -r requirements/dev-complete.txt
 packaging==24.1           # via ipykernel, lazy-loader, nox, pipx, pytest, pytest-sugar, xarray, -r requirements/dev-complete.txt
 pandas==2.2.2             # via xarray
@@ -85,4 +85,4 @@ urllib3==2.2.1            # via requests
 userpath==1.9.2           # via pipx
 virtualenv==20.26.2       # via nox, pre-commit
 wcwidth==0.2.13           # via prompt-toolkit
-xarray==2024.5.0          # via -r requirements/dev-complete.txt
+xarray==2024.6.0          # via -r requirements/dev-complete.txt
