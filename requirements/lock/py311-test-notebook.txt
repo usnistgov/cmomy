@@ -7,7 +7,7 @@ comm==0.2.2               # via ipykernel
 coverage==7.5.3           # via nbval, pytest-cov
 debugpy==1.8.1            # via ipykernel
 decorator==5.1.1          # via ipython
-docstring-inheritance==2.2.0
+docstring-inheritance==2.2.0  # via -r requirements/test-notebook.txt
 execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
 fastjsonschema==2.19.1    # via nbformat
@@ -19,15 +19,15 @@ jsonschema==4.22.0        # via nbformat
 jsonschema-specifications==2023.12.1  # via jsonschema
 jupyter-client==8.6.2     # via ipykernel, nbval
 jupyter-core==5.7.2       # via ipykernel, jupyter-client, nbformat
-lazy-loader==0.4
-llvmlite==0.42.0          # via numba
+lazy-loader==0.4          # via -r requirements/test-notebook.txt
+llvmlite==0.43.0          # via numba
 matplotlib-inline==0.1.7  # via ipykernel, ipython
-module-utilities==0.9.0
+module-utilities==0.9.0   # via -r requirements/test-notebook.txt
 nbformat==5.10.4          # via nbval
-nbval==0.11.0
+nbval==0.11.0             # via -r requirements/test-notebook.txt
 nest-asyncio==1.6.0       # via ipykernel
-numba==0.59.1
-numpy==1.26.4             # via numba, pandas, xarray
+numba==0.60.0             # via -r requirements/test-notebook.txt
+numpy==1.26.4             # via numba, pandas, xarray, -r requirements/test-notebook.txt
 packaging==24.1           # via ipykernel, lazy-loader, pytest, pytest-sugar, xarray
 pandas==2.2.2             # via xarray
 parso==0.8.4              # via jedi
@@ -39,10 +39,10 @@ psutil==5.9.8             # via ipykernel
 ptyprocess==0.7.0         # via pexpect
 pure-eval==0.2.2          # via stack-data
 pygments==2.18.0          # via ipython
-pytest==8.2.2             # via nbval, pytest-cov, pytest-sugar, pytest-xdist
-pytest-cov==5.0.0
-pytest-sugar==1.0.0
-pytest-xdist==3.6.1
+pytest==8.2.2             # via nbval, pytest-cov, pytest-sugar, pytest-xdist, -r requirements/test-notebook.txt
+pytest-cov==5.0.0         # via -r requirements/test-notebook.txt
+pytest-sugar==1.0.0       # via -r requirements/test-notebook.txt
+pytest-xdist==3.6.1       # via -r requirements/test-notebook.txt
 python-dateutil==2.9.0.post0  # via jupyter-client, pandas
 pytz==2024.1              # via pandas
 pyzmq==26.0.3             # via ipykernel, jupyter-client
@@ -53,7 +53,7 @@ stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar
 tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbformat
-typing-extensions==4.12.2  # via ipython, module-utilities
+typing-extensions==4.12.2  # via ipython, module-utilities, -r requirements/test-notebook.txt
 tzdata==2024.1            # via pandas
 wcwidth==0.2.13           # via prompt-toolkit
-xarray==2024.5.0
+xarray==2024.6.0          # via -r requirements/test-notebook.txt

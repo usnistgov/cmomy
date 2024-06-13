@@ -19,7 +19,7 @@ license-files = { paths = [
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.8,<3.13"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
@@ -31,6 +31,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering",
 ]
 dynamic = [
@@ -41,9 +42,9 @@ dependencies = [
     "docstring-inheritance",
     "lazy-loader",
     "module-utilities>=0.6",
-    "numba>=0.50",
+    "numba>=0.58",
     "numpy>=1.21",
-    "typing-extensions; python_version<'3.12'",
+    "typing-extensions; python_version<'3.13'",
     "xarray>=0.16",
 ]
 optional-dependencies.dev = [
@@ -56,7 +57,7 @@ optional-dependencies.dev-extras = [
     "ipykernel",
     "ipython",
     "nbclient>=0.10.0",
-    "nox>=2024.3.2",
+    "nox>=2024.4.15",
     "pytest-accept",
 ]
 optional-dependencies.docs = [
@@ -71,7 +72,7 @@ optional-dependencies.docs = [
     "sphinxcontrib-spelling",
 ]
 optional-dependencies.mypy = [
-    "mypy>=1.9.0",
+    "mypy>=1.10.0",
 ]
 optional-dependencies.nbval = [
     "nbval",
@@ -86,7 +87,7 @@ optional-dependencies.pipxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.358",
+    "pyright>=1.1.367",
     "twine>=5.0.0",
 ]
 optional-dependencies.test = [
@@ -314,7 +315,14 @@ toplevel = [
 src_dir = [
     "src",
 ]
-# package_omit = [".*", "*.pyc", "*.pyo", "*.nbc", "__pycache__/*", "*.egg-info"]
+package_omit = [
+    ".*",
+    "*.pyc",
+    "*.pyo",
+    "*.nbc",
+    "__pycache__/*",
+    "*.egg-info",
+]
 
 # * Testing --------------------------------------------------------------------
 
@@ -541,6 +549,7 @@ python = [
     "3.9",
     "3.10",
     "3.11",
+    "3.12",
 ]
 
 [tool.pip-tools]

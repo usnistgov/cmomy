@@ -18,6 +18,12 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.12.0 — 2024-06-13
+
+### Added
+
+- Now supports python3.12
+
 ## v0.11.0 — 2024-06-12
 
 ### Changed

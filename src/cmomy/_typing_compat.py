@@ -12,7 +12,7 @@ else:
     from typing import Self
 
 
-if sys.version_info < (3, 12):
+if sys.version_info < (3, 13):
     from typing_extensions import TypeVar
 else:  # pragma: no cover
     from typing import TypeVar

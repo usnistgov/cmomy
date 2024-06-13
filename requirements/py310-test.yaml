@@ -14,7 +14,7 @@ dependencies:
   - docstring-inheritance
   - lazy_loader
   - module-utilities>=0.6
-  - numba>=0.50
+  - numba>=0.58
   - numpy>=1.21
   - pytest
   - pytest-cov

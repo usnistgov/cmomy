@@ -87,7 +87,7 @@ CONFIG = load_nox_config()
 
 LOCK = True
 
-PYTHON_ALL_VERSIONS = ["3.8", "3.9", "3.10", "3.11"]
+PYTHON_ALL_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
 PYTHON_DEFAULT_VERSION = "3.11"
 
 
@@ -1037,7 +1037,8 @@ def build(session: nox.Session, opts: SessionParams) -> None:
             session.run(runner.python_full_path, "-m", "hatchling", "version")
 
         elif cmd == "build":
-            if Path(outdir := opts.build_outdir).exists():
+            outdir = opts.build_outdir
+            if Path(outdir).exists():
                 shutil.rmtree(outdir)
 
             args = f"{runner.python_full_path} -m build --outdir {outdir}".split()
