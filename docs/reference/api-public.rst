@@ -19,15 +19,6 @@ Central Moments wrapper classes
    xCentralMoments
 
 
-Convert between raw and central moments
----------------------------------------
-
-
-.. autosummary::
-
-    ~cmomy.convert
-
-
 
 Reduction routines available at top level (from :mod:`cmomy.reduction`)
 -----------------------------------------------------------------------
@@ -51,5 +42,12 @@ Resampling routines available at top level (from :mod:`cmomy.resample`)
    ~cmomy.resample.indices_to_freq
 
 
+Pre-loaded modules
+------------------
 
-.. autofunction:: cmomy.convert
+.. autosummary::
+
+   ~cmomy.random
+   ~cmomy.reduction
+   ~cmomy.resample
+   ~cmomy.convert

@@ -18,6 +18,12 @@ def _dummy_docstrings() -> None:
     mom : int or tuple of int
         Order or moments.  If integer or length one tuple, then moments are for
         a single variable.  If length 2 tuple, then comoments of two variables
+    mom_moments_to_comoments | mom : tuple of int
+        Moments for comoments array. Pass a negative value for one of the
+        moments to fill all available moments for that dimensions. For example,
+        if original array has moments `m` (i.e., ``values.shape=(..., m +
+        1)``), and pass in ``mom = (2, -1)``, then this will be transformed to
+        ``mom = (2, m - 2)``.
     mom_ndim : {1, 2}
         Value indicates if moments (``mom_ndim = 1``) or comoments (``mom_ndim=2``).
     val_shape : tuple
@@ -71,7 +77,8 @@ def _dummy_docstrings() -> None:
 
         Default to ``('dim_0', 'dim_1', ...)``
     mom_dims : hashable or tuple of hashable
-        Name of moment dimensions.  Defaults to ``('xmom', 'umom')``
+        Name of moment dimensions. Defaults to ``("mom_0",)`` for
+        ``mom_ndim==1`` and ``(mom_0, mom_1)`` for ``mom_ndim==2``
     attrs : mapping
         Attributes of output
     coords : mapping

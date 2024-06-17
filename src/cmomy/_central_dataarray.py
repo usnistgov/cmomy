@@ -372,6 +372,47 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
 
+    @docfiller_inherit_abc()
+    def moments_to_comoments(
+        self,
+        *,
+        mom: tuple[int, int],
+        mom_dims: MomDims | None = None,
+        keep_attrs: KeepAttrs = None,
+    ) -> Self:
+        """
+        Convert moments (mom_ndim=1) to comoments (mom_ndim=2).
+
+        Parameters
+        ----------
+        {mom_dims}
+        {keep_attrs}
+
+        See Also
+        --------
+        .convert.moments_to_comoments
+        """
+        self._raise_if_not_mom_ndim_1()
+
+        from . import convert
+
+        return type(self)(
+            convert.moments_to_comoments(
+                self.to_values(),
+                mom=mom,
+                dtype=self.dtype,
+                mom_dims=mom_dims,
+                keep_attrs=keep_attrs,
+            ),
+            mom_ndim=2,
+        )
+
+    @docfiller_inherit_abc()
+    def assign_weight(
+        self, weight: ArrayLike | xr.DataArray, copy: bool = True
+    ) -> Self:
+        return super().assign_weight(weight=weight, copy=copy)
+
     # ** Access to underlying statistics ------------------------------------------
     # TODO(wpk): add overload
     def _single_index_selector(

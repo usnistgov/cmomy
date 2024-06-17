@@ -171,7 +171,7 @@ def test_convert(
 ) -> None:
     from cmomy import convert
 
-    func = partial(convert, mom_ndim=1, to=to)
+    func = partial(convert.moments_type, mom_ndim=1, to=to)
 
     out = np.zeros_like(x_vals, dtype=out_dtype) if out_dtype is not None else None
     vals = x_vals.tolist() if dtype_in is None else x_vals.astype(dtype_in)

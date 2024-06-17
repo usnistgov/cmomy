@@ -5,6 +5,7 @@
    cmomy.reduction
    cmomy.resample
    cmomy.random
+   cmomy.convert
    cmomy.compile
 
 
