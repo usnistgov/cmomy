@@ -17,7 +17,7 @@ dependencies:
   - module-utilities>=0.6
   - myst-nb
   - numba>=0.58
-  - numpy>=1.21
+  - numpy<2.0
   - pyenchant
   - sphinx-autobuild
   - sphinx-autodoc-typehints

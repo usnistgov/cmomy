@@ -10,7 +10,7 @@ decorator==5.1.1          # via ipython
 docstring-inheritance==2.2.0  # via -r requirements/test-notebook.txt
 execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
-fastjsonschema==2.19.1    # via nbformat
+fastjsonschema==2.20.0    # via nbformat
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.4         # via nbval
 ipython==8.25.0           # via ipykernel
