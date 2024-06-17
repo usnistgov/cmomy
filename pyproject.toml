@@ -424,7 +424,7 @@ strict = [
     "src/cmomy/_central_abc.py",
     "src/cmomy/_central_dataarray.py",
     "src/cmomy/_central_numpy.py",
-    "src/cmomy/_convert.py",
+    "src/cmomy/convert.py",
     "src/cmomy/compile.py",
     "src/cmomy/docstrings.py",
     "src/cmomy/options.py",

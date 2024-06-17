@@ -287,21 +287,29 @@ def test_convert() -> None:
     out32 = np.zeros((4,), dtype=np.float32)
     out64 = np.zeros((4,), dtype=np.float64)
     if TYPE_CHECKING:
-        assert_type(convert(x32, mom_ndim=1), NDArray[np.float32])
-        assert_type(convert(x64, mom_ndim=1), NDArray[np.float64])
-
-        assert_type(convert(x32, mom_ndim=1, dtype=np.float64), NDArray[np.float64])
-        assert_type(convert(x64, mom_ndim=1, dtype=np.float32), NDArray[np.float32])
-
-        assert_type(convert(x32, mom_ndim=1, out=out64), NDArray[np.float64])
-        assert_type(convert(x64, mom_ndim=1, out=out32), NDArray[np.float32])
+        assert_type(convert.moments_type(x32, mom_ndim=1), NDArray[np.float32])
+        assert_type(convert.moments_type(x64, mom_ndim=1), NDArray[np.float64])
 
         assert_type(
-            convert(x32, mom_ndim=1, out=out64, dtype=np.float32),
+            convert.moments_type(x32, mom_ndim=1, dtype=np.float64), NDArray[np.float64]
+        )
+        assert_type(
+            convert.moments_type(x64, mom_ndim=1, dtype=np.float32), NDArray[np.float32]
+        )
+
+        assert_type(
+            convert.moments_type(x32, mom_ndim=1, out=out64), NDArray[np.float64]
+        )
+        assert_type(
+            convert.moments_type(x64, mom_ndim=1, out=out32), NDArray[np.float32]
+        )
+
+        assert_type(
+            convert.moments_type(x32, mom_ndim=1, out=out64, dtype=np.float32),
             NDArray[np.float64],
         )
         assert_type(
-            convert(x64, mom_ndim=1, out=out32, dtype=np.float64),
+            convert.moments_type(x64, mom_ndim=1, out=out32, dtype=np.float64),
             NDArray[np.float32],
         )
 
@@ -309,35 +317,197 @@ def test_convert() -> None:
         assert_type(xc, NDArray[Any])
 
         # Would like this to default to np.float64
-        assert_type(convert(xc, mom_ndim=1), NDArray[Any])
-        assert_type(convert(xc, mom_ndim=1, dtype=np.float32), NDArray[np.float32])
+        assert_type(convert.moments_type(xc, mom_ndim=1), NDArray[Any])
         assert_type(
-            convert([1, 2, 3], mom_ndim=1, dtype=np.float32), NDArray[np.float32]
+            convert.moments_type(xc, mom_ndim=1, dtype=np.float32), NDArray[np.float32]
         )
         assert_type(
-            convert([1, 2, 3], mom_ndim=1, dtype=np.float64), NDArray[np.float64]
+            convert.moments_type([1, 2, 3], mom_ndim=1, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            convert.moments_type([1, 2, 3], mom_ndim=1, dtype=np.float64),
+            NDArray[np.float64],
         )
 
         assert_type(
-            convert([1, 2, 3], mom_ndim=1, dtype="f8"),
+            convert.moments_type([1, 2, 3], mom_ndim=1, dtype="f8"),
             NDArray[Any],
         )
         assert_type(
-            convert(x32, mom_ndim=1, dtype="f8"),
+            convert.moments_type(x32, mom_ndim=1, dtype="f8"),
             NDArray[Any],
         )
         assert_type(
-            convert(xc, mom_ndim=1, dtype="f8"),
+            convert.moments_type(xc, mom_ndim=1, dtype="f8"),
             NDArray[Any],
         )
 
-        assert_type(convert([1.0, 2.0, 3.0], mom_ndim=1), NDArray[Any])
+        assert_type(convert.moments_type([1.0, 2.0, 3.0], mom_ndim=1), NDArray[Any])
 
-        # reveal_type(convert([1,2,3], mom_ndim=1))
-        # reveal_type(convert([1,2,3], mom_ndim=1, dtype=np.float32))
+        # reveal_type(convert.moments_type([1,2,3], mom_ndim=1))
+        # reveal_type(convert.moments_type([1,2,3], mom_ndim=1, dtype=np.float32))
 
         xx = xr.DataArray(x32)
-        assert_type(convert(xx, mom_ndim=1), xr.DataArray)
+        assert_type(convert.moments_type(xx, mom_ndim=1), xr.DataArray)
+
+
+def test_convert_moments_to_comoments() -> None:
+    x32 = np.array([1, 2, 3, 4], dtype=np.float32)
+    x64 = np.array([1, 2, 3, 4], dtype=np.float64)
+
+    if TYPE_CHECKING:
+        assert_type(convert.moments_to_comoments(x32, mom=(2, -1)), NDArray[np.float32])
+        assert_type(convert.moments_to_comoments(x64, mom=(2, -1)), NDArray[np.float64])
+
+        assert_type(
+            convert.moments_to_comoments(x32, mom=(2, -1), dtype=np.float64),
+            NDArray[np.float64],
+        )
+        assert_type(
+            convert.moments_to_comoments(x64, mom=(2, -1), dtype=np.float32),
+            NDArray[np.float32],
+        )
+
+        xc = np.array([1, 2, 3, 4])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(convert.moments_to_comoments(xc, mom=(2, -1)), NDArray[Any])
+        assert_type(
+            convert.moments_to_comoments(xc, mom=(2, -1), dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            convert.moments_to_comoments([1, 2, 3, 4], mom=(2, -1), dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            convert.moments_to_comoments([1, 2, 3, 4], mom=(2, -1), dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(
+            convert.moments_to_comoments([1, 2, 3, 4], mom=(2, -1), dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            convert.moments_to_comoments(x32, mom=(2, -1), dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            convert.moments_to_comoments(xc, mom=(2, -1), dtype="f8"),
+            NDArray[Any],
+        )
+
+        assert_type(
+            convert.moments_to_comoments([1.0, 2.0, 3.0], mom=(2, -1)), NDArray[Any]
+        )
+
+        # reveal_type(convert.moments_to_comoments([1,2,3], mom=(2, -1)))
+        # reveal_type(convert.moments_to_comoments([1,2,3], mom=(2, -1), dtype=np.float32))
+
+        xx = xr.DataArray(x32)
+        assert_type(convert.moments_to_comoments(xx, mom=(2, -1)), xr.DataArray)
+
+
+def test_moments_to_comoments() -> None:
+    if TYPE_CHECKING:
+        x32 = np.array([1, 2, 3, 4], dtype=np.float32)
+        x64 = np.array([1, 2, 3, 4], dtype=np.float64)
+        c32 = CentralMoments(x32, mom_ndim=1)
+        c64 = CentralMoments(x64, mom_ndim=1)
+        cAny = CentralMoments([1, 2, 3, 4], mom_ndim=1)
+
+        assert_type(c32.moments_to_comoments(mom=(2, -1)), CentralMoments[np.float32])
+        assert_type(c64.moments_to_comoments(mom=(2, -1)), CentralMoments[np.float64])
+        assert_type(cAny.moments_to_comoments(mom=(2, -1)), CentralMoments[Any])
+
+        assert_type(
+            c32.to_x().moments_to_comoments(mom=(2, -1)), xCentralMoments[np.float32]
+        )
+        assert_type(
+            c64.to_x().moments_to_comoments(mom=(2, -1)), xCentralMoments[np.float64]
+        )
+        assert_type(cAny.to_x().moments_to_comoments(mom=(2, -1)), xCentralMoments[Any])
+
+
+def test_update_weight() -> None:
+    if TYPE_CHECKING:
+        x32 = np.array([1, 2, 3, 4], dtype=np.float32)
+        x64 = np.array([1, 2, 3, 4], dtype=np.float64)
+        c32 = CentralMoments(x32, mom_ndim=1)
+        c64 = CentralMoments(x64, mom_ndim=1)
+        cAny = CentralMoments([1, 2, 3, 4], mom_ndim=1)
+
+        assert_type(c32.assign_weight(1.0), CentralMoments[np.float32])
+        assert_type(c64.assign_weight(1.0), CentralMoments[np.float64])
+        assert_type(cAny.assign_weight(1.0), CentralMoments[Any])
+
+        assert_type(c32.to_x().assign_weight(1.0), xCentralMoments[np.float32])
+        assert_type(c64.to_x().assign_weight(1.0), xCentralMoments[np.float64])
+        assert_type(cAny.to_x().assign_weight(1.0), xCentralMoments[Any])
+
+
+# if mypy properly supports partial will add this...
+# def test_convert_central_to_raw() -> None:
+#     x32 = np.array([1, 2, 3], dtype=np.float32)
+#     x64 = np.array([1, 2, 3], dtype=np.float64)
+
+#     out32 = np.zeros((4,), dtype=np.float32)
+#     out64 = np.zeros((4,), dtype=np.float64)
+#     if TYPE_CHECKING:
+#         assert_type(convert.raw_to_central(x32, mom_ndim=1), NDArray[np.float32])
+#         assert_type(convert.raw_to_central(x64, mom_ndim=1), NDArray[np.float64])
+
+#         assert_type(convert.raw_to_central(x32, mom_ndim=1, dtype=np.float64), NDArray[np.float64])
+#         assert_type(convert.raw_to_central(x64, mom_ndim=1, dtype=np.float32), NDArray[np.float32])
+
+#         assert_type(convert.raw_to_central(x32, mom_ndim=1, out=out64), NDArray[np.float64])
+#         assert_type(convert.raw_to_central(x64, mom_ndim=1, out=out32), NDArray[np.float32])
+
+#         assert_type(
+#             convert.raw_to_central(x32, mom_ndim=1, out=out64, dtype=np.float32),
+#             NDArray[np.float64],
+#         )
+#         assert_type(
+#             convert.raw_to_central(x64, mom_ndim=1, out=out32, dtype=np.float64),
+#             NDArray[np.float32],
+#         )
+
+#         xc = np.array([1, 2, 3])
+#         assert_type(xc, NDArray[Any])
+
+#         # Would like this to default to np.float64
+#         assert_type(convert.raw_to_central(xc, mom_ndim=1), NDArray[Any])
+#         assert_type(convert.raw_to_central(xc, mom_ndim=1, dtype=np.float32), NDArray[np.float32])
+#         assert_type(
+#             convert.raw_to_central([1, 2, 3], mom_ndim=1, dtype=np.float32), NDArray[np.float32]
+#         )
+#         assert_type(
+#             convert.raw_to_central([1, 2, 3], mom_ndim=1, dtype=np.float64), NDArray[np.float64]
+#         )
+
+#         assert_type(
+#             convert.raw_to_central([1, 2, 3], mom_ndim=1, dtype="f8"),
+#             NDArray[Any],
+#         )
+#         assert_type(
+#             convert.raw_to_central(x32, mom_ndim=1, dtype="f8"),
+#             NDArray[Any],
+#         )
+#         assert_type(
+#             convert.raw_to_central(xc, mom_ndim=1, dtype="f8"),
+#             NDArray[Any],
+#         )
+
+#         assert_type(convert.raw_to_central([1.0, 2.0, 3.0], mom_ndim=1), NDArray[Any])
+
+#         # reveal_type(convert.raw_to_central([1,2,3], mom_ndim=1))
+#         # reveal_type(convert.raw_to_central([1,2,3], mom_ndim=1, dtype=np.float32))
+
+#         xx = xr.DataArray(x32)
+#         assert_type(convert.raw_to_central(xx, mom_ndim=1), xr.DataArray)
 
 
 def test_reduce_data_grouped() -> None:
