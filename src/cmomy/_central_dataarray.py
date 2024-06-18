@@ -87,7 +87,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         data: xr.DataArray,
         *,
         mom_ndim: Mom_NDim = ...,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLikeArg[FloatT],
         fastpath: bool = ...,
@@ -98,7 +98,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         data: xr.DataArray,
         *,
         mom_ndim: Mom_NDim = ...,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLike = ...,
         fastpath: bool = ...,
@@ -109,7 +109,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         data: xr.DataArray,
         *,
         mom_ndim: Mom_NDim = 1,
-        copy: bool = False,
+        copy: bool | None = None,
         order: ArrayOrder = None,
         dtype: DTypeLike = None,
         fastpath: bool = False,
@@ -127,6 +127,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             self._data = self._xdata.data
             self._mom_ndim = mom_ndim
         else:
+            # Handle None value directly because using astype...
+            copy = False if copy is None else copy
             super().__init__(
                 data=data.astype(dtype or data.dtype, copy=copy, order=order),  # pyright: ignore[reportUnknownMemberType]
                 mom_ndim=mom_ndim,
@@ -239,7 +241,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: NDArray[FloatT2],
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
@@ -249,7 +251,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: xr.DataArray,
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
@@ -259,7 +261,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: Any = ...,
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: DTypeLikeArg[FloatT2],
@@ -269,7 +271,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: None = ...,
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
@@ -279,7 +281,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: Any = ...,
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: DTypeLike = ...,
@@ -290,7 +292,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         data: NDArrayAny | xr.DataArray | None = None,
         *,
-        copy: bool = False,
+        copy: bool | None = False,
         order: ArrayOrder = None,
         verify: bool = False,
         dtype: DTypeLike = None,
@@ -304,6 +306,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                     dtype=dtype or self.dtype,  # type: ignore[arg-type]
                 ),
             )  # pyright: ignore[reportCallIssue, reportArgumentType]
+            copy = False
         else:
             if isinstance(data, xr.DataArray):
                 xdata = data
@@ -495,7 +498,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         dimensions: Mapping[Any, Sequence[Hashable]] | None = None,
         *,
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
         **dimensions_kwargs: Any,
@@ -580,7 +583,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         *,
         sparse: bool = False,
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
     ) -> Self:
@@ -615,7 +618,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         append: bool = False,
         *,
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
         **indexes_kwargs: Hashable | Sequence[Hashable],
@@ -651,7 +654,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         drop: bool = False,
         *,
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
     ) -> Self:
@@ -672,7 +675,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         *,
         errors: Literal["raise", "ignore"] = "raise",
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
     ) -> Self:
@@ -691,7 +694,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         dims_dict: Mapping[Any, Hashable] | None = None,
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
         **dims_kwargs: Any,
@@ -715,7 +718,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         drop: bool = False,
         *,
         _reorder: bool = False,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
         **indexers_kws: Any,
@@ -807,7 +810,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         missing_dims: xr_types.ErrorOptionsWithWarn = "raise",
         *,
         _reorder: bool = False,
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
         **indexers_kws: Any,
@@ -842,7 +845,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         *dims: Hashable,
         transpose_coords: bool = True,
         missing_dims: xr_types.ErrorOptionsWithWarn = "raise",
-        _copy: bool = False,
+        _copy: bool | None = False,
         _order: ArrayOrder = None,
         _verify: bool = False,
     ) -> Self:

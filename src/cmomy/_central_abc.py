@@ -91,7 +91,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         data: ArrayT,
         *,
         mom_ndim: Mom_NDim = 1,
-        copy: bool = False,  # noqa: ARG002
+        copy: bool | None = None,  # noqa: ARG002
         order: ArrayOrder = None,  # noqa: ARG002
         dtype: DTypeLike = None,  # noqa: ARG002
         fastpath: bool = False,  # noqa: ARG002
@@ -207,7 +207,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 
-    def __array__(self, dtype: DTypeLike = None) -> NDArray[FloatT]:  # noqa: PLW3201
+    def __array__(  # noqa: PLW3201
+        self, dtype: DTypeLike = None, copy: bool | None = None
+    ) -> NDArray[FloatT]:
         """Used by np.array(self)."""  # D401
         return np.asarray(self._data, dtype=dtype)
 
@@ -249,7 +251,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         data: ArrayT | None = None,
         *,
-        copy: bool = False,
+        copy: bool | None = None,
         order: ArrayOrder | None = None,
         verify: bool = False,
         dtype: DTypeLike = None,
@@ -966,7 +968,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         func_or_method: Callable[..., Any] | str,
         *args: Any,
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = None,
         _order: ArrayOrder = None,
         _verify: bool = False,
         **kwargs: Any,

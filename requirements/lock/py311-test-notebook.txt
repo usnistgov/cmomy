@@ -27,7 +27,7 @@ nbformat==5.10.4          # via nbval
 nbval==0.11.0             # via -r requirements/test-notebook.txt
 nest-asyncio==1.6.0       # via ipykernel
 numba==0.60.0             # via -r requirements/test-notebook.txt
-numpy==1.26.4             # via numba, pandas, xarray, -r requirements/test-notebook.txt
+numpy==2.0.0              # via numba, pandas, xarray, -r requirements/test-notebook.txt
 packaging==24.1           # via ipykernel, lazy-loader, pytest, pytest-sugar, xarray
 pandas==2.2.2             # via xarray
 parso==0.8.4              # via jedi

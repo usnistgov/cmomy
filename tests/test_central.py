@@ -301,7 +301,7 @@ def test_wrap_axis() -> None:
         (-4, "error"),
     ]:
         if expected == "error":
-            with pytest.raises(np.AxisError):
+            with pytest.raises(Exception, match=".*out of bounds.*"):
                 c._wrap_axis(axis)
 
         else:

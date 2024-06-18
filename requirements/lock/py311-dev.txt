@@ -33,7 +33,7 @@ nbval==0.11.0             # via -r requirements/dev.txt
 nest-asyncio==1.6.0       # via ipykernel
 nox==2024.4.15            # via -r requirements/dev.txt
 numba==0.60.0             # via -r requirements/dev.txt
-numpy==1.26.4             # via numba, pandas, pandas-stubs, xarray, -r requirements/dev.txt
+numpy==2.0.0              # via numba, pandas, pandas-stubs, xarray, -r requirements/dev.txt
 packaging==24.1           # via ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray, -r requirements/dev.txt
 pandas==2.2.2             # via xarray
 pandas-stubs==2.2.2.240603  # via -r requirements/dev.txt

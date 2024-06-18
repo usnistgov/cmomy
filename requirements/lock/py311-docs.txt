@@ -48,7 +48,7 @@ nbclient==0.10.0          # via jupyter-cache, myst-nb
 nbformat==5.10.4          # via jupyter-cache, myst-nb, nbclient
 nest-asyncio==1.6.0       # via ipykernel
 numba==0.60.0             # via -r requirements/docs.txt
-numpy==1.26.4             # via numba, pandas, xarray, -r requirements/docs.txt
+numpy==2.0.0              # via numba, pandas, xarray, -r requirements/docs.txt
 packaging==24.1           # via ipykernel, lazy-loader, pydata-sphinx-theme, sphinx, xarray
 pandas==2.2.2             # via xarray
 parso==0.8.4              # via jedi

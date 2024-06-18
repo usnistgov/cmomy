@@ -15,6 +15,7 @@ import xarray as xr
 from numpy.typing import NDArray
 
 from ._central_abc import CentralMomentsABC
+from ._compat import copy_if_needed
 from ._utils import (
     arrayorder_to_arrayorder_cf,
     validate_axis,
@@ -79,7 +80,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         data: ArrayLikeArg[FloatT],
         *,
         mom_ndim: Mom_NDim = ...,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         dtype: None = ...,
         fastpath: bool = ...,
@@ -90,7 +91,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         data: Any,
         *,
         mom_ndim: Mom_NDim = ...,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLikeArg[FloatT],
         fastpath: bool = ...,
@@ -101,7 +102,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         data: Any,
         *,
         mom_ndim: Mom_NDim = ...,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         dtype: DTypeLike = ...,
         fastpath: bool = ...,
@@ -112,7 +113,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         data: ArrayLike,
         *,
         mom_ndim: Mom_NDim = 1,
-        copy: bool = False,
+        copy: bool | None = None,
         order: ArrayOrder = None,
         dtype: DTypeLike = None,
         fastpath: bool = False,
@@ -123,7 +124,9 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             self._mom_ndim = mom_ndim
         else:
             super().__init__(
-                data=np.array(data, dtype=dtype, order=order, copy=copy),
+                data=np.array(
+                    data, dtype=dtype, order=order, copy=copy_if_needed(copy)
+                ),
                 mom_ndim=mom_ndim,
             )
 
@@ -142,7 +145,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: NDArray[FloatT2],
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
@@ -152,7 +155,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: Any = ...,
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: DTypeLikeArg[FloatT2],
@@ -162,7 +165,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: None = ...,
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
@@ -172,7 +175,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: Any = ...,
         *,
-        copy: bool = ...,
+        copy: bool | None = ...,
         order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: Any = ...,
@@ -183,7 +186,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: NDArrayAny | None = None,
         *,
-        copy: bool = False,
+        copy: bool | None = None,
         order: ArrayOrder = None,
         verify: bool = False,
         dtype: DTypeLike = None,
@@ -236,30 +239,30 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         dtype: DTypeLikeArg[FloatT2],
         *,
-        order: ArrayOrder = None,
-        casting: DataCasting = None,
-        subok: bool | None = None,
-        copy: bool = False,
+        order: ArrayOrder = ...,
+        casting: DataCasting = ...,
+        subok: bool | None = ...,
+        copy: bool = ...,
     ) -> CentralMoments[FloatT2]: ...
     @overload
     def astype(
         self,
         dtype: None,
         *,
-        order: ArrayOrder = None,
-        casting: DataCasting = None,
-        subok: bool | None = None,
-        copy: bool = False,
+        order: ArrayOrder = ...,
+        casting: DataCasting = ...,
+        subok: bool | None = ...,
+        copy: bool = ...,
     ) -> CentralMoments[np.float64]: ...
     @overload
     def astype(
         self,
         dtype: DTypeLike,
         *,
-        order: ArrayOrder = None,
-        casting: DataCasting = None,
-        subok: bool | None = None,
-        copy: bool = False,
+        order: ArrayOrder = ...,
+        casting: DataCasting = ...,
+        subok: bool | None = ...,
+        copy: bool = ...,
     ) -> CentralMoments[Any]: ...
 
     @docfiller_abc()
@@ -296,7 +299,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         Parameters
         ----------
         {xr_params}
-        {copy}
+        {copy_tf}
 
         Returns
         -------
@@ -395,7 +398,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         Parameters
         ----------
         {xr_params}
-        {copy}
+        {copy_tf}
 
         Returns
         -------
@@ -746,7 +749,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         return type(self)(
             data=out,
             mom_ndim=self.mom_ndim,
-            copy=False,  # pyright: ignore[reportUnknownMemberType]
+            copy=None,  # pyright: ignore[reportUnknownMemberType]
             order=order,
         )
 
@@ -867,9 +870,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self: CentralMoments[FloatT2],
         source: int | tuple[int, ...],
         destination: int | tuple[int, ...],
-        # *,
-        # copy: bool = True,
-        # order: ArrayOrder | None = None,
     ) -> CentralMoments[FloatT2]:
         """
         Move axis from source to destination.
@@ -881,7 +881,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         destination : int or sequence of int
             Destination positions for each of the original axes. These must also be
             unique.
-        {copy}
 
         Returns
         -------
@@ -1189,14 +1188,14 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
 
         >>> dx_raw = CentralMoments.from_raw(raw_x, mom_ndim=1)
-        >>> dx_raw.mean()
+        >>> print(dx_raw.mean())
         0.5505105129032412
         >>> dx_raw.cmom()
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
 
         Which is equivalent to creating raw moments from values
         >>> dx_cen = CentralMoments.from_vals(x, axis=0, mom=4)
-        >>> dx_cen.mean()
+        >>> print(dx_cen.mean())
         0.5505105129032413
         >>> dx_cen.cmom()
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
@@ -1207,7 +1206,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         >>> y = x + 10000
         >>> raw_y = (y[:, None] ** np.arange(5)).mean(axis=0)
         >>> dy_raw = CentralMoments.from_raw(raw_y, mom_ndim=1)
-        >>> dy_raw.mean() - 10000
+        >>> print(dy_raw.mean() - 10000)
         0.5505105129050207
 
         Note that the central moments don't match!
@@ -1216,7 +1215,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         array([ True,  True,  True, False, False])
 
         >>> dy_cen = CentralMoments.from_vals(y, axis=0, mom=4)
-        >>> dy_cen.mean() - 10000
+        >>> print(dy_cen.mean() - 10000)
         0.5505105129032017
         >>> dy_cen.cmom()  # this matches above
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])

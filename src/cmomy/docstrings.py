@@ -9,8 +9,14 @@ def _dummy_docstrings() -> None:
     """
     Parameters
     ----------
-    copy : bool
-        If True, copy the data.  If False, attempt to use view.
+    copy : bool, optional
+        If True, copy the data. If None or False, attempt to use view. Note
+        that ``False`` values will be converted to ``None`` for numpy versions
+        ``>2.0``. This will be changed to reflect the new behavior of the
+        ``copy`` parameter to :func:`numpy.array` when the minimum numpy
+        version ``>2.0``.
+    copy_tf | copy : bool
+        If ``True``, copy the data.  If False, return a view if possible.
     copy_kws : mapping
         extra arguments to copy
     verify : bool

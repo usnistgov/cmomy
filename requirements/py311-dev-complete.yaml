@@ -20,7 +20,7 @@ dependencies:
   - nbval
   - nox>=2024.4.15
   - numba>=0.58
-  - numpy<2.0
+  - numpy>1.24
   - packaging
   - pandas-stubs
   - pipx
