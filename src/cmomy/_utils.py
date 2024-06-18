@@ -66,9 +66,11 @@ Sentinel to indicate the lack of a value when ``None`` is ambiguous.
 # * Axis normalizer
 def normalize_axis_index(axis: int, ndim: int) -> int:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
-    import numpy.core.multiarray as ma
+    from ._compat import (
+        np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue]
+    )
 
-    return ma.normalize_axis_index(axis, ndim)  # type: ignore[no-any-return,attr-defined]
+    return np_normalize_axis_index(axis, ndim)  # type: ignore[no-any-return,unused-ignore]
 
 
 # * Array order

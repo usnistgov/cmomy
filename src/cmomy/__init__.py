@@ -8,10 +8,9 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
     # submodules
-    from . import random, reduction, resample  # noqa: TCH004
+    from . import convert, random, reduction, resample  # noqa: TCH004
     from ._central_dataarray import xCentralMoments  # noqa: TCH004
     from ._central_numpy import CentralMoments  # noqa: TCH004
-    from ._convert import convert  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (
         indices_to_freq,  # noqa: TCH004
@@ -31,11 +30,11 @@ else:
             "random",
             "reduction",
             "resample",
+            "convert",
         ],
         submod_attrs={
             "_central_numpy": ["CentralMoments"],
             "_central_dataarray": ["xCentralMoments"],
-            "_convert": ["convert"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
                 "indices_to_freq",

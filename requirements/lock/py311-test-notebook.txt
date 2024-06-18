@@ -10,7 +10,7 @@ decorator==5.1.1          # via ipython
 docstring-inheritance==2.2.0  # via -r requirements/test-notebook.txt
 execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
-fastjsonschema==2.19.1    # via nbformat
+fastjsonschema==2.20.0    # via nbformat
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.4         # via nbval
 ipython==8.25.0           # via ipykernel
@@ -27,7 +27,7 @@ nbformat==5.10.4          # via nbval
 nbval==0.11.0             # via -r requirements/test-notebook.txt
 nest-asyncio==1.6.0       # via ipykernel
 numba==0.60.0             # via -r requirements/test-notebook.txt
-numpy==1.26.4             # via numba, pandas, xarray, -r requirements/test-notebook.txt
+numpy==2.0.0              # via numba, pandas, xarray, -r requirements/test-notebook.txt
 packaging==24.1           # via ipykernel, lazy-loader, pytest, pytest-sugar, xarray
 pandas==2.2.2             # via xarray
 parso==0.8.4              # via jedi

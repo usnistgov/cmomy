@@ -91,7 +91,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         data: ArrayT,
         *,
         mom_ndim: Mom_NDim = 1,
-        copy: bool = False,  # noqa: ARG002
+        copy: bool | None = None,  # noqa: ARG002
         order: ArrayOrder = None,  # noqa: ARG002
         dtype: DTypeLike = None,  # noqa: ARG002
         fastpath: bool = False,  # noqa: ARG002
@@ -207,9 +207,42 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 
-    def __array__(self, dtype: DTypeLike = None) -> NDArray[FloatT]:  # noqa: PLW3201
+    def __array__(  # noqa: PLW3201
+        self, dtype: DTypeLike = None, copy: bool | None = None
+    ) -> NDArray[FloatT]:
         """Used by np.array(self)."""  # D401
         return np.asarray(self._data, dtype=dtype)
+
+    # ** Utils ----------------------------------------------------------------
+    def _wrap_axis(
+        self,
+        axis: int | None,
+        ndim: int | None = None,
+    ) -> int:
+        """Wrap axis to positive value and check."""
+        if ndim is None:
+            ndim = self.val_ndim
+
+        return normalize_axis_index(validate_axis(axis), ndim)
+
+    # @staticmethod
+    # def _set_default_axis(axis: int | None, default: int = -1) -> int:
+    #     return default if axis is None else axis
+
+    @property
+    def _is_vector(self) -> bool:
+        return self.val_ndim > 0
+
+    def _raise_if_scalar(self, message: str | None = None) -> None:
+        if not self._is_vector:
+            if message is None:  # pragma: no cover
+                message = "Not implemented for scalar"
+            raise ValueError(message)
+
+    def _raise_if_not_mom_ndim_1(self) -> None:
+        if self._mom_ndim != 1:
+            msg = "Only implemented for `mom_ndim==1`"
+            raise ValueError(msg)
 
     # ** top level creation/copy/new ----------------------------------------------
     @abstractmethod
@@ -218,7 +251,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         data: ArrayT | None = None,
         *,
-        copy: bool = False,
+        copy: bool | None = None,
         order: ArrayOrder | None = None,
         verify: bool = False,
         dtype: DTypeLike = None,
@@ -348,6 +381,62 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             # copy_kws=copy_kws,
         )
 
+    @docfiller.decorate
+    def moments_to_comoments(self, *, mom: tuple[int, int]) -> Self:
+        """
+        Convert moments (mom_ndim=1) to comoments (mom_ndim=2).
+
+        Parameters
+        ----------
+        {mom_moments_to_comoments}
+
+        See Also
+        --------
+        .convert.moments_to_comoments
+        """
+        self._raise_if_not_mom_ndim_1()
+
+        from . import convert
+
+        return type(self)(
+            convert.moments_to_comoments(  # pyright: ignore[reportArgumentType]
+                self.to_values(),
+                mom=mom,
+                dtype=self.dtype,
+            ),
+            mom_ndim=2,
+        )
+
+    @docfiller.decorate
+    def assign_weight(self, weight: ArrayLike, copy: bool = True) -> Self:
+        """
+        Create object with updated weights
+
+        Parameters
+        ----------
+        {weight}
+        copy : bool, default=True
+            If ``True`` (default), copy the underlying moments data before update.
+            Otherwise, update weights in in place.
+
+        Returns
+        -------
+        output : object
+            Same type as ``self``
+        """
+        from . import convert
+
+        return type(self)(
+            data=convert.assign_weight(
+                data=self.values,
+                weight=weight,
+                mom_ndim=self._mom_ndim,
+                copy=copy,
+            ),
+            mom_ndim=self._mom_ndim,
+            fastpath=True,
+        )
+
     # ** Access to underlying statistics ------------------------------------------
     @cached.prop
     def _weight_index(self) -> tuple[int | ellipsis, ...]:  # noqa: F821
@@ -455,11 +544,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         See Also
         --------
         from_raw
-        .convert
+        .convert.moments_type
         """
-        from ._convert import convert
+        from . import convert
 
-        out = convert(self._data, mom_ndim=self.mom_ndim, to="raw")
+        out = convert.moments_type(self._data, mom_ndim=self.mom_ndim, to="raw")
         if weight is not None:
             out[self._weight_index] = weight
         return self._wrap_like(out)
@@ -484,7 +573,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         See Also
         --------
         to_raw
-        .convert
+        .convert.moments_type
         cmom
         """
         return self.to_raw(weight=1.0)
@@ -523,22 +612,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         fill
         """
         return self.fill(value=0.0)
-
-    # ** Utils
-    def _wrap_axis(
-        self,
-        axis: int | None,
-        ndim: int | None = None,
-    ) -> int:
-        """Wrap axis to positive value and check."""
-        if ndim is None:
-            ndim = self.val_ndim
-
-        return normalize_axis_index(validate_axis(axis), ndim)
-
-    # @staticmethod
-    # def _set_default_axis(axis: int | None, default: int = -1) -> int:
-    #     return default if axis is None else axis
 
     # ** pushing routines ---------------------------------------------------------
     @cached.prop
@@ -895,7 +968,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         func_or_method: Callable[..., Any] | str,
         *args: Any,
         _reorder: bool = True,
-        _copy: bool = False,
+        _copy: bool | None = None,
         _order: ArrayOrder = None,
         _verify: bool = False,
         **kwargs: Any,
@@ -960,16 +1033,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             order=_order,
             verify=_verify,
         )
-
-    @property
-    def _is_vector(self) -> bool:
-        return self.val_ndim > 0
-
-    def _raise_if_scalar(self, message: str | None = None) -> None:
-        if not self._is_vector:
-            if message is None:  # pragma: no cover
-                message = "Not implemented for scalar"
-            raise ValueError(message)
 
     # ** Operators ----------------------------------------------------------------
     def _check_other(self, b: Self) -> None:
@@ -1180,16 +1243,16 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         --------
         to_raw
         rmom
-        cmomy.convert
+        cmomy.convert.moments_type
 
         Notes
         -----
         Weights are taken from ``raw[...,0, 0]``.
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
         """
-        from ._convert import convert
+        from . import convert
 
         return cls(
-            data=convert(raw, mom_ndim=mom_ndim, to="central"),  # pyright: ignore[reportArgumentType]
+            data=convert.moments_type(raw, mom_ndim=mom_ndim, to="central"),  # pyright: ignore[reportArgumentType]
             mom_ndim=mom_ndim,
         )
