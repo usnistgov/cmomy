@@ -18,6 +18,25 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.13.0 — 2024-06-18
+
+### Added
+
+- Added `cmomy.convert.moments_to_comoments` (and
+  `(x)CentralMoments.moments_to_comoments`)to convert from single variable
+  moments to comoments. This is useful in `thermoextrap`.
+- Added `cmomy.convert.assign_weight` (and `(x)CentralMoments.assign_weights`)
+  to update weights (useful in `thermoextrap`).
+
+- Added support for `numpy>=2.0.0`. Because we still support older versions, we
+  still use the old convention for the `copy` parameter to `numpy.array`. Will
+  change this when minimum numpy is 2.0.
+
+### Changed
+
+- Renamed `cmomy.convert` function to `cmomy.convert.moments_type`A bullet item
+  for the Changed category.
+
 ## v0.12.0 — 2024-06-13
 
 ### Added
