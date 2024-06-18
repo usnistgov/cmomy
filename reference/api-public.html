@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Top level API (cmomy) &#8212; cmomy v0.12.0 documentation</title>
+    <title>Top level API (cmomy) &#8212; cmomy v0.13.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../_static/documentation_options.js?v=41f1f5e8"></script>
+    <script src="../_static/documentation_options.js?v=bd2bc004"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="prev" title="API reference" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-06-13"/>
+    <meta name="docbuild:last-update" content="2024-06-18"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.12.0 documentation</p>
+    <p class="title logo__title">cmomy v0.13.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -201,6 +201,10 @@
 
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="generated/cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
 
 
 
@@ -417,12 +421,9 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moments-wrapper-classes">Central Moments wrapper classes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convert-between-raw-and-central-moments">Convert between raw and central moments</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-routines-available-at-top-level-from-cmomy-reduction">Reduction routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.reduction</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-from-cmomy-resample">Resampling routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.convert"><code class="docutils literal notranslate"><span class="pre">convert()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-from-cmomy-resample">Resampling routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-loaded-modules">Pre-loaded modules</a></li>
 </ul>
             </nav>
         </div>
@@ -442,21 +443,10 @@ document.write(`
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.CentralMoments.html#cmomy.CentralMoments" title="cmomy.CentralMoments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CentralMoments</span></code></a>(data, *[, mom_ndim, copy, ...])</p></td>
-<td><p>Wrapper of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> based central moments data.</p></td>
+<td><p>Wrapper of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> based central moments data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments" title="cmomy.xCentralMoments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xCentralMoments</span></code></a>(data, *[, mom_ndim, copy, ...])</p></td>
-<td><p>Wrapper of <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.5.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> based central moments data.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="convert-between-raw-and-central-moments">
-<h2>Convert between raw and central moments<a class="headerlink" href="#convert-between-raw-and-central-moments" title="Link to this heading">#</a></h2>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.convert" title="cmomy.convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert</span></code></a>(values_in, *, mom_ndim[, to, out, dtype])</p></td>
-<td><p>Convert between central and raw moments.</p></td>
+<td><p>Wrapper of <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.6.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> based central moments data.</p></td>
 </tr>
 </tbody>
 </table>
@@ -501,52 +491,26 @@ document.write(`
 </tbody>
 </table>
 </div>
-<dl class="py function">
-<dt class="sig sig-object py" id="cmomy.convert">
-<span class="sig-prename descclassname"><span class="pre">cmomy.</span></span><span class="sig-name descname"><span class="pre">convert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values_in</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'central'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/_convert.py#L82-L157"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.convert" title="Link to this definition">#</a></dt>
-<dd><p>Convert between central and raw moments.</p>
-<p>The structure of arrays are as follow.
-Central moments:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0]</span></code> : weight</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">1]</span></code> : mean</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">k]</span></code> : kth central moment</p></li>
-</ul>
-<p>Central comoments of variables <cite>a</cite> and <cite>b</cite>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0,</span> <span class="pre">0]</span></code> : weight</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">1,</span> <span class="pre">0]</span></code> : mean of <cite>a</cite></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x[....,0,</span> <span class="pre">1]</span></code> : mean of <cite>b</cite></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> : <span class="math notranslate nohighlight">\(\langle (\delta a)^i (\delta b)^j \rangle\)</span>,</p></li>
-</ul>
-<p>where <cite>a</cite> and <cite>b</cite> are the variables being considered.</p>
-<p>Raw moments array:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0]</span></code> : weight</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">k]</span></code> : kth moment <span class="math notranslate nohighlight">\(\langle a^k \rangle\)</span></p></li>
-</ul>
-<p>Raw comoments array of variables <cite>a</cite> and <cite>b</cite>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">0,</span> <span class="pre">0]</span></code> : weight</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">x[...,</span> <span class="pre">i,</span> <span class="pre">j]</span></code> : <span class="math notranslate nohighlight">\(\langle a^i b^j \rangle\)</span>,</p></li>
-</ul>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>values_in</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – The moments array to convert from.</p></li>
-<li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>) – Value indicates if moments (<code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>) or comoments (<code class="docutils literal notranslate"><span class="pre">mom_ndim=2</span></code>).</p></li>
-<li><p><strong>to</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;raw&quot;,</span> <span class="pre">&quot;central&quot;}</span></code>) – The style of the <code class="docutils literal notranslate"><span class="pre">values_in</span></code> to convert to. If <code class="docutils literal notranslate"><span class="pre">&quot;raw&quot;</span></code>, convert from central to raw.
-If <code class="docutils literal notranslate"><span class="pre">&quot;central&quot;</span></code> convert from raw to central moments.</p></li>
-<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Optional output array. If specified, output will be a reference to this
-array.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.26)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> – Moments array converted from <code class="docutils literal notranslate"><span class="pre">input_style</span></code> to opposite format.</p>
-</dd>
-</dl>
-</dd></dl>
-
+</section>
+<section id="pre-loaded-modules">
+<h2>Pre-loaded modules<a class="headerlink" href="#pre-loaded-modules" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.random.html#module-cmomy.random" title="cmomy.random"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random</span></code></a></p></td>
+<td><p>Internal numpy.random.Generator (cmomy.random)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.reduction.html#module-cmomy.reduction" title="cmomy.reduction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduction</span></code></a></p></td>
+<td><p>Routines to perform central moments reduction (reduction)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#module-cmomy.resample" title="cmomy.resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample</span></code></a></p></td>
+<td><p>Routine to perform resampling (cmomy.resample)</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.convert.html#module-cmomy.convert" title="cmomy.convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert</span></code></a></p></td>
+<td><p>Conversion routines (convert)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 </section>
 </section>
 
@@ -596,12 +560,9 @@ array.</p></li>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moments-wrapper-classes">Central Moments wrapper classes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convert-between-raw-and-central-moments">Convert between raw and central moments</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-routines-available-at-top-level-from-cmomy-reduction">Reduction routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.reduction</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-from-cmomy-resample">Resampling routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.convert"><code class="docutils literal notranslate"><span class="pre">convert()</span></code></a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-from-cmomy-resample">Resampling routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-loaded-modules">Pre-loaded modules</a></li>
 </ul>
   </nav></div>
 
@@ -635,7 +596,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-06-13.
+  Last updated on 2024-06-18.
   <br/>
 </p>
   </div>

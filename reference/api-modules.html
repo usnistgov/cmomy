@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>&lt;no title&gt; &#8212; cmomy v0.12.0 documentation</title>
+    <title>&lt;no title&gt; &#8212; cmomy v0.13.0 documentation</title>
   
   
   
@@ -40,12 +40,14 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../_static/documentation_options.js?v=41f1f5e8"></script>
+    <script src="../_static/documentation_options.js?v=bd2bc004"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'reference/api-modules';</script>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
@@ -58,7 +60,7 @@
     <link rel="prev" title="cmomy.xCentralMoments" href="generated/cmomy.xCentralMoments.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-06-13"/>
+    <meta name="docbuild:last-update" content="2024-06-18"/>
   </head>
   
   
@@ -142,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.12.0 documentation</p>
+    <p class="title logo__title">cmomy v0.13.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -199,6 +201,10 @@
 
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="generated/cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
 
 
 
@@ -437,7 +443,10 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.random.html#module-cmomy.random" title="cmomy.random"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmomy.random</span></code></a></p></td>
 <td><p>Internal numpy.random.Generator (cmomy.random)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.compile.html#module-cmomy.compile" title="cmomy.compile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmomy.compile</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.convert.html#module-cmomy.convert" title="cmomy.convert"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmomy.convert</span></code></a></p></td>
+<td><p>Conversion routines (convert)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.compile.html#module-cmomy.compile" title="cmomy.compile"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmomy.compile</span></code></a></p></td>
 <td><p>Pre-compile numba based core routines (cmomy.compile)</p></td>
 </tr>
 </tbody>
@@ -531,7 +540,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-06-13.
+  Last updated on 2024-06-18.
   <br/>
 </p>
   </div>

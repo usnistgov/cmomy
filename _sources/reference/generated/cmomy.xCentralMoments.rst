@@ -21,6 +21,7 @@
    
       ~xCentralMoments.assign_attrs
       ~xCentralMoments.assign_coords
+      ~xCentralMoments.assign_weight
       ~xCentralMoments.astype
       ~xCentralMoments.block
       ~xCentralMoments.cmom
@@ -33,6 +34,7 @@
       ~xCentralMoments.from_vals
       ~xCentralMoments.isel
       ~xCentralMoments.mean
+      ~xCentralMoments.moments_to_comoments
       ~xCentralMoments.new_like
       ~xCentralMoments.pipe
       ~xCentralMoments.push_data

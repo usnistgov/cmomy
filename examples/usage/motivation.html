@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Why cmomy? &#8212; cmomy v0.12.0 documentation</title>
+    <title>Why cmomy? &#8212; cmomy v0.13.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=41f1f5e8"></script>
+    <script src="../../_static/documentation_options.js?v=bd2bc004"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="prev" title="User guide" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-06-13"/>
+    <meta name="docbuild:last-update" content="2024-06-18"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.12.0 documentation</p>
+    <p class="title logo__title">cmomy v0.13.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -201,6 +201,10 @@
 
 <li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
 
 
 
@@ -3348,7 +3352,7 @@ dl.xr-attrs {
 </section>
 <section id="xarray-dataarray-support">
 <h2>xarray DataArray support<a class="headerlink" href="#xarray-dataarray-support" title="Link to this heading">#</a></h2>
-<p>cmomy also works with <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.5.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> objects.  For example</p>
+<p>cmomy also works with <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.6.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> objects.  For example</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
@@ -3740,7 +3744,7 @@ Dimensions without coordinates: rec, a, b</pre><div class='xr-wrap' style='displ
        [[0.951 , 0.0224, 0.627 ],
         [0.0179, 0.382 , 0.3126]]])</pre></div></div></li><li class='xr-section-item'><input id='section-b6c0deda-9719-4c8e-91f1-ba109f82ddc8' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b6c0deda-9719-4c8e-91f1-ba109f82ddc8' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-b36d0108-7b62-4150-a608-9ef44409dc01' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b36d0108-7b62-4150-a608-9ef44409dc01' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-3aa5034f-afb1-4a59-a9b4-5453a566ef10' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-3aa5034f-afb1-4a59-a9b4-5453a566ef10' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
 </div>
-<p>To create a cmomy object wrapping a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.5.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a>, use <a class="reference internal" href="../../reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments" title="cmomy.xCentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">xCentralMoments</span></code></a></p>
+<p>To create a cmomy object wrapping a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.6.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a>, use <a class="reference internal" href="../../reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments" title="cmomy.xCentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">xCentralMoments</span></code></a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">xCentralMoments</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;rec&quot;</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -4586,7 +4590,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-06-13.
+  Last updated on 2024-06-18.
   <br/>
 </p>
   </div>

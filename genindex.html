@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; cmomy v0.12.0 documentation</title>
+    <title>Index &#8212; cmomy v0.13.0 documentation</title>
   
   
   
@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="_static/documentation_options.js?v=41f1f5e8"></script>
+    <script src="_static/documentation_options.js?v=bd2bc004"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +55,7 @@
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-06-13"/>
+    <meta name="docbuild:last-update" content="2024-06-18"/>
   </head>
   
   
@@ -139,7 +139,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.12.0 documentation</p>
+    <p class="title logo__title">cmomy v0.13.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -196,6 +196,10 @@
 
 <li class="toctree-l2"><a class="reference internal" href="reference/generated/cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="reference/generated/cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
 
 
 
@@ -444,6 +448,16 @@ document.write(`
 </li>
       <li><a href="reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments.assign_coords">assign_coords() (cmomy.xCentralMoments method)</a>
 </li>
+      <li><a href="reference/api-baseclasses.html#cmomy._central_abc.CentralMomentsABC.assign_weight">assign_weight() (cmomy._central_abc.CentralMomentsABC method)</a>
+
+      <ul>
+        <li><a href="reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments.assign_weight">(cmomy.CentralMoments method)</a>
+</li>
+        <li><a href="reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments.assign_weight">(cmomy.xCentralMoments method)</a>
+</li>
+        <li><a href="reference/generated/cmomy.convert.html#cmomy.convert.assign_weight">(in module cmomy.convert)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/api-baseclasses.html#cmomy._central_abc.CentralMomentsABC.astype">astype() (cmomy._central_abc.CentralMomentsABC method)</a>
@@ -505,14 +519,21 @@ document.write(`
 </li>
       </ul></li>
       <li>
+    cmomy.convert
+
+      <ul>
+        <li><a href="reference/generated/cmomy.convert.html#module-cmomy.convert">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     cmomy.random
 
       <ul>
         <li><a href="reference/generated/cmomy.random.html#module-cmomy.random">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     cmomy.reduction
 
@@ -534,8 +555,6 @@ document.write(`
         <li><a href="reference/generated/cmomy.typing.html#module-cmomy.typing">module</a>
 </li>
       </ul></li>
-      <li><a href="reference/api-public.html#cmomy.convert">convert() (in module cmomy)</a>
-</li>
       <li><a href="reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments.coords">coords (cmomy.xCentralMoments property)</a>
 </li>
       <li><a href="reference/api-baseclasses.html#cmomy._central_abc.CentralMomentsABC.copy">copy() (cmomy._central_abc.CentralMomentsABC method)</a>
@@ -678,6 +697,8 @@ document.write(`
 </li>
         <li><a href="reference/generated/cmomy.compile.html#module-cmomy.compile">cmomy.compile</a>
 </li>
+        <li><a href="reference/generated/cmomy.convert.html#module-cmomy.convert">cmomy.convert</a>
+</li>
         <li><a href="reference/generated/cmomy.random.html#module-cmomy.random">cmomy.random</a>
 </li>
         <li><a href="reference/generated/cmomy.reduction.html#module-cmomy.reduction">cmomy.reduction</a>
@@ -687,8 +708,6 @@ document.write(`
         <li><a href="reference/generated/cmomy.typing.html#module-cmomy.typing">cmomy.typing</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/api-baseclasses.html#cmomy._central_abc.CentralMomentsABC.mom">mom (cmomy._central_abc.CentralMomentsABC property)</a>
 
       <ul>
@@ -697,6 +716,8 @@ document.write(`
         <li><a href="reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments.mom">(cmomy.xCentralMoments property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments.mom_dims">mom_dims (cmomy.xCentralMoments property)</a>
 </li>
       <li><a href="reference/api-baseclasses.html#cmomy._central_abc.CentralMomentsABC.mom_ndim">mom_ndim (cmomy._central_abc.CentralMomentsABC property)</a>
@@ -715,6 +736,18 @@ document.write(`
         <li><a href="reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments.mom_shape">(cmomy.xCentralMoments property)</a>
 </li>
       </ul></li>
+      <li><a href="reference/api-baseclasses.html#cmomy._central_abc.CentralMomentsABC.moments_to_comoments">moments_to_comoments() (cmomy._central_abc.CentralMomentsABC method)</a>
+
+      <ul>
+        <li><a href="reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments.moments_to_comoments">(cmomy.CentralMoments method)</a>
+</li>
+        <li><a href="reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments.moments_to_comoments">(cmomy.xCentralMoments method)</a>
+</li>
+        <li><a href="reference/generated/cmomy.convert.html#cmomy.convert.moments_to_comoments">(in module cmomy.convert)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/generated/cmomy.convert.html#cmomy.convert.moments_type">moments_type() (in module cmomy.convert)</a>
+</li>
       <li><a href="reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments.moveaxis">moveaxis() (cmomy.CentralMoments method)</a>
 </li>
   </ul></td>
@@ -1111,7 +1144,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-06-13.
+  Last updated on 2024-06-18.
   <br/>
 </p>
   </div>

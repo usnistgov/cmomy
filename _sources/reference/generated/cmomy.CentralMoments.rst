@@ -19,6 +19,7 @@
    .. rubric:: Methods
    .. autosummary::
    
+      ~CentralMoments.assign_weight
       ~CentralMoments.astype
       ~CentralMoments.block
       ~CentralMoments.cmom
@@ -28,6 +29,7 @@
       ~CentralMoments.from_resample_vals
       ~CentralMoments.from_vals
       ~CentralMoments.mean
+      ~CentralMoments.moments_to_comoments
       ~CentralMoments.moveaxis
       ~CentralMoments.new_like
       ~CentralMoments.pipe
