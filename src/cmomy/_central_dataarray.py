@@ -1174,13 +1174,13 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         dim : str
             Dimension that will be resampled.
         """
-        axis, dim = select_axis_dim(
-            dims=self.dims,
+        from .resample import randsamp_freq
+
+        return randsamp_freq(
+            data=self.values,
+            mom_ndim=self._mom_ndim,
             axis=axis,
             dim=dim,
-        )
-        return super().randsamp_freq(
-            axis=axis,
             nrep=nrep,
             nsamp=nsamp,
             indices=indices,

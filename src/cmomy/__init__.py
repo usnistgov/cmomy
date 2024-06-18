@@ -16,6 +16,7 @@ if TYPE_CHECKING:
         indices_to_freq,  # noqa: TCH004
         random_freq,  # noqa: TCH004
         random_indices,  # noqa: TCH004
+        randsamp_freq,  # noqa: TCH004
         resample_data,  # noqa: TCH004
         resample_vals,  # noqa: TCH004
     )
@@ -40,6 +41,7 @@ else:
                 "indices_to_freq",
                 "random_freq",
                 "random_indices",
+                "randsamp_freq",
                 "resample_data",
                 "resample_vals",
             ],
@@ -65,6 +67,7 @@ __all__ = [
     "random",
     "random_freq",
     "random_indices",
+    "randsamp_freq",
     "reduce_data",
     "reduce_data_grouped",
     "reduce_vals",

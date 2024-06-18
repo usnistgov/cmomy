@@ -39,6 +39,7 @@ Resampling routines available at top level (from :mod:`cmomy.resample`)
    ~cmomy.resample.resample_vals
    ~cmomy.resample.random_freq
    ~cmomy.resample.random_indices
+   ~cmomy.resample.randsamp_freq
    ~cmomy.resample.indices_to_freq
 
 

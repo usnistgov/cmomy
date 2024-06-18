@@ -16,10 +16,12 @@ from numpy.typing import NDArray
 
 from ._utils import (
     MISSING,
+    normalize_axis_index,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
     raise_if_wrong_shape,
+    select_axis_dim,
     select_dtype,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -215,31 +217,113 @@ def _validate_resample_array(
     return x
 
 
+def select_ndat(
+    data: xr.DataArray | NDArrayAny,
+    *,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: Mom_NDim | None = None,
+) -> int:
+    """
+    Determine ndat from array.
+
+    Parameters
+    ----------
+    data : ndarray or DataArray
+    {axis}
+    {dim}
+    mom_ndim : int, optional
+        If specified, then treat ``data`` as a moments array, and wrap negative
+        values for ``axis`` relative to value dimensions only.
+
+    Returns
+    -------
+    int
+        size of ``data`` along specified ``axis`` or ``dim``
+
+
+    Examples
+    --------
+    >>> data = np.zeros((2, 3, 4))
+    >>> select_ndat(data, axis=1)
+    3
+    >>> select_ndat(data, axis=-1, mom_ndim=2)
+    2
+
+
+    >>> xdata = xr.DataArray(data, dims=["x", "y", "mom"])
+    >>> select_ndat(xdata, dim="y")
+    3
+    >>> select_ndat(xdata, dim="mom", mom_ndim=1)
+    Traceback (most recent call last):
+    ...
+    ValueError: Cannot select moment dimension.  axis=2, dim='mom'.
+    """
+    ndim = data.ndim
+    if mom_ndim is not None:
+        ndim -= validate_mom_ndim(mom_ndim)
+
+    if isinstance(axis, int):
+        axis = normalize_axis_index(axis, ndim)
+
+    if isinstance(data, xr.DataArray):
+        axis, dim = select_axis_dim(data.dims, axis, dim)
+        if axis >= ndim:
+            msg = f"Cannot select moment dimension.  {axis=}, {dim=}."
+            raise ValueError(msg)
+
+    elif not isinstance(axis, int):
+        msg = "Must specify integer axis for array input."
+        raise TypeError(msg)
+
+    return data.shape[axis]
+
+
 @docfiller.decorate
 def randsamp_freq(
-    ndat: int,
+    *,
+    ndat: int | None = None,
     nrep: int | None = None,
     nsamp: int | None = None,
     indices: ArrayLike | None = None,
     freq: ArrayLike | None = None,
+    data: xr.DataArray | NDArrayAny | None = None,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: Mom_NDim | None = None,
     check: bool = False,
     rng: np.random.Generator | None = None,
 ) -> NDArrayInt:
     """
-    Produce a random sample for bootstrapping.
+    Convenience function to create frequency table for resampling.
 
     In order, the return will be one of ``freq``, frequencies from ``indices`` or
     new sample from :func:`random_freq`.
 
     Parameters
     ----------
-    {nrep}
     {ndat}
+    {nrep}
     {nsamp}
     {freq}
     {indices}
     check : bool, default=False
         if `check` is `True`, then check `freq` and `indices` against `ndat` and `nrep`
+    {rng}
+    data : ndarray or DataArray
+    {axis}
+    {dim}
+    mom_ndim : int, optional
+        If specified, then treat ``data`` as a moments array, and wrap negative
+        values for ``axis`` relative to value dimensions only.
+
+
+    Notes
+    -----
+    If ``ndat`` is ``None``, attempt to set ``ndat`` using ``ndat =
+    select_ndat(data, axis=axis, dim=dim, mom_ndim=mom_ndim)``. See
+    :func:`select_ndat`.
+
 
     Returns
     -------
@@ -250,7 +334,48 @@ def randsamp_freq(
     --------
     random_freq
     indices_to_freq
+    select_ndat
+
+    Examples
+    --------
+    >>> import cmomy
+    >>> rng = cmomy.random.default_rng(0)
+    >>> randsamp_freq(ndat=3, nrep=5, rng=rng)
+    array([[0, 2, 1],
+           [3, 0, 0],
+           [3, 0, 0],
+           [0, 1, 2],
+           [0, 2, 1]])
+
+    Create from data and axis
+
+    >>> data = np.zeros((2, 3, 5))
+    >>> freq = randsamp_freq(data=data, axis=-1, mom_ndim=1, nrep=5, rng=rng)
+    >>> freq
+    array([[0, 2, 1],
+           [1, 1, 1],
+           [1, 0, 2],
+           [0, 2, 1],
+           [1, 0, 2]])
+
+
+    This can also be used to convert from indices to freq array
+
+    >>> indices = freq_to_indices(freq)
+    >>> randsamp_freq(data=data, axis=-1, mom_ndim=1, indices=indices)
+    array([[0, 2, 1],
+           [1, 1, 1],
+           [1, 0, 2],
+           [0, 2, 1],
+           [1, 0, 2]])
+
     """
+    if ndat is None:
+        if data is None:
+            msg = "Must pass either ndat or data"
+            raise TypeError(msg)
+        ndat = select_ndat(data=data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+
     if freq is not None:
         freq = _validate_resample_array(
             freq,
@@ -283,6 +408,7 @@ def randsamp_freq(
     return freq
 
 
+# * Utilities
 def _check_freq(freq: NDArrayAny, ndat: int) -> None:
     if freq.shape[1] != ndat:
         msg = f"{freq.shape[1]=} != {ndat=}"
@@ -316,9 +442,9 @@ def _resample_data(
 @overload
 def resample_data(  # type: ignore[overload-overlap]
     data: xr.DataArray,
-    freq: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
+    freq: NDArrayInt,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
@@ -332,9 +458,9 @@ def resample_data(  # type: ignore[overload-overlap]
 @overload
 def resample_data(
     data: ArrayLikeArg[FloatT],
-    freq: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
+    freq: NDArrayInt,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
@@ -348,9 +474,9 @@ def resample_data(
 @overload
 def resample_data(
     data: Any,
-    freq: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
+    freq: NDArrayInt,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
@@ -364,9 +490,9 @@ def resample_data(
 @overload
 def resample_data(
     data: Any,
-    freq: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
+    freq: NDArrayInt,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
@@ -380,9 +506,9 @@ def resample_data(
 @overload
 def resample_data(
     data: Any,
-    freq: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
+    freq: NDArrayInt,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
@@ -398,9 +524,9 @@ def resample_data(
 @docfiller.decorate
 def resample_data(
     data: xr.DataArray | ArrayLike,
-    freq: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
+    freq: NDArrayInt,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str = "rep",
@@ -417,8 +543,8 @@ def resample_data(
     ----------
     data : array-like
         central mom array to be resampled
-    {freq}
     {mom_ndim}
+    {freq}
     {axis}
     {dim}
     {rep_dim}
@@ -433,11 +559,16 @@ def resample_data(
     out : ndarray
         Resampled central moments. ``out.shape = (..., shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``,
         where ``shape = data.shape`` and ``nrep = freq.shape[0]``.
+
+    See Also
+    --------
+    random_freq
+    randsamp_freq
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
-
     dtype = select_dtype(data, out=out, dtype=dtype)
-    freq = freq.astype(dtype)
+
+    freq = np.asarray(freq, dtype=dtype)
 
     if isinstance(data, xr.DataArray):
         dim, data = xprepare_data_for_reduction(
@@ -448,6 +579,7 @@ def resample_data(
             order=order,
             dtype=dtype,
         )
+
         core_dims: tuple[Hashable, ...] = data.dims[-(mom_ndim + 1) :]
         return xr.apply_ufunc(  # type: ignore[no-any-return] # pyright: ignore[reportUnknownMemberType]
             _resample_data,
@@ -469,7 +601,11 @@ def resample_data(
         data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
     )
     return _resample_data(
-        data=data, freq=freq, mom_ndim=mom_ndim, parallel=parallel, out=out
+        data=data,
+        freq=freq,
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        out=out,
     )
 
 
@@ -655,13 +791,18 @@ def resample_vals(
     out : ndarray
         Resampled Central moments array. ``out.shape = (...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``
         where ``shape = args[0].shape``. and ``nrep = freq.shape[0]``.
+
+    See Also
+    --------
+    random_freq
+    randsamp_freq
     """
     mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
 
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    freq = freq.astype(dtype)
+    freq = np.asarray(freq, dtype=dtype)
 
     if isinstance(x, xr.DataArray):
         input_core_dims, (dx0, dw, *dx1) = xprepare_values_for_reduction(
