@@ -6,6 +6,7 @@ from typing import Any
 
 import numpy as np
 import pytest
+import xarray as xr
 
 from cmomy import CentralMoments, resample
 from cmomy.reduction import (
@@ -63,6 +64,42 @@ def test_central_randsamp_freq():
     freq1 = c.randsamp_freq(nrep=10, axis=0, rng=np.random.default_rng(0))
 
     np.testing.assert_allclose(freq0, freq1)
+
+    freq2 = resample.randsamp_freq(
+        data=c.data, axis=0, rng=np.random.default_rng(0), nrep=10
+    )
+    np.testing.assert_allclose(freq0, freq2)
+
+    # error if no ndat or data
+    with pytest.raises(TypeError, match="Must pass .*"):
+        resample.randsamp_freq()
+
+
+def test_select_ndat() -> None:
+    data = np.zeros((2, 3, 4, 5))
+
+    assert resample.select_ndat(data, axis=0) == 2
+    assert resample.select_ndat(data, axis=-1) == 5
+
+    assert resample.select_ndat(data, axis=-1, mom_ndim=1) == 4
+    assert resample.select_ndat(data, axis=-1, mom_ndim=2) == 3
+
+    with pytest.raises(TypeError, match="Must specify .*"):
+        resample.select_ndat(data)
+
+    with pytest.raises(ValueError):
+        resample.select_ndat(data, axis=2, mom_ndim=2)
+
+    xdata = xr.DataArray(data)
+
+    assert resample.select_ndat(xdata, dim="dim_0") == 2
+    assert resample.select_ndat(xdata, axis=1) == 3
+
+    with pytest.raises(ValueError):
+        resample.select_ndat(xdata, dim="dim_2", mom_ndim=2)
+
+    with pytest.raises(ValueError):
+        resample.select_ndat(xdata)
 
 
 @parallel_parametrize

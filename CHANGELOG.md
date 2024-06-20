@@ -18,6 +18,18 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.14.0 — 2024-06-20
+
+### Added
+
+- added `cmomy.resample.select_ndat` to select data size along reduction
+  dimension
+- Added `cmomy.randsamp_freq` to top level api
+
+### Changed
+
+- Updated `cmomy.resample.randsamp_freq` to select ndat from array
+
 ## v0.13.0 — 2024-06-18
 
 ### Added

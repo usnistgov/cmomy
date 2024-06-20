@@ -296,6 +296,7 @@ def moments_to_comoments(
 
 
     Which is identical to
+
     >>> cmomy.reduction.reduce_vals(x, x, mom=(2, 2), axis=0)
     array([[10.    ,  0.5505,  0.1014],
            [ 0.5505,  0.1014, -0.0178],

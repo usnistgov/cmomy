@@ -878,9 +878,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         """
         from .resample import randsamp_freq
 
-        axis = self._wrap_axis(axis)
         return randsamp_freq(
-            ndat=self.shape[axis],
+            data=self.values,
+            mom_ndim=self._mom_ndim,
+            axis=axis,
             nrep=nrep,
             nsamp=nsamp,
             indices=indices,
