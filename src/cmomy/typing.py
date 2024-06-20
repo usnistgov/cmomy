@@ -127,24 +127,24 @@ FuncType = Callable[..., Any]
 F = TypeVar("F", bound=FuncType)
 
 # * Xarray specific stuff
-MomDims = Union[Hashable, tuple[Hashable], tuple[Hashable, Hashable]]
-MomDimsStrict = Union[tuple[Hashable], tuple[Hashable, Hashable]]
+MomDims = Union[Hashable, "tuple[Hashable]", "tuple[Hashable, Hashable]"]
+MomDimsStrict = Union["tuple[Hashable]", "tuple[Hashable, Hashable]"]
 
 # fix if using autodoc typehints...
 IndexAny: TypeAlias = "pd.Index[Any]"
 
 XArrayCoordsType: TypeAlias = Union[
-    Sequence[Union[Sequence[Any], IndexAny, xr.DataArray]],
-    Mapping[Any, Any],
+    "Sequence[Union[Sequence[Any], IndexAny, xr.DataArray]]",
+    "Mapping[Any, Any]",
     None,
 ]
 
-XArrayAttrsType: TypeAlias = Optional[Mapping[Any, Any]]
+XArrayAttrsType: TypeAlias = Optional["Mapping[Any, Any]"]
 XArrayNameType: TypeAlias = Optional[Hashable]
-XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
+XArrayDimsType: TypeAlias = Union[Hashable, "Sequence[Hashable]", None]
 XArrayIndexesType: TypeAlias = Any
 
-Dims = Union[str, Collection[Hashable], "ellipsis", None]  # noqa: F821  # pyright: ignore[reportGeneralTypeIssues]
+Dims = Union[str, "Collection[Hashable]", "ellipsis", None]  # noqa: F821  # pyright: ignore[reportGeneralTypeIssues]
 
 # literals
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
@@ -159,4 +159,4 @@ ConvertStyle = Literal["central", "raw"]
 
 
 # For indexed reducetion
-Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
+Groups: TypeAlias = Union["Sequence[Any]", NDArrayAny, IndexAny, pd.MultiIndex]

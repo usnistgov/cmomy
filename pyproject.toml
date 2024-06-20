@@ -19,7 +19,7 @@ license-files = { paths = [
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.8,<3.13"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
@@ -27,6 +27,7 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -551,6 +552,7 @@ envs = [
     "test-extras",
 ]
 python = [
+    "3.8",
     "3.9",
     "3.10",
     "3.11",

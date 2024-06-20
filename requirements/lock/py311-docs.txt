@@ -24,7 +24,7 @@ greenlet==3.0.3           # via sqlalchemy
 h11==0.14.0               # via uvicorn
 idna==3.7                 # via anyio, requests
 imagesize==1.4.1          # via sphinx
-importlib-metadata==7.1.0  # via jupyter-cache, myst-nb
+importlib-metadata==7.2.0  # via jupyter-cache, myst-nb
 ipykernel==6.29.4         # via myst-nb
 ipython==8.25.0           # via ipykernel, myst-nb
 jedi==0.19.1              # via ipython

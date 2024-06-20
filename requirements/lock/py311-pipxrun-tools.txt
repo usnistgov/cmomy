@@ -28,7 +28,7 @@ gitpython==3.1.43         # via conda-lock
 grayskull==2.6.0          # via -r requirements/pipxrun-tools.txt
 html5lib==1.1             # via conda-lock
 idna==3.7                 # via requests
-importlib-metadata==7.1.0  # via keyring, twine
+importlib-metadata==7.2.0  # via keyring, twine
 ipython==8.25.0           # via nbqa
 jaraco-classes==3.4.0     # via keyring
 jaraco-context==5.3.0     # via keyring
