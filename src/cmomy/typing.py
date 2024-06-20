@@ -5,18 +5,14 @@ Typing aliases (:mod:`cmomy.typing`)
 
 from __future__ import annotations
 
+from collections.abc import Collection, Hashable, Mapping, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Collection,
-    Hashable,
     Literal,
-    Mapping,
     Optional,
     Protocol,
-    Sequence,
-    Tuple,
     Union,
     runtime_checkable,
 )
@@ -131,14 +127,11 @@ FuncType = Callable[..., Any]
 F = TypeVar("F", bound=FuncType)
 
 # * Xarray specific stuff
-MomDims = Union[Hashable, Tuple[Hashable], Tuple[Hashable, Hashable]]
-MomDimsStrict = Union[Tuple[Hashable], Tuple[Hashable, Hashable]]
+MomDims = Union[Hashable, tuple[Hashable], tuple[Hashable, Hashable]]
+MomDimsStrict = Union[tuple[Hashable], tuple[Hashable, Hashable]]
 
 # fix if using autodoc typehints...
-if TYPE_CHECKING:
-    IndexAny: TypeAlias = "pd.Index[Any]"  # type: ignore[type-arg,unused-ignore]  # py38 type error
-else:
-    IndexAny: TypeAlias = pd.Index
+IndexAny: TypeAlias = "pd.Index[Any]"
 
 XArrayCoordsType: TypeAlias = Union[
     Sequence[Union[Sequence[Any], IndexAny, xr.DataArray]],

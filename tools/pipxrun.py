@@ -38,10 +38,10 @@ from packaging.version import Version
 
 if TYPE_CHECKING:
     import argparse
-    from types import ModuleType
 
     # from typing import IO, Iterable, Iterator, Literal, Mapping, Sequence
-    from typing import Iterable, Iterator, Mapping, Sequence
+    from collections.abc import Iterable, Iterator, Mapping, Sequence
+    from types import ModuleType
 
 # Optional imports
 colorlog: ModuleType | None

@@ -14,7 +14,8 @@ from ._lib.utils import supports_parallel as supports_parallel  # noqa: PLC0414
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
-    from typing import Any, Hashable, Iterable, Mapping, Sequence
+    from collections.abc import Hashable, Iterable, Mapping, Sequence
+    from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 

@@ -20,10 +20,7 @@ from typing import (
     Annotated,
     Any,
     Callable,
-    Iterable,
-    Iterator,
     Literal,
-    Sequence,
     TypeAlias,
     TypedDict,
 )
@@ -57,6 +54,8 @@ import nox  # type: ignore[unused-ignore,import]
 # fmt: on
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable, Iterator, Sequence
+
     from nox import Session
     from nox.virtualenv import CondaEnv
 
@@ -87,7 +86,7 @@ CONFIG = load_nox_config()
 
 LOCK = True
 
-PYTHON_ALL_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+PYTHON_ALL_VERSIONS = ["3.9", "3.10", "3.11", "3.12"]
 PYTHON_DEFAULT_VERSION = "3.11"
 
 
@@ -606,7 +605,7 @@ def uv_compile(
     )
 
     envs_all = ["test", "typing"]
-    envs_dev = ["dev", "dev-complete", "docs"]
+    envs_dev = ["dev", "dev-complete", "docs", "test-numpy1"]
     envs_dev_optional = ["test-notebook", "pipxrun-tools"]
 
     for python in set(PYTHON_ALL_VERSIONS).union({PYTHON_DEFAULT_VERSION}):
@@ -705,6 +704,37 @@ def test(
 
 nox.session(name="test", **ALL_KWS)(test)
 nox.session(name="test-conda", **CONDA_ALL_KWS)(test)
+
+
+@nox.session(name="test-numpy1", **DEFAULT_KWS)
+@add_opts
+def test_numpy1(
+    session: Session,
+    opts: SessionParams,
+) -> None:
+    """Test environments with numpy<2.0."""
+    (
+        Installer.from_envname(
+            session=session,
+            envname="test-numpy1",
+            lock=opts.lock,
+            # To use editable install
+            package=True,
+            # To use full install
+            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),
+            update=opts.update,
+        ).install_all(log_session=opts.log_session, update_package=opts.update_package)
+    )
+
+    _test(
+        session=session,
+        run=opts.test_run,
+        test_no_pytest=opts.test_no_pytest,
+        test_opts=opts.test_opts,
+        no_cov=opts.no_cov,
+        test_no_numba=opts.test_no_numba,
+    )
+
 
 # @nox.session(name="test-nojit", **DEFAULT_KWS)
 # @add_opts

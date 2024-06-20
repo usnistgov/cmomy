@@ -5,7 +5,8 @@ Conversion routines (:mod:`~cmomy.convert`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Sequence, overload
+from collections.abc import Sequence
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr

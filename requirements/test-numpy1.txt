@@ -7,11 +7,15 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
-channels:
-  - conda-forge
-dependencies:
-  - python=3.8
-  - pytest
-  - pytest-cov
-  - pytest-sugar
-  - pytest-xdist
+docstring-inheritance
+lazy-loader
+module-utilities>=0.6
+numba>=0.58
+numpy<2.0
+numpy>1.24
+pytest
+pytest-cov
+pytest-sugar
+pytest-xdist
+typing-extensions
+xarray>=0.16

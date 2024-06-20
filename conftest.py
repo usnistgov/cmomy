@@ -57,9 +57,4 @@ def pytest_collection_modifyitems(config, items) -> None:
 
 
 def pytest_ignore_collect(collection_path) -> None:
-    import sys
-
-    if sys.version_info < (3, 9):
-        return "cmomy/tests" not in str(collection_path)
-
     return False

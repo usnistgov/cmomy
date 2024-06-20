@@ -8,7 +8,7 @@ from __future__ import annotations
 from itertools import starmap
 
 # if TYPE_CHECKING:
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
@@ -33,7 +33,8 @@ from .docstrings import docfiller
 from .random import validate_rng
 
 if TYPE_CHECKING:
-    from typing import Any, Hashable, Literal, Sequence
+    from collections.abc import Hashable, Sequence
+    from typing import Any, Literal
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
@@ -972,7 +973,7 @@ def xbootstrap_confidence_interval(  # pragma: no cover
         If string, use this for the 'values' name
     """
     if dim is not None:
-        axis = cast(int, x.get_axis_num(dim))  # type: ignore[redundant-cast, unused-ignore]
+        axis = x.get_axis_num(dim)
     else:
         dim = x.dims[axis]
 

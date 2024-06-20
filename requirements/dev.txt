@@ -24,5 +24,5 @@ pytest-accept
 pytest-cov
 pytest-sugar
 pytest-xdist
-typing-extensions;python_version<"3.13"
+typing-extensions
 xarray>=0.16

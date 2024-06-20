@@ -50,9 +50,7 @@ from typing import (
     Annotated,
     Any,
     Callable,
-    Container,
     Literal,
-    Sequence,
     Union,
     cast,
     get_args,
@@ -61,6 +59,8 @@ from typing import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Container, Sequence
+
     if sys.version_info < (3, 11):
         from typing_extensions import Self
     else:

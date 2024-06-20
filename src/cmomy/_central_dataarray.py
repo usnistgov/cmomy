@@ -22,14 +22,11 @@ from ._utils import (
 from .docstrings import docfiller_xcentral as docfiller
 
 if TYPE_CHECKING:
+    from collections.abc import Hashable, Iterable, Mapping, Sequence
     from typing import (
         Any,
         Callable,
-        Hashable,
-        Iterable,
         Literal,
-        Mapping,
-        Sequence,
     )
 
     # Iterable,
