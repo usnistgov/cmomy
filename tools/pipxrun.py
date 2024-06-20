@@ -38,8 +38,6 @@ from packaging.version import Version
 
 if TYPE_CHECKING:
     import argparse
-
-    # from typing import IO, Iterable, Iterator, Literal, Mapping, Sequence
     from collections.abc import Iterable, Iterator, Mapping, Sequence
     from types import ModuleType
 
