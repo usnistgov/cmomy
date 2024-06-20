@@ -6,7 +6,6 @@ from __future__ import annotations
 import shlex
 import shutil
 import sys
-from functools import lru_cache, partial, wraps
 
 # Should only use on python version > 3.10
 if sys.version_info < (3, 10):
@@ -14,12 +13,12 @@ if sys.version_info < (3, 10):
     raise RuntimeError(msg)
 
 from dataclasses import dataclass
+from functools import lru_cache, partial, wraps
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Annotated,
     Any,
-    Callable,
     Literal,
     TypeAlias,
     TypedDict,
@@ -54,7 +53,7 @@ import nox  # type: ignore[unused-ignore,import]
 # fmt: on
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Iterator, Sequence
+    from collections.abc import Callable, Iterable, Iterator, Sequence
 
     from nox import Session
     from nox.virtualenv import CondaEnv

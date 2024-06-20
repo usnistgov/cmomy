@@ -50,8 +50,8 @@ from nox.virtualenv import CondaEnv, VirtualEnv
 
 if TYPE_CHECKING:
     import sys
-    from collections.abc import Iterable, Iterator
-    from typing import Any, Callable, Literal, Union
+    from collections.abc import Callable, Iterable, Iterator
+    from typing import Any, Literal, Union
 
     from nox import Session
 
@@ -156,7 +156,7 @@ def _verify_paths(
 ) -> list[Path]:
     if paths is None:
         return []
-    if isinstance(paths, (str, Path)):
+    if isinstance(paths, str | Path):
         paths = [paths]
     return [_verify_path(p) for p in paths]
 
