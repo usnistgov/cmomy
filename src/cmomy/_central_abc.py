@@ -321,13 +321,12 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         casting : {{'no', 'equiv', 'safe', 'same_kind', 'unsafe'}}, optional
             Controls what kind of data casting may occur.
 
-            * 'no' means the data types should not be cast at all.
-            * 'equiv' means only byte-order changes are allowed.
-            * 'safe' means only casts which can preserve values are allowed.
-            * 'same_kind' means only safe casts or casts within a kind,
+            - 'no' means the data types should not be cast at all.
+            - 'equiv' means only byte-order changes are allowed.
+            - 'safe' means only casts which can preserve values are allowed.
+            - 'same_kind' means only safe casts or casts within a kind,
               like float64 to float32, are allowed.
-            * 'unsafe' (default) means any data conversions may be done.
-
+            - 'unsafe' (default) means any data conversions may be done.
 
         subok : bool, optional
             If True, then sub-classes will be passed-through, otherwise the
