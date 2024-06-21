@@ -18,6 +18,16 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.15.0 — 2024-06-21
+
+### Added
+
+- Added `cmomy.concat` method to concatenate moments objects.
+
+- Added `__getitem__` to `(x)CentralMoments` objects. This method **does not\***
+  allow changing the moments shape. If you want to do that, you'll need to work
+  directly with `(x)CentralMoments.to_values()`
+
 ## v0.14.0 — 2024-06-20
 
 ### Added
