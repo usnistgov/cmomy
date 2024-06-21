@@ -7,7 +7,7 @@
 .. autoclass:: {{ objname }}
    :show-inheritance:
    :inherited-members:
-   :special-members: __call__, __add__, __iadd__, __sub__, __isub__, __mul__, __imul__
+   :special-members: __call__, __add__, __iadd__, __sub__, __isub__, __mul__, __imul__, __getitem__
 
 
 
@@ -53,6 +53,7 @@
                       '__isub__',
                       '__mul__',
                       '__imul__',
+                      '__getitem__',
                       ] %}
       ~{{ name }}.{{ item }}
       {%- endif -%}
