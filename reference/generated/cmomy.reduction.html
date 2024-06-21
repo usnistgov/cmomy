@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Routines to perform central moments reduction (reduction) &#8212; cmomy v0.14.0 documentation</title>
+    <title>Routines to perform central moments reduction (reduction) &#8212; cmomy v0.15.0 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
 
-    <script src="../../_static/documentation_options.js?v=26be4343"></script>
+    <script src="../../_static/documentation_options.js?v=da6476af"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="&lt;no title&gt;" href="../api-modules.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-06-20"/>
+    <meta name="docbuild:last-update" content="2024-06-21"/>
   </head>
   
   
@@ -142,7 +142,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.14.0 documentation</p>
+    <p class="title logo__title">cmomy v0.15.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -204,6 +204,7 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
+
 
 
 
@@ -547,12 +548,12 @@ Same type as input <code class="docutils literal notranslate"><span class="pre">
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.reduction.factor_by">
-<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">factor_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L425-L507"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.factor_by" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">factor_by</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L425-L509"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.factor_by" title="Link to this definition">#</a></dt>
 <dd><p>Factor by to codes and groups.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>by</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>) – Values to group by. Negative or <code class="docutils literal notranslate"><span class="pre">None</span></code> values indicate to skip this
+<li><p><strong>by</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.12)"><span class="xref std std-term">sequence</span></a>) – Values to group by. Negative or <code class="docutils literal notranslate"><span class="pre">None</span></code> values indicate to skip this
 value. Note that if <code class="docutils literal notranslate"><span class="pre">by</span></code> is a pandas <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v2.2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Index</span></code></a> object,
 missing values should be marked with <code class="docutils literal notranslate"><span class="pre">None</span></code> only.</p></li>
 <li><p><strong>sort</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (default), sort <code class="docutils literal notranslate"><span class="pre">groups</span></code>.
@@ -576,32 +577,38 @@ If <code class="docutils literal notranslate"><span class="pre">False</span></co
 <span class="go">array([ 0,  0,  1, -1,  1,  2,  2])</span>
 </pre></div>
 </div>
-<p>Note that with sort=False, groups are in order of first appearance.
-&gt;&gt;&gt; groups, codes = factor_by(by)
-&gt;&gt;&gt; groups
-[0, 1, 2]
-&gt;&gt;&gt; codes
-array([ 1,  1,  0, -1,  0,  2,  2])</p>
-<p>This also works for sequences of non-intengers.
-&gt;&gt;&gt; by = [“a”, “a”, None, “c”, “c”, -1]
-&gt;&gt;&gt; groups, codes = factor_by(by)
-&gt;&gt;&gt; groups
-[‘a’, ‘c’]
-&gt;&gt;&gt; codes
-array([ 0,  0, -1,  1,  1, -1])</p>
-<p>And for <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v2.2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Index</span></code></a> objects
-&gt;&gt;&gt; import pandas as pd
-&gt;&gt;&gt; by = pd.Index([“a”, “a”, None, “c”, “c”, None])
-&gt;&gt;&gt; groups, codes = factor_by(by)
-&gt;&gt;&gt; groups
-Index([‘a’, ‘c’], dtype=’object’)
-&gt;&gt;&gt; codes
-array([ 0,  0, -1,  1,  1, -1])</p>
+<p>Note that with sort=False, groups are in order of first appearance.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span><span class="p">,</span> <span class="n">codes</span> <span class="o">=</span> <span class="n">factor_by</span><span class="p">(</span><span class="n">by</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span>
+<span class="go">[0, 1, 2]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codes</span>
+<span class="go">array([ 1,  1,  0, -1,  0,  2,  2])</span>
+</pre></div>
+</div>
+<p>This also works for sequences of non-intengers.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">by</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span><span class="p">,</span> <span class="n">codes</span> <span class="o">=</span> <span class="n">factor_by</span><span class="p">(</span><span class="n">by</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span>
+<span class="go">[&#39;a&#39;, &#39;c&#39;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codes</span>
+<span class="go">array([ 0,  0, -1,  1,  1, -1])</span>
+</pre></div>
+</div>
+<p>And for <a class="reference external" href="https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.html#pandas.Index" title="(in pandas v2.2.2)"><code class="xref py py-class docutils literal notranslate"><span class="pre">pandas.Index</span></code></a> objects</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">by</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Index</span><span class="p">([</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span><span class="p">,</span> <span class="n">codes</span> <span class="o">=</span> <span class="n">factor_by</span><span class="p">(</span><span class="n">by</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">groups</span>
+<span class="go">Index([&#39;a&#39;, &#39;c&#39;], dtype=&#39;object&#39;)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">codes</span>
+<span class="go">array([ 0,  0, -1,  1,  1, -1])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.reduction.reduce_data_grouped">
-<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">reduce_data_grouped</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L632-L768"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.reduce_data_grouped" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">reduce_data_grouped</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">by</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L634-L770"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.reduce_data_grouped" title="Link to this definition">#</a></dt>
 <dd><p>Reduce data by group.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -622,7 +629,7 @@ array.</p></li>
 <li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> for output data.</p></li>
 <li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.12)"><span class="xref std std-term">hashable</span></a>) – Dimension to reduce along.</p></li>
 <li><p><strong>group_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Name of the output group dimension.  Defaults to <code class="docutils literal notranslate"><span class="pre">dim</span></code>.</p></li>
-<li><p><strong>groups</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>, <em>optional</em>) – Sequence of length <code class="docutils literal notranslate"><span class="pre">by.max()</span> <span class="pre">+</span> <span class="pre">1</span></code> to assign as coordinates for <code class="docutils literal notranslate"><span class="pre">group_dim</span></code>.</p></li>
+<li><p><strong>groups</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.12)"><span class="xref std std-term">sequence</span></a>, <em>optional</em>) – Sequence of length <code class="docutils literal notranslate"><span class="pre">by.max()</span> <span class="pre">+</span> <span class="pre">1</span></code> to assign as coordinates for <code class="docutils literal notranslate"><span class="pre">group_dim</span></code>.</p></li>
 <li><p><strong>keep_attrs</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;drop&quot;,</span> <span class="pre">&quot;identical&quot;,</span> <span class="pre">&quot;no_conflicts&quot;,</span> <span class="pre">&quot;drop_conflicts&quot;,</span> <span class="pre">&quot;override&quot;}</span></code> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – <ul>
 <li><p>‘drop’ or False: empty attrs on returned xarray object.</p></li>
 <li><p>’identical’: all attrs must be the same on every object.</p></li>
@@ -690,7 +697,7 @@ This has the added benefit of working with non integer groups as well</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.reduction.factor_by_to_index">
-<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">factor_by_to_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L773-L845"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.factor_by_to_index" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">factor_by_to_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">by</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L775-L847"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.factor_by_to_index" title="Link to this definition">#</a></dt>
 <dd><p>Transform group_idx to quantities to be used with <a class="reference internal" href="#cmomy.reduction.reduce_data_indexed" title="cmomy.reduction.reduce_data_indexed"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduce_data_indexed()</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -738,7 +745,7 @@ This has the added benefit of working with non integer groups as well</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.reduction.reduce_data_indexed">
-<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">reduce_data_indexed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'first'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L1036-L1208"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.reduce_data_indexed" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">reduce_data_indexed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_start</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'first'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L1038-L1210"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.reduce_data_indexed" title="Link to this definition">#</a></dt>
 <dd><p>Reduce data by index</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -777,7 +784,7 @@ If no coordinates do nothing, otherwise use:</p>
 will be ignored.</p>
 </p></li>
 <li><p><strong>group_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Name of the output group dimension.  Defaults to <code class="docutils literal notranslate"><span class="pre">dim</span></code>.</p></li>
-<li><p><strong>groups</strong> (<code class="xref py py-class docutils literal notranslate"><span class="pre">Sequence</span></code>, <em>optional</em>) – Sequence of length <code class="docutils literal notranslate"><span class="pre">by.max()</span> <span class="pre">+</span> <span class="pre">1</span></code> to assign as coordinates for <code class="docutils literal notranslate"><span class="pre">group_dim</span></code>.</p></li>
+<li><p><strong>groups</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.12)"><span class="xref std std-term">sequence</span></a>, <em>optional</em>) – Sequence of length <code class="docutils literal notranslate"><span class="pre">by.max()</span> <span class="pre">+</span> <span class="pre">1</span></code> to assign as coordinates for <code class="docutils literal notranslate"><span class="pre">group_dim</span></code>.</p></li>
 <li><p><strong>keep_attrs</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;drop&quot;,</span> <span class="pre">&quot;identical&quot;,</span> <span class="pre">&quot;no_conflicts&quot;,</span> <span class="pre">&quot;drop_conflicts&quot;,</span> <span class="pre">&quot;override&quot;}</span></code> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – <ul>
 <li><p>‘drop’ or False: empty attrs on returned xarray object.</p></li>
 <li><p>’identical’: all attrs must be the same on every object.</p></li>
@@ -838,7 +845,7 @@ it can be used similarly.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.reduction.resample_data_indexed">
-<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">resample_data_indexed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'first'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L1212-L1251"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.resample_data_indexed" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.reduction.</span></span><span class="sig-name descname"><span class="pre">resample_data_indexed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">freq</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_policy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'first'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">groups</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/reduction.py#L1214-L1253"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.reduction.resample_data_indexed" title="Link to this definition">#</a></dt>
 <dd><p>Resample using indexed reduction.</p>
 </dd></dl>
 
@@ -930,7 +937,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-06-20.
+  Last updated on 2024-06-21.
   <br/>
 </p>
   </div>

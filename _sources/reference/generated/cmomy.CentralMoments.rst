@@ -8,7 +8,7 @@
 .. autoclass:: CentralMoments
    :show-inheritance:
    :inherited-members:
-   :special-members: __call__, __add__, __iadd__, __sub__, __isub__, __mul__, __imul__
+   :special-members: __call__, __add__, __iadd__, __sub__, __isub__, __mul__, __imul__, __getitem__
 
 
 
@@ -88,6 +88,7 @@
    .. autosummary::
    
       ~CentralMoments.__add__
+      ~CentralMoments.__getitem__
       ~CentralMoments.__iadd__
       ~CentralMoments.__imul__
       ~CentralMoments.__isub__

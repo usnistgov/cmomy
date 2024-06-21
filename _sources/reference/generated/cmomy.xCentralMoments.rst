@@ -8,7 +8,7 @@
 .. autoclass:: xCentralMoments
    :show-inheritance:
    :inherited-members:
-   :special-members: __call__, __add__, __iadd__, __sub__, __isub__, __mul__, __imul__
+   :special-members: __call__, __add__, __iadd__, __sub__, __isub__, __mul__, __imul__, __getitem__
 
 
 
@@ -106,6 +106,7 @@
    .. autosummary::
    
       ~xCentralMoments.__add__
+      ~xCentralMoments.__getitem__
       ~xCentralMoments.__iadd__
       ~xCentralMoments.__imul__
       ~xCentralMoments.__isub__
