@@ -14,7 +14,7 @@ docstring-inheritance==2.2.0  # via -r requirements/dev.txt
 execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
 fastjsonschema==2.20.0    # via nbformat
-filelock==3.15.1          # via virtualenv
+filelock==3.15.3          # via virtualenv
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.4         # via nbval, -r requirements/dev.txt
 ipython==8.25.0           # via ipykernel, -r requirements/dev.txt
@@ -42,7 +42,7 @@ pexpect==4.9.0            # via ipython
 platformdirs==4.2.2       # via jupyter-core, virtualenv
 pluggy==1.5.0             # via pytest
 prompt-toolkit==3.0.47    # via ipython
-psutil==5.9.8             # via ipykernel
+psutil==6.0.0             # via ipykernel
 ptyprocess==0.7.0         # via pexpect
 pure-eval==0.2.2          # via stack-data
 pygments==2.18.0          # via ipython

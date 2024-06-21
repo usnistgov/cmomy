@@ -24,6 +24,7 @@ from .docstrings import docfiller
 if TYPE_CHECKING:
     from typing import Any, Callable
 
+    import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from ._lib.factory import Pusher
@@ -175,7 +176,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     @property
     def mom_shape(self) -> MomentsStrict:
         """Shape of moments part."""
-        return cast("MomentsStrict", self.data.shape[-self.mom_ndim :])
+        return cast("MomentsStrict", self._data.shape[-self._mom_ndim :])
 
     @property
     def mom(self) -> MomentsStrict:
@@ -206,6 +207,29 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         from ._formatting import repr_html  # pyright: ignore[reportUnknownVariableType]
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
+
+    def _check_array_mom_shape(self, data: NDArrayAny | xr.DataArray) -> None:
+        """Check that new data has same mom_shape as `self`."""
+        if data.shape[-self._mom_ndim :] != self.mom_shape:
+            # at a minimum, verify that mom_shape is unchanged.
+            msg = f"{data.shape=} has wrong mom_shape={self.mom_shape}"
+            raise ValueError(msg)
+
+    def __getitem__(self, key: Any) -> Self:
+        """
+        Get new object by indexing.
+
+        Note that only objects with the same moment(s) shape are allowed.
+
+        If you want to extract data in general, use `self.to_values()[....]`.
+        """
+        data = self.to_values()[key]
+        self._check_array_mom_shape(data)
+        return type(self)(
+            data=data,
+            mom_ndim=self._mom_ndim,
+            fastpath=True,
+        )
 
     def __array__(  # noqa: PLW3201
         self, dtype: DTypeLike = None, copy: bool | None = None

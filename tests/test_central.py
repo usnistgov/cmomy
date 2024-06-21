@@ -44,6 +44,17 @@ def test_values() -> None:
     assert c.values is c.to_values()  # noqa: PD011
 
 
+def test_getitem() -> None:
+    c = CentralMoments.zeros(val_shape=(2, 3, 4), mom=3)
+
+    assert c[..., 0, :].shape == (2, 3, 4)
+    assert c[0, ...].shape == (3, 4, 4)
+    assert c[:, 1:, 2:, :].shape == (2, 2, 2, 4)
+
+    with pytest.raises(ValueError, match=".*has wrong mom_shape.*"):
+        _ = c[..., 1:]
+
+
 def test_new_like() -> None:
     c = CentralMoments.zeros(val_shape=(2, 3), mom=2)
 

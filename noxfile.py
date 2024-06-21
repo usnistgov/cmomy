@@ -6,7 +6,6 @@ from __future__ import annotations
 import shlex
 import shutil
 import sys
-from functools import lru_cache, partial, wraps
 
 # Should only use on python version > 3.10
 if sys.version_info < (3, 10):
@@ -14,16 +13,13 @@ if sys.version_info < (3, 10):
     raise RuntimeError(msg)
 
 from dataclasses import dataclass
+from functools import lru_cache, partial, wraps
 from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Annotated,
     Any,
-    Callable,
-    Iterable,
-    Iterator,
     Literal,
-    Sequence,
     TypeAlias,
     TypedDict,
 )
@@ -57,6 +53,8 @@ import nox  # type: ignore[unused-ignore,import]
 # fmt: on
 
 if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable, Iterator, Sequence
+
     from nox import Session
     from nox.virtualenv import CondaEnv
 
@@ -606,7 +604,7 @@ def uv_compile(
     )
 
     envs_all = ["test", "typing"]
-    envs_dev = ["dev", "dev-complete", "docs"]
+    envs_dev = ["dev", "dev-complete", "docs", "test-numpy1"]
     envs_dev_optional = ["test-notebook", "pipxrun-tools"]
 
     for python in set(PYTHON_ALL_VERSIONS).union({PYTHON_DEFAULT_VERSION}):
@@ -705,6 +703,37 @@ def test(
 
 nox.session(name="test", **ALL_KWS)(test)
 nox.session(name="test-conda", **CONDA_ALL_KWS)(test)
+
+
+@nox.session(name="test-numpy1", **DEFAULT_KWS)
+@add_opts
+def test_numpy1(
+    session: Session,
+    opts: SessionParams,
+) -> None:
+    """Test environments with numpy<2.0."""
+    (
+        Installer.from_envname(
+            session=session,
+            envname="test-numpy1",
+            lock=opts.lock,
+            # To use editable install
+            package=True,
+            # To use full install
+            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),
+            update=opts.update,
+        ).install_all(log_session=opts.log_session, update_package=opts.update_package)
+    )
+
+    _test(
+        session=session,
+        run=opts.test_run,
+        test_no_pytest=opts.test_no_pytest,
+        test_opts=opts.test_opts,
+        no_cov=opts.no_cov,
+        test_no_numba=opts.test_no_numba,
+    )
+
 
 # @nox.session(name="test-nojit", **DEFAULT_KWS)
 # @add_opts
@@ -883,8 +912,7 @@ def docs(
     runner.run_commands(opts.docs_run)
 
     cmd = opts.docs or []
-    if not opts.docs_run and not cmd:
-        cmd = ["html"]
+    cmd = ["html"] if not opts.docs_run and not cmd else list(cmd)
 
     if "symlink" in cmd:
         cmd.remove("symlink")
@@ -973,6 +1001,7 @@ def typing(  # noqa: C901
     session.env["MYPY_CACHE_DIR"] = str(Path(session.create_tmp()) / ".mypy_cache")
 
     if "clean" in cmd:
+        cmd = list(cmd)
         cmd.remove("clean")
 
         for name in [".mypy_cache", ".pytype"]:
@@ -1225,6 +1254,7 @@ def conda_build(session: nox.Session, opts: SessionParams) -> None:
     if cmds is None:
         cmds = []
 
+    cmds = list(cmds)
     if "clean" in cmds:
         cmds.remove("clean")
         session.log("removing directory dist-conda/build")

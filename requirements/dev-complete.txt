@@ -27,5 +27,5 @@ pytest-cov
 pytest-sugar
 pytest-xdist
 scriv
-typing-extensions;python_version<"3.13"
+typing-extensions
 xarray>=0.16

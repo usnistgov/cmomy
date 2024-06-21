@@ -68,7 +68,7 @@ def repr_html(x):
     # build the cmomy header
     obj_type = type(x).__name__
 
-    keys = [k for k in ["mom", "mom_dims", "val_shape", "val_dims"] if hasattr(x, k)]
+    keys = [k for k in ["val_shape", "val_dims", "mom", "mom_dims"] if hasattr(x, k)]
 
     attrs = {}
     for k in keys:
@@ -77,7 +77,7 @@ def repr_html(x):
             attrs[k] = tuple_to_str(v)
 
     dims = {}
-    for k in ["mom", "val_shape"]:
+    for k in ["val_shape", "mom"]:
         if k in attrs:
             dims[k] = attrs.pop(k)
 

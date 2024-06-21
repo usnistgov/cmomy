@@ -35,7 +35,7 @@ pexpect==4.9.0            # via ipython
 platformdirs==4.2.2       # via jupyter-core
 pluggy==1.5.0             # via pytest
 prompt-toolkit==3.0.47    # via ipython
-psutil==5.9.8             # via ipykernel
+psutil==6.0.0             # via ipykernel
 ptyprocess==0.7.0         # via pexpect
 pure-eval==0.2.2          # via stack-data
 pygments==2.18.0          # via ipython

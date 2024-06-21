@@ -21,7 +21,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import argparse
-    from typing import Any, Sequence
+    from collections.abc import Sequence
+    from typing import Any
 
     from ._typing_compat import Self
 

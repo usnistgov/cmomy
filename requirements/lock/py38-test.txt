@@ -4,7 +4,7 @@ coverage==7.5.3           # via pytest-cov
 docstring-inheritance==2.2.0  # via -r requirements/test.txt
 exceptiongroup==1.2.1     # via pytest
 execnet==2.1.1            # via pytest-xdist
-importlib-metadata==7.1.0  # via numba
+importlib-metadata==7.2.0  # via numba
 iniconfig==2.0.0          # via pytest
 lazy-loader==0.4          # via -r requirements/test.txt
 llvmlite==0.41.1          # via numba

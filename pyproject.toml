@@ -44,7 +44,7 @@ dependencies = [
     "module-utilities>=0.6",
     "numba>=0.58",
     "numpy>1.24",
-    "typing-extensions; python_version<'3.13'",
+    "typing-extensions",
     "xarray>=0.16",
 ]
 optional-dependencies.dev = [
@@ -87,7 +87,7 @@ optional-dependencies.pipxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.367",
+    "pyright>=1.1.368",
     "twine>=5.0.0",
 ]
 optional-dependencies.test = [
@@ -519,6 +519,13 @@ extras = [
     "test",
 ]
 base = false
+
+[tool.pyproject2conda.envs.test-numpy1]
+extras = "test"
+reqs = [
+    "numpy<2.0",
+]
+style = "requirements"
 
 [tool.pyproject2conda.envs.test-notebook]
 extras = [

@@ -431,7 +431,7 @@ def factor_by(
 
     Parameters
     ----------
-    by : Sequence
+    by : sequence
         Values to group by. Negative or ``None`` values indicate to skip this
         value. Note that if ``by`` is a pandas :class:`pandas.Index` object,
         missing values should be marked with ``None`` only.
@@ -457,6 +457,7 @@ def factor_by(
     array([ 0,  0,  1, -1,  1,  2,  2])
 
     Note that with sort=False, groups are in order of first appearance.
+
     >>> groups, codes = factor_by(by)
     >>> groups
     [0, 1, 2]
@@ -464,6 +465,7 @@ def factor_by(
     array([ 1,  1,  0, -1,  0,  2,  2])
 
     This also works for sequences of non-intengers.
+
     >>> by = ["a", "a", None, "c", "c", -1]
     >>> groups, codes = factor_by(by)
     >>> groups
@@ -471,8 +473,8 @@ def factor_by(
     >>> codes
     array([ 0,  0, -1,  1,  1, -1])
 
-
     And for :class:`pandas.Index` objects
+
     >>> import pandas as pd
     >>> by = pd.Index(["a", "a", None, "c", "c", None])
     >>> groups, codes = factor_by(by)
