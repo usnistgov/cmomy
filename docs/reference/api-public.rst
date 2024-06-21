@@ -18,6 +18,13 @@ Central Moments wrapper classes
    CentralMoments
    xCentralMoments
 
+Concatenation
+-------------
+
+.. autosummary::
+
+   ~cmomy.convert.concat
+
 
 
 Reduction routines available at top level (from :mod:`cmomy.reduction`)
@@ -31,7 +38,6 @@ Reduction routines available at top level (from :mod:`cmomy.reduction`)
 
 Resampling routines available at top level (from :mod:`cmomy.resample`)
 -----------------------------------------------------------------------
-
 
 .. autosummary::
 

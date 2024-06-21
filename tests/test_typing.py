@@ -449,6 +449,43 @@ def test_update_weight() -> None:
         assert_type(cAny.to_x().assign_weight(1.0), xCentralMoments[Any])
 
 
+def test_concat() -> None:
+    if TYPE_CHECKING:
+        x32 = np.zeros((10, 2, 3), dtype=np.float32)
+        x64 = np.zeros((10, 2, 3), dtype=np.float64)
+
+        dx32 = xr.DataArray(x32, dims=["a", "b", "mom"])
+        dx64 = xr.DataArray(x64, dims=["a", "b", "mom"])
+
+        c32 = CentralMoments(x32)
+        c64 = CentralMoments(x64)
+
+        dc32: xCentralMoments[np.float32] = xCentralMoments(dx32)
+        dc64: xCentralMoments[np.float64] = xCentralMoments(dx64)
+
+        assert_type(convert.concat((x32, x32), axis=0), NDArray[np.float32])
+        assert_type(convert.concat((x64, x64), axis=0), NDArray[np.float64])
+
+        assert_type(convert.concat((dx32, dx32), axis=0), xr.DataArray)
+
+        assert_type(convert.concat((c32, c32), axis=0), CentralMoments[np.float32])
+        assert_type(convert.concat((dc32, dc32), axis=0), xCentralMoments[np.float32])
+
+        assert_type(convert.concat((c64, c64), axis=0), CentralMoments[np.float64])
+        assert_type(convert.concat((dc64, dc64), axis=0), xCentralMoments[np.float64])
+
+        xany: NDArray[Any] = np.zeros([1, 2, 3])
+        dxany = xr.DataArray(xany)
+        assert_type(convert.concat((xany, xany), axis=0), NDArray[Any])
+        assert_type(convert.concat((dxany, dxany), axis=0), xr.DataArray)
+
+        cany = CentralMoments(xany)
+        assert_type(convert.concat((cany, cany), axis=0), CentralMoments[Any])
+
+        dcany = xCentralMoments(dxany)
+        assert_type(convert.concat((dcany, dcany), axis=0), xCentralMoments[Any])
+
+
 # if mypy properly supports partial will add this...
 # def test_convert_central_to_raw() -> None:
 #     x32 = np.array([1, 2, 3], dtype=np.float32)

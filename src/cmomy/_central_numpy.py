@@ -218,10 +218,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 dtype=dtype or self.dtype,
             )
         else:
-            if data.shape[-self.mom_ndim :] != self.mom_shape:
-                # at a minimum, verify that mom_shape is unchanged.
-                msg = f"{data.shape=} has wrong mom_shape={self.mom_shape}"
-                raise ValueError(msg)
+            self._check_array_mom_shape(data)
             if verify and data.shape != self.shape:
                 msg = f"{data.shape=} != {self.shape=}"
                 raise ValueError(msg)

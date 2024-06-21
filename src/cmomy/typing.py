@@ -5,18 +5,14 @@ Typing aliases (:mod:`cmomy.typing`)
 
 from __future__ import annotations
 
+from collections.abc import Collection, Hashable, Mapping, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
     Callable,
-    Collection,
-    Hashable,
     Literal,
-    Mapping,
     Optional,
     Protocol,
-    Sequence,
-    Tuple,
     Union,
     runtime_checkable,
 )
@@ -25,7 +21,7 @@ import numpy as np
 
 # import numba as nb
 # put outside to get autodoc typehints working...
-import pandas as pd
+import pandas as pd  # noqa: TCH002
 import xarray as xr
 from numpy.typing import NDArray
 
@@ -112,8 +108,10 @@ NumbaType = Any
 # NOTE: using the strict form for Moments
 # Passing in integer or Sequence[int] will work in almost all cases,
 # but will be flagged by typechecker...
-Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
-MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
+if TYPE_CHECKING:
+    Moments: TypeAlias = Union[int, tuple[int], tuple[int, int]]
+    MomentsStrict: TypeAlias = Union[tuple[int], tuple[int, int]]
+
 Mom_NDim = Literal[1, 2]
 
 # * Generic array
@@ -131,39 +129,38 @@ FuncType = Callable[..., Any]
 F = TypeVar("F", bound=FuncType)
 
 # * Xarray specific stuff
-MomDims = Union[Hashable, Tuple[Hashable], Tuple[Hashable, Hashable]]
-MomDimsStrict = Union[Tuple[Hashable], Tuple[Hashable, Hashable]]
-
 # fix if using autodoc typehints...
+
 if TYPE_CHECKING:
-    IndexAny: TypeAlias = "pd.Index[Any]"  # type: ignore[type-arg,unused-ignore]  # py38 type error
-else:
-    IndexAny: TypeAlias = pd.Index
+    MomDims = Union[Hashable, tuple[Hashable], tuple[Hashable, Hashable]]
+    MomDimsStrict = Union[tuple[Hashable], tuple[Hashable, Hashable]]
 
-XArrayCoordsType: TypeAlias = Union[
-    Sequence[Union[Sequence[Any], IndexAny, xr.DataArray]],
-    Mapping[Any, Any],
-    None,
-]
+    IndexAny: TypeAlias = "pd.Index[Any]"
+    XArrayCoordsType: TypeAlias = Union[
+        Sequence[Union[Sequence[Any], IndexAny, xr.DataArray]],
+        Mapping[Any, Any],
+        None,
+    ]
 
-XArrayAttrsType: TypeAlias = Optional[Mapping[Any, Any]]
-XArrayNameType: TypeAlias = Optional[Hashable]
-XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
-XArrayIndexesType: TypeAlias = Any
+    XArrayAttrsType: TypeAlias = Optional[Mapping[Any, Any]]
+    XArrayNameType: TypeAlias = Optional[Hashable]
+    XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
+    XArrayIndexesType: TypeAlias = Any
 
-Dims = Union[str, Collection[Hashable], "ellipsis", None]  # noqa: F821  # pyright: ignore[reportGeneralTypeIssues]
+    Dims = Union[str, Collection[Hashable], ellipsis, None]  # noqa: F821  # pyright: ignore[reportGeneralTypeIssues]
 
-# literals
-VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
-CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
-KeepAttrs: TypeAlias = Union[
-    Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
-    bool,
-    None,
-]
+    # literals
+    VerifyValuesStyles: TypeAlias = Literal[
+        "val", "vals", "data", "datas", "var", "vars"
+    ]
+    CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
+    KeepAttrs: TypeAlias = Union[
+        Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
+        bool,
+        None,
+    ]
 
-ConvertStyle = Literal["central", "raw"]
+    ConvertStyle = Literal["central", "raw"]
 
-
-# For indexed reducetion
-Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
+    # For indexed reducetion
+    Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]

@@ -11,7 +11,8 @@ from numba import guvectorize, njit
 from ..options import OPTIONS
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Iterable, Sequence
+    from collections.abc import Iterable, Sequence
+    from typing import Any, Callable
 
     from ..typing import F, NumbaType
 

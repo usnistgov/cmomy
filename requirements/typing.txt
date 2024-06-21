@@ -15,5 +15,5 @@ numpy>1.24
 packaging
 pandas-stubs
 pytest
-typing-extensions;python_version<"3.13"
+typing-extensions
 xarray>=0.16
