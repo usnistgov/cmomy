@@ -6,29 +6,42 @@ Conversion routines (:mod:`~cmomy.convert`)
 from __future__ import annotations
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import xarray as xr
 
-from ._utils import select_dtype, validate_mom_dims, validate_mom_ndim
+from ._utils import (
+    MISSING,
+    peek_at,
+    select_axis_dim,
+    select_dtype,
+    validate_mom_dims,
+    validate_mom_ndim,
+)
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.typing import NDArrayAny
-
+    from ._central_dataarray import xCentralMoments
+    from ._central_numpy import CentralMoments
     from .typing import (
         ArrayLikeArg,
+        AxisReduce,
         ConvertStyle,
+        DimsReduce,
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
+        MissingType,
         Mom_NDim,
         MomDims,
+        NDArrayAny,
+        ScalarT,
     )
 
 
@@ -391,3 +404,172 @@ def assign_weight(
         out[..., 0, 0] = weight
 
     return out
+
+
+# * concat
+@overload
+def concat(
+    arrays: Iterable[xr.DataArray],
+    *,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    **kwargs: Any,
+) -> xr.DataArray: ...
+@overload
+def concat(
+    arrays: Iterable[CentralMoments[FloatT]],
+    *,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    **kwargs: Any,
+) -> CentralMoments[FloatT]: ...
+@overload
+def concat(
+    arrays: Iterable[xCentralMoments[FloatT]],
+    *,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    **kwargs: Any,
+) -> xCentralMoments[FloatT]: ...
+@overload
+def concat(
+    arrays: Iterable[NDArray[ScalarT]],
+    *,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    **kwargs: Any,
+) -> NDArray[ScalarT]: ...
+
+
+@docfiller.decorate
+def concat(
+    arrays: Iterable[xr.DataArray]
+    | Iterable[CentralMoments[Any]]
+    | Iterable[xCentralMoments[Any]]
+    | Iterable[NDArrayAny],
+    *,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    **kwargs: Any,
+) -> xr.DataArray | CentralMoments[Any] | xCentralMoments[Any] | NDArrayAny:
+    """
+    Concatenate moments objects.
+
+    Parameters
+    ----------
+    arrays : Iterable of ndarray or DataArray or CentralMoments or xCentralMoments
+        Central moments objects to combine.
+    axis : int, optional
+        Axis to concatenate along. If specify axis for
+        :class:`~xarray.DataArray` or :class:`~.xCentralMoments` input objects
+        with out ``dim``, then determine ``dim`` from ``dim =
+        first.dims[axis]`` where ``first`` is the first item in ``arrays``.
+    dim : str, optional
+        Dimension to concatenate along (used for :class:`~xarray.DataArray` and
+        :class:`~.xCentralMoments` objects only)
+    **kwargs
+        Extra arguments to :func:`numpy.concatenate` or :func:`xarray.concat`.
+
+    Returns
+    -------
+    output : ndarray or DataArray or CentralMoments or xCentralMoments
+        Concatenated object.  Type is the same as the elements of ``arrays``.
+
+    Examples
+    --------
+    >>> import cmomy
+    >>> shape = (2, 1, 2)
+    >>> x = np.arange(np.prod(shape)).reshape(shape).astype(np.float64)
+    >>> y = -x
+    >>> out = concat((x, y), axis=1)
+    >>> out.shape
+    (2, 2, 2)
+    >>> out
+    array([[[ 0.,  1.],
+            [-0., -1.]],
+    <BLANKLINE>
+           [[ 2.,  3.],
+            [-2., -3.]]])
+
+    >>> dx = xr.DataArray(x, dims=["a", "b", "mom"])
+    >>> dy = xr.DataArray(y, dims=["a", "b", "mom"])
+    >>> concat((dx, dy), dim="b")
+    <xarray.DataArray (a: 2, b: 2, mom: 2)> Size: 64B
+    array([[[ 0.,  1.],
+            [-0., -1.]],
+    <BLANKLINE>
+           [[ 2.,  3.],
+            [-2., -3.]]])
+    Dimensions without coordinates: a, b, mom
+
+    For :class:`~xarray.DataArray` objects, you can specify a new dimension
+
+    >>> concat((dx, dy), dim="new")
+    <xarray.DataArray (new: 2, a: 2, b: 1, mom: 2)> Size: 64B
+    array([[[[ 0.,  1.]],
+    <BLANKLINE>
+            [[ 2.,  3.]]],
+    <BLANKLINE>
+    <BLANKLINE>
+           [[[-0., -1.]],
+    <BLANKLINE>
+            [[-2., -3.]]]])
+    Dimensions without coordinates: new, a, b, mom
+
+
+    You can also concatenate :class:`~.CentralMoments` and :class:`~.xCentralMoments` objects
+
+    >>> cx = cmomy.CentralMoments(x)
+    >>> cy = cmomy.CentralMoments(y)
+    >>> concat((cx, cy), axis=1)
+    <CentralMoments(val_shape=(2, 2), mom=(1,))>
+    array([[[ 0.,  1.],
+            [-0., -1.]],
+    <BLANKLINE>
+           [[ 2.,  3.],
+            [-2., -3.]]])
+
+    >>> dcx = cmomy.xCentralMoments(dx)
+    >>> dcy = cmomy.xCentralMoments(dy)
+    >>> concat((dcx, dcy), dim="new")
+    <xCentralMoments(val_shape=(2, 2, 1), mom=(1,))>
+    <xarray.DataArray (new: 2, a: 2, b: 1, mom: 2)> Size: 64B
+    array([[[[ 0.,  1.]],
+    <BLANKLINE>
+            [[ 2.,  3.]]],
+    <BLANKLINE>
+    <BLANKLINE>
+           [[[-0., -1.]],
+    <BLANKLINE>
+            [[-2., -3.]]]])
+    Dimensions without coordinates: new, a, b, mom
+
+
+
+    """
+    first, arrays_iter = peek_at(arrays)
+
+    if isinstance(first, np.ndarray):
+        axis = 0 if axis is MISSING else axis
+        return np.concatenate(
+            tuple(arrays_iter),  # type: ignore[arg-type]
+            axis=axis,
+            dtype=first.dtype,
+            **kwargs,
+        )
+
+    if isinstance(first, xr.DataArray):
+        if dim is MISSING or dim is None or dim in first.dims:
+            axis, dim = select_axis_dim(first.dims, axis=axis, dim=dim, default_axis=0)
+        # otherwise, assume adding a new dimension...
+        return cast("xr.DataArray", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
+
+    return type(first)(  # type: ignore[call-arg, return-value]
+        concat(
+            (c.to_values() for c in arrays_iter),  # type: ignore[attr-defined]
+            axis=axis,
+            dim=dim,
+            **kwargs,
+        ),
+        mom_ndim=first.mom_ndim,  # type: ignore[attr-defined]
+    )

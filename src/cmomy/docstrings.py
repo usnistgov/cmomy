@@ -132,7 +132,7 @@ def _dummy_docstrings() -> None:
         Negative values indicate no group (i.e., skip this index).
     group_dim : str, optional
         Name of the output group dimension.  Defaults to ``dim``.
-    groups : Sequence, optional
+    groups : sequence, optional
         Sequence of length ``by.max() + 1`` to assign as coordinates for ``group_dim``.
     out : ndarray
         Optional output array. If specified, output will be a reference to this

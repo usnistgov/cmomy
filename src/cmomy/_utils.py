@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import enum
-
-# from functools import lru_cache
+from itertools import chain
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
@@ -14,7 +13,7 @@ from ._lib.utils import supports_parallel as supports_parallel  # noqa: PLC0414
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable, Iterable, Mapping, Sequence
+    from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -40,7 +39,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
 
-# * Missing/no values
+# * Missing/no values ---------------------------------------------------------
 # taken from https://github.com/python-attrs/attrs/blob/main/src/attr/_make.py
 class _Missing(enum.Enum):
     """
@@ -74,7 +73,7 @@ def normalize_axis_index(axis: int, ndim: int) -> int:
     return np_normalize_axis_index(axis, ndim)  # type: ignore[no-any-return,unused-ignore]
 
 
-# * Array order
+# * Array order ---------------------------------------------------------------
 def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
     """Convert general array order to C/F/None"""
     if order is None:
@@ -85,6 +84,16 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
         return cast("ArrayOrderCF", order_)
 
     return None
+
+
+# * peek at iterable ----------------------------------------------------------
+def peek_at(iterable: Iterable[T]) -> tuple[T, Iterator[T]]:
+    """Returns the first value from iterable, as well as a new iterator with
+    the same content as the original iterable
+    """
+    gen = iter(iterable)
+    peek = next(gen)
+    return peek, chain([peek], gen)
 
 
 # * Moment validation ---------------------------------------------------------

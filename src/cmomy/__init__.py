@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from . import convert, random, reduction, resample  # noqa: TCH004
     from ._central_dataarray import xCentralMoments  # noqa: TCH004
     from ._central_numpy import CentralMoments  # noqa: TCH004
+    from .convert import concat  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (
         indices_to_freq,  # noqa: TCH004
@@ -34,6 +35,7 @@ else:
             "convert",
         ],
         submod_attrs={
+            "convert": ["concat"],
             "_central_numpy": ["CentralMoments"],
             "_central_dataarray": ["xCentralMoments"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
@@ -62,6 +64,7 @@ __email__ = "wpk@nist.gov"
 __all__ = [
     "CentralMoments",
     "__version__",
+    "concat",
     "convert",
     "indices_to_freq",
     "random",
