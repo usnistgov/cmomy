@@ -4,8 +4,8 @@ appnope==0.1.4            # via ipykernel
 asttokens==2.4.1          # via stack-data
 attrs==23.2.0             # via jsonschema, referencing
 comm==0.2.2               # via ipykernel
-coverage==7.5.3           # via nbval, pytest-cov
-debugpy==1.8.1            # via ipykernel
+coverage==7.5.4           # via nbval, pytest-cov
+debugpy==1.8.2            # via ipykernel
 decorator==5.1.1          # via ipython
 docstring-inheritance==2.2.0  # via -r requirements/test-notebook.txt
 execnet==2.1.1            # via pytest-xdist

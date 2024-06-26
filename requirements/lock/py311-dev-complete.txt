@@ -11,15 +11,15 @@ click==8.1.7              # via click-log, scriv, userpath
 click-log==0.4.0          # via scriv
 colorlog==6.8.2           # via nox
 comm==0.2.2               # via ipykernel
-coverage==7.5.3           # via nbval, pytest-cov
-debugpy==1.8.1            # via ipykernel
+coverage==7.5.4           # via nbval, pytest-cov
+debugpy==1.8.2            # via ipykernel
 decorator==5.1.1          # via ipython
 distlib==0.3.8            # via virtualenv
 docstring-inheritance==2.2.0  # via -r requirements/dev-complete.txt
 execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
 fastjsonschema==2.20.0    # via nbformat
-filelock==3.15.3          # via virtualenv
+filelock==3.15.4          # via virtualenv
 identify==2.5.36          # via pre-commit
 idna==3.7                 # via requests
 iniconfig==2.0.0          # via pytest
@@ -83,6 +83,6 @@ typing-extensions==4.12.2  # via ipython, module-utilities, -r requirements/dev-
 tzdata==2024.1            # via pandas
 urllib3==2.2.2            # via requests
 userpath==1.9.2           # via pipx
-virtualenv==20.26.2       # via nox, pre-commit
+virtualenv==20.26.3       # via nox, pre-commit
 wcwidth==0.2.13           # via prompt-toolkit
 xarray==2024.6.0          # via -r requirements/dev-complete.txt

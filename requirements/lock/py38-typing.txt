@@ -2,7 +2,7 @@
 #    uv pip compile --python-version=3.8 --annotation-style=line -o requirements/lock/py38-typing.txt requirements/typing.txt
 docstring-inheritance==2.2.0  # via -r requirements/typing.txt
 exceptiongroup==1.2.1     # via pytest
-importlib-metadata==7.2.0  # via numba
+importlib-metadata==8.0.0  # via numba
 iniconfig==2.0.0          # via pytest
 lazy-loader==0.4          # via -r requirements/typing.txt
 llvmlite==0.41.1          # via numba
