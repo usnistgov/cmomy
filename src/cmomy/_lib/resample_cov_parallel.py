@@ -41,6 +41,7 @@ def resample_data_fromzero(
     assert data.shape[1:] == out.shape[1:]
     assert data.shape[0] == nsamp
     assert out.shape[0] == nrep
+    assert data.shape[1:] == out.shape[1:]
 
     out[...] = 0.0
 
@@ -99,6 +100,71 @@ def resample_vals(
             if f == 0:
                 continue
             _push.push_val(x0[isamp], x1[isamp], w[isamp] * f, out[irep, ...])
+
+
+# * Jackknife resampling
+# We take advantage of the ability to add and subtract moments here.
+# Instead of out[i, ...] = reduce(data[[0, 1, ..., i-1, i+1, ...], ...]) (which is order n^2)
+# we use out[i, ...] = reduce(data[:, ...]) - data[i, ...]  (which is order n or 2n)
+@_vectorize(
+    "(sample,mom0,mom1),(mom0,mom1) -> (sample,mom0,mom1)",
+    [
+        (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
+        (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
+    ],
+    writable=None,
+)
+def jackknife_data_fromzero(
+    data: NDArray[FloatT], data_reduced: NDArray[FloatT], out: NDArray[FloatT]
+) -> None:
+    assert data.shape[1:] == data_reduced.shape
+
+    # initially fill with data_reduced
+    out[:, ...] = data_reduced
+
+    for isamp in range(data.shape[0]):
+        # out[isamp, ...] = data_reduced - data[isamp, ....]
+        _push.push_data_scale(data[isamp, ...], -1.0, out[isamp, ...])  # type: ignore[arg-type]
+
+
+@_vectorize(
+    "(sample),(sample),(sample),(mom0,mom1) -> (sample,mom0,mom1)",
+    [
+        (
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:, :],
+            nb.float32[:, :, :],
+        ),
+        (
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:, :],
+            nb.float64[:, :, :],
+        ),
+    ],
+    writable=None,
+)
+def jackknife_vals_fromzero(
+    x0: NDArray[FloatT],
+    x1: NDArray[FloatT],
+    w: NDArray[FloatT],
+    data_reduced: NDArray[FloatT],
+    out: NDArray[FloatT],
+) -> None:
+    nsamp = len(x0)
+    assert len(x1) == nsamp
+    assert len(w) == nsamp
+    assert out.shape[0] == nsamp
+    assert data_reduced.shape == out.shape[1:]
+
+    # initially fill with data_reduced
+    out[:, ...] = data_reduced
+
+    for isamp in range(nsamp):
+        _push.push_val(x0[isamp], x1[isamp], -w[isamp], out[isamp, ...])
 
 
 # * Other routines

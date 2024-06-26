@@ -873,6 +873,70 @@ def test_resample_data() -> None:
         assert_type(resample_data(xx, freq=freq, mom_ndim=1), xr.DataArray)
 
 
+def test_jackknife_data() -> None:
+    from cmomy.resample import jackknife_data
+
+    x32 = np.zeros((10, 3, 3), dtype=np.float32)
+    x64 = np.zeros((10, 3, 3), dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+
+    random_freq(20, 10)
+
+    if TYPE_CHECKING:
+        assert_type(jackknife_data(x32, mom_ndim=1), NDArray[np.float32])
+        assert_type(jackknife_data(x64, mom_ndim=1), NDArray[np.float64])
+
+        assert_type(
+            jackknife_data(x32, mom_ndim=1, dtype=np.float64),
+            NDArray[np.float64],
+        )
+        assert_type(
+            jackknife_data(x64, mom_ndim=1, dtype=np.float32),
+            NDArray[np.float32],
+        )
+
+        assert_type(jackknife_data(x32, mom_ndim=1, out=out64), NDArray[np.float64])
+        assert_type(jackknife_data(x64, mom_ndim=1, out=out32), NDArray[np.float32])
+
+        assert_type(
+            jackknife_data(x32, mom_ndim=1, out=out64, dtype=np.float32),
+            NDArray[np.float64],
+        )
+        assert_type(
+            jackknife_data(x64, mom_ndim=1, out=out32, dtype=np.float64),
+            NDArray[np.float32],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(jackknife_data(xc, mom_ndim=1), NDArray[Any])
+        assert_type(
+            jackknife_data(xc, mom_ndim=1, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            jackknife_data([1, 2, 3], mom_ndim=1, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            jackknife_data([1, 2, 3], mom_ndim=1, dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(jackknife_data([1.0, 2.0, 3.0], mom_ndim=1), NDArray[Any])
+        assert_type(jackknife_data(x32, mom_ndim=1, dtype="f8"), NDArray[Any])
+
+        # reveal_type(jackknife_data([1,2,3],  mom_ndim=1))
+        # reveal_type(jackknife_data([1,2,3],  mom_ndim=1, dtype=np.float32))
+
+        xx = xr.DataArray(x32)
+        assert_type(jackknife_data(xx, mom_ndim=1), xr.DataArray)
+
+
 def test_resample_vals() -> None:
     x32 = np.zeros((10, 3, 3), dtype=np.float32)
     x64 = np.zeros((10, 3, 3), dtype=np.float64)
@@ -934,6 +998,61 @@ def test_resample_vals() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(resample_vals(xx, freq=freq, mom=3), xr.DataArray)
+
+
+def test_jackknife_vals() -> None:
+    from cmomy.resample import jackknife_vals
+
+    x32 = np.zeros((10, 3, 3), dtype=np.float32)
+    x64 = np.zeros((10, 3, 3), dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+
+    random_freq(20, 10)
+
+    if TYPE_CHECKING:
+        assert_type(jackknife_vals(x32, mom=3), NDArray[np.float32])
+        assert_type(jackknife_vals(x64, mom=3), NDArray[np.float64])
+
+        assert_type(jackknife_vals(x32, mom=3, dtype=np.float64), NDArray[np.float64])
+        assert_type(jackknife_vals(x64, mom=3, dtype=np.float32), NDArray[np.float32])
+
+        assert_type(jackknife_vals(x32, mom=3, out=out64), NDArray[np.float64])
+        assert_type(jackknife_vals(x64, mom=3, out=out32), NDArray[np.float32])
+
+        assert_type(
+            jackknife_vals(x32, mom=3, out=out64, dtype=np.float32),
+            NDArray[np.float64],
+        )
+        assert_type(
+            jackknife_vals(x64, mom=3, out=out32, dtype=np.float64),
+            NDArray[np.float32],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(jackknife_vals(xc, mom=3), NDArray[Any])
+        assert_type(jackknife_vals(xc, mom=3, dtype=np.float32), NDArray[np.float32])
+        assert_type(
+            jackknife_vals([1, 2, 3], mom=3, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            jackknife_vals([1, 2, 3], mom=3, dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(jackknife_vals([1.0, 2.0, 3.0], mom=3), NDArray[Any])
+        assert_type(jackknife_vals(x32, mom=3, dtype="f8"), NDArray[Any])
+
+        # reveal_type(jackknife_vals([1,2,3],  mom=3))
+        # reveal_type(jackknife_vals([1,2,3],  mom=3, dtype=np.float32))
+
+        xx = xr.DataArray(x32)
+        assert_type(jackknife_vals(xx, mom=3), xr.DataArray)
 
 
 def test_centralmoments_zeros() -> None:

@@ -115,10 +115,42 @@ def test_factory_resample_vals(
         (2, True, resample_cov_parallel.resample_data_fromzero),
     ],
 )
-def test_factory_data(
+def test_factory_resample_data(
     mom_ndim: Mom_NDim, parallel: bool, expected: factory.ResampleData
 ) -> None:
     assert factory.factory_resample_data(mom_ndim, parallel) == expected
+
+
+@pytest.mark.parametrize(
+    ("mom_ndim", "parallel", "expected"),
+    [
+        (1, False, resample.jackknife_vals_fromzero),
+        (1, True, resample_parallel.jackknife_vals_fromzero),
+        (2, False, resample_cov.jackknife_vals_fromzero),
+        (2, True, resample_cov_parallel.jackknife_vals_fromzero),
+    ],
+)
+def test_factory_jackknife_vals(
+    mom_ndim: Mom_NDim,
+    parallel: bool,
+    expected: factory.JackknifeVals | factory.JackknifeValsCov,
+) -> None:
+    assert factory.factory_jackknife_vals(mom_ndim, parallel) == expected
+
+
+@pytest.mark.parametrize(
+    ("mom_ndim", "parallel", "expected"),
+    [
+        (1, False, resample.jackknife_data_fromzero),
+        (1, True, resample_parallel.jackknife_data_fromzero),
+        (2, False, resample_cov.jackknife_data_fromzero),
+        (2, True, resample_cov_parallel.jackknife_data_fromzero),
+    ],
+)
+def test_factory_jackknife_data(
+    mom_ndim: Mom_NDim, parallel: bool, expected: factory.JackknifeData
+) -> None:
+    assert factory.factory_jackknife_data(mom_ndim, parallel) == expected
 
 
 @pytest.mark.parametrize(

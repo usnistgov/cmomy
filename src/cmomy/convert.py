@@ -175,9 +175,7 @@ def moments_type(
         )
 
     values_in = np.asarray(values_in, dtype=dtype)
-    if out is not None:
-        return _input_to_output(values_in, out)
-    return _input_to_output(values_in)
+    return _input_to_output(values_in, out)
 
 
 # * Moments to  Comoments

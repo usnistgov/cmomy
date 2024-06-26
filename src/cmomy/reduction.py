@@ -276,8 +276,6 @@ def _reduce_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
     )
-    if out is None:
-        return _reduce(data)
     return _reduce(data, out)
 
 
@@ -395,7 +393,12 @@ def reduce_data(
 
     if isinstance(data, xr.DataArray):
         dim, data = xprepare_data_for_reduction(
-            data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype
+            data,
+            axis=axis,
+            dim=dim,
+            mom_ndim=mom_ndim,
+            order=order,
+            dtype=dtype,
         )
         return xr.apply_ufunc(  # type: ignore[no-any-return]
             _reduce_data,
@@ -910,16 +913,10 @@ def _reduce_data_indexed(
             msg = f"{len(scale_)=} != {len(index)=}"
             raise ValueError(msg)
 
-    _reduce = factory_reduce_data_indexed(
+    return factory_reduce_data_indexed(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )
-
-    return (
-        _reduce(data, index, group_start, group_end, scale_)
-        if out is None
-        else _reduce(data, index, group_start, group_end, scale_, out)
-    )
+    )(data, index, group_start, group_end, scale_, out)
 
 
 # ** overload

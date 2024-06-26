@@ -48,6 +48,37 @@ if TYPE_CHECKING:
             /,
         ) -> NDArray[FloatT]: ...
 
+    # Jackknife resample
+    class JackknifeVals(Protocol):
+        def __call__(
+            self,
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            data_reduced: NDArray[FloatT],
+            out: NDArray[FloatT] | None = None,
+            /,
+        ) -> NDArray[FloatT]: ...
+
+    class JackknifeValsCov(Protocol):
+        def __call__(
+            self,
+            x0: NDArray[FloatT],
+            x1: NDArray[FloatT],
+            w: NDArray[FloatT],
+            data_reduced: NDArray[FloatT],
+            out: NDArray[FloatT] | None = None,
+            /,
+        ) -> NDArray[FloatT]: ...
+
+    class JackknifeData(Protocol):
+        def __call__(
+            self,
+            data: NDArray[FloatT],
+            data_reduced: NDArray[FloatT],
+            out: NDArray[FloatT] | None = None,
+            /,
+        ) -> NDArray[FloatT]: ...
+
     # Reduce
     class ReduceVals(Protocol):
         def __call__(
@@ -165,8 +196,6 @@ def factory_resample_vals(
     mom_ndim: Literal[1] = ...,
     parallel: bool = ...,
 ) -> ResampleVals: ...
-
-
 @overload
 def factory_resample_vals(
     mom_ndim: Literal[2],
@@ -208,6 +237,56 @@ def factory_resample_data(
     else:
         from .resample_cov import resample_data_fromzero
     return cast("ResampleData", resample_data_fromzero)  # pyright: ignore[reportReturnType]
+
+
+# * Jackknife
+@overload
+def factory_jackknife_vals(
+    mom_ndim: Literal[1] = ...,
+    parallel: bool = ...,
+) -> JackknifeVals: ...
+@overload
+def factory_jackknife_vals(
+    mom_ndim: Literal[2],
+    parallel: bool = ...,
+) -> JackknifeVals: ...
+
+
+@lru_cache
+def factory_jackknife_vals(
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool = True,
+) -> JackknifeVals | JackknifeValsCov:
+    parallel = parallel and supports_parallel()
+
+    if mom_ndim == 1:
+        if parallel:
+            from .resample_parallel import jackknife_vals_fromzero as _jackknife
+        else:
+            from .resample import jackknife_vals_fromzero as _jackknife
+        return cast("JackknifeVals", _jackknife)
+
+    if parallel:
+        from .resample_cov_parallel import jackknife_vals_fromzero as _jackknife_cov
+    else:
+        from .resample_cov import jackknife_vals_fromzero as _jackknife_cov
+    return cast("JackknifeValsCov", _jackknife_cov)
+
+
+@lru_cache
+def factory_jackknife_data(
+    mom_ndim: Mom_NDim = 1, parallel: bool = True
+) -> JackknifeData:
+    parallel = parallel and supports_parallel()
+    if mom_ndim == 1 and parallel:
+        from .resample_parallel import jackknife_data_fromzero
+    elif mom_ndim == 1:
+        from .resample import jackknife_data_fromzero
+    elif parallel:
+        from .resample_cov_parallel import jackknife_data_fromzero
+    else:
+        from .resample_cov import jackknife_data_fromzero
+    return cast("JackknifeData", jackknife_data_fromzero)
 
 
 # * Reduce
