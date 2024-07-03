@@ -27,6 +27,7 @@ dependencies:
   - pytest-cov
   - pytest-sugar
   - pytest-xdist
+  - scipy
   - typing-extensions
   - xarray>=0.16
   - pip

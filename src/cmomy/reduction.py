@@ -250,7 +250,7 @@ def reduce_vals(
             keep_attrs=keep_attrs,
         )
 
-    _x0, _w, *_x1 = prepare_values_for_reduction(
+    axis, (_x0, _w, *_x1) = prepare_values_for_reduction(
         x,
         weight,
         *y,
@@ -409,14 +409,16 @@ def reduce_data(
             keep_attrs=keep_attrs,
         )
 
+    axis, data = prepare_data_for_reduction(
+        data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        order=order,
+        dtype=dtype,
+    )
+
     return _reduce_data(  # pyright: ignore[reportReturnType]
-        prepare_data_for_reduction(
-            data,
-            axis=axis,
-            mom_ndim=mom_ndim,
-            order=order,
-            dtype=dtype,
-        ),
+        data,
         mom_ndim=mom_ndim,
         parallel=parallel,
         out=out,
@@ -758,14 +760,16 @@ def reduce_data_grouped(
             xdata = xdata.rename({dim: group_dim})
         return xdata
 
+    axis, data = prepare_data_for_reduction(  # pyright: ignore[reportArgumentType]
+        data=data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        order=order,
+        dtype=dtype,
+    )
+
     return _reduce_data_grouped(  # pyright: ignore[reportReturnType]
-        data=prepare_data_for_reduction(  # pyright: ignore[reportArgumentType]
-            data=data,
-            axis=axis,
-            mom_ndim=mom_ndim,
-            order=order,
-            dtype=dtype,
-        ),
+        data,
         mom_ndim=mom_ndim,
         by=by_validated,
         parallel=parallel,
@@ -1180,7 +1184,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         return xout
 
     # numpy
-    data = prepare_data_for_reduction(  # pyright: ignore[reportAssignmentType]
+    axis, data = prepare_data_for_reduction(  # pyright: ignore[reportAssignmentType]
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,

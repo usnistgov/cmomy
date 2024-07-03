@@ -231,7 +231,7 @@ def test_prepare_values_for_reduction(
             )
 
     else:
-        x, y, w = utils.prepare_values_for_reduction(
+        _axis, (x, y, w) = utils.prepare_values_for_reduction(
             target,
             y,  # type: ignore[arg-type]
             w,  # type: ignore[arg-type]
@@ -276,7 +276,7 @@ def test_prepare_data_for_reduction(
         error = TypeError if axis is None else ValueError
 
         with pytest.raises(error):
-            out = utils.prepare_data_for_reduction(
+            _, out = utils.prepare_data_for_reduction(
                 data,
                 axis=axis,
                 mom_ndim=mom_ndim,
@@ -285,7 +285,7 @@ def test_prepare_data_for_reduction(
             )
 
     else:
-        out = utils.prepare_data_for_reduction(
+        _, out = utils.prepare_data_for_reduction(
             data,
             axis=axis,
             mom_ndim=mom_ndim,

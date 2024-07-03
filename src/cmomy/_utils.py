@@ -417,7 +417,7 @@ def prepare_values_for_reduction(
     axis: int | None | MissingType = MISSING,
     dtype: DTypeLikeArg[ScalarT],
     order: ArrayOrder = None,
-) -> tuple[NDArray[ScalarT], ...]:
+) -> tuple[int, tuple[NDArray[ScalarT], ...]]:
     """
     Convert input value arrays to correct form for reduction.
 
@@ -452,7 +452,7 @@ def prepare_values_for_reduction(
         )
         for x in args
     )
-    return target, *others
+    return axis, (target, *others)
 
 
 def xprepare_values_for_reduction(
@@ -534,7 +534,7 @@ def prepare_data_for_reduction(
     mom_ndim: Mom_NDim,
     dtype: DTypeLikeArg[ScalarT],
     order: ArrayOrder = None,
-) -> NDArray[ScalarT]:
+) -> tuple[int, NDArray[ScalarT]]:
     """Convert central moments array to correct form for reduction."""
     data = np.asarray(data, dtype=dtype)
     axis = validate_axis(axis)
@@ -547,7 +547,7 @@ def prepare_data_for_reduction(
         data = np.moveaxis(data, axis, last_dim)
     if order:
         data = np.asarray(data, order=order)
-    return data
+    return axis, data
 
 
 def xprepare_data_for_reduction(

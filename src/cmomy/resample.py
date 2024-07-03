@@ -604,7 +604,7 @@ def resample_data(
         )
 
     # numpy array
-    data = prepare_data_for_reduction(
+    axis, data = prepare_data_for_reduction(
         data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
     )
     return _resample_data(
@@ -847,9 +847,12 @@ def resample_vals(
         )
 
     (
-        x0,
-        w,
-        *x1,
+        axis,
+        (
+            x0,
+            w,
+            *x1,
+        ),
     ) = prepare_values_for_reduction(
         x, weight, *y, axis=axis, dtype=dtype, order=order, narrays=mom_ndim + 1
     )
@@ -864,173 +867,6 @@ def resample_vals(
         parallel=parallel,
         out=out,
     )
-
-
-# * Bootstrap statistics
-# TODO(wpk): add coverage for these
-def bootstrap_confidence_interval(  # pragma: no cover
-    distribution: NDArrayAny,
-    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
-    axis: int = 0,
-    alpha: float = 0.05,
-    style: Literal[None, "delta", "pm"] = None,
-    **kwargs: Any,
-) -> NDArrayAny:
-    """
-    Calculate the error bounds.
-
-    Parameters
-    ----------
-    distribution : array-like
-        distribution of values to consider
-    stats_val : array-like, {None, 'mean','median'}, optional
-        * array: perform pivotal error bounds (correct) with this as `value`.
-        * percentile: percentiles, with value as median
-        * mean: pivotal error bounds with mean as value
-        * median: pivotal error bounds with median as value
-    axis : int, default=0
-        axis to analyze along
-    alpha : float
-        alpha value for confidence interval.
-        Percent confidence = `100 * (1 - alpha)`
-    style : {None, 'delta', 'pm'}
-        controls style of output
-    **kwargs
-        extra arguments to `numpy.percentile`
-
-    Returns
-    -------
-    out : array
-        fist dimension will be statistics.  Other dimensions
-        have shape of input less axis reduced over.
-        Depending on `style` first dimension will be
-        (note val is either stats_val or median):
-
-        * None: [val, low, high]
-        * delta:  [val, val-low, high - val]
-        * pm : [val, (high - low) / 2]
-
-    """
-    if stats_val is None:
-        p_low = 100 * (alpha / 2.0)
-        p_mid = 50
-        p_high = 100 - p_low
-        val, low, high = np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kwargs
-        )
-
-    else:
-        if isinstance(stats_val, str):
-            if stats_val == "mean":
-                sv = np.mean(distribution, axis=axis)
-            elif stats_val == "median":
-                sv = np.median(distribution, axis=axis)
-            else:
-                msg = "stats val should be None, mean, median, or an array"
-                raise ValueError(msg)
-
-        else:
-            sv = stats_val
-
-        q_high = 100 * (alpha / 2.0)
-        q_low = 100 - q_high
-        val = sv
-        # fmt: off
-        low = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_low, axis=axis, **kwargs
-        )
-        high = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
-            a=distribution, q=q_high, axis=axis, **kwargs
-        )
-        # fmt: on
-
-    if style is None:
-        out = np.array([val, low, high])
-    elif style == "delta":
-        out = np.array([val, val - low, high - val])
-    elif style == "pm":
-        out = np.array([val, (high - low) / 2.0])
-    return out
-
-
-def xbootstrap_confidence_interval(  # pragma: no cover
-    x: xr.DataArray,
-    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
-    axis: int = 0,
-    dim: DimsReduce | MissingType = MISSING,
-    alpha: float = 0.05,
-    style: Literal[None, "delta", "pm"] = None,
-    bootstrap_dim: Hashable | None = "bootstrap",
-    bootstrap_coords: str | Sequence[str] | None = None,
-    **kwargs: Any,
-) -> xr.DataArray:
-    """
-    Bootstrap xarray object.
-
-    Parameters
-    ----------
-    dim : str
-        if passed, use reduce along this dimension
-    bootstrap_dim : str, default='bootstrap'
-        name of new dimension.  If `bootstrap_dim` conflicts, then
-        `new_name = dim + new_name`
-    bootstrap_coords : array-like or str
-        coords of new dimension.
-        If `None`, use default names
-        If string, use this for the 'values' name
-    """
-    if dim is not None:
-        axis = x.get_axis_num(dim)
-    else:
-        dim = x.dims[axis]
-
-    template = x.isel(indexers={dim: 0})
-
-    if bootstrap_dim is None:
-        bootstrap_dim = "bootstrap"
-
-    if bootstrap_dim in template.dims:
-        bootstrap_dim = f"{dim}_{bootstrap_dim}"
-    dims = (bootstrap_dim, *template.dims)
-
-    if bootstrap_coords is None:
-        bootstrap_coords = stats_val if isinstance(stats_val, str) else "stats_val"
-
-    if isinstance(bootstrap_coords, str):
-        if style is None:
-            bootstrap_coords = [bootstrap_coords, "low", "high"]
-        elif style == "delta":
-            bootstrap_coords = [bootstrap_coords, "err_low", "err_high"]
-        elif style == "pm":
-            bootstrap_coords = [bootstrap_coords, "err"]
-        else:
-            msg = f"unknown style={style}"
-            raise ValueError(msg)
-
-    if not isinstance(stats_val, str):
-        stats_val = np.array(stats_val)
-
-    out = bootstrap_confidence_interval(
-        x.to_numpy(),  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
-        stats_val=stats_val,
-        axis=axis,
-        alpha=alpha,
-        style=style,
-        **kwargs,
-    )
-
-    out_xr = xr.DataArray(
-        out,
-        dims=dims,
-        coords=template.coords,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-        attrs=template.attrs,
-        name=template.name,
-        # indexes=template.indexes,
-    )
-
-    out_xr.coords[bootstrap_dim] = bootstrap_coords  # pyright: ignore[reportUnknownMemberType]
-
-    return out_xr
 
 
 # * Jackknife resampling
@@ -1318,7 +1154,7 @@ def jackknife_data(
         return xout
 
     # numpy array
-    data = prepare_data_for_reduction(
+    axis, data = prepare_data_for_reduction(
         data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
     )
 
@@ -1573,9 +1409,12 @@ def jackknife_vals(  # noqa: PLR0914
         return xout
 
     (
-        x0,
-        w,
-        *x1,
+        axis,
+        (
+            x0,
+            w,
+            *x1,
+        ),
     ) = prepare_values_for_reduction(
         x, weight, *y, axis=axis, dtype=dtype, order=order, narrays=mom_ndim + 1
     )
@@ -1591,3 +1430,170 @@ def jackknife_vals(  # noqa: PLR0914
         parallel=parallel,
         out=out,
     )
+
+
+# * Bootstrap statistics
+# TODO(wpk): add coverage for these
+def bootstrap_confidence_interval(  # pragma: no cover
+    distribution: NDArrayAny,
+    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
+    axis: int = 0,
+    alpha: float = 0.05,
+    style: Literal[None, "delta", "pm"] = None,
+    **kwargs: Any,
+) -> NDArrayAny:
+    """
+    Calculate the error bounds.
+
+    Parameters
+    ----------
+    distribution : array-like
+        distribution of values to consider
+    stats_val : array-like, {None, 'mean','median'}, optional
+        * array: perform pivotal error bounds (correct) with this as `value`.
+        * percentile: percentiles, with value as median
+        * mean: pivotal error bounds with mean as value
+        * median: pivotal error bounds with median as value
+    axis : int, default=0
+        axis to analyze along
+    alpha : float
+        alpha value for confidence interval.
+        Percent confidence = `100 * (1 - alpha)`
+    style : {None, 'delta', 'pm'}
+        controls style of output
+    **kwargs
+        extra arguments to `numpy.percentile`
+
+    Returns
+    -------
+    out : array
+        fist dimension will be statistics.  Other dimensions
+        have shape of input less axis reduced over.
+        Depending on `style` first dimension will be
+        (note val is either stats_val or median):
+
+        * None: [val, low, high]
+        * delta:  [val, val-low, high - val]
+        * pm : [val, (high - low) / 2]
+
+    """
+    if stats_val is None:
+        p_low = 100 * (alpha / 2.0)
+        p_mid = 50
+        p_high = 100 - p_low
+        val, low, high = np.percentile(  # pyright: ignore[reportUnknownMemberType]
+            a=distribution, q=[p_mid, p_low, p_high], axis=axis, **kwargs
+        )
+
+    else:
+        if isinstance(stats_val, str):
+            if stats_val == "mean":
+                sv = np.mean(distribution, axis=axis)
+            elif stats_val == "median":
+                sv = np.median(distribution, axis=axis)
+            else:
+                msg = "stats val should be None, mean, median, or an array"
+                raise ValueError(msg)
+
+        else:
+            sv = stats_val
+
+        q_high = 100 * (alpha / 2.0)
+        q_low = 100 - q_high
+        val = sv
+        # fmt: off
+        low = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
+            a=distribution, q=q_low, axis=axis, **kwargs
+        )
+        high = 2 * sv - np.percentile(  # pyright: ignore[reportUnknownMemberType]
+            a=distribution, q=q_high, axis=axis, **kwargs
+        )
+        # fmt: on
+
+    if style is None:
+        out = np.array([val, low, high])
+    elif style == "delta":
+        out = np.array([val, val - low, high - val])
+    elif style == "pm":
+        out = np.array([val, (high - low) / 2.0])
+    return out
+
+
+def xbootstrap_confidence_interval(  # pragma: no cover
+    x: xr.DataArray,
+    stats_val: NDArrayAny | Literal["percentile", "mean", "median"] | None = "mean",
+    axis: int = 0,
+    dim: DimsReduce | MissingType = MISSING,
+    alpha: float = 0.05,
+    style: Literal[None, "delta", "pm"] = None,
+    bootstrap_dim: Hashable | None = "bootstrap",
+    bootstrap_coords: str | Sequence[str] | None = None,
+    **kwargs: Any,
+) -> xr.DataArray:
+    """
+    Bootstrap xarray object.
+
+    Parameters
+    ----------
+    dim : str
+        if passed, use reduce along this dimension
+    bootstrap_dim : str, default='bootstrap'
+        name of new dimension.  If `bootstrap_dim` conflicts, then
+        `new_name = dim + new_name`
+    bootstrap_coords : array-like or str
+        coords of new dimension.
+        If `None`, use default names
+        If string, use this for the 'values' name
+    """
+    if dim is not None:
+        axis = x.get_axis_num(dim)
+    else:
+        dim = x.dims[axis]
+
+    template = x.isel(indexers={dim: 0})
+
+    if bootstrap_dim is None:
+        bootstrap_dim = "bootstrap"
+
+    if bootstrap_dim in template.dims:
+        bootstrap_dim = f"{dim}_{bootstrap_dim}"
+    dims = (bootstrap_dim, *template.dims)
+
+    if bootstrap_coords is None:
+        bootstrap_coords = stats_val if isinstance(stats_val, str) else "stats_val"
+
+    if isinstance(bootstrap_coords, str):
+        if style is None:
+            bootstrap_coords = [bootstrap_coords, "low", "high"]
+        elif style == "delta":
+            bootstrap_coords = [bootstrap_coords, "err_low", "err_high"]
+        elif style == "pm":
+            bootstrap_coords = [bootstrap_coords, "err"]
+        else:
+            msg = f"unknown style={style}"
+            raise ValueError(msg)
+
+    if not isinstance(stats_val, str):
+        stats_val = np.array(stats_val)
+
+    out = bootstrap_confidence_interval(
+        x.to_numpy(),  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
+        stats_val=stats_val,
+        axis=axis,
+        alpha=alpha,
+        style=style,
+        **kwargs,
+    )
+
+    out_xr = xr.DataArray(
+        out,
+        dims=dims,
+        coords=template.coords,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+        attrs=template.attrs,
+        name=template.name,
+        # indexes=template.indexes,
+    )
+
+    out_xr.coords[bootstrap_dim] = bootstrap_coords  # pyright: ignore[reportUnknownMemberType]
+
+    return out_xr

@@ -26,6 +26,7 @@ pytest-accept
 pytest-cov
 pytest-sugar
 pytest-xdist
+scipy
 scriv
 typing-extensions
 xarray>=0.16

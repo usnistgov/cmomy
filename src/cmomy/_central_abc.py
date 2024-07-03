@@ -667,7 +667,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
-        datas = prepare_data_for_reduction(
+        axis, datas = prepare_data_for_reduction(
             data=datas,
             axis=axis,
             mom_ndim=self.mom_ndim,
@@ -726,7 +726,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         weight = 1.0 if weight is None else weight
         x = np.asarray(x, dtype=self.dtype, order=order)
-        x0, *x1, weight = prepare_values_for_reduction(
+        axis, (x0, *x1, weight) = prepare_values_for_reduction(
             x,
             *y,
             weight,
