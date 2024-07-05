@@ -5,15 +5,14 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from cmomy._compat import copy_if_needed
-
+from ._compat import copy_if_needed
 from ._prob import ndtr, ndtri
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from .typing import FloatingT, NDArrayAny
+    from .typing import FloatDTypes, FloatT, NDArrayAny
 
 
 from collections.abc import Iterable
@@ -29,37 +28,37 @@ class InstabilityWarning(UserWarning):
 
 
 def _compute_a(
-    theta_jack: NDArray[FloatingT],
+    theta_jack: NDArray[FloatT],
     axis: int = -1,
-) -> FloatingT | NDArray[FloatingT]:
+) -> FloatT | NDArray[FloatT]:
     delta = theta_jack.mean(axis=axis, keepdims=True) - theta_jack
     num = (delta**3).sum(axis=axis)
     den = (delta**2).sum(axis=axis)
-    return num / (6.0 * den ** (1.5))
+    return num / (6.0 * den ** (1.5))  # type: ignore[no-any-return]
 
 
 def _percentile_of_score(
     a: NDArrayAny, score: float | NDArrayAny, axis: int = -1
 ) -> NDArray[np.float64]:
     n = a.shape[axis]
-    return ((a < score).sum(axis=axis) + (a <= score).sum(axis=axis)) / (2 * n)
+    return ((a < score).sum(axis=axis) + (a <= score).sum(axis=axis)) / (2 * n)  # type: ignore[no-any-return]
 
 
 def _compute_z0(
     theta_hat: float | NDArrayAny,
-    theta_boot: NDArray[FloatingT],
+    theta_boot: NDArray[FloatT],
     axis: int = -1,
-) -> NDArray[FloatingT]:
+) -> NDArray[FloatT]:
     percentile = _percentile_of_score(theta_boot, theta_hat, axis=axis)
     return ndtri(percentile, dtype=theta_boot.dtype)
 
 
 @docfiller.decorate
 def bootstrap_bca(
-    theta_hat: float | np.floating | NDArrayAny,
+    theta_hat: float | FloatDTypes | NDArrayAny,
     theta_boot: NDArrayAny,
     theta_jack: NDArrayAny,
-    alpha: float | np.floating | Iterable[float | np.floating] = 0.05,
+    alpha: float | FloatDTypes | Iterable[float | FloatDTypes] = 0.05,
     axis: int = -1,
 ) -> NDArrayAny:
     r"""
@@ -110,12 +109,12 @@ def bootstrap_bca(
 
 # modified from scipy.stats._resampling._percentile_along_axis
 def _quantile_along_axis(
-    theta_boot: NDArray[FloatingT], alpha: NDArray[FloatingT], axis: int = -1
-) -> FloatingT | NDArray[FloatingT]:
+    theta_boot: NDArray[FloatT], alpha: NDArray[FloatT], axis: int = -1
+) -> FloatT | NDArray[FloatT]:
     theta_boot = np.moveaxis(theta_boot, axis, -1)
 
-    shape = theta_boot.shape[:-1]
-    broadcast_shape = (
+    shape: tuple[int, ...] = theta_boot.shape[:-1]
+    broadcast_shape: tuple[int, ...] = (
         (*shape, alpha.shape[-1]) if theta_boot.ndim == alpha.ndim else shape
     )
     alpha = np.broadcast_to(alpha, broadcast_shape)
@@ -135,4 +134,4 @@ def _quantile_along_axis(
         else:
             quantiles[indices, ...] = np.quantile(theta_boot[indices, :], alpha_i)
 
-    return quantiles[()]  # return scalar instead of 0d array
+    return quantiles[()]  # type: ignore[return-value]

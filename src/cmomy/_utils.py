@@ -591,6 +591,17 @@ def prepare_values_for_push_val(
     return target, *others
 
 
+def optional_keepdims(
+    x: NDArray[ScalarT],
+    *,
+    axis: int,
+    keepdims: bool = False,
+) -> NDArray[ScalarT]:
+    if keepdims:
+        return np.expand_dims(x, axis)
+    return x
+
+
 def raise_if_wrong_shape(
     array: NDArrayAny, shape: tuple[int, ...], name: str | None = None
 ) -> None:

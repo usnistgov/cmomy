@@ -10,7 +10,7 @@ import numpy as np
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, NDArray
 
-    from .typing import DTypeLikeArg, FloatingT
+    from .typing import DTypeLikeArg, FloatT
 
 # so don't have to use scipy....
 _SQRT2 = sqrt(2)
@@ -27,7 +27,7 @@ del _ndtr_py
 
 
 # fmt: off
-def ndtri(p: ArrayLike, dtype: DTypeLikeArg[FloatingT] = np.float64) -> NDArray[FloatingT]:
+def ndtri(p: ArrayLike, dtype: DTypeLikeArg[FloatT] = np.float64) -> NDArray[FloatT]:  # type: ignore[assignment]
     """Inverse of ndtr."""
     p = np.asarray(p, dtype=dtype)
     out = np.empty_like(p, dtype=p.dtype)

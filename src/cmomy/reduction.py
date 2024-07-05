@@ -19,11 +19,13 @@ from ._lib.factory import (
 )
 from ._utils import (
     MISSING,
+    optional_keepdims,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
     raise_if_wrong_shape,
     replace_coords_from_isel,
+    select_axis_dim,
     select_dtype,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -97,6 +99,7 @@ def reduce_vals(  # type: ignore[overload-overlap]
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -114,6 +117,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
@@ -131,6 +135,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -148,6 +153,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
@@ -165,6 +171,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -184,6 +191,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    keepdims: bool = False,
     order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
@@ -206,6 +214,7 @@ def reduce_vals(
     weight : scalar or array-like or DataArray
         Weights for each point.
     {axis}
+    {keepdims}
     {order}
     {parallel}
     {dtype}
@@ -219,7 +228,11 @@ def reduce_vals(
     out : ndarray or DataArray
         Central moments array of same type as ``x``.
         ``out.shape = (...,shape[axis-1], shape[axis+1], ..., mom0, ...)``
-        where ``shape = args[0].shape``.
+        where ``shape = np.broadcast_shapes(*(a.shape for a in (x, *y, weight)))``
+
+    See Also
+    --------
+    numpy.broadcast_shapes
     """
     mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
@@ -260,11 +273,17 @@ def reduce_vals(
         dtype=dtype,
     )
 
-    return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)
+    return optional_keepdims(
+        _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),
+        axis=axis,
+        keepdims=keepdims,
+    )
 
 
 # * Reduce data ---------------------------------------------------------------
 # ** low level
+# It turns out that the gufuncs are much more capable then I thought.
+# They can take a bunch of additional parameter (like dtype, etc)
 def _reduce_data(
     data: NDArray[FloatT],
     *,
@@ -285,12 +304,13 @@ def reduce_data(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
-    dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
+    dim: DimsReduce | MissingType = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> xr.DataArray: ...
 # array no output
@@ -299,13 +319,14 @@ def reduce_data(
     data: ArrayLikeArg[FloatT],
     *,
     mom_ndim: Mom_NDim,
-    dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    out: None = ...,
     dtype: None = ...,
+    out: None = ...,
+    dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -313,13 +334,14 @@ def reduce_data(
     data: Any,
     *,
     mom_ndim: Mom_NDim,
-    dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    out: NDArray[FloatT],
+    dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -327,13 +349,14 @@ def reduce_data(
     data: Any,
     *,
     mom_ndim: Mom_NDim,
-    dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    out: None = ...,
+    dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -341,13 +364,14 @@ def reduce_data(
     data: Any,
     *,
     mom_ndim: Mom_NDim,
-    dim: DimsReduce | MissingType = ...,
     axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    out: None = ...,
     dtype: DTypeLike = ...,
+    out: None = ...,
+    dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
 ) -> NDArrayAny: ...
 
 
@@ -357,13 +381,15 @@ def reduce_data(
     data: xr.DataArray | ArrayLike,
     *,
     mom_ndim: Mom_NDim,
-    dim: DimsReduce | MissingType = MISSING,
     axis: AxisReduce | MissingType = MISSING,
+    keepdims: bool = False,
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    keep_attrs: KeepAttrs = None,
-    out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    out: NDArrayAny | None = None,
+    # xarray specific
+    dim: DimsReduce | MissingType = MISSING,
+    keep_attrs: KeepAttrs = None,
 ) -> xr.DataArray | NDArrayAny:
     """
     Reduce central moments array along axis.
@@ -375,6 +401,7 @@ def reduce_data(
     {mom_ndim}
     {axis_data}
     {dim}
+    {keepdims}
     {order}
     {parallel}
     {keep_attrs}
@@ -389,26 +416,21 @@ def reduce_data(
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
 
-    dtype = select_dtype(data, out=out, dtype=dtype)
-
     if isinstance(data, xr.DataArray):
-        dim, data = xprepare_data_for_reduction(
-            data,
-            axis=axis,
+        axis, dim = select_axis_dim(dims=data.dims, axis=axis, dim=dim)
+        return data.reduce(
+            reduce_data,
             dim=dim,
+            keep_attrs=keep_attrs,
+            keepdims=keepdims,
             mom_ndim=mom_ndim,
             order=order,
+            parallel=parallel,
             dtype=dtype,
-        )
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            _reduce_data,
-            data,
-            input_core_dims=[data.dims[-(mom_ndim + 1) :]],
-            output_core_dims=[data.dims[-mom_ndim:]],
-            kwargs={"mom_ndim": mom_ndim, "parallel": parallel, "out": out},
-            keep_attrs=keep_attrs,
+            out=out,
         )
 
+    dtype = select_dtype(data, out=out, dtype=dtype)
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,
@@ -417,11 +439,15 @@ def reduce_data(
         dtype=dtype,
     )
 
-    return _reduce_data(  # pyright: ignore[reportReturnType]
-        data,
-        mom_ndim=mom_ndim,
-        parallel=parallel,
-        out=out,
+    return optional_keepdims(
+        _reduce_data(  # pyright: ignore[reportReturnType]
+            data,
+            mom_ndim=mom_ndim,
+            parallel=parallel,
+            out=out,
+        ),
+        axis=axis,
+        keepdims=keepdims,
     )
 
 

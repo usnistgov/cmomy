@@ -127,6 +127,11 @@ def _dummy_docstrings() -> None:
 
         Note that if ``coords_policy`` is one of ``first`` or ``last``, parameter ``groups``
         will be ignored.
+
+    keepdims : bool
+        If this is set to True, the axes which are reduced are left in the
+        result as dimensions with size one. With this option, the result will
+        broadcast correctly against the input array.
     by : array-like of int
         Groupby values of same length as ``data`` along sampled dimension.
         Negative values indicate no group (i.e., skip this index).
