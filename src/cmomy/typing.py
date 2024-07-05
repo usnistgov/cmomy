@@ -39,8 +39,9 @@ if TYPE_CHECKING:
 
 
 # Axis/Dim reduction type
-AxisReduce = Union[int, None]
-DimsReduce = Union[Hashable, None]
+AxisReduce: TypeAlias = Union[int, None]
+DimsReduce: TypeAlias = Union[Hashable, None]
+AxesReduce: TypeAlias = "list[tuple[int, ...]]"
 
 # * Numpy Arrays
 # ** Aliases

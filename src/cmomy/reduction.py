@@ -19,9 +19,11 @@ from ._lib.factory import (
 )
 from ._utils import (
     MISSING,
+    axes_data_reduction,
     optional_keepdims,
     parallel_heuristic,
     prepare_data_for_reduction,
+    prepare_data_for_reduction2,
     prepare_values_for_reduction,
     raise_if_wrong_shape,
     replace_coords_from_isel,
@@ -284,18 +286,18 @@ def reduce_vals(
 # ** low level
 # It turns out that the gufuncs are much more capable then I thought.
 # They can take a bunch of additional parameter (like dtype, etc)
-def _reduce_data(
-    data: NDArray[FloatT],
-    *,
-    mom_ndim: Mom_NDim,
-    parallel: bool | None = None,
-    out: NDArrayAny | None = None,
-) -> NDArray[FloatT]:
-    _reduce = factory_reduce_data(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )
-    return _reduce(data, out)
+# def _reduce_data(
+#     data: NDArray[FloatT],
+#     *,
+#     mom_ndim: Mom_NDim,
+#     parallel: bool | None = None,
+#     out: NDArrayAny | None = None,
+# ) -> NDArray[FloatT]:
+#     _reduce = factory_reduce_data(
+#         mom_ndim=mom_ndim,
+#         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+#     )
+#     return _reduce(data, out)
 
 
 # ** overload
@@ -414,8 +416,6 @@ def reduce_data(
         Reduced data array with shape ``data.shape`` with ``axis`` removed.
         Same type as input ``data``.
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
-
     if isinstance(data, xr.DataArray):
         axis, dim = select_axis_dim(dims=data.dims, axis=axis, dim=dim)
         return data.reduce(
@@ -430,8 +430,9 @@ def reduce_data(
             out=out,
         )
 
+    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
-    axis, data = prepare_data_for_reduction(
+    axis, data = prepare_data_for_reduction2(
         data,
         axis=axis,
         mom_ndim=mom_ndim,
@@ -439,13 +440,13 @@ def reduce_data(
         dtype=dtype,
     )
 
+    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis)
+
     return optional_keepdims(
-        _reduce_data(  # pyright: ignore[reportReturnType]
-            data,
+        factory_reduce_data(
             mom_ndim=mom_ndim,
-            parallel=parallel,
-            out=out,
-        ),
+            parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+        )(data, axes=axes, out=out, order=order, dtype=dtype),
         axis=axis,
         keepdims=keepdims,
     )

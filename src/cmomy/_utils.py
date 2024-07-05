@@ -9,6 +9,8 @@ from typing import TYPE_CHECKING, cast
 import numpy as np
 import xarray as xr
 
+from cmomy.typing import AxisReduce, DimsReduce
+
 from ._lib.utils import supports_parallel as supports_parallel  # noqa: PLC0414
 from .docstrings import docfiller
 
@@ -25,6 +27,9 @@ if TYPE_CHECKING:
     from .typing import (
         ArrayOrder,
         ArrayOrderCF,
+        AxesReduce,
+        AxisReduce,
+        DimsReduce,
         DTypeLikeArg,
         MissingType,
         Mom_NDim,
@@ -291,7 +296,7 @@ def validate_not_none(x: T | None, name: str = "value") -> T:
     return x
 
 
-def validate_axis(axis: int | None | MissingType) -> int:
+def validate_axis(axis: AxisReduce | MissingType) -> int:
     """
     Validate that axis is an integer.
 
@@ -305,10 +310,10 @@ def validate_axis(axis: int | None | MissingType) -> int:
 
 def select_axis_dim(
     dims: tuple[Hashable, ...],
-    axis: int | None | MissingType = MISSING,
-    dim: Hashable | None | MissingType = MISSING,
-    default_axis: int | None | MissingType = MISSING,
-    default_dim: Hashable | None | MissingType = MISSING,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    default_axis: AxisReduce | MissingType = MISSING,
+    default_dim: DimsReduce | MissingType = MISSING,
 ) -> tuple[int, Hashable]:
     """Produce axis/dim from input."""
     # for now, disallow None values
@@ -414,7 +419,7 @@ def prepare_values_for_reduction(
     target: ArrayLike,
     *args: ArrayLike,
     narrays: int,
-    axis: int | None | MissingType = MISSING,
+    axis: AxisReduce | MissingType = MISSING,
     dtype: DTypeLikeArg[ScalarT],
     order: ArrayOrder = None,
 ) -> tuple[int, tuple[NDArray[ScalarT], ...]]:
@@ -459,8 +464,8 @@ def xprepare_values_for_reduction(
     target: xr.DataArray,
     *args: ArrayLike | xr.DataArray,
     narrays: int,
-    dim: Hashable | None | MissingType,
-    axis: int | None | MissingType,
+    dim: DimsReduce | MissingType,
+    axis: AxisReduce | MissingType,
     dtype: DTypeLike,
     order: ArrayOrder = None,
 ) -> tuple[list[list[Hashable]], tuple[xr.DataArray | NDArrayAny, ...]]:
@@ -530,7 +535,7 @@ def xprepare_values_for_reduction(
 
 def prepare_data_for_reduction(
     data: ArrayLike,
-    axis: int | None | MissingType,
+    axis: AxisReduce | MissingType,
     mom_ndim: Mom_NDim,
     dtype: DTypeLikeArg[ScalarT],
     order: ArrayOrder = None,
@@ -552,8 +557,8 @@ def prepare_data_for_reduction(
 
 def xprepare_data_for_reduction(
     data: xr.DataArray,
-    axis: int | None | MissingType,
-    dim: Hashable | None | MissingType,
+    axis: AxisReduce | MissingType,
+    dim: DimsReduce | MissingType,
     mom_ndim: Mom_NDim,
     order: ArrayOrder = None,
     dtype: DTypeLike = None,
@@ -591,17 +596,6 @@ def prepare_values_for_push_val(
     return target, *others
 
 
-def optional_keepdims(
-    x: NDArray[ScalarT],
-    *,
-    axis: int,
-    keepdims: bool = False,
-) -> NDArray[ScalarT]:
-    if keepdims:
-        return np.expand_dims(x, axis)
-    return x
-
-
 def raise_if_wrong_shape(
     array: NDArrayAny, shape: tuple[int, ...], name: str | None = None
 ) -> None:
@@ -633,6 +627,64 @@ def select_dtype(
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
+
+
+def optional_keepdims(
+    x: NDArray[ScalarT],
+    *,
+    axis: int | Sequence[int],
+    keepdims: bool = False,
+) -> NDArray[ScalarT]:
+    if keepdims:
+        return np.expand_dims(x, axis)
+    return x
+
+
+# new style preparation for reduction....
+def prepare_data_for_reduction2(
+    data: ArrayLike,
+    axis: AxisReduce | MissingType,
+    mom_ndim: Mom_NDim,
+    dtype: DTypeLikeArg[ScalarT],
+    order: ArrayOrder = None,
+) -> tuple[int, NDArray[ScalarT]]:
+    """Convert central moments array to correct form for reduction."""
+    data = np.asarray(data, dtype=dtype)
+    axis = validate_axis(axis)
+
+    ndim = data.ndim - mom_ndim
+    axis = normalize_axis_index(axis, ndim)
+
+    if order:
+        data = np.asarray(data, order=order)
+    return axis, data
+
+
+_MOM_AXES_TUPLE = {1: (-1,), 2: (-2, -1)}
+
+
+def axes_data_reduction(
+    *, mom_ndim: Mom_NDim, axis: int, out_has_axis: bool = False
+) -> AxesReduce:
+    """
+    axes for reducing data along axis
+
+    if ``out_has_axis == True``, then treat like resample,
+    so output will still have ``axis`` with new size in output.
+    """
+    mom_axes = _MOM_AXES_TUPLE[mom_ndim]
+
+    data_axes = (axis, *mom_axes)
+    out_axes = data_axes if out_has_axis else mom_axes
+
+    return [data_axes, out_axes]
+
+
+# def axes_reduce_vals(*arr: NDArrayAny, mom_ndim: Mom_NDim, axis: int) -> AxesReduce:
+#     """
+#     axes for reducing values along axis
+#     """
+#     mom_axes = __MOM_AXES_TUPLE[mom_ndim]
 
 
 # * Xarray utilities ----------------------------------------------------------
