@@ -4,7 +4,7 @@ appnope==0.1.4            # via ipykernel
 argcomplete==3.4.0        # via nox, pipx
 asttokens==2.4.1          # via stack-data
 attrs==23.2.0             # via jsonschema, referencing, scriv
-certifi==2024.6.2         # via requests
+certifi==2024.7.4         # via requests
 cfgv==3.4.0               # via pre-commit
 charset-normalizer==3.3.2  # via requests
 click==8.1.7              # via click-log, scriv, userpath
