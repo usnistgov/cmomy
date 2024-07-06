@@ -47,6 +47,9 @@ dependencies = [
     "typing-extensions",
     "xarray>=0.16",
 ]
+optional-dependencies.dev = [
+    "cmomy[dev-extras,test,typing,pipxrun,nbval,test-scipy]",
+]
 optional-dependencies.dev-complete = [
     "cmomy[dev,tools]",
 ]
@@ -56,7 +59,6 @@ optional-dependencies.dev-extras = [
     "nbclient>=0.10.0",
     "nox>=2024.4.15",
     "pytest-accept",
-    "scipy",
 ]
 optional-dependencies.docs = [
     "autodocsumm",
@@ -93,6 +95,9 @@ optional-dependencies.test = [
     "pytest-cov",
     "pytest-sugar",
     "pytest-xdist",
+]
+optional-dependencies.test-scipy = [
+    "scipy; python_version=='3.11'",
 ]
 optional-dependencies.tools = [
     "pipx",
@@ -343,6 +348,9 @@ testpaths = [
     "cmomy",
     "tests",
 ]
+markers = [
+    "scipy: test scipy dependent code",
+]
 
 [tool.coverage.run]
 branch = true
@@ -491,7 +499,6 @@ style = [
     "requirements",
 ]
 default_envs = [
-    "test",
     "typing",
     "docs",
     "dev",
@@ -515,6 +522,12 @@ style = "requirements"
 extras = "pipxrun-tools"
 base = false
 style = "requirements"
+
+[tool.pyproject2conda.envs.test]
+extras = [
+    "test",
+    "test-scipy",
+]
 
 [tool.pyproject2conda.envs.test-extras]
 extras = [

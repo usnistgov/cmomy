@@ -12,8 +12,8 @@ execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
 fastjsonschema==2.20.0    # via nbformat
 iniconfig==2.0.0          # via pytest
-ipykernel==6.29.4         # via nbval
-ipython==8.25.0           # via ipykernel
+ipykernel==6.29.5         # via nbval
+ipython==8.26.0           # via ipykernel
 jedi==0.19.1              # via ipython
 jsonschema==4.22.0        # via nbformat
 jsonschema-specifications==2023.12.1  # via jsonschema

@@ -26,7 +26,7 @@ pytest-accept
 pytest-cov
 pytest-sugar
 pytest-xdist
-scipy
+scipy;python_version=="3.11"
 scriv
 typing-extensions
 xarray>=0.16

@@ -610,8 +610,7 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
     c1 = CentralMoments(c.data[::2, ...], mom_ndim=mom_ndim)
     c2 = CentralMoments(c.data[1::2, ...], mom_ndim=mom_ndim)
 
-    # make axis last dimension before moments
-    c3 = (c1 + c2).moveaxis(0, -1)
+    c3 = c1 + c2  # .moveaxis(0, -1)
 
     np.testing.assert_allclose(
         c3.data,
@@ -633,9 +632,7 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
 
     np.testing.assert_allclose(c3.data, c.block(2, axis=1))
 
-    np.testing.assert_allclose(
-        c.block(None, axis=0).moveaxis(-1, 0).data[0, ...], c.reduce(axis=0)
-    )
+    np.testing.assert_allclose(c.block(None, axis=0).data[0, ...], c.reduce(axis=0))
     np.testing.assert_allclose(
         c.reduce(by=group_idx, axis=1).to_numpy(), c.block(2, axis=1).to_numpy()
     )

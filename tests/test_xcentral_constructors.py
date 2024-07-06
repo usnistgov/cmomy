@@ -283,4 +283,4 @@ def test_resample_and_reduce(dc, dcx, parallel) -> None:
         np.testing.assert_allclose(t.data, o.data)
 
         dims = dcx.val_dims
-        assert o.val_dims == (*dims[:axis], *dims[axis + 1 :], "rep")
+        assert o.val_dims == (*dims[:axis], "rep", *dims[axis + 1 :])

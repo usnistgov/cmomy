@@ -16,7 +16,6 @@ from ._utils import (
     # replace_coords_from_isel,
     select_axis_dim,
     validate_mom_and_mom_ndim,
-    xprepare_data_for_reduction,
     xprepare_values_for_reduction,
 )
 from .docstrings import docfiller_xcentral as docfiller
@@ -987,20 +986,12 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             self._pusher(parallel).datas(_datas, self._data)
             return self._data
 
-        dim, datas = xprepare_data_for_reduction(
-            data=datas,
-            axis=axis,
-            dim=dim,
-            mom_ndim=self.mom_ndim,
-            order=order,
-            dtype=self.dtype,
-        )
-
+        axis, dim = select_axis_dim(datas, axis=axis, dim=dim, mom_ndim=self._mom_ndim)
         datas_dims = [*self.val_dims, dim, *self.mom_dims]
         _ = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._xdata,
-            datas,
+            datas.astype(self.dtype, order=order, copy=False),  # pyright: ignore[reportUnknownMemberType]
             input_core_dims=[self.dims, datas_dims],
             output_core_dims=[self.dims],
         )
@@ -1277,6 +1268,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         *,
         by: str | Groups | None = None,
         axis: AxisReduce | MissingType = MISSING,
+        keepdims: bool = False,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         # xarray specific
@@ -1341,8 +1333,9 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                     dim=dim,
                     order=order,
                     parallel=parallel,
-                    keep_attrs=keep_attrs,
+                    keep_attrs=bool(keep_attrs),
                     dtype=self.dtype,
+                    keepdims=keepdims,
                 ),
                 mom_ndim=self._mom_ndim,
                 fastpath=True,
@@ -1510,9 +1503,10 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
 
         """
         axis, dim = select_axis_dim(
-            dims=self.dims,
+            self._xdata,
             axis=axis,
             dim=dim,
+            mom_ndim=self._mom_ndim,
         )
 
         n = self.sizes[dim]

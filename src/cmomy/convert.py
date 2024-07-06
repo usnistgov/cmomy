@@ -558,7 +558,7 @@ def concat(
 
     if isinstance(first, xr.DataArray):
         if dim is MISSING or dim is None or dim in first.dims:
-            axis, dim = select_axis_dim(first.dims, axis=axis, dim=dim, default_axis=0)
+            axis, dim = select_axis_dim(first, axis=axis, dim=dim, default_axis=0)
         # otherwise, assume adding a new dimension...
         return cast("xr.DataArray", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
 

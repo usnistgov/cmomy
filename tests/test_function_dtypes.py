@@ -50,8 +50,14 @@ def _do_test(func, vals, dtype, out, result_dtype) -> None:
         assert isinstance(r, np.ndarray)
         assert r.dtype.type == result_dtype
 
+        xvals = xr.DataArray(vals)
+        if isinstance(vals, list):
+            assert xvals.dtype.type == np.float64
+        else:
+            assert xvals.dtype.type == vals.dtype.type
+
         rx = func(
-            xr.DataArray(vals),
+            xvals,
             dtype=dtype,
             out=out,
         )
@@ -90,7 +96,7 @@ def test_reduce_dtype(
     elif reduce_style == "data":
         out_shape = x_vals.shape[1:]
     elif reduce_style == "grouped":
-        out_shape = (*x_vals.shape[1:-1], 1, *x_vals.shape[-1:])
+        out_shape = (1, *x_vals.shape[1:-1], *x_vals.shape[-1:])
 
     out = np.zeros(out_shape, dtype=out_dtype) if out_dtype is not None else None
     vals = x_vals.tolist() if dtype_in is None else x_vals.astype(dtype_in)
@@ -112,7 +118,7 @@ def test_reduce_data_grouped_indexed_dtype(
     ngroup = 3
     by = rng.choice(ngroup, size=x_vals.shape[0])
 
-    out_shape = (*x_vals.shape[1:-1], ngroup, *x_vals.shape[-1:])
+    out_shape = (ngroup, *x_vals.shape[1:])
     out = np.zeros(out_shape, dtype=out_dtype) if out_dtype is not None else None
     vals = x_vals.tolist() if dtype_in is None else x_vals.astype(dtype_in)
 
@@ -147,7 +153,7 @@ def test_resample_data(
     freq = resample.random_freq(nrep=nrep, ndat=ndat)
 
     if style == "data":
-        out_shape = (*x_vals.shape[1:-1], nrep, *x_vals.shape[-1:])
+        out_shape = (nrep, *x_vals.shape[1:])
         func = partial(resample.resample_data, freq=freq, mom_ndim=1, axis=0)
     else:
         out_shape = (*x_vals.shape[1:], nrep, 4)

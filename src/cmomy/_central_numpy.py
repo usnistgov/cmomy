@@ -667,8 +667,9 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
     def reduce(
         self,
         *,
-        axis: AxisReduce = -1,
         by: Groups | None = None,
+        axis: AxisReduce = -1,
+        keepdims: bool = False,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -683,6 +684,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 order=order,
                 parallel=parallel,
                 dtype=self.dtype,
+                keepdims=keepdims,
             )
         else:
             from .reduction import reduce_data_grouped
@@ -704,7 +706,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         indices: NDArrayInt,
         *,
         axis: AxisReduce = -1,
-        last: bool = True,
+        last: bool = False,
         order: ArrayOrder = None,
     ) -> CentralMoments[FloatT]:
         """
@@ -773,7 +775,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         -------
         output : object
             Block averaged data of shape
-            ``(..., shape[axis-1],shape[axis+1], ..., nblock, mom_0, ...)``
+            ``(..., shape[axis-1],nblock, shape[axis+1], ..., mom_0, ...)``
             Where ``shape=self.shape``.  That is, the blocked coordinates are
             last.
 

@@ -10,9 +10,10 @@ from module_utilities import cached
 
 from ._lib.factory import factory_pusher
 from ._utils import (
+    axes_data_reduction,
     normalize_axis_index,
     parallel_heuristic,
-    prepare_data_for_reduction,
+    prepare_data_for_reduction2,
     prepare_values_for_push_val,
     prepare_values_for_reduction,
     validate_axis,
@@ -667,17 +668,19 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
-        axis, datas = prepare_data_for_reduction(
+        axis, datas = prepare_data_for_reduction2(
             data=datas,
             axis=axis,
             mom_ndim=self.mom_ndim,
             dtype=self.dtype,
             order=order,
         )
+        axes = axes_data_reduction(mom_ndim=self.mom_ndim, axis=axis)
 
         self._pusher(parallel).datas(
             datas,
             self._data,
+            axes=axes,
         )
 
         return self
@@ -955,8 +958,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     def reduce(
         self,
         *,
-        axis: AxisReduce = -1,
         by: Groups | None = None,
+        axis: AxisReduce = -1,
+        keepdims: bool = False,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -965,20 +969,22 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         Parameters
         ----------
-        {axis_data_and_dim}
         {by}
+        {axis_data_and_dim}
         {order}
         {parallel}
+        keepdims : bool, default=False
+            If ``True`` and ``by = None``, keep ``axis`` after reduction with size ``1``.
 
         Returns
         -------
         output : {klass}
-            If ``by`` is ``None``, reduce all samples along ``axis``.
+            If ``by`` is ``None``, reduce all samples along ``axis``,
+            optionally keeping ``axis`` with size ``1`` if ``keepdims=True``.
             Otherwise, reduce for each unique value of ``by``. In this case,
-            output will have shape
-            ``(..., shape[axis-1], shape[axis+1], ..., ngroup, mom0, ...)``
-            where ``ngroups = np.max(by) + 1`` is the number of unique positive
-            values in ``by``.
+            output will have shape ``(..., shape[axis-1], ngroup,
+            shape[axis+1], ...)`` where ``ngroups = np.max(by) + 1``
+            is the number of unique positive values in ``by``.
 
         See Also
         --------

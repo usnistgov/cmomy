@@ -63,7 +63,7 @@ FloatT = TypeVar(  # type: ignore[misc]
 FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
 DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 ScalarT = TypeVar("ScalarT", bound=np.generic)
-FloatingT = TypeVar("FloatingT", bound=np.floating[Any])
+FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
 IntDTypeT: TypeAlias = np.int64
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 

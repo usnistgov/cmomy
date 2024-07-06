@@ -4,7 +4,7 @@ appnope==0.1.4            # via ipykernel
 argcomplete==3.4.0        # via nox, pipx
 asttokens==2.4.1          # via stack-data
 attrs==23.2.0             # via jsonschema, referencing, scriv
-certifi==2024.6.2         # via requests
+certifi==2024.7.4         # via requests
 cfgv==3.4.0               # via pre-commit
 charset-normalizer==3.3.2  # via requests
 click==8.1.7              # via click-log, scriv, userpath
@@ -23,8 +23,8 @@ filelock==3.15.4          # via virtualenv
 identify==2.5.36          # via pre-commit
 idna==3.7                 # via requests
 iniconfig==2.0.0          # via pytest
-ipykernel==6.29.4         # via nbval, -r requirements/dev-complete.txt
-ipython==8.25.0           # via ipykernel, -r requirements/dev-complete.txt
+ipykernel==6.29.5         # via nbval, -r requirements/dev-complete.txt
+ipython==8.26.0           # via ipykernel, -r requirements/dev-complete.txt
 jedi==0.19.1              # via ipython
 jinja2==3.1.4             # via scriv
 jsonschema==4.22.0        # via nbformat

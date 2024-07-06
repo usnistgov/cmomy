@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 from .utils import supports_parallel
 
 if TYPE_CHECKING:
-    from typing import Callable, Literal, Protocol
+    from typing import Any, Callable, Literal, Protocol
 
     from numpy.typing import NDArray
 
@@ -26,6 +26,7 @@ if TYPE_CHECKING:
             freq: NDArrayInt,
             out: NDArray[FloatT],
             /,
+            **kwargs: Any,
         ) -> tuple[()]: ...
 
     class ResampleValsCov(Protocol):
@@ -37,6 +38,7 @@ if TYPE_CHECKING:
             freq: NDArrayInt,
             out: NDArray[FloatT],
             /,
+            **kwargs: Any,
         ) -> tuple[()]: ...
 
     class ResampleData(Protocol):
@@ -44,8 +46,9 @@ if TYPE_CHECKING:
             self,
             data: NDArray[FloatT],
             freq: NDArrayInt,
-            out: NDArray[FloatT] | None = None,
             /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
     # Jackknife resample
@@ -55,8 +58,9 @@ if TYPE_CHECKING:
             x: NDArray[FloatT],
             w: NDArray[FloatT],
             data_reduced: NDArray[FloatT],
-            out: NDArray[FloatT] | None = None,
             /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
     class JackknifeValsCov(Protocol):
@@ -66,8 +70,9 @@ if TYPE_CHECKING:
             x1: NDArray[FloatT],
             w: NDArray[FloatT],
             data_reduced: NDArray[FloatT],
-            out: NDArray[FloatT] | None = None,
             /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
     class JackknifeData(Protocol):
@@ -75,14 +80,20 @@ if TYPE_CHECKING:
             self,
             data: NDArray[FloatT],
             data_reduced: NDArray[FloatT],
-            out: NDArray[FloatT] | None = None,
             /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
     # Reduce
     class ReduceVals(Protocol):
         def __call__(
-            self, x: NDArray[FloatT], w: NDArray[FloatT], out: NDArray[FloatT], /
+            self,
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            out: NDArray[FloatT],
+            /,
+            **kwargs: Any,
         ) -> tuple[()]: ...
 
     class ReduceValsCov(Protocol):
@@ -93,11 +104,16 @@ if TYPE_CHECKING:
             w: NDArray[FloatT],
             out: NDArray[FloatT],
             /,
+            **kwargs: Any,
         ) -> tuple[()]: ...
 
     class ReduceData(Protocol):
         def __call__(
-            self, data: NDArray[FloatT], out: NDArray[FloatT] | None = None, /
+            self,
+            data: NDArray[FloatT],
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
     # Grouped
@@ -108,6 +124,7 @@ if TYPE_CHECKING:
             group_idx: NDArrayInt,
             out: NDArray[FloatT],
             /,
+            **kwargs: Any,
         ) -> tuple[()]: ...
 
     # Indexed
@@ -119,14 +136,19 @@ if TYPE_CHECKING:
             group_start: NDArrayInt,
             group_end: NDArrayInt,
             scale: NDArray[FloatT],
-            out: NDArray[FloatT] | None = None,
             /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
     # convert
     class Convert(Protocol):
         def __call__(
-            self, values_in: NDArray[FloatT], out: NDArray[FloatT] | None = None, /
+            self,
+            values_in: NDArray[FloatT],
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
 

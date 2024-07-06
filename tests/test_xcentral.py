@@ -424,13 +424,12 @@ def test_resample_and_reduce(other, rng) -> None:
             np.testing.assert_allclose(t0.data, t1.data)
 
             # check dims
-            dims = list(other.s_xr.to_dataarray().dims)
-            dims.pop(axis)
-            dims = (*dims[: -other.mom_ndim], "hello", *dims[-other.mom_ndim :])  # type: ignore[assignment]
+            dims = other.s_xr.to_dataarray().dims
+            dims = (*dims[:axis], "hello", *dims[axis + 1 :])
             assert t1.to_dataarray().dims == dims
 
             # resample
-            tr = other.s.resample(idx, axis=axis)
+            tr = other.s.resample(idx, axis=axis, last=True)
 
             # note: tx may be in different order than tr
             tx = other.s_xr.isel(**{dim: xr.DataArray(idx, dims=["hello", dim])})

@@ -16,8 +16,8 @@ executing==2.0.1          # via stack-data
 fastjsonschema==2.20.0    # via nbformat
 filelock==3.15.4          # via virtualenv
 iniconfig==2.0.0          # via pytest
-ipykernel==6.29.4         # via nbval, -r requirements/dev.txt
-ipython==8.25.0           # via ipykernel, -r requirements/dev.txt
+ipykernel==6.29.5         # via nbval, -r requirements/dev.txt
+ipython==8.26.0           # via ipykernel, -r requirements/dev.txt
 jedi==0.19.1              # via ipython
 jsonschema==4.22.0        # via nbformat
 jsonschema-specifications==2023.12.1  # via jsonschema
