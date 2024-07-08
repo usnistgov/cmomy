@@ -817,7 +817,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
         Parameters
         ----------
-        shape : tuple
+        shape : int or tuple
             shape of values part of data.
         order : {{"C", "F", "A"}}, optional
             Parameter to :func:`numpy.reshape`. Note that this parameter has
@@ -860,7 +860,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                [10.    ,  0.412 ,  0.0865]])
         """
         self._raise_if_scalar()
-        new_shape = shape + self.mom_shape
+        shape = (shape,) if isinstance(shape, int) else shape
+        new_shape = (*shape, *self.mom_shape)
         data = self._data.reshape(new_shape, order=order)
         return self.new_like(data=data)
 

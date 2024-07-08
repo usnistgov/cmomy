@@ -411,6 +411,9 @@ strict = true
 ignore_missing_imports = true
 module = [
     "numba.*",
+    "scipy.*",
+    "scipy.special.*",
+    "scipy.stats.*",
 ]
 
 [[tool.mypy.overrides]]

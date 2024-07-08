@@ -18,9 +18,15 @@ if _IS_NUMPY_2:
     from numpy.lib.array_utils import (  # type: ignore[import-not-found,unused-ignore]
         normalize_axis_index as np_normalize_axis_index,  # pyright: ignore[reportUnknownVariableType, reportMissingImports]
     )
+    from numpy.lib.array_utils import (  # type: ignore[import-not-found,unused-ignore]
+        normalize_axis_tuple as np_normalize_axis_tuple,  # pyright: ignore[reportUnknownVariableType, reportMissingImports]
+    )
 else:
     from numpy.core.multiarray import (  # type: ignore[attr-defined,no-redef,unused-ignore]
         normalize_axis_index as np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]
+    )
+    from numpy.core.numeric import (  # type: ignore[attr-defined,no-redef,unused-ignore]
+        normalize_axis_tuple as np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue,reportUnknownVariableType]
     )
 
 
@@ -33,4 +39,4 @@ def copy_if_needed(
     return copy
 
 
-__all__ = ["copy_if_needed", "np_normalize_axis_index"]
+__all__ = ["copy_if_needed", "np_normalize_axis_index", "np_normalize_axis_tuple"]

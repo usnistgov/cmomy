@@ -20,21 +20,21 @@ from ._lib.factory import (
 from ._utils import (
     MISSING,
     axes_data_reduction,
+    normalize_axis_tuple,
     optional_keepdims,
     optional_move_axis_to_end,
     parallel_heuristic,
-    # prepare_data_for_reduction,
-    prepare_data_for_reduction2,
+    prepare_data_for_reduction,
     prepare_values_for_reduction,
     raise_if_wrong_shape,
     replace_coords_from_isel,
     select_axis_dim,
+    select_axis_dim_mult,
     select_dtype,
-    shape_replace_axis,
+    validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
-    # xprepare_data_for_reduction,
     xprepare_values_for_reduction,
 )
 from .docstrings import docfiller
@@ -49,8 +49,10 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayT,
         AxisReduce,
+        AxisReduceMult,
         CoordsPolicy,
         DimsReduce,
+        DimsReduceMult,
         DTypeLikeArg,
         FloatT,
         Groups,
@@ -291,13 +293,13 @@ def reduce_data(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
+    axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
-    dim: DimsReduce | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     keep_attrs: bool | None = ...,
 ) -> xr.DataArray: ...
 # array no output
@@ -306,13 +308,13 @@ def reduce_data(
     data: ArrayLikeArg[FloatT],
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
+    axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
-    dim: DimsReduce | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     keep_attrs: bool | None = ...,
 ) -> NDArray[FloatT]: ...
 # out
@@ -321,13 +323,13 @@ def reduce_data(
     data: Any,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
+    axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
-    dim: DimsReduce | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     keep_attrs: bool | None = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
@@ -336,13 +338,13 @@ def reduce_data(
     data: Any,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
+    axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
-    dim: DimsReduce | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     keep_attrs: bool | None = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
@@ -351,13 +353,13 @@ def reduce_data(
     data: Any,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
+    axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
-    dim: DimsReduce | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     keep_attrs: bool | None = ...,
 ) -> NDArrayAny: ...
 
@@ -368,14 +370,14 @@ def reduce_data(
     data: xr.DataArray | ArrayLike,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceMult | MissingType = MISSING,
     keepdims: bool = False,
     order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
     # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
+    dim: DimsReduceMult | MissingType = MISSING,
     keep_attrs: bool | None = None,
 ) -> xr.DataArray | NDArrayAny:
     """
@@ -386,13 +388,13 @@ def reduce_data(
     ----------
     {data_numpy_or_dataarray}
     {mom_ndim}
-    {axis_data}
+    {axis_data_mult}
     {keepdims}
     {order}
     {parallel}
     {dtype}
     {out}
-    {dim}
+    {dim_mult}
     {keep_attrs}
 
     Returns
@@ -402,10 +404,10 @@ def reduce_data(
         Same type as input ``data``.
     """
     if isinstance(data, xr.DataArray):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         return data.reduce(
             reduce_data,
-            dim=dim,  # type: ignore[arg-type]
+            dim=dim,
             keep_attrs=keep_attrs,
             keepdims=keepdims,
             mom_ndim=mom_ndim,
@@ -417,22 +419,52 @@ def reduce_data(
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
-    axis, data = prepare_data_for_reduction2(
-        data,
-        axis=axis,
-        mom_ndim=mom_ndim,
-        order=order,
-        dtype=dtype,
+
+    # axis, data = prepare_data_for_reduction(
+    #     data,
+    #     axis=axis,
+    #     mom_ndim=mom_ndim,
+    #     order=order,
+    #     dtype=dtype,
+    # )
+
+    # axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis)
+
+    # return optional_keepdims(
+    #     factory_reduce_data(
+    #         mom_ndim=mom_ndim,
+    #         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+    #     )(data, axes=axes, out=out, order=order, dtype=dtype),
+    #     axis=axis,
+    #     keepdims=keepdims,
+    # )
+
+    # special to support multiple reduction dimensions...
+    data = np.asarray(data, dtype=dtype, order=order)
+    ndim = data.ndim - mom_ndim
+    axis_tuple = normalize_axis_tuple(
+        validate_axis_mult(axis),
+        ndim,
+        msg_prefix="reduce_data",
     )
 
-    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis)
+    # move axis to end and reshape
+    data = np.moveaxis(data, axis_tuple, range(ndim - len(axis_tuple), ndim))
+    new_shape = (
+        *data.shape[: -(len(axis_tuple) + mom_ndim)],
+        -1,
+        *data.shape[-mom_ndim:],
+    )
+    data = data.reshape(new_shape)
+
+    out = factory_reduce_data(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+    )(data, out=out, order=order, dtype=dtype)
 
     return optional_keepdims(
-        factory_reduce_data(
-            mom_ndim=mom_ndim,
-            parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-        )(data, axes=axes, out=out, order=order, dtype=dtype),
-        axis=axis,
+        out,
+        axis=axis_tuple,
         keepdims=keepdims,
     )
 
@@ -746,7 +778,7 @@ def reduce_data_grouped(
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    axis, data = prepare_data_for_reduction2(  # pyright: ignore[reportArgumentType]
+    axis, data = prepare_data_for_reduction(  # pyright: ignore[reportArgumentType]
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
@@ -754,9 +786,8 @@ def reduce_data_grouped(
         dtype=dtype,
     )
 
-    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
-    # [axes_data, axes_out] -> [axes_data, by, axes_out]
-    axes.insert(1, (-1,))
+    # include inner core dims for by
+    axes = axes_data_reduction((-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
 
     # check by
     by = np.asarray(by, dtype=np.int64)
@@ -765,7 +796,7 @@ def reduce_data_grouped(
         raise ValueError(msg)
 
     ngroup = by.max() + 1
-    out_shape = shape_replace_axis(shape=data.shape, axis=axis, new_size=ngroup)
+    out_shape = (*data.shape[:axis], ngroup, *data.shape[axis + 1 :])
     if out is None:
         out = np.zeros(out_shape, dtype=data.dtype)
     else:
@@ -1160,7 +1191,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    axis, data = prepare_data_for_reduction2(  # pyright: ignore[reportAssignmentType]
+    axis, data = prepare_data_for_reduction(  # pyright: ignore[reportAssignmentType]
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
@@ -1209,11 +1240,10 @@ def _reduce_data_indexed(
             msg = f"{len(scale)=} != {len(index)=}"
             raise ValueError(msg)
 
-    # [axes_data, index, start, end, scale, axes_out]
-    axes_data, axes_mom = axes_data_reduction(
-        mom_ndim=mom_ndim, axis=axis, out_has_axis=True
+    # include inner dims for index, start, end, scale
+    axes = axes_data_reduction(
+        *(-1,) * 4, mom_ndim=mom_ndim, axis=axis, out_has_axis=True
     )
-    axes = [axes_data, -1, -1, -1, -1, axes_mom]
 
     return factory_reduce_data_indexed(
         mom_ndim=mom_ndim,

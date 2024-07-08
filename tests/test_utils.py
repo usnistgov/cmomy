@@ -250,56 +250,6 @@ def test_prepare_values_for_reduction(
                 assert xx.flags["C_CONTIGUOUS"]
 
 
-# @dtype_mark
-# @order_mark
-# @pytest.mark.parametrize(
-#     ("axis", "mom_ndim", "shape", "shape2"),
-#     [
-#         (0, 1, (10, 2, 3, 4), (2, 3, 10, 4)),
-#         (1, 1, (2, 10, 3, 4), (2, 3, 10, 4)),
-#         (2, 1, (2, 3, 10, 4), (2, 3, 10, 4)),
-#         (-1, 1, (2, 3, 10, 4), (2, 3, 10, 4)),
-#         (-2, 1, (2, 10, 3, 4), (2, 3, 10, 4)),
-#         (0, 2, (10, 2, 3, 4), (2, 10, 3, 4)),
-#         (1, 2, (2, 10, 3, 4), (2, 10, 3, 4)),
-#         (-1, 2, (2, 10, 3, 4), (2, 10, 3, 4)),
-#         (-2, 2, (10, 2, 3, 4), (2, 10, 3, 4)),
-#         (None, 1, (10, 2, 3, 4), "error"),
-#     ],
-# )
-# def test_prepare_data_for_reduction(
-#     dtype, order, axis, mom_ndim, shape, shape2
-# ) -> None:
-#     data = np.ones(shape, dtype=dtype)
-
-#     if shape2 == "error":
-#         error = TypeError if axis is None else ValueError
-
-#         with pytest.raises(error):
-#             _, out = utils.prepare_data_for_reduction(
-#                 data,
-#                 axis=axis,
-#                 mom_ndim=mom_ndim,
-#                 order=order,
-#                 dtype=dtype,
-#             )
-
-#     else:
-#         _, out = utils.prepare_data_for_reduction(
-#             data,
-#             axis=axis,
-#             mom_ndim=mom_ndim,
-#             order=order,
-#             dtype=dtype,
-#         )
-
-#         assert out.shape == shape2
-
-#         assert out.dtype == np.dtype(dtype or np.float64)
-#         if order == "C":
-#             assert out.flags["C_CONTIGUOUS"]
-
-
 @dtype_mark
 @order_mark
 def test_prepare_values_for_push_val(dtype, order) -> None:
@@ -416,36 +366,6 @@ def test_xprepare_values_for_reduction_1(
             assert y.data.flags["C_CONTIGUOUS"]  # type: ignore[union-attr]
 
 
-# @pytest.mark.parametrize(
-#     ("dim_or_axis", "mom_ndim", "shape", "shape2"),
-#     [
-#         ("dim_0", 1, (10, 2, 3, 4), (2, 3, 10, 4)),
-#         ("dim_1", 1, (2, 10, 3, 4), (2, 3, 10, 4)),
-#         ("dim_2", 1, (2, 3, 10, 4), (2, 3, 10, 4)),
-#         (-1, 1, (2, 3, 10, 4), (2, 3, 10, 4)),
-#         ("dim_0", 2, (10, 2, 3, 4), (2, 10, 3, 4)),
-#         (-1, 2, (2, 10, 3, 4), (2, 10, 3, 4)),
-#     ],
-# )
-# @dtype_mark
-# @order_mark
-# def test_xprepare_data_for_reduction_0(
-#     dtype, order, dim_or_axis, mom_ndim, shape, shape2
-# ):
-#     data = xr.DataArray(np.ones(shape, dtype=np.float32))
-
-#     if isinstance(dim_or_axis, str):
-#         dim, axis = dim_or_axis, utils.MISSING
-#     else:
-#         dim, axis = utils.MISSING, dim_or_axis  # type: ignore[assignment]
-
-#     dim, out = utils.xprepare_data_for_reduction(  # type: ignore[assignment]
-#         data, axis=axis, dim=dim, mom_ndim=mom_ndim, order=order, dtype=dtype
-#     )
-#     assert out.shape == shape2
-#     assert out.dtype == np.dtype(dtype or np.float32)
-
-
 @pytest.mark.parametrize(
     ("mom_ndim", "mom_dims", "expected"),
     [
@@ -467,6 +387,25 @@ def test_validate_mom_dims(mom_ndim, mom_dims, expected):
     else:
         with pytest.raises(expected):
             utils.validate_mom_dims(mom_dims, mom_ndim)
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis", "out"),
+    [
+        ((10, 3), 0, (1, 10, 3)),
+        ((10, 3), 1, (10, 1, 3)),
+        ((2, 3, 4), 0, (1, 2, 3, 4)),
+        ((2, 3, 4), 1, (2, 1, 3, 4)),
+        ((2, 3, 4), 2, (2, 3, 1, 4)),
+    ],
+)
+def test_optional_keepdims(shape, axis, out) -> None:
+    x = np.empty(shape)
+
+    for keepdims in [True, False]:
+        assert utils.optional_keepdims(x, axis=axis, keepdims=keepdims).shape == (
+            out if keepdims else shape
+        )
 
 
 def test_select_axis_dim() -> None:
@@ -502,6 +441,71 @@ def test_select_axis_dim() -> None:
 
     with pytest.raises(ValueError):
         utils.select_axis_dim(data, axis="a")  # type: ignore[arg-type]
+
+
+def test_validate_axis_mult() -> None:
+    assert utils.validate_axis_mult(1) == 1
+    assert utils.validate_axis_mult((1, 2)) == (1, 2)
+    assert utils.validate_axis_mult(None) is None
+
+    with pytest.raises(TypeError):
+        utils.validate_axis_mult(utils.MISSING)
+
+
+def test_select_axis_dim_mult() -> None:
+    data = xr.DataArray((np.zeros((1, 1, 1))), dims=("a", "b", "mom"))
+
+    with pytest.raises(ValueError):
+        utils.select_axis_dim_mult(data)
+
+    with pytest.raises(ValueError):
+        utils.select_axis_dim_mult(data, default_axis=0, default_dim="hello")
+
+    with pytest.raises(ValueError):
+        utils.select_axis_dim_mult(data, axis=0, dim="a")
+
+    assert utils.select_axis_dim_mult(data, axis=0) == ((0,), ("a",))
+    assert utils.select_axis_dim_mult(data, axis=1) == ((1,), ("b",))
+    assert utils.select_axis_dim_mult(data, axis=-1) == ((2,), ("mom",))
+    assert utils.select_axis_dim_mult(data, axis=-1, mom_ndim=1) == ((1,), ("b",))
+
+    with pytest.raises(ValueError):
+        utils.select_axis_dim_mult(data, axis=2, mom_ndim=1)
+
+    assert utils.select_axis_dim_mult(data, dim="a") == ((0,), ("a",))
+    assert utils.select_axis_dim_mult(data, dim="b") == ((1,), ("b",))
+    assert utils.select_axis_dim_mult(data, dim="mom") == ((2,), ("mom",))
+    with pytest.raises(ValueError):
+        utils.select_axis_dim_mult(data, dim="mom", mom_ndim=1)
+
+    assert utils.select_axis_dim_mult(data, axis=(0, 1)) == ((0, 1), ("a", "b"))
+    assert utils.select_axis_dim_mult(data, axis=(1, 0)) == ((1, 0), ("b", "a"))
+    assert utils.select_axis_dim_mult(data, axis=(0, 2)) == ((0, 2), ("a", "mom"))
+    assert utils.select_axis_dim_mult(data, axis=None) == ((0, 1, 2), ("a", "b", "mom"))
+    assert utils.select_axis_dim_mult(data, axis=None, mom_ndim=1) == (
+        (0, 1),
+        ("a", "b"),
+    )
+    with pytest.raises(ValueError):
+        utils.select_axis_dim_mult(data, axis=(0, 2), mom_ndim=1)
+
+    assert utils.select_axis_dim_mult(data, dim=("a", "b")) == ((0, 1), ("a", "b"))
+    assert utils.select_axis_dim_mult(data, dim=("b", "a")) == ((1, 0), ("b", "a"))
+    assert utils.select_axis_dim_mult(data, dim=("a", "mom")) == ((0, 2), ("a", "mom"))
+    assert utils.select_axis_dim_mult(data, dim=None) == ((0, 1, 2), ("a", "b", "mom"))
+    assert utils.select_axis_dim_mult(data, dim=None, mom_ndim=1) == (
+        (0, 1),
+        ("a", "b"),
+    )
+    with pytest.raises(ValueError):
+        utils.select_axis_dim_mult(data, dim=("a", "mom"), mom_ndim=1)
+
+    # infer defaults
+    assert utils.select_axis_dim_mult(data, default_axis=(0, 1)) == ((0, 1), ("a", "b"))
+    assert utils.select_axis_dim_mult(data, default_dim=None, mom_ndim=1) == (
+        (0, 1),
+        ("a", "b"),
+    )
 
 
 def test_move_mom_dims_to_end() -> None:

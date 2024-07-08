@@ -13,7 +13,7 @@ from ._utils import (
     axes_data_reduction,
     normalize_axis_index,
     parallel_heuristic,
-    prepare_data_for_reduction2,
+    prepare_data_for_reduction,
     prepare_values_for_push_val,
     prepare_values_for_reduction,
     validate_axis,
@@ -668,7 +668,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         parallel: bool | None = None,
         order: ArrayOrder = None,
     ) -> Self:
-        axis, datas = prepare_data_for_reduction2(
+        axis, datas = prepare_data_for_reduction(
             data=datas,
             axis=axis,
             mom_ndim=self.mom_ndim,

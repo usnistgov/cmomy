@@ -41,7 +41,9 @@ if TYPE_CHECKING:
 # Axis/Dim reduction type
 AxisReduce: TypeAlias = Union[int, None]
 DimsReduce: TypeAlias = Union[Hashable, None]
-AxesReduce: TypeAlias = "list[tuple[int, ...]]"
+AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
+AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
+DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
 
 # * Numpy Arrays
 # ** Aliases

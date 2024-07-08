@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import CentralMoments
 
 if TYPE_CHECKING:
@@ -397,6 +398,16 @@ def test_init_reduce(other) -> None:
     datas = np.array([s.to_numpy() for s in other.S])
     t = other.cls(datas, mom_ndim=other.mom_ndim).reduce(axis=0)
     other.test_values(t.to_values())
+
+    out = cmomy.reduce_data(datas, axis=0, mom_ndim=other.mom_ndim)
+    other.test_values(out)
+
+
+def test_reduction_total(other) -> None:
+    if len(other.val_shape) > 0:
+        t = other.s.reshape(-1).reduce(axis=0)
+        out = cmomy.reduce_data(other.s.values, axis=None, mom_ndim=other.mom_ndim)
+        np.testing.assert_allclose(t, out)
 
 
 def test_push_datas(other) -> None:

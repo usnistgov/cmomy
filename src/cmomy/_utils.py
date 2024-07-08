@@ -13,7 +13,13 @@ from ._lib.utils import supports_parallel as supports_parallel  # noqa: PLC0414
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable, Iterable, Iterator, Mapping, Sequence
+    from collections.abc import (
+        Hashable,
+        Iterable,
+        Iterator,
+        Mapping,
+        Sequence,
+    )
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -25,9 +31,11 @@ if TYPE_CHECKING:
     from .typing import (
         ArrayOrder,
         ArrayOrderCF,
-        AxesReduce,
+        AxesGUFunc,
         AxisReduce,
+        AxisReduceMult,
         DimsReduce,
+        DimsReduceMult,
         DTypeLikeArg,
         MissingType,
         Mom_NDim,
@@ -80,6 +88,26 @@ def normalize_axis_index(
 
     ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
     return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]
+
+
+def normalize_axis_tuple(
+    axis: int | Iterable[int] | None,
+    ndim: int,
+    mom_ndim: Mom_NDim | None = None,
+    msg_prefix: str | None = None,
+    allow_duplicate: bool = False,
+) -> tuple[int, ...]:
+    """Interface to numpy.core.multiarray.normalize_axis_index"""
+    from ._compat import (
+        np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue]
+    )
+
+    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
+
+    if axis is None:
+        return tuple(range(ndim))
+
+    return np_normalize_axis_tuple(axis, ndim, msg_prefix, allow_duplicate)  # type: ignore[no-any-return,unused-ignore]
 
 
 # * Array order ---------------------------------------------------------------
@@ -307,7 +335,15 @@ def validate_axis(axis: AxisReduce | MissingType) -> int:
     In the future, will allow axis to be None also.
     """
     if axis is None or axis is MISSING:
-        msg = f"Must specify axis as integer.  Received {axis=}."
+        msg = f"Must specify axis. Received {axis=}."
+        raise TypeError(msg)
+    return axis
+
+
+def validate_axis_mult(axis: AxisReduceMult | MissingType) -> AxisReduceMult:
+    """Validate that axis is specified."""
+    if axis is MISSING:
+        msg = f"Must specify axis. Received {axis=}."
         raise TypeError(msg)
     return axis
 
@@ -359,6 +395,62 @@ def select_axis_dim(
         raise TypeError(msg)
 
     return axis, dim
+
+
+def select_axis_dim_mult(
+    data: xr.DataArray,
+    axis: AxisReduceMult | MissingType = MISSING,
+    dim: DimsReduceMult | MissingType = MISSING,
+    default_axis: AxisReduceMult | MissingType = MISSING,
+    default_dim: DimsReduceMult | MissingType = MISSING,
+    mom_ndim: Mom_NDim | None = None,
+) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
+    """
+    Produce axis/dim tuples from input.
+
+    This is like `select_axis_dim`, but allows multiple values in axis/dim.
+    """
+    # Allow None, which implies choosing all dimensions...
+    if axis is MISSING and dim is MISSING:
+        if default_axis is not MISSING and default_dim is MISSING:
+            axis = default_axis
+        elif default_axis is MISSING and default_dim is not MISSING:
+            dim = default_dim
+        else:
+            msg = "Must specify axis or dim, or one of default_axis or default_dim"
+            raise ValueError(msg)
+
+    elif axis is not MISSING and dim is not MISSING:
+        msg = "Can only specify one of axis or dim"
+        raise ValueError(msg)
+
+    ndim = data.ndim - (0 if mom_ndim is None else mom_ndim)
+    dim_: tuple[Hashable, ...]
+    axis_: tuple[int, ...]
+
+    if dim is not MISSING:
+        dim_ = (
+            data.dims[:ndim]
+            if dim is None
+            else (dim,)
+            if isinstance(dim, str)
+            else tuple(dim)  # type: ignore[arg-type]
+        )
+
+        axis_ = tuple(data.dims.index(d) for d in dim_)
+        if any(a >= ndim for a in axis_):
+            msg = f"Cannot select moment dimension. {axis_=}, {dim_=}."
+            raise ValueError(msg)
+
+    elif axis is not MISSING:
+        axis_ = normalize_axis_tuple(axis, data.ndim, mom_ndim)
+        dim_ = tuple(data.dims[a] for a in axis_)
+
+    else:  # pragma: no cover
+        msg = f"Unknown dim {dim} and axis {axis}"
+        raise TypeError(msg)
+
+    return axis_, dim_
 
 
 # ** Prepare for push/reduction
@@ -545,44 +637,6 @@ def xprepare_values_for_reduction(
     return input_core_dims, (target, *others)
 
 
-# def prepare_data_for_reduction(
-#     data: ArrayLike,
-#     axis: AxisReduce | MissingType,
-#     mom_ndim: Mom_NDim,
-#     dtype: DTypeLikeArg[ScalarT],
-#     order: ArrayOrder = None,
-# ) -> tuple[int, NDArray[ScalarT]]:
-#     """Convert central moments array to correct form for reduction."""
-#     data = np.asarray(data, dtype=dtype)
-#     axis = validate_axis(axis)
-
-#     ndim = data.ndim - mom_ndim
-#     axis = normalize_axis_index(axis, ndim)
-#     last_dim = ndim - 1
-
-#     if (ndim > 1) and axis != last_dim:
-#         data = np.moveaxis(data, axis, last_dim)
-#     if order:
-#         data = np.asarray(data, order=order)
-#     return axis, data
-
-
-# def xprepare_data_for_reduction(
-#     data: xr.DataArray,
-#     axis: AxisReduce | MissingType,
-#     dim: DimsReduce | MissingType,
-#     mom_ndim: Mom_NDim,
-#     order: ArrayOrder = None,
-#     dtype: DTypeLike = None,
-# ) -> tuple[Hashable, xr.DataArray]:
-#     """Prepare DataArray for reduction."""
-#     axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-#     if order or dtype:
-#         data = data.astype(dtype or data.dtype, order=order, copy=False)  # pyright: ignore[reportUnknownMemberType]
-
-#     return dim, data
-
-
 def prepare_values_for_push_val(
     target: ArrayLike,
     *args: ArrayLike,
@@ -642,7 +696,7 @@ def optional_keepdims(
 
 
 # new style preparation for reduction....
-def prepare_data_for_reduction2(
+def prepare_data_for_reduction(
     data: ArrayLike,
     axis: AxisReduce | MissingType,
     mom_ndim: Mom_NDim,
@@ -651,6 +705,7 @@ def prepare_data_for_reduction2(
 ) -> tuple[int, NDArray[ScalarT]]:
     """Convert central moments array to correct form for reduction."""
     data = np.asarray(data, dtype=dtype, order=order)
+
     axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim)
     return axis, data
 
@@ -659,46 +714,58 @@ _MOM_AXES_TUPLE = {1: (-1,), 2: (-2, -1)}
 
 
 def axes_data_reduction(
-    *, mom_ndim: Mom_NDim, axis: int, out_has_axis: bool = False
-) -> AxesReduce:
+    *inner: int | tuple[int, ...],
+    mom_ndim: Mom_NDim,
+    axis: int,
+    out_has_axis: bool = False,
+) -> AxesGUFunc:
     """
     axes for reducing data along axis
 
     if ``out_has_axis == True``, then treat like resample,
     so output will still have ``axis`` with new size in output.
+
+    It is assumed that `axis` is validated against a moments array,
+    (i.e., negative values should be ``< -mom_ndim``)
+
+    Can also pass in "inner" dimensions (elements 1:-1 of output)
     """
     mom_axes = _MOM_AXES_TUPLE[mom_ndim]
 
     data_axes = (axis, *mom_axes)
     out_axes = data_axes if out_has_axis else mom_axes
 
-    return [data_axes, out_axes]
+    return [
+        data_axes,
+        *((x,) if isinstance(x, int) else x for x in inner),
+        out_axes,
+    ]
 
 
-def shape_insert_axis(
-    *,
-    shape: Sequence[int],
-    axis: int | None,
-    new_size: int,
-) -> tuple[int, ...]:
-    """Get new shape by inserting ``new_size`` at ``axis``."""
-    if axis is None:
-        msg = "must specify integre axis"
-        raise ValueError(msg)
+# def shape_insert_axis(
+#     *,
+#     shape: Sequence[int],
+#     axis: int | None,
+#     new_size: int,
+# ) -> tuple[int, ...]:
+#     """Get new shape by inserting ``new_size`` at ``axis``."""
+#     if axis is None:
+#         msg = "must specify integre axis"
+#         raise ValueError(msg)
 
-    axis = normalize_axis_index(axis, len(shape) + 1)
-    shape = tuple(shape)
-    return shape[:axis] + (new_size,) + shape[axis:]
+#     axis = normalize_axis_index(axis, len(shape) + 1)
+#     shape = tuple(shape)
+#     return shape[:axis] + (new_size,) + shape[axis:]
 
 
-def shape_replace_axis(
-    *,
-    shape: Sequence[int],
-    axis: int,
-    new_size: int,
-) -> tuple[int, ...]:
-    """Gen new shape by replacing ``shape[axis]`` with ``new_size``."""
-    return (*shape[:axis], new_size, *shape[axis + 1 :])
+# def shape_replace_axis(
+#     *,
+#     shape: Sequence[int],
+#     axis: int,
+#     new_size: int,
+# ) -> tuple[int, ...]:
+#     """Gen new shape by replacing ``shape[axis]`` with ``new_size``."""
+#     return (*shape[:axis], new_size, *shape[axis + 1 :])
 
 
 def optional_move_axis_to_end(
@@ -713,7 +780,7 @@ def optional_move_axis_to_end(
     return np.moveaxis(out, axis, -(mom_ndim + 1))
 
 
-# def axes_reduce_vals(*arr: NDArrayAny, mom_ndim: Mom_NDim, axis: int) -> AxesReduce:
+# def axes_reduce_vals(*arr: NDArrayAny, mom_ndim: Mom_NDim, axis: int) -> AxesGUFunc:
 #     """
 #     axes for reducing values along axis
 #     """

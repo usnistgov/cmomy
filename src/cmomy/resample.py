@@ -20,8 +20,7 @@ from ._utils import (
     normalize_axis_index,
     optional_move_axis_to_end,
     parallel_heuristic,
-    # prepare_data_for_reduction,
-    prepare_data_for_reduction2,
+    prepare_data_for_reduction,
     prepare_values_for_reduction,
     raise_if_wrong_shape,
     select_axis_dim,
@@ -29,7 +28,6 @@ from ._utils import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
-    # xprepare_data_for_reduction,
     xprepare_values_for_reduction,
 )
 from .docstrings import docfiller
@@ -569,13 +567,14 @@ def resample_data(
     dtype = select_dtype(data, out=out, dtype=dtype)
     freq = np.asarray(freq, dtype=dtype)
 
-    axis, data = prepare_data_for_reduction2(
+    axis, data = prepare_data_for_reduction(
         data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
     )
 
-    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
-    # add in axes for freq
-    axes = [axes[0], (-2, -1), axes[-1]]
+    # include inner core dimensions for freq
+    axes = axes_data_reduction(
+        (-2, -1), mom_ndim=mom_ndim, axis=axis, out_has_axis=True
+    )
 
     _check_freq(freq, data.shape[axis])
 
@@ -1085,7 +1084,7 @@ def jackknife_data(
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     # numpy array
-    axis, data = prepare_data_for_reduction2(
+    axis, data = prepare_data_for_reduction(
         data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
     )
 

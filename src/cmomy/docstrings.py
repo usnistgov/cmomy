@@ -48,6 +48,14 @@ def _dummy_docstrings() -> None:
         for moments. For example, if ``data.shape == (1,2,3)`` with
         ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
         Defaults to ``axis=-1``.
+    axis_data_mult | axis : int, tuple of int, optional
+        Axis(es) to reduce along. Note that negative values are relative to
+        ``data.ndim - mom_ndim``. It is assumed that the last dimensions are
+        for moments. For example, if ``data.shape == (1,2,3)`` with
+        ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
+        Defaults to ``axis=-1``.  To reduce over multiple dimensions, specify
+        `axis = (axis_0, axis_1, ...)`.  Passing `axis=None` reduces over all
+        value dimensions (i.e., all dimensions excluding moment dimensions).
     broadcast : bool
         If True, and ``x=(x0, x1)``, then perform 'smart' broadcasting.
         In this case, if ``x1.ndim = 1`` and ``len(x1) == x0.shape[axis]``, then
@@ -98,6 +106,8 @@ def _dummy_docstrings() -> None:
         Overrides other options.
     dim : hashable
         Dimension to reduce along.
+    dim_mult | dim : hashable or iterable of hashable
+        Dimension(s) to reduce along.  Value of `None` implies reduce over all "value" dimensions.
     rep_dim : hashable
         Name of new 'replicated' dimension:
     rec_dim : hashable
