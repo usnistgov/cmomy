@@ -290,7 +290,7 @@ def test_resample_resample_vals(rng) -> None:
     np.testing.assert_allclose(c2.data[..., :, 0], c.data)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_resample_vals(other, parallel) -> None:
     # test basic resampling
@@ -307,7 +307,7 @@ def test_resample_vals(other, parallel) -> None:
         np.testing.assert_allclose(datar, other.data_test_resamp)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_stats_resample_vals(other, parallel) -> None:
     if other.style == "total":
@@ -323,7 +323,7 @@ def test_stats_resample_vals(other, parallel) -> None:
         np.testing.assert_allclose(t.data, other.data_test_resamp)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_resample_data(other, parallel, rng) -> None:
     nrep = 10
@@ -361,7 +361,7 @@ def test_resample_data(other, parallel, rng) -> None:
             )
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_resample_against_vals(other, parallel, rng) -> None:
     nrep = 10
@@ -409,7 +409,7 @@ def test_resample_zero_weight(rng) -> None:
     )
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 def test_bootstrap_stats(other) -> None:
     x = other.xdata
     axis = other.axis

@@ -21,7 +21,7 @@ def _add_parameter(param, flag, args, expected):
     return args, expected
 
 
-@pytest.fixture()
+@pytest.fixture
 def import_module():
     with patch("cmomy.compile.import_module") as mocked:
         yield mocked

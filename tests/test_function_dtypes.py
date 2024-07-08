@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 
-@pytest.fixture()
+@pytest.fixture
 def x_vals(rng: np.random.Generator) -> NDArray[np.float64]:
     return rng.random((100, 2, 4))
 

@@ -49,7 +49,7 @@ def shape(request: pytest.FixtureRequest) -> tuple[int, ...]:
     return request.param  # type: ignore[no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def data(rng: np.random.Generator, shape: tuple[int, ...]) -> NDArray[np.float64]:
     return rng.random(shape)
 
@@ -59,22 +59,22 @@ def alpha(request: pytest.FixtureRequest) -> float:
     return request.param  # type: ignore[no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def nrep() -> int:
     return 20
 
 
-@pytest.fixture()
+@pytest.fixture
 def mom() -> Moments:
     return (3,)
 
 
-@pytest.fixture()
+@pytest.fixture
 def theta_hat(data: NDArray[np.float64], mom: Moments) -> NDArray[np.float64]:
     return cmomy.reduce_vals(data, mom=mom, axis=-1)
 
 
-@pytest.fixture()
+@pytest.fixture
 def theta_boot(data: NDArray[np.float64], mom: Moments, nrep) -> NDArray[np.float64]:
     freq = cmomy.randsamp_freq(
         data=data, axis=-1, nrep=nrep, rng=np.random.default_rng(0)
@@ -82,7 +82,7 @@ def theta_boot(data: NDArray[np.float64], mom: Moments, nrep) -> NDArray[np.floa
     return cmomy.resample_vals(data, mom=mom, axis=-1, freq=freq)
 
 
-@pytest.fixture()
+@pytest.fixture
 def theta_jack(
     data: NDArray[np.float64], mom: Moments, theta_hat: NDArray[np.float64]
 ) -> NDArray[np.float64]:
@@ -94,7 +94,7 @@ def method(request: pytest.FixtureRequest) -> str:
     return request.param  # type: ignore[no-any-return]
 
 
-@pytest.fixture()
+@pytest.fixture
 def scipy_boot_mean(data, nrep, alpha, method) -> st._resampling.BootstrapResult:
     return st.bootstrap(
         [data],
