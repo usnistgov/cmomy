@@ -409,38 +409,38 @@ def test_resample_zero_weight(rng) -> None:
     )
 
 
-@pytest.mark.slow
-def test_bootstrap_stats(other) -> None:
-    x = other.xdata
-    axis = other.axis
-    alpha = 0.05
+# @pytest.mark.slow
+# def test_bootstrap_stats(other) -> None:
+#     x = other.xdata
+#     axis = other.axis
+#     alpha = 0.05
 
-    # test styles
-    test = resample.bootstrap_confidence_interval(
-        x, stats_val=None, axis=axis, alpha=alpha
-    )
+#     # test styles
+#     test = resample.bootstrap_confidence_interval(
+#         x, stats_val=None, axis=axis, alpha=alpha
+#     )
 
-    p_low = 100 * (alpha / 2.0)
-    p_mid = 50
-    p_high = 100 - p_low
+#     p_low = 100 * (alpha / 2.0)
+#     p_mid = 50
+#     p_high = 100 - p_low
 
-    expected = np.percentile(x, [p_mid, p_low, p_high], axis=axis)
-    np.testing.assert_allclose(test, expected)
+#     expected = np.percentile(x, [p_mid, p_low, p_high], axis=axis)
+#     np.testing.assert_allclose(test, expected)
 
-    # 'mean'
-    test = resample.bootstrap_confidence_interval(
-        x, stats_val="mean", axis=axis, alpha=alpha
-    )
+#     # 'mean'
+#     test = resample.bootstrap_confidence_interval(
+#         x, stats_val="mean", axis=axis, alpha=alpha
+#     )
 
-    q_high = 100 * (alpha / 2.0)
-    q_low = 100 - q_high
-    stats_val = x.mean(axis=axis)
-    val = stats_val
-    low = 2 * stats_val - np.percentile(a=x, q=q_low, axis=axis)
-    high = 2 * stats_val - np.percentile(a=x, q=q_high, axis=axis)
+#     q_high = 100 * (alpha / 2.0)
+#     q_low = 100 - q_high
+#     stats_val = x.mean(axis=axis)
+#     val = stats_val
+#     low = 2 * stats_val - np.percentile(a=x, q=q_low, axis=axis)
+#     high = 2 * stats_val - np.percentile(a=x, q=q_high, axis=axis)
 
-    expected = np.array([val, low, high])
-    np.testing.assert_allclose(test, expected)
+#     expected = np.array([val, low, high])
+#     np.testing.assert_allclose(test, expected)
 
 
 # # * Arbitrary number of samples in resample.

@@ -49,6 +49,13 @@ Resampling routines available at top level (from :mod:`cmomy.resample`)
    ~cmomy.resample.indices_to_freq
 
 
+Confidence intervals (from :mod:`cmomy.confidence_interval`)
+------------------------------------------------------------
+
+.. autosummary::
+
+   ~cmomy.confidence_interval.bootstrap_confidence_interval
+
 Pre-loaded modules
 ------------------
 

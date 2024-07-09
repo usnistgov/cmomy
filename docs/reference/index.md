@@ -21,4 +21,5 @@ api-baseclasses
     cmomy.random
     cmomy.compile
     cmomy.typing
+    cmomy.confidence_interval
 ```

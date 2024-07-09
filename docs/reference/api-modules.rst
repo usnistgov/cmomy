@@ -7,6 +7,7 @@
    cmomy.random
    cmomy.convert
    cmomy.compile
+   cmomy.confidence_interval
 
 
 

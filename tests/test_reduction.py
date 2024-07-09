@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from functools import partial
+
 import numpy as np
 import pytest
 
@@ -98,3 +100,21 @@ def test_indexed(rng: np.random.Generator) -> None:
             scale=[1] * 11,
             axis=0,
         )
+
+
+def test_reduce_vals_broadcast(rng: np.random.Generator) -> None:
+    func = partial(cmomy.reduce_vals, axis=-1, mom=(2, 2))
+
+    x = rng.random((2, 10))
+    y = rng.random((2, 10))
+
+    a = func(x, y)
+    b = func(x[None, ...], y)
+    c = func(x, y[None, ...])
+
+    assert a.shape == (2, 3, 3)
+    assert b.shape == (1, 2, 3, 3)
+    assert c.shape == (1, 2, 3, 3)
+
+    np.testing.assert_allclose(a[None, ...], b)
+    np.testing.assert_allclose(b, c)

@@ -77,10 +77,22 @@ def _reduce_vals(
     mom: MomentsStrict,
     parallel: bool | None = None,
     out: NDArray[FloatT] | None = None,
+    # keepdims: bool = False,
 ) -> NDArray[FloatT]:
     val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
         :-1
     ]
+    # TODO(wpk): what to do about ``axis`` and ``keepdims`` for values reduction.
+    # 1) Stay the way we are.  Values reduction (and resampling) always move axis to end
+    # 2) Instead move expand/resampled dimension back to ``axis``.  This is tricky though, as
+    # the final shape is broadcast from ``x``, ``y`` and ``weight``.  If you really want to do this,
+    # then need a check like the following to make sure things make sense.
+    #
+    # if keepdims and len(val_shape) != _x0.ndim - 1:
+    #     msg = (
+    #         f"Broadcasted value shape {val_shape} inconsistent with values shape of x={_x0.shape[:-1]}."
+    #     )
+    #     raise ValueError(msg)
     mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom)
     out_shape: tuple[int, ...] = (*val_shape, *mom_shape)
 
@@ -105,7 +117,7 @@ def reduce_vals(  # type: ignore[overload-overlap]
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
-    keepdims: bool = ...,
+    # keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -123,7 +135,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    keepdims: bool = ...,
+    # keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
@@ -141,7 +153,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    keepdims: bool = ...,
+    # keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -159,7 +171,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    keepdims: bool = ...,
+    # keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
@@ -177,7 +189,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    keepdims: bool = ...,
+    # keepdims: bool = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -197,7 +209,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    keepdims: bool = False,
+    # keepdims: bool = False,
     order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
@@ -215,10 +227,12 @@ def reduce_vals(
     x : ndarray or DataArray
         Values to analyze.
     *y : array-like or DataArray
-        Seconda value.  Must specify if ``len(mom) == 2.``
+        Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
+        to broadcast to ``x`` or be 1d array with length ``x.shape[axis]``.
     {mom}
     weight : scalar or array-like or DataArray
-        Weights for each point.
+        Weights for each point. Should either be able to broadcast to ``x`` or
+        be `d array of length ``x.shape[axis]``.
     {axis}
     {keepdims}
     {order}
@@ -232,9 +246,18 @@ def reduce_vals(
     Returns
     -------
     out : ndarray or DataArray
-        Central moments array of same type as ``x``.
-        ``out.shape = (...,shape[axis-1], shape[axis+1], ..., mom0, ...)``
-        where ``shape = np.broadcast_shapes(*(a.shape for a in (x, *y, weight)))``
+        Central moments array of same type as ``x``. ``out.shape = shape +
+        (mom0, ...)`` where ``shape = np.broadcast_shapes(*(a.shape for a in
+        (x_, *y_, weight_)))[:-1]`` and ``x_``, ``y_`` and ``weight_`` are the
+        input arrays with ``axis`` moved to the last axis.
+
+
+    Notes
+    -----
+    We have removed the ``keepdims`` argument from this function, as the
+    behaviour could be inconsistent for comoments. For comoments, the output
+    shape will depend on both ``x`` and ``y``, and is not clear where in
+    ``out`` to include the expanded dims.
 
     See Also
     --------
@@ -279,11 +302,13 @@ def reduce_vals(
         dtype=dtype,
     )
 
-    return optional_keepdims(
-        _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),
-        axis=axis,
-        keepdims=keepdims,
-    )
+    # return optional_keepdims(
+    #     _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),
+    #     axis=axis,
+    #     keepdims=keepdims,
+    # )
+
+    return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)
 
 
 # * Reduce data ---------------------------------------------------------------

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from textwrap import dedent
+
 from module_utilities.docfiller import DocFiller
 
 
@@ -86,8 +88,8 @@ def _dummy_docstrings() -> None:
     dims : hashable or sequence of hashable
         Dimension of resulting :class:`xarray.DataArray`.
 
-        * If ``len(dims) == self.ndim``, then dims specifies all dimensions.
-        * If ``len(dims) == self.val_ndim``, ``dims = dims + mom_dims``
+        - If ``len(dims) == self.ndim``, then dims specifies all dimensions.
+        - If ``len(dims) == self.val_ndim``, ``dims = dims + mom_dims``
 
         Default to ``('dim_0', 'dim_1', ...)``
     mom_dims : hashable or tuple of hashable
@@ -130,10 +132,10 @@ def _dummy_docstrings() -> None:
         for :class:`~xarray.DataArray` data.
         If no coordinates do nothing, otherwise use:
 
-        * 'first': select first value of coordinate for each block.
-        * 'last': select last value of coordinate for each block.
-        * 'group': Assign unique groups from ``group_idx`` to ``dim``
-        * None: drop any coordinates.
+        - 'first': select first value of coordinate for each block.
+        - 'last': select last value of coordinate for each block.
+        - 'group': Assign unique groups from ``group_idx`` to ``dim``
+        - None: drop any coordinates.
 
         Note that if ``coords_policy`` is one of ``first`` or ``last``, parameter ``groups``
         will be ignored.
@@ -202,6 +204,19 @@ docfiller = (
     )
     .assign_combined_key("axis_and_dim", ["axis"])
     .assign_combined_key("axis_data_and_dim", ["axis_data"])
+    .update(
+        vals_resample_note=dedent(
+            """\
+            Note that the resampled axis (``resamp_axis``) is at position
+            ``-(len(mom) + 1)``, just before the moment axes. This is opposed
+            to the behavior of resampling moments arrays (e.g.,
+            func:`.resample_data`), where the resampled axis is the same as the
+            argument ``axis``. This is because the shape of the output array
+            when resampling values is dependent the result of broadcasting
+            ``x`` and ``y`` and ``weight``.
+            """
+        )
+    )
 )
 
 
