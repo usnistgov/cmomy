@@ -191,7 +191,9 @@ def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     ],
     inline=True,
 )
-def push_data_scale(data: NDArray[FloatT], scale: FloatT, out: NDArray[FloatT]) -> None:
+def push_data_scale(
+    data: NDArray[FloatT], scale: float | FloatT, out: NDArray[FloatT]
+) -> None:
     w = data[0, 0] * scale
     if w == 0.0:
         return

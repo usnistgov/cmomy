@@ -41,8 +41,6 @@ if TYPE_CHECKING:
                 push.reduce_vals,
                 push.push_data,
                 push.reduce_data,
-                push.push_stat,
-                push.reduce_stats,
             ),
         ),
         (
@@ -53,8 +51,6 @@ if TYPE_CHECKING:
                 push_parallel.reduce_vals,
                 push_parallel.push_data,
                 push_parallel.reduce_data,
-                push_parallel.push_stat,
-                push_parallel.reduce_stats,
             ),
         ),
         (
@@ -65,8 +61,6 @@ if TYPE_CHECKING:
                 push_cov.reduce_vals,
                 push_cov.push_data,
                 push_cov.reduce_data,
-                None,
-                None,
             ),
         ),
         (
@@ -77,8 +71,6 @@ if TYPE_CHECKING:
                 push_cov_parallel.reduce_vals,
                 push_cov_parallel.push_data,
                 push_cov_parallel.reduce_data,
-                None,
-                None,
             ),
         ),
     ],

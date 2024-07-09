@@ -10,6 +10,7 @@ from numpy.typing import NDArray
 from .utils import supports_parallel
 
 if TYPE_CHECKING:
+    from types import ModuleType
     from typing import Any, Callable, Literal, Protocol
 
     from numpy.typing import NDArray
@@ -159,8 +160,6 @@ class Pusher(NamedTuple):
     vals: Callable[..., None]
     data: Callable[..., None]
     datas: Callable[..., None]
-    stat: Callable[..., None] | None = None
-    stats: Callable[..., None] | None = None
 
 
 @lru_cache
@@ -168,47 +167,21 @@ def factory_pusher(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Pusher:
     """Factory method to get pusher functions."""
     parallel = parallel and supports_parallel()
 
+    _push_mod: ModuleType
     if mom_ndim == 1 and parallel:
-        from . import push_parallel
-
-        return Pusher(
-            val=push_parallel.push_val,
-            vals=push_parallel.reduce_vals,
-            data=push_parallel.push_data,
-            datas=push_parallel.reduce_data,
-            stat=push_parallel.push_stat,
-            stats=push_parallel.reduce_stats,
-        )
-
-    if mom_ndim == 1:
-        from . import push
-
-        return Pusher(
-            val=push.push_val,
-            vals=push.reduce_vals,
-            data=push.push_data,
-            datas=push.reduce_data,
-            stat=push.push_stat,
-            stats=push.reduce_stats,
-        )
-
-    if mom_ndim == 2 and parallel:
-        from . import push_cov_parallel
-
-        return Pusher(
-            val=push_cov_parallel.push_val,
-            vals=push_cov_parallel.reduce_vals,
-            data=push_cov_parallel.push_data,
-            datas=push_cov_parallel.reduce_data,
-        )
-
-    from . import push_cov
+        from . import push_parallel as _push_mod
+    elif mom_ndim == 1:
+        from . import push as _push_mod
+    elif mom_ndim == 2 and parallel:
+        from . import push_cov_parallel as _push_mod
+    else:
+        from . import push_cov as _push_mod
 
     return Pusher(
-        val=push_cov.push_val,
-        vals=push_cov.reduce_vals,
-        data=push_cov.push_data,
-        datas=push_cov.reduce_data,
+        val=_push_mod.push_val,
+        vals=_push_mod.reduce_vals,
+        data=_push_mod.push_data,
+        datas=_push_mod.reduce_data,
     )
 
 
