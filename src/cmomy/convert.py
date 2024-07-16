@@ -13,9 +13,13 @@ import xarray as xr
 
 from ._utils import (
     MISSING,
+    axes_data_reduction,
+    normalize_axis_index,
+    parallel_heuristic,
     peek_at,
     select_axis_dim,
     select_dtype,
+    validate_axis,
     validate_mom_dims,
     validate_mom_ndim,
 )
@@ -55,6 +59,7 @@ def moments_type(  # type: ignore[overload-overlap]
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
 ) -> xr.DataArray: ...
+# array
 @overload
 def moments_type(
     values_in: ArrayLikeArg[FloatT],
@@ -64,15 +69,7 @@ def moments_type(
     out: None = ...,
     dtype: None = ...,
 ) -> NDArray[FloatT]: ...
-@overload
-def moments_type(
-    values_in: ArrayLike,
-    *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
-    out: None = ...,
-    dtype: None = ...,
-) -> NDArrayAny: ...
+# out
 @overload
 def moments_type(
     values_in: Any,
@@ -82,6 +79,7 @@ def moments_type(
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
 ) -> NDArray[FloatT]: ...
+# dtype
 @overload
 def moments_type(
     values_in: Any,
@@ -91,6 +89,7 @@ def moments_type(
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
 ) -> NDArray[FloatT]: ...
+# fallback
 @overload
 def moments_type(
     values_in: Any,
@@ -98,7 +97,7 @@ def moments_type(
     mom_ndim: Mom_NDim,
     to: ConvertStyle = ...,
     out: None = ...,
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
 ) -> NDArrayAny: ...
 
 
@@ -114,6 +113,24 @@ def moments_type(
     r"""
     Convert between central and raw moments type.
 
+    Parameters
+    ----------
+    values_in : array-like or DataArray
+        The moments array to convert from.
+    {mom_ndim}
+    to : {{"raw", "central"}}
+        The style of the ``values_in`` to convert to. If ``"raw"``, convert from central to raw.
+        If ``"central"`` convert from raw to central moments.
+    {out}
+    {dtype}
+
+    Returns
+    -------
+    ndarray
+        Moments array converted from ``input_style`` to opposite format.
+
+    Notes
+    -----
     The structure of arrays are as follow.
     Central moments:
 
@@ -140,42 +157,172 @@ def moments_type(
     * ``values_in[..., 0, 0]`` : weight
     * ``values_in[..., i, j]`` : :math:`\langle a^i b^j \rangle`,
 
-
-    Parameters
-    ----------
-    values_in : ndarray
-        The moments array to convert from.
-    {mom_ndim}
-    to : {{"raw", "central"}}
-        The style of the ``values_in`` to convert to. If ``"raw"``, convert from central to raw.
-        If ``"central"`` convert from raw to central moments.
-    {out}
-
-    Returns
-    -------
-    ndarray
-        Moments array converted from ``input_style`` to opposite format.
     """
-    from ._lib.factory import factory_convert
-
-    mom_ndim = validate_mom_ndim(mom_ndim)
-
-    _input_to_output = factory_convert(mom_ndim=mom_ndim, to=to)
-
-    dtype = select_dtype(values_in, out=out, dtype=dtype)
-
     if isinstance(values_in, xr.DataArray):
         return values_in.copy(
             data=moments_type(
-                values_in.to_numpy().astype(dtype),  # pyright: ignore[reportUnknownMemberType]
+                values_in.to_numpy(),  # pyright: ignore[reportUnknownMemberType]
                 mom_ndim=mom_ndim,
                 to=to,
                 out=out,
+                dtype=dtype,
             )
         )
 
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(values_in, out=out, dtype=dtype)
     values_in = np.asarray(values_in, dtype=dtype)
-    return _input_to_output(values_in, out)
+
+    from ._lib.factory import factory_convert
+
+    return factory_convert(mom_ndim=mom_ndim, to=to)(values_in, out=out)
+
+
+# * Moments to Cumulative moments
+@overload
+def cumulative(  # type: ignore[overload-overlap]
+    values_in: xr.DataArray,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = 1,
+    inverse: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> xr.DataArray: ...
+# array
+@overload
+def cumulative(
+    values_in: ArrayLikeArg[FloatT],
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = 1,
+    inverse: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: None = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def cumulative(
+    values_in: Any,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = 1,
+    inverse: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def cumulative(
+    values_in: Any,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = 1,
+    inverse: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def cumulative(
+    values_in: Any,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = 1,
+    inverse: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: DTypeLike = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> NDArrayAny: ...
+
+
+def cumulative(
+    values_in: ArrayLike | xr.DataArray,
+    *,
+    axis: AxisReduce | MissingType = MISSING,
+    mom_ndim: Mom_NDim = 1,
+    inverse: bool = False,
+    parallel: bool | None = None,
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+    dim: DimsReduce | MissingType = MISSING,
+) -> NDArrayAny | xr.DataArray:
+    """
+    Convert between moments array and cumulative moments array.
+
+    Parameters
+    ----------
+    values_in : array-like or DataArray
+    {mom_ndim}
+    inverse : bool, optional
+        Default is to create a cumulative moments array.  Pass ``inverse=True`` to convert from
+        cumulative moments array back to normal moments.
+    {out}
+    {dtype}
+
+    Examples
+    --------
+    >>> import cmomy
+    >>> x = cmomy.random.default_rng(0).random((10, 3))
+    >>> data = cmomy.reduce_vals(x, mom=2, axis=0)
+    >>> data
+    array([[10.    ,  0.5248,  0.1106],
+           [10.    ,  0.5688,  0.0689],
+           [10.    ,  0.5094,  0.1198]])
+
+    >>> cdata = cumulative(data, axis=0, mom_ndim=1)
+    >>> cdata
+    array([[10.    ,  0.5248,  0.1106],
+           [20.    ,  0.5468,  0.0902],
+           [30.    ,  0.5344,  0.1004]])
+
+    To get the original data back, pass ``inverse=True``
+
+    >>> cumulative(cdata, axis=0, mom_ndim=1, inverse=True)
+    array([[10.    ,  0.5248,  0.1106],
+           [10.    ,  0.5688,  0.0689],
+           [10.    ,  0.5094,  0.1198]])
+
+
+    """
+    if isinstance(values_in, xr.DataArray):
+        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim)
+        return values_in.copy(
+            data=cumulative(
+                values_in.to_numpy(),  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
+                mom_ndim=mom_ndim,
+                inverse=inverse,
+                axis=axis,
+                out=out,
+                dtype=dtype,
+            )
+        )
+
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(values_in, out=out, dtype=dtype)
+    values_in = np.asarray(values_in, dtype=dtype)
+
+    axis = normalize_axis_index(
+        validate_axis(axis), values_in.ndim, mom_ndim, "cumulative"
+    )
+    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
+
+    from ._lib.factory import factory_cumulative
+
+    return factory_cumulative(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, values_in.size * mom_ndim),
+        inverse=inverse,
+    )(values_in, out=out, axes=axes)
 
 
 # * Moments to  Comoments
@@ -222,6 +369,7 @@ def moments_to_comoments(  # type: ignore[overload-overlap]
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> xr.DataArray: ...
+# array
 @overload
 def moments_to_comoments(
     values: ArrayLikeArg[FloatT],
@@ -231,15 +379,7 @@ def moments_to_comoments(
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[FloatT]: ...
-@overload
-def moments_to_comoments(
-    values: ArrayLike,
-    *,
-    mom: tuple[int, int],
-    dtype: None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-) -> NDArrayAny: ...
+# dtype
 @overload
 def moments_to_comoments(
     values: Any,
@@ -249,19 +389,20 @@ def moments_to_comoments(
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArray[FloatT]: ...
+# fallback
 @overload
 def moments_to_comoments(
     values: Any,
     *,
     mom: tuple[int, int],
-    dtype: DTypeLike,
+    dtype: DTypeLike = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
-def moments_to_comoments(
+def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     values: ArrayLike | xr.DataArray,
     *,
     mom: tuple[int, int],
@@ -395,12 +536,10 @@ def assign_weight(
         Otherwise, return the original array with weights updated inplace.
     """
     out = data.copy() if copy else data
-
     if mom_ndim == 1:
         out[..., 0] = weight
     else:
         out[..., 0, 0] = weight
-
     return out
 
 

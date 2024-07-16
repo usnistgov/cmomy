@@ -77,7 +77,7 @@ def _reduce_vals(
     mom: MomentsStrict,
     parallel: bool | None = None,
     out: NDArray[FloatT] | None = None,
-    # keepdims: bool = False,
+    # keepdims: bool = False,  # noqa: ERA001
 ) -> NDArray[FloatT]:
     val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
         :-1
@@ -89,10 +89,8 @@ def _reduce_vals(
     # then need a check like the following to make sure things make sense.
     #
     # if keepdims and len(val_shape) != _x0.ndim - 1:
-    #     msg = (
-    #         f"Broadcasted value shape {val_shape} inconsistent with values shape of x={_x0.shape[:-1]}."
-    #     )
-    #     raise ValueError(msg)
+    #     msg = f"Broadcasted value shape {val_shape} inconsistent with values shape of x={_x0.shape[:-1]}."  # noqa: ERA001
+    #     raise ValueError(msg)  # noqa: ERA001
     mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom)
     out_shape: tuple[int, ...] = (*val_shape, *mom_shape)
 
@@ -117,7 +115,7 @@ def reduce_vals(  # type: ignore[overload-overlap]
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,
+    # keepdims: bool = ...,  # noqa: ERA001
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -135,7 +133,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,
+    # keepdims: bool = ...,  # noqa: ERA001
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
@@ -153,7 +151,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,
+    # keepdims: bool = ...,  # noqa: ERA001
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -171,7 +169,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,
+    # keepdims: bool = ...,  # noqa: ERA001
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
@@ -189,7 +187,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,
+    # keepdims: bool = ...,  # noqa: ERA001
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
@@ -209,7 +207,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    # keepdims: bool = False,
+    # keepdims: bool = False,  # noqa: ERA001
     order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
@@ -303,10 +301,9 @@ def reduce_vals(
     )
 
     # return optional_keepdims(
-    #     _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),
-    #     axis=axis,
-    #     keepdims=keepdims,
-    # )
+    #     _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),  # noqa: ERA001
+    #     axis=axis,  # noqa: ERA001
+    #     keepdims=keepdims)
 
     return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)
 
@@ -444,25 +441,6 @@ def reduce_data(
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
-
-    # axis, data = prepare_data_for_reduction(
-    #     data,
-    #     axis=axis,
-    #     mom_ndim=mom_ndim,
-    #     order=order,
-    #     dtype=dtype,
-    # )
-
-    # axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis)
-
-    # return optional_keepdims(
-    #     factory_reduce_data(
-    #         mom_ndim=mom_ndim,
-    #         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    #     )(data, axes=axes, out=out, order=order, dtype=dtype),
-    #     axis=axis,
-    #     keepdims=keepdims,
-    # )
 
     # special to support multiple reduction dimensions...
     data = np.asarray(data, dtype=dtype, order=order)

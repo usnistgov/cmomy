@@ -40,6 +40,7 @@ def import_module():
                 "include_resample": None,
                 "include_indexed": None,
                 "include_convert": None,
+                "include_moving": None,
             },
         ),
         (
@@ -52,6 +53,7 @@ def import_module():
                 "include_resample": None,
                 "include_indexed": None,
                 "include_convert": None,
+                "include_moving": None,
             },
         ),
     ],
@@ -66,6 +68,7 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
     args, expected = _add_parameter(others, "vec", args, expected)
     args, expected = _add_parameter(others, "resample", args, expected)
     args, expected = _add_parameter(others, "indexed", args, expected)
+    args, expected = _add_parameter(others, "moving", args, expected)
     args, expected = _add_parameter(others, "convert", args, expected)
 
     assert vars(_parser_args(args)) == expected
@@ -73,11 +76,10 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
     all_ = expected["include_all"]
     cov = all_ if cov is None else cov
     others = all_ if others is None else others
-    parallel = vec = resample = indexed = convert = others
+    parallel = vec = resample = indexed = convert = moving = others
 
     _main(args)
 
-    # modules = ["utils", "_push"]
     modules = []
     if vec:
         modules.append("push")
@@ -85,8 +87,8 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
         modules.append("resample")
     if indexed:
         modules.append("indexed")
-    # if convert:
-    #     modules.append("convert")
+    if moving:
+        modules.append("moving")
 
     covs = ["", "_cov"] if cov else [""]
     parallels = ["", "_parallel"] if parallel else [""]

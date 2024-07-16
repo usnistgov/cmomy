@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from ..typing import FloatT
 
-_PARALLEL = False
+_PARALLEL = True  # Auto generated from moving.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 

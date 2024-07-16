@@ -32,8 +32,6 @@ def is_in_unsafe_thread_pool() -> bool:
 @lru_cache
 def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely
-    # return True
-
     try:
         from numba.np.ufunc import (
             tbbpool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
@@ -143,12 +141,6 @@ def _get_signatures(
     signature: Iterable[Sequence[NumbaType]] | None,
     signature_generator: Iterable[NumbaType | Sequence[NumbaType]] | None,
 ) -> list[tuple[NumbaType, ...]]:
-    # # For testing right now.
-    # # if has gufunc_sig and "->" in sig, return sig.
-    # # otherwise, skip signature.
-    # if gufunc_sig is None or "->" not in gufunc_sig:
-    #     return []
-
     signatures = [] if signature is None else [tuple(x) for x in signature]
 
     if signature_generator is not None:

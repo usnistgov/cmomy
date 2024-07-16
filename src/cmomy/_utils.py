@@ -25,9 +25,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from ._typing_compat import TypeGuard, TypeVar
-
-    # from .typing import FloatT
-    # from .typing import T_FloatDType_co as T_Float_co
     from .typing import (
         ArrayOrder,
         ArrayOrderCF,
@@ -378,7 +375,7 @@ def select_axis_dim(
         raise ValueError(msg)
 
     if dim is not MISSING:
-        axis = data.dims.index(dim)
+        axis = data.get_axis_num(dim)
         if axis >= data.ndim - (0 if mom_ndim is None else mom_ndim):
             msg = f"Cannot select moment dimension. {axis=}, {dim=}."
             raise ValueError(msg)
@@ -437,7 +434,7 @@ def select_axis_dim_mult(
             else tuple(dim)  # type: ignore[arg-type]
         )
 
-        axis_ = tuple(data.dims.index(d) for d in dim_)
+        axis_ = data.get_axis_num(dim_)
         if any(a >= ndim for a in axis_):
             msg = f"Cannot select moment dimension. {axis_=}, {dim_=}."
             raise ValueError(msg)
@@ -609,8 +606,6 @@ def xprepare_values_for_reduction(
 
     nsamp = target.shape[-1]
 
-    # nsamp = target.shape[axis]
-
     others: list[NDArrayAny | xr.DataArray] = []
     for x in args:
         if isinstance(x, xr.DataArray):
@@ -742,32 +737,6 @@ def axes_data_reduction(
     ]
 
 
-# def shape_insert_axis(
-#     *,
-#     shape: Sequence[int],
-#     axis: int | None,
-#     new_size: int,
-# ) -> tuple[int, ...]:
-#     """Get new shape by inserting ``new_size`` at ``axis``."""
-#     if axis is None:
-#         msg = "must specify integre axis"
-#         raise ValueError(msg)
-
-#     axis = normalize_axis_index(axis, len(shape) + 1)
-#     shape = tuple(shape)
-#     return shape[:axis] + (new_size,) + shape[axis:]
-
-
-# def shape_replace_axis(
-#     *,
-#     shape: Sequence[int],
-#     axis: int,
-#     new_size: int,
-# ) -> tuple[int, ...]:
-#     """Gen new shape by replacing ``shape[axis]`` with ``new_size``."""
-#     return (*shape[:axis], new_size, *shape[axis + 1 :])
-
-
 def optional_move_axis_to_end(
     out: NDArray[ScalarT] | None,
     *,
@@ -778,13 +747,6 @@ def optional_move_axis_to_end(
     if out is None:
         return out
     return np.moveaxis(out, axis, -(mom_ndim + 1))
-
-
-# def axes_reduce_vals(*arr: NDArrayAny, mom_ndim: Mom_NDim, axis: int) -> AxesGUFunc:
-#     """
-#     axes for reducing values along axis
-#     """
-#     mom_axes = __MOM_AXES_TUPLE[mom_ndim]
 
 
 # * Xarray utilities ----------------------------------------------------------

@@ -88,3 +88,39 @@ def reduce_data_fromzero(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     out[...] = 0.0
     for i in range(data.shape[0]):
         _push.push_data(data[i, :, :], out)
+
+
+@_decorator(
+    "(sample, mom0, mom1) -> (sample, mom0, mom1)",
+    [
+        (nb.float32[:, :, :], nb.float32[:, :, :]),
+        (nb.float64[:, :, :], nb.float64[:, :, :]),
+    ],
+    writable=None,
+)
+def cumulative(
+    data: NDArray[FloatT],
+    out: NDArray[FloatT],
+) -> None:
+    out[0, ...] = data[0, ...]
+    for i in range(1, data.shape[0]):
+        out[i, ...] = data[i, ...]
+        _push.push_data(out[i - 1, ...], out[i, ...])
+
+
+@_decorator(
+    "(sample, mom0, mom1) -> (sample, mom0, mom1)",
+    [
+        (nb.float32[:, :, :], nb.float32[:, :, :]),
+        (nb.float64[:, :, :], nb.float64[:, :, :]),
+    ],
+    writable=None,
+)
+def cumulative_inverse(
+    data: NDArray[FloatT],
+    out: NDArray[FloatT],
+) -> None:
+    out[0, ...] = data[0, ...]
+    for i in range(1, data.shape[0]):
+        out[i, ...] = data[i, ...]
+        _push.push_data_scale(data[i - 1, ...], -1.0, out[i, ...])

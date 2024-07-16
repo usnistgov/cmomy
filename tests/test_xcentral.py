@@ -10,9 +10,6 @@ import xarray as xr
 
 import cmomy
 from cmomy import CentralMoments, resample, xCentralMoments
-
-# import cmomy
-# from cmomy import xcentral
 from cmomy.random import default_rng
 
 if TYPE_CHECKING:
@@ -437,9 +434,6 @@ def test_resample_and_reduce(other, rng) -> None:
             np.testing.assert_allclose(
                 tr.data, tx.transpose(..., "hello", dim, *tx.mom_dims).data
             )
-
-            # # check dims
-            # assert tx.dims == ('hello', ) + other.s_xr.to_dataarray().dims
 
             # reduce
             xtest(t1.to_dataarray(), tx.reduce(dim=dim).to_dataarray())

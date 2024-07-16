@@ -243,7 +243,6 @@ def test_pipe(rng) -> None:
 
     c1 = c.pipe(lambda x: x + 1, _reorder=False)
     c2 = c.pipe("__add__", 1, _reorder=False)
-    # c3 = c.pipe("__add__", 1, _reorder=False, _check_mom=False)
 
     for cc in [c1, c2]:
         np.testing.assert_allclose(cc.data, c.data + 1)
@@ -417,25 +416,6 @@ def test_push_datas(other) -> None:
     other.test_values(t.to_values())
 
 
-# def test_push_stat(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         t = other.s.zeros_like()
-#         for s in other.S:
-#             t.push_stat(s.mean(), v=s.to_numpy()[..., 2:], weight=s.weight())
-#         other.test_values(t.to_values())
-
-
-# TODO(wpk): add this?
-# def test_push_stats(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         datas = np.array([s.to_numpy() for s in other.S])
-#         t = other.s.zeros_like()
-#         t.push_stats()
-#         for s in other.S:
-#             t.push_stat(s.mean(), v=s.to_numpy()[..., 2:], w=s.weight())
-#         other.test_values(t.to_values())
-
-
 @pytest.mark.parametrize(("val_shape", "mom"), [(None, 2), ((2, 2), (2, 2))])
 def test_push_zero_weight(val_shape, mom, rng) -> None:
     c = CentralMoments.zeros(mom=mom, val_shape=val_shape)
@@ -462,68 +442,9 @@ def test_push_order_1(val_shape, mom, rng) -> None:
     c1 = CentralMoments.zeros(mom=mom1, val_shape=val_shape)  # type: ignore[call-overload]
     c2 = CentralMoments.from_vals(*xx, axis=0, mom=mom)
 
-    # if not cov:
-    #     a = x.mean(axis=0)
-    #     v = x.var(axis=0)
-    #     c1.push_stat(a, v, weight=100.0)
-    #     np.testing.assert_allclose(c1.weight(), c2.weight())
-    #     np.testing.assert_allclose(c1.mean(), c2.mean())
-
-    #     c1.zero()
-
     c1.push_vals(*xx, axis=0)
     np.testing.assert_allclose(c1.weight(), c2.weight())
     np.testing.assert_allclose(c1.mean(), c2.mean())
-
-
-# TODO(wpk): Add this back?
-# def test_from_stat(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         t = other.cls.from_stat(
-#             a=other.s.mean(),
-#             v=other.s.to_numpy()[..., 2:],
-#             w=other.s.weight(),
-#             mom=other.mom,
-#         )
-#         other.test_values(t.to_values())
-
-#         t = other.cls.from_stat(
-#             a=other.s.mean(),
-#             v=other.s.to_numpy()[..., 2:],
-#             w=other.s.weight(),
-#             mom=other.mom,
-#             dtype=np.float32,
-#             val_shape=t.val_shape,
-#         )
-
-#         other.test_values(t.to_values(), rtol=1e-4)
-
-
-# def test_from_stats(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         a = np.array([s.mean() for s in other.S])
-#         v = np.array([s.to_numpy()[..., 2:] for s in other.S])
-#         w = np.array([s.weight() for s in other.S])
-
-#         t = other.s.zeros_like()
-#         t.push_stats(
-#             a=a,
-#             v=v,
-#             w=w,
-#             axis=0,
-#         )
-#         other.test_values(t.to_values())
-
-#         for val_shape in [None, other.s.val_shape]:
-#             t = other.cls.from_stats(
-#                 a=a, v=v, w=w, mom=other.s.mom, val_shape=val_shape
-#             )
-#             other.test_values(t.to_values())
-
-#     else:
-#         t = other.s.zeros_like()
-#         with pytest.raises(NotImplementedError):
-#             t.push_stats(1.0)
 
 
 def test_add(other) -> None:

@@ -74,9 +74,9 @@ def push_val(x: NDGeneric[FloatT], w: NDGeneric[FloatT], out: NDArray[FloatT]) -
     inline=True,
 )
 def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
-    # w : weight
-    # data[1]a : average
-    # v[i] : <dx**(i+2)>
+    # w -> weight
+    # data[1] -> average
+    # v[i] -> <dx**(i+2)>
 
     w = data[0]
     if w == 0:
@@ -134,10 +134,6 @@ def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
 def push_data_scale(
     data: NDArray[FloatT], scale: float | NDGeneric[FloatT], out: NDArray[FloatT]
 ) -> None:
-    # w : weight
-    # data[1]a : average
-    # v[i] : <dx**(i+2)>
-
     w = data[0] * scale
     if w == 0:
         return

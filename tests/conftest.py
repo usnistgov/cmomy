@@ -30,8 +30,6 @@ def rng():
 class Data:
     """wrapper around stuff for generic testing."""
 
-    # _count = 0
-
     def __init__(
         self,
         shape: int | tuple[int, ...],
@@ -185,9 +183,6 @@ class Data:
             for ww, xx in zip(self.W, self.X)
         ]
 
-    # @property
-    # def values(self) -> NDArrayAny:
-    #     return self.data_test
     def to_values(self) -> NDArrayAny:
         return self.data_test
 

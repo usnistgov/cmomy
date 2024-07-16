@@ -187,51 +187,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     def _wrap_like(self, x: NDArrayAny) -> xr.DataArray:
         return self._xdata.copy(data=x)
 
-    # def _replace_coords_isel(
-    #     self,
-    #     da_selected: xr.DataArray,
-    #     indexers: Mapping[Any, Any] | None = None,
-    #     drop: bool = False,
-    #     **indexers_kwargs: Any,
-    # ) -> xr.DataArray:
-    #     """Update coords when reducing."""
-    #     return replace_coords_from_isel(
-    #         da_original=self._xdata,
-    #         da_selected=da_selected,
-    #         indexers=indexers,
-    #         drop=drop,
-    #         **indexers_kwargs,
-    #     )
-
-    # def _check_reduce_axis_dim(
-    #     self,
-    #     *,
-    #     axis: AxisReduce | MissingType = MISSING,
-    #     dim: DimsReduce | MissingType = MISSING,
-    #     default_axis: AxisReduce | MissingType = MISSING,
-    #     default_dim: DimsReduce | MissingType = MISSING,
-    # ) -> tuple[int, Hashable]:
-    #     self._raise_if_scalar()
-
-    #     axis, dim = select_axis_dim(
-    #         dims=self.dims,
-    #         axis=axis,
-    #         dim=dim,
-    #         default_axis=default_axis,
-    #         default_dim=default_dim,
-    #     )
-
-    #     if dim in self.mom_dims:
-    #         msg = f"Can only reduce over value dimensions {self.val_dims}. Passed moment dimension {dim}."
-    #         raise ValueError(msg)
-
-    #     return axis, dim
-
-    # def _remove_dim(self, dim: Hashable | Iterable[Hashable]) -> tuple[Hashable, ...]:
-    #     """Return self.dims with dim removed"""
-    #     dim = {dim} if isinstance(dim, str) else set(dim)  # type: ignore[arg-type]
-    #     return tuple(d for d in self.dims if d not in dim)
-
     @overload
     def new_like(
         self,
@@ -887,21 +842,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         """Alias to :meth:`to_centralmoments`"""
         return self.to_centralmoments(copy=copy)
 
-    # @cached.prop
-    # def centralmoments_view(self) -> CentralMoments[FloatT]:
-    #     """
-    #     Create CentralMoments view.
-
-    #     This object has the same underlying data as `self`, but no
-    #     DataArray attributes.  Useful for some function calls.
-
-    #     See Also
-    #     --------
-    #     CentralMoments.to_xcentralmoments
-    #     xCentralMoments.from_centralmoments
-    #     """
-    #     return self._to_centralmoments(copy=False)
-
     @classmethod
     @docfiller.decorate
     def from_centralmoments(
@@ -1349,8 +1289,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 from .reduction import factor_by
 
                 _groups, codes = factor_by(self._xdata[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-                # if groups is None:  # have to exclicitly pass groups...
-                #     groups = _groups
             else:
                 codes = by
 

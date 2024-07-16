@@ -152,6 +152,46 @@ if TYPE_CHECKING:
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
+    # moving
+    class MoveVals(Protocol):
+        def __call__(
+            self,
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            data_tmp: NDArray[FloatT],
+            window: int,
+            min_count: int,
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
+        ) -> NDArray[FloatT]: ...
+
+    class MoveValsCov(Protocol):
+        def __call__(
+            self,
+            x0: NDArray[FloatT],
+            x1: NDArray[FloatT],
+            w: NDArray[FloatT],
+            data_tmp: NDArray[FloatT],
+            window: int,
+            min_count: int,
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
+        ) -> NDArray[FloatT]: ...
+
+    class MoveData(Protocol):
+        def __call__(
+            self,
+            data: NDArray[FloatT],
+            data_tmp: NDArray[FloatT],
+            window: int,
+            min_count: int,
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
+        ) -> NDArray[FloatT]: ...
+
 
 class Pusher(NamedTuple):
     """Collection of pusher functions."""
@@ -396,3 +436,80 @@ def factory_convert(mom_ndim: Mom_NDim = 1, to: ConvertStyle = "central") -> Con
     else:
         from .convert_cov import central_to_raw
     return cast("Convert", central_to_raw)
+
+
+# * CumReduce
+@lru_cache
+def factory_cumulative(
+    mom_ndim: Mom_NDim = 1, parallel: bool = True, inverse: bool = False
+) -> Convert:
+    if inverse:
+        if mom_ndim == 1 and parallel:
+            from .push_parallel import cumulative_inverse as func
+        elif mom_ndim == 1:
+            from .push import cumulative_inverse as func
+        elif parallel:
+            from .push_cov_parallel import cumulative_inverse as func
+        else:
+            from .push_cov import cumulative_inverse as func
+
+    elif mom_ndim == 1 and parallel:
+        from .push_parallel import cumulative as func
+    elif mom_ndim == 1:
+        from .push import cumulative as func
+    elif parallel:
+        from .push_cov_parallel import cumulative as func
+    else:
+        from .push_cov import cumulative as func
+
+    return cast("Convert", func)
+
+
+# * Moving
+@overload
+def factory_move_vals(
+    mom_ndim: Literal[1] = ...,
+    parallel: bool = True,
+) -> MoveVals: ...
+@overload
+def factory_move_vals(
+    mom_ndim: Literal[2],
+    parallel: bool = True,
+) -> MoveValsCov: ...
+
+
+@lru_cache
+def factory_move_vals(
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool = True,
+) -> MoveVals | MoveValsCov:
+    parallel = parallel and supports_parallel()
+
+    if mom_ndim == 1:
+        if parallel:
+            from .moving_parallel import move_vals
+        else:
+            from .moving import move_vals
+        return cast("MoveVals", move_vals)
+
+    if parallel:
+        from .moving_cov_parallel import move_vals as _move_cov
+    else:
+        from .moving_cov import move_vals as _move_cov
+    return cast("MoveValsCov", _move_cov)
+
+
+@lru_cache
+def factory_move_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> MoveData:
+    parallel = parallel and supports_parallel()
+
+    if mom_ndim == 1 and parallel:
+        from .moving_parallel import move_data
+    elif mom_ndim == 1:
+        from .moving import move_data
+    elif parallel:
+        from .moving_cov_parallel import move_data
+    else:
+        from .moving_cov import move_data
+
+    return cast("MoveData", move_data)

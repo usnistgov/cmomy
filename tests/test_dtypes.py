@@ -107,7 +107,6 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
     data_base = np.zeros((2, 3, 4), dtype=dtype_base)
     if cls == xCentralMoments:
         xdata = xr.DataArray(data)
-        # xdata_base = xr.DataArray(data_base)
 
     c = cls.zeros(mom=3, val_shape=(2, 3), dtype=dtype_base)
 

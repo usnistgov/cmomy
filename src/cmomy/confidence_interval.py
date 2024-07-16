@@ -235,7 +235,7 @@ def bootstrap_confidence_interval(
     array([-0.986 , -0.4517])
 
 
-    These results are the same as using :func:`scipy.stats.bootstrap`, but are much faster.
+    These results are the same as using :func:`scipy.stats.bootstrap`, but should be faster.
 
     >>> from scipy.stats import bootstrap
     >>> out = bootstrap(
@@ -248,7 +248,6 @@ def bootstrap_confidence_interval(
     ... )
     >>> np.array((out.confidence_interval.low, out.confidence_interval.high))
     array([-0.986 , -0.4517])
-
 
     Moreover, you can use pre-averaged data.
     """
@@ -320,3 +319,13 @@ def bootstrap_confidence_interval(
             ci = 2 * np.squeeze(theta_hat_, axis=axis) - ci[-1::-1, ...]  # pyright: ignore[reportAssignmentType]
 
     return ci
+
+
+# def ci_style(val: NDArray[FloatT], ci: NDArray[FloatT], style: Literal["delta", "pm"]) -> NDArray[FloatT]:
+#     if style is None:
+#         out = np.array([val, ci[0, ...], ci[1, ...])
+#     elif style == "delta":  # noqa: ERA001
+#         out = np.array([val, val - ci[0, ...], ci[1, ...] - val])  # noqa: ERA001
+#     elif style == "pm":  # noqa: ERA001
+#         out = np.array([val, (ci[1, ...] - ci[0, ...]) / 2.0])  # noqa: ERA001
+#     return out  # noqa: ERA001

@@ -19,7 +19,6 @@ from typing import (
 
 import numpy as np
 
-# import numba as nb
 # put outside to get autodoc typehints working...
 import pandas as pd  # noqa: TCH002
 import xarray as xr
@@ -104,7 +103,7 @@ DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
 
 
 # * Numba types
-# NumbaType = Union[nb.typing.Integer, nb.typing.Array]
+# NumbaType = Union[nb.typing.Integer, nb.typing.Array]  # noqa: ERA001
 # The above isn't working for pyright.  Just using any for now...
 NumbaType = Any
 

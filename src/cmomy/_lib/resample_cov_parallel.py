@@ -17,12 +17,6 @@ if TYPE_CHECKING:
 
 _PARALLEL = True  # Auto generated from resample_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
-# _jit = partial(myjit, parallel=_PARALLEL)
-
-
-# NOTE: The parallel implementation is quite similar to the old
-# way of doing things (with reshape and njit), but the serial is slower.
-# Still, this is way simpler...
 
 
 @_vectorize(

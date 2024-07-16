@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 import xarray as xr
 
-# from cmomy import central_from_values
 from cmomy.reduction import reduce_vals
 
 from ._simple_cmom import get_cmom, get_comom
@@ -219,64 +218,45 @@ def test_central_comoments(
                 _ = reduce_vals(x, yy, mom=mom, weight=w, axis=axis, out=out)
             np.testing.assert_allclose(out, expected)
 
-        # if out_style is None:
-        #     out = central_from_values.central_moments(x=(x, y), mom=mom, w=w, axis=axis, broadcast=True)
-        # elif out_style == "set":
-        #     out = np.zeros_like(expected)
-        #     _ = central_from_values.central_moments(x=(x, y), mom=mom, w=w, axis=axis, out=out, broadcast=True)
-        # assert out.dtype == expected.dtype
-        # np.testing.assert_allclose(out, expected)
 
+# * Test against np.cov
+@pytest.mark.parametrize(
+    ("shapex", "shapey"),
+    [
+        ((1, 10), (1, 10)),
+        ((2, 10), (3, 10)),
+    ],
+)
+@pytest.mark.parametrize("aweight", [True, False])
+@pytest.mark.parametrize("fweight", [True, False])
+def test_np_cov(
+    rng: np.random.Generator,
+    shapex: tuple[int, ...],
+    shapey: tuple[int, ...],
+    aweight: bool,
+    fweight: bool,
+) -> None:
+    x = rng.random(shapex)
+    y = rng.random(shapey)
 
-# @comom_central
-# @pytest.mark.parametrize("dtype", [None, np.float64])
-# @pytest.mark.parametrize("order", [None, "C"])
-# def test_central_comoments_dtype_order(
-#         mom: Mom_NDim,
-#         axes: list[int],
-#         x_values: list[NDArray],
-#         y_values: list[Any],
-#         w_values: list[Any],
-#         dtype: DTypeLike, order: ArrayOrder) -> None:
+    aw = rng.random(shapex[-1]) if aweight else None
+    fw = rng.integers(1, 10, size=shapex[-1]) if fweight else None
 
-#     for axis, x, y, w in zip(axes, x_values, y_values, w_values):
-#         expected = get_comom(w=w if w is None else w.astype(dtype), x=x.astype(dtype), y=y.astype(dtype), moments=mom, axis=axis)
-#         out = central_from_values.central_moments(x=(x, y), mom=mom, w=w, axis=axis, dtype=dtype, order=order, broadcast=True)
+    z = np.concatenate((x, y), axis=0)
+    c = np.cov(z, ddof=0, aweights=aw, fweights=fw)
 
-#         assert out.dtype == expected.dtype
-#         np.testing.assert_allclose(out, expected)
+    if aw is not None and fw is not None:
+        w = aw * fw
+    elif aw is not None:
+        w = aw
+    elif fw is not None:
+        w = fw.astype(np.float64)
+    else:
+        w = None
 
+    out = reduce_vals(z[:, None, :], z, mom=(1, 1), axis=-1, weight=w)
 
-# def test_central_comoments_raises():
-
-#     x = np.ones(10)
-
-#     with pytest.raises(ValueError):
-#         central_from_values.central_moments(x=(x, x), mom=(3,3,3), axis=0)
-
-#     with pytest.raises(TypeError):
-#         central_from_values.central_moments(x=x, mom=(3,3), axis=0)
-
-#     with pytest.raises(ValueError):
-#         central_from_values.central_moments(x=(x, x, x), mom=(3,3), axis=0)
-
-#     y = np.ones((10, 10))
-
-#     with pytest.raises(ValueError):
-#         central_from_values.central_moments(x=(x, y), mom=(3,3), axis=0)
-
-#     out = np.ones((2, 3))
-#     with pytest.raises(ValueError):
-#         central_from_values.central_moments(x=(x, x), mom=(3, 3), axis=0, out=out)
-
-
-#     # no last
-#     xx = np.ones((10, 2, 3))
-#     out = central_from_values.central_moments(x=(xx, xx), mom=(3, 3), axis=0, last=False)
-#     assert out.shape == (4, 4, 2, 3)
-
-#     out = central_from_values.central_moments(x=(xx, xx), mom=(3, 3), axis=0, last=True)
-#     assert out.shape == (2, 3, 4, 4)
+    np.testing.assert_allclose(c, out[..., 1, 1])
 
 
 # # * DataArray

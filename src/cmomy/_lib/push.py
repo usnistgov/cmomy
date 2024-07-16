@@ -83,37 +83,37 @@ def reduce_data_fromzero(
         _push.push_data(data[i, :], out)
 
 
-# @_decorator(
-#     "(sample),(sample),(mom)",
-#     [
-#         (nb.float32[:], nb.float32[:], nb.float32[:]),
-#         (nb.float64[:], nb.float64[:], nb.float64[:]),
-#     ],
-# )
-# def reduce_vals_multipass(
-#     x: NDArray[FloatT], w: NDArray[FloatT], out: NDArray[FloatT]
-# ) -> None:
-#     # first calculate average
-#     xave = 0.0
-#     wsum = 0.0
-#     for i in range(x.shape[0]):
-#         ww = w[i]
-#         xave += x[i] * ww
-#         wsum += ww
+@_decorator(
+    "(sample, mom) -> (sample, mom)",
+    [
+        (nb.float32[:, :], nb.float32[:, :]),
+        (nb.float64[:, :], nb.float64[:, :]),
+    ],
+    writable=None,
+)
+def cumulative(
+    data: NDArray[FloatT],
+    out: NDArray[FloatT],
+) -> None:
+    out[0, ...] = data[0, ...]
+    for i in range(1, data.shape[0]):
+        out[i, ...] = data[i, ...]
+        _push.push_data(out[i - 1, ...], out[i, ...])
 
-#     xave /= wsum
-#     out[...] = 0.0
-#     out[0] = wsum
-#     out[1] = xave
 
-#     # sum other moments
-#     nmom = out.shape[-1]
-#     if nmom > 2:
-#         for i in range(x.shape[0]):
-#             xx = x[i]
-#             ww = w[i]
-#             for m in range(2, nmom):
-#                 out[m] += ww * (xx - xave) ** m
-
-#         for m in range(2, nmom):
-#             out[m] /= wsum
+@_decorator(
+    "(sample, mom) -> (sample, mom)",
+    [
+        (nb.float32[:, :], nb.float32[:, :]),
+        (nb.float64[:, :], nb.float64[:, :]),
+    ],
+    writable=None,
+)
+def cumulative_inverse(
+    data: NDArray[FloatT],
+    out: NDArray[FloatT],
+) -> None:
+    out[0, ...] = data[0, ...]
+    for i in range(1, data.shape[0]):
+        out[i, ...] = data[i, ...]
+        _push.push_data_scale(data[i - 1, ...], -1.0, out[i, ...])

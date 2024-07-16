@@ -54,9 +54,6 @@ if TYPE_CHECKING:
 
 from .typing import FloatT
 
-# from ._typing_compat import TypeVar
-
-
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
@@ -66,14 +63,6 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]):  # type: ignore[type-var]
     """Wrapper of :class:`numpy.ndarray` based central moments data."""
 
-    # TODO(wpk):  I think something like this would solve some of my typing issues.
-    # see https://mypy.readthedocs.io/en/stable/more_types.html#precise-typing-of-alternative-constructors
-    # But pyright isn't going to support it (see https://github.com/microsoft/pyright/issues/3497)
-    #
-    # _CentralT = TypeVar("_CentralT", bound="CentralMoments[FloatT]")
-
-    # TODO(wpk):  make these all with fastpath: Literal[False] = ...,
-    # and ad a single fastpath = Literal[False].
     @overload
     def __init__(
         self,

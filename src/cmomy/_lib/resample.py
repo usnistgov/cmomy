@@ -15,14 +15,8 @@ if TYPE_CHECKING:
 
     from ..typing import FloatT
 
-# NOTE: The parallel implementation is quite similar to the old
-# way of doing things (with reshape and njit), but the serial is slower.
-# Still, this is way simpler...
-
-
 _PARALLEL = False
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
-# _jit = partial(myjit, parallel=_PARALLEL)
 
 
 @_vectorize(

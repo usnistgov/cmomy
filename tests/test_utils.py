@@ -213,9 +213,6 @@ def test_prepare_values_for_reduction(
             dtype=dtype,
         )
 
-    # with pytest.raises(ValueError, match=r"Must specify axis.*"):
-    #     utils.prepare_values_for_reduction(target, y, w, narrays=3, axis=None, order=order)
-
     if xshape2 == "error":
         error = TypeError if axis is None else ValueError
 

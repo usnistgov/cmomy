@@ -56,9 +56,7 @@ BINOMIAL_FACTOR = factory_binomial(OPTIONS["nmax"])
 
 # * resampling
 @myjit(
-    # indices[rep, nsamp], freqs[rep, ndat]
     signature=[
-        # (nb.int32[:, :], nb.int32[:, :]),
         (nb.int64[:, :], nb.int64[:, :]),
     ]
 )
@@ -79,7 +77,6 @@ def randsamp_indices_to_freq(
 
 @myjit(
     [
-        # (nb.int32[:, :],),
         (nb.int64[:, :],),
     ]
 )

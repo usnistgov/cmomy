@@ -1,0 +1,289 @@
+from __future__ import annotations
+
+from functools import partial
+from typing import TYPE_CHECKING
+
+import numba as nb
+import numpy as np
+
+from . import _push_cov as _push
+from .decorators import myguvectorize
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from ..typing import FloatT
+
+_PARALLEL = True  # Auto generated from moving_cov.py
+_vectorize = partial(myguvectorize, parallel=_PARALLEL)
+
+
+@_vectorize(
+    "(sample),(sample),(sample),(mom0, mom1),(),() -> (sample, mom0, mom1)",
+    [
+        (
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:, :],
+            nb.int64,
+            nb.int64,
+            nb.float32[:, :, :],
+        ),
+        (
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:, :],
+            nb.int64,
+            nb.int64,
+            nb.float64[:, :, :],
+        ),
+    ],
+    writable=None,
+)
+def move_vals(
+    x0: NDArray[FloatT],
+    x1: NDArray[FloatT],
+    w: NDArray[FloatT],
+    data_tmp: NDArray[FloatT],
+    window: int,
+    min_count: int,
+    out: NDArray[FloatT],
+) -> None:
+    nsamp = len(x0)
+    data_tmp[...] = 0.0
+    count = 0
+    min_count = max(min_count, 1)
+
+    for i in range(min(window, nsamp)):
+        wi = w[i]
+        if wi != 0:
+            _push.push_val(x0[i], x1[i], wi, data_tmp)
+            count += 1
+
+        if count >= min_count:
+            out[i, ...] = data_tmp
+        else:
+            out[i, ...] = np.nan
+            out[i, 0, 0] = 0.0
+
+    for i in range(window, nsamp):
+        i_old = i - window
+
+        wi = w[i]
+        wold = w[i_old]
+
+        wi_valid = wi != 0.0
+        wold_valid = wold != 0.0
+
+        if wi_valid and wold_valid:
+            _push.push_val(x0[i], x1[i], wi, data_tmp)
+            _push.push_val(x0[i_old], x1[i_old], -wold, data_tmp)
+
+        elif wi_valid:
+            _push.push_val(x0[i], x1[i], wi, data_tmp)
+            count += 1
+        elif wold_valid:
+            _push.push_val(x0[i_old], x1[i_old], -wold, data_tmp)
+            count -= 1
+
+        if count >= min_count:
+            out[i, ...] = data_tmp
+        else:
+            out[i, ...] = np.nan
+            out[i, 0, 0] = 0.0
+
+
+@_vectorize(
+    "(sample, mom0, mom1),(mom0, mom1),(),() -> (sample, mom0, mom1)",
+    [
+        (
+            nb.float32[:, :, :],
+            nb.float32[:, :],
+            nb.int64,
+            nb.int64,
+            nb.float32[:, :, :],
+        ),
+        (
+            nb.float64[:, :, :],
+            nb.float64[:, :],
+            nb.int64,
+            nb.int64,
+            nb.float64[:, :, :],
+        ),
+    ],
+    writable=None,
+)
+def move_data(
+    data: NDArray[FloatT],
+    data_tmp: NDArray[FloatT],
+    window: int,
+    min_count: int,
+    out: NDArray[FloatT],
+) -> None:
+    nsamp = data.shape[0]
+    data_tmp[...] = 0.0
+    count = 0
+    min_count = max(min_count, 1)
+
+    for i in range(min(window, nsamp)):
+        wi = data[i, 0, 0]
+        if wi != 0:
+            _push.push_data(data[i, ...], data_tmp)
+            count += 1
+
+        if count >= min_count:
+            out[i, ...] = data_tmp
+        else:
+            out[i, ...] = np.nan
+            out[i, 0, 0] = 0.0
+
+    for i in range(window, nsamp):
+        i_old = i - window
+
+        wi = data[i, 0, 0]
+        wold = data[i_old, 0, 0]
+
+        wi_valid = wi != 0.0
+        wold_valid = wold != 0.0
+
+        if wi_valid and wold_valid:
+            _push.push_data(data[i, ...], data_tmp)
+            _push.push_data_scale(data[i_old, ...], -1.0, data_tmp)
+
+        elif wi_valid:
+            _push.push_data(data[i, ...], data_tmp)
+            count += 1
+        elif wold_valid:
+            _push.push_data_scale(data[i_old, ...], -1.0, data_tmp)
+            count -= 1
+
+        if count >= min_count:
+            out[i, ...] = data_tmp
+        else:
+            out[i, ...] = np.nan
+            out[i, 0, 0] = 0.0
+
+
+@_vectorize(
+    "(sample, mom0, mom1),(mom0, mom1),(sample),() -> (sample, mom0, mom1)",
+    [
+        (
+            nb.float32[:, :, :],
+            nb.float32[:, :],
+            nb.float32[:],
+            nb.float32,
+            nb.float32[:, :, :],
+        ),
+        (
+            nb.float64[:, :, :],
+            nb.float64[:, :],
+            nb.float64[:],
+            nb.float64,
+            nb.float64[:, :, :],
+        ),
+    ],
+    writable=None,
+)
+def move_exp_data(
+    data: NDArray[FloatT],
+    data_tmp: NDArray[FloatT],
+    alpha: NDArray[FloatT],
+    min_weight: float,
+    out: NDArray[FloatT],
+) -> None:
+    """Exponential moving accumulation of moments array"""
+    nsamp = data.shape[0]
+    data_tmp[...] = 0.0
+
+    weight = 0.0
+
+    for i in range(nsamp):
+        wi = data[i, 0]
+        alphai = alpha[i]
+        decay = 1.0 - alphai
+
+        # scale down
+        weight *= decay
+        data_tmp[..., 0, 0] *= decay
+
+        if wi != 0.0:
+            _push.push_data(data[i, ...], data_tmp)
+            weight += alphai
+
+        if weight >= min_weight:
+            out[i, ...] = data_tmp
+        else:
+            out[i, ...] = np.nan
+            out[i, 0, 0] = 0.0
+
+
+@_vectorize(
+    "(sample,mom0, mom1),(mom0, mom1),(sample),() -> (sample, mom0, mom1)",
+    [
+        (
+            nb.float32[:, :, :],
+            nb.float32[:, :],
+            nb.float32[:],
+            nb.float32,
+            nb.float32[:, :, :],
+        ),
+        (
+            nb.float64[:, :, :],
+            nb.float64[:, :],
+            nb.float64[:],
+            nb.float64,
+            nb.float64[:, :, :],
+        ),
+    ],
+    writable=None,
+)
+def move_exp_noadjust_data(
+    data: NDArray[FloatT],
+    data_tmp: NDArray[FloatT],
+    alpha: NDArray[FloatT],
+    min_weight: float,
+    out: NDArray[FloatT],
+) -> None:
+    """Exponential moving accumulation of moments array"""
+    nsamp = data.shape[0]
+    weight = 0.0
+
+    # first element
+    if data[0, 0, 0] != 0.0:
+        weight += alpha[0]
+        old_weight = 1.0
+        data_tmp[...] = data[0, ...]
+        out[0, ...] = data_tmp
+    else:
+        old_weight = 0.0
+        data_tmp[...] = 0.0
+        out[0, ...] = np.nan
+        out[0, 0, 0] = 0.0
+
+    for i in range(1, nsamp):
+        wi = data[i, 0]
+        alphai = alpha[i]
+        decay = 1.0 - alphai
+
+        # scale down
+        weight *= decay
+        old_weight *= decay
+        data_tmp[..., 0, 0] *= decay
+
+        if wi != 0.0:
+            # This follows how pandas does things.
+            _push.push_data_scale(data[i, ...], alphai, data_tmp)
+            old_weight += alphai
+            data_tmp[..., 0, 0] /= old_weight
+            old_weight = 1.0
+
+            old_weight = 1.0
+            weight += alphai
+
+        if weight >= min_weight:
+            out[i, ...] = data_tmp
+        else:
+            out[i, ...] = np.nan
+            out[i, 0, 0] = 0.0

@@ -252,7 +252,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
     # @staticmethod
     # def _set_default_axis(axis: int | None, default: int = -1) -> int:
-    #     return default if axis is None else axis
+    #     return default if axis is None else axis  # noqa: ERA001
 
     @property
     def _is_vector(self) -> bool:
@@ -397,12 +397,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         new_like
         zeros_like
         """
-        # return type(self)(data=self.to_values(), copy=True)
         return self.new_like(
             data=self.to_values(),
             verify=False,
             copy=True,
-            # copy_kws=copy_kws,
         )
 
     @docfiller.decorate
@@ -471,8 +469,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
     @cached.meth
     def _single_index(self, val: int) -> tuple[ellipsis | int | list[int], ...]:  # noqa: F821
-        # index with things like data[..., 1,0] data[..., 0,1]
-        # index = (...,[1,0],[0,1])
+        # index with things like data[..., 1,0] data[..., 0,1], index = (...,[1,0],[0,1])
         dims = len(self.mom)
 
         index: list[int] | list[list[int]]
@@ -1053,9 +1050,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         if _reorder and hasattr(self, "mom_dims"):
             values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues, reportAttributeAccessIssue]
-            # else:
-            #     msg = "to specify `_reorder`, must have attribute `mom_dims`"
-            #     raise AttributeError(msg)
 
         return self.new_like(
             data=values,
@@ -1080,9 +1074,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     def __add__(self, b: Self) -> Self:
         """Add objects to new object."""
         self._check_other(b)
-        # new = self.copy()
-        # new.push_data(b.data)
-        # return new
         return self.copy().push_data(b.to_values())
 
     def __isub__(self, b: Self) -> Self:  # noqa: PYI034
@@ -1102,8 +1093,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             raise ValueError
         new = b.copy()
         new._data[self._weight_index] *= -1
-        # new.push_data(self.data)
-        # return new
         return new.push_data(self.to_values())
 
     def __mul__(self, scale: float) -> Self:

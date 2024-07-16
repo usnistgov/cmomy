@@ -87,7 +87,7 @@ optional-dependencies.pipxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.369",
+    "pyright>=1.1.370",
     "twine>=5.0.0",
 ]
 optional-dependencies.test = [
@@ -178,7 +178,6 @@ lint.ignore = [
     # * Other
     "E501", # - line too long - let formatter fix this
     "E731", # - do not assign a lambda expression, use a def
-    "ERA",  # - eradicate (want to keep some stuff)
     "FBT",  # - bools are ok
     "ISC",  # - flake8-implicit-str-concat
     # * Allow non top level imports
@@ -189,6 +188,7 @@ lint.ignore = [
 lint.extend-ignore = [
     # "PD",        # - not using pandas?
     # "NPY",       # - not using numpy?
+    # "ERA",  # - eradicate (want to keep some stuff)
     # * Annotations
     # "SLF001",  # - flake8-self (private access sometimes OK)
     # "ANN",     # - Annotations (just use mypy/pyright)
@@ -213,6 +213,7 @@ lint.per-file-ignores."conftest.py" = [
     "PT",
 ]
 lint.per-file-ignores."docs/conf.py" = [
+    "ERA",
     "INP001",
 ]
 lint.per-file-ignores."noxfile.py" = [
@@ -221,6 +222,9 @@ lint.per-file-ignores."noxfile.py" = [
 lint.per-file-ignores."tests/*.py" = [
     "D",
     "S101",
+]
+lint.per-file-ignores."tests/test_central_2.py" = [
+    "ERA",
 ]
 lint.per-file-ignores."tools/*.py" = [
     "A",
@@ -253,6 +257,7 @@ lint.extend-per-file-ignores."classic_tests/**/*.py" = [
 ]
 lint.extend-per-file-ignores."src/**/*.py" = [
     "D102",
+    "ERA",
     "FIX002",
     "PLR2004",
     "TD003",
@@ -365,11 +370,13 @@ omit = [
     "*/vendored/*",
     "*/_typing.py",
     "*/options.py",
+    # No great way to test coverage of guvectorized functions...
     "*/_lib/_push*.py",
     "*/_lib/push*.py",
     "*/_lib/convert*.py",
     "*/_lib/decorators.py",
     "*/_lib/indexed*.py",
+    "*/_lib/moving*.py",
     "*/_lib/make_parallel_files.py",
     "*/_lib/resample*.py",
     "*/_lib/utils.py",

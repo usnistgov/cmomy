@@ -64,7 +64,7 @@ def test_stability() -> None:
     np.testing.assert_allclose(moments, test2)
 
     # scaling
-    # y = x * a + b
+    # y -> x * a + b
     # <y> = <x * a + b>  = <x> * a + b
     # <(y - <y>)**n> = <(x*a + b - <x * a + b>)**n> = a ** n * <dx>**n
 

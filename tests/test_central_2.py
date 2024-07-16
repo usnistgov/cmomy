@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-# from cmomy import central_moments
 from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:

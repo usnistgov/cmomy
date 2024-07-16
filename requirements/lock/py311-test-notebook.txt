@@ -15,7 +15,7 @@ iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval
 ipython==8.26.0           # via ipykernel
 jedi==0.19.1              # via ipython
-jsonschema==4.22.0        # via nbformat
+jsonschema==4.23.0        # via nbformat
 jsonschema-specifications==2023.12.1  # via jsonschema
 jupyter-client==8.6.2     # via ipykernel, nbval
 jupyter-core==5.7.2       # via ipykernel, jupyter-client, nbformat
@@ -47,7 +47,7 @@ python-dateutil==2.9.0.post0  # via jupyter-client, pandas
 pytz==2024.1              # via pandas
 pyzmq==26.0.3             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
-rpds-py==0.18.1           # via jsonschema, referencing
+rpds-py==0.19.0           # via jsonschema, referencing
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar

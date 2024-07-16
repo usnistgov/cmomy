@@ -12,6 +12,10 @@ from cmomy._lib import (
     indexed_cov,
     indexed_cov_parallel,
     indexed_parallel,
+    moving,
+    moving_cov,
+    moving_cov_parallel,
+    moving_parallel,
     push,
     push_cov,
     push_cov_parallel,
@@ -218,3 +222,57 @@ def test_reduce_data_indexed(
 )
 def test_reduce_convert(mom_ndim: Mom_NDim, to: str, expected: factory.Convert) -> None:
     assert factory.factory_convert(mom_ndim, to) == expected
+
+
+@pytest.mark.parametrize(
+    ("mom_ndim", "parallel", "inverse", "expected"),
+    [
+        (1, False, False, push.cumulative),
+        (1, True, False, push_parallel.cumulative),
+        (2, False, False, push_cov.cumulative),
+        (2, True, False, push_cov_parallel.cumulative),
+        # inverse
+        (1, False, True, push.cumulative_inverse),
+        (1, True, True, push_parallel.cumulative_inverse),
+        (2, False, True, push_cov.cumulative_inverse),
+        (2, True, True, push_cov_parallel.cumulative_inverse),
+    ],
+)
+def test_cumulative_data(
+    mom_ndim: Mom_NDim, parallel: bool, inverse: bool, expected: factory.Convert
+) -> None:
+    assert factory.factory_cumulative(mom_ndim, parallel, inverse) == expected
+
+
+@pytest.mark.parametrize(
+    ("mom_ndim", "parallel", "expected"),
+    [
+        (1, False, moving.move_vals),
+        (1, True, moving_parallel.move_vals),
+        (2, False, moving_cov.move_vals),
+        (2, True, moving_cov_parallel.move_vals),
+    ],
+)
+def test_move_vals(
+    mom_ndim: Mom_NDim,
+    parallel: bool,
+    expected: factory.MoveVals | factory.MoveValsCov,
+) -> None:
+    assert factory.factory_move_vals(mom_ndim, parallel) == expected
+
+
+@pytest.mark.parametrize(
+    ("mom_ndim", "parallel", "expected"),
+    [
+        (1, False, moving.move_data),
+        (1, True, moving_parallel.move_data),
+        (2, False, moving_cov.move_data),
+        (2, True, moving_cov_parallel.move_data),
+    ],
+)
+def test_move_data(
+    mom_ndim: Mom_NDim,
+    parallel: bool,
+    expected: factory.MoveData,
+) -> None:
+    assert factory.factory_move_data(mom_ndim, parallel) == expected

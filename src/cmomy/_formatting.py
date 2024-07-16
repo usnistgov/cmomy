@@ -81,8 +81,6 @@ def repr_html(x):
         if k in attrs:
             dims[k] = attrs.pop(k)
 
-    # dims = {k: attrs[k] for k in ["mom", "val_shape"] if k in attrs}
-
     header_components = [
         f"<div class='xr-obj-type'>{obj_type}</div>",
         fm.format_dims(dims, {}),
