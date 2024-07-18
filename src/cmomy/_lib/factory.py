@@ -192,6 +192,48 @@ if TYPE_CHECKING:
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
+    class MoveExpVals(Protocol):
+        def __call__(
+            self,
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            data_tmp: NDArray[FloatT],
+            alpha: NDArray[FloatT],
+            adjust: bool,
+            min_count: int,
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
+        ) -> NDArray[FloatT]: ...
+
+    class MoveExpValsCov(Protocol):
+        def __call__(
+            self,
+            x0: NDArray[FloatT],
+            x1: NDArray[FloatT],
+            w: NDArray[FloatT],
+            data_tmp: NDArray[FloatT],
+            alpha: NDArray[FloatT],
+            adjust: bool,
+            min_count: int,
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
+        ) -> NDArray[FloatT]: ...
+
+    class MoveExpData(Protocol):
+        def __call__(
+            self,
+            data: NDArray[FloatT],
+            data_tmp: NDArray[FloatT],
+            alpha: NDArray[FloatT],
+            adjust: bool,
+            min_count: int,
+            /,
+            out: NDArray[FloatT] | None = None,
+            **kwargs: Any,
+        ) -> NDArray[FloatT]: ...
+
 
 class Pusher(NamedTuple):
     """Collection of pusher functions."""
@@ -513,3 +555,52 @@ def factory_move_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> MoveData
         from .moving_cov import move_data
 
     return cast("MoveData", move_data)
+
+
+@overload
+def factory_move_exp_vals(
+    mom_ndim: Literal[1] = ...,
+    parallel: bool = True,
+) -> MoveExpVals: ...
+@overload
+def factory_move_exp_vals(
+    mom_ndim: Literal[2],
+    parallel: bool = True,
+) -> MoveExpValsCov: ...
+
+
+@lru_cache
+def factory_move_exp_vals(
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool = True,
+) -> MoveExpVals | MoveExpValsCov:
+    parallel = parallel and supports_parallel()
+
+    if mom_ndim == 1:
+        if parallel:
+            from .moving_parallel import move_exp_vals
+        else:
+            from .moving import move_exp_vals
+        return cast("MoveExpVals", move_exp_vals)
+
+    if parallel:
+        from .moving_cov_parallel import move_exp_vals as _move_cov
+    else:
+        from .moving_cov import move_exp_vals as _move_cov
+    return cast("MoveExpValsCov", _move_cov)
+
+
+@lru_cache
+def factory_move_exp_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> MoveExpData:
+    parallel = parallel and supports_parallel()
+
+    if mom_ndim == 1 and parallel:
+        from .moving_parallel import move_exp_data
+    elif mom_ndim == 1:
+        from .moving import move_exp_data
+    elif parallel:
+        from .moving_cov_parallel import move_exp_data
+    else:
+        from .moving_cov import move_exp_data
+
+    return cast("MoveExpData", move_exp_data)

@@ -5,7 +5,7 @@ Moving averages (:mod:`~cmomy.moving`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
@@ -15,10 +15,15 @@ from ._utils import (
     axes_data_reduction,
     normalize_axis_index,
     parallel_heuristic,
+    prepare_values_for_reduction,
+    select_axis_dim,
     select_axis_dim_mult,
     select_dtype,
     validate_axis,
+    validate_mom_and_mom_ndim,
+    validate_mom_dims,
     validate_mom_ndim,
+    xprepare_values_for_reduction,
 )
 from .docstrings import docfiller
 
@@ -28,90 +33,76 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.typing import DimsReduceMult
-
     from .typing import (
+        ArrayLikeArg,
         AxisReduce,
         AxisReduceMult,
+        DimsReduce,
+        DimsReduceMult,
+        DTypeLikeArg,
         FloatT,
+        KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomDims,
+        Moments,
+        MomentsStrict,
         NDArrayAny,
+        ScalarT,
     )
 
 
 # * Moving average
-# def construct_rolling_window_array(
-#     x: NDArray[FloatT],
-#     axis: AxisReduceMult,
-#     window: int | Sequence[int],
-#     center: bool | Sequence[bool] = False,
-#     fill_value: ArrayLike = np.nan,
-#     mom_ndim: Mom_NDim | None = None,
-#     **kwargs: Any,
-# ) -> NDArray[FloatT]:
-#     """
-#     Convert an array to one with rolling windows.
-
-#     Parameters
-#     ----------
-#     x : array
-#     axis : int or iterable of int
-#     window : int or sequence of int
-#     center : bool
-
-#     Returns
-#     -------
-#     output : array
-#         Array of shape ``(*shape, window)`` if ``mom_ndim = None`` or
-#         ``(*shape[:-mom_ndim], window, *shape[-mom_ndim:])`` if ``mom_ndim is
-#         not None``. That is, the new window dimension is placed at the end, but
-#         before any moment dimensions if they are specified.
-#     """
-#     ndim = x.ndim - (0 if mom_ndim is None else validate_mom_ndim(mom_ndim))
-#     if axis is None:
-#         axis = tuple(range(ndim))
-#     axis = normalize_axis_tuple(axis, ndim, msg_prefix="rolling")
-
-#     nroll = len(axis)
-#     window = (window,) * nroll if isinstance(window, int) else tuple(window)
-#     center = (center,) * nroll if isinstance(center, bool) else tuple(center)
-#     if any(len(x) != nroll for x in (window, center)):
-#         msg = f"{axis=}, {window=}, {center=} must have same length"
-#         raise ValueError(msg)
-
-#     pads = [(0, 0)] * x.ndim
-#     for a, win, cent in zip(axis, window, center):
-#         if cent:
-#             start = win // 2
-#             end = win - 1 - start
-#             pads[a] = (start, end)
-#         else:
-#             pads[a] = (win - 1, 0)
-
-#     padded: NDArray[FloatT] = np.pad(
-#         x, pads, mode="constant", constant_values=fill_value, **kwargs
-#     )
-
-#     from numpy.lib.stride_tricks import sliding_window_view
-
-#     out = cast(
-#         "NDArray[FloatT]",
-#         sliding_window_view(  # type: ignore[call-overload]
-#             padded,
-#             window_shape=window if isinstance(window, int) else tuple(window),
-#             axis=axis,  # pyright: ignore[reportArgumentType]
-#         ),
-#     )
-
-#     if mom_ndim is not None:
-#         out = np.moveaxis(out, range(-len(axis), 0), range(ndim, ndim + len(axis)))  # pyright: ignore[reportUnknownArgumentType]
-#     return out
+@overload
+def construct_rolling_window_array(
+    x: xr.DataArray,
+    window: int | Sequence[int],
+    axis: AxisReduceMult | MissingType = ...,
+    center: bool | Sequence[bool] = ...,
+    stride: int | Sequence[int] = ...,
+    fill_value: ArrayLike = ...,
+    mom_ndim: Mom_NDim | None = ...,
+    # xarray specific
+    dim: DimsReduceMult | MissingType = ...,
+    window_dim: str | Sequence[str] | None = ...,
+    keep_attrs: bool | None = ...,
+    **kwargs: Any,
+) -> xr.DataArray: ...
+@overload
+def construct_rolling_window_array(
+    x: NDArray[FloatT],
+    window: int | Sequence[int],
+    axis: AxisReduceMult | MissingType = ...,
+    center: bool | Sequence[bool] = ...,
+    stride: int | Sequence[int] = ...,
+    fill_value: ArrayLike = ...,
+    mom_ndim: Mom_NDim | None = ...,
+    # xarray specific
+    dim: DimsReduceMult | MissingType = ...,
+    window_dim: str | Sequence[str] | None = ...,
+    keep_attrs: bool | None = ...,
+    **kwargs: Any,
+) -> NDArray[FloatT]: ...
+@overload
+def construct_rolling_window_array(
+    x: NDArrayAny,
+    window: int | Sequence[int],
+    axis: AxisReduceMult | MissingType = ...,
+    center: bool | Sequence[bool] = ...,
+    stride: int | Sequence[int] = ...,
+    fill_value: ArrayLike = ...,
+    mom_ndim: Mom_NDim | None = ...,
+    # xarray specific
+    dim: DimsReduceMult | MissingType = ...,
+    window_dim: str | Sequence[str] | None = ...,
+    keep_attrs: bool | None = ...,
+    **kwargs: Any,
+) -> NDArrayAny: ...
 
 
 @docfiller.decorate
 def construct_rolling_window_array(
-    x: NDArray[FloatT] | xr.DataArray,
+    x: NDArrayAny | xr.DataArray,
     window: int | Sequence[int],
     axis: AxisReduceMult | MissingType = MISSING,
     center: bool | Sequence[bool] = False,
@@ -123,7 +114,7 @@ def construct_rolling_window_array(
     window_dim: str | Sequence[str] | None = None,
     keep_attrs: bool | None = None,
     **kwargs: Any,
-) -> NDArray[FloatT] | xr.DataArray:
+) -> NDArrayAny | xr.DataArray:
     """
     Convert an array to one with rolling windows.
 
@@ -205,26 +196,171 @@ def construct_rolling_window_array(
     ).to_numpy()
 
 
-def move_data(
-    data: ArrayLike,
+# * Moving
+def _pad_along_axis(
+    data: NDArray[ScalarT], axis: int, shift: int, fill_value: float
+) -> NDArray[ScalarT]:
+    pads = [(0, 0)] * data.ndim
+    pads[axis] = (0, -shift)
+    return np.pad(
+        data,
+        pads,
+        mode="constant",
+        constant_values=fill_value,
+    )
+
+
+def _optional_zero_missing_weight(
+    data: NDArray[ScalarT], mom_ndim: Mom_NDim, zero_missing_weights: bool
+) -> NDArray[ScalarT]:
+    """Note that this modifies ``data`` inplace.  Pass in a copy if this is not what you want."""
+    if zero_missing_weights:
+        w = data[(..., *(0,) * mom_ndim)]  # type: ignore[arg-type]
+        w[np.isnan(w)] = 0.0
+    return data
+
+
+# ** Data
+@overload
+def move_data(  # type: ignore[overload-overlap]
+    data: xr.DataArray,
     *,
+    window: int,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+) -> xr.DataArray: ...
+# Array
+@overload
+def move_data(
+    data: ArrayLikeArg[FloatT],
+    *,
+    window: int,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def move_data(
+    data: Any,
+    *,
+    window: int,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def move_data(
+    data: Any,
+    *,
+    window: int,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def move_data(
+    data: Any,
+    *,
+    window: int,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: Any = ...,
+    dtype: Any = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+) -> NDArrayAny: ...
+
+
+@docfiller.decorate
+def move_data(  # pyright: ignore[reportOverlappingOverload]
+    data: ArrayLike | xr.DataArray,
+    *,
+    window: int,
     axis: AxisReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim = 1,
-    window: int,
-    min_count: int | None = None,
+    min_periods: int | None = None,
     center: bool = False,
+    zero_missing_weights: bool = True,
     parallel: bool | None = None,
-    dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
-) -> NDArrayAny:
+    dtype: DTypeLike = None,
+    # xarray specific
+    dim: DimsReduce | MissingType = MISSING,
+) -> NDArrayAny | xr.DataArray:
     """
     Moving average of central moments array.
 
     Parameters
     ----------
-    data : array-like
+    data : array-like or xarray.DataArray
+    {window}
+    {axis}
+    {mom_ndim}
+    {min_periods}
+    {center}
+    {zero_missing_weights}
+    {parallel}
+    {out}
+    {dtype}
+    {dim}
+
+    Returns
+    -------
+    out : ndarray or DataArray
+        Moving average data, of same shape and type as ``data``.
     """
-    min_count = window if min_count is None else min_count
+    if isinstance(data, xr.DataArray):
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        return data.copy(
+            data=move_data(
+                data.to_numpy(),
+                window=window,
+                axis=axis,
+                mom_ndim=mom_ndim,
+                min_periods=min_periods,
+                center=center,
+                parallel=parallel,
+                zero_missing_weights=zero_missing_weights,
+                dtype=dtype,
+                out=out,
+            )
+        )
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
@@ -233,22 +369,9 @@ def move_data(
     data = np.asarray(data, dtype=dtype)
     axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim, "move_data")
 
-    valid: list[slice] | None = None
-    if center:
-        shift = (-window // 2) + 1
-
-        valid = [slice(None)] * data.ndim
-        valid[axis] = slice(-shift, None)
-
-        pads = [(0, 0)] * data.ndim
-        pads[axis] = (0, -shift)
-
-        data = np.pad(
-            data,
-            pads,
-            mode="constant",
-            constant_values=0.0,
-        )
+    shift = (-window // 2) + 1 if center else None
+    if shift is not None:
+        data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
 
     axes = axes_data_reduction(
         # add in data_tmp, window, count
@@ -262,13 +385,704 @@ def move_data(
 
     from ._lib.factory import factory_move_data
 
+    min_periods = window if min_periods is None else min_periods
     data_tmp = np.zeros(data.shape[-mom_ndim:], dtype=dtype)
+
     out = factory_move_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )(data, data_tmp, window, min_count, out=out, axes=axes)
+    )(data, data_tmp, window, min_periods, out=out, axes=axes)
 
-    if valid is not None:
-        out = out[tuple(valid)]  # pyright: ignore[]
+    if shift is not None:
+        valid = [slice(None)] * data.ndim
+        valid[axis] = slice(-shift, None)
+        out = out[tuple(valid)]
 
-    return out
+    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)
+
+
+# * Vals
+@overload
+def move_vals(  # type: ignore[overload-overlap]
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    window: int,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> xr.DataArray: ...
+# array
+@overload
+def move_vals(
+    x: ArrayLikeArg[FloatT],
+    *y: ArrayLike,
+    mom: Moments,
+    window: int,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def move_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    window: int,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def move_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    window: int,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def move_vals(
+    x: Any,
+    *y: ArrayLike,
+    mom: Moments,
+    window: int,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: Any = ...,
+    dtype: Any = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArrayAny: ...
+
+
+@docfiller.decorate
+def move_vals(  # pyright: ignore[reportOverlappingOverload]
+    x: ArrayLike | xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    window: int,
+    weight: ArrayLike | xr.DataArray | None = None,
+    axis: AxisReduce | MissingType = MISSING,
+    min_periods: int | None = None,
+    center: bool = False,
+    zero_missing_weights: bool = True,
+    parallel: bool | None = None,
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+    # xarray specific
+    dim: DimsReduce | MissingType = MISSING,
+    mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
+) -> NDArrayAny | xr.DataArray:
+    """
+    Moving average of central moments generated by values.
+
+    Parameters
+    ----------
+    x : ndarray or DataArray
+        Values to analyze.
+    *y : array-like or DataArray
+        Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
+        to broadcast to ``x`` or be 1d array with length ``x.shape[axis]``.
+    {mom}
+    {window}
+    weight : scalar or array-like or DataArray
+        Weights for each point. Should either be able to broadcast to ``x`` or
+        be `d array of length ``x.shape[axis]``.
+    {axis}
+    {min_periods}
+    {center}
+    {zero_missing_weights}
+    {parallel}
+    {out}
+    {dtype}
+    {dim}
+    {mom_dims}
+    {keep_attrs}
+
+    Returns
+    -------
+    out : ndarray or DataArray
+        Central moments array of same type as ``x``. ``out.shape = shape +
+        (mom0, ...)`` where ``shape = np.broadcast_shapes(*(a.shape for a in
+        (x_, *y_, weight_)))`` and ``x_``, ``y_`` and ``weight_`` are the input
+        arrays with ``axis`` moved to the last axis. That is, the last
+        dimensions are the moving average axis ``axis`` and the moments
+        dimensions.
+
+
+    See Also
+    --------
+    numpy.broadcast_shapes
+    """
+    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    dtype = select_dtype(x, out=out, dtype=dtype)
+    weight = 1.0 if weight is None else weight
+
+    if isinstance(x, xr.DataArray):
+        input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
+            x,
+            weight,
+            *y,
+            axis=axis,
+            dim=dim,
+            narrays=mom_ndim + 1,
+            dtype=dtype,
+        )
+
+        mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+
+        return xr.apply_ufunc(  # type: ignore[no-any-return]
+            _move_vals,
+            x0,
+            w,
+            *x1,
+            input_core_dims=input_core_dims,
+            output_core_dims=[[input_core_dims[0][0], *mom_dims_strict]],
+            kwargs={
+                "mom": mom,
+                "mom_ndim": mom_ndim,
+                "parallel": parallel,
+                "out": out,
+                "center": center,
+                "window": window,
+                "min_periods": min_periods,
+                "zero_missing_weights": zero_missing_weights,
+            },
+            keep_attrs=keep_attrs,
+        )
+
+    axis, args = prepare_values_for_reduction(
+        x,
+        weight,
+        *y,
+        axis=axis,
+        narrays=mom_ndim + 1,
+        dtype=dtype,
+    )
+
+    return _move_vals(
+        *args,
+        mom=mom,
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        out=out,
+        center=center,
+        window=window,
+        min_periods=min_periods,
+        zero_missing_weights=zero_missing_weights,
+    )
+
+
+def _move_vals(
+    x: NDArray[FloatT],
+    w: NDArray[FloatT],
+    *y: NDArray[FloatT],
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None,
+    out: NDArray[FloatT] | None,
+    center: bool,
+    window: int,
+    min_periods: int | None,
+    zero_missing_weights: bool,
+) -> NDArray[FloatT]:
+    shift = (-window // 2) + 1 if center else None
+    if shift is not None:
+        (x, w, *y) = tuple(  # type: ignore[assignment]
+            _pad_along_axis(_, axis=-1, shift=shift, fill_value=0.0) for _ in (x, w, *y)
+        )
+
+    min_periods = window if min_periods is None else min_periods
+    data_tmp = np.zeros(tuple(m + 1 for m in mom), dtype=x.dtype)
+
+    from ._lib.factory import factory_move_vals
+
+    out = factory_move_vals(  # type: ignore[call-arg, misc]
+        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x.size * mom_ndim)
+    )(x, *y, w, data_tmp, window, min_periods, out=out)  # type: ignore[arg-type]
+
+    if shift is not None:
+        valid = [slice(None)] * out.ndim
+        valid[-(mom_ndim + 1)] = slice(-shift, None)
+        out = out[tuple(valid)]
+
+    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)  # pyright: ignore[reportReturnType, reportArgumentType]
+
+
+# * Move Exponential
+# ** Data
+@overload
+def move_exp_data(  # type: ignore[overload-overlap]
+    data: xr.DataArray,
+    alpha: ArrayLike,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> xr.DataArray: ...
+# array
+@overload
+def move_exp_data(
+    data: ArrayLikeArg[FloatT],
+    alpha: ArrayLike,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: None = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def move_exp_data(
+    data: Any,
+    alpha: ArrayLike,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def move_exp_data(
+    data: Any,
+    alpha: ArrayLike,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def move_exp_data(
+    data: Any,
+    alpha: ArrayLike,
+    *,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: Any = ...,
+    dtype: Any = ...,
+    dim: DimsReduce | MissingType = ...,
+) -> NDArray[FloatT]: ...
+
+
+@docfiller.decorate
+def move_exp_data(  # pyright: ignore[reportOverlappingOverload]
+    data: ArrayLike | xr.DataArray,
+    alpha: ArrayLike,
+    *,
+    axis: AxisReduce | MissingType = MISSING,
+    mom_ndim: Mom_NDim = 1,
+    min_periods: int | None = None,
+    adjust: bool = True,
+    zero_missing_weights: bool = True,
+    parallel: bool | None = None,
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+    dim: DimsReduce | MissingType = MISSING,
+) -> NDArrayAny | xr.DataArray:
+    """
+    Moving average of central moments array.
+
+    Parameters
+    ----------
+    data : array-like
+    alpha : array-like
+        `alpha` values.
+    {axis}
+    {mom_ndim}
+    {min_periods}
+    adjust : bool, default=True
+        Same as ``adjust`` parameter of :meth:`pandas.DataFrame.ewm`
+    {zero_missing_weights}
+    {parallel}
+    {out}
+    {dtype}
+
+    Returns
+    -------
+    out : ndarray or DataArray
+        Exponential moving average of same shape and type of ``data``.
+
+    See Also
+    --------
+    xarray.DataArray.rolling_exp
+    xarray.core.rolling_exp.RollingExp
+    pandas.DataFrame.ewm
+
+    """
+    if isinstance(data, xr.DataArray):
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        return data.copy(
+            data=move_exp_data(
+                data.to_numpy(),
+                alpha=alpha,
+                axis=axis,
+                mom_ndim=mom_ndim,
+                min_periods=min_periods,
+                adjust=adjust,
+                zero_missing_weights=zero_missing_weights,
+                parallel=parallel,
+                out=out,
+                dtype=dtype,
+            )
+        )
+
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(data, out=out, dtype=dtype)
+
+    data = np.asarray(data, dtype=dtype)
+    axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim, "move_data")
+
+    alpha = np.asarray(alpha, dtype=dtype)
+    if alpha.ndim == 0:
+        alpha = np.broadcast_to(alpha, data.shape[axis])
+        alpha_axis = -1
+    elif alpha.ndim == 1:
+        alpha_axis = -1
+    else:
+        alpha_axis = axis
+
+    # axes for reduction
+    axes = axes_data_reduction(
+        # add in data_tmp, alpha, adjust, min_periods
+        tuple(range(-mom_ndim, 0)),
+        (alpha_axis,),
+        (),
+        (),
+        mom_ndim=mom_ndim,
+        axis=axis,
+        out_has_axis=True,
+    )
+
+    from ._lib.factory import factory_move_exp_data
+
+    min_periods = 1 if min_periods is None else max(1, min_periods)
+    data_tmp = np.zeros(data.shape[-mom_ndim:], dtype=dtype)
+    out = factory_move_exp_data(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+    )(data, data_tmp, alpha, adjust, min_periods, out=out, axes=axes)
+
+    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)
+
+
+# ** Vals
+@overload
+def move_exp_vals(  # type: ignore[overload-overlap]
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    alpha: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> xr.DataArray: ...
+# Array
+@overload
+def move_exp_vals(
+    x: ArrayLikeArg[FloatT],
+    *y: ArrayLike,
+    alpha: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def move_exp_vals(
+    x: Any,
+    *y: ArrayLike,
+    alpha: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def move_exp_vals(
+    x: Any,
+    *y: ArrayLike,
+    alpha: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+# Fallback
+@overload
+def move_exp_vals(
+    x: Any,
+    *y: ArrayLike,
+    alpha: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    adjust: bool = ...,
+    zero_missing_weights: bool = ...,
+    parallel: bool | None = ...,
+    out: Any = ...,
+    dtype: Any = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+) -> NDArray[FloatT]: ...
+
+
+@docfiller.decorate
+def move_exp_vals(  # pyright: ignore[reportOverlappingOverload]
+    x: ArrayLike | xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    alpha: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = None,
+    axis: AxisReduce | MissingType = MISSING,
+    min_periods: int | None = None,
+    adjust: bool = True,
+    zero_missing_weights: bool = True,
+    parallel: bool | None = None,
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+    # xarray specific
+    dim: DimsReduce | MissingType = MISSING,
+    mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
+) -> NDArrayAny | xr.DataArray:
+    """
+    Moving average of central moments generated by values.
+
+    Parameters
+    ----------
+    x : ndarray or DataArray
+        Values to analyze.
+    *y : array-like or DataArray
+        Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
+        to broadcast to ``x`` or be 1d array with length ``x.shape[axis]``.
+    alpha : array-like
+        `alpha` values.
+    {mom}
+    weight : scalar or array-like or DataArray
+        Weights for each point. Should either be able to broadcast to ``x`` or
+        be `d array of length ``x.shape[axis]``.
+    {axis}
+    {min_periods}
+    adjust : bool, default=True
+        Same as ``adjust`` parameter of :meth:`pandas.DataFrame.ewm`
+    {zero_missing_weights}
+    {parallel}
+    {out}
+    {dtype}
+    {dim}
+    {mom_dims}
+    {keep_attrs}
+
+    Returns
+    -------
+    out : ndarray or DataArray
+        Central moments array of same type as ``x``. ``out.shape = shape +
+        (mom0, ...)`` where ``shape = np.broadcast_shapes(*(a.shape for a in
+        (x_, *y_, weight_)))`` and ``x_``, ``y_`` and ``weight_`` are the input
+        arrays with ``axis`` moved to the last axis. That is, the last
+        dimensions are the moving average axis ``axis`` and the moments
+        dimensions.
+
+
+    See Also
+    --------
+    numpy.broadcast_shapes
+    """
+    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    dtype = select_dtype(x, out=out, dtype=dtype)
+    weight = 1.0 if weight is None else weight
+
+    if isinstance(x, xr.DataArray):
+        input_core_dims, args = xprepare_values_for_reduction(
+            x,
+            weight,
+            alpha,
+            *y,
+            axis=axis,
+            dim=dim,
+            narrays=mom_ndim + 2,
+            dtype=dtype,
+        )
+
+        mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+
+        return xr.apply_ufunc(  # type: ignore[no-any-return]
+            _move_exp_vals,
+            *args,
+            input_core_dims=input_core_dims,
+            output_core_dims=[[input_core_dims[0][0], *mom_dims_strict]],
+            kwargs={
+                "mom": mom,
+                "mom_ndim": mom_ndim,
+                "parallel": parallel,
+                "out": out,
+                "adjust": adjust,
+                "min_periods": min_periods,
+                "zero_missing_weights": zero_missing_weights,
+            },
+            keep_attrs=keep_attrs,
+        )
+
+    axis, args = prepare_values_for_reduction(
+        x,
+        weight,
+        alpha,
+        *y,
+        axis=axis,
+        narrays=mom_ndim + 2,
+        dtype=dtype,
+    )
+
+    return _move_exp_vals(
+        *args,
+        mom=mom,
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        out=out,
+        adjust=adjust,
+        min_periods=min_periods,
+        zero_missing_weights=zero_missing_weights,
+    )
+
+
+def _move_exp_vals(
+    x: NDArray[FloatT],
+    w: NDArray[FloatT],
+    alpha: NDArray[FloatT],
+    *y: NDArray[FloatT],
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None,
+    out: NDArray[FloatT] | None,
+    adjust: bool,
+    min_periods: int | None,
+    zero_missing_weights: bool,
+) -> NDArray[FloatT]:
+    data_tmp = np.zeros(tuple(m + 1 for m in mom), dtype=x.dtype)
+
+    from ._lib.factory import factory_move_exp_vals
+
+    min_periods = 1 if min_periods is None else max(1, min_periods)
+    out = factory_move_exp_vals(  # type: ignore[call-arg, misc]
+        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x.size * mom_ndim)
+    )(x, *y, w, data_tmp, alpha, adjust, min_periods, out=out)  # type: ignore[arg-type]
+
+    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)  # pyright: ignore[reportReturnType, reportArgumentType]

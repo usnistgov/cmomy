@@ -169,6 +169,17 @@ def _dummy_docstrings() -> None:
         - 'drop_conflicts': attrs from all objects are combined, any that have the same name but different values are dropped.
         - 'override' or True: skip comparing and copy attrs from the first object to the result.
 
+    min_periods : int, optional
+        Minimum number of observations in window required to have a value
+        (otherwise result is NA). The default, None, is equivalent to
+        setting min_periods equal to the size of the window.
+    center : bool, default=False
+        If ``True``, set the labels at the center of the window.
+    zero_missing_weights : bool, default=True
+        If ``True``, set missing weights (``np.nan``) to ``0``.
+    window : int
+        Size of moving window.
+
     """
 
 

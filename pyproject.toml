@@ -87,7 +87,7 @@ optional-dependencies.pipxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.370",
+    "pyright>=1.1.372",
     "twine>=5.0.0",
 ]
 optional-dependencies.test = [
@@ -257,7 +257,6 @@ lint.extend-per-file-ignores."classic_tests/**/*.py" = [
 ]
 lint.extend-per-file-ignores."src/**/*.py" = [
     "D102",
-    "ERA",
     "FIX002",
     "PLR2004",
     "TD003",

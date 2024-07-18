@@ -451,7 +451,7 @@ def select_axis_dim_mult(
 
 
 # ** Prepare for push/reduction
-def _prepare_secondary_value_for_reduction(
+def prepare_secondary_value_for_reduction(
     target: NDArray[ScalarT],
     x: ArrayLike,
     axis: int,
@@ -504,12 +504,13 @@ def _prepare_secondary_value_for_reduction(
     return out
 
 
-def _xprepare_secondary_value_for_reduction(
+def xprepare_secondary_value_for_reduction(
     target: xr.DataArray,
     x: xr.DataArray,
     *,
     order: ArrayOrder = None,
 ) -> xr.DataArray:
+    """Prepare secondary values for reduction."""
     # assume ordering will be handled by apply_ufunc
     if order or x.dtype != target.dtype:  # pyright: ignore[reportUnknownMemberType]
         x = x.astype(dtype=target.dtype, copy=False, order=order)  # pyright: ignore[reportUnknownMemberType]
@@ -548,7 +549,7 @@ def prepare_values_for_reduction(
         target = np.asarray(target, order=order)
 
     others: Iterable[NDArray[ScalarT]] = (
-        _prepare_secondary_value_for_reduction(
+        prepare_secondary_value_for_reduction(
             target=target,
             x=x,
             axis=axis,
@@ -610,7 +611,7 @@ def xprepare_values_for_reduction(
     for x in args:
         if isinstance(x, xr.DataArray):
             others.append(
-                _xprepare_secondary_value_for_reduction(
+                xprepare_secondary_value_for_reduction(
                     target=target,
                     x=x,
                     order=order,  # axis=axis, dim=dim, move_axis=move_axis, order=order
@@ -618,7 +619,7 @@ def xprepare_values_for_reduction(
             )
         else:
             others.append(
-                _prepare_secondary_value_for_reduction(  # pyright: ignore[reportUnknownArgumentType]
+                prepare_secondary_value_for_reduction(  # pyright: ignore[reportUnknownArgumentType]
                     target=target.values,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                     x=x,
                     axis=axis,

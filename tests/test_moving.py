@@ -1,14 +1,50 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
-from functools import partial
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type"
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 import numpy as np
+import pandas as pd
 import pytest
 import xarray as xr
 
 import cmomy
 from cmomy import moving
 
+if TYPE_CHECKING:
+    from typing import TypedDict
 
+    from cmomy.typing import Mom_NDim, MomentsStrict
+
+    class MovingDict(TypedDict):
+        window: int
+        min_periods: int | None
+        center: bool
+
+    class MovingExpDict(TypedDict):
+        alpha: float
+        adjust: bool
+        min_periods: int | None
+
+
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test__optional_zero_missing_weights(mom_ndim) -> None:
+    data = np.ones((2, 3, 4))
+
+    data[(..., *(0,) * mom_ndim)] = np.nan
+
+    # no change
+    out = moving._optional_zero_missing_weight(data.copy(), mom_ndim, False)
+    np.testing.assert_equal(out, data)
+
+    # change
+    check = data.copy()
+    check[(..., *(0,) * mom_ndim)] = 0.0
+    out = moving._optional_zero_missing_weight(data.copy(), mom_ndim, True)
+    np.testing.assert_allclose(out, check)
+
+
+# * construct
 @pytest.mark.parametrize(
     ("shape", "axis", "window"),
     [
@@ -39,17 +75,26 @@ def test_construct_rolling_window_array(shape, axis, window, center):
 
     np.testing.assert_allclose(c, out)
 
+    if isinstance(window, tuple) and len(window) == 3:
+        with pytest.raises(ValueError):
+            moving.construct_rolling_window_array(
+                data,
+                axis=axis,
+                window=window[:-1],
+                center=center,
+            )
+
 
 def test_construct_rolling_window_array_mom_ndim() -> None:
     shape = (2, 3, 4, 5)
     data = np.arange(np.prod(shape)).reshape(shape).astype(np.float64)
 
-    func = partial(moving.construct_rolling_window_array, window=3)
+    func = moving.construct_rolling_window_array
 
     axis = (0, 1)
-    out = func(data, axis=axis)
-    out1 = func(data, axis=axis, mom_ndim=1)
-    out2 = func(data, axis=axis, mom_ndim=2)
+    out = func(data, axis=axis, window=3)
+    out1 = func(data, axis=axis, mom_ndim=1, window=3)
+    out2 = func(data, axis=axis, mom_ndim=2, window=3)
 
     np.testing.assert_allclose(
         np.moveaxis(out, (-2, -1), (-3, -2)),
@@ -61,9 +106,16 @@ def test_construct_rolling_window_array_mom_ndim() -> None:
     )
 
     with pytest.raises(ValueError):
-        func(data, axis=2, mom_ndim=2)
+        func(data, axis=2, mom_ndim=2, window=3)
+
+    # using xarray data
+    xdata = xr.DataArray(data)
+    xout = func(xdata, axis=axis, window=3)
+    np.testing.assert_allclose(xout, out)
+    assert isinstance(xout, xr.DataArray)
 
 
+# * Move data
 @pytest.mark.parametrize(
     ("shape", "axis"),
     [
@@ -73,9 +125,9 @@ def test_construct_rolling_window_array_mom_ndim() -> None:
     ],
 )
 @pytest.mark.parametrize("window", [3, 8])
-@pytest.mark.parametrize("min_count", [None, 2])
+@pytest.mark.parametrize("min_periods", [None, 2])
 @pytest.mark.parametrize("center", [False, True])
-def test_move_data(rng, shape, axis, window, min_count, center) -> None:
+def test_move_data(rng, shape, axis, window, min_periods, center) -> None:
     """
     Simple test like move_vals...
 
@@ -83,18 +135,210 @@ def test_move_data(rng, shape, axis, window, min_count, center) -> None:
     """
     x = rng.random(shape)
     dx = xr.DataArray(x)
-    r = dx.rolling({dx.dims[axis]: window}, min_periods=min_count, center=center)
+    r = dx.rolling({dx.dims[axis]: window}, min_periods=min_periods, center=center)
 
-    data = np.zeros((*shape, 3))
+    kws: MovingDict = {"window": window, "min_periods": min_periods, "center": center}
+
+    # data
+    data = np.zeros((*shape, 4))
     data[..., 0] = 1
     data[..., 1] = x
     out = moving.move_data(
-        data, axis=axis, mom_ndim=1, window=window, min_count=min_count, center=center
+        data,
+        axis=axis,
+        mom_ndim=1,
+        **kws,
     )
 
     np.testing.assert_allclose(out[..., 1], r.mean())
-
     np.testing.assert_allclose(out[..., 2], r.var(ddof=0))
+
+    # vals
+    out2 = moving.move_vals(x, axis=axis, mom=3, **kws)
+
+    np.testing.assert_allclose(
+        out,
+        np.moveaxis(out2, -2, axis),
+        atol=1e-14,
+    )
+
+    # xarray
+    xout = moving.move_data(
+        xr.DataArray(data),
+        axis=axis,
+        mom_ndim=1,
+        **kws,
+    )
+    assert isinstance(xout, xr.DataArray)
+    np.testing.assert_allclose(xout, out)
+
+    xout2 = moving.move_vals(xr.DataArray(x), axis=axis, mom=3, **kws)
+    assert isinstance(xout2, xr.DataArray)
+    np.testing.assert_allclose(xout2, out2)
+
+
+@pytest.mark.parametrize("window", [3, 8])
+@pytest.mark.parametrize("min_periods", [None, 2])
+@pytest.mark.parametrize("center", [False, True])
+@pytest.mark.parametrize("missing", [True, False])
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_move_data_vals_missing(  # noqa: PLR0914
+    rng: np.random.Generator,
+    window: int,
+    min_periods: int | None,
+    center: bool,
+    missing: bool,
+    mom_ndim: Mom_NDim,
+) -> None:
+    shape = (100, 3)
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
+
+    kws: MovingDict = {"window": window, "min_periods": min_periods, "center": center}
+
+    x = rng.random(shape)
+    y = rng.random(shape)
+    w = np.ones_like(x)
+
+    if missing:
+        idx = rng.choice(range(20, x.shape[0]), size=10, replace=False).tolist()
+        # include the first and missing chunk
+        idx = [0, *range(5, 5 + window + 1), *idx]
+
+        x[idx, ...] = np.nan
+        y[idx, ...] = np.nan
+        w[idx, ...] = 0.0
+
+    xy = (x,) if mom_ndim == 1 else (x, y)
+    widx = (..., *(0,) * mom_ndim)
+    xidx = (..., 1) if mom_ndim == 1 else (..., 1, 0)
+    x2idx = (..., 2) if mom_ndim == 1 else (..., 2, 0)
+
+    data = np.zeros((*x.shape, *(m + 1 for m in mom)))
+    data[widx] = w
+    data[xidx] = x
+    if mom_ndim == 2:
+        data[..., 0, 1] = y
+
+    moving.move_data(
+        data,
+        window=window,
+        min_periods=min_periods,
+        center=center,
+        axis=0,
+        mom_ndim=mom_ndim,
+    )
+    outd = moving.move_data(data, **kws, axis=0, mom_ndim=mom_ndim)
+    out = np.moveaxis(
+        moving.move_vals(*xy, **kws, axis=0, mom=mom, weight=w), -(mom_ndim + 1), 0
+    )
+
+    np.testing.assert_allclose(out, outd, atol=1e-14)
+
+    # just to make sure, we also use construct
+    data_rolling = moving.construct_rolling_window_array(
+        data, axis=0, fill_value=0.0, mom_ndim=mom_ndim, **kws
+    )
+
+    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
+    count = (data_rolling[widx] != 0.0).sum(axis=-1)
+
+    outc = np.where(
+        count[(..., *(None,) * mom_ndim)]
+        >= (window if min_periods is None else min_periods),
+        outc,
+        np.nan,
+    )
+    w2 = outc[widx]
+    w2[np.isnan(w2)] = 0.0
+    np.testing.assert_allclose(outc, out, atol=1e-14)
+
+    # compare to pands
+    rx = pd.DataFrame(x).rolling(**kws)
+    rw = pd.DataFrame(w).replace(0.0, np.nan).rolling(**kws)
+
+    np.testing.assert_allclose(out[widx], rw.sum().fillna(0.0))
+    np.testing.assert_allclose(out[xidx], rx.mean())
+    np.testing.assert_allclose(out[x2idx], rx.var(ddof=0), atol=1e-14)
+
+    if mom_ndim == 2:
+        dfy = pd.DataFrame(y)
+        ry = dfy.rolling(**kws)
+        np.testing.assert_allclose(out[..., 0, 1], ry.mean())
+        np.testing.assert_allclose(out[..., 0, 2], ry.var(ddof=0))
+        np.testing.assert_allclose(out[..., 1, 1], rx.cov(dfy, ddof=0), atol=1e-14)
+
+
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+@pytest.mark.parametrize("window", [3, 8])
+@pytest.mark.parametrize("min_periods", [None, 2])
+@pytest.mark.parametrize("center", [False, True])
+@pytest.mark.parametrize("missing", [True, False])
+def test_move_weights(  # noqa: PLR0914
+    rng, mom_ndim, window, min_periods, center, missing
+) -> None:
+    # test unequal weights...
+    data = rng.random((100, 3, 3))
+
+    kws: MovingDict = {"window": window, "min_periods": min_periods, "center": center}
+
+    if missing:
+        idx = rng.choice(range(20, data.shape[0]), size=10, replace=False)
+        # include the first and missing chunk
+        idx = [0, *range(5, 5 + window + 1), *list(idx)]
+
+        data[idx, ...] = np.nan
+        data[(idx, ..., *(0,) * mom_ndim)] = 0.0
+
+    out = moving.move_data(data, **kws, axis=0, mom_ndim=mom_ndim)
+    data_rolling = moving.construct_rolling_window_array(
+        data, axis=0, fill_value=0.0, mom_ndim=mom_ndim, **kws
+    )
+
+    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
+    count = (data_rolling[(..., *((0,) * mom_ndim))] != 0.0).sum(axis=-1)
+
+    outc = np.where(
+        count[(..., *((None,) * mom_ndim))]
+        >= (window if min_periods is None else min_periods),
+        outc,
+        np.nan,
+    )
+    w2 = outc[(..., *(0,) * mom_ndim)]
+    w2[np.isnan(w2)] = 0.0
+
+    np.testing.assert_allclose(out, outc)
+
+    # testing val
+    w = data[(..., *(0,) * mom_ndim)]
+    x = data[(..., *(1,) * mom_ndim)]
+    y = data[(..., *(2,) * mom_ndim)]
+
+    mom = (3,) * mom_ndim
+
+    xy = (x,) if mom_ndim == 1 else (x, y)
+
+    out = moving.move_vals(*xy, weight=w, **kws, axis=0, mom=mom)
+
+    wr = data_rolling[(..., *(0,) * mom_ndim)]
+    xr = data_rolling[(..., *(1,) * mom_ndim)]
+    yr = data_rolling[(..., *(2,) * mom_ndim)]
+
+    xyr = (xr,) if mom_ndim == 1 else (xr, yr)
+
+    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=-1)
+    count = (wr != 0.0).sum(axis=-1)
+
+    outc = np.where(
+        count[(..., *((None,) * mom_ndim))]
+        >= (window if min_periods is None else min_periods),
+        outc,
+        np.nan,
+    )
+    w2 = outc[(..., *(0,) * mom_ndim)]
+    w2[np.isnan(w2)] = 0.0
+
+    outc = np.moveaxis(outc, 0, -(mom_ndim + 1))
+    np.testing.assert_allclose(out, outc, atol=1e-14)
 
 
 @pytest.mark.parametrize(
@@ -108,12 +352,11 @@ def test_move_data(rng, shape, axis, window, min_count, center) -> None:
     ],
 )
 @pytest.mark.parametrize("window", [3, 8])
-@pytest.mark.parametrize("min_count", [None, 2])
+@pytest.mark.parametrize("min_periods", [None, 2])
 @pytest.mark.parametrize("center", [False, True])
 def test_move_data_from_constructed_windows(
-    rng, shape, axis, mom_ndim, window, min_count, center
+    rng, shape, axis, mom_ndim, window, min_periods, center
 ) -> None:
-    rng = np.random.default_rng(0)
     data = rng.random(shape)
 
     out = moving.move_data(
@@ -121,7 +364,7 @@ def test_move_data_from_constructed_windows(
         axis=axis,
         mom_ndim=mom_ndim,
         window=window,
-        min_count=min_count,
+        min_periods=min_periods,
         center=center,
     )
 
@@ -130,18 +373,261 @@ def test_move_data_from_constructed_windows(
     )
     out2 = cmomy.reduce_data(data_rolling, axis=-1, mom_ndim=mom_ndim)
     # clean up counts...
-    count = (data_rolling[..., *((0,) * mom_ndim)] != 0.0).sum(axis=-1)
+    count = (data_rolling[(..., *((0,) * mom_ndim))] != 0.0).sum(axis=-1)
 
     out2 = np.where(
-        count[..., *((None,) * mom_ndim)]
-        >= (window if min_count is None else min_count),
+        count[(..., *((None,) * mom_ndim))]
+        >= (window if min_periods is None else min_periods),
         out2,
         np.nan,
     )
 
     # nan weights -> 0
-    w = out2[..., *(0,) * mom_ndim]
+    w = out2[(..., *(0,) * mom_ndim)]
     w[np.isnan(w)] = 0.0
     out2 = cmomy.convert.assign_weight(out2, w, mom_ndim=mom_ndim, copy=False)
 
     np.testing.assert_allclose(out, out2)
+
+
+# * move exp
+@pytest.mark.parametrize("alpha", [0.2, 0.4])
+@pytest.mark.parametrize("adjust", [True, False])
+@pytest.mark.parametrize("missing", [True, False])
+@pytest.mark.parametrize("min_periods", [None, 3])
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_move_exp_data_vals_missing(  # noqa: PLR0914
+    rng: np.random.Generator,
+    alpha: float,
+    adjust: bool,
+    missing: bool,
+    min_periods: int | None,
+    mom_ndim: Mom_NDim,
+) -> None:
+    shape = (100, 3)
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
+
+    kws: MovingExpDict = {"alpha": alpha, "adjust": adjust, "min_periods": min_periods}
+
+    x = rng.random(shape)
+    y = rng.random(shape)
+    w = np.ones_like(x)
+
+    if missing:
+        idx = rng.choice(range(20, x.shape[0]), size=10, replace=False).tolist()
+        # include the first and missing chunk
+        idx = [0, *range(5, 10), *idx]
+
+        x[idx, ...] = np.nan
+        y[idx, ...] = np.nan
+        w[idx, ...] = 0.0
+
+    xy = (x,) if mom_ndim == 1 else (x, y)
+    widx = (..., *(0,) * mom_ndim)
+    xidx = (..., 1) if mom_ndim == 1 else (..., 1, 0)
+    x2idx = (..., 2) if mom_ndim == 1 else (..., 2, 0)
+
+    data = np.zeros((*x.shape, *(m + 1 for m in mom)))
+    data[widx] = w
+    data[xidx] = x
+    if mom_ndim == 2:
+        data[..., 0, 1] = y
+
+    outd = moving.move_exp_data(data, **kws, axis=0, mom_ndim=mom_ndim)
+    out = moving.move_exp_vals(*xy, weight=w, **kws, axis=0, mom=mom)
+
+    out = np.moveaxis(out, -(mom_ndim + 1), 0)
+    np.testing.assert_allclose(out, outd, atol=1e-14)
+
+    rx = pd.DataFrame(x).ewm(**kws)
+    rw = pd.DataFrame(w).replace(0.0, np.nan).ewm(**kws)
+
+    if adjust:
+        np.testing.assert_allclose(out[widx], rw.sum().fillna(0.0))
+    np.testing.assert_allclose(out[xidx], rx.mean())
+    np.testing.assert_allclose(out[x2idx], rx.var(bias=True))
+
+    if mom_ndim == 2:
+        dfy = pd.DataFrame(y)
+        ry = dfy.ewm(**kws)
+        np.testing.assert_allclose(out[..., 0, 1], ry.mean())
+        np.testing.assert_allclose(out[..., 0, 2], ry.var(bias=True))
+        np.testing.assert_allclose(out[..., 1, 1], rx.cov(dfy, bias=True))
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis"),
+    [
+        ((10,), 0),
+        ((10, 2, 3), 0),
+        ((2, 10, 3), 1),
+    ],
+)
+@pytest.mark.parametrize("alpha", [0.2, 0.4])
+@pytest.mark.parametrize("adjust", [True])
+def test_move_exp_simple(rng, shape, axis, alpha, adjust) -> None:
+    x = rng.random(shape)
+    dx = xr.DataArray(x)
+    rolling_kws = {"window": {dx.dims[axis]: alpha}, "window_type": "alpha"}
+
+    out = moving.move_exp_vals(
+        x,
+        alpha=alpha,
+        mom=1,
+        axis=axis,
+        adjust=adjust,
+    )
+
+    # move to original position
+    out = np.moveaxis(out, -2, axis)
+
+    data = np.zeros((*x.shape, 2))
+    data[..., 0] = 1
+    data[..., 1] = x
+    outd = moving.move_exp_data(
+        data,
+        alpha=alpha,
+        mom_ndim=1,
+        axis=axis,
+        adjust=adjust,
+    )
+
+    np.testing.assert_allclose(out, outd)
+
+    # if have numbagg, do this.
+    try:
+        np.testing.assert_allclose(out[..., 1], dx.rolling_exp(**rolling_kws).mean())
+        x_count = (~np.isnan(x)).astype(x.dtype)
+        np.testing.assert_allclose(
+            out[..., 0], xr.DataArray(x_count).rolling_exp(**rolling_kws).sum()
+        )
+    except ImportError:
+        pass
+
+    # using xarray
+    xout = moving.move_exp_vals(
+        dx,
+        alpha=alpha,
+        mom=1,
+        dim=dx.dims[axis],
+        adjust=adjust,
+    ).transpose(*dx.dims, ...)
+
+    assert isinstance(xout, xr.DataArray)
+    np.testing.assert_allclose(out, xout)
+
+    xout = moving.move_exp_data(
+        xr.DataArray(data),
+        alpha=alpha,
+        mom_ndim=1,
+        axis=axis,
+        adjust=adjust,
+    )
+
+    assert isinstance(xout, xr.DataArray)
+    np.testing.assert_allclose(out, xout)
+
+
+@pytest.mark.parametrize("adjust", [True, False])
+@pytest.mark.parametrize("alpha", [0.2, 0.8, None])
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_move_exp_weight(
+    rng: np.random.Generator,
+    adjust: bool,
+    alpha: float | None,
+    mom_ndim: Mom_NDim,
+) -> None:
+    axis = 0
+    shape = (50, 2, 3)
+    mom: MomentsStrict = (3,) * mom_ndim
+    data = np.zeros((*shape, *(m + 1 for m in mom)))
+
+    if alpha is None:
+        alphas = rng.random(shape[axis])
+    else:
+        alphas = np.full(shape[axis], alpha, dtype=data.dtype)
+
+    weight = rng.random(shape)
+    if mom_ndim == 1:
+        xy = (rng.random(shape),)
+        data[..., 0] = weight
+        data[..., 1] = xy[0]
+    else:
+        xy = (rng.random(shape), rng.random(shape))
+        data[..., 0, 0] = weight
+        data[..., 1, 0] = xy[0]
+        data[..., 0, 1] = xy[1]
+
+    freq = np.zeros((shape[axis],) * 2)
+    _w = np.array([], dtype=np.float64)
+    old_weight = 0.0
+    for k in range(shape[axis]):
+        _w *= 1 - alphas[k]
+        _w = np.append(_w, 1.0 if adjust else alphas[k])
+        if not adjust:
+            old_weight = old_weight * (1 - alphas[k]) + alphas[k]
+            _w /= old_weight
+            old_weight = 1.0
+
+        freq[k, : k + 1] = _w
+
+    a = moving.move_exp_vals(
+        *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
+    )
+    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)
+    np.testing.assert_allclose(a, b)
+
+    c = moving.move_exp_data(
+        data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust
+    )
+    np.testing.assert_allclose(
+        a,
+        np.moveaxis(c, axis, -(mom_ndim + 1)),
+    )
+
+
+@pytest.mark.parametrize("adjust", [True, False])
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_move_exp_multiple_alpha(
+    rng: np.random.Generator,
+    adjust: bool,
+    mom_ndim: Mom_NDim,
+) -> None:
+    axis = 0
+    shape = (50, 2)
+    mom: MomentsStrict = (3,) * mom_ndim
+    data = np.zeros((*shape, *(m + 1 for m in mom)))
+
+    alphas = rng.random(shape)
+    weight = rng.random(shape)
+    if mom_ndim == 1:
+        xy = (rng.random(shape),)
+        data[..., 0] = weight
+        data[..., 1] = xy[0]
+    else:
+        xy = (rng.random(shape), rng.random(shape))
+        data[..., 0, 0] = weight
+        data[..., 1, 0] = xy[0]
+        data[..., 0, 1] = xy[1]
+
+    a = moving.move_exp_vals(
+        *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
+    )
+    c = moving.move_exp_data(
+        data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust
+    )
+    np.testing.assert_allclose(
+        a,
+        np.moveaxis(c, axis, -(mom_ndim + 1)),
+    )
+
+    for k in range(shape[-1]):
+        b = moving.move_exp_vals(
+            *(_[..., k] for _ in xy),
+            weight=weight[..., k],
+            alpha=alphas[..., k],
+            mom=mom,
+            axis=axis,
+            adjust=adjust,
+        )
+        np.testing.assert_allclose(b, a[k, ...])

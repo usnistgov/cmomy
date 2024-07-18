@@ -276,3 +276,37 @@ def test_move_data(
     expected: factory.MoveData,
 ) -> None:
     assert factory.factory_move_data(mom_ndim, parallel) == expected
+
+
+@pytest.mark.parametrize(
+    ("mom_ndim", "parallel", "expected"),
+    [
+        (1, False, moving.move_exp_vals),
+        (1, True, moving_parallel.move_exp_vals),
+        (2, False, moving_cov.move_exp_vals),
+        (2, True, moving_cov_parallel.move_exp_vals),
+    ],
+)
+def test_move_exp_vals(
+    mom_ndim: Mom_NDim,
+    parallel: bool,
+    expected: factory.MoveExpVals | factory.MoveExpValsCov,
+) -> None:
+    assert factory.factory_move_exp_vals(mom_ndim, parallel) == expected
+
+
+@pytest.mark.parametrize(
+    ("mom_ndim", "parallel", "expected"),
+    [
+        (1, False, moving.move_exp_data),
+        (1, True, moving_parallel.move_exp_data),
+        (2, False, moving_cov.move_exp_data),
+        (2, True, moving_cov_parallel.move_exp_data),
+    ],
+)
+def test_move_exp_data(
+    mom_ndim: Mom_NDim,
+    parallel: bool,
+    expected: factory.MoveExpData,
+) -> None:
+    assert factory.factory_move_exp_data(mom_ndim, parallel) == expected

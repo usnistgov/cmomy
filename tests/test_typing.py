@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from cmomy import convert
+    from cmomy import convert, moving
     from cmomy.reduction import (
         reduce_data,
         reduce_data_grouped,
@@ -327,6 +327,8 @@ def test_cumulative() -> None:
 
     out32 = np.zeros((4,), dtype=np.float32)
     out64 = np.zeros((4,), dtype=np.float64)
+    outAny: NDArray[Any] = np.zeros((4,), dtype=np.float32)
+
     if TYPE_CHECKING:
         assert_type(convert.cumulative(x32, mom_ndim=1), NDArray[np.float32])
         assert_type(convert.cumulative(x64, mom_ndim=1), NDArray[np.float64])
@@ -348,6 +350,11 @@ def test_cumulative() -> None:
         assert_type(
             convert.cumulative(x64, mom_ndim=1, out=out32, dtype=np.float64),
             NDArray[np.float32],
+        )
+
+        assert_type(
+            convert.cumulative(x32, mom_ndim=1, out=outAny, dtype=np.float32),
+            NDArray[Any],
         )
 
         xc = np.array([1, 2, 3])
@@ -1302,3 +1309,330 @@ def test_xcentral_resample_vals() -> None:
             xCentralMoments.from_resample_vals(x64, freq=freq, mom=3, dtype="f8"),
             xCentralMoments[Any],
         )
+
+
+# * Moving
+def test_moving_data() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+    outAny: NDArray[Any] = np.zeros((4,), dtype=np.float32)
+    if TYPE_CHECKING:
+        assert_type(moving.move_data(x32, mom_ndim=1, window=3), NDArray[np.float32])
+        assert_type(moving.move_data(x64, mom_ndim=1, window=3), NDArray[np.float64])
+
+        assert_type(
+            moving.move_data(x32, mom_ndim=1, window=3, dtype=np.float64),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_data(x64, mom_ndim=1, window=3, dtype=np.float32),
+            NDArray[np.float32],
+        )
+
+        assert_type(
+            moving.move_data(x32, mom_ndim=1, window=3, out=out64), NDArray[np.float64]
+        )
+        assert_type(
+            moving.move_data(x64, mom_ndim=1, window=3, out=out32), NDArray[np.float32]
+        )
+
+        assert_type(
+            moving.move_data(x32, mom_ndim=1, window=3, out=out64, dtype=np.float32),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_data(x64, mom_ndim=1, window=3, out=out32, dtype=np.float64),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_data(x64, mom_ndim=1, window=3, out=outAny, dtype=np.float64),
+            NDArray[Any],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(moving.move_data(xc, mom_ndim=1, window=3), NDArray[Any])
+        assert_type(
+            moving.move_data(xc, mom_ndim=1, window=3, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_data([1, 2, 3], mom_ndim=1, window=3, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_data([1, 2, 3], mom_ndim=1, window=3, dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(
+            moving.move_data([1, 2, 3], mom_ndim=1, window=3, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_data(x32, mom_ndim=1, window=3, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_data(xc, mom_ndim=1, window=3, dtype="f8"),
+            NDArray[Any],
+        )
+
+        assert_type(
+            moving.move_data([1.0, 2.0, 3.0], mom_ndim=1, window=3), NDArray[Any]
+        )
+
+        xx = xr.DataArray(x32)
+        assert_type(moving.move_data(xx, mom_ndim=1, window=3), xr.DataArray)
+
+
+def test_moving_vals() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+    outAny: NDArray[Any] = np.zeros((4,), dtype=np.float32)
+    if TYPE_CHECKING:
+        assert_type(moving.move_vals(x32, mom=3, window=3), NDArray[np.float32])
+        assert_type(moving.move_vals(x64, mom=3, window=3), NDArray[np.float64])
+
+        assert_type(
+            moving.move_vals(x32, mom=3, window=3, dtype=np.float64),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_vals(x64, mom=3, window=3, dtype=np.float32),
+            NDArray[np.float32],
+        )
+
+        assert_type(
+            moving.move_vals(x32, mom=3, window=3, out=out64), NDArray[np.float64]
+        )
+        assert_type(
+            moving.move_vals(x64, mom=3, window=3, out=out32), NDArray[np.float32]
+        )
+
+        assert_type(
+            moving.move_vals(x32, mom=3, window=3, out=out64, dtype=np.float32),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_vals(x64, mom=3, window=3, out=out32, dtype=np.float64),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_vals(x64, mom=3, window=3, out=outAny, dtype=np.float64),
+            NDArray[Any],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(moving.move_vals(xc, mom=3, window=3), NDArray[Any])
+        assert_type(
+            moving.move_vals(xc, mom=3, window=3, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_vals([1, 2, 3], mom=3, window=3, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_vals([1, 2, 3], mom=3, window=3, dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(
+            moving.move_vals([1, 2, 3], mom=3, window=3, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_vals(x32, mom=3, window=3, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_vals(xc, mom=3, window=3, dtype="f8"),
+            NDArray[Any],
+        )
+
+        assert_type(moving.move_vals([1.0, 2.0, 3.0], mom=3, window=3), NDArray[Any])
+
+        xx = xr.DataArray(x32)
+        assert_type(moving.move_vals(xx, mom=3, window=3), xr.DataArray)
+
+
+def test_moving_exp_data() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+    outAny: NDArray[Any] = np.zeros((4,), dtype=np.float32)
+    if TYPE_CHECKING:
+        assert_type(
+            moving.move_exp_data(x32, mom_ndim=1, alpha=0.2), NDArray[np.float32]
+        )
+        assert_type(
+            moving.move_exp_data(x64, mom_ndim=1, alpha=0.2), NDArray[np.float64]
+        )
+
+        assert_type(
+            moving.move_exp_data(x32, mom_ndim=1, alpha=0.2, dtype=np.float64),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_exp_data(x64, mom_ndim=1, alpha=0.2, dtype=np.float32),
+            NDArray[np.float32],
+        )
+
+        assert_type(
+            moving.move_exp_data(x32, mom_ndim=1, alpha=0.2, out=out64),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_exp_data(x64, mom_ndim=1, alpha=0.2, out=out32),
+            NDArray[np.float32],
+        )
+
+        assert_type(
+            moving.move_exp_data(
+                x32, mom_ndim=1, alpha=0.2, out=out64, dtype=np.float32
+            ),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_exp_data(
+                x64, mom_ndim=1, alpha=0.2, out=out32, dtype=np.float64
+            ),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_exp_data(
+                x64, mom_ndim=1, alpha=0.2, out=outAny, dtype=np.float64
+            ),
+            NDArray[Any],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(moving.move_exp_data(xc, mom_ndim=1, alpha=0.2), NDArray[Any])
+        assert_type(
+            moving.move_exp_data(xc, mom_ndim=1, alpha=0.2, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_exp_data([1, 2, 3], mom_ndim=1, alpha=0.2, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_exp_data([1, 2, 3], mom_ndim=1, alpha=0.2, dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(
+            moving.move_exp_data([1, 2, 3], mom_ndim=1, alpha=0.2, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_exp_data(x32, mom_ndim=1, alpha=0.2, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_exp_data(xc, mom_ndim=1, alpha=0.2, dtype="f8"),
+            NDArray[Any],
+        )
+
+        assert_type(
+            moving.move_exp_data([1.0, 2.0, 3.0], mom_ndim=1, alpha=0.2), NDArray[Any]
+        )
+
+        xx = xr.DataArray(x32)
+        assert_type(moving.move_exp_data(xx, mom_ndim=1, alpha=0.2), xr.DataArray)
+
+
+def test_moving_exp_vals() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+    outAny: NDArray[Any] = np.zeros((4,), dtype=np.float32)
+    if TYPE_CHECKING:
+        assert_type(moving.move_exp_vals(x32, mom=3, alpha=0.2), NDArray[np.float32])
+        assert_type(moving.move_exp_vals(x64, mom=3, alpha=0.2), NDArray[np.float64])
+
+        assert_type(
+            moving.move_exp_vals(x32, mom=3, alpha=0.2, dtype=np.float64),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_exp_vals(x64, mom=3, alpha=0.2, dtype=np.float32),
+            NDArray[np.float32],
+        )
+
+        assert_type(
+            moving.move_exp_vals(x32, mom=3, alpha=0.2, out=out64), NDArray[np.float64]
+        )
+        assert_type(
+            moving.move_exp_vals(x64, mom=3, alpha=0.2, out=out32), NDArray[np.float32]
+        )
+
+        assert_type(
+            moving.move_exp_vals(x32, mom=3, alpha=0.2, out=out64, dtype=np.float32),
+            NDArray[np.float64],
+        )
+        assert_type(
+            moving.move_exp_vals(x64, mom=3, alpha=0.2, out=out32, dtype=np.float64),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_exp_vals(x64, mom=3, alpha=0.2, out=outAny, dtype=np.float64),
+            NDArray[Any],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(moving.move_exp_vals(xc, mom=3, alpha=0.2), NDArray[Any])
+        assert_type(
+            moving.move_exp_vals(xc, mom=3, alpha=0.2, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_exp_vals([1, 2, 3], mom=3, alpha=0.2, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            moving.move_exp_vals([1, 2, 3], mom=3, alpha=0.2, dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(
+            moving.move_exp_vals([1, 2, 3], mom=3, alpha=0.2, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_exp_vals(x32, mom=3, alpha=0.2, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            moving.move_exp_vals(xc, mom=3, alpha=0.2, dtype="f8"),
+            NDArray[Any],
+        )
+
+        assert_type(
+            moving.move_exp_vals([1.0, 2.0, 3.0], mom=3, alpha=0.2), NDArray[Any]
+        )
+
+        xx = xr.DataArray(x32)
+        assert_type(moving.move_exp_vals(xx, mom=3, alpha=0.2), xr.DataArray)
