@@ -14,41 +14,41 @@ if TYPE_CHECKING:
 
     from ..typing import FloatT
 
-_PARALLEL = True  # Auto generated from moving_cov.py
+_PARALLEL = False
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample),(sample),(sample),(mom0, mom1),(),() -> (sample, mom0, mom1)",
+    "(mom0, mom1),(),(),(sample),(sample),(sample) -> (sample, mom0, mom1)",
     [
         (
-            nb.float32[:],
-            nb.float32[:],
-            nb.float32[:],
             nb.float32[:, :],
             nb.int64,
             nb.int64,
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
             nb.float32[:, :, :],
         ),
         (
-            nb.float64[:],
-            nb.float64[:],
-            nb.float64[:],
             nb.float64[:, :],
             nb.int64,
             nb.int64,
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
             nb.float64[:, :, :],
         ),
     ],
     writable=None,
 )
-def move_vals(
-    x0: NDArray[FloatT],
-    x1: NDArray[FloatT],
-    w: NDArray[FloatT],
+def rolling_vals(
     data_tmp: NDArray[FloatT],
     window: int,
     min_count: int,
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    x1: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     nsamp = len(x0)
@@ -99,30 +99,30 @@ def move_vals(
 
 
 @_vectorize(
-    "(sample, mom0, mom1),(mom0, mom1),(),() -> (sample, mom0, mom1)",
+    "(mom0, mom1),(),(),(sample, mom0, mom1) -> (sample, mom0, mom1)",
     [
         (
-            nb.float32[:, :, :],
             nb.float32[:, :],
             nb.int64,
             nb.int64,
             nb.float32[:, :, :],
+            nb.float32[:, :, :],
         ),
         (
-            nb.float64[:, :, :],
             nb.float64[:, :],
             nb.int64,
             nb.int64,
+            nb.float64[:, :, :],
             nb.float64[:, :, :],
         ),
     ],
     writable=None,
 )
-def move_data(
-    data: NDArray[FloatT],
+def rolling_data(
     data_tmp: NDArray[FloatT],
     window: int,
     min_count: int,
+    data: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     nsamp = data.shape[0]
@@ -173,39 +173,39 @@ def move_data(
 
 
 @_vectorize(
-    "(sample),(sample),(sample),(mom0,mom1),(sample),(),() -> (sample, mom0,mom1)",
+    "(mom0,mom1),(sample),(),(),(sample),(sample),(sample) -> (sample, mom0,mom1)",
     [
         (
-            nb.float32[:],
-            nb.float32[:],
-            nb.float32[:],
             nb.float32[:, :],
             nb.float32[:],
             nb.boolean,
             nb.int64,
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
             nb.float32[:, :, :],
         ),
         (
-            nb.float64[:],
-            nb.float64[:],
-            nb.float64[:],
             nb.float64[:, :],
             nb.float64[:],
             nb.boolean,
             nb.int64,
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
             nb.float64[:, :, :],
         ),
     ],
     writable=None,
 )
-def move_exp_vals(
-    x0: NDArray[FloatT],
-    x1: NDArray[FloatT],
-    w: NDArray[FloatT],
+def rolling_exp_vals(
     data_tmp: NDArray[FloatT],
     alpha: NDArray[FloatT],
     adjust: bool,
     min_count: int,
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    x1: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     """Exponential moving accumulation of moments array"""
@@ -241,33 +241,33 @@ def move_exp_vals(
 
 
 @_vectorize(
-    "(sample,mom0,mom1),(mom0,mom1),(sample),(),() -> (sample, mom0,mom1)",
+    "(mom0,mom1),(sample),(),(),(sample,mom0,mom1) -> (sample, mom0,mom1)",
     [
         (
-            nb.float32[:, :, :],
             nb.float32[:, :],
             nb.float32[:],
             nb.boolean,
             nb.int64,
             nb.float32[:, :, :],
+            nb.float32[:, :, :],
         ),
         (
-            nb.float64[:, :, :],
             nb.float64[:, :],
             nb.float64[:],
             nb.boolean,
             nb.int64,
             nb.float64[:, :, :],
+            nb.float64[:, :, :],
         ),
     ],
     writable=None,
 )
-def move_exp_data(
-    data: NDArray[FloatT],
+def rolling_exp_data(
     data_tmp: NDArray[FloatT],
     alpha: NDArray[FloatT],
     adjust: bool,
     min_count: int,
+    data: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     """Exponential moving accumulation of moments array"""

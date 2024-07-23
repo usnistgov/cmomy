@@ -19,33 +19,33 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample),(sample),(mom),(),() -> (sample, mom)",
+    "(mom),(),(),(sample),(sample) -> (sample, mom)",
     [
         (
             nb.float32[:],
-            nb.float32[:],
-            nb.float32[:],
             nb.int64,
             nb.int64,
+            nb.float32[:],
+            nb.float32[:],
             nb.float32[:, :],
         ),
         (
             nb.float64[:],
-            nb.float64[:],
-            nb.float64[:],
             nb.int64,
             nb.int64,
+            nb.float64[:],
+            nb.float64[:],
             nb.float64[:, :],
         ),
     ],
     writable=None,
 )
-def move_vals(
-    x: NDArray[FloatT],
-    w: NDArray[FloatT],
+def rolling_vals(
     data_tmp: NDArray[FloatT],
     window: int,
     min_count: int,
+    x: NDArray[FloatT],
+    w: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     nsamp = len(x)
@@ -96,30 +96,30 @@ def move_vals(
 
 
 @_vectorize(
-    "(sample,mom),(mom),(),() -> (sample, mom)",
+    "(mom),(),(),(sample,mom) -> (sample, mom)",
     [
         (
-            nb.float32[:, :],
             nb.float32[:],
             nb.int64,
             nb.int64,
             nb.float32[:, :],
+            nb.float32[:, :],
         ),
         (
-            nb.float64[:, :],
             nb.float64[:],
             nb.int64,
             nb.int64,
+            nb.float64[:, :],
             nb.float64[:, :],
         ),
     ],
     writable=None,
 )
-def move_data(
-    data: NDArray[FloatT],
+def rolling_data(
     data_tmp: NDArray[FloatT],
     window: int,
     min_count: int,
+    data: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     nsamp = data.shape[0]
@@ -171,36 +171,36 @@ def move_data(
 
 # * Exponential moving average
 @_vectorize(
-    "(sample),(sample),(mom),(sample),(),() -> (sample, mom)",
+    "(mom),(sample),(),(),(sample),(sample) -> (sample, mom)",
     [
         (
             nb.float32[:],
             nb.float32[:],
-            nb.float32[:],
-            nb.float32[:],
             nb.boolean,
             nb.int64,
+            nb.float32[:],
+            nb.float32[:],
             nb.float32[:, :],
         ),
         (
             nb.float64[:],
             nb.float64[:],
-            nb.float64[:],
-            nb.float64[:],
             nb.boolean,
             nb.int64,
+            nb.float64[:],
+            nb.float64[:],
             nb.float64[:, :],
         ),
     ],
     writable=None,
 )
-def move_exp_vals(
-    x: NDArray[FloatT],
-    w: NDArray[FloatT],
+def rolling_exp_vals(
     data_tmp: NDArray[FloatT],
     alpha: NDArray[FloatT],
     adjust: bool,
     min_count: int,
+    x: NDArray[FloatT],
+    w: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     """Exponential moving accumulation of moments array"""
@@ -236,33 +236,33 @@ def move_exp_vals(
 
 
 @_vectorize(
-    "(sample,mom),(mom),(sample),(),() -> (sample, mom)",
+    "(mom),(sample),(),(),(sample,mom) -> (sample, mom)",
     [
         (
-            nb.float32[:, :],
             nb.float32[:],
             nb.float32[:],
             nb.boolean,
             nb.int64,
+            nb.float32[:, :],
             nb.float32[:, :],
         ),
         (
-            nb.float64[:, :],
             nb.float64[:],
             nb.float64[:],
             nb.boolean,
             nb.int64,
+            nb.float64[:, :],
             nb.float64[:, :],
         ),
     ],
     writable=None,
 )
-def move_exp_data(
-    data: NDArray[FloatT],
+def rolling_exp_data(
     data_tmp: NDArray[FloatT],
     alpha: NDArray[FloatT],
     adjust: bool,
     min_count: int,
+    data: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     """Exponential moving accumulation of moments array"""
@@ -317,7 +317,7 @@ if not _PARALLEL:
         ],
         writable=None,
     )
-    def move_exp_var_bias_correction(
+    def rolling_exp_var_bias_correction(
         weight: NDArray[FloatT],
         alpha: NDArray[FloatT],
         adjust: bool,

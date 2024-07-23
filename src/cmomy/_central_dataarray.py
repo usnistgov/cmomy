@@ -951,7 +951,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         def func(
             _out: NDArrayAny, x0: NDArrayAny, w: NDArrayAny, *x1: NDArrayAny
         ) -> NDArrayAny:
-            self._pusher(parallel).val(x0, *x1, w, self._data)
+            self._pusher(parallel).val(self._data, x0, w, *x1)
             return self._data
 
         weight = 1.0 if weight is None else weight
@@ -995,7 +995,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         def func(
             _out: NDArrayAny, x0: NDArrayAny, w: NDArrayAny, *x1: NDArrayAny
         ) -> NDArrayAny:
-            self._pusher(parallel).vals(x0, *x1, w, self._data)
+            self._pusher(parallel).vals(self._data, x0, w, *x1)
             return self._data
 
         _ = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]

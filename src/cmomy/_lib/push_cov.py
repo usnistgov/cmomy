@@ -21,33 +21,33 @@ _decorator = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_decorator(
-    "(),(),(),(mom0, mom1)",
+    "(mom0, mom1),(),(),()",
     [
-        (nb.float32, nb.float32, nb.float32, nb.float32[:, :]),
-        (nb.float64, nb.float64, nb.float64, nb.float64[:, :]),
+        (nb.float32[:, :], nb.float32, nb.float32, nb.float32),
+        (nb.float64[:, :], nb.float64, nb.float64, nb.float64),
     ],
 )
 def push_val(
-    x0: NDGeneric[FloatT],
-    x1: NDGeneric[FloatT],
-    w: NDGeneric[FloatT],
     out: NDArray[FloatT],
+    x0: NDGeneric[FloatT],
+    w: NDGeneric[FloatT],
+    x1: NDGeneric[FloatT],
 ) -> None:
     _push.push_val(x0, x1, w, out)
 
 
 @_decorator(
-    "(sample),(sample),(sample),(mom0, mom1)",
+    "(mom0, mom1),(sample),(sample),(sample)",
     [
-        (nb.float32[:], nb.float32[:], nb.float32[:], nb.float32[:, :]),
-        (nb.float64[:], nb.float64[:], nb.float64[:], nb.float64[:, :]),
+        (nb.float32[:, :], nb.float32[:], nb.float32[:], nb.float32[:]),
+        (nb.float64[:, :], nb.float64[:], nb.float64[:], nb.float64[:]),
     ],
 )
 def reduce_vals(
-    x0: NDArray[FloatT],
-    x1: NDArray[FloatT],
-    w: NDArray[FloatT],
     out: NDArray[FloatT],
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    x1: NDArray[FloatT],
 ) -> None:
     for i in range(len(x0)):
         _push.push_val(x0[i], x1[i], w[i], out)

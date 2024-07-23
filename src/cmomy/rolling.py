@@ -244,7 +244,7 @@ def _optional_zero_missing_weight(
 
 # ** Data
 @overload
-def move_data(  # type: ignore[overload-overlap]
+def rolling_data(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     *,
     window: int,
@@ -261,7 +261,7 @@ def move_data(  # type: ignore[overload-overlap]
 ) -> xr.DataArray: ...
 # Array
 @overload
-def move_data(
+def rolling_data(
     data: ArrayLikeArg[FloatT],
     *,
     window: int,
@@ -278,7 +278,7 @@ def move_data(
 ) -> NDArray[FloatT]: ...
 # out
 @overload
-def move_data(
+def rolling_data(
     data: Any,
     *,
     window: int,
@@ -295,7 +295,7 @@ def move_data(
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
-def move_data(
+def rolling_data(
     data: Any,
     *,
     window: int,
@@ -312,7 +312,7 @@ def move_data(
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
-def move_data(
+def rolling_data(
     data: Any,
     *,
     window: int,
@@ -330,7 +330,7 @@ def move_data(
 
 
 @docfiller.decorate
-def move_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     data: ArrayLike | xr.DataArray,
     *,
     window: int,
@@ -370,7 +370,7 @@ def move_data(  # pyright: ignore[reportOverlappingOverload]
     if isinstance(data, xr.DataArray):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         return data.copy(
-            data=move_data(
+            data=rolling_data(
                 data.to_numpy(),
                 window=window,
                 axis=axis,
@@ -389,31 +389,35 @@ def move_data(  # pyright: ignore[reportOverlappingOverload]
 
     # special to support multiple reduction dimensions...
     data = np.asarray(data, dtype=dtype)
-    axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim, "move_data")
+    axis = normalize_axis_index(
+        validate_axis(axis), data.ndim, mom_ndim, "rolling_data"
+    )
 
     shift = (-window // 2) + 1 if center else None
     if shift is not None:
         data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
 
-    axes = axes_data_reduction(
+    axes = [
         # add in data_tmp, window, count
         tuple(range(-mom_ndim, 0)),
         (),
         (),
-        mom_ndim=mom_ndim,
-        axis=axis,
-        out_has_axis=True,
-    )
+        *axes_data_reduction(
+            mom_ndim=mom_ndim,
+            axis=axis,
+            out_has_axis=True,
+        ),
+    ]
 
-    from ._lib.factory import factory_move_data
+    from ._lib.factory import factory_rolling_data
 
     min_periods = window if min_periods is None else min_periods
     data_tmp = np.zeros(data.shape[-mom_ndim:], dtype=dtype)
 
-    out = factory_move_data(
+    out = factory_rolling_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )(data, data_tmp, window, min_periods, out=out, axes=axes)
+    )(data_tmp, window, min_periods, data, out=out, axes=axes)
 
     if shift is not None:
         valid = [slice(None)] * data.ndim
@@ -425,7 +429,7 @@ def move_data(  # pyright: ignore[reportOverlappingOverload]
 
 # * Vals
 @overload
-def move_vals(  # type: ignore[overload-overlap]
+def rolling_vals(  # type: ignore[overload-overlap]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -445,7 +449,7 @@ def move_vals(  # type: ignore[overload-overlap]
 ) -> xr.DataArray: ...
 # array
 @overload
-def move_vals(
+def rolling_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
     mom: Moments,
@@ -465,7 +469,7 @@ def move_vals(
 ) -> NDArray[FloatT]: ...
 # out
 @overload
-def move_vals(
+def rolling_vals(
     x: Any,
     *y: ArrayLike,
     mom: Moments,
@@ -485,7 +489,7 @@ def move_vals(
 ) -> NDArray[FloatT]: ...
 # out
 @overload
-def move_vals(
+def rolling_vals(
     x: Any,
     *y: ArrayLike,
     mom: Moments,
@@ -505,7 +509,7 @@ def move_vals(
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
-def move_vals(
+def rolling_vals(
     x: Any,
     *y: ArrayLike,
     mom: Moments,
@@ -526,7 +530,7 @@ def move_vals(
 
 
 @docfiller.decorate
-def move_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     x: ArrayLike | xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -590,7 +594,7 @@ def move_vals(  # pyright: ignore[reportOverlappingOverload]
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
+        input_core_dims, args = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -603,10 +607,8 @@ def move_vals(  # pyright: ignore[reportOverlappingOverload]
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
         return xr.apply_ufunc(  # type: ignore[no-any-return]
-            _move_vals,
-            x0,
-            w,
-            *x1,
+            _rolling_vals,
+            *args,
             input_core_dims=input_core_dims,
             output_core_dims=[[input_core_dims[0][0], *mom_dims_strict]],
             kwargs={
@@ -631,7 +633,7 @@ def move_vals(  # pyright: ignore[reportOverlappingOverload]
         dtype=dtype,
     )
 
-    return _move_vals(
+    return _rolling_vals(
         *args,
         mom=mom,
         mom_ndim=mom_ndim,
@@ -644,7 +646,7 @@ def move_vals(  # pyright: ignore[reportOverlappingOverload]
     )
 
 
-def _move_vals(
+def _rolling_vals(
     x: NDArray[FloatT],
     w: NDArray[FloatT],
     *y: NDArray[FloatT],
@@ -666,11 +668,11 @@ def _move_vals(
     min_periods = window if min_periods is None else min_periods
     data_tmp = np.zeros(mom_to_mom_shape(mom), dtype=x.dtype)
 
-    from ._lib.factory import factory_move_vals
+    from ._lib.factory import factory_rolling_vals
 
-    out = factory_move_vals(  # type: ignore[call-arg, misc]
+    out = factory_rolling_vals(
         mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x.size * mom_ndim)
-    )(x, *y, w, data_tmp, window, min_periods, out=out)  # type: ignore[arg-type]
+    )(data_tmp, window, min_periods, x, w, *y, out=out)
 
     if shift is not None:
         valid = [slice(None)] * out.ndim
@@ -683,7 +685,7 @@ def _move_vals(
 # * Move Exponential
 # ** Data
 @overload
-def move_exp_data(  # type: ignore[overload-overlap]
+def rolling_exp_data(  # type: ignore[overload-overlap]
     data: xr.DataArray,
     alpha: ArrayLike,
     *,
@@ -699,7 +701,7 @@ def move_exp_data(  # type: ignore[overload-overlap]
 ) -> xr.DataArray: ...
 # array
 @overload
-def move_exp_data(
+def rolling_exp_data(
     data: ArrayLikeArg[FloatT],
     alpha: ArrayLike,
     *,
@@ -715,7 +717,7 @@ def move_exp_data(
 ) -> NDArray[FloatT]: ...
 # out
 @overload
-def move_exp_data(
+def rolling_exp_data(
     data: Any,
     alpha: ArrayLike,
     *,
@@ -731,7 +733,7 @@ def move_exp_data(
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
-def move_exp_data(
+def rolling_exp_data(
     data: Any,
     alpha: ArrayLike,
     *,
@@ -747,7 +749,7 @@ def move_exp_data(
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
-def move_exp_data(
+def rolling_exp_data(
     data: Any,
     alpha: ArrayLike,
     *,
@@ -764,7 +766,7 @@ def move_exp_data(
 
 
 @docfiller.decorate
-def move_exp_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
     data: ArrayLike | xr.DataArray,
     alpha: ArrayLike,
     *,
@@ -811,7 +813,7 @@ def move_exp_data(  # pyright: ignore[reportOverlappingOverload]
     if isinstance(data, xr.DataArray):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         return data.copy(
-            data=move_exp_data(
+            data=rolling_exp_data(
                 data.to_numpy(),
                 alpha=alpha,
                 axis=axis,
@@ -829,7 +831,9 @@ def move_exp_data(  # pyright: ignore[reportOverlappingOverload]
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     data = np.asarray(data, dtype=dtype)
-    axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim, "move_data")
+    axis = normalize_axis_index(
+        validate_axis(axis), data.ndim, mom_ndim, "rolling_data"
+    )
 
     alpha = np.asarray(alpha, dtype=dtype)
     if alpha.ndim == 0:
@@ -841,32 +845,34 @@ def move_exp_data(  # pyright: ignore[reportOverlappingOverload]
         alpha_axis = axis
 
     # axes for reduction
-    axes = axes_data_reduction(
+    axes = [
         # add in data_tmp, alpha, adjust, min_periods
         tuple(range(-mom_ndim, 0)),
         (alpha_axis,),
         (),
         (),
-        mom_ndim=mom_ndim,
-        axis=axis,
-        out_has_axis=True,
-    )
+        *axes_data_reduction(
+            mom_ndim=mom_ndim,
+            axis=axis,
+            out_has_axis=True,
+        ),
+    ]
 
-    from ._lib.factory import factory_move_exp_data
+    from ._lib.factory import factory_rolling_exp_data
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
     data_tmp = np.zeros(data.shape[-mom_ndim:], dtype=dtype)
-    out = factory_move_exp_data(
+    out = factory_rolling_exp_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )(data, data_tmp, alpha, adjust, min_periods, out=out, axes=axes)
+    )(data_tmp, alpha, adjust, min_periods, data, out=out, axes=axes)
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)
 
 
 # ** Vals
 @overload
-def move_exp_vals(  # type: ignore[overload-overlap]
+def rolling_exp_vals(  # type: ignore[overload-overlap]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     alpha: ArrayLike | xr.DataArray,
@@ -886,7 +892,7 @@ def move_exp_vals(  # type: ignore[overload-overlap]
 ) -> xr.DataArray: ...
 # Array
 @overload
-def move_exp_vals(
+def rolling_exp_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
     alpha: ArrayLike,
@@ -906,7 +912,7 @@ def move_exp_vals(
 ) -> NDArray[FloatT]: ...
 # out
 @overload
-def move_exp_vals(
+def rolling_exp_vals(
     x: Any,
     *y: ArrayLike,
     alpha: ArrayLike,
@@ -926,7 +932,7 @@ def move_exp_vals(
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
-def move_exp_vals(
+def rolling_exp_vals(
     x: Any,
     *y: ArrayLike,
     alpha: ArrayLike,
@@ -946,7 +952,7 @@ def move_exp_vals(
 ) -> NDArray[FloatT]: ...
 # Fallback
 @overload
-def move_exp_vals(
+def rolling_exp_vals(
     x: Any,
     *y: ArrayLike,
     alpha: ArrayLike,
@@ -967,7 +973,7 @@ def move_exp_vals(
 
 
 @docfiller.decorate
-def move_exp_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
     x: ArrayLike | xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     alpha: ArrayLike | xr.DataArray,
@@ -1033,7 +1039,7 @@ def move_exp_vals(  # pyright: ignore[reportOverlappingOverload]
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction(
+        input_core_dims, (x, weight, alpha, *y) = xprepare_values_for_reduction(  # type: ignore[assignment]
             x,
             weight,
             alpha,
@@ -1047,8 +1053,11 @@ def move_exp_vals(  # pyright: ignore[reportOverlappingOverload]
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
         return xr.apply_ufunc(  # type: ignore[no-any-return]
-            _move_exp_vals,
-            *args,
+            _rolling_exp_vals,
+            x,
+            weight,
+            alpha,
+            *y,
             input_core_dims=input_core_dims,
             output_core_dims=[[input_core_dims[0][0], *mom_dims_strict]],
             kwargs={
@@ -1073,7 +1082,7 @@ def move_exp_vals(  # pyright: ignore[reportOverlappingOverload]
         dtype=dtype,
     )
 
-    return _move_exp_vals(
+    return _rolling_exp_vals(
         *args,
         mom=mom,
         mom_ndim=mom_ndim,
@@ -1085,7 +1094,7 @@ def move_exp_vals(  # pyright: ignore[reportOverlappingOverload]
     )
 
 
-def _move_exp_vals(
+def _rolling_exp_vals(
     x: NDArray[FloatT],
     w: NDArray[FloatT],
     alpha: NDArray[FloatT],
@@ -1100,11 +1109,11 @@ def _move_exp_vals(
 ) -> NDArray[FloatT]:
     data_tmp = np.zeros(mom_to_mom_shape(mom), dtype=x.dtype)
 
-    from ._lib.factory import factory_move_exp_vals
+    from ._lib.factory import factory_rolling_exp_vals
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
-    out = factory_move_exp_vals(  # type: ignore[call-arg, misc]
+    out = factory_rolling_exp_vals(
         mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x.size * mom_ndim)
-    )(x, *y, w, data_tmp, alpha, adjust, min_periods, out=out)  # type: ignore[arg-type]
+    )(data_tmp, alpha, adjust, min_periods, x, w, *y, out=out)
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)  # pyright: ignore[reportReturnType, reportArgumentType]

@@ -577,9 +577,10 @@ def resample_data(
     )
 
     # include inner core dimensions for freq
-    axes = axes_data_reduction(
-        (-2, -1), mom_ndim=mom_ndim, axis=axis, out_has_axis=True
-    )
+    axes = [
+        (-2, -1),
+        *axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True),
+    ]
 
     _check_freq(freq, data.shape[axis])
 
@@ -587,7 +588,7 @@ def resample_data(
 
     return factory_resample_data(
         mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
-    )(data, freq, out=out, axes=axes)
+    )(freq, data, out=out, axes=axes)
 
 
 # * Resample vals
@@ -620,10 +621,10 @@ def _resample_vals(
 
     from ._lib.factory import factory_resample_vals
 
-    factory_resample_vals(  # type: ignore[call-arg]
+    factory_resample_vals(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
-    )(x0, *x1, w, freq, out)  # type: ignore[arg-type] # pyright: ignore[reportCallIssue]
+    )(out, freq, x0, w, *x1)
 
     return out
 
@@ -1116,13 +1117,13 @@ def jackknife_data(
         mom_ndim=mom_ndim, axis=axis, out_has_axis=True
     )
     # add axes for data_reduced
-    axes = [axes_data, axes_data[1:], axes_mom]
+    axes = [axes_data[1:], axes_data, axes_mom]
 
     from ._lib.factory import factory_jackknife_data
 
     return factory_jackknife_data(
         mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
-    )(data, data_reduced, out=out, axes=axes)
+    )(data_reduced, data, out=out, axes=axes)
 
 
 # * Jackknife vals
@@ -1142,7 +1143,7 @@ def _jackknife_vals(
         mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x0.size * mom_ndim)
     )
 
-    return _jackknife(x0, *x1, w, data_reduced, out)  # type: ignore[call-arg]
+    return _jackknife(data_reduced, x0, w, *x1, out=out)
 
 
 # ** overloads

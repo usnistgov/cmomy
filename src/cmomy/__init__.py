@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
     # submodules
-    from . import convert, moving, random, reduction, resample, utils  # noqa: TCH004
+    from . import convert, random, reduction, resample, rolling, utils  # noqa: TCH004
     from ._central_dataarray import xCentralMoments  # noqa: TCH004
     from ._central_numpy import CentralMoments  # noqa: TCH004
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TCH004
@@ -34,7 +34,7 @@ else:
             "reduction",
             "resample",
             "convert",
-            "moving",
+            "rolling",
             "utils",
         ],
         submod_attrs={
@@ -72,7 +72,6 @@ __all__ = [
     "concat",
     "convert",
     "indices_to_freq",
-    "moving",
     "random",
     "random_freq",
     "random_indices",
@@ -84,6 +83,7 @@ __all__ = [
     "resample",
     "resample_data",
     "resample_vals",
+    "rolling",
     "utils",
     "xCentralMoments",
 ]

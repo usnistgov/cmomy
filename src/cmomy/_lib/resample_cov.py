@@ -20,15 +20,17 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample,mom0,mom1),(replicate,sample) -> (replicate,mom0,mom1)",
+    "(replicate,sample),(sample,mom0,mom1)-> (replicate,mom0,mom1)",
     [
-        (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
-        (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
+        (nb.float32[:, :], nb.float32[:, :, :], nb.float32[:, :, :]),
+        (nb.float64[:, :], nb.float64[:, :, :], nb.float64[:, :, :]),
     ],
     writable=None,
 )
 def resample_data_fromzero(
-    data: NDArray[FloatT], freq: NDArray[FloatT], out: NDArray[FloatT]
+    freq: NDArray[FloatT],
+    data: NDArray[FloatT],
+    out: NDArray[FloatT],
 ) -> None:
     nrep, nsamp = freq.shape
 
@@ -56,30 +58,30 @@ def resample_data_fromzero(
 
 
 @_vectorize(
-    "(sample),(sample),(sample),(replicate,sample),(replicate,mom0,mom1)",
+    "(replicate,mom0,mom1),(replicate,sample),(sample),(sample),(sample)",
     [
         (
-            nb.float32[:],
-            nb.float32[:],
-            nb.float32[:],
-            nb.float32[:, :],
             nb.float32[:, :, :],
+            nb.float32[:, :],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
         ),
         (
-            nb.float64[:],
-            nb.float64[:],
-            nb.float64[:],
-            nb.float64[:, :],
             nb.float64[:, :, :],
+            nb.float64[:, :],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
         ),
     ],
 )
 def resample_vals(
-    x0: NDArray[FloatT],
-    x1: NDArray[FloatT],
-    w: NDArray[FloatT],
-    freq: NDArray[FloatT],
     out: NDArray[FloatT],
+    freq: NDArray[FloatT],
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    x1: NDArray[FloatT],
 ) -> None:
     nrep, nsamp = freq.shape
 
@@ -101,15 +103,15 @@ def resample_vals(
 # Instead of out[i, ...] = reduce(data[[0, 1, ..., i-1, i+1, ...], ...]) (which is order n^2)
 # we use out[i, ...] = reduce(data[:, ...]) - data[i, ...]  (which is order n or 2n)
 @_vectorize(
-    "(sample,mom0,mom1),(mom0,mom1) -> (sample,mom0,mom1)",
+    "(mom0,mom1),(sample,mom0,mom1) -> (sample,mom0,mom1)",
     [
-        (nb.float32[:, :, :], nb.float32[:, :], nb.float32[:, :, :]),
-        (nb.float64[:, :, :], nb.float64[:, :], nb.float64[:, :, :]),
+        (nb.float32[:, :], nb.float32[:, :, :], nb.float32[:, :, :]),
+        (nb.float64[:, :], nb.float64[:, :, :], nb.float64[:, :, :]),
     ],
     writable=None,
 )
 def jackknife_data_fromzero(
-    data: NDArray[FloatT], data_reduced: NDArray[FloatT], out: NDArray[FloatT]
+    data_reduced: NDArray[FloatT], data: NDArray[FloatT], out: NDArray[FloatT]
 ) -> None:
     assert data.shape[1:] == data_reduced.shape
 
@@ -122,30 +124,30 @@ def jackknife_data_fromzero(
 
 
 @_vectorize(
-    "(sample),(sample),(sample),(mom0,mom1) -> (sample,mom0,mom1)",
+    "(mom0,mom1),(sample),(sample),(sample) -> (sample,mom0,mom1)",
     [
         (
-            nb.float32[:],
-            nb.float32[:],
-            nb.float32[:],
             nb.float32[:, :],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
             nb.float32[:, :, :],
         ),
         (
-            nb.float64[:],
-            nb.float64[:],
-            nb.float64[:],
             nb.float64[:, :],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
             nb.float64[:, :, :],
         ),
     ],
     writable=None,
 )
 def jackknife_vals_fromzero(
-    x0: NDArray[FloatT],
-    x1: NDArray[FloatT],
-    w: NDArray[FloatT],
     data_reduced: NDArray[FloatT],
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    x1: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
     nsamp = len(x0)

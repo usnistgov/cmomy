@@ -42,8 +42,8 @@ if __name__ == "__main__":
         "resample_cov",
         "indexed",
         "indexed_cov",
-        "moving",
-        "moving_cov",
+        "rolling",
+        "rolling_cov",
     ]
 
     for name in names:

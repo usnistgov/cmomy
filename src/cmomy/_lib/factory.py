@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import TYPE_CHECKING, NamedTuple, cast, overload
+from typing import TYPE_CHECKING, NamedTuple, cast
 
 from numpy.typing import NDArray
 
@@ -11,7 +11,7 @@ from .utils import supports_parallel
 
 if TYPE_CHECKING:
     from types import ModuleType
-    from typing import Any, Callable, Literal, Protocol
+    from typing import Any, Callable, Protocol
 
     from numpy.typing import NDArray
 
@@ -22,31 +22,20 @@ if TYPE_CHECKING:
     class ResampleVals(Protocol):
         def __call__(
             self,
+            out: NDArray[FloatT],
+            freq: NDArrayInt,
             x: NDArray[FloatT],
             w: NDArray[FloatT],
-            freq: NDArrayInt,
-            out: NDArray[FloatT],
             /,
-            **kwargs: Any,
-        ) -> tuple[()]: ...
-
-    class ResampleValsCov(Protocol):
-        def __call__(
-            self,
-            x0: NDArray[FloatT],
-            x1: NDArray[FloatT],
-            w: NDArray[FloatT],
-            freq: NDArrayInt,
-            out: NDArray[FloatT],
-            /,
+            *y: NDArray[FloatT],
             **kwargs: Any,
         ) -> tuple[()]: ...
 
     class ResampleData(Protocol):
         def __call__(
             self,
-            data: NDArray[FloatT],
             freq: NDArrayInt,
+            data: NDArray[FloatT],
             /,
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
@@ -56,22 +45,11 @@ if TYPE_CHECKING:
     class JackknifeVals(Protocol):
         def __call__(
             self,
+            data_reduced: NDArray[FloatT],
             x: NDArray[FloatT],
             w: NDArray[FloatT],
-            data_reduced: NDArray[FloatT],
             /,
-            out: NDArray[FloatT] | None = None,
-            **kwargs: Any,
-        ) -> NDArray[FloatT]: ...
-
-    class JackknifeValsCov(Protocol):
-        def __call__(
-            self,
-            x0: NDArray[FloatT],
-            x1: NDArray[FloatT],
-            w: NDArray[FloatT],
-            data_reduced: NDArray[FloatT],
-            /,
+            *y: NDArray[FloatT],
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
@@ -79,8 +57,8 @@ if TYPE_CHECKING:
     class JackknifeData(Protocol):
         def __call__(
             self,
-            data: NDArray[FloatT],
             data_reduced: NDArray[FloatT],
+            data: NDArray[FloatT],
             /,
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
@@ -90,21 +68,11 @@ if TYPE_CHECKING:
     class ReduceVals(Protocol):
         def __call__(
             self,
+            out: NDArray[FloatT],
             x: NDArray[FloatT],
             w: NDArray[FloatT],
-            out: NDArray[FloatT],
             /,
-            **kwargs: Any,
-        ) -> tuple[()]: ...
-
-    class ReduceValsCov(Protocol):
-        def __call__(
-            self,
-            x0: NDArray[FloatT],
-            x1: NDArray[FloatT],
-            w: NDArray[FloatT],
-            out: NDArray[FloatT],
-            /,
+            *y: NDArray[FloatT],
             **kwargs: Any,
         ) -> tuple[()]: ...
 
@@ -152,83 +120,56 @@ if TYPE_CHECKING:
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
-    # moving
-    class MoveVals(Protocol):
+    # Rolling
+    class RollingVals(Protocol):
         def __call__(
             self,
+            data_tmp: NDArray[FloatT],
+            window: int,
+            min_count: int,
             x: NDArray[FloatT],
             w: NDArray[FloatT],
-            data_tmp: NDArray[FloatT],
-            window: int,
-            min_count: int,
             /,
+            *y: NDArray[FloatT],
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
-    class MoveValsCov(Protocol):
+    class RollingData(Protocol):
         def __call__(
             self,
-            x0: NDArray[FloatT],
-            x1: NDArray[FloatT],
-            w: NDArray[FloatT],
             data_tmp: NDArray[FloatT],
             window: int,
             min_count: int,
-            /,
-            out: NDArray[FloatT] | None = None,
-            **kwargs: Any,
-        ) -> NDArray[FloatT]: ...
-
-    class MoveData(Protocol):
-        def __call__(
-            self,
             data: NDArray[FloatT],
-            data_tmp: NDArray[FloatT],
-            window: int,
-            min_count: int,
             /,
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
-    class MoveExpVals(Protocol):
+    class RollingExpVals(Protocol):
         def __call__(
             self,
+            data_tmp: NDArray[FloatT],
+            alpha: NDArray[FloatT],
+            adjust: bool,
+            min_count: int,
             x: NDArray[FloatT],
             w: NDArray[FloatT],
-            data_tmp: NDArray[FloatT],
-            alpha: NDArray[FloatT],
-            adjust: bool,
-            min_count: int,
             /,
+            *y: NDArray[FloatT],
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
-    class MoveExpValsCov(Protocol):
+    class RollingExpData(Protocol):
         def __call__(
             self,
-            x0: NDArray[FloatT],
-            x1: NDArray[FloatT],
-            w: NDArray[FloatT],
             data_tmp: NDArray[FloatT],
             alpha: NDArray[FloatT],
             adjust: bool,
             min_count: int,
-            /,
-            out: NDArray[FloatT] | None = None,
-            **kwargs: Any,
-        ) -> NDArray[FloatT]: ...
-
-    class MoveExpData(Protocol):
-        def __call__(
-            self,
             data: NDArray[FloatT],
-            data_tmp: NDArray[FloatT],
-            alpha: NDArray[FloatT],
-            adjust: bool,
-            min_count: int,
             /,
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
@@ -268,22 +209,10 @@ def factory_pusher(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Pusher:
 
 
 # * Resample
-@overload
-def factory_resample_vals(
-    mom_ndim: Literal[1] = ...,
-    parallel: bool = ...,
-) -> ResampleVals: ...
-@overload
-def factory_resample_vals(
-    mom_ndim: Literal[2],
-    parallel: bool = ...,
-) -> ResampleValsCov: ...
-
-
 @lru_cache
 def factory_resample_vals(
     mom_ndim: Mom_NDim = 1, parallel: bool = True
-) -> ResampleVals | ResampleValsCov:
+) -> ResampleVals:
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
@@ -297,7 +226,7 @@ def factory_resample_vals(
         from .resample_cov_parallel import resample_vals as _resample_cov
     else:
         from .resample_cov import resample_vals as _resample_cov
-    return cast("ResampleValsCov", _resample_cov)
+    return cast("ResampleVals", _resample_cov)
 
 
 @lru_cache
@@ -317,23 +246,11 @@ def factory_resample_data(
 
 
 # * Jackknife
-@overload
-def factory_jackknife_vals(
-    mom_ndim: Literal[1] = ...,
-    parallel: bool = ...,
-) -> JackknifeVals: ...
-@overload
-def factory_jackknife_vals(
-    mom_ndim: Literal[2],
-    parallel: bool = ...,
-) -> JackknifeVals: ...
-
-
 @lru_cache
 def factory_jackknife_vals(
     mom_ndim: Mom_NDim = 1,
     parallel: bool = True,
-) -> JackknifeVals | JackknifeValsCov:
+) -> JackknifeVals:
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
@@ -347,7 +264,7 @@ def factory_jackknife_vals(
         from .resample_cov_parallel import jackknife_vals_fromzero as _jackknife_cov
     else:
         from .resample_cov import jackknife_vals_fromzero as _jackknife_cov
-    return cast("JackknifeValsCov", _jackknife_cov)
+    return cast("JackknifeVals", _jackknife_cov)
 
 
 @lru_cache
@@ -367,31 +284,8 @@ def factory_jackknife_data(
 
 
 # * Reduce
-@overload
-def factory_reduce_vals(
-    mom_ndim: Literal[1] = ...,
-    parallel: bool = ...,
-) -> ReduceVals: ...
-
-
-@overload
-def factory_reduce_vals(
-    mom_ndim: Literal[2],
-    parallel: bool = ...,
-) -> ReduceValsCov: ...
-
-
-@overload
-def factory_reduce_vals(
-    mom_ndim: Mom_NDim = ...,
-    parallel: bool = ...,
-) -> ReduceVals | ReduceValsCov: ...
-
-
 @lru_cache
-def factory_reduce_vals(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True
-) -> ReduceVals | ReduceValsCov:
+def factory_reduce_vals(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> ReduceVals:
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
@@ -405,7 +299,7 @@ def factory_reduce_vals(
         from .push_cov_parallel import reduce_vals as _reduce_cov
     else:
         from .push_cov import reduce_vals as _reduce_cov
-    return cast("ReduceValsCov", _reduce_cov)
+    return cast("ReduceVals", _reduce_cov)
 
 
 @lru_cache
@@ -507,100 +401,78 @@ def factory_cumulative(
     return cast("Convert", func)
 
 
-# * Moving
-@overload
-def factory_move_vals(
-    mom_ndim: Literal[1] = ...,
-    parallel: bool = True,
-) -> MoveVals: ...
-@overload
-def factory_move_vals(
-    mom_ndim: Literal[2],
-    parallel: bool = True,
-) -> MoveValsCov: ...
-
-
+# * Rolling
 @lru_cache
-def factory_move_vals(
+def factory_rolling_vals(
     mom_ndim: Mom_NDim = 1,
     parallel: bool = True,
-) -> MoveVals | MoveValsCov:
+) -> RollingVals:
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
         if parallel:
-            from .moving_parallel import move_vals
+            from .rolling_parallel import rolling_vals
         else:
-            from .moving import move_vals
-        return cast("MoveVals", move_vals)
+            from .rolling import rolling_vals
+        return cast("RollingVals", rolling_vals)
 
     if parallel:
-        from .moving_cov_parallel import move_vals as _move_cov
+        from .rolling_cov_parallel import rolling_vals as _rolling_cov
     else:
-        from .moving_cov import move_vals as _move_cov
-    return cast("MoveValsCov", _move_cov)
+        from .rolling_cov import rolling_vals as _rolling_cov
+    return cast("RollingVals", _rolling_cov)
 
 
 @lru_cache
-def factory_move_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> MoveData:
+def factory_rolling_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> RollingData:
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
-        from .moving_parallel import move_data
+        from .rolling_parallel import rolling_data
     elif mom_ndim == 1:
-        from .moving import move_data
+        from .rolling import rolling_data
     elif parallel:
-        from .moving_cov_parallel import move_data
+        from .rolling_cov_parallel import rolling_data
     else:
-        from .moving_cov import move_data
+        from .rolling_cov import rolling_data
 
-    return cast("MoveData", move_data)
-
-
-@overload
-def factory_move_exp_vals(
-    mom_ndim: Literal[1] = ...,
-    parallel: bool = True,
-) -> MoveExpVals: ...
-@overload
-def factory_move_exp_vals(
-    mom_ndim: Literal[2],
-    parallel: bool = True,
-) -> MoveExpValsCov: ...
+    return cast("RollingData", rolling_data)
 
 
 @lru_cache
-def factory_move_exp_vals(
+def factory_rolling_exp_vals(
     mom_ndim: Mom_NDim = 1,
     parallel: bool = True,
-) -> MoveExpVals | MoveExpValsCov:
+) -> RollingExpVals:
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
         if parallel:
-            from .moving_parallel import move_exp_vals
+            from .rolling_parallel import rolling_exp_vals
         else:
-            from .moving import move_exp_vals
-        return cast("MoveExpVals", move_exp_vals)
+            from .rolling import rolling_exp_vals
+        return cast("RollingExpVals", rolling_exp_vals)
 
     if parallel:
-        from .moving_cov_parallel import move_exp_vals as _move_cov
+        from .rolling_cov_parallel import rolling_exp_vals as _rolling_cov
     else:
-        from .moving_cov import move_exp_vals as _move_cov
-    return cast("MoveExpValsCov", _move_cov)
+        from .rolling_cov import rolling_exp_vals as _rolling_cov
+    return cast("RollingExpVals", _rolling_cov)
 
 
 @lru_cache
-def factory_move_exp_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> MoveExpData:
+def factory_rolling_exp_data(
+    mom_ndim: Mom_NDim = 1, parallel: bool = True
+) -> RollingExpData:
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
-        from .moving_parallel import move_exp_data
+        from .rolling_parallel import rolling_exp_data
     elif mom_ndim == 1:
-        from .moving import move_exp_data
+        from .rolling import rolling_exp_data
     elif parallel:
-        from .moving_cov_parallel import move_exp_data
+        from .rolling_cov_parallel import rolling_exp_data
     else:
-        from .moving_cov import move_exp_data
+        from .rolling_cov import rolling_exp_data
 
-    return cast("MoveExpData", move_exp_data)
+    return cast("RollingExpData", rolling_exp_data)

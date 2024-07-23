@@ -706,10 +706,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         )
 
         self._pusher(parallel).val(
-            x0,
-            *x1,
-            weight,
             self._data,
+            x0,
+            weight,
+            *x1,
         )
         return self
 
@@ -737,10 +737,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         )
 
         self._pusher(parallel).vals(
-            x0,
-            *x1,
-            weight,
             self._data,
+            x0,
+            weight,
+            *x1,
         )
         return self
 

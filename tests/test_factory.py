@@ -12,10 +12,6 @@ from cmomy._lib import (
     indexed_cov,
     indexed_cov_parallel,
     indexed_parallel,
-    moving,
-    moving_cov,
-    moving_cov_parallel,
-    moving_parallel,
     push,
     push_cov,
     push_cov_parallel,
@@ -24,6 +20,10 @@ from cmomy._lib import (
     resample_cov,
     resample_cov_parallel,
     resample_parallel,
+    rolling,
+    rolling_cov,
+    rolling_cov_parallel,
+    rolling_parallel,
 )
 
 if TYPE_CHECKING:
@@ -97,7 +97,7 @@ def test_factory_pusher(
 def test_factory_resample_vals(
     mom_ndim: Mom_NDim,
     parallel: bool,
-    expected: factory.ResampleVals | factory.ResampleValsCov,
+    expected: factory.ResampleVals,
 ) -> None:
     assert factory.factory_resample_vals(mom_ndim, parallel) == expected
 
@@ -129,7 +129,7 @@ def test_factory_resample_data(
 def test_factory_jackknife_vals(
     mom_ndim: Mom_NDim,
     parallel: bool,
-    expected: factory.JackknifeVals | factory.JackknifeValsCov,
+    expected: factory.JackknifeVals,
 ) -> None:
     assert factory.factory_jackknife_vals(mom_ndim, parallel) == expected
 
@@ -161,7 +161,7 @@ def test_factory_jackknife_data(
 def test_reduce_vals(
     mom_ndim: Mom_NDim,
     parallel: bool,
-    expected: factory.ReduceVals | factory.ReduceValsCov,
+    expected: factory.ReduceVals,
 ) -> None:
     assert factory.factory_reduce_vals(mom_ndim, parallel) == expected
 
@@ -247,66 +247,64 @@ def test_cumulative_data(
 @pytest.mark.parametrize(
     ("mom_ndim", "parallel", "expected"),
     [
-        (1, False, moving.move_vals),
-        (1, True, moving_parallel.move_vals),
-        (2, False, moving_cov.move_vals),
-        (2, True, moving_cov_parallel.move_vals),
+        (1, False, rolling.rolling_vals),
+        (1, True, rolling_parallel.rolling_vals),
+        (2, False, rolling_cov.rolling_vals),
+        (2, True, rolling_cov_parallel.rolling_vals),
     ],
 )
-def test_move_vals(
+def test_rolling_vals(
     mom_ndim: Mom_NDim,
     parallel: bool,
-    expected: factory.MoveVals | factory.MoveValsCov,
+    expected: factory.RollingVals,
 ) -> None:
-    assert factory.factory_move_vals(mom_ndim, parallel) == expected
+    assert factory.factory_rolling_vals(mom_ndim, parallel) == expected
 
 
 @pytest.mark.parametrize(
     ("mom_ndim", "parallel", "expected"),
     [
-        (1, False, moving.move_data),
-        (1, True, moving_parallel.move_data),
-        (2, False, moving_cov.move_data),
-        (2, True, moving_cov_parallel.move_data),
+        (1, False, rolling.rolling_data),
+        (1, True, rolling_parallel.rolling_data),
+        (2, False, rolling_cov.rolling_data),
+        (2, True, rolling_cov_parallel.rolling_data),
     ],
 )
-def test_move_data(
+def test_rolling_data(
     mom_ndim: Mom_NDim,
     parallel: bool,
-    expected: factory.MoveData,
+    expected: factory.RollingData,
 ) -> None:
-    assert factory.factory_move_data(mom_ndim, parallel) == expected
+    assert factory.factory_rolling_data(mom_ndim, parallel) == expected
 
 
 @pytest.mark.parametrize(
     ("mom_ndim", "parallel", "expected"),
     [
-        (1, False, moving.move_exp_vals),
-        (1, True, moving_parallel.move_exp_vals),
-        (2, False, moving_cov.move_exp_vals),
-        (2, True, moving_cov_parallel.move_exp_vals),
+        (1, False, rolling.rolling_exp_vals),
+        (1, True, rolling_parallel.rolling_exp_vals),
+        (2, False, rolling_cov.rolling_exp_vals),
+        (2, True, rolling_cov_parallel.rolling_exp_vals),
     ],
 )
-def test_move_exp_vals(
-    mom_ndim: Mom_NDim,
-    parallel: bool,
-    expected: factory.MoveExpVals | factory.MoveExpValsCov,
+def test_rolling_exp_vals(
+    mom_ndim: Mom_NDim, parallel: bool, expected: factory.RollingExpVals
 ) -> None:
-    assert factory.factory_move_exp_vals(mom_ndim, parallel) == expected
+    assert factory.factory_rolling_exp_vals(mom_ndim, parallel) == expected
 
 
 @pytest.mark.parametrize(
     ("mom_ndim", "parallel", "expected"),
     [
-        (1, False, moving.move_exp_data),
-        (1, True, moving_parallel.move_exp_data),
-        (2, False, moving_cov.move_exp_data),
-        (2, True, moving_cov_parallel.move_exp_data),
+        (1, False, rolling.rolling_exp_data),
+        (1, True, rolling_parallel.rolling_exp_data),
+        (2, False, rolling_cov.rolling_exp_data),
+        (2, True, rolling_cov_parallel.rolling_exp_data),
     ],
 )
-def test_move_exp_data(
+def test_rolling_exp_data(
     mom_ndim: Mom_NDim,
     parallel: bool,
-    expected: factory.MoveExpData,
+    expected: factory.RollingExpData,
 ) -> None:
-    assert factory.factory_move_exp_data(mom_ndim, parallel) == expected
+    assert factory.factory_rolling_exp_data(mom_ndim, parallel) == expected

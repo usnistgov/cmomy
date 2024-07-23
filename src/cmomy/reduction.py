@@ -100,10 +100,10 @@ def _reduce_vals(
         raise_if_wrong_shape(out, out_shape)
         out.fill(0.0)
 
-    factory_reduce_vals(  # type: ignore[call-overload]
+    factory_reduce_vals(
         mom_ndim=len(mom),
         parallel=parallel_heuristic(parallel, x0.size * len(mom)),
-    )(x0, *x1, w, out)  # pyright: ignore[reportCallIssue]
+    )(out, x0, w, *x1)
     return out
 
 

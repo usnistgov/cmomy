@@ -21,24 +21,32 @@ _decorator = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_decorator(
-    "(),(),(mom)",
+    "(mom),(),()",
     [
-        (nb.float32, nb.float32, nb.float32[:]),
-        (nb.float64, nb.float64, nb.float64[:]),
+        (nb.float32[:], nb.float32, nb.float32),
+        (nb.float64[:], nb.float64, nb.float64),
     ],
 )
-def push_val(x: NDGeneric[FloatT], w: NDGeneric[FloatT], out: NDArray[FloatT]) -> None:
+def push_val(
+    out: NDArray[FloatT],
+    x: NDGeneric[FloatT],
+    w: NDGeneric[FloatT],
+) -> None:
     _push.push_val(x, w, out)
 
 
 @_decorator(
-    "(sample),(sample),(mom)",
+    "(mom),(sample),(sample)",
     [
         (nb.float32[:], nb.float32[:], nb.float32[:]),
         (nb.float64[:], nb.float64[:], nb.float64[:]),
     ],
 )
-def reduce_vals(x: NDArray[FloatT], w: NDArray[FloatT], out: NDArray[FloatT]) -> None:
+def reduce_vals(
+    out: NDArray[FloatT],
+    x: NDArray[FloatT],
+    w: NDArray[FloatT],
+) -> None:
     for i in range(x.shape[0]):
         _push.push_val(x[i], w[i], out)
 

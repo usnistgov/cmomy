@@ -68,7 +68,7 @@ def load_numba_modules(
     include_resample: bool | None = None,
     include_indexed: bool | None = None,
     include_convert: bool | None = None,
-    include_moving: bool | None = None,
+    include_rolling: bool | None = None,
 ) -> None:
     """
     Compile numba modules by loading them.
@@ -93,7 +93,7 @@ def load_numba_modules(
     include_indexed = _set_default(include_indexed)
     include_parallel = _set_default(include_parallel) if supports_parallel() else False
     include_convert = _set_default(include_convert)
-    include_moving = _set_default(include_moving)
+    include_rolling = _set_default(include_rolling)
 
     _covs = ["", "_cov"] if include_cov else [""]
     _parallels = ["", "_parallel"] if include_parallel else [""]
@@ -105,8 +105,8 @@ def load_numba_modules(
         _modules.append("resample")
     if include_indexed:
         _modules.append("indexed")
-    if include_moving:
-        _modules.append("moving")
+    if include_rolling:
+        _modules.append("rolling")
     if include_convert:
         _modules.append("convert")
 
@@ -205,12 +205,12 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         help=msg.format(name="indexed"),
     )
     parser.add_argument(
-        "--moving",
-        "--no-moving",
-        dest="include_moving",
+        "--rolling",
+        "--no-rolling",
+        dest="include_rolling",
         action=BooleanAction,
         default=None,
-        help=msg.format(name="moving"),
+        help=msg.format(name="rolling"),
     )
     parser.add_argument(
         "--convert",
