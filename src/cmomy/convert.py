@@ -14,12 +14,14 @@ import xarray as xr
 from ._utils import (
     MISSING,
     axes_data_reduction,
+    mom_to_mom_shape,
     normalize_axis_index,
     parallel_heuristic,
     peek_at,
     select_axis_dim,
     select_dtype,
     validate_axis,
+    validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
 )
@@ -44,6 +46,7 @@ if TYPE_CHECKING:
         MissingType,
         Mom_NDim,
         MomDims,
+        Moments,
         NDArrayAny,
         ScalarT,
     )
@@ -176,6 +179,181 @@ def moments_type(
     from ._lib.factory import factory_convert
 
     return factory_convert(mom_ndim=mom_ndim, to=to)(values_in, out=out)
+
+
+# * Vals -> Data
+@overload
+def vals_to_data(  # type: ignore[overload-overlap]
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | xr.DataArray | None = ...,
+    mom_dims: MomDims | None = ...,
+) -> xr.DataArray: ...
+# Array
+@overload
+def vals_to_data(
+    x: ArrayLikeArg[FloatT],
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    mom_dims: MomDims | None = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArray[FloatT],
+    mom_dims: MomDims | None = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    out: None = ...,
+    mom_dims: MomDims | None = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    mom_dims: MomDims | None = ...,
+) -> NDArrayAny: ...
+
+
+def vals_to_data(
+    x: ArrayLike | xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = None,
+    dtype: DTypeLike = None,
+    out: NDArrayAny | xr.DataArray | None = None,
+    mom_dims: MomDims | None = None,
+) -> NDArrayAny | xr.DataArray:
+    """
+    Convert `values` to `central moments array`.
+
+    This allows passing `values` based observations to `data` routines.
+    See examples below for more details
+
+    Parameters
+    ----------
+    x : array-like or DataArray
+        First value.
+    *y : array-like or DataArray
+        Secondary value (if comoments).
+    {mom}
+    {weight}
+    {dtype}
+    {out}
+
+    Returns
+    -------
+    data : ndarray or DataArray
+
+    Notes
+    -----
+    Values ``x``, ``y`` and ``weight`` must be broadcastable.
+
+    Examples
+    --------
+    >>> w = np.full((2), 0.1)
+    >>> x = np.full((1, 2), 0.2)
+    >>> out = vals_to_data(x, weight=w, mom=2)
+    >>> out.shape
+    (1, 2, 3)
+    >>> print(out[..., 0])
+    [[0.1 0.1]]
+    >>> print(out[..., 1])
+    [[0.2 0.2]]
+    >>> y = np.full((2, 1, 2), 0.3)
+    >>> out = vals_to_data(x, y, weight=w, mom=(2, 2))
+    >>> out.shape
+    (2, 1, 2, 3, 3)
+    >>> print(out[..., 0, 0])
+    [[[0.1 0.1]]
+    <BLANKLINE>
+     [[0.1 0.1]]]
+    >>> print(out[..., 1, 0])
+    [[[0.2 0.2]]
+    <BLANKLINE>
+     [[0.2 0.2]]]
+    >>> print(out[..., 0, 1])
+    [[[0.3 0.3]]
+    <BLANKLINE>
+     [[0.3 0.3]]]
+    """
+    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    dtype = select_dtype(x, out=out, dtype=dtype)
+    weight = 1.0 if weight is None else weight
+    if len(y) != mom_ndim - 1:
+        msg = "Supply single value for ``y`` if and only if ``mom_ndim==2``."
+        raise ValueError(msg)
+
+    if isinstance(x, xr.DataArray):
+        if isinstance(out, xr.DataArray) and mom_dims is None:
+            mom_dims = out.dims[-mom_ndim:]
+        else:
+            mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+        # Do this for consistency with numpy version
+        # In numpy version, ``x`` sets the right hand most dimensions.
+        # xr.apply_ufunc (which calls xr.broadcast) acts left to right.
+        # that is, if call a  func(x, y, z), the dimensions in ``x`` will
+        # be the left most dimensions
+        return xr.apply_ufunc(  # type: ignore[no-any-return]
+            lambda out, weight, *args, **kwargs: vals_to_data(  # pyright: ignore[reportUnknownLambdaType]
+                *args[-1::-1],  # pyright: ignore[reportUnknownArgumentType]
+                weight=weight,  # pyright: ignore[reportUnknownArgumentType]
+                out=out,  # pyright: ignore[reportUnknownArgumentType]
+                **kwargs,  # pyright: ignore[reportUnknownArgumentType]
+            ),
+            out,
+            weight,
+            *y,
+            x,
+            input_core_dims=[mom_dims, *((),) * (mom_ndim + 1)],
+            output_core_dims=[mom_dims],
+            kwargs={
+                "dtype": dtype,
+                "mom": mom,
+            },
+        )
+
+    x, weight, *y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))  # type: ignore[assignment]
+    if out is None:
+        val_shape: tuple[int, ...] = np.broadcast_shapes(
+            *(_.shape for _ in (x, *y, weight))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportAttributeAccessIssue, reportUnknownArgumentType]
+        )
+        out = np.zeros((*val_shape, *mom_to_mom_shape(mom)), dtype=dtype)
+    else:
+        out[...] = 0.0
+
+    if mom_ndim == 1:
+        out[..., 0] = weight
+        out[..., 1] = x
+    else:
+        out[..., 0, 0] = weight
+        out[..., 1, 0] = x
+        out[..., 0, 1] = y[0]
+
+    return out
 
 
 # * Moments to Cumulative moments
@@ -354,7 +532,7 @@ def _moments_to_comoments(
     dtype: DTypeLikeArg[FloatT],
 ) -> NDArray[FloatT]:
     mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
-    out = np.empty((*values.shape[:-1], *(m + 1 for m in mom)), dtype=dtype)
+    out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)
     for i, j in np.ndindex(*out.shape[-2:]):
         out[..., i, j] = values[..., i + j]
     return out

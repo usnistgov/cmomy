@@ -22,4 +22,6 @@ api-baseclasses
     cmomy.compile
     cmomy.typing
     cmomy.confidence_interval
+    cmomy.moving
+    cmomy.utils
 ```

@@ -393,6 +393,78 @@ def test_cumulative() -> None:
         assert_type(convert.cumulative(xx, mom_ndim=1), xr.DataArray)
 
 
+def test_vals_to_data() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    out32 = np.zeros((4,), dtype=np.float32)
+    out64 = np.zeros((4,), dtype=np.float64)
+    outAny: NDArray[Any] = np.zeros((4,), dtype=np.float32)
+
+    if TYPE_CHECKING:
+        assert_type(convert.vals_to_data(x32, mom=1), NDArray[np.float32])
+        assert_type(convert.vals_to_data(x64, mom=1), NDArray[np.float64])
+
+        assert_type(
+            convert.vals_to_data(x32, mom=1, dtype=np.float64), NDArray[np.float64]
+        )
+        assert_type(
+            convert.vals_to_data(x64, mom=1, dtype=np.float32), NDArray[np.float32]
+        )
+
+        assert_type(convert.vals_to_data(x32, mom=1, out=out64), NDArray[np.float64])
+        assert_type(convert.vals_to_data(x64, mom=1, out=out32), NDArray[np.float32])
+
+        assert_type(
+            convert.vals_to_data(x32, mom=1, out=out64, dtype=np.float32),
+            NDArray[np.float64],
+        )
+        assert_type(
+            convert.vals_to_data(x64, mom=1, out=out32, dtype=np.float64),
+            NDArray[np.float32],
+        )
+
+        assert_type(
+            convert.vals_to_data(x32, mom=1, out=outAny, dtype=np.float32),
+            NDArray[Any],
+        )
+
+        xc = np.array([1, 2, 3])
+        assert_type(xc, NDArray[Any])
+
+        # Would like this to default to np.float64
+        assert_type(convert.vals_to_data(xc, mom=1), NDArray[Any])
+        assert_type(
+            convert.vals_to_data(xc, mom=1, dtype=np.float32), NDArray[np.float32]
+        )
+        assert_type(
+            convert.vals_to_data([1, 2, 3], mom=1, dtype=np.float32),
+            NDArray[np.float32],
+        )
+        assert_type(
+            convert.vals_to_data([1, 2, 3], mom=1, dtype=np.float64),
+            NDArray[np.float64],
+        )
+
+        assert_type(
+            convert.vals_to_data([1, 2, 3], mom=1, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            convert.vals_to_data(x32, mom=1, dtype="f8"),
+            NDArray[Any],
+        )
+        assert_type(
+            convert.vals_to_data(xc, mom=1, dtype="f8"),
+            NDArray[Any],
+        )
+
+        assert_type(convert.vals_to_data([1.0, 2.0, 3.0], mom=1), NDArray[Any])
+
+        xx = xr.DataArray(x32)
+        assert_type(convert.vals_to_data(xx, mom=1), xr.DataArray)
+
+
 def test_convert_moments_to_comoments() -> None:
     x32 = np.array([1, 2, 3, 4], dtype=np.float32)
     x64 = np.array([1, 2, 3, 4], dtype=np.float64)

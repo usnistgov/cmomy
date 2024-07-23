@@ -38,6 +38,7 @@ if TYPE_CHECKING:
 
 
 # Axis/Dim reduction type
+# TODO(wpk): convert int -> SupportsIndex?
 AxisReduce: TypeAlias = Union[int, None]
 DimsReduce: TypeAlias = Union[Hashable, None]
 AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"

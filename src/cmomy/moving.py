@@ -13,6 +13,7 @@ import xarray as xr
 from ._utils import (
     MISSING,
     axes_data_reduction,
+    mom_to_mom_shape,
     normalize_axis_index,
     parallel_heuristic,
     prepare_values_for_reduction,
@@ -141,6 +142,27 @@ def construct_rolling_window_array(
     etc, here you pass scalar or sequence values corresponding to axis/dim.
     Corresponding mappings are created from, for example ``center=dict(zip(dim,
     center))``.
+
+
+    Examples
+    --------
+    >>> x = np.arange(5).astype(float)
+    >>> construct_rolling_window_array(x, window=4, axis=0)
+    array([[nan, nan, nan,  0.],
+           [nan, nan,  0.,  1.],
+           [nan,  0.,  1.,  2.],
+           [ 0.,  1.,  2.,  3.],
+           [ 1.,  2.,  3.,  4.]])
+
+    >>> dx = xr.DataArray(x)
+    >>> construct_rolling_window_array(dx, window=4, center=True, dim="dim_0")
+    <xarray.DataArray (dim_0: 5, rolling_dim_0: 4)> Size: 160B
+    array([[nan, nan,  0.,  1.],
+           [nan,  0.,  1.,  2.],
+           [ 0.,  1.,  2.,  3.],
+           [ 1.,  2.,  3.,  4.],
+           [ 2.,  3.,  4., nan]])
+    Dimensions without coordinates: dim_0, rolling_dim_0
 
     See Also
     --------
@@ -642,7 +664,7 @@ def _move_vals(
         )
 
     min_periods = window if min_periods is None else min_periods
-    data_tmp = np.zeros(tuple(m + 1 for m in mom), dtype=x.dtype)
+    data_tmp = np.zeros(mom_to_mom_shape(mom), dtype=x.dtype)
 
     from ._lib.factory import factory_move_vals
 
@@ -1076,7 +1098,7 @@ def _move_exp_vals(
     min_periods: int | None,
     zero_missing_weights: bool,
 ) -> NDArray[FloatT]:
-    data_tmp = np.zeros(tuple(m + 1 for m in mom), dtype=x.dtype)
+    data_tmp = np.zeros(mom_to_mom_shape(mom), dtype=x.dtype)
 
     from ._lib.factory import factory_move_exp_vals
 

@@ -17,6 +17,7 @@ from numpy.typing import NDArray
 from ._utils import (
     MISSING,
     axes_data_reduction,
+    mom_to_mom_shape,
     normalize_axis_index,
     optional_move_axis_to_end,
     parallel_heuristic,
@@ -366,6 +367,10 @@ def randsamp_freq(
            [1, 0, 2]])
 
     """
+    # short circuit the most likely scenario...
+    if freq is not None and not check:
+        return np.asarray(freq, np.int64)
+
     if ndat is None:
         if data is None:
             msg = "Must pass either ndat or data"
@@ -602,11 +607,10 @@ def _resample_vals(
     val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
         :-1
     ]
-    mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom)
     out_shape: tuple[int, ...] = (
         *val_shape,
         freq.shape[0],
-        *mom_shape,
+        *mom_to_mom_shape(mom),
     )
     if out is None:
         out = np.zeros(out_shape, dtype=x0.dtype)
@@ -1293,7 +1297,7 @@ def jackknife_vals(  # noqa: PLR0914
     -----
     {vals_resample_note}
     """
-    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
@@ -1320,7 +1324,7 @@ def jackknife_vals(  # noqa: PLR0914
             else np.asarray(data_reduced, dtype=dtype, order=order)
         )
 
-        if data_reduced.shape[-mom_ndim:] != tuple(m + 1 for m in mom_validated):
+        if data_reduced.shape[-mom_ndim:] != mom_to_mom_shape(mom):
             msg = f"{data_reduced.shape[-mom_ndim:]=} inconsistent with {mom=}"
             raise ValueError(msg)
 

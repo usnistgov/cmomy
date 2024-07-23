@@ -152,6 +152,19 @@ def test_select_mom_ndim() -> None:
 
 
 @pytest.mark.parametrize(
+    ("mom", "mom_shape"),
+    [
+        (1, (2,)),
+        ((1,), (2,)),
+        ((1, 2), (2, 3)),
+    ],
+)
+def test_mom_to_mom_shape(mom, mom_shape) -> None:
+    assert utils.mom_to_mom_shape(mom) == mom_shape
+    assert utils.mom_shape_to_mom(mom_shape) == utils.validate_mom(mom)
+
+
+@pytest.mark.parametrize(
     ("parallel", "size", "cutoff", "expected"),
     [
         (None, 100, 100, False),

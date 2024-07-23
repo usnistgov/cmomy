@@ -1,4 +1,5 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type, index, assignment"
+# pyright:  reportArgumentType=false, reportAssignmentType=false
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -140,9 +141,11 @@ def test_move_data(rng, shape, axis, window, min_periods, center) -> None:
     kws: MovingDict = {"window": window, "min_periods": min_periods, "center": center}
 
     # data
-    data = np.zeros((*shape, 4))
-    data[..., 0] = 1
-    data[..., 1] = x
+    data = cmomy.convert.vals_to_data(
+        x,
+        mom=3,
+    )
+
     out = moving.move_data(
         data,
         axis=axis,
@@ -191,7 +194,7 @@ def test_move_data_vals_missing(  # noqa: PLR0914
     mom_ndim: Mom_NDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # type: ignore[assignment]
 
     kws: MovingDict = {"window": window, "min_periods": min_periods, "center": center}
 
@@ -209,15 +212,15 @@ def test_move_data_vals_missing(  # noqa: PLR0914
         w[idx, ...] = 0.0
 
     xy = (x,) if mom_ndim == 1 else (x, y)
-    widx = (..., *(0,) * mom_ndim)
+    widx = (..., 0) if mom_ndim == 1 else (..., 0, 0)
     xidx = (..., 1) if mom_ndim == 1 else (..., 1, 0)
     x2idx = (..., 2) if mom_ndim == 1 else (..., 2, 0)
 
-    data = np.zeros((*x.shape, *(m + 1 for m in mom)))
-    data[widx] = w
-    data[xidx] = x
-    if mom_ndim == 2:
-        data[..., 0, 1] = y
+    data = cmomy.convert.vals_to_data(
+        *xy,
+        weight=w,
+        mom=mom,
+    )
 
     moving.move_data(
         data,
@@ -405,7 +408,7 @@ def test_move_exp_data_vals_missing(  # noqa: PLR0914
     mom_ndim: Mom_NDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
 
     kws: MovingExpDict = {"alpha": alpha, "adjust": adjust, "min_periods": min_periods}
 
@@ -423,15 +426,15 @@ def test_move_exp_data_vals_missing(  # noqa: PLR0914
         w[idx, ...] = 0.0
 
     xy = (x,) if mom_ndim == 1 else (x, y)
-    widx = (..., *(0,) * mom_ndim)
+    widx = (..., 0) if mom_ndim == 1 else (..., 0, 0)
     xidx = (..., 1) if mom_ndim == 1 else (..., 1, 0)
     x2idx = (..., 2) if mom_ndim == 1 else (..., 2, 0)
 
-    data = np.zeros((*x.shape, *(m + 1 for m in mom)))
-    data[widx] = w
-    data[xidx] = x
-    if mom_ndim == 2:
-        data[..., 0, 1] = y
+    data = cmomy.convert.vals_to_data(
+        *xy,
+        weight=w,
+        mom=mom,
+    )
 
     outd = moving.move_exp_data(data, **kws, axis=0, mom_ndim=mom_ndim)
     out = moving.move_exp_vals(*xy, weight=w, **kws, axis=0, mom=mom)
@@ -481,9 +484,10 @@ def test_move_exp_simple(rng, shape, axis, alpha, adjust) -> None:
     # move to original position
     out = np.moveaxis(out, -2, axis)
 
-    data = np.zeros((*x.shape, 2))
-    data[..., 0] = 1
-    data[..., 1] = x
+    data = cmomy.convert.vals_to_data(
+        x,
+        mom=1,
+    )
     outd = moving.move_exp_data(
         data,
         alpha=alpha,
@@ -540,23 +544,21 @@ def test_move_exp_weight(
     axis = 0
     shape = (50, 2, 3)
     mom: MomentsStrict = (3,) * mom_ndim
-    data = np.zeros((*shape, *(m + 1 for m in mom)))
-
-    if alpha is None:
-        alphas = rng.random(shape[axis])
-    else:
-        alphas = np.full(shape[axis], alpha, dtype=data.dtype)
 
     weight = rng.random(shape)
-    if mom_ndim == 1:
-        xy = (rng.random(shape),)
-        data[..., 0] = weight
-        data[..., 1] = xy[0]
-    else:
-        xy = (rng.random(shape), rng.random(shape))
-        data[..., 0, 0] = weight
-        data[..., 1, 0] = xy[0]
-        data[..., 0, 1] = xy[1]
+    xy = tuple(rng.random(shape) for _ in range(mom_ndim))
+
+    data = cmomy.convert.vals_to_data(
+        *xy,
+        weight=weight,
+        mom=mom,
+    )
+
+    alphas = (
+        rng.random(shape[axis])
+        if alpha is None
+        else np.full(shape[axis], alpha, dtype=data.dtype)
+    )
 
     freq = np.zeros((shape[axis],) * 2)
     _w = np.array([], dtype=np.float64)
@@ -574,7 +576,7 @@ def test_move_exp_weight(
     a = moving.move_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
     )
-    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)
+    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)  # pyright: ignore[reportCallIssue]
     np.testing.assert_allclose(a, b)
 
     c = moving.move_exp_data(
@@ -596,19 +598,12 @@ def test_move_exp_multiple_alpha(
     axis = 0
     shape = (50, 2)
     mom: MomentsStrict = (3,) * mom_ndim
-    data = np.zeros((*shape, *(m + 1 for m in mom)))
 
     alphas = rng.random(shape)
     weight = rng.random(shape)
-    if mom_ndim == 1:
-        xy = (rng.random(shape),)
-        data[..., 0] = weight
-        data[..., 1] = xy[0]
-    else:
-        xy = (rng.random(shape), rng.random(shape))
-        data[..., 0, 0] = weight
-        data[..., 1, 0] = xy[0]
-        data[..., 0, 1] = xy[1]
+    xy = tuple(rng.random(shape) for _ in range(mom_ndim))
+
+    data = cmomy.convert.vals_to_data(*xy, weight=weight, mom=mom)
 
     a = moving.move_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust

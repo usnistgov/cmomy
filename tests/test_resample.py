@@ -200,6 +200,10 @@ def test_randsamp_freq() -> None:
 
     np.testing.assert_allclose(f0, f1)
 
+    # test short circuit
+    f2 = resample.randsamp_freq(freq=f1, check=False)
+    assert f1 is f2
+
     with pytest.raises(ValueError):
         resample.randsamp_freq(ndat=10)
 
@@ -456,6 +460,16 @@ def test_jackknife_data(rng, mom_ndim, shape, axis) -> None:
         out0,
         out1,
     )
+
+    # using central moments
+    np.testing.assert_allclose(
+        out0,
+        cmomy.CentralMoments(data, mom_ndim=mom_ndim).jackknife_and_reduce(axis=axis),
+    )
+
+    # using xcentralMoments
+    cx = cmomy.CentralMoments(data, mom_ndim=mom_ndim).to_x()
+    np.testing.assert_allclose(out0, cx.jackknife_and_reduce(dim=cx.dims[axis]))
 
     # using calculated data_reduced
     data_reduced = cmomy.reduce_data(data, mom_ndim=mom_ndim, axis=axis)

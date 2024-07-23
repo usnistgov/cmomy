@@ -20,6 +20,7 @@ from ._lib.factory import (
 from ._utils import (
     MISSING,
     axes_data_reduction,
+    mom_to_mom_shape,
     normalize_axis_tuple,
     optional_keepdims,
     optional_move_axis_to_end,
@@ -91,8 +92,7 @@ def _reduce_vals(
     # if keepdims and len(val_shape) != _x0.ndim - 1:
     #     msg = f"Broadcasted value shape {val_shape} inconsistent with values shape of x={_x0.shape[:-1]}."  # noqa: ERA001
     #     raise ValueError(msg)  # noqa: ERA001
-    mom_shape: tuple[int, ...] = tuple(m + 1 for m in mom)
-    out_shape: tuple[int, ...] = (*val_shape, *mom_shape)
+    out_shape: tuple[int, ...] = (*val_shape, *mom_to_mom_shape(mom))
 
     if out is None:
         out = np.zeros(out_shape, dtype=x0.dtype)

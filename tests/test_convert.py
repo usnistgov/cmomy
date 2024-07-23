@@ -1,11 +1,17 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+from __future__ import annotations
+
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
 import xarray as xr
 
 from cmomy import convert
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
 
 
 def test_to_raw_moments(other) -> None:
@@ -96,6 +102,98 @@ def test__validate_mom_moments_to_comoments(mom_orig, mom, expected) -> None:
             convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=mom_orig)
             == expected
         )
+
+
+# * Vals -> Data
+@pytest.mark.parametrize(
+    ("xshape", "yshape", "wshape", "mom", "out_shape"),
+    [
+        ((2,), None, None, (2,), (2, 3)),
+        (None, None, (2,), (2,), (2, 3)),
+        ((2, 3), None, (4, 1, 1), (2,), (4, 2, 3, 3)),
+        ((2,), (2,), None, (2, 2), (2, 3, 3)),
+        ((1, 2), (3, 1, 1), None, (2, 2), (3, 1, 2, 3, 3)),
+        ((2,), (2,), (1, 2), (2, 2), (1, 2, 3, 3)),
+    ],
+)
+def test_vals_to_data(xshape, yshape, wshape, mom, out_shape) -> None:
+    w: ArrayLike = 0.1 if wshape is None else np.full(wshape, 0.1)
+    x: ArrayLike = 0.2 if xshape is None else np.full(xshape, 0.2)
+    y: ArrayLike = 0.3 if yshape is None else np.full(yshape, 0.3)
+
+    xy: tuple[ArrayLike, ...] = (x,) if len(mom) == 1 else (x, y)
+    out = convert.vals_to_data(*xy, weight=w, mom=mom)
+    assert out.shape == out_shape
+
+    if len(mom) == 1:
+        np.testing.assert_allclose(out[..., 0], 0.1)
+        np.testing.assert_allclose(out[..., 1], 0.2)
+
+    else:
+        np.testing.assert_allclose(out[..., 0, 0], 0.1)
+        np.testing.assert_allclose(out[..., 1, 0], 0.2)
+        np.testing.assert_allclose(out[..., 0, 1], 0.3)
+
+    np.testing.assert_allclose(
+        out.sum(),
+        (
+            np.prod(out.shape[: -len(mom)])
+            * (0.1 + 0.2 + (0.0 if len(mom) == 1 else 0.3))
+        ),
+    )
+
+
+def test_vals_to_data_dtype() -> None:
+    mom = 2
+    x = np.full((1, 2), 0.1)
+    assert convert.vals_to_data(x, mom=mom).dtype.type == np.float64
+
+    assert convert.vals_to_data(x, mom=mom, dtype=np.float32).dtype.type == np.float32
+    assert (
+        convert.vals_to_data(
+            x, mom=mom, dtype=np.float32, out=np.zeros((1, 2, 3), dtype=np.float64)
+        ).dtype.type
+        == np.float64
+    )
+
+
+def test_vals_to_data_errors() -> None:
+    x = np.zeros(3)
+
+    with pytest.raises(ValueError):
+        convert.vals_to_data(x, mom=(2, 2))
+
+    with pytest.raises(ValueError):
+        convert.vals_to_data(x, x, mom=2)
+
+
+def test_vals_to_data_xarray() -> None:
+    x = xr.DataArray(np.full((1, 2), 0.2), dims=["a", "b"])
+    out = convert.vals_to_data(x, weight=0.1, mom=2, dtype=np.float32)
+    assert out.dtype.type == np.float32
+    assert out.dims == ("a", "b", "mom_0")
+    assert out.shape == (1, 2, 3)
+
+    y = xr.DataArray(np.full((3, 4), 0.3), dims=["c", "d"])
+
+    out0 = convert.vals_to_data(x, y, weight=0.1, mom=(2, 2), mom_dims=("x", "y"))
+    assert out0.dims == ("c", "d", "a", "b", "x", "y")
+    assert out0.shape == (3, 4, 1, 2, 3, 3)
+
+    out = xr.DataArray(
+        np.zeros((1, 2, 3, 4, 3, 3), dtype=np.float32),
+        dims=["a", "b", "c", "d", "x", "y"],
+    )
+
+    w = xr.full_like(x, 0.1)
+    check = convert.vals_to_data(x, y, weight=w, out=out, mom=(2, 2))
+    assert check.data is out.data
+
+    xr.testing.assert_allclose(out0, out.transpose(*out0.dims))
+
+    np.testing.assert_allclose(out[..., 0, 0], 0.1)
+    np.testing.assert_allclose(out[..., 1, 0], 0.2)
+    np.testing.assert_allclose(out[..., 0, 1], 0.3)
 
 
 @pytest.mark.parametrize("shape", [(10,), (10, 3)])

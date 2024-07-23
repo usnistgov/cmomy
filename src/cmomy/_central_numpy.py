@@ -18,6 +18,7 @@ from ._central_abc import CentralMomentsABC
 from ._compat import copy_if_needed
 from ._utils import (
     arrayorder_to_arrayorder_cf,
+    mom_to_mom_shape,
     validate_axis,
     validate_mom_and_mom_ndim,
 )
@@ -631,28 +632,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
     # ** Reduction ----------------------------------------------------------------
     @docfiller_inherit_abc()
-    def resample_and_reduce(
-        self,
-        *,
-        freq: NDArrayInt,
-        axis: AxisReduce = -1,
-        parallel: bool | None = None,
-        order: ArrayOrder = None,
-    ) -> Self:
-        self._raise_if_scalar()
-        from .resample import resample_data
-
-        data: NDArray[FloatT] = resample_data(
-            self._data,
-            freq=freq,
-            mom_ndim=self._mom_ndim,
-            axis=axis,
-            order=order,
-            parallel=parallel,
-        )
-        return type(self)(data=data, mom_ndim=self.mom_ndim)
-
-    @docfiller_inherit_abc()
     def reduce(
         self,
         *,
@@ -956,7 +935,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         dtype: DTypeLike = None,
         order: ArrayOrderCF | None = None,
     ) -> CentralMoments[Any] | Self:
-        mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
 
         vshape: tuple[int, ...]
         if val_shape is None:
@@ -967,8 +946,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             vshape = val_shape
 
         # add in moments
-        mshape: tuple[int, ...] = tuple(m + 1 for m in mom_strict)
-        shape: tuple[int, ...] = (*vshape, *mshape)
+        shape: tuple[int, ...] = (*vshape, *mom_to_mom_shape(mom))
 
         data = np.zeros(shape, dtype=dtype, order=order)
         return cls(data=data, mom_ndim=mom_ndim)

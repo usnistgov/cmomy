@@ -107,6 +107,26 @@ def normalize_axis_tuple(
     return np_normalize_axis_tuple(axis, ndim, msg_prefix, allow_duplicate)  # type: ignore[no-any-return,unused-ignore]
 
 
+def positive_to_negative_index(index: int, ndim: int) -> int:
+    """
+    Convert positive index to negative index
+
+    Note that this assumes that axis has been normalized via :func:`normalize_axis_index`.
+
+    Examples
+    --------
+    >>> positive_to_negative_index(0, 4)
+    -4
+    >>> positive_to_negative_index(-1, 4)
+    -1
+    >>> positive_to_negative_index(2, 4)
+    -2
+    """
+    if index < 0:
+        return index
+    return index - ndim
+
+
 # * Array order ---------------------------------------------------------------
 def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
     """Convert general array order to C/F/None"""
@@ -150,7 +170,7 @@ def validate_mom_ndim(mom_ndim: int) -> Mom_NDim:
     raise ValueError(msg)
 
 
-def validate_mom(mom: int | Sequence[int]) -> MomentsStrict:
+def validate_mom(mom: int | Iterable[int]) -> MomentsStrict:
     """
     Convert to MomentsStrict.
 
@@ -270,6 +290,18 @@ def select_mom_ndim(*, mom: Moments | None, mom_ndim: int | None) -> Mom_NDim:
         raise TypeError(msg)
 
     return validate_mom_ndim(mom_ndim)
+
+
+@docfiller.decorate
+def mom_to_mom_shape(mom: int | Iterable[int]) -> MomentsStrict:
+    """Convert moments to moments shape."""
+    return cast("MomentsStrict", tuple(m + 1 for m in validate_mom(mom)))
+
+
+@docfiller.decorate
+def mom_shape_to_mom(mom_shape: int | Iterable[int]) -> MomentsStrict:
+    """Convert moments shape to moments"""
+    return cast("MomentsStrict", tuple(m - 1 for m in validate_mom(mom_shape)))
 
 
 # * New helpers ---------------------------------------------------------------
@@ -662,7 +694,7 @@ _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
 
 def select_dtype(
     x: xr.DataArray | ArrayLike,
-    out: NDArrayAny | None,
+    out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
 ) -> np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
     """Select a dtype from, in order, out, dtype, or passed array."""

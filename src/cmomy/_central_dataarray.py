@@ -1087,14 +1087,15 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     def randsamp_freq(
         self,
         *,
-        axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        axis: AxisReduce | MissingType = MISSING,
         nrep: int | None = None,
         nsamp: int | None = None,
         indices: ArrayLike | None = None,
         freq: ArrayLike | None = None,
         check: bool = False,
         rng: np.random.Generator | None = None,
+        **kwargs: Any,
     ) -> NDArrayInt:
         """
         Parameters
@@ -1115,6 +1116,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             freq=freq,
             check=check,
             rng=rng,
+            **kwargs,
         )
 
     @docfiller_inherit_abc()
@@ -1128,6 +1130,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         parallel: bool | None = None,
         order: ArrayOrder = None,
         keep_attrs: KeepAttrs = None,
+        **kwargs: Any,
     ) -> Self:
         """
         Parameters
@@ -1184,23 +1187,46 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         Dimensions without coordinates: rep, mom_0
 
         """
-        self._raise_if_scalar()
-        from .resample import resample_data
-
-        data = resample_data(
-            self._xdata,
+        return super().resample_and_reduce(
             freq=freq,
-            mom_ndim=self.mom_ndim,
             axis=axis,
+            parallel=parallel,
+            order=order,
             dim=dim,
             rep_dim=rep_dim,
-            order=order,
-            parallel=parallel,
-            dtype=self.dtype,
             keep_attrs=keep_attrs,
+            **kwargs,
         )
 
-        return type(self)(data=data, mom_ndim=self.mom_ndim)
+    @docfiller_inherit_abc()
+    def jackknife_and_reduce(
+        self,
+        *,
+        axis: AxisReduce | MissingType = MISSING,
+        parallel: bool | None = None,
+        order: ArrayOrder = None,
+        data_reduced: Self | xr.DataArray | ArrayLike | None = None,
+        dim: DimsReduce | MissingType = MISSING,
+        rep_dim: str | None = "rep",
+        keep_attrs: KeepAttrs = None,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Parameters
+        ----------
+        {rep_dim}
+        {keep_attrs}
+        """
+        return super().jackknife_and_reduce(
+            axis=axis,
+            parallel=parallel,
+            order=order,
+            data_reduced=data_reduced,
+            dim=dim,
+            rep_dim=rep_dim,
+            keep_attrs=keep_attrs,
+            **kwargs,
+        )
 
     @docfiller_inherit_abc()
     def reduce(

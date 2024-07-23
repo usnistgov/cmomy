@@ -868,13 +868,14 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     def randsamp_freq(
         self,
         *,
-        axis: AxisReduce = -1,
+        axis: AxisReduce | MissingType = -1,
         nrep: int | None = None,
         nsamp: int | None = None,
         indices: ArrayLike | None = None,
         freq: ArrayLike | None = None,
         check: bool = False,
         rng: np.random.Generator | None = None,
+        **kwargs: Any,
     ) -> NDArrayInt:
         """
         Interface to :func:`.resample.randsamp_freq`
@@ -911,17 +912,22 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             freq=freq,
             check=check,
             rng=rng,
+            **kwargs,
         )
 
-    @abstractmethod
     @docfiller.decorate
     def resample_and_reduce(
         self,
         *,
         freq: NDArrayInt,
-        axis: AxisReduce = -1,
+        axis: AxisReduce | MissingType = -1,
+        # freq: NDArrayInt | None = None,  # noqa: ERA001
+        # indices: NDArrayInt | None = None,  # noqa: ERA001
+        # nrep: NDArrayInt | None = None,  # noqa: ERA001
+        # rng: np.random.Generator | None = None,  # noqa: ERA001
         parallel: bool | None = None,
         order: ArrayOrder = None,
+        **kwargs: Any,
     ) -> Self:
         """
         Bootstrap resample and reduce.
@@ -937,7 +943,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         -------
         output : object
             Instance of calling class. Note that new object will have
-            ``(...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``,
+            ``(...,shape[axis-1], nrep, shape[axis+1], ...)``,
             where ``nrep = freq.shape[0]``.
 
 
@@ -949,6 +955,59 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         ~cmomy.resample.indices_to_freq : convert index sample to frequency sample
         ~cmomy.resample.resample_data : method to perform resampling
         """
+        self._raise_if_scalar()
+        from .resample import resample_data
+
+        data: ArrayT = resample_data(
+            self.to_values(),  # pyright: ignore[reportAssignmentType]
+            freq=freq,
+            mom_ndim=self._mom_ndim,
+            axis=axis,
+            order=order,
+            parallel=parallel,
+            dtype=self.dtype,
+            **kwargs,
+        )
+        return type(self)(data=data, mom_ndim=self._mom_ndim)
+
+    @docfiller.decorate
+    def jackknife_and_reduce(
+        self,
+        *,
+        axis: AxisReduce | MissingType = -1,
+        parallel: bool | None = None,
+        order: ArrayOrder = None,
+        data_reduced: xr.DataArray | ArrayLike | None = None,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Jackknife resample and reduce
+
+        Parameters
+        ----------
+        {axis_data_and_dim}
+        {parallel}
+        {order}
+
+        Returns
+        -------
+        output : {klass}
+            Instance of calling class with jackknife resampling along ``axis``.
+        """
+        self._raise_if_scalar()
+        from .resample import jackknife_data
+
+        data: ArrayT = jackknife_data(  # pyright: ignore[reportAssignmentType]
+            self.to_values(),
+            mom_ndim=self._mom_ndim,
+            axis=axis,
+            data_reduced=data_reduced,
+            parallel=parallel,
+            order=order,
+            **kwargs,
+        )
+
+        return type(self)(data=data, mom_ndim=self._mom_ndim)
 
     @abstractmethod
     @docfiller.decorate
