@@ -1025,8 +1025,9 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             axis=axis,
             parallel=parallel,
             dtype=dtype,
+            order=order,
         )
-        return cls(data=data, mom_ndim=mom_ndim, order=order)
+        return cls(data=data, mom_ndim=mom_ndim)
 
     @overload
     @classmethod
@@ -1126,9 +1127,10 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             weight=weight,
             parallel=parallel,
             dtype=dtype,
+            order=order,
         )
 
-        return cls(data=data, mom_ndim=mom_ndim, order=order)
+        return cls(data=data, mom_ndim=mom_ndim)
 
     @classmethod
     @docfiller_abc()

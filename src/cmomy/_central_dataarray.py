@@ -1808,6 +1808,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 weight=weight,
                 axis=axis,
                 dim=dim,
+                order=order,
                 parallel=parallel,
                 mom_dims=mom_dims,
                 rep_dim=rep_dim,
@@ -1815,7 +1816,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 dtype=dtype,
             ),
             mom_ndim=mom_ndim,
-            order=order,
         )
 
     @classmethod
