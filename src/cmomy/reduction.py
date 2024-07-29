@@ -20,6 +20,8 @@ from ._lib.factory import (
 from ._utils import (
     MISSING,
     axes_data_reduction,
+    get_axes_from_values,
+    get_out_from_values,
     mom_to_mom_shape,
     normalize_axis_tuple,
     optional_keepdims,
@@ -27,6 +29,7 @@ from ._utils import (
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
+    prepare_values_for_reduction2,
     raise_if_wrong_shape,
     replace_coords_from_isel,
     select_axis_dim,
@@ -37,6 +40,7 @@ from ._utils import (
     validate_mom_dims,
     validate_mom_ndim,
     xprepare_values_for_reduction,
+    xprepare_values_for_reduction2,
 )
 from .docstrings import docfiller
 
@@ -49,6 +53,7 @@ if TYPE_CHECKING:
         ArrayLikeArg,
         ArrayOrder,
         ArrayT,
+        AxesGUFunc,
         AxisReduce,
         AxisReduceMult,
         CoordsPolicy,
@@ -279,14 +284,36 @@ def reduce_vals(
         )
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
+        # to ensure order like numpy....
+        def _wrapper(
+            out: NDArrayAny | None, weight: NDArrayAny, *args: NDArrayAny
+        ) -> NDArrayAny:
+            *x1, x0 = args
+            return _reduce_vals(
+                x0, weight, *x1, mom=mom_validated, parallel=parallel, out=out
+            )
+
+        input_core_dims = [
+            # out, w, x1, x0
+            mom_dims_strict,
+            input_core_dims[1],
+            *input_core_dims[2:],
+            input_core_dims[0],
+        ]
+
         return xr.apply_ufunc(  # type: ignore[no-any-return]
-            _reduce_vals,
-            x0,
+            # _reduce_vals,
+            # x0,
+            # w,
+            # *x1,
+            _wrapper,
+            out,
             w,
             *x1,
+            x0,
             input_core_dims=input_core_dims,
             output_core_dims=[mom_dims_strict],
-            kwargs={"mom": mom_validated, "parallel": parallel, "out": out},
+            # kwargs={"mom": mom_validated, "parallel": parallel, "out": out},  # noqa: ERA001
             keep_attrs=keep_attrs,
         )
 
@@ -306,6 +333,157 @@ def reduce_vals(
     #     keepdims=keepdims)
 
     return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)
+
+
+@docfiller.decorate
+def reduce_vals2(
+    x: ArrayLike | xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = None,
+    axis: AxisReduce | MissingType = MISSING,
+    keepdims: bool = False,
+    order: ArrayOrder = None,
+    parallel: bool | None = None,
+    dtype: DTypeLike = None,
+    out: NDArrayAny | None = None,
+    # xarray specific
+    dim: DimsReduce | MissingType = MISSING,
+    mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
+) -> NDArrayAny | xr.DataArray:
+    """
+    Reduce values to central (co)moments.
+
+    Parameters
+    ----------
+    x : ndarray or DataArray
+        Values to analyze.
+    *y : array-like or DataArray
+        Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
+        to broadcast to ``x`` or be 1d array with length ``x.shape[axis]``.
+    {mom}
+    weight : scalar or array-like or DataArray
+        Weights for each point. Should either be able to broadcast to ``x`` or
+        be `d array of length ``x.shape[axis]``.
+    {axis}
+    {keepdims}
+    {order}
+    {parallel}
+    {dtype}
+    {out}
+    {dim}
+    {mom_dims}
+    {keep_attrs}
+
+    Returns
+    -------
+    out : ndarray or DataArray
+        Central moments array of same type as ``x``. ``out.shape = shape +
+        (mom0, ...)`` where ``shape = np.broadcast_shapes(*(a.shape for a in
+        (x_, *y_, weight_)))[:-1]`` and ``x_``, ``y_`` and ``weight_`` are the
+        input arrays with ``axis`` moved to the last axis.
+
+
+    Notes
+    -----
+    We have removed the ``keepdims`` argument from this function, as the
+    behaviour could be inconsistent for comoments. For comoments, the output
+    shape will depend on both ``x`` and ``y``, and is not clear where in
+    ``out`` to include the expanded dims.
+
+    See Also
+    --------
+    numpy.broadcast_shapes
+    """
+    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    dtype = select_dtype(x, out=out, dtype=dtype)
+    weight = 1.0 if weight is None else weight
+
+    if isinstance(x, xr.DataArray):
+        input_core_dims, args = xprepare_values_for_reduction2(
+            x,
+            *y,
+            weight,
+            axis=axis,
+            dim=dim,
+            narrays=mom_ndim + 1,
+            dtype=dtype,
+        )
+
+        mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+        dim = input_core_dims[0][0]
+        input_core_dims = [
+            # out, w, *y, x
+            mom_dims_strict,
+            *reversed(input_core_dims),
+        ]
+
+        # to ensure order like numpy....
+        def _wrapper(
+            out: NDArrayAny | None, weight: NDArrayAny, *args: NDArrayAny, **kwargs: Any
+        ) -> NDArrayAny:
+            return reduce_vals2(*reversed(args), weight=weight, out=out, **kwargs)
+
+        xout: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
+            _wrapper,
+            out,
+            *reversed(args),
+            input_core_dims=input_core_dims,
+            output_core_dims=[(dim, *mom_dims_strict)],
+            exclude_dims={dim},
+            kwargs={
+                "mom": mom_validated,
+                "parallel": parallel,
+                "axis": -1,
+                "keepdims": True,
+            },
+            keep_attrs=keep_attrs,
+        )
+
+        if keepdims:
+            xout = xout.transpose(..., *x.dims, *mom_dims_strict)
+        else:
+            xout = xout.squeeze(dim)
+
+        return xout
+
+    axis_neg, args = prepare_values_for_reduction2(
+        x,
+        weight,
+        *y,
+        axis=axis,
+        order=order,
+        dtype=dtype,
+        narrays=mom_ndim + 1,
+    )
+
+    if out is None:
+        out = get_out_from_values(*args, mom=mom, axis_neg=axis_neg)
+    else:
+        out.fill(0.0)
+
+    axes: AxesGUFunc = [
+        # out
+        tuple(range(-mom_ndim, 0)),
+        # x, weight, *y
+        *get_axes_from_values(*args, axis_neg=axis_neg),
+    ]
+    factory_reduce_vals(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, args[0].size * mom_ndim),
+    )(out, *args, axes=axes)
+
+    return optional_keepdims(
+        out,
+        axis=axis_neg - mom_ndim,
+        keepdims=keepdims,
+    )
+
+    # return optional_keepdims(
+    #     _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),  # noqa: ERA001
+    #     axis=axis,  # noqa: ERA001
+    #     keepdims=keepdims)
 
 
 # * Reduce data ---------------------------------------------------------------

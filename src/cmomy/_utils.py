@@ -487,7 +487,7 @@ def prepare_secondary_value_for_reduction(
     target: NDArray[ScalarT],
     x: ArrayLike,
     axis: int,
-    move_axis: bool,
+    # move_axis: bool,
     nsamp: int,
     *,
     order: ArrayOrder = None,
@@ -511,29 +511,18 @@ def prepare_secondary_value_for_reduction(
 
     """
     out: NDArray[ScalarT] = np.asarray(x, dtype=target.dtype, order=order)
-    if out.ndim == target.ndim:
-        if move_axis:
-            out = np.moveaxis(out, axis, -1)
-            if order:
-                out = np.asarray(out, order=order)
-        return out
-
     if out.ndim == 0:
         out = np.broadcast_to(out, nsamp)
-        if order:
-            out = np.asarray(out, order=order)
-        return out
+    elif out.ndim == 1:
+        pass
+    elif axis != -1:
+        out = np.moveaxis(out, axis, -1)
 
-    if out.ndim == 1 and len(out) != nsamp:
-        msg = f"For 1D secondary values, {len(out)=} must be same as target.shape[axis]={nsamp}"
+    if out.shape[-1] != nsamp:
+        msg = f"{out.shape[-1]} must be same as target.shape[axis]={nsamp}"
         raise ValueError(msg)
 
-    # At least check that last dimension has correct shape.
-    if out.shape[-1] != target.shape[-1]:
-        msg = f"{out.shape=} will not broadcast to {target.shape=}"
-        raise ValueError(msg)
-
-    return out
+    return np.asarray(out, order=order)
 
 
 def xprepare_secondary_value_for_reduction(
@@ -560,23 +549,24 @@ def prepare_values_for_reduction(
     """
     Convert input value arrays to correct form for reduction.
 
+    Note: Played around with using axes to handle the different axes, but it's easier to
+    just move to end before operation...
+
     Parameters
     ----------
-        narrays : int
+    narrays : int
         The total number of expected arrays.  len(args) + 1 must equal narrays.
     """
     if len(args) + 1 != narrays:
         msg = f"Number of arrays {len(args) + 1} != {narrays}"
         raise ValueError(msg)
 
-    axis = validate_axis(axis)
-
     target = np.asarray(target, dtype=dtype)
-    axis = normalize_axis_index(axis, target.ndim)
-    move_axis = (target.ndim > 1) and (axis != target.ndim - 1)
+    axis = normalize_axis_index(validate_axis(axis), target.ndim)
 
-    if move_axis:
-        target = np.moveaxis(target, axis, -1)
+    axis_neg = positive_to_negative_index(axis, target.ndim)
+    if axis_neg != -1:
+        target = np.moveaxis(target, axis_neg, -1)
     if order:
         target = np.asarray(target, order=order)
 
@@ -584,8 +574,7 @@ def prepare_values_for_reduction(
         prepare_secondary_value_for_reduction(
             target=target,
             x=x,
-            axis=axis,
-            move_axis=move_axis,
+            axis=axis_neg,
             order=order,
             nsamp=target.shape[-1],
         )
@@ -629,16 +618,13 @@ def xprepare_values_for_reduction(
         axis=axis,
         dim=dim,
     )
-
-    move_axis = (target.ndim > 1) and (axis != target.ndim - 1)
-
+    axis_neg = positive_to_negative_index(axis, target.ndim)
     # go ahead and do the move in case we want to order...
-    if move_axis:
+    if axis_neg != -1:
         target = target.transpose(..., dim)  # pyright: ignore[reportUnknownArgumentType]
     target = target.astype(dtype=dtype, order=order, copy=False)  # pyright: ignore[reportUnknownMemberType]
 
     nsamp = target.shape[-1]
-
     others: list[NDArrayAny | xr.DataArray] = []
     for x in args:
         if isinstance(x, xr.DataArray):
@@ -654,8 +640,7 @@ def xprepare_values_for_reduction(
                 prepare_secondary_value_for_reduction(  # pyright: ignore[reportUnknownArgumentType]
                     target=target.values,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                     x=x,
-                    axis=axis,
-                    move_axis=move_axis,
+                    axis=axis_neg,
                     order=order,
                     nsamp=nsamp,
                 )
@@ -663,6 +648,140 @@ def xprepare_values_for_reduction(
 
     input_core_dims = [[dim]] * (len(others) + 1)
     return input_core_dims, (target, *others)
+
+
+def prepare_secondary_value_for_reduction2(
+    x: ArrayLike,
+    nsamp: int,
+    dtype: DTypeLikeArg[ScalarT],
+    axis: int,
+    move_axis_to_end: bool = False,
+) -> NDArray[ScalarT]:
+    out: NDArray[ScalarT] = np.asarray(x, dtype=dtype)
+    if out.ndim == 0:
+        return np.broadcast_to(out, nsamp)
+    if out.ndim == 1:
+        return out
+
+    if move_axis_to_end:
+        out = np.moveaxis(out, axis, -1)
+    return out
+
+
+def prepare_values_for_reduction2(
+    target: ArrayLike,
+    *args: ArrayLike,
+    narrays: int,
+    axis: AxisReduce | MissingType = MISSING,
+    dtype: DTypeLikeArg[ScalarT],
+    order: ArrayOrder = None,
+    move_axis_to_end: bool = False,
+) -> tuple[int, list[NDArray[ScalarT]]]:
+    if len(args) + 1 != narrays:
+        msg = f"Number of arrays {len(args) + 1} != {narrays}"
+        raise ValueError(msg)
+
+    target = np.asarray(target, dtype=dtype, order=order)
+    axis = normalize_axis_index(validate_axis(axis), target.ndim)
+    nsamp = target.shape[axis]
+
+    if move_axis_to_end:
+        target = np.moveaxis(target, axis, -1)
+
+    axis_neg = positive_to_negative_index(axis, target.ndim)
+
+    arrays = [
+        target,
+        *(
+            prepare_secondary_value_for_reduction2(
+                a,
+                nsamp=nsamp,
+                dtype=dtype,
+                axis=axis_neg,
+                move_axis_to_end=move_axis_to_end,
+            )
+            for a in args
+        ),
+    ]
+
+    return axis_neg, arrays
+
+
+def xprepare_values_for_reduction2(
+    target: xr.DataArray,
+    *args: ArrayLike | xr.DataArray,
+    narrays: int,
+    dim: DimsReduce | MissingType,
+    axis: AxisReduce | MissingType,
+    dtype: DTypeLikeArg[ScalarT],
+) -> tuple[list[list[Hashable]], list[xr.DataArray | NDArray[ScalarT]]]:
+    """
+    Convert input value arrays to correct form for reduction.
+
+    Parameters
+    ----------
+        narrays : int
+        The total number of expected arrays.  len(args) + 1 must equal narrays.
+
+    Returns
+    -------
+    input_core_dims : list[list[Hashable]]
+    tuple_of_arrays : tuple of DataArray or ndarray
+    """
+    if len(args) + 1 != narrays:
+        msg = f"Number of arrays {len(args) + 1} != {narrays}"
+        raise ValueError(msg)
+
+    axis, dim = select_axis_dim(
+        target,
+        axis=axis,
+        dim=dim,
+    )
+
+    nsamp = target.shape[axis]
+    axis_neg = positive_to_negative_index(axis, target.ndim)
+
+    arrays: list[xr.DataArray | NDArray[ScalarT]] = []
+    for a in (target, *args):
+        if isinstance(a, xr.DataArray):
+            arrays.append(a.astype(dtype=dtype, copy=False))
+        else:
+            arrays.append(
+                prepare_secondary_value_for_reduction2(
+                    a, nsamp=nsamp, dtype=dtype, axis=axis_neg, move_axis_to_end=True
+                )
+            )
+
+    input_core_dims = [[dim]] * len(arrays)
+    return input_core_dims, arrays
+
+
+def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
+    """Get reduction axes for arrays..."""
+    return [(-1,) if a.ndim == 1 else (axis_neg,) for a in args]
+
+
+def get_out_from_values(
+    *args: NDArray[ScalarT],
+    mom: MomentsStrict,
+    axis_neg: int | None = None,
+    axis_new_size: int | None = None,
+) -> NDArray[ScalarT]:
+    """Pass in axis if this is a reduction and will be removing axis_neg"""
+    val_shape: tuple[int, ...] = np.broadcast_shapes(
+        args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
+    )
+
+    if axis_neg is not None:
+        # need to normalize
+        axis = normalize_axis_index(axis_neg, len(val_shape))
+        if axis_new_size is None:
+            val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
+        else:
+            val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
+
+    out_shape = (*val_shape, *mom_to_mom_shape(mom))
+    return np.zeros(out_shape, dtype=args[0].dtype)
 
 
 def prepare_values_for_push_val(

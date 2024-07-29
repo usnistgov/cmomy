@@ -8,7 +8,7 @@
    cmomy.convert
    cmomy.compile
    cmomy.confidence_interval
-   cmomy.moving
+   cmomy.rolling
    cmomy.utils
 
 
