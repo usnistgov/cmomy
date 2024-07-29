@@ -528,20 +528,6 @@ def prepare_secondary_value_for_reduction(
     return out
 
 
-def xprepare_secondary_value_for_reduction(
-    x: xr.DataArray | ArrayLike,
-    axis: int,
-    nsamp: int,
-    dtype: DTypeLikeArg[ScalarT],
-) -> xr.DataArray | NDArray[ScalarT]:
-    """Prepare secondary values for reduction."""
-    if isinstance(x, xr.DataArray):
-        return x.astype(dtype=dtype, copy=False)
-    return prepare_secondary_value_for_reduction(
-        x, axis=axis, nsamp=nsamp, dtype=dtype, move_axis_to_end=True
-    )
-
-
 def prepare_values_for_reduction(
     target: ArrayLike,
     *args: ArrayLike,
@@ -586,14 +572,28 @@ def prepare_values_for_reduction(
     return axis_neg, (target, *others)
 
 
+def xprepare_secondary_value_for_reduction(
+    x: xr.DataArray | ArrayLike,
+    axis: int,
+    nsamp: int,
+    dtype: DTypeLikeArg[ScalarT],
+) -> xr.DataArray | NDArray[ScalarT]:
+    """Prepare secondary values for reduction."""
+    if isinstance(x, xr.DataArray):
+        return x.astype(dtype=dtype, copy=False)
+    return prepare_secondary_value_for_reduction(
+        x, axis=axis, nsamp=nsamp, dtype=dtype, move_axis_to_end=True
+    )
+
+
 def xprepare_values_for_reduction(
     target: xr.DataArray,
     *args: ArrayLike | xr.DataArray,
     narrays: int,
     dim: DimsReduce | MissingType,
     axis: AxisReduce | MissingType,
-    dtype: DTypeLike,
-) -> tuple[list[list[Hashable]], list[xr.DataArray | NDArrayAny]]:
+    dtype: DTypeLikeArg[ScalarT],
+) -> tuple[list[list[Hashable]], list[xr.DataArray | NDArray[ScalarT]]]:
     """
     Convert input value arrays to correct form for reduction.
 
@@ -627,94 +627,6 @@ def xprepare_values_for_reduction(
         )
         for a in (target, *args)
     ]
-
-    input_core_dims = [[dim]] * len(arrays)
-    return input_core_dims, arrays
-
-
-def prepare_values_for_reduction2(
-    target: ArrayLike,
-    *args: ArrayLike,
-    narrays: int,
-    axis: AxisReduce | MissingType = MISSING,
-    dtype: DTypeLikeArg[ScalarT],
-    order: ArrayOrder = None,
-    move_axis_to_end: bool = False,
-) -> tuple[int, list[NDArray[ScalarT]]]:
-    if len(args) + 1 != narrays:
-        msg = f"Number of arrays {len(args) + 1} != {narrays}"
-        raise ValueError(msg)
-
-    target = np.asarray(target, dtype=dtype, order=order)
-    axis = normalize_axis_index(validate_axis(axis), target.ndim)
-    nsamp = target.shape[axis]
-
-    if move_axis_to_end:
-        target = np.moveaxis(target, axis, -1)
-
-    axis_neg = positive_to_negative_index(axis, target.ndim)
-
-    arrays = [
-        target,
-        *(
-            prepare_secondary_value_for_reduction(
-                a,
-                nsamp=nsamp,
-                dtype=dtype,
-                axis=axis_neg,
-                move_axis_to_end=move_axis_to_end,
-            )
-            for a in args
-        ),
-    ]
-
-    return axis_neg, arrays
-
-
-def xprepare_values_for_reduction2(
-    target: xr.DataArray,
-    *args: ArrayLike | xr.DataArray,
-    narrays: int,
-    dim: DimsReduce | MissingType,
-    axis: AxisReduce | MissingType,
-    dtype: DTypeLikeArg[ScalarT],
-) -> tuple[list[list[Hashable]], list[xr.DataArray | NDArray[ScalarT]]]:
-    """
-    Convert input value arrays to correct form for reduction.
-
-    Parameters
-    ----------
-        narrays : int
-        The total number of expected arrays.  len(args) + 1 must equal narrays.
-
-    Returns
-    -------
-    input_core_dims : list[list[Hashable]]
-    tuple_of_arrays : tuple of DataArray or ndarray
-    """
-    if len(args) + 1 != narrays:
-        msg = f"Number of arrays {len(args) + 1} != {narrays}"
-        raise ValueError(msg)
-
-    axis, dim = select_axis_dim(
-        target,
-        axis=axis,
-        dim=dim,
-    )
-
-    nsamp = target.shape[axis]
-    axis_neg = positive_to_negative_index(axis, target.ndim)
-
-    arrays: list[xr.DataArray | NDArray[ScalarT]] = []
-    for a in (target, *args):
-        if isinstance(a, xr.DataArray):
-            arrays.append(a.astype(dtype=dtype, copy=False))
-        else:
-            arrays.append(
-                prepare_secondary_value_for_reduction(
-                    a, nsamp=nsamp, dtype=dtype, axis=axis_neg, move_axis_to_end=True
-                )
-            )
 
     input_core_dims = [[dim]] * len(arrays)
     return input_core_dims, arrays

@@ -1684,9 +1684,9 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 parallel=parallel,
                 dtype=dtype,
                 keep_attrs=keep_attrs,
+                order=order,
             ),
             mom_ndim=mom_ndim,
-            order=order,
         )
 
     @overload

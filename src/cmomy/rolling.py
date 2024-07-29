@@ -18,7 +18,6 @@ from ._utils import (
     normalize_axis_index,
     parallel_heuristic,
     prepare_values_for_reduction,
-    prepare_values_for_reduction2,
     select_axis_dim,
     select_axis_dim_mult,
     select_dtype,
@@ -781,7 +780,7 @@ def rolling_vals2(  # pyright: ignore[reportOverlappingOverload]
             keep_attrs=keep_attrs,
         )
 
-    axis_neg, args = prepare_values_for_reduction2(
+    axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
         *y,

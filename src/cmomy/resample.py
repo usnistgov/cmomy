@@ -25,7 +25,6 @@ from ._utils import (
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
-    prepare_values_for_reduction2,
     raise_if_wrong_shape,
     select_axis_dim,
     select_dtype,
@@ -596,43 +595,6 @@ def resample_data(
 
 
 # * Resample vals
-# ** low level
-def _resample_vals(
-    x0: NDArray[FloatT],
-    w: NDArray[FloatT],
-    freq: NDArrayInt,
-    *x1: NDArray[FloatT],
-    mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
-    parallel: bool | None = None,
-    out: NDArray[FloatT] | None = None,
-) -> NDArray[FloatT]:
-    _check_freq(freq, x0.shape[-1])
-
-    val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
-        :-1
-    ]
-    out_shape: tuple[int, ...] = (
-        *val_shape,
-        freq.shape[0],
-        *mom_to_mom_shape(mom),
-    )
-    if out is None:
-        out = np.zeros(out_shape, dtype=x0.dtype)
-    else:
-        raise_if_wrong_shape(out, out_shape)
-        out.fill(0.0)
-
-    from ._lib.factory import factory_resample_vals
-
-    factory_resample_vals(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
-    )(out, freq, x0, w, *x1)
-
-    return out
-
-
 # ** overloads
 @overload
 def resample_vals(  # type: ignore[overload-overlap]
@@ -642,6 +604,7 @@ def resample_vals(  # type: ignore[overload-overlap]
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -660,6 +623,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -678,6 +642,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -696,6 +661,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -714,6 +680,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -734,6 +701,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -756,6 +724,7 @@ def resample_vals(
     {mom}
     {weight}
     {axis}
+    {order}
     {parallel}
     {dtype}
     {out}
@@ -816,6 +785,7 @@ def resample_vals(
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
                 "out": out,
+                "order": order,
             },
             keep_attrs=keep_attrs,
         )
@@ -840,7 +810,46 @@ def resample_vals(
         mom_ndim=mom_ndim,
         parallel=parallel,
         out=out,
+        order=order,
     )
+
+
+# ** low level
+def _resample_vals(
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    freq: NDArrayInt,
+    *x1: NDArray[FloatT],
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    parallel: bool | None = None,
+    out: NDArray[FloatT] | None = None,
+    order: ArrayOrder = None,
+) -> NDArray[FloatT]:
+    _check_freq(freq, x0.shape[-1])
+
+    val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
+        :-1
+    ]
+    out_shape: tuple[int, ...] = (
+        *val_shape,
+        freq.shape[0],
+        *mom_to_mom_shape(mom),
+    )
+    if out is None:
+        out = np.zeros(out_shape, dtype=x0.dtype)
+    else:
+        raise_if_wrong_shape(out, out_shape)
+        out.fill(0.0)
+
+    from ._lib.factory import factory_resample_vals
+
+    factory_resample_vals(
+        mom_ndim=mom_ndim,
+        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
+    )(out, freq, x0, w, *x1)
+
+    return np.asarray(out, order)
 
 
 @docfiller.decorate
@@ -960,7 +969,7 @@ def resample_vals2(
         ).transpose(*dims_order)
 
     freq = np.asarray(freq, dtype=dtype)
-    axis_neg, args = prepare_values_for_reduction2(
+    axis_neg, args = prepare_values_for_reduction(
         x, weight, *y, axis=axis, dtype=dtype, narrays=mom_ndim + 1
     )
 
@@ -1690,7 +1699,7 @@ def jackknife_vals2(
 
         return xout
 
-    axis_neg, args = prepare_values_for_reduction2(
+    axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
         *y,

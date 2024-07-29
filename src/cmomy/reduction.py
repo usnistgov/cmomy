@@ -28,7 +28,6 @@ from ._utils import (
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
-    # prepare_values_for_reduction2,
     raise_if_wrong_shape,
     replace_coords_from_isel,
     select_axis_dim,
@@ -40,8 +39,6 @@ from ._utils import (
     validate_mom_ndim,
     xprepare_values_for_reduction,
 )
-
-# xprepare_values_for_reduction2,
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
@@ -84,6 +81,7 @@ def reduce_vals(  # type: ignore[overload-overlap]
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -101,6 +99,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -118,6 +117,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -135,6 +135,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -152,6 +153,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
+    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -171,6 +173,7 @@ def reduce_vals(
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
     keepdims: bool = False,
+    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -195,6 +198,7 @@ def reduce_vals(
         be `d array of length ``x.shape[axis]``.
     {axis}
     {keepdims}
+    {order}
     {parallel}
     {dtype}
     {out}
@@ -259,6 +263,7 @@ def reduce_vals(
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
                 "axis_neg": -1,
+                "order": order,
                 "keepdims": True,
             },
             keep_attrs=keep_attrs,
@@ -289,6 +294,7 @@ def reduce_vals(
         parallel=parallel,
         out=out,
         keepdims=keepdims,
+        order=order,
     )
 
 
@@ -303,6 +309,7 @@ def _reduce_vals(
     parallel: bool | None = None,
     out: NDArray[FloatT] | None = None,
     keepdims: bool = False,
+    order: ArrayOrder = None,
 ) -> NDArray[FloatT]:
     args = (x0, w, *x1)
     if out is None:
@@ -321,11 +328,12 @@ def _reduce_vals(
         parallel=parallel_heuristic(parallel, args[0].size * mom_ndim),
     )(out, *args, axes=axes)
 
-    return optional_keepdims(
+    out = optional_keepdims(
         out,
         axis=axis_neg - mom_ndim,
         keepdims=keepdims,
     )
+    return np.asarray(out, order=order)
 
 
 # * Reduce data ---------------------------------------------------------------
