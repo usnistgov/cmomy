@@ -472,7 +472,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         self,
         data: ArrayLike,
         *,
-        order: ArrayOrder = None,
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -500,7 +499,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         array([20.    ,  0.5124,  0.1033])
 
         """
-        return self._push_data_numpy(data, order=order, parallel=parallel)
+        return self._push_data_numpy(data, parallel=parallel)
 
     @docfiller_inherit_abc()
     def push_datas(
@@ -508,7 +507,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         datas: ArrayLike,
         *,
         axis: AxisReduce = -1,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -530,7 +528,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         <CentralMoments(val_shape=(), mom=(2,))>
         array([20.    ,  0.5124,  0.1033])
         """
-        return self._push_datas_numpy(datas, axis=axis, order=order, parallel=parallel)
+        return self._push_datas_numpy(datas, axis=axis, parallel=parallel)
 
     @docfiller_inherit_abc()
     def push_val(
@@ -643,11 +641,11 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 self._data,
                 mom_ndim=self._mom_ndim,
                 axis=axis,
-                order=order,
                 parallel=parallel,
                 dtype=self.dtype,
                 keepdims=keepdims,
             )
+
         else:
             from .reduction import reduce_data_grouped
 
@@ -656,11 +654,15 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 mom_ndim=self._mom_ndim,
                 by=by,
                 axis=axis,
-                order=order,
                 parallel=parallel,
                 dtype=self.dtype,
             )
-        return type(self)(data=data, mom_ndim=self._mom_ndim, fastpath=True)
+
+        return type(self)(
+            data=data.astype(self.dtype, order=order, copy=False),
+            mom_ndim=self._mom_ndim,
+            fastpath=True,
+        )
 
     @docfiller.decorate
     def resample(
@@ -1025,9 +1027,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             axis=axis,
             parallel=parallel,
             dtype=dtype,
-            order=order,
         )
-        return cls(data=data, mom_ndim=mom_ndim)
+        return cls(data=data, mom_ndim=mom_ndim, order=order)
 
     @overload
     @classmethod
@@ -1127,10 +1128,9 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             weight=weight,
             parallel=parallel,
             dtype=dtype,
-            order=order,
         )
 
-        return cls(data=data, mom_ndim=mom_ndim)
+        return cls(data=data, mom_ndim=mom_ndim, order=order)
 
     @classmethod
     @docfiller_abc()

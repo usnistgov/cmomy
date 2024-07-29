@@ -48,7 +48,6 @@ if TYPE_CHECKING:
 
     from .typing import (
         ArrayLikeArg,
-        ArrayOrder,
         ArrayT,
         AxesGUFunc,
         AxisReduce,
@@ -81,7 +80,6 @@ def reduce_vals(  # type: ignore[overload-overlap]
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -99,7 +97,6 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -117,7 +114,6 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -135,7 +131,6 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -153,7 +148,6 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -173,7 +167,6 @@ def reduce_vals(
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
     keepdims: bool = False,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -198,7 +191,6 @@ def reduce_vals(
         be `d array of length ``x.shape[axis]``.
     {axis}
     {keepdims}
-    {order}
     {parallel}
     {dtype}
     {out}
@@ -263,7 +255,6 @@ def reduce_vals(
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
                 "axis_neg": -1,
-                "order": order,
                 "keepdims": True,
             },
             keep_attrs=keep_attrs,
@@ -288,13 +279,12 @@ def reduce_vals(
 
     return _reduce_vals(
         *args,
-        mom=mom,
+        mom=mom_validated,
         mom_ndim=mom_ndim,
         axis_neg=axis_neg,
         parallel=parallel,
         out=out,
         keepdims=keepdims,
-        order=order,
     )
 
 
@@ -309,7 +299,6 @@ def _reduce_vals(
     parallel: bool | None = None,
     out: NDArray[FloatT] | None = None,
     keepdims: bool = False,
-    order: ArrayOrder = None,
 ) -> NDArray[FloatT]:
     args = (x0, w, *x1)
     if out is None:
@@ -328,12 +317,11 @@ def _reduce_vals(
         parallel=parallel_heuristic(parallel, args[0].size * mom_ndim),
     )(out, *args, axes=axes)
 
-    out = optional_keepdims(
+    return optional_keepdims(
         out,
         axis=axis_neg - mom_ndim,
         keepdims=keepdims,
     )
-    return np.asarray(out, order=order)
 
 
 # * Reduce data ---------------------------------------------------------------
@@ -345,7 +333,6 @@ def reduce_data(  # type: ignore[overload-overlap]
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -360,7 +347,6 @@ def reduce_data(
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -375,7 +361,6 @@ def reduce_data(
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -390,7 +375,6 @@ def reduce_data(
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -405,7 +389,6 @@ def reduce_data(
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
     keepdims: bool = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -422,7 +405,6 @@ def reduce_data(
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = MISSING,
     keepdims: bool = False,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -440,7 +422,6 @@ def reduce_data(
     {mom_ndim}
     {axis_data_mult}
     {keepdims}
-    {order}
     {parallel}
     {dtype}
     {out}
@@ -461,7 +442,6 @@ def reduce_data(
             keep_attrs=keep_attrs,
             keepdims=keepdims,
             mom_ndim=mom_ndim,
-            order=order,
             parallel=parallel,
             dtype=dtype,
             out=out,
@@ -471,7 +451,7 @@ def reduce_data(
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     # special to support multiple reduction dimensions...
-    data = np.asarray(data, dtype=dtype, order=order)
+    data = np.asarray(data, dtype=dtype)
     ndim = data.ndim - mom_ndim
     axis_tuple = normalize_axis_tuple(
         validate_axis_mult(axis),
@@ -491,7 +471,7 @@ def reduce_data(
     out = factory_reduce_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, data.size * mom_ndim),
-    )(data, out=out, order=order, dtype=dtype)
+    )(data, out=out, dtype=dtype)
 
     return optional_keepdims(
         out,
@@ -597,7 +577,6 @@ def reduce_data_grouped(  # type: ignore[overload-overlap]
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
@@ -615,7 +594,6 @@ def reduce_data_grouped(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
@@ -633,7 +611,6 @@ def reduce_data_grouped(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
@@ -651,7 +628,6 @@ def reduce_data_grouped(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
@@ -669,7 +645,6 @@ def reduce_data_grouped(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLike = ...,
@@ -689,7 +664,6 @@ def reduce_data_grouped(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -709,7 +683,6 @@ def reduce_data_grouped(
     {mom_ndim}
     {by}
     {axis_data}
-    {order}
     {parallel}
     {out}
     {dtype}
@@ -791,7 +764,6 @@ def reduce_data_grouped(
                     "parallel": parallel,
                     "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
                     "dtype": dtype,
-                    "order": order,
                     "axis": -1,
                 },
                 keep_attrs=keep_attrs,
@@ -813,7 +785,6 @@ def reduce_data_grouped(
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
-        order=order,
         dtype=dtype,
     )
 
@@ -972,7 +943,6 @@ def reduce_data_indexed(  # type: ignore[overload-overlap]
     group_end: ArrayLike,
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
@@ -994,7 +964,6 @@ def reduce_data_indexed(
     group_end: ArrayLike,
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
@@ -1016,7 +985,6 @@ def reduce_data_indexed(
     group_end: ArrayLike,
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
@@ -1038,7 +1006,6 @@ def reduce_data_indexed(
     group_end: ArrayLike,
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
@@ -1060,7 +1027,6 @@ def reduce_data_indexed(
     group_end: ArrayLike,
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLike = ...,
@@ -1075,7 +1041,7 @@ def reduce_data_indexed(
 
 # ** public
 @docfiller.decorate
-def reduce_data_indexed(  # noqa: PLR0913
+def reduce_data_indexed(
     data: xr.DataArray | ArrayLike,
     *,
     mom_ndim: Mom_NDim,
@@ -1084,7 +1050,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     group_end: ArrayLike,
     scale: ArrayLike | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -1111,7 +1076,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     scale : ndarray, optional
         Weights of same size as ``index``.
     {axis_data}
-    {order}
     {parallel}
     {out}
     {dtype}
@@ -1188,7 +1152,6 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "scale": scale,
                 "parallel": parallel,
                 "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
-                "order": order,
                 "dtype": dtype,
                 "axis": -1,
             },
@@ -1226,7 +1189,6 @@ def reduce_data_indexed(  # noqa: PLR0913
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
-        order=order,
         dtype=dtype,
     )
 
@@ -1289,7 +1251,6 @@ def resample_data_indexed(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool = True,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -1313,7 +1274,6 @@ def resample_data_indexed(
         group_end=end,
         scale=scales,
         axis=axis,
-        order=order,
         parallel=parallel,
         out=out,  # pyright: ignore[reportArgumentType]
         dtype=dtype,

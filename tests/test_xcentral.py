@@ -293,7 +293,7 @@ def test_push_vals_mult(other) -> None:
 def test_combine(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
-        t.push_data(scramble_xr(s.to_dataarray())[0], order="c")
+        t.push_data(scramble_xr(s.to_dataarray())[0])
     xtest(other.data_test_xr, t.to_dataarray())
 
     t = other.s_xr.zeros_like()

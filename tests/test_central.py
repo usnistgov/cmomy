@@ -385,11 +385,10 @@ def test_push_vals_mult(other) -> None:
     other.test_values(t.to_values())
 
 
-@pytest.mark.parametrize("order", ["C", None])
-def test_combine(other, order) -> None:
+def test_combine(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
-        t.push_data(s.to_values(), order=order)
+        t.push_data(s.to_values())
     other.test_values(t.to_values())
 
 

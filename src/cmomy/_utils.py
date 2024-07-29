@@ -710,10 +710,9 @@ def prepare_data_for_reduction(
     axis: AxisReduce | MissingType,
     mom_ndim: Mom_NDim,
     dtype: DTypeLikeArg[ScalarT],
-    order: ArrayOrder = None,
 ) -> tuple[int, NDArray[ScalarT]]:
     """Convert central moments array to correct form for reduction."""
-    data = np.asarray(data, dtype=dtype, order=order)
+    data = np.asarray(data, dtype=dtype)
 
     axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim)
     return axis, data

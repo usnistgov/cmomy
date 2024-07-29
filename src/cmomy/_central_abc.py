@@ -649,10 +649,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         data: ArrayLike,
         *,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
-        data = np.asarray(data, order=order, dtype=self.dtype)
+        data = np.asarray(data, dtype=self.dtype)
         self._pusher(parallel).data(data, self._data)
         return self
 
@@ -662,14 +661,12 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *,
         axis: AxisReduce | MissingType,
         parallel: bool | None = None,
-        order: ArrayOrder = None,
     ) -> Self:
         axis, datas = prepare_data_for_reduction(
             data=datas,
             axis=axis,
             mom_ndim=self.mom_ndim,
             dtype=self.dtype,
-            order=order,
         )
         axes = axes_data_reduction(mom_ndim=self.mom_ndim, axis=axis)
 
@@ -738,7 +735,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         data: Any,
         *,
-        order: ArrayOrder = None,
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -764,7 +760,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         datas: Any,
         *,
         axis: AxisReduce = -1,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -949,12 +944,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             freq=freq,
             mom_ndim=self._mom_ndim,
             axis=axis,
-            order=order,
             parallel=parallel,
             dtype=self.dtype,
             **kwargs,
         )
-        return type(self)(data=data, mom_ndim=self._mom_ndim)
+        return type(self)(data=data, mom_ndim=self._mom_ndim, order=order)
 
     @docfiller.decorate
     def jackknife_and_reduce(
@@ -989,11 +983,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             axis=axis,
             data_reduced=data_reduced,
             parallel=parallel,
-            order=order,
             **kwargs,
         )
 
-        return type(self)(data=data, mom_ndim=self._mom_ndim)
+        return type(self)(data=data, mom_ndim=self._mom_ndim, order=order)
 
     @abstractmethod
     @docfiller.decorate

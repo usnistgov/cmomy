@@ -44,7 +44,6 @@ if TYPE_CHECKING:
 
     from .typing import (
         ArrayLikeArg,
-        ArrayOrder,
         AxesGUFunc,
         AxisReduce,
         DimsReduce,
@@ -430,7 +429,6 @@ def resample_data(  # type: ignore[overload-overlap]
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -446,7 +444,6 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -462,7 +459,6 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -478,7 +474,6 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -494,7 +489,6 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -515,7 +509,6 @@ def resample_data(
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str = "rep",
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -534,7 +527,6 @@ def resample_data(
     {dim}
     {rep_dim}
     {parallel}
-    {order}
     {dtype}
     {out}
     {keep_attrs}
@@ -565,7 +557,6 @@ def resample_data(
                 "parallel": parallel,
                 "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
                 "dtype": dtype,
-                "order": order,
                 "axis": -1,
             },
             keep_attrs=keep_attrs,
@@ -576,7 +567,10 @@ def resample_data(
     freq = np.asarray(freq, dtype=dtype)
 
     axis, data = prepare_data_for_reduction(
-        data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
+        data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        dtype=dtype,
     )
 
     # include inner core dimensions for freq
@@ -604,7 +598,6 @@ def resample_vals(  # type: ignore[overload-overlap]
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -623,7 +616,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -642,7 +634,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -661,7 +652,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -680,7 +670,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -701,7 +690,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -724,7 +712,6 @@ def resample_vals(
     {mom}
     {weight}
     {axis}
-    {order}
     {parallel}
     {dtype}
     {out}
@@ -785,7 +772,6 @@ def resample_vals(
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
                 "out": out,
-                "order": order,
             },
             keep_attrs=keep_attrs,
         )
@@ -810,7 +796,6 @@ def resample_vals(
         mom_ndim=mom_ndim,
         parallel=parallel,
         out=out,
-        order=order,
     )
 
 
@@ -824,7 +809,6 @@ def _resample_vals(
     mom_ndim: Mom_NDim,
     parallel: bool | None = None,
     out: NDArray[FloatT] | None = None,
-    order: ArrayOrder = None,
 ) -> NDArray[FloatT]:
     _check_freq(freq, x0.shape[-1])
 
@@ -849,7 +833,7 @@ def _resample_vals(
         parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
     )(out, freq, x0, w, *x1)
 
-    return np.asarray(out, order)
+    return out
 
 
 @docfiller.decorate
@@ -1054,7 +1038,6 @@ def jackknife_data(  # type: ignore[overload-overlap]
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -1070,7 +1053,6 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -1086,7 +1068,6 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -1102,7 +1083,6 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -1118,7 +1098,6 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     # thing should be out: NDArrayAny | None = ...
@@ -1136,7 +1115,6 @@ def jackknife_data(
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str | None = "rep",
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -1160,7 +1138,6 @@ def jackknife_data(
     rep_dim : str, optional
         Optionally output ``dim`` to ``rep_dim``.
     {parallel}
-    {order}
     {dtype}
     {out}
     {keep_attrs}
@@ -1230,7 +1207,6 @@ def jackknife_data(
                 "parallel": parallel,
                 "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
                 "dtype": dtype,
-                "order": order,
                 "axis": -1,
             },
             keep_attrs=keep_attrs,
@@ -1246,7 +1222,7 @@ def jackknife_data(
 
     # numpy array
     axis, data = prepare_data_for_reduction(
-        data, axis=axis, mom_ndim=mom_ndim, dtype=dtype, order=order
+        data, axis=axis, mom_ndim=mom_ndim, dtype=dtype
     )
 
     if data_reduced is None:
@@ -1257,13 +1233,12 @@ def jackknife_data(
             mom_ndim=mom_ndim,
             dim=dim,
             axis=axis,
-            order=order,
             parallel=parallel,
             keep_attrs=bool(keep_attrs),
             dtype=dtype,
         )
     else:
-        data_reduced = np.asarray(data_reduced, dtype=dtype, order=order)
+        data_reduced = np.asarray(data_reduced, dtype=dtype)
 
     axes_data, axes_mom = axes_data_reduction(
         mom_ndim=mom_ndim, axis=axis, out_has_axis=True
@@ -1289,7 +1264,6 @@ def jackknife_vals(  # type: ignore[overload-overlap]
     data_reduced: xr.DataArray | ArrayLike | None = ...,
     weight: xr.DataArray | ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -1308,7 +1282,6 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -1327,7 +1300,6 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -1346,7 +1318,6 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -1365,7 +1336,6 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -1385,7 +1355,6 @@ def jackknife_vals(  # noqa: PLR0914
     data_reduced: xr.DataArray | ArrayLike | None = None,
     weight: xr.DataArray | ArrayLike | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -1452,9 +1421,9 @@ def jackknife_vals(  # noqa: PLR0914
         )
     else:
         data_reduced = (
-            data_reduced.astype(dtype, copy=False, order=order)  # pyright: ignore[reportUnknownMemberType]
+            data_reduced.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
             if isinstance(data_reduced, (xr.DataArray, np.ndarray))
-            else np.asarray(data_reduced, dtype=dtype, order=order)
+            else np.asarray(data_reduced, dtype=dtype)
         )
 
         if data_reduced.shape[-mom_ndim:] != mom_to_mom_shape(mom):
@@ -1559,7 +1528,6 @@ def jackknife_vals2(
     data_reduced: xr.DataArray | ArrayLike | None = None,
     weight: xr.DataArray | ArrayLike | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -1618,7 +1586,6 @@ def jackknife_vals2(
             mom=mom,
             weight=weight,
             axis=axis,
-            order=order,
             parallel=parallel,
             dtype=dtype,
             dim=dim,
@@ -1627,9 +1594,9 @@ def jackknife_vals2(
         )
     else:
         data_reduced = (
-            data_reduced.astype(dtype, copy=False, order=order)  # pyright: ignore[reportUnknownMemberType]
+            data_reduced.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
             if isinstance(data_reduced, (xr.DataArray, np.ndarray))
-            else np.asarray(data_reduced, dtype=dtype, order=order)
+            else np.asarray(data_reduced, dtype=dtype)
         )
 
         if data_reduced.shape[-mom_ndim:] != mom_to_mom_shape(mom):
