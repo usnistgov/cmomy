@@ -13,7 +13,7 @@ from ._simple_cmom import get_cmom, get_comom
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
 
-    from cmomy.typing import ArrayOrder, Mom_NDim, NDArrayAny
+    from cmomy.typing import Mom_NDim, NDArrayAny
 
 
 @pytest.fixture(scope="module", params=[(), (2,), (2, 3)])
@@ -162,20 +162,18 @@ def test_central_moments(
 
 @mom_central
 @pytest.mark.parametrize("dtype", [None, np.float64])
-@pytest.mark.parametrize("order", [None, "C"])
 def test_central_moments_dtype_order(
     mom: Mom_NDim,
     axes: list[int],
     x_values: list[NDArrayAny],
     w_values: list[Any],
     dtype: DTypeLike,
-    order: ArrayOrder,
 ) -> None:
     for axis, x, w in zip(axes, x_values, w_values):
         expected = get_cmom(  # type: ignore[no-untyped-call]
             w if w is None else w.astype(dtype), x.astype(dtype), mom, axis=axis
         )
-        out = reduce_vals(x.astype(dtype), mom=mom, weight=w, axis=axis, order=order)
+        out = reduce_vals(x.astype(dtype), mom=mom, weight=w, axis=axis)
 
         assert out.dtype == expected.dtype
         np.testing.assert_allclose(out, expected)

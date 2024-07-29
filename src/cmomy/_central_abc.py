@@ -14,7 +14,6 @@ from ._utils import (
     normalize_axis_index,
     parallel_heuristic,
     prepare_data_for_reduction,
-    prepare_values_for_push_val,
     prepare_values_for_reduction,
     validate_axis,
     validate_floating_dtype,
@@ -693,23 +692,17 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         self._check_y(y, self.mom_ndim)
 
         weight = 1.0 if weight is None else weight
 
-        x = np.asarray(x, dtype=self.dtype, order=order)
-        x0, *x1, weight = prepare_values_for_push_val(
-            x, *y, weight, dtype=self.dtype, order=order
-        )
-
+        x = np.asarray(x, dtype=self.dtype)
         self._pusher(parallel).val(
             self._data,
-            x0,
-            weight,
-            *x1,
+            x,
+            *(np.asarray(a, dtype=self.dtype) for a in (weight, *y)),
         )
         return self
 
@@ -719,28 +712,23 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *y: ArrayLike,
         axis: AxisReduce | MissingType,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         self._check_y(y, self.mom_ndim)
 
         weight = 1.0 if weight is None else weight
-        x = np.asarray(x, dtype=self.dtype, order=order)
-        axis, (x0, *x1, weight) = prepare_values_for_reduction(
+        axis, args = prepare_values_for_reduction(
             x,
-            *y,
             weight,
+            *y,
             axis=axis,
             dtype=self.dtype,
-            order=order,
             narrays=self._mom_ndim + 1,
         )
 
         self._pusher(parallel).vals(
             self._data,
-            x0,
-            weight,
-            *x1,
+            *args,
         )
         return self
 
@@ -805,7 +793,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -840,7 +827,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *y: ArrayLike,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         """

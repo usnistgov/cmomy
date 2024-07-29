@@ -538,7 +538,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -578,9 +577,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        return self._push_val_numpy(
-            x, *y, weight=weight, order=order, parallel=parallel
-        )
+        return self._push_val_numpy(x, *y, weight=weight, parallel=parallel)
 
     @docfiller_inherit_abc()
     def push_vals(
@@ -589,7 +586,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         *y: ArrayLike,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -626,9 +622,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        return self._push_vals_numpy(
-            x, *y, weight=weight, axis=axis, order=order, parallel=parallel
-        )
+        return self._push_vals_numpy(x, *y, weight=weight, axis=axis, parallel=parallel)
 
     # ** Reduction ----------------------------------------------------------------
     @docfiller_inherit_abc()
@@ -1029,11 +1023,10 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             mom=mom_strict,
             weight=weight,
             axis=axis,
-            order=order,
             parallel=parallel,
             dtype=dtype,
         )
-        return cls(data=data, mom_ndim=mom_ndim)
+        return cls(data=data, mom_ndim=mom_ndim, order=order)
 
     @overload
     @classmethod
@@ -1131,12 +1124,11 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             mom=mom_strict,
             axis=axis,
             weight=weight,
-            order=order,
             parallel=parallel,
             dtype=dtype,
         )
 
-        return cls(data=data, mom_ndim=mom_ndim)
+        return cls(data=data, mom_ndim=mom_ndim, order=order)
 
     @classmethod
     @docfiller_abc()

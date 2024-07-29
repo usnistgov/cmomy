@@ -22,14 +22,13 @@ from ._utils import (
     axes_data_reduction,
     get_axes_from_values,
     get_out_from_values,
-    mom_to_mom_shape,
     normalize_axis_tuple,
     optional_keepdims,
     optional_move_axis_to_end,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
-    prepare_values_for_reduction2,
+    # prepare_values_for_reduction2,
     raise_if_wrong_shape,
     replace_coords_from_isel,
     select_axis_dim,
@@ -40,8 +39,9 @@ from ._utils import (
     validate_mom_dims,
     validate_mom_ndim,
     xprepare_values_for_reduction,
-    xprepare_values_for_reduction2,
 )
+
+# xprepare_values_for_reduction2,
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
@@ -75,43 +75,6 @@ if TYPE_CHECKING:
 
 
 # * Reduce vals ---------------------------------------------------------------
-# ** low level
-def _reduce_vals(
-    x0: NDArray[FloatT],
-    w: NDArray[FloatT],
-    *x1: NDArray[FloatT],
-    mom: MomentsStrict,
-    parallel: bool | None = None,
-    out: NDArray[FloatT] | None = None,
-    # keepdims: bool = False,  # noqa: ERA001
-) -> NDArray[FloatT]:
-    val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
-        :-1
-    ]
-    # TODO(wpk): what to do about ``axis`` and ``keepdims`` for values reduction.
-    # 1) Stay the way we are.  Values reduction (and resampling) always move axis to end
-    # 2) Instead move expand/resampled dimension back to ``axis``.  This is tricky though, as
-    # the final shape is broadcast from ``x``, ``y`` and ``weight``.  If you really want to do this,
-    # then need a check like the following to make sure things make sense.
-    #
-    # if keepdims and len(val_shape) != _x0.ndim - 1:
-    #     msg = f"Broadcasted value shape {val_shape} inconsistent with values shape of x={_x0.shape[:-1]}."  # noqa: ERA001
-    #     raise ValueError(msg)  # noqa: ERA001
-    out_shape: tuple[int, ...] = (*val_shape, *mom_to_mom_shape(mom))
-
-    if out is None:
-        out = np.zeros(out_shape, dtype=x0.dtype)
-    else:
-        raise_if_wrong_shape(out, out_shape)
-        out.fill(0.0)
-
-    factory_reduce_vals(
-        mom_ndim=len(mom),
-        parallel=parallel_heuristic(parallel, x0.size * len(mom)),
-    )(out, x0, w, *x1)
-    return out
-
-
 # ** overloads
 @overload
 def reduce_vals(  # type: ignore[overload-overlap]
@@ -120,8 +83,7 @@ def reduce_vals(  # type: ignore[overload-overlap]
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,  # noqa: ERA001
-    order: ArrayOrder = ...,
+    keepdims: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -138,8 +100,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,  # noqa: ERA001
-    order: ArrayOrder = ...,
+    keepdims: bool = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -156,8 +117,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,  # noqa: ERA001
-    order: ArrayOrder = ...,
+    keepdims: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -174,8 +134,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,  # noqa: ERA001
-    order: ArrayOrder = ...,
+    keepdims: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -192,8 +151,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    # keepdims: bool = ...,  # noqa: ERA001
-    order: ArrayOrder = ...,
+    keepdims: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -204,7 +162,7 @@ def reduce_vals(
 ) -> NDArrayAny: ...
 
 
-# ** public
+# TODO(wpk): add tests for keepdims...
 @docfiller.decorate
 def reduce_vals(
     x: ArrayLike | xr.DataArray,
@@ -212,138 +170,7 @@ def reduce_vals(
     mom: Moments,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    # keepdims: bool = False,  # noqa: ERA001
-    order: ArrayOrder = None,
-    parallel: bool | None = None,
-    dtype: DTypeLike = None,
-    out: NDArrayAny | None = None,
-    # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
-    keep_attrs: KeepAttrs = None,
-) -> NDArrayAny | xr.DataArray:
-    """
-    Reduce values to central (co)moments.
-
-    Parameters
-    ----------
-    x : ndarray or DataArray
-        Values to analyze.
-    *y : array-like or DataArray
-        Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
-        to broadcast to ``x`` or be 1d array with length ``x.shape[axis]``.
-    {mom}
-    weight : scalar or array-like or DataArray
-        Weights for each point. Should either be able to broadcast to ``x`` or
-        be `d array of length ``x.shape[axis]``.
-    {axis}
-    {keepdims}
-    {order}
-    {parallel}
-    {dtype}
-    {out}
-    {dim}
-    {mom_dims}
-    {keep_attrs}
-
-    Returns
-    -------
-    out : ndarray or DataArray
-        Central moments array of same type as ``x``. ``out.shape = shape +
-        (mom0, ...)`` where ``shape = np.broadcast_shapes(*(a.shape for a in
-        (x_, *y_, weight_)))[:-1]`` and ``x_``, ``y_`` and ``weight_`` are the
-        input arrays with ``axis`` moved to the last axis.
-
-
-    Notes
-    -----
-    We have removed the ``keepdims`` argument from this function, as the
-    behaviour could be inconsistent for comoments. For comoments, the output
-    shape will depend on both ``x`` and ``y``, and is not clear where in
-    ``out`` to include the expanded dims.
-
-    See Also
-    --------
-    numpy.broadcast_shapes
-    """
-    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    weight = 1.0 if weight is None else weight
-
-    dtype = select_dtype(x, out=out, dtype=dtype)
-
-    if isinstance(x, xr.DataArray):
-        input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
-            x,
-            weight,
-            *y,
-            axis=axis,
-            dim=dim,
-            order=order,
-            narrays=mom_ndim + 1,
-            dtype=dtype,
-        )
-        mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
-
-        # to ensure order like numpy....
-        def _wrapper(
-            out: NDArrayAny | None, weight: NDArrayAny, *args: NDArrayAny
-        ) -> NDArrayAny:
-            *x1, x0 = args
-            return _reduce_vals(
-                x0, weight, *x1, mom=mom_validated, parallel=parallel, out=out
-            )
-
-        input_core_dims = [
-            # out, w, x1, x0
-            mom_dims_strict,
-            input_core_dims[1],
-            *input_core_dims[2:],
-            input_core_dims[0],
-        ]
-
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            # _reduce_vals,
-            # x0,
-            # w,
-            # *x1,
-            _wrapper,
-            out,
-            w,
-            *x1,
-            x0,
-            input_core_dims=input_core_dims,
-            output_core_dims=[mom_dims_strict],
-            # kwargs={"mom": mom_validated, "parallel": parallel, "out": out},  # noqa: ERA001
-            keep_attrs=keep_attrs,
-        )
-
-    axis, (_x0, _w, *_x1) = prepare_values_for_reduction(
-        x,
-        weight,
-        *y,
-        axis=axis,
-        order=order,
-        narrays=mom_ndim + 1,
-        dtype=dtype,
-    )
-
-    # return optional_keepdims(
-    #     _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),  # noqa: ERA001
-    #     axis=axis,  # noqa: ERA001
-    #     keepdims=keepdims)
-
-    return _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out)
-
-
-@docfiller.decorate
-def reduce_vals2(
-    x: ArrayLike | xr.DataArray,
-    *y: ArrayLike | xr.DataArray,
-    mom: Moments,
-    weight: ArrayLike | xr.DataArray | None = None,
-    axis: AxisReduce | MissingType = MISSING,
     keepdims: bool = False,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -368,7 +195,6 @@ def reduce_vals2(
         be `d array of length ``x.shape[axis]``.
     {axis}
     {keepdims}
-    {order}
     {parallel}
     {dtype}
     {out}
@@ -385,12 +211,6 @@ def reduce_vals2(
         input arrays with ``axis`` moved to the last axis.
 
 
-    Notes
-    -----
-    We have removed the ``keepdims`` argument from this function, as the
-    behaviour could be inconsistent for comoments. For comoments, the output
-    shape will depend on both ``x`` and ``y``, and is not clear where in
-    ``out`` to include the expanded dims.
 
     See Also
     --------
@@ -401,7 +221,7 @@ def reduce_vals2(
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction2(
+        input_core_dims, args = xprepare_values_for_reduction(
             x,
             *y,
             weight,
@@ -414,8 +234,9 @@ def reduce_vals2(
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
         dim = input_core_dims[0][0]
         input_core_dims = [
-            # out, w, *y, x
+            # out
             mom_dims_strict,
+            # w, *y, x
             *reversed(input_core_dims),
         ]
 
@@ -423,7 +244,8 @@ def reduce_vals2(
         def _wrapper(
             out: NDArrayAny | None, weight: NDArrayAny, *args: NDArrayAny, **kwargs: Any
         ) -> NDArrayAny:
-            return reduce_vals2(*reversed(args), weight=weight, out=out, **kwargs)
+            *y, x = args
+            return _reduce_vals(x, weight, *y, out=out, **kwargs)
 
         xout: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
             _wrapper,
@@ -434,8 +256,9 @@ def reduce_vals2(
             exclude_dims={dim},
             kwargs={
                 "mom": mom_validated,
+                "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "axis": -1,
+                "axis_neg": -1,
                 "keepdims": True,
             },
             keep_attrs=keep_attrs,
@@ -448,16 +271,40 @@ def reduce_vals2(
 
         return xout
 
-    axis_neg, args = prepare_values_for_reduction2(
+    axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
         *y,
         axis=axis,
-        order=order,
         dtype=dtype,
         narrays=mom_ndim + 1,
+        move_axis_to_end=False,
     )
 
+    return _reduce_vals(
+        *args,
+        mom=mom,
+        mom_ndim=mom_ndim,
+        axis_neg=axis_neg,
+        parallel=parallel,
+        out=out,
+        keepdims=keepdims,
+    )
+
+
+# Low level
+def _reduce_vals(
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    *x1: NDArray[FloatT],
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    axis_neg: int,
+    parallel: bool | None = None,
+    out: NDArray[FloatT] | None = None,
+    keepdims: bool = False,
+) -> NDArray[FloatT]:
+    args = (x0, w, *x1)
     if out is None:
         out = get_out_from_values(*args, mom=mom, axis_neg=axis_neg)
     else:
@@ -479,11 +326,6 @@ def reduce_vals2(
         axis=axis_neg - mom_ndim,
         keepdims=keepdims,
     )
-
-    # return optional_keepdims(
-    #     _reduce_vals(_x0, _w, *_x1, mom=mom_validated, parallel=parallel, out=out),  # noqa: ERA001
-    #     axis=axis,  # noqa: ERA001
-    #     keepdims=keepdims)
 
 
 # * Reduce data ---------------------------------------------------------------

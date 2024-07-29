@@ -943,7 +943,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         x: xr.DataArray,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,  # noqa: ARG002
         parallel: bool | None = None,
     ) -> Self:
         self._check_y(y, self.mom_ndim)
@@ -974,7 +973,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         weight: ArrayLike | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         self._check_y(y, self.mom_ndim)
@@ -988,7 +986,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             axis=axis,
             dim=dim,
             dtype=self.dtype,
-            order=order,
             narrays=self.mom_ndim + 1,
         )
 
@@ -1043,17 +1040,12 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         x: ArrayLike | xr.DataArray,
         *y: ArrayLike | xr.DataArray,
         weight: ArrayLike | xr.DataArray | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = False,
     ) -> Self:
         if isinstance(x, xr.DataArray):
-            return self._push_val_dataarray(
-                x, *y, weight=weight, order=order, parallel=parallel
-            )
+            return self._push_val_dataarray(x, *y, weight=weight, parallel=parallel)
 
-        return self._push_val_numpy(
-            x, *y, weight=weight, order=order, parallel=parallel
-        )
+        return self._push_val_numpy(x, *y, weight=weight, parallel=parallel)
 
     @docfiller_inherit_abc()
     def push_vals(
@@ -1063,7 +1055,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         weight: ArrayLike | xr.DataArray | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         if isinstance(x, xr.DataArray):
@@ -1073,13 +1064,10 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 weight=weight,
                 axis=axis,
                 dim=dim,
-                order=order,
                 parallel=parallel,
             )
 
-        return self._push_vals_numpy(
-            x, *y, weight=weight, axis=axis, order=order, parallel=parallel
-        )
+        return self._push_vals_numpy(x, *y, weight=weight, axis=axis, parallel=parallel)
 
     # ** Manipulation
     # ** Reduction -----------------------------------------------------------
@@ -1693,12 +1681,12 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 axis=axis,
                 dim=dim,
                 mom_dims=mom_dims,
-                order=order,
                 parallel=parallel,
                 dtype=dtype,
                 keep_attrs=keep_attrs,
             ),
             mom_ndim=mom_ndim,
+            order=order,
         )
 
     @overload
@@ -1820,7 +1808,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 weight=weight,
                 axis=axis,
                 dim=dim,
-                order=order,
                 parallel=parallel,
                 mom_dims=mom_dims,
                 rep_dim=rep_dim,
@@ -1828,6 +1815,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 dtype=dtype,
             ),
             mom_ndim=mom_ndim,
+            order=order,
         )
 
     @classmethod

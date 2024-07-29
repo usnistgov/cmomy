@@ -642,7 +642,6 @@ def resample_vals(  # type: ignore[overload-overlap]
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -661,7 +660,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -680,7 +678,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -699,7 +696,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -718,7 +714,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
-    order: ArrayOrder = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -739,7 +734,6 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -762,7 +756,6 @@ def resample_vals(
     {mom}
     {weight}
     {axis}
-    {order}
     {parallel}
     {dtype}
     {out}
@@ -801,7 +794,6 @@ def resample_vals(
             axis=axis,
             dim=dim,
             dtype=dtype,
-            order=order,
             narrays=mom_ndim + 1,
         )
 
@@ -836,7 +828,7 @@ def resample_vals(
             *x1,
         ),
     ) = prepare_values_for_reduction(
-        x, weight, *y, axis=axis, dtype=dtype, order=order, narrays=mom_ndim + 1
+        x, weight, *y, axis=axis, dtype=dtype, narrays=mom_ndim + 1
     )
 
     return _resample_vals(
@@ -859,7 +851,6 @@ def resample_vals2(
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
-    order: ArrayOrder = None,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -970,7 +961,7 @@ def resample_vals2(
 
     freq = np.asarray(freq, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction2(
-        x, weight, *y, axis=axis, order=order, dtype=dtype, narrays=mom_ndim + 1
+        x, weight, *y, axis=axis, dtype=dtype, narrays=mom_ndim + 1
     )
 
     if out is None:
@@ -1444,7 +1435,6 @@ def jackknife_vals(  # noqa: PLR0914
             mom=mom,
             weight=weight,
             axis=axis,
-            order=order,
             parallel=parallel,
             dtype=dtype,
             dim=dim,
@@ -1470,7 +1460,6 @@ def jackknife_vals(  # noqa: PLR0914
             axis=axis,
             dim=dim,
             dtype=dtype,
-            order=order,
             narrays=mom_ndim + 1,
         )
 
@@ -1513,7 +1502,12 @@ def jackknife_vals(  # noqa: PLR0914
             *x1,
         ),
     ) = prepare_values_for_reduction(
-        x, weight, *y, axis=axis, dtype=dtype, order=order, narrays=mom_ndim + 1
+        x,
+        weight,
+        *y,
+        axis=axis,
+        dtype=dtype,
+        narrays=mom_ndim + 1,
     )
 
     return _jackknife_vals(
@@ -1701,7 +1695,6 @@ def jackknife_vals2(
         weight,
         *y,
         axis=axis,
-        order=order,
         dtype=dtype,
         narrays=mom_ndim + 1,
     )

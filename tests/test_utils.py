@@ -206,9 +206,9 @@ prepare_values_mark = pytest.mark.parametrize(
 
 @prepare_values_mark
 @dtype_mark
-@order_mark
+# @order_mark
 def test_prepare_values_for_reduction(
-    dtype, order, axis, xshape, xshape2, yshape, yshape2, wshape, wshape2
+    dtype, axis, xshape, xshape2, yshape, yshape2, wshape, wshape2
 ) -> None:
     xv, yv, wv = 1, 2, 3
 
@@ -222,7 +222,6 @@ def test_prepare_values_for_reduction(
             w,  # type: ignore[arg-type]
             narrays=2,
             axis=axis,
-            order=order,
             dtype=dtype,
         )
 
@@ -237,7 +236,6 @@ def test_prepare_values_for_reduction(
                 narrays=3,
                 axis=axis,
                 dtype=dtype,
-                order=order,
             )
 
     else:
@@ -247,7 +245,6 @@ def test_prepare_values_for_reduction(
             w,  # type: ignore[arg-type]
             narrays=3,
             axis=axis,
-            order=order,
             dtype=dtype,
         )
 
@@ -255,21 +252,6 @@ def test_prepare_values_for_reduction(
             assert xx.shape == ss
             assert xx.dtype == np.dtype(dtype or np.float64)
             np.testing.assert_allclose(xx, vv)
-
-            if order == "C":
-                assert xx.flags["C_CONTIGUOUS"]
-
-
-@dtype_mark
-@order_mark
-def test_prepare_values_for_push_val(dtype, order) -> None:
-    x = np.ones((2, 3, 4), dtype=dtype, order="F")
-    w = 1.0
-
-    for arg in utils.prepare_values_for_push_val(x, w, order=order, dtype=dtype):
-        if order == "C":
-            assert arg.flags["C_CONTIGUOUS"]
-        assert arg.dtype == np.dtype(dtype or np.float64)
 
 
 # * xarray stuff
@@ -316,16 +298,15 @@ def test_xprepare_values_for_reduction_0():
 @pytest.mark.parametrize(
     ("dim", "xshape", "xshape2", "yshape", "yshape2"),
     [
-        ("dim_0", (2, 3, 4), (3, 4, 2), (2,), (2,)),
-        ("dim_1", (2, 3, 4), (2, 4, 3), (3, 4), (4, 3)),
+        ("dim_0", (2, 3, 4), (2, 3, 4), (2,), (2,)),
+        ("dim_1", (2, 3, 4), (2, 3, 4), (3, 4), (4, 3)),
         ("dim_2", (2, 3, 4), (2, 3, 4), (4,), (4,)),
-        ("dim_0", (2, 3, 4), (3, 4, 2), (2, 3, 4), (3, 4, 2)),
+        ("dim_0", (2, 3, 4), (2, 3, 4), (2, 3, 4), (3, 4, 2)),
     ],
 )
 @dtype_mark
-@order_mark
 def test_xprepare_values_for_reduction_1(
-    dtype, order, dim, xshape, xshape2, yshape, yshape2
+    dtype, dim, xshape, xshape2, yshape, yshape2
 ) -> None:
     target = xr.DataArray(np.ones(xshape, dtype=dtype))
     other = np.ones(yshape, dtype=np.float32)
@@ -336,7 +317,6 @@ def test_xprepare_values_for_reduction_1(
         narrays=2,
         axis=utils.MISSING,
         dim=dim,
-        order=order,
         dtype=dtype,
     )
 
@@ -347,10 +327,6 @@ def test_xprepare_values_for_reduction_1(
     assert x.dtype == np.dtype(dtype or np.float64)
     assert y.dtype == np.dtype(dtype or np.float64)
 
-    if order == "C":
-        assert x.data.flags["C_CONTIGUOUS"]  # type: ignore[union-attr]
-        assert y.flags["C_CONTIGUOUS"]
-
     if xshape == yshape:
         # also do xr test
         other = xr.DataArray(other)  # type: ignore[assignment]
@@ -360,7 +336,6 @@ def test_xprepare_values_for_reduction_1(
             narrays=2,
             axis=utils.MISSING,
             dim=dim,
-            order=order,
             dtype=dtype,
         )
 
@@ -370,10 +345,6 @@ def test_xprepare_values_for_reduction_1(
         assert y.shape == other.shape
         assert x.dtype == np.dtype(dtype or np.float64)
         assert y.dtype == np.dtype(dtype or np.float64)
-
-        if order == "C":
-            assert x.data.flags["C_CONTIGUOUS"]  # type: ignore[union-attr]
-            assert y.data.flags["C_CONTIGUOUS"]  # type: ignore[union-attr]
 
 
 @pytest.mark.parametrize(

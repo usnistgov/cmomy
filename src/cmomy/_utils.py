@@ -484,13 +484,12 @@ def select_axis_dim_mult(
 
 # ** Prepare for push/reduction
 def prepare_secondary_value_for_reduction(
-    target: NDArray[ScalarT],
     x: ArrayLike,
     axis: int,
-    # move_axis: bool,
     nsamp: int,
+    dtype: DTypeLikeArg[ScalarT],
     *,
-    order: ArrayOrder = None,
+    move_axis_to_end: bool = True,
 ) -> NDArray[ScalarT]:
     """
     Prepare value array (x1, w) for reduction.
@@ -510,32 +509,37 @@ def prepare_secondary_value_for_reduction(
         passed through `_prepare_target_value_for_reduction`
 
     """
-    out: NDArray[ScalarT] = np.asarray(x, dtype=target.dtype, order=order)
+    out: NDArray[ScalarT] = np.asarray(x, dtype=dtype)
     if out.ndim == 0:
-        out = np.broadcast_to(out, nsamp)
-    elif out.ndim == 1:
-        pass
-    elif axis != -1:
-        out = np.moveaxis(out, axis, -1)
+        return np.broadcast_to(out, nsamp)
 
-    if out.shape[-1] != nsamp:
-        msg = f"{out.shape[-1]} must be same as target.shape[axis]={nsamp}"
+    if out.ndim == 1:
+        axis_check = -1
+    elif move_axis_to_end and axis != -1:
+        out = np.moveaxis(out, axis, -1)
+        axis_check = -1
+    else:
+        axis_check = axis
+
+    if out.shape[axis_check] != nsamp:
+        msg = f"{out.shape[axis_check]} must be same as target.shape[axis]={nsamp}"
         raise ValueError(msg)
 
-    return np.asarray(out, order=order)
+    return out
 
 
 def xprepare_secondary_value_for_reduction(
-    target: xr.DataArray,
-    x: xr.DataArray,
-    *,
-    order: ArrayOrder = None,
-) -> xr.DataArray:
+    x: xr.DataArray | ArrayLike,
+    axis: int,
+    nsamp: int,
+    dtype: DTypeLikeArg[ScalarT],
+) -> xr.DataArray | NDArray[ScalarT]:
     """Prepare secondary values for reduction."""
-    # assume ordering will be handled by apply_ufunc
-    if order or x.dtype != target.dtype:  # pyright: ignore[reportUnknownMemberType]
-        x = x.astype(dtype=target.dtype, copy=False, order=order)  # pyright: ignore[reportUnknownMemberType]
-    return x
+    if isinstance(x, xr.DataArray):
+        return x.astype(dtype=dtype, copy=False)
+    return prepare_secondary_value_for_reduction(
+        x, axis=axis, nsamp=nsamp, dtype=dtype, move_axis_to_end=True
+    )
 
 
 def prepare_values_for_reduction(
@@ -544,7 +548,7 @@ def prepare_values_for_reduction(
     narrays: int,
     axis: AxisReduce | MissingType = MISSING,
     dtype: DTypeLikeArg[ScalarT],
-    order: ArrayOrder = None,
+    move_axis_to_end: bool = True,
 ) -> tuple[int, tuple[NDArray[ScalarT], ...]]:
     """
     Convert input value arrays to correct form for reduction.
@@ -563,24 +567,23 @@ def prepare_values_for_reduction(
 
     target = np.asarray(target, dtype=dtype)
     axis = normalize_axis_index(validate_axis(axis), target.ndim)
+    nsamp = target.shape[axis]
 
     axis_neg = positive_to_negative_index(axis, target.ndim)
-    if axis_neg != -1:
+    if move_axis_to_end and axis_neg != -1:
         target = np.moveaxis(target, axis_neg, -1)
-    if order:
-        target = np.asarray(target, order=order)
 
     others: Iterable[NDArray[ScalarT]] = (
         prepare_secondary_value_for_reduction(
-            target=target,
             x=x,
             axis=axis_neg,
-            order=order,
-            nsamp=target.shape[-1],
+            nsamp=nsamp,
+            dtype=target.dtype,
+            move_axis_to_end=move_axis_to_end,
         )
         for x in args
     )
-    return axis, (target, *others)
+    return axis_neg, (target, *others)
 
 
 def xprepare_values_for_reduction(
@@ -590,8 +593,7 @@ def xprepare_values_for_reduction(
     dim: DimsReduce | MissingType,
     axis: AxisReduce | MissingType,
     dtype: DTypeLike,
-    order: ArrayOrder = None,
-) -> tuple[list[list[Hashable]], tuple[xr.DataArray | NDArrayAny, ...]]:
+) -> tuple[list[list[Hashable]], list[xr.DataArray | NDArrayAny]]:
     """
     Convert input value arrays to correct form for reduction.
 
@@ -609,63 +611,25 @@ def xprepare_values_for_reduction(
         msg = f"Number of arrays {len(args) + 1} != {narrays}"
         raise ValueError(msg)
 
-    if not isinstance(target, xr.DataArray):  # pyright: ignore[reportUnnecessaryIsInstance]
-        msg = "First value must be DataArray.  Received type {type(target)}"
-        raise TypeError(msg)
-
     axis, dim = select_axis_dim(
         target,
         axis=axis,
         dim=dim,
     )
+
+    dtype = target.dtype if dtype is None else dtype
+    nsamp = target.sizes[dim]
     axis_neg = positive_to_negative_index(axis, target.ndim)
-    # go ahead and do the move in case we want to order...
-    if axis_neg != -1:
-        target = target.transpose(..., dim)  # pyright: ignore[reportUnknownArgumentType]
-    target = target.astype(dtype=dtype, order=order, copy=False)  # pyright: ignore[reportUnknownMemberType]
 
-    nsamp = target.shape[-1]
-    others: list[NDArrayAny | xr.DataArray] = []
-    for x in args:
-        if isinstance(x, xr.DataArray):
-            others.append(
-                xprepare_secondary_value_for_reduction(
-                    target=target,
-                    x=x,
-                    order=order,  # axis=axis, dim=dim, move_axis=move_axis, order=order
-                )
-            )
-        else:
-            others.append(
-                prepare_secondary_value_for_reduction(  # pyright: ignore[reportUnknownArgumentType]
-                    target=target.values,  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-                    x=x,
-                    axis=axis_neg,
-                    order=order,
-                    nsamp=nsamp,
-                )
-            )
+    arrays = [
+        xprepare_secondary_value_for_reduction(
+            a, axis=axis_neg, nsamp=nsamp, dtype=dtype
+        )
+        for a in (target, *args)
+    ]
 
-    input_core_dims = [[dim]] * (len(others) + 1)
-    return input_core_dims, (target, *others)
-
-
-def prepare_secondary_value_for_reduction2(
-    x: ArrayLike,
-    nsamp: int,
-    dtype: DTypeLikeArg[ScalarT],
-    axis: int,
-    move_axis_to_end: bool = False,
-) -> NDArray[ScalarT]:
-    out: NDArray[ScalarT] = np.asarray(x, dtype=dtype)
-    if out.ndim == 0:
-        return np.broadcast_to(out, nsamp)
-    if out.ndim == 1:
-        return out
-
-    if move_axis_to_end:
-        out = np.moveaxis(out, axis, -1)
-    return out
+    input_core_dims = [[dim]] * len(arrays)
+    return input_core_dims, arrays
 
 
 def prepare_values_for_reduction2(
@@ -693,7 +657,7 @@ def prepare_values_for_reduction2(
     arrays = [
         target,
         *(
-            prepare_secondary_value_for_reduction2(
+            prepare_secondary_value_for_reduction(
                 a,
                 nsamp=nsamp,
                 dtype=dtype,
@@ -747,7 +711,7 @@ def xprepare_values_for_reduction2(
             arrays.append(a.astype(dtype=dtype, copy=False))
         else:
             arrays.append(
-                prepare_secondary_value_for_reduction2(
+                prepare_secondary_value_for_reduction(
                     a, nsamp=nsamp, dtype=dtype, axis=axis_neg, move_axis_to_end=True
                 )
             )
@@ -782,20 +746,6 @@ def get_out_from_values(
 
     out_shape = (*val_shape, *mom_to_mom_shape(mom))
     return np.zeros(out_shape, dtype=args[0].dtype)
-
-
-def prepare_values_for_push_val(
-    target: ArrayLike,
-    *args: ArrayLike,
-    dtype: DTypeLikeArg[ScalarT],
-    order: ArrayOrder | None = None,
-) -> tuple[NDArray[ScalarT], ...]:
-    """Get values ready for push"""
-    target = np.asarray(target, order=order, dtype=dtype)
-    others: Iterable[NDArray[ScalarT]] = (
-        np.asarray(x, dtype=target.dtype, order=order) for x in args
-    )
-    return target, *others
 
 
 def raise_if_wrong_shape(
@@ -899,6 +849,22 @@ def optional_move_axis_to_end(
     if out is None:
         return out
     return np.moveaxis(out, axis, -(mom_ndim + 1))
+
+
+def optional_move_end_to_axis(
+    out: NDArray[ScalarT],
+    *,
+    mom_ndim: Mom_NDim,
+    axis: int,
+) -> NDArray[ScalarT]:
+    """
+    Move 'last' axis back to original position
+
+    Note that this assumes axis is negative (relative to end of array), and relative to `mom_dim`.
+    """
+    if axis != -1:
+        np.moveaxis(out, -(mom_ndim + 1), axis - mom_ndim)
+    return out
 
 
 # * Xarray utilities ----------------------------------------------------------
