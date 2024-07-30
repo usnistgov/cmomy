@@ -25,7 +25,6 @@ from ._utils import (
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
-    raise_if_wrong_shape,
     select_axis_dim,
     select_dtype,
     validate_mom_and_mom_ndim,
@@ -598,6 +597,7 @@ def resample_vals(  # type: ignore[overload-overlap]
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -616,6 +616,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -634,6 +635,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -652,6 +654,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -670,6 +673,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -690,6 +694,7 @@ def resample_vals(
     freq: NDArrayInt,
     weight: ArrayLike | xr.DataArray | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    move_axis_to_end: bool = True,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -712,6 +717,7 @@ def resample_vals(
     {mom}
     {weight}
     {axis}
+    {move_axis_to_end}
     {parallel}
     {dtype}
     {out}
@@ -719,159 +725,6 @@ def resample_vals(
     {rep_dim}
     {mom_dims}
     {keep_attrs}
-
-    Returns
-    -------
-    out : ndarray or DataArray
-        Resampled Central moments array. ``out.shape = (...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``
-        where ``shape = x.shape``. and ``nrep = freq.shape[0]``.
-
-    Notes
-    -----
-    {vals_resample_note}
-
-    See Also
-    --------
-    random_freq
-    randsamp_freq
-    """
-    mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    weight = 1.0 if weight is None else weight
-
-    dtype = select_dtype(x, out=out, dtype=dtype)
-
-    freq = np.asarray(freq, dtype=dtype)
-
-    if isinstance(x, xr.DataArray):
-        input_core_dims, (dx0, dw, *dx1) = xprepare_values_for_reduction(
-            x,
-            weight,
-            *y,
-            axis=axis,
-            dim=dim,
-            dtype=dtype,
-            narrays=mom_ndim + 1,
-        )
-
-        mom_dims_strict: tuple[Hashable, ...] = validate_mom_dims(
-            mom_dims=mom_dims, mom_ndim=mom_ndim
-        )
-        # add in freq dims:
-        input_core_dims.insert(2, [rep_dim, input_core_dims[0][0]])
-
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            _resample_vals,
-            dx0,
-            dw,
-            freq,
-            *dx1,
-            input_core_dims=input_core_dims,
-            output_core_dims=[[rep_dim, *mom_dims_strict]],
-            kwargs={
-                "mom": mom_validated,
-                "mom_ndim": mom_ndim,
-                "parallel": parallel,
-                "out": out,
-            },
-            keep_attrs=keep_attrs,
-        )
-
-    (
-        axis,
-        (
-            x0,
-            w,
-            *x1,
-        ),
-    ) = prepare_values_for_reduction(
-        x, weight, *y, axis=axis, dtype=dtype, narrays=mom_ndim + 1
-    )
-
-    return _resample_vals(
-        x0,
-        w,
-        freq,
-        *x1,
-        mom=mom_validated,
-        mom_ndim=mom_ndim,
-        parallel=parallel,
-        out=out,
-    )
-
-
-# ** low level
-def _resample_vals(
-    x0: NDArray[FloatT],
-    w: NDArray[FloatT],
-    freq: NDArrayInt,
-    *x1: NDArray[FloatT],
-    mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
-    parallel: bool | None = None,
-    out: NDArray[FloatT] | None = None,
-) -> NDArray[FloatT]:
-    _check_freq(freq, x0.shape[-1])
-
-    val_shape: tuple[int, ...] = np.broadcast_shapes(*(_.shape for _ in (x0, *x1, w)))[
-        :-1
-    ]
-    out_shape: tuple[int, ...] = (
-        *val_shape,
-        freq.shape[0],
-        *mom_to_mom_shape(mom),
-    )
-    if out is None:
-        out = np.zeros(out_shape, dtype=x0.dtype)
-    else:
-        raise_if_wrong_shape(out, out_shape)
-        out.fill(0.0)
-
-    from ._lib.factory import factory_resample_vals
-
-    factory_resample_vals(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
-    )(out, freq, x0, w, *x1)
-
-    return out
-
-
-@docfiller.decorate
-def resample_vals2(
-    x: ArrayLike | xr.DataArray,
-    *y: ArrayLike | xr.DataArray,
-    mom: Moments,
-    freq: NDArrayInt,
-    weight: ArrayLike | xr.DataArray | None = None,
-    axis: AxisReduce | MissingType = MISSING,
-    parallel: bool | None = None,
-    dtype: DTypeLike = None,
-    out: NDArrayAny | None = None,
-    # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    rep_dim: str = "rep",
-    mom_dims: MomDims | None = None,
-    keep_attrs: KeepAttrs = None,
-) -> NDArrayAny | xr.DataArray:
-    """
-    Resample data according to frequency table.
-
-    Parameters
-    ----------
-    x : ndarray or DataArray
-        Value to analyze
-    *y:  array-like or DataArray, optional
-        Second value needed if len(mom)==2.
-    {freq}
-    {mom}
-    {weight}
-    {axis}
-    {order}
-    {parallel}
-    {dtype}
-    {out}
-    {dim}
-    {rep_dim}
 
     Returns
     -------
@@ -916,12 +769,6 @@ def resample_vals2(
             *reversed(input_core_dims),
         ]
 
-        dims_order = [
-            ...,
-            *(d if d != dim else rep_dim for d in x.dims),
-            *mom_dims_strict,
-        ]
-
         def _wrapper(
             out: NDArrayAny | None,
             freq: NDArrayAny,
@@ -929,37 +776,85 @@ def resample_vals2(
             *args: NDArrayAny,
             **kwargs: Any,
         ) -> NDArrayAny:
-            return resample_vals2(
-                *reversed(args),
-                freq=freq,
-                weight=weight,
+            *y, x = args
+            return _resample_vals(
+                freq,
+                x,
+                weight,
+                *y,
                 out=out,
                 **kwargs,
             )
 
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
+        out: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
             _wrapper,
             out,
             freq,
             *reversed(args),
             input_core_dims=input_core_dims,
-            output_core_dims=[(rep_dim, *mom_dims_strict)],
+            output_core_dims=[[rep_dim, *mom_dims_strict]],
             kwargs={
                 "mom": mom_validated,
+                "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "axis": -1,
+                "axis_neg": -1,
             },
             keep_attrs=keep_attrs,
-        ).transpose(*dims_order)
+        )
+
+        if not move_axis_to_end:
+            dims_order = [
+                *(d if d != dim else rep_dim for d in x.dims),
+                *mom_dims_strict,
+            ]
+            out = out.transpose(..., *dims_order)
+
+        return out
 
     freq = np.asarray(freq, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
-        x, weight, *y, axis=axis, dtype=dtype, narrays=mom_ndim + 1
+        x,
+        weight,
+        *y,
+        axis=axis,
+        dtype=dtype,
+        narrays=mom_ndim + 1,
+        move_axis_to_end=move_axis_to_end,
     )
+
+    return _resample_vals(
+        freq,
+        *args,
+        mom=mom_validated,
+        mom_ndim=mom_ndim,
+        axis_neg=axis_neg,
+        parallel=parallel,
+        out=out,
+    )
+
+
+# ** low level
+def _resample_vals(
+    freq: NDArrayInt,
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    *x1: NDArray[FloatT],
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    axis_neg: int,
+    parallel: bool | None = None,
+    out: NDArray[FloatT] | None = None,
+) -> NDArray[FloatT]:
+    _check_freq(freq, x0.shape[axis_neg])
+
+    args = (x0, w, *x1)
 
     if out is None:
         out = get_out_from_values(
-            *args, mom=mom, axis_neg=axis_neg, axis_new_size=freq.shape[0]
+            *args,
+            mom=mom,
+            axis_neg=axis_neg,
+            axis_new_size=freq.shape[0],
         )
     else:
         out.fill(0.0)
@@ -977,7 +872,7 @@ def resample_vals2(
 
     factory_resample_vals(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, args[0].size * mom_ndim),
+        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
     )(out, freq, *args, axes=axes)
 
     return out
@@ -1518,175 +1413,3 @@ def _jackknife_vals(
     )
 
     return _jackknife(data_reduced, x0, w, *x1, out=out)
-
-
-@docfiller.decorate
-def jackknife_vals2(
-    x: xr.DataArray | ArrayLike,
-    *y: xr.DataArray | ArrayLike,
-    mom: Moments,
-    data_reduced: xr.DataArray | ArrayLike | None = None,
-    weight: xr.DataArray | ArrayLike | None = None,
-    axis: AxisReduce | MissingType = MISSING,
-    parallel: bool | None = None,
-    dtype: DTypeLike = None,
-    out: NDArrayAny | None = None,
-    # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    rep_dim: str | None = "rep",
-    mom_dims: MomDims | None = None,
-    keep_attrs: KeepAttrs = None,
-) -> NDArrayAny | xr.DataArray:
-    """
-    Jackknife by value.
-
-    Parameters
-    ----------
-    x : ndarray or DataArray
-        Value to analyze
-    *y:  array-like or DataArray, optional
-        Second value needed if len(mom)==2.
-    {mom}
-    data_reduced : array-like or DataArray, optional
-        ``data`` reduced along ``axis`` or ``dim``.  This will be calculated using
-        :func:`.reduce_vals` if not passed.
-    {weight}
-    {axis}
-    {order}
-    {parallel}
-    {dtype}
-    {out}
-    {dim}
-    {rep_dim}
-    {mom_dims}
-    {keep_attrs}
-
-    Returns
-    -------
-    out : ndarray or DataArray
-        Resampled Central moments array. ``out.shape = (...,shape[axis-1],
-        shape[axis+1], ..., shape[axis], mom0, ...)`` where ``shape =
-        x.shape``. That is, the resampled dimension is moved to the end, just
-        before the moment dimensions.
-
-    Notes
-    -----
-    {vals_resample_note}
-    """
-    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    weight = 1.0 if weight is None else weight
-    dtype = select_dtype(x, out=out, dtype=dtype)
-
-    if data_reduced is None:
-        from .reduction import reduce_vals
-
-        data_reduced = reduce_vals(
-            x,
-            *y,
-            mom=mom,
-            weight=weight,
-            axis=axis,
-            parallel=parallel,
-            dtype=dtype,
-            dim=dim,
-            mom_dims=mom_dims,
-            keep_attrs=keep_attrs,
-        )
-    else:
-        data_reduced = (
-            data_reduced.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
-            if isinstance(data_reduced, (xr.DataArray, np.ndarray))
-            else np.asarray(data_reduced, dtype=dtype)
-        )
-
-        if data_reduced.shape[-mom_ndim:] != mom_to_mom_shape(mom):
-            msg = f"{data_reduced.shape[-mom_ndim:]=} inconsistent with {mom=}"
-            raise ValueError(msg)
-
-    if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction(
-            x,
-            *y,
-            weight,
-            axis=axis,
-            dim=dim,
-            dtype=dtype,
-            narrays=mom_ndim + 1,
-        )
-
-        # If have DataArray data_reduced, get mom_dims from it.
-        mom_dims = (
-            data_reduced.dims[-mom_ndim:]
-            if isinstance(data_reduced, xr.DataArray)
-            else validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
-        )
-
-        dim = input_core_dims[0][0]
-        input_core_dims = [
-            # out
-            (dim, *mom_dims),
-            # data_reduced,
-            mom_dims,
-            # w, *y, x
-            *reversed(input_core_dims),
-        ]
-
-        def _wrapper(
-            out: NDArrayAny | None,
-            data_reduced: NDArrayAny,
-            weight: NDArrayAny,
-            *args: NDArrayAny,
-            **kwargs: Any,
-        ) -> NDArrayAny:
-            return jackknife_vals2(
-                *reversed(args),
-                data_reduced=data_reduced,
-                weight=weight,
-                out=out,
-                **kwargs,
-            )
-
-        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            _wrapper,
-            out,
-            data_reduced,
-            *reversed(args),
-            input_core_dims=input_core_dims,
-            output_core_dims=[[dim, *mom_dims]],
-            kwargs={
-                "mom": mom,
-                "parallel": parallel,
-                "axis": -1,
-            },
-            keep_attrs=keep_attrs,
-        ).transpose(..., *x.dims, *mom_dims)
-
-        if rep_dim is not None:
-            xout = xout.rename({dim: rep_dim})
-
-        return xout
-
-    axis_neg, args = prepare_values_for_reduction(
-        x,
-        weight,
-        *y,
-        axis=axis,
-        dtype=dtype,
-        narrays=mom_ndim + 1,
-    )
-
-    axes: AxesGUFunc = [
-        # data_reduced
-        tuple(range(-mom_ndim, 0)),
-        # x, weight, *y
-        *get_axes_from_values(*args, axis_neg=axis_neg),
-        # out
-        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
-    ]
-
-    from ._lib.factory import factory_jackknife_vals
-
-    return factory_jackknife_vals(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, args[0].size * mom_ndim),
-    )(data_reduced, *args, out=out, axes=axes)

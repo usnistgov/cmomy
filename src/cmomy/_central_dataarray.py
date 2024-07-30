@@ -1691,6 +1691,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         weight: ArrayLike | xr.DataArray | None = ...,
         axis: AxisReduce | MissingType = ...,
         dim: DimsReduce | MissingType = ...,
+        move_axis_to_end: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLikeArg[FloatT2],
@@ -1709,6 +1710,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         weight: ArrayLike | xr.DataArray | None = ...,
         axis: AxisReduce | MissingType = ...,
         dim: DimsReduce | MissingType = ...,
+        move_axis_to_end: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
@@ -1728,6 +1730,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         weight: ArrayLike | xr.DataArray | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        move_axis_to_end: bool = True,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
@@ -1751,6 +1754,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         {freq}
         {weight}
         {axis_and_dim}
+        {move_axis_to_end}
         {full_output}
         {order}
         {parallel}
@@ -1799,6 +1803,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 weight=weight,
                 axis=axis,
                 dim=dim,
+                move_axis_to_end=move_axis_to_end,
                 parallel=parallel,
                 mom_dims=mom_dims,
                 rep_dim=rep_dim,

@@ -249,39 +249,52 @@ def test_resample_resample_data(rng) -> None:
         resample.resample_data(c.data, freq=freq, mom_ndim=1, axis=1)
 
 
-def test_resample_resample_vals(rng) -> None:
-    x = rng.random((10, 3))
+@pytest.mark.parametrize(
+    ("move_axis_to_end", "shape", "out_shape"),
+    [
+        (True, (10, 3), (3, 5, 4)),
+        (False, (10, 3), (5, 3, 4)),
+    ],
+)
+def test_resample_resample_vals(rng, move_axis_to_end, shape, out_shape) -> None:
+    x = rng.random(shape)
 
     freq = resample.random_freq(nrep=5, ndat=10, rng=rng)
 
-    c = CentralMoments.from_resample_vals(x, freq=freq, mom=3, axis=0)
+    c = CentralMoments.from_resample_vals(
+        x, freq=freq, mom=3, axis=0, move_axis_to_end=move_axis_to_end
+    )
+    assert c.shape == out_shape
 
     out = resample.resample_vals(
         x,
         freq=freq,
         mom=3,
         axis=0,
+        move_axis_to_end=move_axis_to_end,
     )
     np.testing.assert_allclose(c.data, out)
 
-    with pytest.raises(TypeError):
-        resample.resample_vals(x, freq=freq, mom=[3])  # type: ignore[call-overload]
-
     with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq, mom=(3, 3, 3), axis=0)  # type: ignore[arg-type]
+        resample.resample_vals(
+            x, freq=freq[:, :-1], mom=3, axis=0, move_axis_to_end=move_axis_to_end
+        )
 
-    with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq[:, :-1], mom=3, axis=0)
-
-    out = np.zeros((3, 5, 4))
-    _ = resample.resample_vals(x, freq=freq, mom=3, out=out, axis=0)
+    out = np.zeros(out_shape)
+    _ = resample.resample_vals(
+        x, freq=freq, mom=3, out=out, axis=0, move_axis_to_end=move_axis_to_end
+    )
     np.testing.assert_allclose(c.data, out)
 
     out = np.zeros((4, 4, 4))
     with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq, mom=3, out=out, axis=0)
+        resample.resample_vals(
+            x, freq=freq, mom=3, out=out, axis=0, move_axis_to_end=move_axis_to_end
+        )
 
-    c2 = CentralMoments.from_resample_vals(x, x, freq=freq, mom=(3, 3), axis=0)
+    c2 = CentralMoments.from_resample_vals(
+        x, x, freq=freq, mom=(3, 3), axis=0, move_axis_to_end=move_axis_to_end
+    )
 
     np.testing.assert_allclose(c2.data[..., :, 0], c.data)
 

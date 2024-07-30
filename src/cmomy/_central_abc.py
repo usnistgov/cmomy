@@ -1230,8 +1230,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
-        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
+        axis: AxisReduce = -1,
+        move_axis_to_end: bool = True,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
@@ -1252,6 +1253,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         {freq}
         {weight}
         {axis_and_dim}
+        {move_axis_to_end}
         {full_output}
         {order}
         {parallel}

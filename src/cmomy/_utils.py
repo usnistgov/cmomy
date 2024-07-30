@@ -569,7 +569,8 @@ def prepare_values_for_reduction(
         )
         for x in args
     )
-    return axis_neg, (target, *others)
+
+    return -1 if move_axis_to_end else axis_neg, (target, *others)
 
 
 def xprepare_secondary_value_for_reduction(

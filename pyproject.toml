@@ -375,7 +375,7 @@ omit = [
     "*/_lib/convert*.py",
     "*/_lib/decorators.py",
     "*/_lib/indexed*.py",
-    "*/_lib/moving*.py",
+    "*/_lib/rolling*.py",
     "*/_lib/make_parallel_files.py",
     "*/_lib/resample*.py",
     "*/_lib/utils.py",
