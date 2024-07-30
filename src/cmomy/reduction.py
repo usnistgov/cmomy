@@ -219,8 +219,8 @@ def reduce_vals(
     if isinstance(x, xr.DataArray):
         input_core_dims, args = xprepare_values_for_reduction(
             x,
-            *y,
             weight,
+            *y,
             axis=axis,
             dim=dim,
             narrays=mom_ndim + 1,
@@ -229,24 +229,10 @@ def reduce_vals(
 
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
         dim = input_core_dims[0][0]
-        input_core_dims = [
-            # out
-            mom_dims_strict,
-            # w, *y, x
-            *reversed(input_core_dims),
-        ]
-
-        # to ensure order like numpy....
-        def _wrapper(
-            out: NDArrayAny | None, weight: NDArrayAny, *args: NDArrayAny, **kwargs: Any
-        ) -> NDArrayAny:
-            *y, x = args
-            return _reduce_vals(x, weight, *y, out=out, **kwargs)
 
         xout: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
-            _wrapper,
-            out,
-            *reversed(args),
+            _reduce_vals,
+            *args,
             input_core_dims=input_core_dims,
             output_core_dims=[(dim, *mom_dims_strict)],
             exclude_dims={dim},
@@ -256,6 +242,7 @@ def reduce_vals(
                 "parallel": parallel,
                 "axis_neg": -1,
                 "keepdims": True,
+                "out": out,
             },
             keep_attrs=keep_attrs,
         )
