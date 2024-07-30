@@ -30,13 +30,13 @@ from ._utils import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+    xprepare_out_for_resample_vals,
     xprepare_values_for_reduction,
 )
 from .docstrings import docfiller
 from .random import validate_rng
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -729,8 +729,8 @@ def resample_vals(
     Returns
     -------
     out : ndarray or DataArray
-        Resampled Central moments array. ``out.shape = (...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``
-        where ``shape = x.shape``. and ``nrep = freq.shape[0]``.
+        Resampled Central moments array. ``out.shape = (...,shape[axis-1], nrep, shape[axis+1], ...)``
+        where ``shape = x.shape``. and ``nrep = freq.shape[0]``.  This can be overridden by setting `move_axis_to_end`.
 
     Notes
     -----
@@ -756,13 +756,23 @@ def resample_vals(
             narrays=mom_ndim + 1,
         )
 
-        mom_dims_strict: tuple[Hashable, ...] = validate_mom_dims(
-            mom_dims=mom_dims, mom_ndim=mom_ndim
-        )
         dim = input_core_dims[0][0]
+        out = xprepare_out_for_resample_vals(
+            target=x,
+            out=out,
+            dim=dim,
+            mom_ndim=mom_ndim,
+            move_axis_to_end=move_axis_to_end,
+        )
+
+        mom_dims = validate_mom_dims(
+            mom_dims=mom_dims,
+            mom_ndim=mom_ndim,
+            out=out,
+        )
         input_core_dims = [
             # out
-            (rep_dim, *mom_dims_strict),
+            (rep_dim, *mom_dims),
             # freq
             (rep_dim, dim),
             # w, *y, x
@@ -792,7 +802,7 @@ def resample_vals(
             freq,
             *reversed(args),
             input_core_dims=input_core_dims,
-            output_core_dims=[[rep_dim, *mom_dims_strict]],
+            output_core_dims=[[rep_dim, *mom_dims]],
             kwargs={
                 "mom": mom_validated,
                 "mom_ndim": mom_ndim,
@@ -805,7 +815,7 @@ def resample_vals(
         if not move_axis_to_end:
             dims_order = [
                 *(d if d != dim else rep_dim for d in x.dims),
-                *mom_dims_strict,
+                *mom_dims,
             ]
             out = out.transpose(..., *dims_order)
 
@@ -1159,9 +1169,10 @@ def jackknife_vals(  # type: ignore[overload-overlap]
     data_reduced: xr.DataArray | ArrayLike | None = ...,
     weight: xr.DataArray | ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
-    out: NDArrayAny | None = ...,
+    out: NDArrayAny | xr.DataArray | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
@@ -1177,6 +1188,7 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -1195,6 +1207,7 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -1213,6 +1226,7 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -1231,6 +1245,7 @@ def jackknife_vals(
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -1243,16 +1258,17 @@ def jackknife_vals(
 
 
 @docfiller.decorate
-def jackknife_vals(  # noqa: PLR0914
+def jackknife_vals(
     x: xr.DataArray | ArrayLike,
     *y: xr.DataArray | ArrayLike,
     mom: Moments,
     data_reduced: xr.DataArray | ArrayLike | None = None,
     weight: xr.DataArray | ArrayLike | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    move_axis_to_end: bool = True,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
-    out: NDArrayAny | None = None,
+    out: NDArrayAny | xr.DataArray | None = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str | None = "rep",
@@ -1274,6 +1290,7 @@ def jackknife_vals(  # noqa: PLR0914
         :func:`.reduce_vals` if not passed.
     {weight}
     {axis}
+    {move_axis_to_end}
     {order}
     {parallel}
     {dtype}
@@ -1326,70 +1343,96 @@ def jackknife_vals(  # noqa: PLR0914
             raise ValueError(msg)
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, (dx0, dw, *dx1) = xprepare_values_for_reduction(
+        input_core_dims, args = xprepare_values_for_reduction(
             x,
-            weight,
             *y,
+            weight,
             axis=axis,
             dim=dim,
             dtype=dtype,
             narrays=mom_ndim + 1,
         )
 
-        # If have DataArray data_reduced, get mom_dims from it.
-        if isinstance(data_reduced, xr.DataArray):
-            mom_dims = data_reduced.dims[-mom_ndim:]
-        else:
-            mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
-
-        # add in data_reduced dims (mom0, ...)
-        input_core_dims.insert(2, list(mom_dims))
         dim = input_core_dims[0][0]
+        out = xprepare_out_for_resample_vals(
+            target=x,
+            out=out,
+            dim=dim,
+            mom_ndim=mom_ndim,
+            move_axis_to_end=move_axis_to_end,
+        )
 
-        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            _jackknife_vals,
-            dx0,
-            dw,
+        mom_dims = validate_mom_dims(
+            mom_dims=mom_dims, mom_ndim=mom_ndim, out=data_reduced
+        )
+
+        input_core_dims = [
+            # out
+            (dim, *mom_dims),
+            # data_reduced
+            mom_dims,
+            # w, *y, x
+            *reversed(input_core_dims),
+        ]
+
+        def _wrapper(
+            out: NDArrayAny | None,
+            data_reduced: NDArrayAny,
+            weight: NDArrayAny,
+            *args: NDArrayAny,
+            **kwargs: Any,
+        ) -> NDArrayAny:
+            *y, x = args
+
+            return _jackknife_vals(
+                data_reduced,
+                x,
+                weight,
+                *y,
+                out=out,
+                **kwargs,
+            )
+
+        out: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _wrapper,
+            out,
             data_reduced,
-            *dx1,
+            *reversed(args),
             input_core_dims=input_core_dims,
-            output_core_dims=[[dim, *mom_dims]],
+            output_core_dims=[(dim, *mom_dims)],
             kwargs={
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "out": out,
+                "axis_neg": -1,
             },
             keep_attrs=keep_attrs,
         )
 
+        if not move_axis_to_end:
+            out = out.transpose(..., *x.dims, *mom_dims)
+
         if rep_dim is not None:
-            xout = xout.rename({dim: rep_dim})
+            out = out.rename({dim: rep_dim})
 
-        return xout
+        return out
 
-    (
-        axis,
-        (
-            x0,
-            w,
-            *x1,
-        ),
-    ) = prepare_values_for_reduction(
+    # numpy
+    axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
         *y,
         axis=axis,
         dtype=dtype,
         narrays=mom_ndim + 1,
+        move_axis_to_end=move_axis_to_end,
     )
 
     return _jackknife_vals(
-        x0,
-        w,
         data_reduced.to_numpy()  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         if isinstance(data_reduced, xr.DataArray)
         else data_reduced,
-        *x1,
+        *args,
+        axis_neg=axis_neg,
         mom_ndim=mom_ndim,
         parallel=parallel,
         out=out,
@@ -1398,18 +1441,28 @@ def jackknife_vals(  # noqa: PLR0914
 
 # ** low level
 def _jackknife_vals(
+    data_reduced: NDArray[FloatT],
     x0: NDArray[FloatT],
     w: NDArray[FloatT],
-    data_reduced: NDArray[FloatT],
     *x1: NDArray[FloatT],
+    axis_neg: int,
     mom_ndim: Mom_NDim,
     parallel: bool | None = None,
     out: NDArray[FloatT] | None = None,
 ) -> NDArray[FloatT]:
+    args = (x0, w, *x1)
+
+    axes: AxesGUFunc = [
+        # data_reduced
+        tuple(range(-mom_ndim, 0)),
+        # x, w, *y
+        *get_axes_from_values(*args, axis_neg=axis_neg),
+        # out
+        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
+    ]
+
     from ._lib.factory import factory_jackknife_vals
 
-    _jackknife = factory_jackknife_vals(
+    return factory_jackknife_vals(
         mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x0.size * mom_ndim)
-    )
-
-    return _jackknife(data_reduced, x0, w, *x1, out=out)
+    )(data_reduced, *args, out=out, axes=axes)

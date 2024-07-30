@@ -740,7 +740,6 @@ def axes_data_reduction(
     Can also pass in "inner" dimensions (elements 1:-1 of output)
     """
     mom_axes = _MOM_AXES_TUPLE[mom_ndim]
-
     data_axes = (axis, *mom_axes)
     out_axes = data_axes if out_has_axis else mom_axes
 
@@ -751,16 +750,42 @@ def axes_data_reduction(
     ]
 
 
+def xprepare_out_for_resample_vals(
+    target: xr.DataArray,
+    out: xr.DataArray | NDArray[ScalarT] | None,
+    dim: DimsReduce,
+    mom_ndim: Mom_NDim,
+    move_axis_to_end: bool,
+) -> xr.DataArray | NDArray[ScalarT] | None:
+    if out is None:
+        return out
+
+    if isinstance(out, xr.DataArray):
+        return out
+
+    if move_axis_to_end:
+        # out should already be in correct order
+        return out
+
+    axis_neg = positive_to_negative_index(
+        target.get_axis_num(dim),
+        ndim=target.ndim,
+    )
+
+    return np.moveaxis(out, axis_neg - mom_ndim, -(mom_ndim + 1))
+
+
 def optional_move_axis_to_end(
     out: NDArray[ScalarT] | None,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim | None,
     axis: int,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
     if out is None:
         return out
-    return np.moveaxis(out, axis, -(mom_ndim + 1))
+    shift = 0 if mom_ndim is None else mom_ndim
+    return np.moveaxis(out, axis, -(shift + 1))
 
 
 def optional_move_end_to_axis(
@@ -781,10 +806,15 @@ def optional_move_end_to_axis(
 
 # * Xarray utilities ----------------------------------------------------------
 def validate_mom_dims(
-    mom_dims: Hashable | Sequence[Hashable] | None, mom_ndim: Mom_NDim
+    mom_dims: Hashable | Sequence[Hashable] | None,
+    mom_ndim: Mom_NDim,
+    out: Any = None,
 ) -> MomDimsStrict:
     """Validate mom_dims to correct form."""
     if mom_dims is None:
+        if isinstance(out, xr.DataArray):
+            return out.dims[-mom_ndim:]
+
         if mom_ndim == 1:
             return ("mom_0",)
         return ("mom_0", "mom_1")

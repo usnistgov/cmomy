@@ -675,7 +675,6 @@ def test_jackknife_vals_extras(shape, axis, mom: Mom_NDim, dtype: DTypeLike) -> 
         dx,
         mom=mom,
         dim="dim_0",
-        mom_dims="passed_moment",
         data_reduced=xdata_reduced,
         dtype=dtype,
     )

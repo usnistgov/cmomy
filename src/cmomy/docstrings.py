@@ -179,7 +179,6 @@ def _dummy_docstrings() -> None:
         If ``True``, set missing weights (``np.nan``) to ``0``.
     window : int
         Size of moving window.
-
     move_axis_to_end : bool
         If ``True``, place sampled dimension at end (just before moments
         dimensions) in output. Otherwise, place sampled dimension at same
