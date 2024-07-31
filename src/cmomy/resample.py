@@ -771,7 +771,7 @@ def resample_vals(
             mom_ndim=mom_ndim,
         )
 
-        xout: xr.DataArray = xr.apply_ufunc(
+        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_vals,
             *xargs,
             input_core_dims=input_core_dims,

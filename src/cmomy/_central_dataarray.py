@@ -1337,7 +1337,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             )
 
         return type(self)(
-            data=data.astype(self.dtype, order=order, copy=False),
+            data=data.astype(self.dtype, order=order, copy=False),  # pyright: ignore[reportUnknownMemberType]
             mom_ndim=self._mom_ndim,
             fastpath=True,
         )

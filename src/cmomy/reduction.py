@@ -230,7 +230,7 @@ def reduce_vals(
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
         dim = input_core_dims[0][0]
 
-        xout: xr.DataArray = xr.apply_ufunc(
+        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
