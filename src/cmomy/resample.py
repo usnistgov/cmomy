@@ -428,6 +428,7 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -443,6 +444,7 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -458,6 +460,7 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -473,6 +476,7 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -488,6 +492,7 @@ def resample_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: None = ...,
@@ -508,6 +513,7 @@ def resample_data(
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str = "rep",
+    move_axis_to_end: bool = False,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -525,6 +531,7 @@ def resample_data(
     {axis}
     {dim}
     {rep_dim}
+    {move_axis_to_end}
     {parallel}
     {dtype}
     {out}
@@ -544,8 +551,7 @@ def resample_data(
     if isinstance(data, xr.DataArray):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
 
-        dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])
-        return xr.apply_ufunc(  # type: ignore[no-any-return] # pyright: ignore[reportUnknownMemberType]
+        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             resample_data,
             data,
             freq,
@@ -555,13 +561,21 @@ def resample_data(
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
                 "out": xprepare_out_for_resample_data(
-                    out, mom_ndim=mom_ndim, axis=axis
+                    out,
+                    mom_ndim=mom_ndim,
+                    axis=axis,
+                    move_axis_to_end=move_axis_to_end,
                 ),
                 "dtype": dtype,
                 "axis": -1,
             },
             keep_attrs=keep_attrs,
-        ).transpose(*dims_order)
+        )
+
+        if not move_axis_to_end:
+            dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])
+            xout = xout.transpose(*dims_order)
+        return xout
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
@@ -572,6 +586,7 @@ def resample_data(
         axis=axis,
         mom_ndim=mom_ndim,
         dtype=dtype,
+        move_axis_to_end=move_axis_to_end,
     )
 
     # include inner core dimensions for freq
@@ -592,7 +607,7 @@ def resample_data(
 # * Resample vals
 # ** overloads
 @overload
-def resample_vals(
+def resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -678,7 +693,7 @@ def resample_vals(
     move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
-    out: None = ...,
+    out: NDArrayAny | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
@@ -689,7 +704,7 @@ def resample_vals(
 
 # ** public api
 @docfiller.decorate
-def resample_vals(
+def resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: ArrayLike | xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -918,6 +933,7 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
@@ -933,6 +949,7 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: None = ...,
     out: None = ...,
@@ -948,6 +965,7 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
@@ -963,6 +981,7 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
@@ -978,6 +997,7 @@ def jackknife_data(
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
     # thing should be out: NDArrayAny | None = ...
@@ -995,6 +1015,7 @@ def jackknife_data(
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str | None = "rep",
+    move_axis_to_end: bool = False,
     parallel: bool | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | None = None,
@@ -1017,6 +1038,7 @@ def jackknife_data(
         :func:`.reduce_data` if not passed.
     rep_dim : str, optional
         Optionally output ``dim`` to ``rep_dim``.
+    {move_axis_to_end}
     {parallel}
     {dtype}
     {out}
@@ -1086,14 +1108,19 @@ def jackknife_data(
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
                 "out": xprepare_out_for_resample_data(
-                    out, mom_ndim=mom_ndim, axis=axis
+                    out,
+                    mom_ndim=mom_ndim,
+                    axis=axis,
+                    move_axis_to_end=move_axis_to_end,
                 ),
                 "dtype": dtype,
                 "axis": -1,
             },
             keep_attrs=keep_attrs,
-        ).transpose(*data.dims)
+        )
 
+        if not move_axis_to_end:
+            xout = xout.transpose(*data.dims)
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
         return xout
@@ -1101,11 +1128,6 @@ def jackknife_data(
     # numpy
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
-
-    # numpy array
-    axis, data = prepare_data_for_reduction(
-        data, axis=axis, mom_ndim=mom_ndim, dtype=dtype
-    )
 
     if data_reduced is None:
         from .reduction import reduce_data
@@ -1122,6 +1144,13 @@ def jackknife_data(
     else:
         data_reduced = np.asarray(data_reduced, dtype=dtype)
 
+    axis, data = prepare_data_for_reduction(
+        data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        dtype=dtype,
+        move_axis_to_end=move_axis_to_end,
+    )
     axes_data, axes_mom = axes_data_reduction(
         mom_ndim=mom_ndim, axis=axis, out_has_axis=True
     )

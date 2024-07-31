@@ -1,11 +1,17 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import CentralMoments, xCentralMoments
+
+if TYPE_CHECKING:
+    from typing import Any
 
 # * Dtypes
 dtype_mark = pytest.mark.parametrize(
@@ -26,6 +32,7 @@ dtype_mark = pytest.mark.parametrize(
 
 dtype_base_mark = pytest.mark.parametrize("dtype_base", [np.float32, np.float64])
 cls_mark = pytest.mark.parametrize("cls", [CentralMoments, xCentralMoments])
+use_out_mark = pytest.mark.parametrize("use_out", [False, True])
 
 
 @dtype_base_mark
@@ -81,20 +88,62 @@ def test_init(cls, dtype_base, dtype, expected) -> None:
 @cls_mark
 @dtype_base_mark
 @dtype_mark
-def test_from_vals(cls, dtype_base, dtype, expected) -> None:
+@use_out_mark
+def test_from_vals(cls, dtype_base, dtype, expected, use_out) -> None:
     data = np.zeros((2, 3, 4), dtype=dtype_base)
 
     if cls == xCentralMoments:
         data = xr.DataArray(data)  # type: ignore[assignment]
 
+    kws: dict[str, Any] = {"mom": 3, "axis": 0}
+    if use_out:
+        kws["out"] = np.zeros((3, 4, 4), dtype=dtype)
+    else:
+        kws["dtype"] = dtype
+
     if expected == "error":
         with pytest.raises(ValueError, match=".*not supported.*"):
-            cls.from_vals(data, mom=3, axis=0, dtype=dtype)
+            cls.from_vals(data, **kws)
     else:
-        c = cls.from_vals(data, mom=3, axis=0, dtype=dtype)
+        c = cls.from_vals(data, **kws)
 
         if dtype is None:
-            assert c.dtype.type == dtype_base
+            if use_out:
+                assert c.dtype.type == np.float64
+            else:
+                assert c.dtype.type == dtype_base
+        else:
+            assert c.dtype.type == expected
+
+
+@cls_mark
+@dtype_base_mark
+@dtype_mark
+@use_out_mark
+def test_from_resample_vals(cls, dtype_base, dtype, expected, use_out) -> None:
+    data = np.zeros((10, 3, 4), dtype=dtype_base)
+
+    freq = cmomy.random_freq(ndat=10, nrep=5)
+    if cls == xCentralMoments:
+        data = xr.DataArray(data)  # type: ignore[assignment]
+
+    kws = {"mom": 3, "axis": 0, "freq": freq, "move_axis_to_end": True}
+    if use_out:
+        kws["out"] = np.zeros((3, 4, 5, 4), dtype=dtype)
+    else:
+        kws["dtype"] = dtype
+
+    if expected == "error":
+        with pytest.raises(ValueError, match=".*not supported.*"):
+            cls.from_resample_vals(data, **kws)
+    else:
+        c = cls.from_resample_vals(data, **kws)
+
+        if dtype is None:
+            if use_out:
+                assert c.dtype.type == np.float64
+            else:
+                assert c.dtype.type == dtype_base
         else:
             assert c.dtype.type == expected
 

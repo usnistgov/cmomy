@@ -630,6 +630,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         by: Groups | None = None,
         axis: AxisReduce = -1,
         keepdims: bool = False,
+        move_axis_to_end: bool = False,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -654,6 +655,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 mom_ndim=self._mom_ndim,
                 by=by,
                 axis=axis,
+                move_axis_to_end=move_axis_to_end,
                 parallel=parallel,
                 dtype=self.dtype,
             )
@@ -956,9 +958,27 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         mom: Moments,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
         order: ArrayOrder = ...,
-        parallel: bool | None = ...,
         dtype: None = ...,
+        out: None = ...,
+        parallel: bool | None = ...,
+    ) -> CentralMoments[FloatT2]: ...
+    # out
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = -1,
+        weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
+        order: ArrayOrder = ...,
+        dtype: DTypeLike = ...,
+        out: NDArray[FloatT2],
+        parallel: bool | None = ...,
     ) -> CentralMoments[FloatT2]: ...
     # dtype
     @overload
@@ -970,9 +990,11 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         mom: Moments,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
         order: ArrayOrder = ...,
-        parallel: bool | None = ...,
         dtype: DTypeLikeArg[FloatT2],
+        out: None = ...,
+        parallel: bool | None = ...,
     ) -> CentralMoments[FloatT2]: ...
     # fallback
     @overload
@@ -984,9 +1006,11 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         mom: Moments,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
         order: ArrayOrder = ...,
-        parallel: bool | None = ...,
         dtype: DTypeLike = ...,
+        out: NDArrayAny | None = ...,
+        parallel: bool | None = ...,
     ) -> Self: ...
 
     @classmethod
@@ -998,9 +1022,11 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         mom: Moments,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
+        keepdims: bool = False,
         order: ArrayOrder = None,
-        parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
+        parallel: bool | None = None,
     ) -> CentralMoments[Any] | Self:
         """
         Examples
@@ -1025,8 +1051,10 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             mom=mom_strict,
             weight=weight,
             axis=axis,
-            parallel=parallel,
+            keepdims=keepdims,
             dtype=dtype,
+            out=out,
+            parallel=parallel,
         )
         return cls(data=data, mom_ndim=mom_ndim, order=order)
 
@@ -1044,21 +1072,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: None = ...,
-    ) -> CentralMoments[FloatT2]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        freq: NDArrayInt,
-        axis: AxisReduce = ...,
-        move_axis_to_end: bool = ...,
-        weight: ArrayLike | None = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
-        dtype: DTypeLikeArg[FloatT2],
+        out: None = ...,
     ) -> CentralMoments[FloatT2]: ...
     @overload
     @classmethod
@@ -1074,6 +1088,39 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
+        out: NDArray[FloatT2],
+    ) -> CentralMoments[FloatT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        freq: NDArrayInt,
+        axis: AxisReduce = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLikeArg[FloatT2],
+        out: None = ...,
+    ) -> CentralMoments[FloatT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        freq: NDArrayInt,
+        axis: AxisReduce = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLike = ...,
+        out: NDArrayAny | None = ...,
     ) -> Self: ...
 
     @classmethod
@@ -1090,6 +1137,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
     ) -> CentralMoments[Any]:
         """
         Examples
@@ -1133,6 +1181,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             weight=weight,
             parallel=parallel,
             dtype=dtype,
+            out=out,
         )
 
         return cls(data=data, mom_ndim=mom_ndim, order=order)

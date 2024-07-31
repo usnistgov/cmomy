@@ -1217,6 +1217,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         by: str | Groups | None = None,
         axis: AxisReduce | MissingType = MISSING,
         keepdims: bool = False,
+        move_axis_to_end: bool = False,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         # xarray specific
@@ -1301,6 +1302,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 by=codes,
                 axis=axis,
                 dim=dim,
+                move_axis_to_end=move_axis_to_end,
                 parallel=parallel,
                 dtype=self.dtype,
                 group_dim=group_dim,
@@ -1328,6 +1330,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 group_end=group_end,
                 axis=axis,
                 dim=dim,
+                move_axis_to_end=move_axis_to_end,
                 parallel=parallel,
                 dtype=self.dtype,
                 coords_policy=coords_policy,
@@ -1591,9 +1594,11 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         axis: AxisReduce | MissingType = ...,
         dim: DimsReduce | MissingType = ...,
         mom_dims: MomDims | None = ...,
+        keepdims: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
-        dtype: DTypeLikeArg[FloatT2],
+        dtype: DTypeLike = ...,
+        out: NDArray[FloatT2],
         keep_attrs: KeepAttrs = ...,
     ) -> xCentralMoments[FloatT2]: ...
     @overload
@@ -1607,9 +1612,29 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         axis: AxisReduce | MissingType = ...,
         dim: DimsReduce | MissingType = ...,
         mom_dims: MomDims | None = ...,
+        keepdims: bool = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLikeArg[FloatT2],
+        out: None = ...,
+        keep_attrs: KeepAttrs = ...,
+    ) -> xCentralMoments[FloatT2]: ...
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: xr.DataArray,
+        *y: ArrayLike | xr.DataArray,
+        mom: Moments,
+        weight: ArrayLike | xr.DataArray | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        mom_dims: MomDims | None = ...,
+        keepdims: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
+        out: NDArrayAny | None = ...,
         keep_attrs: KeepAttrs = ...,
     ) -> Self: ...
 
@@ -1624,9 +1649,11 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         mom_dims: MomDims | None = None,
+        keepdims: bool = False,
         order: ArrayOrder = None,
-        parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
+        parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
     ) -> Self | xCentralMoments[Any]:
         """
@@ -1641,12 +1668,13 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         weight : scalar or array-like or DataArray, optional
             Optional weight.  If scalar or array, attempt to
             broadcast to `x0.shape`
-        {axis_and_dim}
         {mom}
-        {order}
-        {parallel}
-        {dtype}
+        {axis_and_dim}
         {mom_dims}
+        {keepdims}
+        {order}
+        {dtype}
+        {parallel}
         {keep_attrs}
 
         Returns
@@ -1672,8 +1700,10 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 axis=axis,
                 dim=dim,
                 mom_dims=mom_dims,
+                keepdims=keepdims,
                 parallel=parallel,
                 dtype=dtype,
+                out=out,
                 keep_attrs=keep_attrs,
             ),
             mom_ndim=mom_ndim,
@@ -1694,7 +1724,28 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         move_axis_to_end: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
+        dtype: DTypeLike = ...,
+        out: NDArray[FloatT2],
+        mom_dims: MomDims | None = ...,
+        rep_dim: str = ...,
+        keep_attrs: bool = ...,
+    ) -> xCentralMoments[FloatT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: xr.DataArray,
+        *y: ArrayLike | xr.DataArray,
+        mom: Moments,
+        freq: NDArrayInt,
+        weight: ArrayLike | xr.DataArray | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        move_axis_to_end: bool = ...,
+        order: ArrayOrder = ...,
+        parallel: bool | None = ...,
         dtype: DTypeLikeArg[FloatT2],
+        out: None = ...,
         mom_dims: MomDims | None = ...,
         rep_dim: str = ...,
         keep_attrs: bool = ...,
@@ -1714,6 +1765,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
+        out: NDArrayAny | None = ...,
         mom_dims: MomDims | None = ...,
         rep_dim: str = ...,
         keep_attrs: bool = ...,
@@ -1734,6 +1786,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
         mom_dims: MomDims | None = None,
         rep_dim: str = "rep",
         keep_attrs: bool = True,
@@ -1755,10 +1808,13 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         {weight}
         {axis_and_dim}
         {move_axis_to_end}
-        {full_output}
         {order}
         {parallel}
         {dtype}
+        {out}
+        {mom_dims}
+        {rep_dim}
+        {keep_attrs}
 
         Returns
         -------
@@ -1809,6 +1865,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 rep_dim=rep_dim,
                 keep_attrs=keep_attrs,
                 dtype=dtype,
+                out=out,
             ),
             mom_ndim=mom_ndim,
             order=order,

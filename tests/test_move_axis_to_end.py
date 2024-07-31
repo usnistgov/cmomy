@@ -51,26 +51,52 @@ def get_params(
     return xy, w
 
 
+def factory_central_method(method):
+    def inner(x, *args, **kwargs):
+        cls = (
+            cmomy.xCentralMoments
+            if isinstance(x, xr.DataArray)
+            else cmomy.CentralMoments
+        )
+        return getattr(cls, method)(x, *args, **kwargs)
+
+    return inner
+
+
 @shapes_mark
 @as_dataarray
 @pytest.mark.parametrize(
-    ("func", "kwargs"),
+    ("func", "kwargs", "style"),
     [
-        (cmomy.resample.resample_vals, {}),
-        (cmomy.resample.jackknife_vals, {}),
-        (cmomy.rolling.rolling_vals, {"window": 3, "center": False}),
-        (cmomy.rolling.rolling_exp_vals, {"alpha": 0.2}),
+        (cmomy.resample.resample_vals, {}, "resample"),
+        (factory_central_method("from_resample_vals"), {}, "resample"),
+        (cmomy.resample.jackknife_vals, {}, None),
+        (
+            cmomy.rolling.rolling_vals,
+            {"window": 3, "center": False},
+            None,
+        ),
+        (cmomy.rolling.rolling_exp_vals, {"alpha": 0.2}, None),
     ],
 )
-def test_resample_vals_move_axis_to_end(
-    rng, xshape, yshape, wshape, axis, mom, as_dataarray, func, kwargs
+def test_vals_move_axis_to_end(
+    rng,
+    xshape,
+    yshape,
+    wshape,
+    axis,
+    mom,
+    as_dataarray,
+    func,
+    kwargs,
+    style,
 ) -> None:
     mom_ndim: Mom_NDim = len(mom)  # type: ignore[assignment]
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray)
 
     kws = {"weight": w, "mom": mom, "axis": axis, **kwargs}
-    if func == cmomy.resample.resample_vals:
+    if style == "resample":
         kws["freq"] = cmomy.randsamp_freq(ndat=xshape[axis], nrep=20)
 
     outs = [func(*xy, **kws, move_axis_to_end=m) for m in (True, False)]
@@ -82,11 +108,84 @@ def test_resample_vals_move_axis_to_end(
 
     # using out parameter
     _outs = [np.zeros_like(o) for o in outs]
-    outs2 = (
+    outs2 = [
         func(*xy, **kws, out=o, move_axis_to_end=m)
         for m, o in zip((True, False), _outs)
+    ]
+
+    for a, b, c in zip(outs2, _outs, outs):
+        np.shares_memory(a, b)
+        np.testing.assert_allclose(a, c)
+
+
+from cmomy._utils import normalize_axis_index
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis", "mom_ndim"),
+    [
+        ((10, 1, 2, 3), 0, 1),
+        ((1, 10, 2, 3), 1, 1),
+        ((1, 2, 10, 3), -1, 1),
+        ((10, 1, 2, 3), 0, 2),
+        ((1, 10, 2, 3), -1, 2),
+    ],
+)
+@as_dataarray
+@pytest.mark.parametrize(
+    ("func", "kwargs", "style"),
+    [
+        (cmomy.resample.resample_data, {}, "resample"),
+        (cmomy.resample.jackknife_data, {}, "jack"),
+        (cmomy.reduction.reduce_data_grouped, {}, "group"),
+        (cmomy.reduction.reduce_data_indexed, {}, "index"),
+        (cmomy.rolling.rolling_data, {"window": 4, "center": False}, "roll"),
+        (cmomy.rolling.rolling_exp_data, {"alpha": 0.2}, "roll"),
+    ],
+)
+def test_data_move_axis_to_end(
+    rng,
+    shape,
+    axis,
+    mom_ndim,
+    as_dataarray,
+    func,
+    kwargs,
+    style,
+) -> None:
+    data = rng.random(shape)
+    if as_dataarray:
+        data = xr.DataArray(data)
+
+    kws = dict(axis=axis, mom_ndim=mom_ndim, **kwargs)
+    ndat = cmomy.resample.select_ndat(data, axis=axis, mom_ndim=mom_ndim)
+    if style == "resample":
+        kws["freq"] = cmomy.randsamp_freq(ndat=ndat, nrep=20)
+    elif style == "group":
+        kws["by"] = rng.choice(4, size=ndat)
+    elif style == "index":
+        groups = rng.choice(4, size=ndat)
+        _, kws["index"], kws["group_start"], kws["group_end"] = (
+            cmomy.reduction.factor_by_to_index(groups)
+        )
+
+    outs = [func(data, **kws, move_axis_to_end=m) for m in (True, False)]
+    np.testing.assert_allclose(
+        outs[0],
+        np.moveaxis(
+            np.asarray(outs[1]),
+            normalize_axis_index(axis, data.ndim, mom_ndim),
+            -(mom_ndim + 1),
+        ),
     )
 
-    for a, b in zip(outs2, _outs):
+    # using out parameter
+    _outs = [np.zeros_like(o) for o in outs]
+    outs2 = [
+        func(data, **kws, out=o, move_axis_to_end=m)
+        for m, o in zip((True, False), _outs)
+    ]
+
+    for a, b, c in zip(outs2, _outs, outs):
         np.shares_memory(a, b)
-        np.testing.assert_allclose(a, b)
+        np.testing.assert_allclose(a, c)

@@ -996,6 +996,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         by: Groups | None = None,
         axis: AxisReduce = -1,
         keepdims: bool = False,
+        move_axis_to_end: bool = False,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -1006,10 +1007,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         ----------
         {by}
         {axis_data_and_dim}
+        {keepdims}
+        {move_axis_to_end}
         {order}
         {parallel}
-        keepdims : bool, default=False
-            If ``True`` and ``by = None``, keep ``axis`` after reduction with size ``1``.
 
         Returns
         -------
@@ -1189,9 +1190,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         mom: Moments,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
+        keepdims: bool = False,
         order: ArrayOrder = None,
-        parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
+        parallel: bool | None = None,
         # **kwargs: Any,
     ) -> Self:
         """
@@ -1208,9 +1211,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             broadcast to `x0.shape`
         {axis_and_dim}
         {mom}
+        {keepdims}
         {order}
-        {parallel}
         {dtype}
+        {out}
+        {parallel}
 
         Returns
         -------
@@ -1236,6 +1241,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
     ) -> Self:
         """
         Create from resample observations/values.
@@ -1258,6 +1264,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         {order}
         {parallel}
         {dtype}
+        {out}
 
         Returns
         -------

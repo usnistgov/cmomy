@@ -711,12 +711,20 @@ def prepare_data_for_reduction(
     axis: AxisReduce | MissingType,
     mom_ndim: Mom_NDim,
     dtype: DTypeLikeArg[ScalarT],
+    move_axis_to_end: bool = False,
 ) -> tuple[int, NDArray[ScalarT]]:
     """Convert central moments array to correct form for reduction."""
     data = np.asarray(data, dtype=dtype)
-
     axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim)
-    return axis, data
+
+    if move_axis_to_end:
+        # make sure this axis is positive in case we want to use it again...
+        axis_out = data.ndim - (mom_ndim + 1)
+        data = np.moveaxis(data, axis, axis_out)
+    else:
+        axis_out = axis
+
+    return axis_out, data
 
 
 _MOM_AXES_TUPLE = {1: (-1,), 2: (-2, -1)}
@@ -780,10 +788,16 @@ def xprepare_out_for_resample_data(
     *,
     mom_ndim: Mom_NDim | None,
     axis: int,
+    move_axis_to_end: bool,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
     if out is None:
         return out
+
+    if move_axis_to_end:
+        # out should already be in correct order
+        return out
+
     shift = 0 if mom_ndim is None else mom_ndim
     return np.moveaxis(out, axis, -(shift + 1))
 
