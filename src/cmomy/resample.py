@@ -21,7 +21,6 @@ from ._utils import (
     get_out_from_values,
     mom_to_mom_shape,
     normalize_axis_index,
-    optional_move_axis_to_end,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -30,6 +29,7 @@ from ._utils import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+    xprepare_out_for_resample_data,
     xprepare_out_for_resample_vals,
     xprepare_values_for_reduction,
 )
@@ -554,7 +554,9 @@ def resample_data(
             kwargs={
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
+                "out": xprepare_out_for_resample_data(
+                    out, mom_ndim=mom_ndim, axis=axis
+                ),
                 "dtype": dtype,
                 "axis": -1,
             },
@@ -1083,7 +1085,9 @@ def jackknife_data(
             kwargs={
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
+                "out": xprepare_out_for_resample_data(
+                    out, mom_ndim=mom_ndim, axis=axis
+                ),
                 "dtype": dtype,
                 "axis": -1,
             },

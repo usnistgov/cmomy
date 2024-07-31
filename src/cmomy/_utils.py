@@ -641,7 +641,7 @@ def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
 def get_out_from_values(
     *args: NDArray[ScalarT],
     mom: MomentsStrict,
-    axis_neg: int | None = None,
+    axis_neg: int,
     axis_new_size: int | None = None,
 ) -> NDArray[ScalarT]:
     """Pass in axis if this is a reduction and will be removing axis_neg"""
@@ -649,13 +649,12 @@ def get_out_from_values(
         args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
     )
 
-    if axis_neg is not None:
-        # need to normalize
-        axis = normalize_axis_index(axis_neg, len(val_shape))
-        if axis_new_size is None:
-            val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
-        else:
-            val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
+    # need to normalize
+    axis = normalize_axis_index(axis_neg, len(val_shape))
+    if axis_new_size is None:
+        val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
+    else:
+        val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
 
     out_shape = (*val_shape, *mom_to_mom_shape(mom))
     return np.zeros(out_shape, dtype=args[0].dtype)
@@ -752,16 +751,16 @@ def axes_data_reduction(
 
 def xprepare_out_for_resample_vals(
     target: xr.DataArray,
-    out: xr.DataArray | NDArray[ScalarT] | None,
+    out: NDArray[ScalarT] | None,
     dim: DimsReduce,
     mom_ndim: Mom_NDim,
     move_axis_to_end: bool,
-) -> xr.DataArray | NDArray[ScalarT] | None:
+) -> NDArray[ScalarT] | None:
     if out is None:
         return out
 
-    if isinstance(out, xr.DataArray):
-        return out
+    # if isinstance(out, xr.DataArray):
+    #     return out  # noqa: ERA001
 
     if move_axis_to_end:
         # out should already be in correct order
@@ -775,7 +774,7 @@ def xprepare_out_for_resample_vals(
     return np.moveaxis(out, axis_neg - mom_ndim, -(mom_ndim + 1))
 
 
-def optional_move_axis_to_end(
+def xprepare_out_for_resample_data(
     out: NDArray[ScalarT] | None,
     *,
     mom_ndim: Mom_NDim | None,
@@ -788,20 +787,20 @@ def optional_move_axis_to_end(
     return np.moveaxis(out, axis, -(shift + 1))
 
 
-def optional_move_end_to_axis(
-    out: NDArray[ScalarT],
-    *,
-    mom_ndim: Mom_NDim,
-    axis: int,
-) -> NDArray[ScalarT]:
-    """
-    Move 'last' axis back to original position
+# def optional_move_end_to_axis(
+#     out: NDArray[ScalarT],
+#     *,
+#     mom_ndim: Mom_NDim,
+#     axis: int,
+# ) -> NDArray[ScalarT]:
+#     """
+#     Move 'last' axis back to original position
 
-    Note that this assumes axis is negative (relative to end of array), and relative to `mom_dim`.
-    """
-    if axis != -1:
-        np.moveaxis(out, -(mom_ndim + 1), axis - mom_ndim)
-    return out
+#     Note that this assumes axis is negative (relative to end of array), and relative to `mom_dim`.
+#     """
+#     if axis != -1:
+#         np.moveaxis(out, -(mom_ndim + 1), axis - mom_ndim)  # noqa: ERA001
+#     return out  # noqa: ERA001
 
 
 # * Xarray utilities ----------------------------------------------------------

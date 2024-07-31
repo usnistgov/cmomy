@@ -602,6 +602,9 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     dtype = select_dtype(x, out=out, dtype=dtype)
     weight = 1.0 if weight is None else weight
 
+    # if passing center, then don't use the out parameter.
+    out = None if center else out
+
     if isinstance(x, xr.DataArray):
         input_core_dims, args = xprepare_values_for_reduction(
             x,

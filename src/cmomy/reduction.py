@@ -24,7 +24,6 @@ from ._utils import (
     get_out_from_values,
     normalize_axis_tuple,
     optional_keepdims,
-    optional_move_axis_to_end,
     parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -37,6 +36,7 @@ from ._utils import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+    xprepare_out_for_resample_data,
     xprepare_values_for_reduction,
 )
 from .docstrings import docfiller
@@ -245,13 +245,10 @@ def reduce_vals(
                 "out": out,
             },
             keep_attrs=keep_attrs,
-        )
+        ).transpose(..., *x.dims, *mom_dims_strict)
 
-        if keepdims:
-            xout = xout.transpose(..., *x.dims, *mom_dims_strict)
-        else:
+        if not keepdims:
             xout = xout.squeeze(dim)
-
         return xout
 
     axis_neg, args = prepare_values_for_reduction(
@@ -749,7 +746,9 @@ def reduce_data_grouped(
                 kwargs={
                     "mom_ndim": mom_ndim,
                     "parallel": parallel,
-                    "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
+                    "out": xprepare_out_for_resample_data(
+                        out, mom_ndim=mom_ndim, axis=axis
+                    ),
                     "dtype": dtype,
                     "axis": -1,
                 },
@@ -1138,7 +1137,9 @@ def reduce_data_indexed(
                 "group_end": group_end,
                 "scale": scale,
                 "parallel": parallel,
-                "out": optional_move_axis_to_end(out, mom_ndim=mom_ndim, axis=axis),
+                "out": xprepare_out_for_resample_data(
+                    out, mom_ndim=mom_ndim, axis=axis
+                ),
                 "dtype": dtype,
                 "axis": -1,
             },

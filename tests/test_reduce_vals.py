@@ -217,6 +217,20 @@ def test_central_comoments(
             np.testing.assert_allclose(out, expected)
 
 
+@pytest.mark.parametrize("as_dataarray", [False, True])
+def test_reduce_vals_keepdims(as_dataarray) -> None:
+    shape = (2, 3, 4)
+    x = np.zeros(shape)
+    if as_dataarray:
+        x = xr.DataArray(x)
+
+    for axis in [0, 1, 2]:
+        out = reduce_vals(x, mom=2, axis=axis, keepdims=True)
+        new_shape = [*shape, 3]
+        new_shape[axis] = 1
+        assert out.shape == tuple(new_shape)
+
+
 # * Test against np.cov
 @pytest.mark.parametrize(
     ("shapex", "shapey"),
