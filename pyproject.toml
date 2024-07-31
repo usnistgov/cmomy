@@ -200,6 +200,7 @@ lint.extend-ignore = [
     # "D102",    # - Missing docstring in public method
     # "D103",    # - Missing docstring in public function
     # "D202",    # - blank line after docstring
+    "DOC501", # - Missing raises from documentation
 ]
 lint.per-file-ignores."**/*.ipynb" = [
     "B018",

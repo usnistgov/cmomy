@@ -1099,7 +1099,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     # ** Operators ----------------------------------------------------------------
     def _check_other(self, b: Self) -> None:
         """Check other object."""
-        if type(self) != type(b):
+        if type(self) is not type(b):
             raise TypeError
         if self.mom_ndim != b.mom_ndim or self.shape != b.shape:
             raise ValueError
