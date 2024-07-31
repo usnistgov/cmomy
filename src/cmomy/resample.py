@@ -420,7 +420,7 @@ def _check_freq(freq: NDArrayAny, ndat: int) -> None:
 # * Resample data
 # ** overloads
 @overload
-def resample_data(  # type: ignore[overload-overlap]
+def resample_data(
     data: xr.DataArray,
     freq: NDArrayInt,
     *,
@@ -592,7 +592,7 @@ def resample_data(
 # * Resample vals
 # ** overloads
 @overload
-def resample_vals(  # type: ignore[overload-overlap]
+def resample_vals(
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -792,7 +792,7 @@ def resample_vals(
                 *(d if d != dim else rep_dim for d in x.dims),
                 *mom_dims,
             ]
-            xout = xout.transpose(..., *dims_order)
+            xout = xout.transpose(..., *dims_order)  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 
@@ -910,7 +910,7 @@ def jackknife_freq(
 # * Jackknife data
 # ** overloads
 @overload
-def jackknife_data(  # type: ignore[overload-overlap]
+def jackknife_data(
     data: xr.DataArray,
     data_reduced: xr.DataArray | ArrayLike | None = ...,
     *,
@@ -1139,7 +1139,7 @@ def jackknife_data(
 # ** overloads
 # xarray
 @overload
-def jackknife_vals(  # type: ignore[overload-overlap]
+def jackknife_vals(
     x: xr.DataArray,
     *y: xr.DataArray | ArrayLike,
     mom: Moments,
@@ -1366,7 +1366,7 @@ def jackknife_vals(
         )
 
         if not move_axis_to_end:
-            xout = xout.transpose(..., *x.dims, *mom_dims)
+            xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
 
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})

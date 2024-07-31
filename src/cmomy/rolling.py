@@ -248,7 +248,7 @@ def _optional_zero_missing_weight(
 
 # ** Data
 @overload
-def rolling_data(  # type: ignore[overload-overlap]
+def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     data: xr.DataArray,
     *,
     window: int,
@@ -433,7 +433,7 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
 
 # * Vals
 @overload
-def rolling_vals(  # type: ignore[overload-overlap]
+def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -732,7 +732,7 @@ def _rolling_vals(
 # * Move Exponential
 # ** Data
 @overload
-def rolling_exp_data(  # type: ignore[overload-overlap]
+def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
     data: xr.DataArray,
     alpha: ArrayLike,
     *,
@@ -919,7 +919,7 @@ def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
 
 # ** Vals
 @overload
-def rolling_exp_vals(  # type: ignore[overload-overlap]
+def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     alpha: ArrayLike | xr.DataArray,

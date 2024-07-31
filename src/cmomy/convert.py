@@ -54,7 +54,7 @@ if TYPE_CHECKING:
 
 # * Convert between raw and central moments
 @overload
-def moments_type(  # type: ignore[overload-overlap]
+def moments_type(
     values_in: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
@@ -183,7 +183,7 @@ def moments_type(
 
 # * Vals -> Data
 @overload
-def vals_to_data(  # type: ignore[overload-overlap]
+def vals_to_data(
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -358,7 +358,7 @@ def vals_to_data(
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(  # type: ignore[overload-overlap]
+def cumulative(  # pyright: ignore[reportOverlappingOverload]
     values_in: xr.DataArray,
     *,
     axis: AxisReduce | MissingType = ...,
@@ -539,7 +539,7 @@ def _moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(  # type: ignore[overload-overlap]
+def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     values: xr.DataArray,
     *,
     mom: tuple[int, int],

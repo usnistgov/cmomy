@@ -73,7 +73,7 @@ if TYPE_CHECKING:
 # * Reduce vals ---------------------------------------------------------------
 # ** overloads
 @overload
-def reduce_vals(  # type: ignore[overload-overlap]
+def reduce_vals(
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -311,7 +311,7 @@ def _reduce_vals(
 # * Reduce data ---------------------------------------------------------------
 # ** overload
 @overload
-def reduce_data(  # type: ignore[overload-overlap]
+def reduce_data(
     data: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
@@ -555,7 +555,7 @@ def factor_by(
 
 # ** overload
 @overload
-def reduce_data_grouped(  # type: ignore[overload-overlap]
+def reduce_data_grouped(
     data: xr.DataArray,
     by: ArrayLike,
     *,
@@ -920,7 +920,7 @@ def _validate_index(
 
 # ** overload
 @overload
-def reduce_data_indexed(  # type: ignore[overload-overlap]
+def reduce_data_indexed(
     data: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
