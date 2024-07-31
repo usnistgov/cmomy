@@ -36,6 +36,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.typing import AxesGUFunc
+
     from .typing import (
         ArrayLikeArg,
         AxisReduce,
@@ -606,7 +608,7 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     out = None if center else out
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction(
+        input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -627,9 +629,9 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
 
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
-        xout: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
+        xout: xr.DataArray = xr.apply_ufunc(
             _rolling_vals,
-            *args,
+            *xargs,
             input_core_dims=input_core_dims,
             output_core_dims=[[dim, *mom_dims]],
             kwargs={
@@ -688,17 +690,17 @@ def _rolling_vals(
     zero_missing_weights: bool,
     axis_neg: int,
 ) -> NDArray[FloatT]:
-    args = (x, w, *y)
-    axes_args = get_axes_from_values(*args, axis_neg=axis_neg)
+    args: tuple[NDArray[FloatT], ...] = (x, w, *y)  # type: ignore[arg-type]
+    axes_args: AxesGUFunc = get_axes_from_values(*args, axis_neg=axis_neg)
 
     shift = (-window // 2) + 1 if center else None
     if shift is not None:
-        args = tuple(  # type: ignore[assignment]
+        args = tuple(
             _pad_along_axis(arg, axis=axes[0], shift=shift, fill_value=0.0)
             for arg, axes in zip(args, axes_args)
         )
 
-    axes = [
+    axes: AxesGUFunc = [
         # data_tmp
         tuple(range(-mom_ndim, 0)),
         # window, min_periods
@@ -1091,7 +1093,7 @@ def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction(  # type: ignore[assignment]
+        input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             alpha,
@@ -1113,9 +1115,9 @@ def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
 
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
-        xout: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
+        xout: xr.DataArray = xr.apply_ufunc(
             _rolling_exp_vals,
-            *args,
+            *xargs,
             input_core_dims=input_core_dims,
             output_core_dims=[[dim, *mom_dims]],
             kwargs={
@@ -1173,7 +1175,7 @@ def _rolling_exp_vals(
     zero_missing_weights: bool,
     axis_neg: int,
 ) -> NDArray[FloatT]:
-    args = (x, w, *y)
+    args: tuple[NDArray[FloatT], ...] = (x, w, *y)  # type: ignore[arg-type]
     axes_alpha, *axes_args = get_axes_from_values(alpha, *args, axis_neg=axis_neg)
     axes = [
         # data_tmp

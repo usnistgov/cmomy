@@ -594,7 +594,7 @@ def xprepare_values_for_reduction(
     dim: DimsReduce | MissingType,
     axis: AxisReduce | MissingType,
     dtype: DTypeLikeArg[ScalarT],
-) -> tuple[list[list[Hashable]], list[xr.DataArray | NDArray[ScalarT]]]:
+) -> tuple[list[Sequence[Hashable]], list[xr.DataArray | NDArray[ScalarT]]]:
     """
     Convert input value arrays to correct form for reduction.
 
@@ -628,8 +628,9 @@ def xprepare_values_for_reduction(
         )
         for a in (target, *args)
     ]
-
-    input_core_dims = [[dim]] * len(arrays)
+    # NOTE: Go with list[Sequence[...]] here so that `input_core_dims` can
+    # be updated later with less restriction...
+    input_core_dims: list[Sequence[Hashable]] = [[dim]] * len(arrays)
     return input_core_dims, arrays
 
 
@@ -812,25 +813,25 @@ def validate_mom_dims(
     """Validate mom_dims to correct form."""
     if mom_dims is None:
         if isinstance(out, xr.DataArray):
-            return out.dims[-mom_ndim:]
+            return cast("MomDimsStrict", out.dims[-mom_ndim:])
 
         if mom_ndim == 1:
             return ("mom_0",)
         return ("mom_0", "mom_1")
 
-    out: tuple[Hashable, ...]
+    validated: tuple[Hashable, ...]
     if isinstance(mom_dims, str):
-        out = (mom_dims,)
+        validated = (mom_dims,)
     elif isinstance(mom_dims, (tuple, list)):
-        out = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+        validated = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
     else:
         msg = f"Unknown {type(mom_dims)=}.  Expected str or Sequence[str]"
         raise TypeError(msg)
 
-    if len(out) != mom_ndim:  # pyright: ignore[reportUnknownArgumentType]
-        msg = f"mom_ndim={out} inconsistent with {mom_ndim=}"
+    if len(validated) != mom_ndim:  # pyright: ignore[reportUnknownArgumentType]
+        msg = f"mom_dims={validated} inconsistent with {mom_ndim=}"
         raise ValueError(msg)
-    return cast("MomDimsStrict", out)
+    return cast("MomDimsStrict", validated)
 
 
 def move_mom_dims_to_end(

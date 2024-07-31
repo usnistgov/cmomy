@@ -217,7 +217,7 @@ def reduce_vals(
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction(
+        input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -230,9 +230,9 @@ def reduce_vals(
         mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
         dim = input_core_dims[0][0]
 
-        xout: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
+        xout: xr.DataArray = xr.apply_ufunc(
             _reduce_vals,
-            *args,
+            *xargs,
             input_core_dims=input_core_dims,
             output_core_dims=[(dim, *mom_dims_strict)],
             exclude_dims={dim},
@@ -284,7 +284,7 @@ def _reduce_vals(
     out: NDArray[FloatT] | None = None,
     keepdims: bool = False,
 ) -> NDArray[FloatT]:
-    args = (x0, w, *x1)
+    args: tuple[NDArray[FloatT], ...] = (x0, w, *x1)  # type: ignore[arg-type]
     if out is None:
         out = get_out_from_values(*args, mom=mom, axis_neg=axis_neg)
     else:

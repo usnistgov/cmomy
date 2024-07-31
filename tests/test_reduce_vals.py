@@ -218,8 +218,9 @@ def test_central_comoments(
 
 
 @pytest.mark.parametrize("as_dataarray", [False, True])
-def test_reduce_vals_keepdims(as_dataarray) -> None:
+def test_reduce_vals_keepdims(as_dataarray: bool) -> None:
     shape = (2, 3, 4)
+    x: NDArrayAny | xr.DataArray
     x = np.zeros(shape)
     if as_dataarray:
         x = xr.DataArray(x)
@@ -269,6 +270,3 @@ def test_np_cov(
     out = reduce_vals(z[:, None, :], z, mom=(1, 1), axis=-1, weight=w)
 
     np.testing.assert_allclose(c, out[..., 1, 1])
-
-
-# # * DataArray

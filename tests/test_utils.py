@@ -258,7 +258,7 @@ def test_prepare_values_for_reduction(
 # @dtype_mark
 # @order_mark
 def test_xprepare_values_for_reduction_0():
-    dtype = None
+    dtype = np.float32
     target = xr.DataArray(np.ones((2, 3, 4)))
     other = np.full((3, 4), fill_value=2)
 

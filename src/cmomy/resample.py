@@ -748,7 +748,7 @@ def resample_vals(
     dtype = select_dtype(x, out=out, dtype=dtype)
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction(
+        input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -771,9 +771,9 @@ def resample_vals(
             mom_ndim=mom_ndim,
         )
 
-        out: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
+        xout: xr.DataArray = xr.apply_ufunc(
             _resample_vals,
-            *args,
+            *xargs,
             input_core_dims=input_core_dims,
             output_core_dims=[[rep_dim, *mom_dims]],
             kwargs={
@@ -792,9 +792,9 @@ def resample_vals(
                 *(d if d != dim else rep_dim for d in x.dims),
                 *mom_dims,
             ]
-            out = out.transpose(..., *dims_order)
+            xout = xout.transpose(..., *dims_order)
 
-        return out
+        return xout
 
     freq = np.asarray(freq, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
@@ -832,7 +832,7 @@ def _resample_vals(
 ) -> NDArray[FloatT]:
     _check_freq(freq, x0.shape[axis_neg])
 
-    args = (x0, w, *x1)
+    args: tuple[NDArray[FloatT], ...] = (x0, w, *x1)  # type: ignore[arg-type]
 
     if out is None:
         out = get_out_from_values(
@@ -1320,7 +1320,7 @@ def jackknife_vals(
             raise ValueError(msg)
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, args = xprepare_values_for_reduction(
+        input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -1353,7 +1353,7 @@ def jackknife_vals(
         xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_vals,
             data_reduced,
-            *args,
+            *xargs,
             input_core_dims=input_core_dims,
             output_core_dims=[(dim, *mom_dims)],
             kwargs={
@@ -1407,7 +1407,7 @@ def _jackknife_vals(
     parallel: bool | None = None,
     out: NDArray[FloatT] | None = None,
 ) -> NDArray[FloatT]:
-    args = (x0, w, *x1)
+    args: tuple[NDArray[FloatT], ...] = (x0, w, *x1)  # type: ignore[arg-type]
 
     axes: AxesGUFunc = [
         # data_reduced

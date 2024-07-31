@@ -1,3 +1,5 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -28,7 +30,9 @@ shapes_mark = pytest.mark.parametrize(
 as_dataarray = pytest.mark.parametrize("as_dataarray", [False, True])
 
 
-def get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray):
+def get_params(
+    rng: np.random.Generator, xshape, yshape, wshape, axis, mom_ndim, as_dataarray
+):
     x = rng.random(xshape)
     w = None if wshape is None else rng.random(wshape)
     y = None if yshape is None else rng.random(yshape)
@@ -61,7 +65,7 @@ def get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray):
 def test_resample_vals_move_axis_to_end(
     rng, xshape, yshape, wshape, axis, mom, as_dataarray, func, kwargs
 ) -> None:
-    mom_ndim: Mom_NDim = len(mom)
+    mom_ndim: Mom_NDim = len(mom)  # type: ignore[assignment]
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray)
 
