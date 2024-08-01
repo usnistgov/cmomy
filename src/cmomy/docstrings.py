@@ -35,7 +35,8 @@ def _dummy_docstrings() -> None:
     mom_ndim : {1, 2}
         Value indicates if moments (``mom_ndim = 1``) or comoments (``mom_ndim=2``).
     mom_ndim_optional | mom_ndim : {1, 2, None}
-        If ``mom_ndim is not None``, then wrap axis relative to ``mom_ndim``.
+        If ``mom_ndim`` is not ``None``, then wrap axis relative to ``mom_ndim``.
+        For Example, with mom_ndim=``2``, ``axis = -1`` will be transformed to ``axis = -3``.
     val_shape : tuple
         Shape of `values` part of data.  That is, the non-moment dimensions.
     shape : tuple
@@ -45,15 +46,15 @@ def _dummy_docstrings() -> None:
     zeros_kws : mapping
         Optional parameters to :func:`numpy.zeros`
     axis : int
-        Axis to reduce along.
+        Axis to reduce/sample along.
     axis_data | axis : int, optional
-        Axis to reduce along. Note that negative values are relative to
+        Axis to reduce/sample along. Note that negative values are relative to
         ``data.ndim - mom_ndim``. It is assumed that the last dimensions are
         for moments. For example, if ``data.shape == (1,2,3)`` with
         ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
         Defaults to ``axis=-1``.
     axis_data_mult | axis : int, tuple of int, optional
-        Axis(es) to reduce along. Note that negative values are relative to
+        Axis(es) to reduce/sample along. Note that negative values are relative to
         ``data.ndim - mom_ndim``. It is assumed that the last dimensions are
         for moments. For example, if ``data.shape == (1,2,3)`` with
         ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
@@ -109,7 +110,7 @@ def _dummy_docstrings() -> None:
         If present, output will have attributes of `template`.
         Overrides other options.
     dim : hashable
-        Dimension to reduce along.
+        Dimension to reduce/sample along.
     dim_mult | dim : hashable or iterable of hashable
         Dimension(s) to reduce along.  Value of `None` implies reduce over all "value" dimensions.
     rep_dim : hashable

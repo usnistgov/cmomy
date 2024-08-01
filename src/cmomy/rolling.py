@@ -27,7 +27,6 @@ from ._utils import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
-    xprepare_out_for_resample_data,
     xprepare_out_for_resample_vals,
     xprepare_values_for_reduction,
 )
@@ -128,11 +127,26 @@ def construct_rolling_window_array(
 
     Parameters
     ----------
-    x : array
+    x : array or DataArray
+        Input array.
     axis : int or iterable of int
+        To sample along.
     window : int or sequence of int
+        Window size.
     center : bool
+        If ``True``, center windows.
+    stride : int
+        Size of strides in rolling window.
     fill_value : scalar
+        Fill value for missing values.
+    {mom_ndim}
+    dim : str or sequence of hashable
+    window_dim : str or Sequence of str, optional
+        Names of output window dimension(s).
+    {keep_attrs}
+    **kwargs
+        Extra arguments to :meth:`xarray.DataArray.rolling`.
+
 
     Returns
     -------
@@ -145,7 +159,7 @@ def construct_rolling_window_array(
     Notes
     -----
     This function uses different syntax compared to
-    :meth:`~xarray.DataArray.rolling`. Instead of mappings ffor ``center``,
+    :meth:`xarray.DataArray.rolling`. Instead of mappings for ``center``,
     etc, here you pass scalar or sequence values corresponding to axis/dim.
     Corresponding mappings are created from, for example ``center=dict(zip(dim,
     center))``.
@@ -383,35 +397,26 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     """
     if isinstance(data, xr.DataArray):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = [[dim, *data.dims[-mom_ndim:]]]
 
-        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            rolling_data,
-            data,
-            input_core_dims=core_dims,
-            output_core_dims=core_dims,
-            kwargs={
-                "window": window,
-                "axis": -1,
-                "mom_ndim": mom_ndim,
-                "min_periods": min_periods,
-                "center": center,
-                "parallel": parallel,
-                "zero_missing_weights": zero_missing_weights,
-                "dtype": dtype,
-                "out": xprepare_out_for_resample_data(
-                    out,
-                    mom_ndim=mom_ndim,
-                    axis=axis,
-                    move_axis_to_end=move_axis_to_end,
-                ),
-                "move_axis_to_end": False,
-            },
+        if move_axis_to_end:
+            axis = -1
+            data = data.transpose(..., dim, *data.dims[-mom_ndim:])
+
+        return data.copy(
+            data=rolling_data(
+                data.to_numpy(),
+                window=window,
+                axis=axis,
+                mom_ndim=mom_ndim,
+                min_periods=min_periods,
+                center=center,
+                parallel=parallel,
+                zero_missing_weights=zero_missing_weights,
+                dtype=dtype,
+                out=out,
+                move_axis_to_end=False,
+            )
         )
-
-        if not move_axis_to_end:
-            xout = xout.transpose(*data.dims)
-        return xout
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
@@ -893,33 +898,25 @@ def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
     """
     if isinstance(data, xr.DataArray):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = [[dim, *data.dims[-mom_ndim:]]]
-        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            rolling_exp_data,
-            data,
-            input_core_dims=core_dims,
-            output_core_dims=core_dims,
-            kwargs={
-                "alpha": alpha,
-                "axis": -1,
-                "mom_ndim": mom_ndim,
-                "min_periods": min_periods,
-                "parallel": parallel,
-                "zero_missing_weights": zero_missing_weights,
-                "dtype": dtype,
-                "out": xprepare_out_for_resample_data(
-                    out,
-                    mom_ndim=mom_ndim,
-                    axis=axis,
-                    move_axis_to_end=move_axis_to_end,
-                ),
-                "move_axis_to_end": False,
-            },
-        )
 
-        if not move_axis_to_end:
-            xout = xout.transpose(*data.dims)
-        return xout
+        if move_axis_to_end:
+            axis = -1
+            data = data.transpose(..., dim, *data.dims[-mom_ndim:])
+
+        return data.copy(
+            data=rolling_exp_data(
+                data.to_numpy(),
+                alpha=alpha,
+                axis=axis,
+                mom_ndim=mom_ndim,
+                min_periods=min_periods,
+                parallel=parallel,
+                zero_missing_weights=zero_missing_weights,
+                dtype=dtype,
+                out=out,
+                move_axis_to_end=False,
+            )
+        )
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)

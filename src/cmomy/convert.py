@@ -15,12 +15,11 @@ from ._utils import (
     MISSING,
     axes_data_reduction,
     mom_to_mom_shape,
-    normalize_axis_index,
     parallel_heuristic,
     peek_at,
+    prepare_data_for_reduction,
     select_axis_dim,
     select_dtype,
-    validate_axis,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
@@ -362,12 +361,13 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     values_in: xr.DataArray,
     *,
     axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    dim: DimsReduce | MissingType = ...,
 ) -> xr.DataArray: ...
 # array
 @overload
@@ -375,12 +375,13 @@ def cumulative(
     values_in: ArrayLikeArg[FloatT],
     *,
     axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
-    dim: DimsReduce | MissingType = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -388,12 +389,13 @@ def cumulative(
     values_in: Any,
     *,
     axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    dim: DimsReduce | MissingType = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -401,12 +403,13 @@ def cumulative(
     values_in: Any,
     *,
     axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    dim: DimsReduce | MissingType = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -414,25 +417,28 @@ def cumulative(
     values_in: Any,
     *,
     axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
+    move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
     out: Any = ...,
     dtype: Any = ...,
-    dim: DimsReduce | MissingType = ...,
 ) -> NDArrayAny: ...
 
 
-def cumulative(
+@docfiller.decorate
+def cumulative(  # pyright: ignore[reportOverlappingOverload]
     values_in: ArrayLike | xr.DataArray,
     *,
     axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim = 1,
     inverse: bool = False,
+    move_axis_to_end: bool = False,
     parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
-    dim: DimsReduce | MissingType = MISSING,
 ) -> NDArrayAny | xr.DataArray:
     """
     Convert between moments array and cumulative moments array.
@@ -440,10 +446,14 @@ def cumulative(
     Parameters
     ----------
     values_in : array-like or DataArray
+    {axis}
+    {dim}
     {mom_ndim}
     inverse : bool, optional
         Default is to create a cumulative moments array.  Pass ``inverse=True`` to convert from
         cumulative moments array back to normal moments.
+    {move_axis_to_end}
+    {parallel}
     {out}
     {dtype}
 
@@ -473,7 +483,12 @@ def cumulative(
 
     """
     if isinstance(values_in, xr.DataArray):
-        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim)
+        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
+
+        if move_axis_to_end:
+            axis = -1
+            values_in = values_in.transpose(..., dim, *values_in.dims[-mom_ndim:])
+
         return values_in.copy(
             data=cumulative(
                 values_in.to_numpy(),  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
@@ -482,16 +497,21 @@ def cumulative(
                 axis=axis,
                 out=out,
                 dtype=dtype,
+                move_axis_to_end=False,
             )
         )
 
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    values_in = np.asarray(values_in, dtype=dtype)
 
-    axis = normalize_axis_index(
-        validate_axis(axis), values_in.ndim, mom_ndim, "cumulative"
+    axis, values_in = prepare_data_for_reduction(
+        values_in,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        dtype=dtype,
+        move_axis_to_end=move_axis_to_end,
     )
+
     axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
 
     from ._lib.factory import factory_cumulative

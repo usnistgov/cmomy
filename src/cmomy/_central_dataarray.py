@@ -13,6 +13,7 @@ import xarray as xr
 from ._central_abc import CentralMomentsABC
 from ._utils import (
     MISSING,
+    moveaxis,
     # replace_coords_from_isel,
     select_axis_dim,
     validate_mom_and_mom_ndim,
@@ -1063,7 +1064,52 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
 
         return self._push_vals_numpy(x, *y, weight=weight, axis=axis, parallel=parallel)
 
-    # ** Manipulation
+    # ** Manipulation ---------------------------------------------------------
+    @docfiller_inherit_abc()
+    def moveaxis(
+        self,
+        axis: int | tuple[int, ...] | MissingType = MISSING,
+        dest: int | tuple[int, ...] | MissingType = MISSING,
+        dim: str | Sequence[Hashable] | MissingType = MISSING,
+        dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
+    ) -> Self:
+        """
+        Parameters
+        ----------
+        dim : str or sequence of hashable
+            Original dimensions to move (for DataArray).
+        dest_dim : str or sequence of hashable
+            Destination of each original dimension.
+
+        Notes
+        -----
+        Must specify either ``axis`` or ``dim`` and either ``dest`` or
+        ``dest_dim``.
+
+        Examples
+        --------
+        >>> data = xr.DataArray(np.zeros((1, 2, 3, 4)), dims=["a", "b", "c", "mom"])
+        >>> cx = xCentralMoments(data, mom_ndim=1)
+        >>> cx.dims
+        ('a', 'b', 'c', 'mom')
+
+        >>> cx.moveaxis(0, -1).dims
+        ('b', 'c', 'a', 'mom')
+
+        >>> cx.moveaxis(dim=("a", "b"), dest=(-1, -2)).dims
+        ('c', 'b', 'a', 'mom')
+
+        """
+        self._raise_if_scalar()
+        return self.pipe(
+            moveaxis,
+            axis=axis,
+            dest=dest,
+            dim=dim,
+            dest_dim=dest_dim,
+            mom_ndim=self.mom_ndim,
+        )
+
     # ** Reduction -----------------------------------------------------------
     @docfiller_inherit_abc()
     def randsamp_freq(

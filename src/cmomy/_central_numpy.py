@@ -19,6 +19,7 @@ from ._compat import copy_if_needed
 from ._utils import (
     arrayorder_to_arrayorder_cf,
     mom_to_mom_shape,
+    moveaxis,
     validate_axis,
     validate_mom_and_mom_ndim,
 )
@@ -831,35 +832,13 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         data = self._data.reshape(new_shape, order=order)
         return self.new_like(data=data)
 
-    @docfiller.decorate
+    @docfiller_inherit_abc()
     def moveaxis(
-        self: CentralMoments[FloatT2],
-        source: int | tuple[int, ...],
-        destination: int | tuple[int, ...],
-    ) -> CentralMoments[FloatT2]:
+        self,
+        axis: int | tuple[int, ...],
+        dest: int | tuple[int, ...],
+    ) -> Self:
         """
-        Move axis from source to destination.
-
-        Parameters
-        ----------
-        source : int or sequence of int
-            Original positions of the axes to move. These must be unique.
-        destination : int or sequence of int
-            Destination positions for each of the original axes. These must also be
-            unique.
-
-        Returns
-        -------
-        result : CentralMoments
-            CentralMoments object with with moved axes. This array is a view of
-            the input array.
-
-        Notes
-        -----
-        Both ``source`` and ``destination`` are relative to ``self.val_shape``.
-        So the moment dimensions will always remain as the last dimensions.
-
-
         Examples
         --------
         >>> from cmomy.random import default_rng
@@ -877,19 +856,14 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         <BLANKLINE>
                [[[10.    ,  0.5038,  0.1153],
                  [10.    ,  0.412 ,  0.0865]]]])
-
         """
         self._raise_if_scalar()
-
-        def _internal_check_val(v: int | tuple[int, ...]) -> tuple[int, ...]:
-            v = (v,) if isinstance(v, int) else tuple(v)
-            return tuple(self._wrap_axis(x) for x in v)
-
-        source = _internal_check_val(source)
-        destination = _internal_check_val(destination)
-        data = np.moveaxis(self.data, source, destination)
-
-        return self.new_like(data=data, verify=False)
+        return self.pipe(
+            moveaxis,
+            axis=axis,
+            dest=dest,
+            mom_ndim=self.mom_ndim,
+        )
 
     # ** Constructors ----------------------------------------------------------
     @overload  # type: ignore[override]

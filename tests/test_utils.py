@@ -9,9 +9,18 @@ import xarray as xr
 from cmomy import _utils as utils
 
 
+# * catch all args only test
+def _do_test(func, *args, expected=None, match=None, **kwargs):
+    if isinstance(expected, type):
+        with pytest.raises(expected, match=match):
+            func(*args, **kwargs)
+    else:
+        assert func(*args, **kwargs) == expected
+
+
 # * Order validation
 @pytest.mark.parametrize(
-    ("order", "expected"),
+    ("arg", "expected"),
     [
         ("c", "C"),
         ("F", "F"),
@@ -20,135 +29,109 @@ from cmomy import _utils as utils
         ("anything", None),
     ],
 )
-def test_arrayorder_to_arrayorder_cf(order, expected) -> None:
-    assert utils.arrayorder_to_arrayorder_cf(order) == expected
+def test_arrayorder_to_arrayorder_cf(arg, expected) -> None:
+    _do_test(utils.arrayorder_to_arrayorder_cf, arg, expected=expected)
 
 
 # * validate not none
 @pytest.mark.parametrize(
-    ("x", "expected"),
+    ("arg", "expected", "match"),
     [
-        (None, "error"),
-        ("a", "a"),
-        (1, 1),
+        (None, TypeError, ".*is not supported"),
+        ("a", "a", None),
+        (1, 1, None),
     ],
 )
-def test_validate_not_none(x, expected) -> None:
-    if expected == "error":
-        with pytest.raises(TypeError, match=".*is not supported.*"):
-            utils.validate_not_none(x)
-
-    else:
-        assert utils.validate_not_none(x) == expected
+def test_validate_not_none(arg, expected, match) -> None:
+    _do_test(utils.validate_not_none, arg, expected=expected, match=match)
 
 
 # * Moment validation
-@pytest.mark.parametrize(("mom_ndim", "expected"), [(0, -1), (1, 1), (2, 2), (3, -1)])
-def test_validate_mom_ndim(mom_ndim: int, expected: int) -> None:
-    if expected < 0:
-        with pytest.raises(ValueError, match=r".* must be either 1 or 2"):
-            utils.validate_mom_ndim(mom_ndim)
-    else:
-        assert utils.validate_mom_ndim(mom_ndim) == expected
+@pytest.mark.parametrize(
+    ("arg", "expected", "match"),
+    [
+        (0, ValueError, ".* must be either 1 or 2"),
+        (3, ValueError, ".* must be either 1 or 2"),
+        (1, 1, None),
+        (2, 2, None),
+    ],
+)
+def test_validate_mom_ndim(arg, expected, match) -> None:
+    _do_test(utils.validate_mom_ndim, arg, expected=expected, match=match)
 
 
 @pytest.mark.parametrize(
-    ("mom", "expected"),
+    ("arg", "expected", "match"),
     [
-        (0, "error"),
-        ((0,), "error"),
-        ((3, 0), "error"),
-        ((0, 3), "error"),
-        (3, (3,)),
-        ((3,), (3,)),
-        ([3], (3,)),
-        ([3, 3], (3, 3)),
-        ([3, 3, 3], "error"),
+        (3, (3,), None),
+        ((3,), (3,), None),
+        ([3], (3,), None),
+        ([3, 3], (3, 3), None),
+        (0, ValueError, r".* must be an integer, .*"),
+        ((0,), ValueError, r".* must be an integer, .*"),
+        ((3, 0), ValueError, r".* must be an integer, .*"),
+        ((0, 3), ValueError, r".* must be an integer, .*"),
+        ([3, 3, 3], ValueError, r".* must be an integer, .*"),
     ],
 )
-def test_is_mom_tuple(mom: tuple[int, ...], expected: tuple[int, ...] | str) -> None:
-    if expected == "error":
-        with pytest.raises(ValueError, match=r".* must be an integer, .*"):
-            utils.validate_mom(mom)
-    else:
-        assert utils.validate_mom(mom) == expected
+def test_is_mom_tuple(arg, expected, match) -> None:
+    _do_test(utils.validate_mom, arg, expected=expected, match=match)
 
 
 @pytest.mark.parametrize(
-    ("mom", "mom_ndim", "shape", "expected_mom", "expected_mom_ndim"),
+    ("kws", "expected"),
     [
-        (3, 1, None, (3,), 1),
-        ((3,), 1, None, (3,), 1),
-        (None, 1, (1, 2, 3), (2,), 1),
-        (0, 1, None, "error", "error"),
-        (None, 1, (2, 1), "error", "error"),
-        (3, 2, None, "error", "error"),
-        ((3, 0), 2, None, "error", "error"),
-        ((3, 3), 1, None, "error", "error"),
-        (None, 2, (1, 2, 3), (1, 2), 2),
-        (None, 2, (2, 3), (1, 2), 2),
-        (None, 2, (2, 1, 1), "error", "error"),
-        (None, 2, (3,), "error", "error"),
+        ({"mom": 3, "mom_ndim": 1}, ((3,), 1)),
+        ({"mom": (3,), "mom_ndim": 1}, ((3,), 1)),
+        ({"mom_ndim": 1, "shape": (1, 2, 3)}, ((2,), 1)),
+        ({"mom_ndim": 2, "shape": (1, 2, 3)}, ((1, 2), 2)),
+        ({"mom_ndim": 2, "shape": (2, 3)}, ((1, 2), 2)),
+        ({"mom": (2, 2)}, ((2, 2), 2)),
+        ({"mom_ndim": 1, "shape": (2, 1)}, ValueError),
+        ({"mom_ndim": 2, "shape": (2, 1, 1)}, ValueError),
+        ({"mom_ndim": 2, "shape": (3,)}, ValueError),
+        ({"mom": 0, "mom_ndim": 1}, ValueError),
+        ({"mom": 3, "mom_ndim": 2}, ValueError),
+        ({"mom": (3, 0), "mom_ndim": 2}, ValueError),
+        ({"mom": (3, 3), "mom_ndim": 1}, ValueError),
+        ({"mom": None, "mom_ndim": None}, ValueError),
+        ({"mom": None, "mom_ndim": 1}, ValueError),
+        ({"mom": None, "mom_ndim": 2, "shape": (2,)}, ValueError),
+        ({"mom": None, "mom_ndim": 3, "shape": (2, 3, 4)}, ValueError),
+        ({"mom": (2, 2, 2), "mom_ndim": None}, ValueError),
+        ({"mom": (2, 2), "mom_ndim": 1}, ValueError),
     ],
 )
-def test_validate_mom_and_mom_ndim(
-    mom, mom_ndim, shape, expected_mom, expected_mom_ndim
-) -> None:
-    if expected_mom == "error":
-        with pytest.raises(ValueError):
-            utils.validate_mom_and_mom_ndim(mom=mom, mom_ndim=mom_ndim, shape=shape)
-
-    else:
-        assert utils.validate_mom_and_mom_ndim(
-            mom=mom, mom_ndim=mom_ndim, shape=shape
-        ) == (expected_mom, expected_mom_ndim)
+def test_validate_mom_and_mom_ndim(kws, expected) -> None:
+    _do_test(utils.validate_mom_and_mom_ndim, expected=expected, **kws)
 
 
-def test_validate_mom_and_mom_ndim_2() -> None:
-    with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=None, mom_ndim=None)
-    with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=None, mom_ndim=1)
-
-    with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=None, mom_ndim=2, shape=(2,))
-
-    with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=None, mom_ndim=3, shape=(2, 3, 4))
-
-    assert utils.validate_mom_and_mom_ndim(mom=(2, 2), mom_ndim=None) == ((2, 2), 2)
-
-    with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=(2, 2, 2), mom_ndim=None)  # type: ignore[arg-type]
-
-    with pytest.raises(ValueError):
-        utils.validate_mom_and_mom_ndim(mom=(2, 2), mom_ndim=1)
+@pytest.mark.parametrize(
+    ("arg", "expected"),
+    [
+        (2, 1),
+        ((2, 2), 2),
+        ((2, 2, 2), ValueError),
+        ([2, 2], 2),
+    ],
+)
+def test_mom_to_mom_ndim(arg, expected) -> None:
+    _do_test(utils.mom_to_mom_ndim, arg, expected=expected)
 
 
-def test_mom_to_mom_ndim() -> None:
-    assert utils.mom_to_mom_ndim(2) == 1
-    assert utils.mom_to_mom_ndim((2, 2)) == 2
-
-    with pytest.raises(ValueError):
-        utils.mom_to_mom_ndim((2, 2, 2))  # type: ignore[arg-type]
-
-    # this should be fine
-    utils.mom_to_mom_ndim([2, 2])  # type: ignore[arg-type]
-
-
-def test_select_mom_ndim() -> None:
-    assert utils.select_mom_ndim(mom=2, mom_ndim=None) == 1
-    assert utils.select_mom_ndim(mom=(2, 2), mom_ndim=None) == 2
-
-    with pytest.raises(ValueError):
-        utils.select_mom_ndim(mom=(2, 2), mom_ndim=1)
-
-    with pytest.raises(TypeError):
-        utils.select_mom_ndim(mom=None, mom_ndim=None)
-
-    assert utils.select_mom_ndim(mom=None, mom_ndim=1) == 1
-    with pytest.raises(ValueError):
-        utils.select_mom_ndim(mom=None, mom_ndim=3)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({"mom": 2, "mom_ndim": None}, 1),
+        ({"mom": (2, 2), "mom_ndim": None}, 2),
+        ({"mom": (2, 2), "mom_ndim": 1}, ValueError),
+        ({"mom": None, "mom_ndim": None}, TypeError),
+        ({"mom": None, "mom_ndim": 1}, 1),
+        ({"mom": None, "mom_ndim": 3}, ValueError),
+    ],
+)
+def test_select_mom_ndim(kws, expected) -> None:
+    _do_test(utils.select_mom_ndim, expected=expected, **kws)
 
 
 @pytest.mark.parametrize(
@@ -165,18 +148,18 @@ def test_mom_to_mom_shape(mom, mom_shape) -> None:
 
 
 @pytest.mark.parametrize(
-    ("parallel", "size", "cutoff", "expected"),
+    ("args", "expected"),
     [
-        (None, 100, 100, False),
-        (None, 101, 100, True),
-        (True, 100, 100, True),
-        (True, 101, 100, True),
-        (False, 100, 100, False),
-        (False, 101, 100, False),
+        ((None, 100, 100), False),
+        ((None, 101, 100), True),
+        ((True, 100, 100), True),
+        ((True, 101, 100), True),
+        ((False, 100, 100), False),
+        ((False, 101, 100), False),
     ],
 )
-def test_parallel_heuristic(parallel, size, cutoff, expected) -> None:
-    assert utils.parallel_heuristic(parallel, size, cutoff) == expected
+def test_parallel_heuristic(args, expected) -> None:
+    _do_test(utils.parallel_heuristic, *args, expected=expected)
 
 
 # * prepare values/data
@@ -255,44 +238,36 @@ def test_prepare_values_for_reduction(
 
 
 # * xarray stuff
-# @dtype_mark
-# @order_mark
-def test_xprepare_values_for_reduction_0():
-    dtype = np.float32
-    target = xr.DataArray(np.ones((2, 3, 4)))
-    other = np.full((3, 4), fill_value=2)
-
-    # wrong number of arrays
-    with pytest.raises(ValueError, match=".*Number of arrays.*"):
-        utils.xprepare_values_for_reduction(
-            target,
-            other,
-            narrays=3,
-            axis=None,
-            dim="rec",
-            dtype=dtype,
-        )
-
-    # no axis or dim
-    with pytest.raises(ValueError):
-        utils.xprepare_values_for_reduction(
-            target,
-            other,
-            narrays=2,
-            axis=utils.MISSING,
-            dim=utils.MISSING,
-            dtype=dtype,
-        )
-
-    with pytest.raises(TypeError):
-        utils.xprepare_values_for_reduction(
-            other,  # type: ignore[arg-type]
-            other,
-            narrays=2,
-            axis=0,
-            dim=None,
-            dtype=dtype,
-        )
+@pytest.mark.parametrize(
+    ("target", "other"),
+    [
+        (xr.DataArray(np.ones((2, 3, 4))), np.full((3, 4), fill_value=2)),
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "raises", "match"),
+    [
+        (
+            {"narrays": 3, "axis": None, "dim": "rec", "dtype": np.float32},
+            ValueError,
+            ".*Number of arrays.*",
+        ),
+        (
+            {
+                "narrays": 2,
+                "axis": utils.MISSING,
+                "dim": utils.MISSING,
+                "dtype": np.float32,
+            },
+            ValueError,
+            None,
+        ),
+        ({"narrays": 2, "axis": 0, "dim": None, "dtype": np.float32}, TypeError, None),
+    ],
+)
+def test_xprepare_values_for_reduction_0(target, other, kws, raises, match):
+    with pytest.raises(raises, match=match):
+        utils.xprepare_values_for_reduction(target, other, **kws)
 
 
 @pytest.mark.parametrize(
@@ -348,26 +323,22 @@ def test_xprepare_values_for_reduction_1(
 
 
 @pytest.mark.parametrize(
-    ("mom_ndim", "mom_dims", "expected"),
+    ("args", "expected"),
     [
-        (1, None, ("mom_0",)),
-        (2, None, ("mom_0", "mom_1")),
-        (1, "a", ("a",)),
-        (2, ("a", "b"), ("a", "b")),
-        (1, ["a"], ("a",)),
-        (2, ["a", "b"], ("a", "b")),
-        (1, {"a"}, TypeError),
-        (1, ["a", "b"], ValueError),
-        (2, "a", ValueError),
-        (2, ("a,"), ValueError),
+        ((None, 1), ("mom_0",)),
+        ((None, 2), ("mom_0", "mom_1")),
+        (("a", 1), ("a",)),
+        ((("a", "b"), 2), ("a", "b")),
+        ((["a"], 1), ("a",)),
+        ((["a", "b"], 2), ("a", "b")),
+        (({"a"}, 1), TypeError),
+        ((["a", "b"], 1), ValueError),
+        (("a", 2), ValueError),
+        ((("a,"), 2), ValueError),
     ],
 )
-def test_validate_mom_dims(mom_ndim, mom_dims, expected):
-    if isinstance(expected, tuple):
-        assert utils.validate_mom_dims(mom_dims, mom_ndim) == expected
-    else:
-        with pytest.raises(expected):
-            utils.validate_mom_dims(mom_dims, mom_ndim)
+def test_validate_mom_dims(args, expected):
+    _do_test(utils.validate_mom_dims, *args, expected=expected)
 
 
 @pytest.mark.parametrize(
@@ -389,116 +360,147 @@ def test_optional_keepdims(shape, axis, out) -> None:
         )
 
 
-def test_select_axis_dim() -> None:
-    data = xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom"))
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim(data)
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim(data, default_axis=0, default_dim="hello")
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim(data, axis=0, dim="a")
-
-    assert utils.select_axis_dim(data, default_axis=0) == (0, "a")
-    assert utils.select_axis_dim(data, default_axis=-1) == (2, "mom")
-
-    assert utils.select_axis_dim(data, default_dim="a") == (0, "a")
-    assert utils.select_axis_dim(data, default_dim="mom") == (2, "mom")
-
-    assert utils.select_axis_dim(data, axis=-1) == (2, "mom")
-    assert utils.select_axis_dim(data, axis=-1, mom_ndim=1) == (1, "b")
-    assert utils.select_axis_dim(data, axis=-1, mom_ndim=2) == (0, "a")
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim(data, axis=-1, mom_ndim=3)  # type: ignore[arg-type]
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim(data, axis=2, mom_ndim=1)
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim(data, dim="hello")
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim(data, axis="a")  # type: ignore[arg-type]
+@pytest.mark.parametrize(
+    "data", [xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom"))]
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({}, ValueError),
+        ({"default_axis": 0, "default_dim": "hello"}, ValueError),
+        ({"axis": 0, "dim": "a"}, ValueError),
+        ({"default_axis": 0}, (0, "a")),
+        ({"default_axis": -1}, (2, "mom")),
+        ({"default_dim": "a"}, (0, "a")),
+        ({"default_dim": "mom"}, (2, "mom")),
+        ({"axis": -1}, (2, "mom")),
+        ({"axis": -1, "mom_ndim": 1}, (1, "b")),
+        ({"axis": -1, "mom_ndim": 2}, (0, "a")),
+        ({"axis": -1, "mom_ndim": 3}, ValueError),
+        ({"axis": 2, "mom_ndim": 1}, ValueError),
+        ({"dim": "hello"}, ValueError),
+        ({"axis": "a"}, ValueError),
+    ],
+)
+def test_select_axis_dim(data, kws, expected) -> None:
+    _do_test(utils.select_axis_dim, data, expected=expected, **kws)
 
 
-def test_validate_axis_mult() -> None:
-    assert utils.validate_axis_mult(1) == 1
-    assert utils.validate_axis_mult((1, 2)) == (1, 2)
-    assert utils.validate_axis_mult(None) is None
-
-    with pytest.raises(TypeError):
-        utils.validate_axis_mult(utils.MISSING)
-
-
-def test_select_axis_dim_mult() -> None:
-    data = xr.DataArray((np.zeros((1, 1, 1))), dims=("a", "b", "mom"))
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim_mult(data)
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim_mult(data, default_axis=0, default_dim="hello")
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim_mult(data, axis=0, dim="a")
-
-    assert utils.select_axis_dim_mult(data, axis=0) == ((0,), ("a",))
-    assert utils.select_axis_dim_mult(data, axis=1) == ((1,), ("b",))
-    assert utils.select_axis_dim_mult(data, axis=-1) == ((2,), ("mom",))
-    assert utils.select_axis_dim_mult(data, axis=-1, mom_ndim=1) == ((1,), ("b",))
-
-    with pytest.raises(ValueError):
-        utils.select_axis_dim_mult(data, axis=2, mom_ndim=1)
-
-    assert utils.select_axis_dim_mult(data, dim="a") == ((0,), ("a",))
-    assert utils.select_axis_dim_mult(data, dim="b") == ((1,), ("b",))
-    assert utils.select_axis_dim_mult(data, dim="mom") == ((2,), ("mom",))
-    with pytest.raises(ValueError):
-        utils.select_axis_dim_mult(data, dim="mom", mom_ndim=1)
-
-    assert utils.select_axis_dim_mult(data, axis=(0, 1)) == ((0, 1), ("a", "b"))
-    assert utils.select_axis_dim_mult(data, axis=(1, 0)) == ((1, 0), ("b", "a"))
-    assert utils.select_axis_dim_mult(data, axis=(0, 2)) == ((0, 2), ("a", "mom"))
-    assert utils.select_axis_dim_mult(data, axis=None) == ((0, 1, 2), ("a", "b", "mom"))
-    assert utils.select_axis_dim_mult(data, axis=None, mom_ndim=1) == (
-        (0, 1),
-        ("a", "b"),
-    )
-    with pytest.raises(ValueError):
-        utils.select_axis_dim_mult(data, axis=(0, 2), mom_ndim=1)
-
-    assert utils.select_axis_dim_mult(data, dim=("a", "b")) == ((0, 1), ("a", "b"))
-    assert utils.select_axis_dim_mult(data, dim=("b", "a")) == ((1, 0), ("b", "a"))
-    assert utils.select_axis_dim_mult(data, dim=("a", "mom")) == ((0, 2), ("a", "mom"))
-    assert utils.select_axis_dim_mult(data, dim=None) == ((0, 1, 2), ("a", "b", "mom"))
-    assert utils.select_axis_dim_mult(data, dim=None, mom_ndim=1) == (
-        (0, 1),
-        ("a", "b"),
-    )
-    with pytest.raises(ValueError):
-        utils.select_axis_dim_mult(data, dim=("a", "mom"), mom_ndim=1)
-
-    # infer defaults
-    assert utils.select_axis_dim_mult(data, default_axis=(0, 1)) == ((0, 1), ("a", "b"))
-    assert utils.select_axis_dim_mult(data, default_dim=None, mom_ndim=1) == (
-        (0, 1),
-        ("a", "b"),
-    )
+@pytest.mark.parametrize(
+    ("arg", "expected"),
+    [
+        (1, 1),
+        ((1, 2), (1, 2)),
+        (None, None),
+        (utils.MISSING, TypeError),
+    ],
+)
+def test_validate_axis_mult(arg, expected) -> None:
+    _do_test(utils.validate_axis_mult, arg, expected=expected)
 
 
-def test_move_mom_dims_to_end() -> None:
-    x = xr.DataArray(np.zeros((2, 3, 4)), dims=["a", "b", "c"])
+@pytest.mark.parametrize(
+    "data", [xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom"))]
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"default_axis": 0, "default_dim": "hello"}, ValueError),
+        ({"axis": 0, "dim": "a"}, ValueError),
+        ({"axis": 2, "mom_ndim": 1}, ValueError),
+        ({"dim": "mom", "mom_ndim": 1}, ValueError),
+        ({"axis": (0, 2), "mom_ndim": 1}, ValueError),
+        ({"dim": ("a", "mom"), "mom_ndim": 1}, ValueError),
+        # other
+        ({"axis": 0}, ((0,), ("a",))),
+        ({"axis": 1}, ((1,), ("b",))),
+        ({"axis": -1}, ((2,), ("mom",))),
+        ({"axis": -1, "mom_ndim": 1}, ((1,), ("b",))),
+        ({"dim": "a"}, ((0,), ("a",))),
+        ({"dim": "b"}, ((1,), ("b",))),
+        ({"dim": "mom"}, ((2,), ("mom",))),
+        ({"axis": (0, 1)}, ((0, 1), ("a", "b"))),
+        ({"axis": (1, 0)}, ((1, 0), ("b", "a"))),
+        ({"axis": None}, ((0, 1, 2), ("a", "b", "mom"))),
+        ({"axis": None, "mom_ndim": 1}, ((0, 1), ("a", "b"))),
+        ({"dim": ("a", "b")}, ((0, 1), ("a", "b"))),
+        ({"dim": ("b", "a")}, ((1, 0), ("b", "a"))),
+        ({"dim": ("a", "mom")}, ((0, 2), ("a", "mom"))),
+        ({"dim": None}, ((0, 1, 2), ("a", "b", "mom"))),
+        ({"dim": None, "mom_ndim": 1}, ((0, 1), ("a", "b"))),
+        ({"default_axis": (0, 1)}, ((0, 1), ("a", "b"))),
+        ({"default_dim": None, "mom_ndim": 1}, ((0, 1), ("a", "b"))),
+    ],
+)
+def test_select_axis_dim_mult(data, kws, expected) -> None:
+    _do_test(utils.select_axis_dim_mult, data, expected=expected, **kws)
 
-    assert utils.move_mom_dims_to_end(x, mom_dims=None) is x
-    assert utils.move_mom_dims_to_end(x, mom_dims="a").dims == ("b", "c", "a")
-    assert utils.move_mom_dims_to_end(x, mom_dims="b").dims == ("a", "c", "b")
-    assert utils.move_mom_dims_to_end(x, mom_dims=("b", "a")).dims == ("c", "b", "a")
 
-    with pytest.raises(ValueError):
-        utils.move_mom_dims_to_end(x, mom_dims="a", mom_ndim=2)
+@pytest.mark.parametrize(
+    "x", [np.zeros((1, 2, 3, 4)), xr.DataArray(np.zeros((1, 2, 3, 4)))]
+)
+@pytest.mark.parametrize(
+    "func", [lambda *args, **kwargs: utils.moveaxis(*args, **kwargs).shape]
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({"axis": 0, "dest": -1, "mom_ndim": None}, (2, 3, 4, 1)),
+        ({"axis": 0, "dest": -1, "mom_ndim": 1}, (2, 3, 1, 4)),
+        ({"axis": 0, "dest": -1, "mom_ndim": 2}, (2, 1, 3, 4)),
+        ({"axis": (1, 0), "dest": (-2, -1), "mom_ndim": 1}, (3, 2, 1, 4)),
+        ({"axis": (1, 0), "dest": (-2,), "mom_ndim": 1}, ValueError),
+    ],
+)
+def test_moveaxis(x, kws, expected, func):
+    _do_test(func, x, **kws, expected=expected)
+
+
+@pytest.mark.parametrize("x", [xr.DataArray(np.zeros((1, 2, 3, 4)))])
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({"dim": "dim_0", "dest": -1, "mom_ndim": None}, (2, 3, 4, 1)),
+        ({"dim": "dim_0", "dest": -1, "mom_ndim": 1}, (2, 3, 1, 4)),
+        ({"dim": "dim_0", "dest": -1, "mom_ndim": 2}, (2, 1, 3, 4)),
+        ({"dim": ("dim_1", "dim_0"), "dest": (-2, -1), "mom_ndim": 1}, (3, 2, 1, 4)),
+        ({"dim": ("dim_1", "dim_0"), "dest": (-2,), "mom_ndim": 1}, ValueError),
+        ({"dim": "dim_0", "dest_dim": "dim_3", "mom_ndim": None}, (2, 3, 4, 1)),
+        ({"dim": "dim_0", "dest_dim": "dim_2", "mom_ndim": 1}, (2, 3, 1, 4)),
+        ({"dim": "dim_0", "dest_dim": "dim_1", "mom_ndim": 2}, (2, 1, 3, 4)),
+        (
+            {"dim": ("dim_1", "dim_0"), "dest_dim": ("dim_1", "dim_2"), "mom_ndim": 1},
+            (3, 2, 1, 4),
+        ),
+        ({"dim": ("dim_1", "dim_0"), "dest_dim": "dim_2", "mom_ndim": 1}, ValueError),
+    ],
+)
+@pytest.mark.parametrize(
+    "func", [lambda *args, **kwargs: utils.moveaxis(*args, **kwargs).shape]
+)
+def test_moveaxis_dataarray(x, kws, expected, func):
+    _do_test(func, x, **kws, expected=expected)
+
+
+@pytest.mark.parametrize("x", [xr.DataArray(np.zeros((2, 3, 4)), dims=["a", "b", "c"])])
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({"mom_dims": None}, ("a", "b", "c")),
+        ({"mom_dims": "a"}, ("b", "c", "a")),
+        ({"mom_dims": "b"}, ("a", "c", "b")),
+        ({"mom_dims": ("b", "a")}, ("c", "b", "a")),
+        ({"mom_dims": "a", "mom_ndim": 2}, ValueError),
+    ],
+)
+def test_move_mom_dims_to_end(x, kws, expected) -> None:
+    if isinstance(expected, type):
+        with pytest.raises(expected):
+            utils.move_mom_dims_to_end(x, **kws)
+    else:
+        assert utils.move_mom_dims_to_end(x, **kws).dims == expected
 
 
 @pytest.mark.parametrize("drop", [False, True])
@@ -530,6 +532,5 @@ def test_raise_if_wrong_shape() -> None:
     x = np.ones((2, 3, 4))
 
     utils.raise_if_wrong_shape(x, (2, 3, 4))
-
     with pytest.raises(ValueError):
         utils.raise_if_wrong_shape(x, (1, 2, 3, 4))

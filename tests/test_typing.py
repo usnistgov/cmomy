@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    import cmomy
     from cmomy import convert, rolling
     from cmomy.reduction import (
         reduce_data,
@@ -319,6 +320,20 @@ def test_convert() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(convert.moments_type(xx, mom_ndim=1), xr.DataArray)
+
+
+def test_moveaxis() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+    xint = np.array([1, 2, 3], dtype=np.int64)
+    xAny: NDArray[Any] = xint
+
+    if TYPE_CHECKING:
+        assert_type(cmomy.moveaxis(x32, mom_ndim=1), NDArray[np.float32])
+        assert_type(cmomy.moveaxis(x64, mom_ndim=1), NDArray[np.float64])
+        assert_type(cmomy.moveaxis(xint, mom_ndim=1), NDArray[np.int64])
+        assert_type(cmomy.moveaxis(xAny, mom_ndim=1), NDArray[Any])
+        assert_type(cmomy.moveaxis(xr.DataArray(xAny), mom_ndim=1), xr.DataArray)
 
 
 def test_cumulative() -> None:

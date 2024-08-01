@@ -141,6 +141,7 @@ from cmomy._utils import normalize_axis_index
         (cmomy.reduction.reduce_data_indexed, {}, "index"),
         (cmomy.rolling.rolling_data, {"window": 4, "center": False}, "roll"),
         (cmomy.rolling.rolling_exp_data, {"alpha": 0.2}, "roll"),
+        (cmomy.convert.cumulative, {}, "convert"),
     ],
 )
 def test_data_move_axis_to_end(

@@ -22,6 +22,7 @@ if TYPE_CHECKING:
         resample_data,  # noqa: TCH004
         resample_vals,  # noqa: TCH004
     )
+    from .utils import moveaxis
 
 
 else:
@@ -51,11 +52,14 @@ else:
                 "resample_data",
                 "resample_vals",
             ],
+            "utils": ["moveaxis"],
         },
     )
 
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
+
+from .utils import moveaxis
 
 try:
     __version__ = _version("cmomy")
@@ -72,6 +76,7 @@ __all__ = [
     "concat",
     "convert",
     "indices_to_freq",
+    "moveaxis",
     "random",
     "random_freq",
     "random_indices",

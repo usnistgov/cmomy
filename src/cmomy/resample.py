@@ -1096,7 +1096,8 @@ def jackknife_data(
     """
     if isinstance(data, xr.DataArray):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-
+        # NOTE: could simplify this to use `data.copy`, but might want added flexibility in future.
+        # For example, maybe remove 2 jackknife...
         core_dims = [dim, *data.dims[-mom_ndim:]]
         xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             jackknife_data,

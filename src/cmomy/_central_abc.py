@@ -1097,6 +1097,35 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             verify=_verify,
         )
 
+    @abstractmethod
+    @docfiller.decorate
+    def moveaxis(
+        self,
+        axis: int | tuple[int, ...],
+        dest: int | tuple[int, ...],
+    ) -> Self:
+        """
+        Generalized moveaxis
+
+        Parameters
+        ----------
+        {axis}
+        axis : int or sequence of int
+            Original positions of axes to move.
+        dest : int or sequence of int
+            Destination positions for each original axes.
+
+        Returns
+        -------
+        output : {klass}
+            Object with moved axes.  This is a view of the original data.
+
+        See Also
+        --------
+        .utils.moveaxis
+        numpy.moveaxis
+        """
+
     # ** Operators ----------------------------------------------------------------
     def _check_other(self, b: Self) -> None:
         """Check other object."""
