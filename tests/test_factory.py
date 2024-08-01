@@ -25,6 +25,23 @@ from cmomy._lib import (
     rolling_cov_parallel,
     rolling_parallel,
 )
+from cmomy._lib.factory import (
+    factory_convert,
+    factory_cumulative,
+    factory_jackknife_data,
+    factory_jackknife_vals,
+    factory_pusher,
+    factory_reduce_data,
+    factory_reduce_data_grouped,
+    factory_reduce_data_indexed,
+    factory_reduce_vals,
+    factory_resample_data,
+    factory_resample_vals,
+    factory_rolling_data,
+    factory_rolling_exp_data,
+    factory_rolling_exp_vals,
+    factory_rolling_vals,
+)
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -35,19 +52,17 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
+    ("factory", "mom_ndim", "parallel", "expected"),
     [
+        # pushers
         (
+            factory_pusher,
             1,
             False,
-            (
-                push.push_val,
-                push.reduce_vals,
-                push.push_data,
-                push.reduce_data,
-            ),
+            (push.push_val, push.reduce_vals, push.push_data, push.reduce_data),
         ),
         (
+            factory_pusher,
             1,
             True,
             (
@@ -58,6 +73,7 @@ if TYPE_CHECKING:
             ),
         ),
         (
+            factory_pusher,
             2,
             False,
             (
@@ -68,6 +84,7 @@ if TYPE_CHECKING:
             ),
         ),
         (
+            factory_pusher,
             2,
             True,
             (
@@ -77,138 +94,157 @@ if TYPE_CHECKING:
                 push_cov_parallel.reduce_data,
             ),
         ),
+        # resample_vals
+        (factory_resample_vals, 1, False, resample.resample_vals),
+        (factory_resample_vals, 1, True, resample_parallel.resample_vals),
+        (factory_resample_vals, 2, False, resample_cov.resample_vals),
+        (factory_resample_vals, 2, True, resample_cov_parallel.resample_vals),
+        # resample_data
+        (factory_resample_data, 1, False, resample.resample_data_fromzero),
+        (
+            factory_resample_data,
+            1,
+            True,
+            resample_parallel.resample_data_fromzero,
+        ),
+        (factory_resample_data, 2, False, resample_cov.resample_data_fromzero),
+        (
+            factory_resample_data,
+            2,
+            True,
+            resample_cov_parallel.resample_data_fromzero,
+        ),
+        # jacknife_vals
+        (factory_jackknife_vals, 1, False, resample.jackknife_vals_fromzero),
+        (
+            factory_jackknife_vals,
+            1,
+            True,
+            resample_parallel.jackknife_vals_fromzero,
+        ),
+        (
+            factory_jackknife_vals,
+            2,
+            False,
+            resample_cov.jackknife_vals_fromzero,
+        ),
+        (
+            factory_jackknife_vals,
+            2,
+            True,
+            resample_cov_parallel.jackknife_vals_fromzero,
+        ),
+        # jackknife_data
+        (factory_jackknife_data, 1, False, resample.jackknife_data_fromzero),
+        (
+            factory_jackknife_data,
+            1,
+            True,
+            resample_parallel.jackknife_data_fromzero,
+        ),
+        (
+            factory_jackknife_data,
+            2,
+            False,
+            resample_cov.jackknife_data_fromzero,
+        ),
+        (
+            factory_jackknife_data,
+            2,
+            True,
+            resample_cov_parallel.jackknife_data_fromzero,
+        ),
+        # reduce_vals
+        (factory_reduce_vals, 1, False, push.reduce_vals),
+        (factory_reduce_vals, 1, True, push_parallel.reduce_vals),
+        (factory_reduce_vals, 2, False, push_cov.reduce_vals),
+        (factory_reduce_vals, 2, True, push_cov_parallel.reduce_vals),
+        # reduce_data
+        (factory_reduce_data, 1, False, push.reduce_data_fromzero),
+        (factory_reduce_data, 1, True, push_parallel.reduce_data_fromzero),
+        (factory_reduce_data, 2, False, push_cov.reduce_data_fromzero),
+        (factory_reduce_data, 2, True, push_cov_parallel.reduce_data_fromzero),
+        # reduce_data_grouped
+        (factory_reduce_data_grouped, 1, False, indexed.reduce_data_grouped),
+        (
+            factory_reduce_data_grouped,
+            1,
+            True,
+            indexed_parallel.reduce_data_grouped,
+        ),
+        (
+            factory_reduce_data_grouped,
+            2,
+            False,
+            indexed_cov.reduce_data_grouped,
+        ),
+        (
+            factory_reduce_data_grouped,
+            2,
+            True,
+            indexed_cov_parallel.reduce_data_grouped,
+        ),
+        # reduce_data_indexed
+        (
+            factory_reduce_data_indexed,
+            1,
+            False,
+            indexed.reduce_data_indexed_fromzero,
+        ),
+        (
+            factory_reduce_data_indexed,
+            1,
+            True,
+            indexed_parallel.reduce_data_indexed_fromzero,
+        ),
+        (
+            factory_reduce_data_indexed,
+            2,
+            False,
+            indexed_cov.reduce_data_indexed_fromzero,
+        ),
+        (
+            factory_reduce_data_indexed,
+            2,
+            True,
+            indexed_cov_parallel.reduce_data_indexed_fromzero,
+        ),
+        # rolling_vals
+        (factory_rolling_vals, 1, False, rolling.rolling_vals),
+        (factory_rolling_vals, 1, True, rolling_parallel.rolling_vals),
+        (factory_rolling_vals, 2, False, rolling_cov.rolling_vals),
+        (factory_rolling_vals, 2, True, rolling_cov_parallel.rolling_vals),
+        # rolling_data
+        (factory_rolling_data, 1, False, rolling.rolling_data),
+        (factory_rolling_data, 1, True, rolling_parallel.rolling_data),
+        (factory_rolling_data, 2, False, rolling_cov.rolling_data),
+        (factory_rolling_data, 2, True, rolling_cov_parallel.rolling_data),
+        # rolling_exp_vals
+        (factory_rolling_exp_vals, 1, False, rolling.rolling_exp_vals),
+        (factory_rolling_exp_vals, 1, True, rolling_parallel.rolling_exp_vals),
+        (factory_rolling_exp_vals, 2, False, rolling_cov.rolling_exp_vals),
+        (
+            factory_rolling_exp_vals,
+            2,
+            True,
+            rolling_cov_parallel.rolling_exp_vals,
+        ),
+        # rolling_exp_data
+        (factory_rolling_exp_data, 1, False, rolling.rolling_exp_data),
+        (factory_rolling_exp_data, 1, True, rolling_parallel.rolling_exp_data),
+        (factory_rolling_exp_data, 2, False, rolling_cov.rolling_exp_data),
+        (
+            factory_rolling_exp_data,
+            2,
+            True,
+            rolling_cov_parallel.rolling_exp_data,
+        ),
     ],
 )
-def test_factory_pusher(
-    mom_ndim: Mom_NDim, parallel: bool, expected: tuple[Func | None, ...]
+def test_factory_general(
+    factory: Any, mom_ndim: Mom_NDim, parallel: bool, expected: Any
 ) -> None:
-    assert factory.factory_pusher(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, resample.resample_vals),
-        (1, True, resample_parallel.resample_vals),
-        (2, False, resample_cov.resample_vals),
-        (2, True, resample_cov_parallel.resample_vals),
-    ],
-)
-def test_factory_resample_vals(
-    mom_ndim: Mom_NDim,
-    parallel: bool,
-    expected: factory.ResampleVals,
-) -> None:
-    assert factory.factory_resample_vals(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, resample.resample_data_fromzero),
-        (1, True, resample_parallel.resample_data_fromzero),
-        (2, False, resample_cov.resample_data_fromzero),
-        (2, True, resample_cov_parallel.resample_data_fromzero),
-    ],
-)
-def test_factory_resample_data(
-    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ResampleData
-) -> None:
-    assert factory.factory_resample_data(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, resample.jackknife_vals_fromzero),
-        (1, True, resample_parallel.jackknife_vals_fromzero),
-        (2, False, resample_cov.jackknife_vals_fromzero),
-        (2, True, resample_cov_parallel.jackknife_vals_fromzero),
-    ],
-)
-def test_factory_jackknife_vals(
-    mom_ndim: Mom_NDim,
-    parallel: bool,
-    expected: factory.JackknifeVals,
-) -> None:
-    assert factory.factory_jackknife_vals(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, resample.jackknife_data_fromzero),
-        (1, True, resample_parallel.jackknife_data_fromzero),
-        (2, False, resample_cov.jackknife_data_fromzero),
-        (2, True, resample_cov_parallel.jackknife_data_fromzero),
-    ],
-)
-def test_factory_jackknife_data(
-    mom_ndim: Mom_NDim, parallel: bool, expected: factory.JackknifeData
-) -> None:
-    assert factory.factory_jackknife_data(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, push.reduce_vals),
-        (1, True, push_parallel.reduce_vals),
-        (2, False, push_cov.reduce_vals),
-        (2, True, push_cov_parallel.reduce_vals),
-    ],
-)
-def test_reduce_vals(
-    mom_ndim: Mom_NDim,
-    parallel: bool,
-    expected: factory.ReduceVals,
-) -> None:
-    assert factory.factory_reduce_vals(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, push.reduce_data_fromzero),
-        (1, True, push_parallel.reduce_data_fromzero),
-        (2, False, push_cov.reduce_data_fromzero),
-        (2, True, push_cov_parallel.reduce_data_fromzero),
-    ],
-)
-def test_reduce_data(
-    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ReduceData
-) -> None:
-    assert factory.factory_reduce_data(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, indexed.reduce_data_grouped),
-        (1, True, indexed_parallel.reduce_data_grouped),
-        (2, False, indexed_cov.reduce_data_grouped),
-        (2, True, indexed_cov_parallel.reduce_data_grouped),
-    ],
-)
-def test_reduce_data_grouped(
-    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ReduceDataGrouped
-) -> None:
-    assert factory.factory_reduce_data_grouped(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, indexed.reduce_data_indexed_fromzero),
-        (1, True, indexed_parallel.reduce_data_indexed_fromzero),
-        (2, False, indexed_cov.reduce_data_indexed_fromzero),
-        (2, True, indexed_cov_parallel.reduce_data_indexed_fromzero),
-    ],
-)
-def test_reduce_data_indexed(
-    mom_ndim: Mom_NDim, parallel: bool, expected: factory.ReduceDataIndexed
-) -> None:
-    assert factory.factory_reduce_data_indexed(mom_ndim, parallel) == expected
+    assert factory(mom_ndim, parallel) == expected
 
 
 @pytest.mark.parametrize(
@@ -221,7 +257,7 @@ def test_reduce_data_indexed(
     ],
 )
 def test_reduce_convert(mom_ndim: Mom_NDim, to: str, expected: factory.Convert) -> None:
-    assert factory.factory_convert(mom_ndim, to) == expected
+    assert factory_convert(mom_ndim, to) == expected
 
 
 @pytest.mark.parametrize(
@@ -241,70 +277,4 @@ def test_reduce_convert(mom_ndim: Mom_NDim, to: str, expected: factory.Convert) 
 def test_cumulative_data(
     mom_ndim: Mom_NDim, parallel: bool, inverse: bool, expected: factory.Convert
 ) -> None:
-    assert factory.factory_cumulative(mom_ndim, parallel, inverse) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, rolling.rolling_vals),
-        (1, True, rolling_parallel.rolling_vals),
-        (2, False, rolling_cov.rolling_vals),
-        (2, True, rolling_cov_parallel.rolling_vals),
-    ],
-)
-def test_rolling_vals(
-    mom_ndim: Mom_NDim,
-    parallel: bool,
-    expected: factory.RollingVals,
-) -> None:
-    assert factory.factory_rolling_vals(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, rolling.rolling_data),
-        (1, True, rolling_parallel.rolling_data),
-        (2, False, rolling_cov.rolling_data),
-        (2, True, rolling_cov_parallel.rolling_data),
-    ],
-)
-def test_rolling_data(
-    mom_ndim: Mom_NDim,
-    parallel: bool,
-    expected: factory.RollingData,
-) -> None:
-    assert factory.factory_rolling_data(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, rolling.rolling_exp_vals),
-        (1, True, rolling_parallel.rolling_exp_vals),
-        (2, False, rolling_cov.rolling_exp_vals),
-        (2, True, rolling_cov_parallel.rolling_exp_vals),
-    ],
-)
-def test_rolling_exp_vals(
-    mom_ndim: Mom_NDim, parallel: bool, expected: factory.RollingExpVals
-) -> None:
-    assert factory.factory_rolling_exp_vals(mom_ndim, parallel) == expected
-
-
-@pytest.mark.parametrize(
-    ("mom_ndim", "parallel", "expected"),
-    [
-        (1, False, rolling.rolling_exp_data),
-        (1, True, rolling_parallel.rolling_exp_data),
-        (2, False, rolling_cov.rolling_exp_data),
-        (2, True, rolling_cov_parallel.rolling_exp_data),
-    ],
-)
-def test_rolling_exp_data(
-    mom_ndim: Mom_NDim,
-    parallel: bool,
-    expected: factory.RollingExpData,
-) -> None:
-    assert factory.factory_rolling_exp_data(mom_ndim, parallel) == expected
+    assert factory_cumulative(mom_ndim, parallel, inverse) == expected
