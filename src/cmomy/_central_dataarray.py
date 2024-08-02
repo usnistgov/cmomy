@@ -13,13 +13,13 @@ import xarray as xr
 from ._central_abc import CentralMomentsABC
 from ._utils import (
     MISSING,
-    moveaxis,
     # replace_coords_from_isel,
     select_axis_dim,
     validate_mom_and_mom_ndim,
     xprepare_values_for_reduction,
 )
 from .docstrings import docfiller_xcentral as docfiller
+from .utils import moveaxis
 
 if TYPE_CHECKING:
     from collections.abc import Hashable, Iterable, Mapping, Sequence

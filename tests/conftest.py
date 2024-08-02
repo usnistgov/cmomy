@@ -381,3 +381,8 @@ def get_params():
 @pytest.fixture(params=get_params(), scope="module")  # type: ignore[call-overload]
 def other(request):
     return Data(*request.param)
+
+
+@pytest.fixture(params=[True, False])
+def as_dataarray(request):
+    return request.param

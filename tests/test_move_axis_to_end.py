@@ -27,7 +27,6 @@ shapes_mark = pytest.mark.parametrize(
         ((2, 3, 10), (10,), (3, 10), 2, (3, 3)),
     ],
 )
-as_dataarray = pytest.mark.parametrize("as_dataarray", [False, True])
 
 
 def get_params(
@@ -64,7 +63,6 @@ def factory_central_method(method):
 
 
 @shapes_mark
-@as_dataarray
 @pytest.mark.parametrize(
     ("func", "kwargs", "style"),
     [
@@ -131,7 +129,6 @@ from cmomy._utils import normalize_axis_index
         ((1, 10, 2, 3), -1, 2),
     ],
 )
-@as_dataarray
 @pytest.mark.parametrize(
     ("func", "kwargs", "style"),
     [

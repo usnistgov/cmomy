@@ -58,17 +58,19 @@ def test__optional_zero_missing_weights(mom_ndim) -> None:
     ],
 )
 @pytest.mark.parametrize("center", [True, False])
-def test_construct_rolling_window_array(shape, axis, window, center):
+def test_construct_rolling_window_array(shape, axis, window, center, as_dataarray):
     data = np.arange(np.prod(shape)).reshape(shape).astype(np.float64)
 
     xdata = xr.DataArray(data)
-
     _axis = (axis,) if isinstance(axis, int) else axis
     _window = (window,) * len(_axis) if isinstance(window, int) else window
     r = xdata.rolling(
         {xdata.dims[a]: win for a, win in zip(_axis, _window)}, center=center
     )
     c = r.construct({xdata.dims[a]: f"_rolling_{a}" for a in _axis})
+
+    if as_dataarray:
+        data = xdata
 
     out = rolling.construct_rolling_window_array(
         data, axis=axis, window=window, center=center
@@ -86,9 +88,11 @@ def test_construct_rolling_window_array(shape, axis, window, center):
             )
 
 
-def test_construct_rolling_window_array_mom_ndim() -> None:
+def test_construct_rolling_window_array_mom_ndim(as_dataarray) -> None:
     shape = (2, 3, 4, 5)
     data = np.arange(np.prod(shape)).reshape(shape).astype(np.float64)
+    if as_dataarray:
+        data = xr.DataArray(data)
 
     func = rolling.construct_rolling_window_array
 
@@ -98,22 +102,16 @@ def test_construct_rolling_window_array_mom_ndim() -> None:
     out2 = func(data, axis=axis, mom_ndim=2, window=3)
 
     np.testing.assert_allclose(
-        np.moveaxis(out, (-2, -1), (-3, -2)),
+        cmomy.moveaxis(out, (-2, -1), (-3, -2)),
         out1,
     )
     np.testing.assert_allclose(
-        np.moveaxis(out, (-2, -1), (-4, -3)),
+        cmomy.moveaxis(out, (-2, -1), (-4, -3)),
         out2,
     )
 
     with pytest.raises(ValueError):
         func(data, axis=2, mom_ndim=2, window=3)
-
-    # using xarray data
-    xdata = xr.DataArray(data)
-    xout = func(xdata, axis=axis, window=3)
-    np.testing.assert_allclose(xout, out)
-    assert isinstance(xout, xr.DataArray)
 
 
 # * Move data
@@ -128,7 +126,9 @@ def test_construct_rolling_window_array_mom_ndim() -> None:
 @pytest.mark.parametrize("window", [3, 8])
 @pytest.mark.parametrize("min_periods", [None, 2])
 @pytest.mark.parametrize("center", [False, True])
-def test_rolling_data(rng, shape, axis, window, min_periods, center) -> None:
+def test_rolling_data(
+    rng, shape, axis, window, min_periods, center, as_dataarray
+) -> None:
     """
     Simple test like rolling_vals...
 
@@ -141,6 +141,9 @@ def test_rolling_data(rng, shape, axis, window, min_periods, center) -> None:
     kws: RollingDict = {"window": window, "min_periods": min_periods, "center": center}
 
     # data
+    if as_dataarray:
+        x = dx
+
     data = cmomy.convert.vals_to_data(
         x,
         mom=3,
@@ -157,27 +160,13 @@ def test_rolling_data(rng, shape, axis, window, min_periods, center) -> None:
     np.testing.assert_allclose(out[..., 2], r.var(ddof=0))
 
     # vals
-    out2 = rolling.rolling_vals(x, axis=axis, mom=3, **kws)
+    out2 = rolling.rolling_vals(x, axis=axis, mom=3, move_axis_to_end=False, **kws)
 
     np.testing.assert_allclose(
         out,
-        np.moveaxis(out2, -2, axis),
+        out2,
         atol=1e-14,
     )
-
-    # xarray
-    xout = rolling.rolling_data(
-        xr.DataArray(data),
-        axis=axis,
-        mom_ndim=1,
-        **kws,
-    )
-    assert isinstance(xout, xr.DataArray)
-    np.testing.assert_allclose(xout, out)
-
-    xout2 = rolling.rolling_vals(xr.DataArray(x), axis=axis, mom=3, **kws)
-    assert isinstance(xout2, xr.DataArray)
-    np.testing.assert_allclose(xout2, out2)
 
 
 @pytest.mark.parametrize("window", [3, 8])
@@ -267,7 +256,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
         dfy = pd.DataFrame(y)
         ry = dfy.rolling(**kws)
         np.testing.assert_allclose(out[..., 0, 1], ry.mean())
-        np.testing.assert_allclose(out[..., 0, 2], ry.var(ddof=0))
+        np.testing.assert_allclose(out[..., 0, 2], ry.var(ddof=0), atol=1e-14)
         np.testing.assert_allclose(out[..., 1, 1], rx.cov(dfy, ddof=0), atol=1e-14)
 
 

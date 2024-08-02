@@ -132,7 +132,6 @@ def test_reduce_vals_broadcast(rng: np.random.Generator) -> None:
         ((2, 3, 4), 2, 3),
     ],
 )
-@pytest.mark.parametrize("as_dataarray", [False, True])
 def test_reduce_vals_keepdims(
     shape: tuple[int, ...],
     axis: int,
@@ -173,7 +172,6 @@ def test_reduce_vals_keepdims(
         ((2, 3, 4, 3), 2, 1),
     ],
 )
-@pytest.mark.parametrize("as_dataarray", [False, True])
 def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) -> None:
     x = rng.random(shape)
     if as_dataarray:

@@ -546,18 +546,6 @@ def _validate_mom_moments_to_comoments(
     return out
 
 
-def _moments_to_comoments(
-    values: NDArrayAny,
-    mom: tuple[int, int],
-    dtype: DTypeLikeArg[FloatT],
-) -> NDArray[FloatT]:
-    mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
-    out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)
-    for i, j in np.ndindex(*out.shape[-2:]):
-        out[..., i, j] = values[..., i + j]
-    return out
-
-
 @overload
 def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     values: xr.DataArray,
@@ -676,10 +664,8 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     """
     if isinstance(values, xr.DataArray):
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=2)
-        dtype = values.dtype if dtype is None else dtype  # pyright: ignore[reportUnknownMemberType]
-
         return xr.apply_ufunc(  # type: ignore[no-any-return]
-            _moments_to_comoments,
+            moments_to_comoments,
             values,
             input_core_dims=[values.dims],
             output_core_dims=[[*values.dims[:-1], *mom_dims]],
@@ -688,9 +674,14 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
             keep_attrs=keep_attrs,
         )
 
-    values = np.asarray(values)
-    dtype = values.dtype if dtype is None else dtype
-    return _moments_to_comoments(values, mom, dtype)  # type: ignore[arg-type]
+    dtype = select_dtype(values, out=None, dtype=dtype)
+    values = np.asarray(values, dtype=dtype)
+
+    mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
+    out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)
+    for i, j in np.ndindex(*out.shape[-2:]):
+        out[..., i, j] = values[..., i + j]
+    return out
 
 
 # * Update weights
