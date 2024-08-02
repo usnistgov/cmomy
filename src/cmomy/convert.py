@@ -11,14 +11,16 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
+from ._missing import MISSING
 from ._utils import (
-    MISSING,
     axes_data_reduction,
     mom_to_mom_shape,
     peek_at,
     prepare_data_for_reduction,
     select_axis_dim,
     select_dtype,
+)
+from ._validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,

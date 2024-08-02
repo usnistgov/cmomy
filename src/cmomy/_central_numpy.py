@@ -19,6 +19,8 @@ from ._compat import copy_if_needed
 from ._utils import (
     arrayorder_to_arrayorder_cf,
     mom_to_mom_shape,
+)
+from ._validate import (
     validate_axis,
     validate_mom_and_mom_ndim,
 )

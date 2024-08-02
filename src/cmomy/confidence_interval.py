@@ -9,8 +9,10 @@ import numpy as np
 import xarray as xr
 
 from ._compat import copy_if_needed
+from ._missing import MISSING
 from ._prob import ndtr, ndtri
-from ._utils import MISSING, select_axis_dim, validate_axis
+from ._utils import select_axis_dim
+from ._validate import validate_axis
 from .docstrings import docfiller
 
 if TYPE_CHECKING:

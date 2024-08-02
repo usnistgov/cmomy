@@ -7,6 +7,8 @@ import pytest
 import xarray as xr
 
 from cmomy import _utils as utils
+from cmomy import _validate as validate
+from cmomy._missing import MISSING
 
 
 # * catch all args only test
@@ -31,79 +33,6 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
 )
 def test_arrayorder_to_arrayorder_cf(arg, expected) -> None:
     _do_test(utils.arrayorder_to_arrayorder_cf, arg, expected=expected)
-
-
-# * validate not none
-@pytest.mark.parametrize(
-    ("arg", "expected", "match"),
-    [
-        (None, TypeError, ".*is not supported"),
-        ("a", "a", None),
-        (1, 1, None),
-    ],
-)
-def test_validate_not_none(arg, expected, match) -> None:
-    _do_test(utils.validate_not_none, arg, expected=expected, match=match)
-
-
-# * Moment validation
-@pytest.mark.parametrize(
-    ("arg", "expected", "match"),
-    [
-        (0, ValueError, ".* must be either 1 or 2"),
-        (3, ValueError, ".* must be either 1 or 2"),
-        (1, 1, None),
-        (2, 2, None),
-    ],
-)
-def test_validate_mom_ndim(arg, expected, match) -> None:
-    _do_test(utils.validate_mom_ndim, arg, expected=expected, match=match)
-
-
-@pytest.mark.parametrize(
-    ("arg", "expected", "match"),
-    [
-        (3, (3,), None),
-        ((3,), (3,), None),
-        ([3], (3,), None),
-        ([3, 3], (3, 3), None),
-        (0, ValueError, r".* must be an integer, .*"),
-        ((0,), ValueError, r".* must be an integer, .*"),
-        ((3, 0), ValueError, r".* must be an integer, .*"),
-        ((0, 3), ValueError, r".* must be an integer, .*"),
-        ([3, 3, 3], ValueError, r".* must be an integer, .*"),
-    ],
-)
-def test_is_mom_tuple(arg, expected, match) -> None:
-    _do_test(utils.validate_mom, arg, expected=expected, match=match)
-
-
-@pytest.mark.parametrize(
-    ("kws", "expected"),
-    [
-        ({"mom": 3, "mom_ndim": 1}, ((3,), 1)),
-        ({"mom": (3,), "mom_ndim": 1}, ((3,), 1)),
-        ({"mom_ndim": 1, "shape": (1, 2, 3)}, ((2,), 1)),
-        ({"mom_ndim": 2, "shape": (1, 2, 3)}, ((1, 2), 2)),
-        ({"mom_ndim": 2, "shape": (2, 3)}, ((1, 2), 2)),
-        ({"mom": (2, 2)}, ((2, 2), 2)),
-        ({"mom_ndim": 1, "shape": (2, 1)}, ValueError),
-        ({"mom_ndim": 2, "shape": (2, 1, 1)}, ValueError),
-        ({"mom_ndim": 2, "shape": (3,)}, ValueError),
-        ({"mom": 0, "mom_ndim": 1}, ValueError),
-        ({"mom": 3, "mom_ndim": 2}, ValueError),
-        ({"mom": (3, 0), "mom_ndim": 2}, ValueError),
-        ({"mom": (3, 3), "mom_ndim": 1}, ValueError),
-        ({"mom": None, "mom_ndim": None}, ValueError),
-        ({"mom": None, "mom_ndim": 1}, ValueError),
-        ({"mom": None, "mom_ndim": 2, "shape": (2,)}, ValueError),
-        ({"mom": None, "mom_ndim": 3, "shape": (2, 3, 4)}, ValueError),
-        ({"mom": (2, 2, 2), "mom_ndim": None}, ValueError),
-        ({"mom": (2, 2), "mom_ndim": 1}, ValueError),
-    ],
-)
-def test_validate_mom_and_mom_ndim(kws, expected) -> None:
-    _do_test(utils.validate_mom_and_mom_ndim, expected=expected, **kws)
 
 
 @pytest.mark.parametrize(
@@ -144,7 +73,7 @@ def test_select_mom_ndim(kws, expected) -> None:
 )
 def test_mom_to_mom_shape(mom, mom_shape) -> None:
     assert utils.mom_to_mom_shape(mom) == mom_shape
-    assert utils.mom_shape_to_mom(mom_shape) == utils.validate_mom(mom)
+    assert utils.mom_shape_to_mom(mom_shape) == validate.validate_mom(mom)
 
 
 # * prepare values/data
@@ -240,8 +169,8 @@ def test_prepare_values_for_reduction(
         (
             {
                 "narrays": 2,
-                "axis": utils.MISSING,
-                "dim": utils.MISSING,
+                "axis": MISSING,
+                "dim": MISSING,
                 "dtype": np.float32,
             },
             ValueError,
@@ -275,7 +204,7 @@ def test_xprepare_values_for_reduction_1(
         target,
         other,
         narrays=2,
-        axis=utils.MISSING,
+        axis=MISSING,
         dim=dim,
         dtype=dtype,
     )
@@ -294,7 +223,7 @@ def test_xprepare_values_for_reduction_1(
             target,
             other,
             narrays=2,
-            axis=utils.MISSING,
+            axis=MISSING,
             dim=dim,
             dtype=dtype,
         )
@@ -305,25 +234,6 @@ def test_xprepare_values_for_reduction_1(
         assert y.shape == other.shape
         assert x.dtype == np.dtype(dtype or np.float64)
         assert y.dtype == np.dtype(dtype or np.float64)
-
-
-@pytest.mark.parametrize(
-    ("args", "expected"),
-    [
-        ((None, 1), ("mom_0",)),
-        ((None, 2), ("mom_0", "mom_1")),
-        (("a", 1), ("a",)),
-        ((("a", "b"), 2), ("a", "b")),
-        ((["a"], 1), ("a",)),
-        ((["a", "b"], 2), ("a", "b")),
-        (({"a"}, 1), TypeError),
-        ((["a", "b"], 1), ValueError),
-        (("a", 2), ValueError),
-        ((("a,"), 2), ValueError),
-    ],
-)
-def test_validate_mom_dims(args, expected):
-    _do_test(utils.validate_mom_dims, *args, expected=expected)
 
 
 @pytest.mark.parametrize(
@@ -369,19 +279,6 @@ def test_optional_keepdims(shape, axis, out) -> None:
 )
 def test_select_axis_dim(data, kws, expected) -> None:
     _do_test(utils.select_axis_dim, data, expected=expected, **kws)
-
-
-@pytest.mark.parametrize(
-    ("arg", "expected"),
-    [
-        (1, 1),
-        ((1, 2), (1, 2)),
-        (None, None),
-        (utils.MISSING, TypeError),
-    ],
-)
-def test_validate_axis_mult(arg, expected) -> None:
-    _do_test(utils.validate_axis_mult, arg, expected=expected)
 
 
 @pytest.mark.parametrize(

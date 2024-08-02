@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 import xarray as xr
 
+from ._missing import MISSING
 from ._utils import (
-    MISSING,
     axes_data_reduction,
     get_axes_from_values,
     mom_to_mom_shape,
@@ -22,12 +22,14 @@ from ._utils import (
     select_axis_dim,
     select_axis_dim_mult,
     select_dtype,
+    xprepare_out_for_resample_vals,
+    xprepare_values_for_reduction,
+)
+from ._validate import (
     validate_axis,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
-    xprepare_out_for_resample_vals,
-    xprepare_values_for_reduction,
 )
 from .docstrings import docfiller
 

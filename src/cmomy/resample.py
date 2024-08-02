@@ -14,8 +14,8 @@ import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
+from ._missing import MISSING
 from ._utils import (
-    MISSING,
     axes_data_reduction,
     get_axes_from_values,
     get_out_from_values,
@@ -25,12 +25,14 @@ from ._utils import (
     prepare_values_for_reduction,
     select_axis_dim,
     select_dtype,
-    validate_mom_and_mom_ndim,
-    validate_mom_dims,
-    validate_mom_ndim,
     xprepare_out_for_resample_data,
     xprepare_out_for_resample_vals,
     xprepare_values_for_reduction,
+)
+from ._validate import (
+    validate_mom_and_mom_ndim,
+    validate_mom_dims,
+    validate_mom_ndim,
 )
 from .docstrings import docfiller
 from .random import validate_rng

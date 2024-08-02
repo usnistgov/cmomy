@@ -27,11 +27,11 @@ from numpy.typing import NDArray
 from ._typing_compat import TypeVar
 
 if TYPE_CHECKING:
+    from ._missing import _Missing  # pyright: ignore[reportPrivateUsage]
     from ._typing_compat import TypeAlias
     from ._typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
     )
-    from ._utils import _Missing  # pyright: ignore[reportPrivateUsage]
 
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]

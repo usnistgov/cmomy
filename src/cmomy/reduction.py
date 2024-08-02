@@ -17,8 +17,8 @@ from ._lib.factory import (
     factory_reduce_data_indexed,
     factory_reduce_vals,
 )
+from ._missing import MISSING
 from ._utils import (
-    MISSING,
     axes_data_reduction,
     get_axes_from_values,
     get_out_from_values,
@@ -31,12 +31,14 @@ from ._utils import (
     select_axis_dim,
     select_axis_dim_mult,
     select_dtype,
+    xprepare_out_for_resample_data,
+    xprepare_values_for_reduction,
+)
+from ._validate import (
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
-    xprepare_out_for_resample_data,
-    xprepare_values_for_reduction,
 )
 from .docstrings import docfiller
 

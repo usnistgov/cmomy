@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from functools import partial
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pytest
@@ -10,6 +11,9 @@ import xarray as xr
 import cmomy
 from cmomy import CentralMoments, xCentralMoments
 from cmomy._utils import select_dtype
+
+if TYPE_CHECKING:
+    from cmomy.typing import NDArrayAny
 
 # NOTE: This is for testing that methods give to correct output dtype
 # metho(x, out=out, dtype=dtype) -> dtype
@@ -139,6 +143,7 @@ def test_functions_with_out(
     dtype_array, dtype_out, dtype, expected, func, style, kws, out_shape, as_dataarray
 ) -> None:
     shape = (5, 1, 2)
+    x: NDArrayAny | xr.DataArray
     if as_dataarray:
         x = xr.DataArray(np.zeros(shape, dtype=dtype_array))
     else:
@@ -192,6 +197,7 @@ def test_functions_without_out(
     dtype_array, dtype, expected, func, style, kws, as_dataarray
 ) -> None:
     shape = (5, 1, 3)
+    x: NDArrayAny | xr.DataArray
     if as_dataarray:
         x = xr.DataArray(np.zeros(shape, dtype=dtype_array))
     else:
