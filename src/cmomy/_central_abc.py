@@ -9,11 +9,13 @@ import numpy as np
 from module_utilities import cached
 
 from ._lib.factory import factory_pusher, parallel_heuristic
+from ._prepare import (
+    prepare_data_for_reduction,
+    prepare_values_for_reduction,
+)
 from ._utils import (
     axes_data_reduction,
     normalize_axis_index,
-    prepare_data_for_reduction,
-    prepare_values_for_reduction,
 )
 from ._validate import (
     validate_axis,

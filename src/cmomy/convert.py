@@ -12,11 +12,13 @@ import numpy as np
 import xarray as xr
 
 from ._missing import MISSING
+from ._prepare import (
+    prepare_data_for_reduction,
+)
 from ._utils import (
     axes_data_reduction,
     mom_to_mom_shape,
     peek_at,
-    prepare_data_for_reduction,
     select_axis_dim,
     select_dtype,
 )

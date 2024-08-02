@@ -12,10 +12,11 @@ import xarray as xr
 
 from ._central_abc import CentralMomentsABC
 from ._missing import MISSING
-from ._utils import (
-    # replace_coords_from_isel,
-    select_axis_dim,
+from ._prepare import (
     xprepare_values_for_reduction,
+)
+from ._utils import (
+    select_axis_dim,
 )
 from ._validate import (
     validate_mom_and_mom_ndim,

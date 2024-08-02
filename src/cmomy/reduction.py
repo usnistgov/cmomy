@@ -18,21 +18,23 @@ from ._lib.factory import (
     factory_reduce_vals,
 )
 from ._missing import MISSING
+from ._prepare import (
+    prepare_data_for_reduction,
+    prepare_values_for_reduction,
+    xprepare_out_for_resample_data,
+    xprepare_values_for_reduction,
+)
 from ._utils import (
     axes_data_reduction,
     get_axes_from_values,
     get_out_from_values,
     normalize_axis_tuple,
     optional_keepdims,
-    prepare_data_for_reduction,
-    prepare_values_for_reduction,
     raise_if_wrong_shape,
     replace_coords_from_isel,
     select_axis_dim,
     select_axis_dim_mult,
     select_dtype,
-    xprepare_out_for_resample_data,
-    xprepare_values_for_reduction,
 )
 from ._validate import (
     validate_axis_mult,
