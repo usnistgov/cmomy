@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy import _prepare as prepare
-from cmomy._missing import MISSING
+from cmomy.core import prepare
+from cmomy.core.missing import MISSING
 
 # * prepare values/data
 dtype_mark = pytest.mark.parametrize("dtype", [np.float32, np.float64, None])

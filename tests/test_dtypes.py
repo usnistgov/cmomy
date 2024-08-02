@@ -10,10 +10,10 @@ import xarray as xr
 
 import cmomy
 from cmomy import CentralMoments, xCentralMoments
-from cmomy._utils import select_dtype
+from cmomy.core.utils import select_dtype
 
 if TYPE_CHECKING:
-    from cmomy.typing import NDArrayAny
+    from cmomy.core.typing import NDArrayAny
 
 # NOTE: This is for testing that methods give to correct output dtype
 # metho(x, out=out, dtype=dtype) -> dtype

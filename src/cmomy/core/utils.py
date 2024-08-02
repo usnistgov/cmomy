@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING, cast
 
 import numpy as np
 
-from ._missing import MISSING
-from ._validate import (
+from .docstrings import docfiller
+from .missing import MISSING
+from .validate import (
     validate_mom,
     validate_mom_ndim,
     validate_not_none,
 )
-from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -28,7 +28,6 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from ._typing_compat import TypeVar
     from .typing import (
         ArrayOrder,
         ArrayOrderCF,
@@ -45,6 +44,7 @@ if TYPE_CHECKING:
         NDArrayAny,
         ScalarT,
     )
+    from .typing_compat import TypeVar
 
     T = TypeVar("T")
 
@@ -57,8 +57,8 @@ def normalize_axis_index(
     msg_prefix: str | None = None,
 ) -> int:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
-    from ._compat import (
-        np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue]
+    from .compat import (
+        np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
     ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
@@ -73,8 +73,8 @@ def normalize_axis_tuple(
     allow_duplicate: bool = False,
 ) -> tuple[int, ...]:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
-    from ._compat import (
-        np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue]
+    from .compat import (
+        np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
     ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
@@ -295,28 +295,6 @@ def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
     return [(-1,) if a.ndim == 1 else (axis_neg,) for a in args]
 
 
-def get_out_from_values(
-    *args: NDArray[ScalarT],
-    mom: MomentsStrict,
-    axis_neg: int,
-    axis_new_size: int | None = None,
-) -> NDArray[ScalarT]:
-    """Pass in axis if this is a reduction and will be removing axis_neg"""
-    val_shape: tuple[int, ...] = np.broadcast_shapes(
-        args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
-    )
-
-    # need to normalize
-    axis = normalize_axis_index(axis_neg, len(val_shape))
-    if axis_new_size is None:
-        val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
-    else:
-        val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
-
-    out_shape = (*val_shape, *mom_to_mom_shape(mom))
-    return np.zeros(out_shape, dtype=args[0].dtype)
-
-
 def raise_if_wrong_shape(
     array: NDArrayAny, shape: tuple[int, ...], name: str | None = None
 ) -> None:
@@ -337,7 +315,7 @@ def select_dtype(
 ) -> np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
     """Select a dtype from, in order, out, dtype, or passed array."""
     if out is not None:
-        dtype = out.dtype
+        dtype = out.dtype  # pyright: ignore[reportUnknownMemberType]
     elif dtype is not None:
         dtype = np.dtype(dtype)
     else:
@@ -356,6 +334,7 @@ def optional_keepdims(
     axis: int | Sequence[int],
     keepdims: bool = False,
 ) -> NDArray[ScalarT]:
+    """Optional keep dimensions."""
     if keepdims:
         return np.expand_dims(x, axis)
     return x

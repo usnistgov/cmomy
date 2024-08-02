@@ -10,14 +10,15 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 import xarray as xr
 
-from ._missing import MISSING
-from ._prepare import (
+from .core.docstrings import docfiller
+from .core.missing import MISSING
+from .core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
     xprepare_out_for_resample_vals,
     xprepare_values_for_reduction,
 )
-from ._utils import (
+from .core.utils import (
     axes_data_reduction,
     get_axes_from_values,
     mom_to_mom_shape,
@@ -27,13 +28,12 @@ from ._utils import (
     select_axis_dim_mult,
     select_dtype,
 )
-from ._validate import (
+from .core.validate import (
     validate_axis,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
 )
-from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -41,10 +41,9 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.typing import AxesGUFunc
-
-    from .typing import (
+    from .core.typing import (
         ArrayLikeArg,
+        AxesGUFunc,
         AxisReduce,
         AxisReduceMult,
         DimsReduce,
@@ -230,7 +229,7 @@ def construct_rolling_window_array(
 
         return xout
 
-    return construct_rolling_window_array(
+    return construct_rolling_window_array(  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
         x=xr.DataArray(x),
         window=window,
         axis=axis,
@@ -407,7 +406,7 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
 
         return data.copy(
             data=rolling_data(
-                data.to_numpy(),
+                data.to_numpy(),  # pyright: ignore[reportUnknownMemberType]
                 window=window,
                 axis=axis,
                 mom_ndim=mom_ndim,
@@ -665,7 +664,7 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
 
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
-        xout: xr.DataArray = xr.apply_ufunc(
+        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_vals,
             *xargs,
             input_core_dims=input_core_dims,
@@ -911,7 +910,7 @@ def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
 
         return data.copy(
             data=rolling_exp_data(
-                data.to_numpy(),
+                data.to_numpy(),  # pyright: ignore[reportUnknownMemberType]
                 alpha=alpha,
                 axis=axis,
                 mom_ndim=mom_ndim,
@@ -1172,7 +1171,7 @@ def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
 
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
-        xout: xr.DataArray = xr.apply_ufunc(
+        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_exp_vals,
             *xargs,
             input_core_dims=input_core_dims,

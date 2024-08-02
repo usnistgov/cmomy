@@ -17,17 +17,18 @@ from ._lib.factory import (
     factory_reduce_data_indexed,
     factory_reduce_vals,
 )
-from ._missing import MISSING
-from ._prepare import (
+from .core.docstrings import docfiller
+from .core.missing import MISSING
+from .core.prepare import (
     prepare_data_for_reduction,
+    prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
     xprepare_values_for_reduction,
 )
-from ._utils import (
+from .core.utils import (
     axes_data_reduction,
     get_axes_from_values,
-    get_out_from_values,
     normalize_axis_tuple,
     optional_keepdims,
     raise_if_wrong_shape,
@@ -36,20 +37,19 @@ from ._utils import (
     select_axis_dim_mult,
     select_dtype,
 )
-from ._validate import (
+from .core.validate import (
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
 )
-from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .typing import (
+    from .core.typing import (
         ArrayLikeArg,
         ArrayT,
         AxesGUFunc,
@@ -288,10 +288,7 @@ def _reduce_vals(
     keepdims: bool = False,
 ) -> NDArray[FloatT]:
     args: tuple[NDArray[FloatT], ...] = (x0, w, *x1)  # type: ignore[arg-type]
-    if out is None:
-        out = get_out_from_values(*args, mom=mom, axis_neg=axis_neg)
-    else:
-        out.fill(0.0)
+    out = prepare_out_from_values(out, *args, mom=mom, axis_neg=axis_neg)
 
     axes: AxesGUFunc = [
         # out

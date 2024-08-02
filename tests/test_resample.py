@@ -17,7 +17,7 @@ from cmomy.reduction import (
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
 
-    from cmomy.typing import Mom_NDim
+    from cmomy.core.typing import Mom_NDim
 
 
 @pytest.mark.parametrize("ndat", [50])

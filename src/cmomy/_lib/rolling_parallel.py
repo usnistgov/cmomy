@@ -12,7 +12,7 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import FloatT
+    from cmomy.core.typing import FloatT
 
 _PARALLEL = True  # Auto generated from rolling.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)

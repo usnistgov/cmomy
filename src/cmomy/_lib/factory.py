@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from ..typing import ConvertStyle, FloatT, Mom_NDim, NDArrayInt
+    from cmomy.core.typing import ConvertStyle, FloatT, Mom_NDim, NDArrayInt
 
     # Resample signature
     # These don't play well with pyright and overloading...

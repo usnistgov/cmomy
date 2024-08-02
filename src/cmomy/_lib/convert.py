@@ -13,7 +13,7 @@ from .utils import BINOMIAL_FACTOR
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import FloatT
+    from cmomy.core.typing import FloatT
 
 
 _PARALLEL = False

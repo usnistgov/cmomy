@@ -13,7 +13,7 @@ from ._simple_cmom import get_cmom, get_comom
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike
 
-    from cmomy.typing import Mom_NDim, NDArrayAny
+    from cmomy.core.typing import Mom_NDim, NDArrayAny
 
 
 @pytest.fixture(scope="module", params=[(), (2,), (2, 3)])

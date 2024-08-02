@@ -13,7 +13,7 @@ from cmomy import CentralMoments, resample, xCentralMoments
 from cmomy.random import default_rng
 
 if TYPE_CHECKING:
-    from cmomy.typing import Mom_NDim
+    from cmomy.core.typing import Mom_NDim
 
 
 def xtest(a, b) -> None:

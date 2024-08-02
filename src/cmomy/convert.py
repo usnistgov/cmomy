@@ -11,23 +11,23 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
-from ._missing import MISSING
-from ._prepare import (
+from .core.docstrings import docfiller
+from .core.missing import MISSING
+from .core.prepare import (
     prepare_data_for_reduction,
 )
-from ._utils import (
+from .core.utils import (
     axes_data_reduction,
     mom_to_mom_shape,
     peek_at,
     select_axis_dim,
     select_dtype,
 )
-from ._validate import (
+from .core.validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
 )
-from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
     from ._central_dataarray import xCentralMoments
     from ._central_numpy import CentralMoments
-    from .typing import (
+    from .core.typing import (
         ArrayLikeArg,
         AxisReduce,
         ConvertStyle,

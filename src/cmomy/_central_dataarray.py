@@ -11,17 +11,17 @@ import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import xarray as xr
 
 from ._central_abc import CentralMomentsABC
-from ._missing import MISSING
-from ._prepare import (
+from .core.docstrings import docfiller_xcentral as docfiller
+from .core.missing import MISSING
+from .core.prepare import (
     xprepare_values_for_reduction,
 )
-from ._utils import (
+from .core.utils import (
     select_axis_dim,
 )
-from ._validate import (
+from .core.validate import (
     validate_mom_and_mom_ndim,
 )
-from .docstrings import docfiller_xcentral as docfiller
 from .utils import moveaxis
 
 if TYPE_CHECKING:
@@ -38,11 +38,10 @@ if TYPE_CHECKING:
     from xarray.core.coordinates import DataArrayCoordinates
     from xarray.core.indexes import Indexes
 
-    from cmomy.typing import KeepAttrs
+    from cmomy.core.typing import KeepAttrs
 
     from ._central_numpy import CentralMoments
-    from ._typing_compat import Self
-    from .typing import (
+    from .core.typing import (
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
@@ -65,8 +64,9 @@ if TYPE_CHECKING:
         XArrayIndexesType,
         XArrayNameType,
     )
+    from .core.typing_compat import Self
 
-from .typing import FloatT
+from .core.typing import FloatT
 
 # * xCentralMoments -----------------------------------------------------------
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)

@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 if TYPE_CHECKING:
-    from ..typing import FloatT, NDArrayInt
+    from cmomy.core.typing import FloatT, NDArrayInt
 
 
 _PARALLEL = True  # Auto generated from indexed_cov.py

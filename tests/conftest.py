@@ -16,7 +16,7 @@ from cmomy import CentralMoments, xCentralMoments
 from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
-    from cmomy.typing import Moments, NDArrayAny
+    from cmomy.core.typing import Moments, NDArrayAny
 
 
 default_rng = cmomy.random.default_rng(0)

@@ -9,20 +9,20 @@ import numpy as np
 from module_utilities import cached
 
 from ._lib.factory import factory_pusher, parallel_heuristic
-from ._prepare import (
+from .core.docstrings import docfiller
+from .core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
 )
-from ._utils import (
+from .core.utils import (
     axes_data_reduction,
     normalize_axis_index,
 )
-from ._validate import (
+from .core.validate import (
     validate_axis,
     validate_floating_dtype,
     validate_mom_ndim,
 )
-from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from typing import Any, Callable
@@ -31,8 +31,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from ._lib.factory import Pusher
-    from ._typing_compat import Self
-    from .typing import (
+    from .core.typing import (
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
@@ -45,8 +44,9 @@ if TYPE_CHECKING:
         NDArrayAny,
         NDArrayInt,
     )
+    from .core.typing_compat import Self
 
-from .typing import ArrayT, FloatT
+from .core.typing import ArrayT, FloatT
 
 
 # * Main class ----------------------------------------------------------------
@@ -207,7 +207,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         return s + repr(self.to_values())
 
     def _repr_html_(self) -> str:  # noqa: PLW3201
-        from ._formatting import repr_html  # pyright: ignore[reportUnknownVariableType]
+        from .core.formatting import (
+            repr_html,  # pyright: ignore[reportUnknownVariableType]
+        )
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 

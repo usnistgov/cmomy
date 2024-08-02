@@ -242,28 +242,11 @@ lint.extend-per-file-ignores."**/*.ipynb" = [
     "PLR2004",
     "T201",
 ]
-lint.extend-per-file-ignores."classic_tests/**/*.py" = [
-    "ANN",
-    "D",
-    "FIX002",
-    "N802",
-    "N806",
-    "PLC2701",
-    "PLR0904",
-    "PLR2004",
-    "PT011",
-    "S101",
-    "SLF001",
-    "TD003",
-]
 lint.extend-per-file-ignores."src/**/*.py" = [
     "D102",
     "FIX002",
     "PLR2004",
     "TD003",
-]
-lint.extend-per-file-ignores."src/**/_formatting.py" = [
-    "SLF001",
 ]
 lint.extend-per-file-ignores."src/**/_lib/*.py" = [
     "ANN",
@@ -275,18 +258,10 @@ lint.extend-per-file-ignores."src/**/_lib/*.py" = [
 lint.extend-per-file-ignores."src/**/_lib/convert.py" = [
     "PLR1702",
 ]
-lint.extend-per-file-ignores."src/**/_testing.py" = [
-    "S101",
-]
-lint.extend-per-file-ignores."src/**/_{formatting,testing}.py" = [
+lint.extend-per-file-ignores."src/**/core/formatting.py" = [
     "ANN",
-]
-lint.extend-per-file-ignores."src/**/abstract_central.py" = [
-    "PLR2004",
-]
-lint.extend-per-file-ignores."src/**/central.py" = [
-    "D102",
-    "PLR2004",
+    "D",
+    "SLF001",
 ]
 # Project specific ignores (avoid changing per-file-ignores directly)
 lint.extend-per-file-ignores."tests/**/*.py" = [
@@ -368,7 +343,6 @@ exclude_also = [
 ]
 omit = [
     "*/vendored/*",
-    "*/_typing.py",
     "*/options.py",
     # No great way to test coverage of guvectorized functions...
     "*/_lib/_push*.py",
@@ -380,7 +354,7 @@ omit = [
     "*/_lib/make_parallel_files.py",
     "*/_lib/resample*.py",
     "*/_lib/utils.py",
-    "*/_typing_nested_sequence.py",
+    "*/core/typing_nested_sequence.py",
 ]
 include = [
     "src/*",
@@ -436,24 +410,21 @@ include = [
 strict = [
     "noxfile.py",
     "tools/*.py",
-    "src/cmomy/__init__.py",
-    "src/cmomy/_compat.py",
-    # "src/cmomy/_formatting.py",
-    "src/cmomy/_typing_compat.py",
-    # "src/cmomy/_typing_nested_sequence.py",
-    "src/cmomy/_central_abc.py",
-    "src/cmomy/_central_dataarray.py",
-    "src/cmomy/_central_numpy.py",
-    "src/cmomy/convert.py",
-    "src/cmomy/compile.py",
-    "src/cmomy/docstrings.py",
-    "src/cmomy/options.py",
-    "src/cmomy/random.py",
-    "src/cmomy/reduction.py",
-    "src/cmomy/resample.py",
-    "src/cmomy/typing.py",
-    "src/cmomy/utils.py",
+    "src/cmomy/*.py",
     "src/cmomy/_lib/factory.py",
+    "src/cmomy/core/compat.py",
+    "src/cmomy/core/__init__.py",
+    "src/cmomy/core/compat.py",
+    "src/cmomy/core/docstrings.py",
+    # "src/cmomy/core/formatting.py",
+    "src/cmomy/core/missing.py",
+    "src/cmomy/core/prepare.py",
+    "src/cmomy/core/prob.py",
+    "src/cmomy/core/typing.py",
+    "src/cmomy/core/typing_compat.py",
+    # "src/cmomy/core/typing_nested_sequence.py",
+    "src/cmomy/core/utils.py",
+    "src/cmomy/core/validate.py",
 ]
 exclude = [
     "**/__pycache__",

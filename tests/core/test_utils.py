@@ -6,8 +6,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy import _utils as utils
-from cmomy import _validate as validate
+from cmomy.core import utils, validate
 
 
 # * catch all args only test

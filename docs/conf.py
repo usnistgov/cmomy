@@ -72,7 +72,7 @@ nitpicky_ignore_regex = [
     (r"py:.*", r"numpy\._typing.*"),
 ]
 # nitpicky_ignore = [
-#     ("py:obj", "cmomy.typing.ArrayT"),
+#     ("py:obj", "cmomy.core.typing.ArrayT"),
 #     # ("py:class", "numpy._typing.*"),
 # ]
 autosectionlabel_prefix_document = True

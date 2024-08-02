@@ -47,7 +47,7 @@ from cmomy._lib.factory import (
 if TYPE_CHECKING:
     from typing import Any, Callable
 
-    from cmomy.typing import Mom_NDim
+    from cmomy.core.typing import Mom_NDim
 
     Func = Callable[..., Any]
 

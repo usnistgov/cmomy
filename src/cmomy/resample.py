@@ -14,29 +14,29 @@ import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
-from ._missing import MISSING
-from ._prepare import (
+from .core.docstrings import docfiller
+from .core.missing import MISSING
+from .core.prepare import (
     prepare_data_for_reduction,
+    prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
     xprepare_out_for_resample_vals,
     xprepare_values_for_reduction,
 )
-from ._utils import (
+from .core.utils import (
     axes_data_reduction,
     get_axes_from_values,
-    get_out_from_values,
     mom_to_mom_shape,
     normalize_axis_index,
     select_axis_dim,
     select_dtype,
 )
-from ._validate import (
+from .core.validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
 )
-from .docstrings import docfiller
 from .random import validate_rng
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .typing import (
+    from .core.typing import (
         ArrayLikeArg,
         AxesGUFunc,
         AxisReduce,
@@ -854,15 +854,13 @@ def _resample_vals(
 
     args: tuple[NDArray[FloatT], ...] = (x0, w, *x1)  # type: ignore[arg-type]
 
-    if out is None:
-        out = get_out_from_values(
-            *args,
-            mom=mom,
-            axis_neg=axis_neg,
-            axis_new_size=freq.shape[0],
-        )
-    else:
-        out.fill(0.0)
+    out = prepare_out_from_values(
+        out,
+        *args,
+        mom=mom,
+        axis_neg=axis_neg,
+        axis_new_size=freq.shape[0],
+    )
 
     axes: AxesGUFunc = [
         # out

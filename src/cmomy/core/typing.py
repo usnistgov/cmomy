@@ -1,5 +1,5 @@
 """
-Typing aliases (:mod:`cmomy.typing`)
+Typing aliases (:mod:`cmomy.core.typing`)
 ====================================
 """
 
@@ -24,12 +24,12 @@ import pandas as pd  # noqa: TCH002
 import xarray as xr
 from numpy.typing import NDArray
 
-from ._typing_compat import TypeVar
+from .typing_compat import TypeVar
 
 if TYPE_CHECKING:
-    from ._missing import _Missing  # pyright: ignore[reportPrivateUsage]
-    from ._typing_compat import TypeAlias
-    from ._typing_nested_sequence import (
+    from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
+    from .typing_compat import TypeAlias
+    from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
     )
 

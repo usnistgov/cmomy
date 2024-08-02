@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Union
 
-    from ._typing_compat import TypeAlias
+    from .core.typing_compat import TypeAlias
 
     SEED_TYPES: TypeAlias = Union[
         int,

@@ -15,16 +15,16 @@ import xarray as xr
 from numpy.typing import NDArray
 
 from ._central_abc import CentralMomentsABC
-from ._compat import copy_if_needed
-from ._utils import (
+from .core.compat import copy_if_needed
+from .core.docstrings import docfiller_central as docfiller
+from .core.utils import (
     arrayorder_to_arrayorder_cf,
     mom_to_mom_shape,
 )
-from ._validate import (
+from .core.validate import (
     validate_axis,
     validate_mom_and_mom_ndim,
 )
-from .docstrings import docfiller_central as docfiller
 from .utils import moveaxis
 
 if TYPE_CHECKING:
@@ -33,8 +33,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
 
     from ._central_dataarray import xCentralMoments
-    from ._typing_compat import Self
-    from .typing import (
+    from .core.typing import (
         ArrayLikeArg,
         ArrayOrder,
         ArrayOrderCF,
@@ -55,8 +54,9 @@ if TYPE_CHECKING:
         XArrayIndexesType,
         XArrayNameType,
     )
+    from .core.typing_compat import Self
 
-from .typing import FloatT
+from .core.typing import FloatT
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)

@@ -12,7 +12,7 @@ import cmomy
 from cmomy import CentralMoments
 
 if TYPE_CHECKING:
-    from cmomy.typing import Mom_NDim
+    from cmomy.core.typing import Mom_NDim
 
 
 # Tests

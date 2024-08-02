@@ -27,20 +27,20 @@ import cmomy
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from cmomy.typing import Moments, NDArrayAny
+    from cmomy.core.typing import Moments, NDArrayAny
 
 
 def test_ndtr(rng: np.random.Generator) -> None:
-    from cmomy import _prob
+    from cmomy.core import prob
 
     x = rng.random(100)
 
     a = ndtr(x)
-    b = _prob.ndtr(x)
+    b = prob.ndtr(x)
     np.testing.assert_allclose(a, b)
 
     aa = ndtri(a)
-    bb = _prob.ndtri(b)
+    bb = prob.ndtri(b)
 
     np.testing.assert_allclose(aa, bb)
 

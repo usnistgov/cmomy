@@ -15,7 +15,7 @@ from cmomy import rolling
 if TYPE_CHECKING:
     from typing import TypedDict
 
-    from cmomy.typing import Mom_NDim, MomentsStrict
+    from cmomy.core.typing import Mom_NDim, MomentsStrict
 
     class RollingDict(TypedDict):
         window: int

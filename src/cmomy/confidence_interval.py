@@ -8,19 +8,19 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
-from ._compat import copy_if_needed
-from ._missing import MISSING
-from ._prob import ndtr, ndtri
-from ._utils import select_axis_dim
-from ._validate import validate_axis
-from .docstrings import docfiller
+from .core.compat import copy_if_needed
+from .core.docstrings import docfiller
+from .core.missing import MISSING
+from .core.prob import ndtr, ndtri
+from .core.utils import select_axis_dim
+from .core.validate import validate_axis
 
 if TYPE_CHECKING:
     from typing import Literal
 
-    from numpy.typing import NDArray
+    from numpy.typing import DTypeLike, NDArray
 
-    from .typing import (
+    from .core.typing import (
         AxisReduce,
         DimsReduce,
         FloatDTypes,
@@ -253,7 +253,7 @@ def bootstrap_confidence_interval(
 
     Moreover, you can use pre-averaged data.
     """
-    dtype = theta_boot.dtype
+    dtype: DTypeLike = theta_boot.dtype  # pyright: ignore[reportUnknownMemberType]
     if isinstance(alpha, Iterable):
         alphas = np.array(list(alpha), dtype=dtype)
     else:
@@ -269,9 +269,11 @@ def bootstrap_confidence_interval(
 
         return cast(
             xr.DataArray,
-            xr.apply_ufunc(
-                lambda *args, **kwargs: np.moveaxis(
-                    bootstrap_confidence_interval(*args, **kwargs), 0, -1
+            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+                lambda *args, **kwargs: np.moveaxis(  # pyright: ignore[reportUnknownLambdaType]
+                    bootstrap_confidence_interval(*args, **kwargs),
+                    0,
+                    -1,  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
                 ),
                 theta_boot,
                 theta_hat,
@@ -307,7 +309,7 @@ def bootstrap_confidence_interval(
         theta_jack = np.asarray(theta_jack, dtype=dtype)
 
         a = _compute_a(theta_jack, axis)
-        z0 = _compute_z0(theta_hat_, theta_boot, axis)
+        z0 = _compute_z0(theta_hat_, theta_boot, axis)  # pyright: ignore[reportPossiblyUnboundVariable]
 
         z0_expanded = np.expand_dims(z0, -1)
         a_expanded = np.expand_dims(a, -1)
@@ -318,7 +320,7 @@ def bootstrap_confidence_interval(
     else:
         ci = np.quantile(theta_boot, alphas, axis=axis).astype(dtype, copy=False)
         if method_ == "basic":
-            ci = 2 * np.squeeze(theta_hat_, axis=axis) - ci[-1::-1, ...]  # pyright: ignore[reportAssignmentType]
+            ci = 2 * np.squeeze(theta_hat_, axis=axis) - ci[-1::-1, ...]  # pyright: ignore[reportAssignmentType, reportPossiblyUnboundVariable]
 
     return ci
 

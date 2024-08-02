@@ -1,3 +1,5 @@
+"""Missing value sentinel."""
+
 from __future__ import annotations
 
 import enum
@@ -9,7 +11,7 @@ class _Missing(enum.Enum):
     """
     Sentinel to indicate the lack of a value when ``None`` is ambiguous.
 
-    Use `cmomy.typing.MissingType` to type this value.
+    Use `cmomy.core.typing.MissingType` to type this value.
     """
 
     MISSING = enum.auto()

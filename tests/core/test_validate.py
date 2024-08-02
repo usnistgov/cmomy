@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-import cmomy._validate as validate
-from cmomy._missing import MISSING
+from cmomy.core import validate
+from cmomy.core.missing import MISSING
 
 
 # * catch all args only test

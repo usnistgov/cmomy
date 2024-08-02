@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, cast
 import numpy as np
 import xarray as xr
 
-from ._missing import MISSING
 from .docstrings import docfiller
+from .missing import MISSING
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -20,7 +20,6 @@ if TYPE_CHECKING:
 
     from numpy.typing import DTypeLike
 
-    from ._typing_compat import TypeGuard, TypeVar
     from .typing import (
         AxisReduce,
         AxisReduceMult,
@@ -30,6 +29,7 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
     )
+    from .typing_compat import TypeGuard, TypeVar
 
     T = TypeVar("T")
 

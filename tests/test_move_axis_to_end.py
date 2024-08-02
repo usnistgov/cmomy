@@ -11,7 +11,7 @@ import xarray as xr
 import cmomy
 
 if TYPE_CHECKING:
-    from cmomy.typing import Mom_NDim
+    from cmomy.core.typing import Mom_NDim
 
 
 shapes_mark = pytest.mark.parametrize(
@@ -116,7 +116,7 @@ def test_vals_move_axis_to_end(
         np.testing.assert_allclose(a, c)
 
 
-from cmomy._utils import normalize_axis_index
+from cmomy.core.utils import normalize_axis_index
 
 
 @pytest.mark.parametrize(

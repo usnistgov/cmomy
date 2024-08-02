@@ -17,4 +17,4 @@
    :toctree: generated/
    :template: autodocsumm/module.rst
 
-   cmomy.typing
+   cmomy.core.typing

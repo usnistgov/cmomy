@@ -10,18 +10,18 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 import xarray as xr
 
-from ._missing import MISSING
-from ._utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
-from ._utils import mom_to_mom_shape as mom_to_mom_shape  # noqa: PLC0414
-from ._utils import (
+from .core.docstrings import docfiller
+from .core.missing import MISSING
+from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
+from .core.utils import mom_to_mom_shape as mom_to_mom_shape  # noqa: PLC0414
+from .core.utils import (
     normalize_axis_tuple,
     select_axis_dim_mult,
 )
-from ._validate import (
+from .core.validate import (
     validate_axis_mult,
     validate_mom_ndim,
 )
-from .docstrings import docfiller
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from .typing import (
+    from .core.typing import (
         MissingType,
         Mom_NDim,
         ScalarT,

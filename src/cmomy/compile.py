@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
-    from ._typing_compat import Self
+    from .core.typing_compat import Self
 
 
 FORMAT = "[%(name)s] %(message)s"

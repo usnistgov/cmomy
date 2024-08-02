@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from typing import Any, Callable
 
-    from ..typing import F, NumbaType
+    from cmomy.core.typing import F, NumbaType
 
 
 # * Threading

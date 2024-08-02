@@ -11,7 +11,7 @@ from .decorators import is_in_unsafe_thread_pool, myjit
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
 
-    from ..typing import IntDTypeT, NDArrayAny
+    from cmomy.core.typing import IntDTypeT, NDArrayAny
 
 
 # * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py

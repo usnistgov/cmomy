@@ -13,7 +13,7 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import FloatT, NDGeneric
+    from cmomy.core.typing import FloatT, NDGeneric
 
 
 _PARALLEL = True  # Auto generated from push.py

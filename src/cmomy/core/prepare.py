@@ -7,13 +7,14 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
-from ._missing import MISSING
-from ._utils import (
+from .missing import MISSING
+from .utils import (
+    mom_to_mom_shape,
     normalize_axis_index,
     positive_to_negative_index,
     select_axis_dim,
 )
-from ._validate import (
+from .validate import (
     validate_axis,
 )
 
@@ -32,6 +33,7 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         MissingType,
         Mom_NDim,
+        MomentsStrict,
         ScalarT,
     )
 
@@ -135,7 +137,7 @@ def xprepare_values_for_reduction(
         dim=dim,
     )
 
-    dtype = target.dtype if dtype is None else dtype
+    dtype = target.dtype if dtype is None else dtype  # pyright: ignore[reportUnnecessaryComparison]
     nsamp = target.sizes[dim]
     axis_neg = positive_to_negative_index(axis, target.ndim)
 
@@ -204,7 +206,7 @@ def xprepare_secondary_value_for_reduction(
 ) -> xr.DataArray | NDArray[ScalarT]:
     """Prepare secondary values for reduction."""
     if isinstance(x, xr.DataArray):
-        return x.astype(dtype=dtype, copy=False)
+        return x.astype(dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
     return prepare_secondary_value_for_reduction(
         x, axis=axis, nsamp=nsamp, dtype=dtype, move_axis_to_end=True
     )
@@ -218,6 +220,7 @@ def xprepare_out_for_resample_vals(
     mom_ndim: Mom_NDim,
     move_axis_to_end: bool,
 ) -> NDArray[ScalarT] | None:
+    """Prepare out for resampling"""
     if out is None:
         return out
 
@@ -253,3 +256,30 @@ def xprepare_out_for_resample_data(
 
     shift = 0 if mom_ndim is None else mom_ndim
     return np.moveaxis(out, axis, -(shift + 1))
+
+
+def prepare_out_from_values(
+    out: NDArray[ScalarT] | None,
+    *args: NDArray[ScalarT],
+    mom: MomentsStrict,
+    axis_neg: int,
+    axis_new_size: int | None = None,
+) -> NDArray[ScalarT]:
+    """Pass in axis if this is a reduction and will be removing axis_neg"""
+    if out is not None:
+        out.fill(0.0)
+        return out
+
+    val_shape: tuple[int, ...] = np.broadcast_shapes(
+        args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
+    )
+
+    # need to normalize
+    axis = normalize_axis_index(axis_neg, len(val_shape))
+    if axis_new_size is None:
+        val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
+    else:
+        val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
+
+    out_shape = (*val_shape, *mom_to_mom_shape(mom))
+    return np.zeros(out_shape, dtype=args[0].dtype)

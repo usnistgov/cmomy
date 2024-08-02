@@ -13,7 +13,7 @@ from .decorators import myguvectorize, myjit
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import FloatT, NDArrayInt
+    from cmomy.core.typing import FloatT, NDArrayInt
 
 _PARALLEL = True  # Auto generated from indexed.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)

@@ -14,7 +14,7 @@ from cmomy import CentralMoments, resample, xCentralMoments
 if TYPE_CHECKING:
     from typing import Callable
 
-    from cmomy.typing import F
+    from cmomy.core.typing import F
 
 
 def my_fixture(**kws) -> Callable[[F], F]:
