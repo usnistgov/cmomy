@@ -24,7 +24,6 @@ from ._utils import (
     get_out_from_values,
     normalize_axis_tuple,
     optional_keepdims,
-    parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
     raise_if_wrong_shape,
@@ -298,7 +297,8 @@ def _reduce_vals(
     ]
     factory_reduce_vals(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, args[0].size * mom_ndim),
+        parallel=parallel,
+        size=args[0].size,
     )(out, *args, axes=axes)
 
     return optional_keepdims(
@@ -454,7 +454,8 @@ def reduce_data(
 
     out = factory_reduce_data(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+        parallel=parallel,
+        size=data.size,
     )(data, out=out, dtype=dtype)
 
     return optional_keepdims(
@@ -802,7 +803,8 @@ def reduce_data_grouped(
 
     factory_reduce_data_grouped(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+        parallel=parallel,
+        size=data.size,
     )(data, by, out, axes=axes)
 
     return out
@@ -1251,7 +1253,8 @@ def _reduce_data_indexed(
 
     return factory_reduce_data_indexed(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+        parallel=parallel,
+        size=data.size,
     )(data, index, group_start, group_end, scale, axes=axes, out=out)
 
 

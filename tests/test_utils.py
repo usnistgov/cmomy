@@ -147,21 +147,6 @@ def test_mom_to_mom_shape(mom, mom_shape) -> None:
     assert utils.mom_shape_to_mom(mom_shape) == utils.validate_mom(mom)
 
 
-@pytest.mark.parametrize(
-    ("args", "expected"),
-    [
-        ((None, 100, 100), False),
-        ((None, 101, 100), True),
-        ((True, 100, 100), True),
-        ((True, 101, 100), True),
-        ((False, 100, 100), False),
-        ((False, 101, 100), False),
-    ],
-)
-def test_parallel_heuristic(args, expected) -> None:
-    _do_test(utils.parallel_heuristic, *args, expected=expected)
-
-
 # * prepare values/data
 dtype_mark = pytest.mark.parametrize("dtype", [np.float32, np.float64, None])
 order_mark = pytest.mark.parametrize("order", ["C", None])

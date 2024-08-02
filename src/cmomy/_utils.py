@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
-from ._lib.utils import supports_parallel as supports_parallel  # noqa: PLC0414
 from .docstrings import docfiller
 
 if TYPE_CHECKING:
@@ -335,13 +334,6 @@ def validate_floating_dtype(
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
-
-
-def parallel_heuristic(parallel: bool | None, size: int, cutoff: int = 10000) -> bool:
-    """Default parallel."""
-    if parallel is not None:
-        return parallel and supports_parallel()
-    return size > cutoff
 
 
 def validate_not_none(x: T | None, name: str = "value") -> T:

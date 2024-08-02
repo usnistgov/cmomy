@@ -41,6 +41,7 @@ from cmomy._lib.factory import (
     factory_rolling_exp_data,
     factory_rolling_exp_vals,
     factory_rolling_vals,
+    parallel_heuristic,
 )
 
 if TYPE_CHECKING:
@@ -49,6 +50,32 @@ if TYPE_CHECKING:
     from cmomy.typing import Mom_NDim
 
     Func = Callable[..., Any]
+
+
+# * parallel heuristic
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        # typical
+        ((None, 100, 100), False),
+        ((None, 101, 100), True),
+        ((True, 100, 100), True),
+        ((True, 101, 100), True),
+        ((False, 100, 100), False),
+        ((False, 101, 100), False),
+        # no size
+        ((None, None, None), False),
+        ((None, None, 100), False),
+        # mom_ndim
+        ((None, 51, 100, 2), True),
+        ((None, 50, 100, 2), False),
+        # no cutoff
+        ((None, 1000, None), False),
+        ((None, 10001, None), True),
+    ],
+)
+def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
+    assert parallel_heuristic(*args) == expected
 
 
 @pytest.mark.parametrize(

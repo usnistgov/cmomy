@@ -176,6 +176,25 @@ if TYPE_CHECKING:
         ) -> NDArray[FloatT]: ...
 
 
+# * Heuristic for parallel
+def parallel_heuristic(
+    parallel: bool | None,
+    size: int | None = None,
+    cutoff: int | None = None,
+    mom_ndim: Mom_NDim | None = None,
+) -> bool:
+    """Default parallel."""
+    if parallel is not None:
+        return parallel and supports_parallel()
+    if size is None:
+        return False
+
+    cutoff = cutoff or 10000
+    size = size if mom_ndim is None else size * mom_ndim
+
+    return size > cutoff and supports_parallel()
+
+
 class Pusher(NamedTuple):
     """Collection of pusher functions."""
 
@@ -186,9 +205,14 @@ class Pusher(NamedTuple):
 
 
 @lru_cache
-def factory_pusher(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Pusher:
+def factory_pusher(
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = None,
+    size: int | None = None,
+    cutoff: int | None = None,
+) -> Pusher:
     """Factory method to get pusher functions."""
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     _push_mod: ModuleType
     if mom_ndim == 1 and parallel:
@@ -211,9 +235,12 @@ def factory_pusher(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Pusher:
 # * Resample
 @lru_cache
 def factory_resample_vals(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> ResampleVals:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1:
         if parallel:
@@ -231,9 +258,12 @@ def factory_resample_vals(
 
 @lru_cache
 def factory_resample_data(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> ResampleData:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
     if mom_ndim == 1 and parallel:
         from .resample_parallel import resample_data_fromzero
     elif mom_ndim == 1:
@@ -249,9 +279,11 @@ def factory_resample_data(
 @lru_cache
 def factory_jackknife_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool = True,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> JackknifeVals:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1:
         if parallel:
@@ -269,9 +301,12 @@ def factory_jackknife_vals(
 
 @lru_cache
 def factory_jackknife_data(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> JackknifeData:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
     if mom_ndim == 1 and parallel:
         from .resample_parallel import jackknife_data_fromzero
     elif mom_ndim == 1:
@@ -285,9 +320,13 @@ def factory_jackknife_data(
 
 # * Reduce
 @lru_cache
-def factory_reduce_vals(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> ReduceVals:
-    parallel = parallel and supports_parallel()
-
+def factory_reduce_vals(
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
+) -> ReduceVals:
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
     if mom_ndim == 1:
         if parallel:
             from .push_parallel import reduce_vals as _reduce
@@ -303,8 +342,13 @@ def factory_reduce_vals(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Reduce
 
 
 @lru_cache
-def factory_reduce_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> ReduceData:
-    parallel = parallel and supports_parallel()
+def factory_reduce_data(
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
+) -> ReduceData:
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1 and parallel:
         from .push_parallel import reduce_data_fromzero
@@ -320,9 +364,12 @@ def factory_reduce_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Reduce
 
 @lru_cache
 def factory_reduce_data_grouped(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> ReduceDataGrouped:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1 and parallel:
         from .indexed_parallel import reduce_data_grouped
@@ -338,9 +385,12 @@ def factory_reduce_data_grouped(
 
 @lru_cache
 def factory_reduce_data_indexed(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> ReduceDataIndexed:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1 and parallel:
         from .indexed_parallel import reduce_data_indexed_fromzero
@@ -377,8 +427,13 @@ def factory_convert(mom_ndim: Mom_NDim = 1, to: ConvertStyle = "central") -> Con
 # * CumReduce
 @lru_cache
 def factory_cumulative(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True, inverse: bool = False
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    inverse: bool = False,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> Convert:
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
     if inverse:
         if mom_ndim == 1 and parallel:
             from .push_parallel import cumulative_inverse as func
@@ -405,9 +460,11 @@ def factory_cumulative(
 @lru_cache
 def factory_rolling_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool = True,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> RollingVals:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1:
         if parallel:
@@ -424,8 +481,13 @@ def factory_rolling_vals(
 
 
 @lru_cache
-def factory_rolling_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> RollingData:
-    parallel = parallel and supports_parallel()
+def factory_rolling_data(
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
+) -> RollingData:
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1 and parallel:
         from .rolling_parallel import rolling_data
@@ -442,9 +504,11 @@ def factory_rolling_data(mom_ndim: Mom_NDim = 1, parallel: bool = True) -> Rolli
 @lru_cache
 def factory_rolling_exp_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool = True,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> RollingExpVals:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1:
         if parallel:
@@ -462,9 +526,12 @@ def factory_rolling_exp_vals(
 
 @lru_cache
 def factory_rolling_exp_data(
-    mom_ndim: Mom_NDim = 1, parallel: bool = True
+    mom_ndim: Mom_NDim = 1,
+    parallel: bool | None = True,
+    size: int | None = None,
+    cutoff: int | None = None,
 ) -> RollingExpData:
-    parallel = parallel and supports_parallel()
+    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
 
     if mom_ndim == 1 and parallel:
         from .rolling_parallel import rolling_exp_data

@@ -16,7 +16,6 @@ from ._utils import (
     get_axes_from_values,
     mom_to_mom_shape,
     normalize_axis_index,
-    parallel_heuristic,
     positive_to_negative_index,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -452,7 +451,8 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
 
     out = factory_rolling_data(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+        parallel=parallel,
+        size=data.size,
     )(data_tmp, window, min_periods, data, out=out, axes=axes)
 
     if shift is not None:
@@ -750,7 +750,9 @@ def _rolling_vals(
     from ._lib.factory import factory_rolling_vals
 
     out = factory_rolling_vals(
-        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x.size * mom_ndim)
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        size=x.size,
     )(data_tmp, window, min_periods, *args, out=out, axes=axes)
 
     if shift is not None:
@@ -961,7 +963,8 @@ def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
     data_tmp = np.zeros(data.shape[-mom_ndim:], dtype=dtype)
     out = factory_rolling_exp_data(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, data.size * mom_ndim),
+        parallel=parallel,
+        size=data.size,
     )(data_tmp, alpha, adjust, min_periods, data, out=out, axes=axes)
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)
@@ -1246,7 +1249,9 @@ def _rolling_exp_vals(
     data_tmp = np.zeros(mom_to_mom_shape(mom), dtype=x.dtype)
     min_periods = 1 if min_periods is None else max(1, min_periods)
     out = factory_rolling_exp_vals(
-        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x.size * mom_ndim)
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        size=x.size,
     )(data_tmp, alpha, adjust, min_periods, *args, out=out, axes=axes)
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)  # pyright: ignore[reportReturnType, reportArgumentType]

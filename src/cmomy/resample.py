@@ -21,7 +21,6 @@ from ._utils import (
     get_out_from_values,
     mom_to_mom_shape,
     normalize_axis_index,
-    parallel_heuristic,
     prepare_data_for_reduction,
     prepare_values_for_reduction,
     select_axis_dim,
@@ -600,7 +599,9 @@ def resample_data(
     from ._lib.factory import factory_resample_data
 
     return factory_resample_data(
-        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        size=data.size,
     )(freq, data, out=out, axes=axes)
 
 
@@ -872,7 +873,8 @@ def _resample_vals(
 
     factory_resample_vals(
         mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, x0.size * mom_ndim),
+        parallel=parallel,
+        size=x0.size,
     )(out, freq, *args, axes=axes)
 
     return out
@@ -1161,7 +1163,9 @@ def jackknife_data(
     from ._lib.factory import factory_jackknife_data
 
     return factory_jackknife_data(
-        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, data.size * mom_ndim)
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        size=data.size,
     )(data_reduced, data, out=out, axes=axes)
 
 
@@ -1451,5 +1455,7 @@ def _jackknife_vals(
     from ._lib.factory import factory_jackknife_vals
 
     return factory_jackknife_vals(
-        mom_ndim=mom_ndim, parallel=parallel_heuristic(parallel, x0.size * mom_ndim)
+        mom_ndim=mom_ndim,
+        parallel=parallel,
+        size=x0.size,
     )(data_reduced, *args, out=out, axes=axes)
