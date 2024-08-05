@@ -10,7 +10,7 @@ import xarray as xr
 
 import cmomy
 from cmomy import CentralMoments, xCentralMoments
-from cmomy.core.utils import select_dtype
+from cmomy.core.array_utils import select_dtype
 
 if TYPE_CHECKING:
     from cmomy.core.typing import NDArrayAny

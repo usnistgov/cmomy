@@ -16,11 +16,11 @@ from .core.missing import MISSING
 from .core.prepare import (
     xprepare_values_for_reduction,
 )
-from .core.utils import (
-    select_axis_dim,
-)
 from .core.validate import (
     validate_mom_and_mom_ndim,
+)
+from .core.xr_utils import (
+    select_axis_dim,
 )
 from .utils import moveaxis
 

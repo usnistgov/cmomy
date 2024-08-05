@@ -7,15 +7,19 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
+from .array_utils import (
+    normalize_axis_index,
+    positive_to_negative_index,
+)
 from .missing import MISSING
 from .utils import (
     mom_to_mom_shape,
-    normalize_axis_index,
-    positive_to_negative_index,
-    select_axis_dim,
 )
 from .validate import (
     validate_axis,
+)
+from .xr_utils import (
+    select_axis_dim,
 )
 
 if TYPE_CHECKING:

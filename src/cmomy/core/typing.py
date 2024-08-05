@@ -169,3 +169,15 @@ if TYPE_CHECKING:
 
     # For indexed reducetion
     Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
+
+    # SelectComponent
+    SelectMoment = Literal[
+        "weight",
+        "ave",
+        "cov",
+        "var",
+        "xave",
+        "yave",
+        "xvar",
+        "yvar",
+    ]

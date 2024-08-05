@@ -14,6 +14,12 @@ import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
+from .core.array_utils import (
+    axes_data_reduction,
+    get_axes_from_values,
+    normalize_axis_index,
+    select_dtype,
+)
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
@@ -25,17 +31,15 @@ from .core.prepare import (
     xprepare_values_for_reduction,
 )
 from .core.utils import (
-    axes_data_reduction,
-    get_axes_from_values,
     mom_to_mom_shape,
-    normalize_axis_index,
-    select_axis_dim,
-    select_dtype,
 )
 from .core.validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+)
+from .core.xr_utils import (
+    select_axis_dim,
 )
 from .random import validate_rng
 

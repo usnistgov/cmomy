@@ -11,22 +11,26 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
+from .core.array_utils import (
+    axes_data_reduction,
+    select_dtype,
+)
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
     prepare_data_for_reduction,
 )
 from .core.utils import (
-    axes_data_reduction,
     mom_to_mom_shape,
     peek_at,
-    select_axis_dim,
-    select_dtype,
 )
 from .core.validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+)
+from .core.xr_utils import (
+    select_axis_dim,
 )
 
 if TYPE_CHECKING:

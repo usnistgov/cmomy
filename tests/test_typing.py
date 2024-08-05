@@ -336,6 +336,29 @@ def test_moveaxis() -> None:
         assert_type(cmomy.moveaxis(xr.DataArray(xAny), mom_ndim=1), xr.DataArray)
 
 
+def test_select_moment() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+    xint = np.array([1, 2, 3], dtype=np.int64)
+    xAny: NDArray[Any] = xint
+
+    if TYPE_CHECKING:
+        assert_type(
+            cmomy.utils.select_moment(x32, "weight", mom_ndim=1), NDArray[np.float32]
+        )
+        assert_type(
+            cmomy.utils.select_moment(x64, "weight", mom_ndim=1), NDArray[np.float64]
+        )
+        assert_type(
+            cmomy.utils.select_moment(xint, "weight", mom_ndim=1), NDArray[np.int64]
+        )
+        assert_type(cmomy.utils.select_moment(xAny, "weight", mom_ndim=1), NDArray[Any])
+        assert_type(
+            cmomy.utils.select_moment(xr.DataArray(xAny), "weight", mom_ndim=1),
+            xr.DataArray,
+        )
+
+
 def test_cumulative() -> None:
     x32 = np.array([1, 2, 3], dtype=np.float32)
     x64 = np.array([1, 2, 3], dtype=np.float64)

@@ -412,8 +412,9 @@ strict = [
     "tools/*.py",
     "src/cmomy/*.py",
     "src/cmomy/_lib/factory.py",
-    "src/cmomy/core/compat.py",
     "src/cmomy/core/__init__.py",
+    "src/cmomy/core/array_utils.py",
+    "src/cmomy/core/axes_utils.py",
     "src/cmomy/core/compat.py",
     "src/cmomy/core/docstrings.py",
     # "src/cmomy/core/formatting.py",
@@ -425,6 +426,7 @@ strict = [
     # "src/cmomy/core/typing_nested_sequence.py",
     "src/cmomy/core/utils.py",
     "src/cmomy/core/validate.py",
+    "src/cmomy/core/xr_utils.py",
 ]
 exclude = [
     "**/__pycache__",

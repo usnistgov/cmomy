@@ -9,14 +9,14 @@ import numpy as np
 from module_utilities import cached
 
 from ._lib.factory import factory_pusher, parallel_heuristic
+from .core.array_utils import (
+    axes_data_reduction,
+    normalize_axis_index,
+)
 from .core.docstrings import docfiller
 from .core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
-)
-from .core.utils import (
-    axes_data_reduction,
-    normalize_axis_index,
 )
 from .core.validate import (
     validate_axis,

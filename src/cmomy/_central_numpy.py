@@ -15,10 +15,12 @@ import xarray as xr
 from numpy.typing import NDArray
 
 from ._central_abc import CentralMomentsABC
+from .core.array_utils import (
+    arrayorder_to_arrayorder_cf,
+)
 from .core.compat import copy_if_needed
 from .core.docstrings import docfiller_central as docfiller
 from .core.utils import (
-    arrayorder_to_arrayorder_cf,
     mom_to_mom_shape,
 )
 from .core.validate import (

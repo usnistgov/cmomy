@@ -116,7 +116,7 @@ def test_vals_move_axis_to_end(
         np.testing.assert_allclose(a, c)
 
 
-from cmomy.core.utils import normalize_axis_index
+from cmomy.core.array_utils import normalize_axis_index
 
 
 @pytest.mark.parametrize(

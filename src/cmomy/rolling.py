@@ -10,6 +10,13 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 import xarray as xr
 
+from .core.array_utils import (
+    axes_data_reduction,
+    get_axes_from_values,
+    normalize_axis_index,
+    positive_to_negative_index,
+    select_dtype,
+)
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
@@ -19,20 +26,17 @@ from .core.prepare import (
     xprepare_values_for_reduction,
 )
 from .core.utils import (
-    axes_data_reduction,
-    get_axes_from_values,
     mom_to_mom_shape,
-    normalize_axis_index,
-    positive_to_negative_index,
-    select_axis_dim,
-    select_axis_dim_mult,
-    select_dtype,
 )
 from .core.validate import (
     validate_axis,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+)
+from .core.xr_utils import (
+    select_axis_dim,
+    select_axis_dim_mult,
 )
 
 if TYPE_CHECKING:

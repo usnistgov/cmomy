@@ -17,6 +17,14 @@ from ._lib.factory import (
     factory_reduce_data_indexed,
     factory_reduce_vals,
 )
+from .core.array_utils import (
+    axes_data_reduction,
+    get_axes_from_values,
+    normalize_axis_tuple,
+    optional_keepdims,
+    raise_if_wrong_shape,
+    select_dtype,
+)
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
@@ -26,22 +34,16 @@ from .core.prepare import (
     xprepare_out_for_resample_data,
     xprepare_values_for_reduction,
 )
-from .core.utils import (
-    axes_data_reduction,
-    get_axes_from_values,
-    normalize_axis_tuple,
-    optional_keepdims,
-    raise_if_wrong_shape,
-    replace_coords_from_isel,
-    select_axis_dim,
-    select_axis_dim_mult,
-    select_dtype,
-)
 from .core.validate import (
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+)
+from .core.xr_utils import (
+    replace_coords_from_isel,
+    select_axis_dim,
+    select_axis_dim_mult,
 )
 
 if TYPE_CHECKING:

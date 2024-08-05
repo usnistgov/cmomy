@@ -12,8 +12,8 @@ from .core.compat import copy_if_needed
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prob import ndtr, ndtri
-from .core.utils import select_axis_dim
 from .core.validate import validate_axis
+from .core.xr_utils import select_axis_dim
 
 if TYPE_CHECKING:
     from typing import Literal
@@ -271,7 +271,7 @@ def bootstrap_confidence_interval(
             xr.DataArray,
             xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 lambda *args, **kwargs: np.moveaxis(  # pyright: ignore[reportUnknownLambdaType]
-                    bootstrap_confidence_interval(*args, **kwargs),
+                    bootstrap_confidence_interval(*args, **kwargs),  # pyright: ignore[reportUnknownArgumentType]
                     0,
                     -1,  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
                 ),
