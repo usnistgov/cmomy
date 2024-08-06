@@ -49,6 +49,25 @@ Resampling routines available at top level (from :mod:`cmomy.resample`)
    ~cmomy.resample.indices_to_freq
 
 
+Confidence intervals (from :mod:`cmomy.confidence_interval`)
+------------------------------------------------------------
+
+.. autosummary::
+
+   ~cmomy.confidence_interval.bootstrap_confidence_interval
+
+
+Central moment array utilities (from :mod:`cmomy.utils`)
+--------------------------------------------------------
+
+.. autosummary::
+
+   ~cmomy.utils.moveaxis
+   ~cmomy.utils.select_moment
+   ~cmomy.utils.assign_moment
+
+
+
 Pre-loaded modules
 ------------------
 
@@ -58,3 +77,5 @@ Pre-loaded modules
    ~cmomy.reduction
    ~cmomy.resample
    ~cmomy.convert
+   ~cmomy.utils
+   ~cmomy.rolling

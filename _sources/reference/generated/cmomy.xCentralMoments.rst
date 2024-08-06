@@ -21,11 +21,12 @@
    
       ~xCentralMoments.assign_attrs
       ~xCentralMoments.assign_coords
-      ~xCentralMoments.assign_weight
+      ~xCentralMoments.assign_moment
       ~xCentralMoments.astype
       ~xCentralMoments.block
       ~xCentralMoments.cmom
       ~xCentralMoments.copy
+      ~xCentralMoments.cov
       ~xCentralMoments.drop_vars
       ~xCentralMoments.fill
       ~xCentralMoments.from_centralmoments
@@ -33,8 +34,10 @@
       ~xCentralMoments.from_resample_vals
       ~xCentralMoments.from_vals
       ~xCentralMoments.isel
+      ~xCentralMoments.jackknife_and_reduce
       ~xCentralMoments.mean
       ~xCentralMoments.moments_to_comoments
+      ~xCentralMoments.moveaxis
       ~xCentralMoments.new_like
       ~xCentralMoments.pipe
       ~xCentralMoments.push_data
@@ -48,6 +51,7 @@
       ~xCentralMoments.reset_index
       ~xCentralMoments.rmom
       ~xCentralMoments.sel
+      ~xCentralMoments.select_moment
       ~xCentralMoments.set_index
       ~xCentralMoments.set_values
       ~xCentralMoments.stack

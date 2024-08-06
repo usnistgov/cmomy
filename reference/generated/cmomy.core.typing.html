@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Typing aliases (cmomy.typing) &#8212; cmomy v0.15.0 documentation</title>
+    <title>Typing aliases (cmomy.core.typing) &#8212; cmomy v0.16.0 documentation</title>
   
   
   
@@ -18,12 +18,12 @@
   </script>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
-<link href="../../_static/styles/bootstrap.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
 
   
-  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=3ee479438cf8b5e0d341" rel="stylesheet" />
+  <link href="../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
   <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
@@ -31,22 +31,22 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341" />
-  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=3ee479438cf8b5e0d341"></script>
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=da6476af"></script>
+    <script src="../../_static/documentation_options.js?v=047b2eda"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.typing';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.core.typing';</script>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
     <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
@@ -55,10 +55,10 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Base Classes" href="../api-baseclasses.html" />
-    <link rel="prev" title="Pre-compile numba based core routines (cmomy.compile)" href="cmomy.compile.html" />
+    <link rel="prev" title="Interface to utility functions (cmomy.utils)" href="cmomy.utils.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-06-21"/>
+    <meta name="docbuild:last-update" content="2024-08-06"/>
   </head>
   
   
@@ -134,6 +134,8 @@
         <div class="sidebar-primary-item">
 
   
+    
+  
 
 <a class="navbar-brand logo" href="../../index.html">
   
@@ -142,14 +144,14 @@
   
   
   
-    <p class="title logo__title">cmomy v0.15.0 documentation</p>
+    <p class="title logo__title">cmomy v0.16.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
 
  <script>
  document.write(`
-   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass"></i>
     <span class="search-button__default-text">Search</span>
     <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -198,6 +200,7 @@
 
 
 
+
 <li class="toctree-l2"><a class="reference internal" href="cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
 
@@ -208,9 +211,28 @@
 
 
 
+
 <li class="toctree-l2"><a class="reference internal" href="cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.typing</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
+
+
+<li class="toctree-l2"><a class="reference internal" href="cmomy.rolling.html">Rolling and rolling exponential averages (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rolling</span></code>)</a></li>
+
+
+
+
+
+<li class="toctree-l2"><a class="reference internal" href="cmomy.utils.html">Interface to utility functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+
+
+
+
+
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
 
 
 <li class="toctree-l2"><a class="reference internal" href="../api-baseclasses.html">Base Classes</a></li>
@@ -296,7 +318,7 @@
       
       
       
-      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.typing.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.core.typing.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -326,7 +348,7 @@
       
       
       
-      <li><a href="../../_sources/reference/generated/cmomy.typing.rst" target="_blank"
+      <li><a href="../../_sources/reference/generated/cmomy.core.typing.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -381,10 +403,10 @@
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
-    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
-    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
   </button>
 `);
 </script>
@@ -392,7 +414,7 @@ document.write(`
 
 <script>
 document.write(`
-  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
   </button>
 `);
@@ -410,7 +432,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Typing aliases (cmomy.typing)</h1>
+    <h1>Typing aliases (cmomy.core.typing)</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -420,9 +442,12 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.typing</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.typing.ArrayT"><code class="docutils literal notranslate"><span class="pre">ArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ScalarT"><code class="docutils literal notranslate"><span class="pre">ScalarT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Moments"><code class="docutils literal notranslate"><span class="pre">Moments</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayT"><code class="docutils literal notranslate"><span class="pre">ArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SelectMoment"><code class="docutils literal notranslate"><span class="pre">SelectMoment</span></code></a></li>
 </ul>
 
             </nav>
@@ -435,33 +460,57 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="typing-aliases-cmomy-typing">
-<span id="module-cmomy.typing"></span><h1>Typing aliases (<a class="reference internal" href="#module-cmomy.typing" title="cmomy.typing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.typing</span></code></a>)<a class="headerlink" href="#typing-aliases-cmomy-typing" title="Link to this heading">#</a></h1>
+  <section id="typing-aliases-cmomy-core-typing">
+<span id="module-cmomy.core.typing"></span><h1>Typing aliases (<a class="reference internal" href="#module-cmomy.core.typing" title="cmomy.core.typing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code></a>)<a class="headerlink" href="#typing-aliases-cmomy-core-typing" title="Link to this heading">#</a></h1>
 </section>
 <p><strong>Classes:</strong></p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.typing.FloatT" title="cmomy.typing.FloatT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatT</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.FloatT" title="cmomy.core.typing.FloatT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatT</span></code></a></p></td>
 <td><p>TypeVar of floating point precision (np.float32, np.float64, default=Any)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.typing.ArrayT" title="cmomy.typing.ArrayT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrayT</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ScalarT" title="cmomy.core.typing.ScalarT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarT</span></code></a></p></td>
+<td><p>TypeVar of for np.generic dtype.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ArrayT" title="cmomy.core.typing.ArrayT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrayT</span></code></a></p></td>
 <td><p>TypeVar of array type.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <dl class="py class">
-<dt class="sig sig-object py" id="cmomy.typing.FloatT">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.typing.</span></span><span class="sig-name descname"><span class="pre">FloatT</span></span><a class="headerlink" href="#cmomy.typing.FloatT" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="cmomy.core.typing.FloatT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">FloatT</span></span><a class="headerlink" href="#cmomy.core.typing.FloatT" title="Link to this definition">#</a></dt>
 <dd><p>TypeVar of floating point precision (np.float32, np.float64, default=Any)</p>
 <p>alias of TypeVar(‘FloatT’, ~numpy.float32, ~numpy.float64)</p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="cmomy.typing.ArrayT">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.typing.</span></span><span class="sig-name descname"><span class="pre">ArrayT</span></span><a class="headerlink" href="#cmomy.typing.ArrayT" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="cmomy.core.typing.ScalarT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ScalarT</span></span><a class="headerlink" href="#cmomy.core.typing.ScalarT" title="Link to this definition">#</a></dt>
+<dd><p>TypeVar of for np.generic dtype.</p>
+<p>alias of TypeVar(‘ScalarT’, bound=<a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.generic" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">generic</span></code></a>)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.Moments">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">Moments</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.Moments" title="Link to this definition">#</a></dt>
+<dd><p>Moments type.</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple[int]</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple[int,</span> <span class="pre">int]</span></code></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.core.typing.ArrayT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ArrayT</span></span><a class="headerlink" href="#cmomy.core.typing.ArrayT" title="Link to this definition">#</a></dt>
 <dd><p>TypeVar of array type.</p>
 <p>alias of TypeVar(‘ArrayT’, ~numpy.ndarray[~typing.Any, ~numpy.dtype[~numpy.float32]], ~numpy.ndarray[~typing.Any, ~numpy.dtype[~numpy.float64]], ~xarray.core.dataarray.DataArray)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.SelectMoment">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">SelectMoment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.SelectMoment" title="Link to this definition">#</a></dt>
+<dd><p>Selectable moment names.</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘weight’, ‘ave’, ‘cov’, ‘var’, ‘xave’, ‘yave’, ‘xvar’, ‘yvar’]</p>
 </dd></dl>
 
 
@@ -477,12 +526,12 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cmomy.compile.html"
+       href="cmomy.utils.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</p>
+        <p class="prev-next-title">Interface to utility functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</p>
       </div>
     </a>
     <a class="right-next"
@@ -510,9 +559,12 @@ document.write(`
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.typing</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.typing.ArrayT"><code class="docutils literal notranslate"><span class="pre">ArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ScalarT"><code class="docutils literal notranslate"><span class="pre">ScalarT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Moments"><code class="docutils literal notranslate"><span class="pre">Moments</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayT"><code class="docutils literal notranslate"><span class="pre">ArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SelectMoment"><code class="docutils literal notranslate"><span class="pre">SelectMoment</span></code></a></li>
 </ul>
 
   </nav></div>
@@ -547,7 +599,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-06-21.
+  Last updated on 2024-08-06.
   <br/>
 </p>
   </div>
@@ -565,8 +617,8 @@ By William P. Krekelberg
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script src="../../_static/scripts/bootstrap.js?digest=3ee479438cf8b5e0d341"></script>
-<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=3ee479438cf8b5e0d341"></script>
+  <script src="../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

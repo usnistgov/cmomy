@@ -19,15 +19,17 @@
    .. rubric:: Methods
    .. autosummary::
    
-      ~CentralMoments.assign_weight
+      ~CentralMoments.assign_moment
       ~CentralMoments.astype
       ~CentralMoments.block
       ~CentralMoments.cmom
       ~CentralMoments.copy
+      ~CentralMoments.cov
       ~CentralMoments.fill
       ~CentralMoments.from_raw
       ~CentralMoments.from_resample_vals
       ~CentralMoments.from_vals
+      ~CentralMoments.jackknife_and_reduce
       ~CentralMoments.mean
       ~CentralMoments.moments_to_comoments
       ~CentralMoments.moveaxis
@@ -43,6 +45,7 @@
       ~CentralMoments.resample_and_reduce
       ~CentralMoments.reshape
       ~CentralMoments.rmom
+      ~CentralMoments.select_moment
       ~CentralMoments.set_values
       ~CentralMoments.std
       ~CentralMoments.to_dataarray
