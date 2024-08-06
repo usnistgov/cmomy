@@ -1,9 +1,12 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+from __future__ import annotations
+
+from functools import partial
+
 import numpy as np
 import pytest
 import xarray as xr
 
-# import cmomy.central as central
 from cmomy import convert
 
 
@@ -147,36 +150,57 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     )
 
 
-@pytest.mark.parametrize("shape", [(10,), (10, 3)])
-@pytest.mark.parametrize("mom", [(3,), (3, 3)])
-def test_assign_weight(rng, shape, mom) -> None:
+@pytest.mark.parametrize(
+    ("shape", "axis", "mom_ndim"),
+    [
+        ((10, 3), 0, 1),
+        ((10, 2, 3), 0, 1),
+        ((2, 10, 3), 1, 1),
+        ((10, 2, 2), 0, 2),
+        ((2, 5, 2, 2), 1, 2),
+    ],
+)
+def test_cumulative(rng, shape, axis, mom_ndim) -> None:
     import cmomy
 
-    x = rng.random(shape)
-    xy = (x,) if len(mom) == 1 else (x, x)
+    data = rng.random(shape)
+    cout = cmomy.convert.cumulative(data, axis=axis, mom_ndim=mom_ndim)
 
-    c1 = cmomy.CentralMoments.from_vals(*xy, mom=mom, axis=0)
-    c2 = cmomy.CentralMoments.from_vals(*xy, mom=mom, axis=0, weight=2)
+    cr = cmomy.CentralMoments(data, mom_ndim=mom_ndim).reduce(axis=axis)
 
-    cc = c1.assign_weight(x.shape[0] * 2, copy=True)
-    np.testing.assert_allclose(cc.values, c2.values)
-    assert not np.shares_memory(cc.data, c1.data)
+    # check last
+    np.testing.assert_allclose(np.take(cout, -1, axis=axis), cr)
 
-    ca = c1.copy()
-    cc = ca.assign_weight(x.shape[0] * 2, copy=False)
-    np.testing.assert_allclose(cc.values, c2.values)
-    np.testing.assert_allclose(cc.values, ca.values)
-    assert np.shares_memory(cc.data, ca.data)
+    # dumb way
+    cn = cr.zeros_like()
+    for i in range(data.shape[axis]):
+        cn.push_data(np.take(data, i, axis=axis))
+        np.testing.assert_allclose(cn, np.take(cout, i, axis=axis))
 
-    # xcentral
-    cx1 = c1.to_x()
-    cx2 = c2.to_x()
+    check = cmomy.convert.cumulative(cout, axis=axis, mom_ndim=mom_ndim, inverse=True)
+    np.testing.assert_allclose(check, data)
 
-    ccx = cx1.assign_weight(x.shape[0] * 2, copy=True)
-    xr.testing.assert_allclose(cx2.values, ccx.values)
-    assert not np.shares_memory(ccx.data, cx1.data)
 
-    ccx = cx1.assign_weight(x.shape[0] * 2, copy=False)
-    xr.testing.assert_allclose(cx2.values, ccx.values)
-    xr.testing.assert_allclose(cx1.values, ccx.values)
-    assert np.shares_memory(ccx.data, cx1.data)
+@pytest.mark.parametrize("parallel", [True, False])
+def test_cumulative_options(rng, parallel) -> None:
+    import cmomy
+
+    func = partial(cmomy.convert.cumulative, mom_ndim=1, axis=0, parallel=parallel)
+    ifunc = partial(
+        cmomy.convert.cumulative, mom_ndim=1, axis=0, inverse=True, parallel=parallel
+    )
+    data = rng.random((10, 3))
+    xdata = xr.DataArray(data, dims=["a", "b"], attrs={"hello": "there"})
+
+    out = np.zeros_like(data)
+
+    np.testing.assert_allclose(ifunc(func(data)), data)
+    xr.testing.assert_allclose(ifunc(func(xdata)), xdata)
+
+    for d in [data, xdata]:
+        assert func(d.astype(np.float32)).dtype.type == np.float32
+        assert func(d, dtype=np.float32).dtype.type == np.float32
+        assert (
+            func(d.astype(np.float32), out=out, dtype=np.float16).dtype.type
+            == np.float64
+        )

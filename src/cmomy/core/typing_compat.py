@@ -1,8 +1,13 @@
+"""Typing compatibility."""
+
 import sys
+from typing import Any
 
 if sys.version_info < (3, 10):
+    EllipsisType = Any
     from typing_extensions import TypeAlias, TypeGuard
 else:
+    from types import EllipsisType
     from typing import TypeAlias, TypeGuard
 
 
@@ -19,6 +24,7 @@ else:  # pragma: no cover
 
 
 __all__ = [
+    "EllipsisType",
     "Self",
     "TypeAlias",
     "TypeGuard",

@@ -78,7 +78,7 @@ nox.options.default_venv_backend = "uv"
 CONFIG = load_nox_config()
 # if you'd like to disallow uv.
 # You'll need to import this from tools.noxtools
-# DISALLOW_WHICH.append("uv")
+# DISALLOW_WHICH.append("uv")  # noqa: ERA001
 
 
 # * Options ---------------------------------------------------------------------------
@@ -686,7 +686,7 @@ def test(
             # To use editable install
             package=True,
             # To use full install
-            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),
+            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),  # noqa: ERA001
             update=opts.update,
         ).install_all(log_session=opts.log_session, update_package=opts.update_package)
     )
@@ -720,7 +720,7 @@ def test_numpy1(
             # To use editable install
             package=True,
             # To use full install
-            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),
+            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),  # noqa: ERA001
             update=opts.update,
         ).install_all(log_session=opts.log_session, update_package=opts.update_package)
     )
@@ -735,36 +735,6 @@ def test_numpy1(
     )
 
 
-# @nox.session(name="test-nojit", **DEFAULT_KWS)
-# @add_opts
-# def test_nojit(
-#         session: Session,
-#         opts: SessionParams,
-# ) -> None:
-#     (
-#         Installer.from_envname(
-#             session=session,
-#             envname="test",
-#             lock=opts.lock,
-#             # To use editable install
-#             package=True,
-#             # To use full install
-#             # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),
-#             update=opts.update,
-#         ).install_all(log_session=opts.log_session, update_package=opts.update_package)
-#     )
-
-#     session.env["NUMBA_"]
-
-#     _test(
-#         session=session,
-#         run=opts.test_run,
-#         test_no_pytest=opts.test_no_pytest,
-#         test_opts=opts.test_opts,
-#         no_cov=opts.no_cov,
-#     )
-
-
 @nox.session(name="test-notebook", **DEFAULT_KWS)
 @add_opts
 def test_notebook(session: nox.Session, opts: SessionParams) -> None:
@@ -774,7 +744,7 @@ def test_notebook(session: nox.Session, opts: SessionParams) -> None:
             session=session,
             envname="test-notebook",
             lock=opts.lock,
-            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),
+            # package=get_package_wheel(session, opts="--no-deps --force-reinstall"),  # noqa: ERA001
             package=True,
             update=opts.update,
         ).install_all(log_session=opts.log_session, update_package=opts.update_package)
@@ -1035,8 +1005,6 @@ def typing(  # noqa: C901
     for cmds in combine_list_list_str(opts.typing_run_internal or []):
         run(*cmds)
 
-    # runner.run_commands(opts.typing_run_internal, external=False)
-
 
 nox.session(name="typing", **ALL_KWS)(typing)
 nox.session(name="typing-conda", **CONDA_ALL_KWS)(typing)
@@ -1205,33 +1173,11 @@ def conda_recipe(
                     "-o",
                     str(d),
                 )
-                # session.run(
-                #     sys.executable,
-                #     "tools/pipxrun.py",
-                #     PIPXRUN_REQUIREMENTS,
-                #     "-v",
-                #     "-c",
-                #     " ".join(
-                #         [
-                #             "grayskull",
-                #             "pypi",
-                #             sdist_path,
-                #             "-o",
-                #             str(d),
-                #         ]
-                #     ),
-                # )
                 path = Path(d) / PACKAGE_NAME / "meta.yaml"
                 session.log(f"cat {path}:")
                 with path.open() as f:
                     for line in f:
                         print(line, end="")  # noqa: T201
-
-                # # session.run(
-                # #     "cat",
-                #     str(Path(d) / PACKAGE_NAME / "meta.yaml"),
-                #     external=True,
-                # )
 
 
 @nox.session(name="conda-build", **CONDA_DEFAULT_KWS)

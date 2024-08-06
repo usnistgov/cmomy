@@ -16,7 +16,7 @@ from cmomy import CentralMoments, xCentralMoments
 from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
-    from cmomy.typing import Moments, NDArrayAny
+    from cmomy.core.typing import Moments, NDArrayAny
 
 
 default_rng = cmomy.random.default_rng(0)
@@ -29,8 +29,6 @@ def rng():
 
 class Data:
     """wrapper around stuff for generic testing."""
-
-    # _count = 0
 
     def __init__(
         self,
@@ -185,9 +183,6 @@ class Data:
             for ww, xx in zip(self.W, self.X)
         ]
 
-    # @property
-    # def values(self) -> NDArrayAny:
-    #     return self.data_test
     def to_values(self) -> NDArrayAny:
         return self.data_test
 
@@ -386,3 +381,8 @@ def get_params():
 @pytest.fixture(params=get_params(), scope="module")  # type: ignore[call-overload]
 def other(request):
     return Data(*request.param)
+
+
+@pytest.fixture(params=[True, False])
+def as_dataarray(request):
+    return request.param

@@ -12,7 +12,7 @@ from .utils import BINOMIAL_FACTOR
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import FloatT, NDGeneric
+    from cmomy.core.typing import FloatT, NDGeneric
 
 
 @myjit(
@@ -44,12 +44,6 @@ def push_val(
     incr0 = delta0 * alpha
     incr1 = delta1 * alpha
 
-    # NOTE: decided to force order > 1
-    # otherwise, this is just normal variance
-    # if order0 > 0:
-    #     out[1, 0] += incr0
-    # if order1 > 0:
-    #     out[0, 1] += incr1
     out[1, 0] += incr0
     out[0, 1] += incr1
 
@@ -125,11 +119,6 @@ def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     incr0 = delta0 * alpha
     incr1 = delta1 * alpha
 
-    # NOTE : decided to force all orders >0
-    # if order0 > 0:
-    #     out[1, 0] += incr0
-    # if order1 > 0:
-    #     out[0, 1] += incr1
     out[1, 0] += incr0
     out[0, 1] += incr1
 
@@ -191,7 +180,9 @@ def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     ],
     inline=True,
 )
-def push_data_scale(data: NDArray[FloatT], scale: FloatT, out: NDArray[FloatT]) -> None:
+def push_data_scale(
+    data: NDArray[FloatT], scale: float | FloatT, out: NDArray[FloatT]
+) -> None:
     w = data[0, 0] * scale
     if w == 0.0:
         return
@@ -209,11 +200,6 @@ def push_data_scale(data: NDArray[FloatT], scale: FloatT, out: NDArray[FloatT]) 
     incr0 = delta0 * alpha
     incr1 = delta1 * alpha
 
-    # NOTE : decided to force all orders >0
-    # if order0 > 0:
-    #     out[1, 0] += incr0
-    # if order1 > 0:
-    #     out[0, 1] += incr1
     out[1, 0] += incr0
     out[0, 1] += incr1
 

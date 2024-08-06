@@ -20,5 +20,8 @@ api-baseclasses
     cmomy.resample
     cmomy.random
     cmomy.compile
-    cmomy.typing
+    cmomy.core.typing
+    cmomy.confidence_interval
+    cmomy.rolling
+    cmomy.utils
 ```

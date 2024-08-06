@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from textwrap import dedent
+
 from module_utilities.docfiller import DocFiller
 
 
@@ -32,6 +34,9 @@ def _dummy_docstrings() -> None:
         ``mom = (2, m - 2)``.
     mom_ndim : {1, 2}
         Value indicates if moments (``mom_ndim = 1``) or comoments (``mom_ndim=2``).
+    mom_ndim_optional | mom_ndim : {1, 2, None}
+        If ``mom_ndim`` is not ``None``, then wrap axis relative to ``mom_ndim``.
+        For Example, with mom_ndim=``2``, ``axis = -1`` will be transformed to ``axis = -3``.
     val_shape : tuple
         Shape of `values` part of data.  That is, the non-moment dimensions.
     shape : tuple
@@ -41,13 +46,21 @@ def _dummy_docstrings() -> None:
     zeros_kws : mapping
         Optional parameters to :func:`numpy.zeros`
     axis : int
-        Axis to reduce along.
+        Axis to reduce/sample along.
     axis_data | axis : int, optional
-        Axis to reduce along. Note that negative values are relative to
+        Axis to reduce/sample along. Note that negative values are relative to
         ``data.ndim - mom_ndim``. It is assumed that the last dimensions are
         for moments. For example, if ``data.shape == (1,2,3)`` with
         ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
         Defaults to ``axis=-1``.
+    axis_data_mult | axis : int, tuple of int, optional
+        Axis(es) to reduce/sample along. Note that negative values are relative to
+        ``data.ndim - mom_ndim``. It is assumed that the last dimensions are
+        for moments. For example, if ``data.shape == (1,2,3)`` with
+        ``mom_ndim=1``, ``axis = -1 `` would be equivalent to ``axis = 1``.
+        Defaults to ``axis=-1``.  To reduce over multiple dimensions, specify
+        `axis = (axis_0, axis_1, ...)`.  Passing `axis=None` reduces over all
+        value dimensions (i.e., all dimensions excluding moment dimensions).
     broadcast : bool
         If True, and ``x=(x0, x1)``, then perform 'smart' broadcasting.
         In this case, if ``x1.ndim = 1`` and ``len(x1) == x0.shape[axis]``, then
@@ -78,8 +91,8 @@ def _dummy_docstrings() -> None:
     dims : hashable or sequence of hashable
         Dimension of resulting :class:`xarray.DataArray`.
 
-        * If ``len(dims) == self.ndim``, then dims specifies all dimensions.
-        * If ``len(dims) == self.val_ndim``, ``dims = dims + mom_dims``
+        - If ``len(dims) == self.ndim``, then dims specifies all dimensions.
+        - If ``len(dims) == self.val_ndim``, ``dims = dims + mom_dims``
 
         Default to ``('dim_0', 'dim_1', ...)``
     mom_dims : hashable or tuple of hashable
@@ -97,7 +110,9 @@ def _dummy_docstrings() -> None:
         If present, output will have attributes of `template`.
         Overrides other options.
     dim : hashable
-        Dimension to reduce along.
+        Dimension to reduce/sample along.
+    dim_mult | dim : hashable or iterable of hashable
+        Dimension(s) to reduce along.  Value of `None` implies reduce over all "value" dimensions.
     rep_dim : hashable
         Name of new 'replicated' dimension:
     rec_dim : hashable
@@ -120,13 +135,18 @@ def _dummy_docstrings() -> None:
         for :class:`~xarray.DataArray` data.
         If no coordinates do nothing, otherwise use:
 
-        * 'first': select first value of coordinate for each block.
-        * 'last': select last value of coordinate for each block.
-        * 'group': Assign unique groups from ``group_idx`` to ``dim``
-        * None: drop any coordinates.
+        - 'first': select first value of coordinate for each block.
+        - 'last': select last value of coordinate for each block.
+        - 'group': Assign unique groups from ``group_idx`` to ``dim``
+        - None: drop any coordinates.
 
         Note that if ``coords_policy`` is one of ``first`` or ``last``, parameter ``groups``
         will be ignored.
+
+    keepdims : bool
+        If this is set to True, the axes which are reduced are left in the
+        result as dimensions with size one. With this option, the result will
+        broadcast correctly against the input array.
     by : array-like of int
         Groupby values of same length as ``data`` along sampled dimension.
         Negative values indicate no group (i.e., skip this index).
@@ -149,6 +169,45 @@ def _dummy_docstrings() -> None:
         - 'no_conflicts': attrs from all objects are combined, any that have the same name must also have the same value.
         - 'drop_conflicts': attrs from all objects are combined, any that have the same name but different values are dropped.
         - 'override' or True: skip comparing and copy attrs from the first object to the result.
+
+    min_periods : int, optional
+        Minimum number of observations in window required to have a value
+        (otherwise result is NA). The default, None, is equivalent to
+        setting min_periods equal to the size of the window.
+    center : bool, default=False
+        If ``True``, set the labels at the center of the window.
+    zero_missing_weights : bool, default=True
+        If ``True``, set missing weights (``np.nan``) to ``0``.
+    window : int
+        Size of moving window.
+    move_axis_to_end : bool
+        If ``True``, place sampled dimension at end (just before moments
+        dimensions) in output. Otherwise, place sampled dimension at same
+        position as input ``axis``.
+
+    select_name | name : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar"}
+        Name of moment(s) to select.
+
+        - ``"weight"`` : weights
+        - ``"ave"`` : Averages.
+        - ``"var"``: Variance.
+        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variace if ``mom_ndim == 1``.
+        - ``"xave"``: Average of first variable.
+        - ``"xvar"``: Variance of first variable.
+        - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
+        - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+
+        Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape
+        ``data.shape[:-mom_ndim]``. Names ``"ave", "var"`` imply shape
+        ``(*data.shape[:-mom_ndim], mom_ndim)``, unless ``mom_ndim == 1`` and
+        ``squeeze = True``.
+    select_squeeze | squeeze : bool, default=False
+        If True, squeeze last dimension if ``name`` is one of ``ave`` or ``var`` and ``mom_ndim == 1``.
+    select_dim_combined | dim_combined: str, optional
+        Name of new dimension for options ``name`` that can select multiple dimensions.
+    select_coords_combined | coords_combined: str or sequence of str, optional
+        Coordates to assign to ``dim_combined``.  Defaults to names of moments dimension(s)
+
 
     """
 
@@ -187,6 +246,19 @@ docfiller = (
     )
     .assign_combined_key("axis_and_dim", ["axis"])
     .assign_combined_key("axis_data_and_dim", ["axis_data"])
+    .update(
+        vals_resample_note=dedent(
+            """\
+            Note that the resampled axis (``resamp_axis``) is at position
+            ``-(len(mom) + 1)``, just before the moment axes. This is opposed
+            to the behavior of resampling moments arrays (e.g.,
+            func:`.resample_data`), where the resampled axis is the same as the
+            argument ``axis``. This is because the shape of the output array
+            when resampling values is dependent the result of broadcasting
+            ``x`` and ``y`` and ``weight``.
+            """
+        )
+    )
 )
 
 
@@ -223,95 +295,3 @@ docfiller_xcentral = (
 
 
 docfiller_decorate = docfiller()
-
-
-# --- Factory functions ----------------------------------------------------------------
-# from typing import Any, Callable, cast
-
-# from custom_inherit import doc_inherit
-
-# from .typing import F
-# from .options import DOC_SUB
-
-
-# def _my_doc_inherit(parent, style) -> Callable[[F], F]:
-#     if DOC_SUB:
-#         return cast(Callable[[F], F], doc_inherit(parent=parent, style=style))
-#     else:
-
-#         def wrapper(func: F) -> F:
-#             return func
-
-#         return wrapper
-
-
-# def factory_docfiller_from_parent(
-#     cls: Any, docfiller: DocFiller
-# ) -> Callable[..., Callable[[F], F]]:
-#     """Decorator with docfiller inheriting from cls"""
-
-#     def decorator(*name: str, **params) -> Callable[[F], F]:
-#         if len(name) == 0:
-#             _name = None
-#         elif len(name) == 1:
-#             _name = name[0]
-#         else:
-#             raise ValueError("can only pass a single name")
-
-#         def decorated(method: F) -> F:
-#             template = getattr(cls, _name or method.__name__)
-#             return docfiller(template, **params)(method)
-
-#         return decorated
-
-#     return decorator
-
-
-# def factory_docinherit_from_parent(
-#     cls: Any, style="numpy_with_merge"
-# ) -> Callable[..., Callable[[F], F]]:
-#     """Create decorator inheriting from cls"""
-
-#     def decorator(name: str | None = None) -> Callable[[F], F]:
-#         def decorated(method: F) -> F:
-#             template = getattr(cls, name or method.__name__)
-#             return cast(F, _my_doc_inherit(parent=template, style=style)(method))
-
-#         return decorated
-
-#     return decorator
-
-
-# def factory_docfiller_inherit_from_parent(
-#     cls: Any, docfiller: DocFiller, style="numpy_with_merge"
-# ) -> Callable[..., Callable[[F], F]]:
-#     """
-#     Do combination of doc_inherit and docfiller
-
-#     1. Fill parent and child with docfiller (from this module).
-#     2. Merge using doc_inherit
-#     """
-
-#     def decorator(*name: str, **params) -> Callable[[F], F]:
-#         if len(name) == 0:
-#             _name = None
-#         elif len(name) == 1:
-#             _name = name[0]
-#         else:
-#             raise ValueError("can only pass a single name")
-
-#         def decorated(method: F) -> F:
-#             template = getattr(cls, _name or method.__name__)
-
-#             @docfiller(template, **params)
-#             def dummy():
-#                 pass
-
-#             method = docfiller(**params)(method)
-#             return cast(
-#                 F, _my_doc_inherit(parent=dummy, style="numpy_with_merge")(method)
-#             )
-
-#         return decorated
-
-#     return decorator

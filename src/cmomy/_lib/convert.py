@@ -13,7 +13,7 @@ from .utils import BINOMIAL_FACTOR
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from ..typing import FloatT
+    from cmomy.core.typing import FloatT
 
 
 _PARALLEL = False
@@ -41,8 +41,6 @@ def central_to_raw(central: NDArray[FloatT], raw: NDArray[FloatT]) -> None:
             ave_i *= ave
 
         # last two
-        # <dx> = 0 so skip i = n-1
-        # i = n
         tmp += ave_i * ave
         raw[n] = tmp
 
@@ -68,10 +66,5 @@ def raw_to_central(raw: NDArray[FloatT], central: NDArray[FloatT]) -> None:
             ave_i *= -ave
 
         # last two
-        # right now, ave_i = (-ave)**(n-1)
-        # i = n-1
-        # ave * ave_i * n
-        # i = n
-        # 1 * (-ave) * ave_i
         tmp += ave * ave_i * (n - 1)
         central[n] = tmp

@@ -6,11 +6,10 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pytest
 
-# from cmomy import central_moments
 from ._simple_cmom import get_cmom, get_comom
 
 if TYPE_CHECKING:
-    from cmomy.typing import Mom_NDim, NDArrayAny
+    from cmomy.core.typing import Mom_NDim, NDArrayAny
 
 
 class DataContainer:

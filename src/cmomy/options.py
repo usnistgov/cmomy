@@ -24,7 +24,7 @@ def _isint(x: Any) -> bool:
 
 
 # def _isstr(x: Any) -> bool:
-#     return isinstance(x, str)
+#     return isinstance(x, str)  # noqa: ERA001
 
 
 _VALIDATORS: dict[str, Callable[[Any], bool]] = {
