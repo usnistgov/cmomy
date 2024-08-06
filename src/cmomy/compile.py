@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 
-    from ._typing_compat import Self
+    from .core.typing_compat import Self
 
 
 FORMAT = "[%(name)s] %(message)s"
@@ -68,6 +68,7 @@ def load_numba_modules(
     include_resample: bool | None = None,
     include_indexed: bool | None = None,
     include_convert: bool | None = None,
+    include_rolling: bool | None = None,
 ) -> None:
     """
     Compile numba modules by loading them.
@@ -81,7 +82,7 @@ def load_numba_modules(
     """
     from pathlib import Path
 
-    from ._utils import supports_parallel
+    from ._lib.utils import supports_parallel
 
     def _set_default(x: bool | None) -> bool:
         return include_all if x is None else x
@@ -92,6 +93,7 @@ def load_numba_modules(
     include_indexed = _set_default(include_indexed)
     include_parallel = _set_default(include_parallel) if supports_parallel() else False
     include_convert = _set_default(include_convert)
+    include_rolling = _set_default(include_rolling)
 
     _covs = ["", "_cov"] if include_cov else [""]
     _parallels = ["", "_parallel"] if include_parallel else [""]
@@ -103,6 +105,8 @@ def load_numba_modules(
         _modules.append("resample")
     if include_indexed:
         _modules.append("indexed")
+    if include_rolling:
+        _modules.append("rolling")
     if include_convert:
         _modules.append("convert")
 
@@ -201,6 +205,14 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         help=msg.format(name="indexed"),
     )
     parser.add_argument(
+        "--rolling",
+        "--no-rolling",
+        dest="include_rolling",
+        action=BooleanAction,
+        default=None,
+        help=msg.format(name="rolling"),
+    )
+    parser.add_argument(
         "--convert",
         "--no-convert",
         dest="include_convert",
@@ -208,7 +220,6 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help=msg.format(name="convert"),
     )
-
     return parser.parse_args() if args is None else parser.parse_args(args)
 
 

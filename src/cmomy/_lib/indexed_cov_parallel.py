@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
 if TYPE_CHECKING:
-    from ..typing import FloatT, NDArrayInt
+    from cmomy.core.typing import FloatT, NDArrayInt
 
 
 _PARALLEL = True  # Auto generated from indexed_cov.py
@@ -101,90 +101,3 @@ def reduce_data_indexed_fromzero(
                 s = index[i]
                 f = scale[i]
                 _push.push_data_scale(data[s, ...], f, out[group, ...])
-
-
-# * Other routines
-# @_vectorize(
-#     "(sample,mom0,mom1),(index),(group),(group),(index),(group,mom0,mom1)",
-#     [
-#         (
-#             nb.float32[:, :, :],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.float32[:],
-#             nb.float32[:, :, :],
-#         ),
-#         (
-#             nb.float64[:, :, :],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.float64[:],
-#             nb.float64[:, :, :],
-#         ),
-#     ],
-# )
-# def reduce_data_indexed(data, index, group_start, group_end, scale, out) -> None:
-#     ngroup = len(group_start)
-
-#     assert data.shape[1:] == out.shape[1:]
-#     assert index.shape == scale.shape
-#     assert len(group_end) == ngroup
-#     assert out.shape[0] == ngroup
-
-#     for group in range(ngroup):
-#         start = group_start[group]
-#         end = group_end[group]
-#         if end > start:
-#             for i in range(start, end):
-#                 s = index[i]
-#                 f = scale[i]
-#                 _push.push_data_scale(data[s, ...], f, out[group, ...])
-
-
-# @_jit(
-#     # data[sample,val,mom0,mom1],index[index],start[group],end[group],scale[index],out[group,val,mom0,mom1]
-#     [
-#         (
-#             nb.float32[:, :, :, :],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.float32[:],
-#             nb.float32[:, :, :, :],
-#         ),
-#         (
-#             nb.float64[:, :, :, :],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.int64[:],
-#             nb.float64[:],
-#             nb.float64[:, :, :, :],
-#         ),
-#     ],
-# )
-# def reduce_data_indexed_jit(data, index, group_start, group_end, scale, out) -> None:
-#     ngroup = len(group_start)
-#     nval = data.shape[1]
-
-#     assert data.shape[1:] == out.shape[1:]
-#     assert index.shape == scale.shape
-#     assert len(group_end) == ngroup
-#     assert out.shape[0] == ngroup
-
-#     for group in nb.prange(ngroup):
-#         start = group_start[group]
-#         end = group_end[group]
-#         if end > start:
-#             s = index[start]
-#             f = scale[start]
-#             for k in range(nval):
-#                 out[group, k, :, :] = data[s, k, :, :]
-#                 out[group, k, 0, 0] *= f
-
-#             for i in range(start + 1, end):
-#                 s = index[i]
-#                 f = scale[i]
-#                 for k in range(nval):
-#                     _push.push_data_scale(data[s, k, ...], f, out[group, k, ...])

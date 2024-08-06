@@ -48,7 +48,7 @@ dependencies = [
     "xarray>=0.16",
 ]
 optional-dependencies.dev = [
-    "cmomy[dev-extras,test,typing,pipxrun,nbval]",
+    "cmomy[dev-extras,test,typing,pipxrun,nbval,test-scipy]",
 ]
 optional-dependencies.dev-complete = [
     "cmomy[dev,tools]",
@@ -72,7 +72,7 @@ optional-dependencies.docs = [
     "sphinxcontrib-spelling",
 ]
 optional-dependencies.mypy = [
-    "mypy>=1.10.0",
+    "mypy>=1.10.1",
 ]
 optional-dependencies.nbval = [
     "nbval",
@@ -87,7 +87,7 @@ optional-dependencies.pipxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.368",
+    "pyright>=1.1.372",
     "twine>=5.0.0",
 ]
 optional-dependencies.test = [
@@ -95,6 +95,9 @@ optional-dependencies.test = [
     "pytest-cov",
     "pytest-sugar",
     "pytest-xdist",
+]
+optional-dependencies.test-scipy = [
+    "scipy; python_version=='3.11'",
 ]
 optional-dependencies.tools = [
     "pipx",
@@ -108,6 +111,10 @@ optional-dependencies.typing = [
 ]
 urls.Documentation = "https://pages.nist.gov/cmomy/"
 urls.Homepage = "https://github.com/usnistgov/cmomy"
+
+optional-depedencies.dev = [
+    "cmomy[dev-extras,test,typing,pipxrun,nbval]",
+]
 
 [tool.hatch.version]
 source = "vcs"
@@ -171,7 +178,6 @@ lint.ignore = [
     # * Other
     "E501", # - line too long - let formatter fix this
     "E731", # - do not assign a lambda expression, use a def
-    "ERA",  # - eradicate (want to keep some stuff)
     "FBT",  # - bools are ok
     "ISC",  # - flake8-implicit-str-concat
     # * Allow non top level imports
@@ -182,6 +188,7 @@ lint.ignore = [
 lint.extend-ignore = [
     # "PD",        # - not using pandas?
     # "NPY",       # - not using numpy?
+    # "ERA",  # - eradicate (want to keep some stuff)
     # * Annotations
     # "SLF001",  # - flake8-self (private access sometimes OK)
     # "ANN",     # - Annotations (just use mypy/pyright)
@@ -193,6 +200,9 @@ lint.extend-ignore = [
     # "D102",    # - Missing docstring in public method
     # "D103",    # - Missing docstring in public function
     # "D202",    # - blank line after docstring
+    "DOC201", # - Missing return from documentation
+    "DOC202", # - Missing return from documentation
+    "DOC501", # - Missing raises from documentation
 ]
 lint.per-file-ignores."**/*.ipynb" = [
     "B018",
@@ -206,6 +216,7 @@ lint.per-file-ignores."conftest.py" = [
     "PT",
 ]
 lint.per-file-ignores."docs/conf.py" = [
+    "ERA",
     "INP001",
 ]
 lint.per-file-ignores."noxfile.py" = [
@@ -213,11 +224,16 @@ lint.per-file-ignores."noxfile.py" = [
 ]
 lint.per-file-ignores."tests/*.py" = [
     "D",
+    "DOC",
     "S101",
+]
+lint.per-file-ignores."tests/test_central_2.py" = [
+    "ERA",
 ]
 lint.per-file-ignores."tools/*.py" = [
     "A",
     "D102",
+    "DOC201",
     "S",
     "SLF001",
 ]
@@ -230,28 +246,11 @@ lint.extend-per-file-ignores."**/*.ipynb" = [
     "PLR2004",
     "T201",
 ]
-lint.extend-per-file-ignores."classic_tests/**/*.py" = [
-    "ANN",
-    "D",
-    "FIX002",
-    "N802",
-    "N806",
-    "PLC2701",
-    "PLR0904",
-    "PLR2004",
-    "PT011",
-    "S101",
-    "SLF001",
-    "TD003",
-]
 lint.extend-per-file-ignores."src/**/*.py" = [
     "D102",
     "FIX002",
     "PLR2004",
     "TD003",
-]
-lint.extend-per-file-ignores."src/**/_formatting.py" = [
-    "SLF001",
 ]
 lint.extend-per-file-ignores."src/**/_lib/*.py" = [
     "ANN",
@@ -263,18 +262,13 @@ lint.extend-per-file-ignores."src/**/_lib/*.py" = [
 lint.extend-per-file-ignores."src/**/_lib/convert.py" = [
     "PLR1702",
 ]
-lint.extend-per-file-ignores."src/**/_testing.py" = [
-    "S101",
-]
-lint.extend-per-file-ignores."src/**/_{formatting,testing}.py" = [
+lint.extend-per-file-ignores."src/**/core/formatting.py" = [
     "ANN",
+    "D",
+    "SLF001",
 ]
-lint.extend-per-file-ignores."src/**/abstract_central.py" = [
-    "PLR2004",
-]
-lint.extend-per-file-ignores."src/**/central.py" = [
-    "D102",
-    "PLR2004",
+lint.extend-per-file-ignores."src/**/{typing,random}.py" = [
+    "A005",
 ]
 # Project specific ignores (avoid changing per-file-ignores directly)
 lint.extend-per-file-ignores."tests/**/*.py" = [
@@ -341,6 +335,9 @@ testpaths = [
     "cmomy",
     "tests",
 ]
+markers = [
+    "scipy: test scipy dependent code",
+]
 
 [tool.coverage.run]
 branch = true
@@ -353,17 +350,18 @@ exclude_also = [
 ]
 omit = [
     "*/vendored/*",
-    "*/_typing.py",
     "*/options.py",
+    # No great way to test coverage of guvectorized functions...
     "*/_lib/_push*.py",
     "*/_lib/push*.py",
     "*/_lib/convert*.py",
     "*/_lib/decorators.py",
     "*/_lib/indexed*.py",
+    "*/_lib/rolling*.py",
     "*/_lib/make_parallel_files.py",
     "*/_lib/resample*.py",
     "*/_lib/utils.py",
-    "*/_typing_nested_sequence.py",
+    "*/core/typing_nested_sequence.py",
 ]
 include = [
     "src/*",
@@ -401,6 +399,9 @@ strict = true
 ignore_missing_imports = true
 module = [
     "numba.*",
+    "scipy.*",
+    "scipy.special.*",
+    "scipy.stats.*",
 ]
 
 [[tool.mypy.overrides]]
@@ -416,24 +417,23 @@ include = [
 strict = [
     "noxfile.py",
     "tools/*.py",
-    "src/cmomy/__init__.py",
-    "src/cmomy/_compat.py",
-    # "src/cmomy/_formatting.py",
-    "src/cmomy/_typing_compat.py",
-    # "src/cmomy/_typing_nested_sequence.py",
-    "src/cmomy/_central_abc.py",
-    "src/cmomy/_central_dataarray.py",
-    "src/cmomy/_central_numpy.py",
-    "src/cmomy/convert.py",
-    "src/cmomy/compile.py",
-    "src/cmomy/docstrings.py",
-    "src/cmomy/options.py",
-    "src/cmomy/random.py",
-    "src/cmomy/reduction.py",
-    "src/cmomy/resample.py",
-    "src/cmomy/typing.py",
-    "src/cmomy/utils.py",
+    "src/cmomy/*.py",
     "src/cmomy/_lib/factory.py",
+    "src/cmomy/core/__init__.py",
+    "src/cmomy/core/array_utils.py",
+    "src/cmomy/core/axes_utils.py",
+    "src/cmomy/core/compat.py",
+    "src/cmomy/core/docstrings.py",
+    # "src/cmomy/core/formatting.py",
+    "src/cmomy/core/missing.py",
+    "src/cmomy/core/prepare.py",
+    "src/cmomy/core/prob.py",
+    "src/cmomy/core/typing.py",
+    "src/cmomy/core/typing_compat.py",
+    # "src/cmomy/core/typing_nested_sequence.py",
+    "src/cmomy/core/utils.py",
+    "src/cmomy/core/validate.py",
+    "src/cmomy/core/xr_utils.py",
 ]
 exclude = [
     "**/__pycache__",
@@ -489,7 +489,6 @@ style = [
     "requirements",
 ]
 default_envs = [
-    "test",
     "typing",
     "docs",
     "dev",
@@ -513,6 +512,12 @@ style = "requirements"
 extras = "pipxrun-tools"
 base = false
 style = "requirements"
+
+[tool.pyproject2conda.envs.test]
+extras = [
+    "test",
+    "test-scipy",
+]
 
 [tool.pyproject2conda.envs.test-extras]
 extras = [

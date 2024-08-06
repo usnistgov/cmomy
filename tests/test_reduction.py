@@ -1,7 +1,13 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pyright: reportCallIssue=false, reportArgumentType=false
+
 from __future__ import annotations
+
+from functools import partial
 
 import numpy as np
 import pytest
+import xarray as xr
 
 import cmomy
 
@@ -98,3 +104,94 @@ def test_indexed(rng: np.random.Generator) -> None:
             scale=[1] * 11,
             axis=0,
         )
+
+
+def test_reduce_vals_broadcast(rng: np.random.Generator) -> None:
+    func = partial(cmomy.reduce_vals, axis=-1, mom=(2, 2))
+
+    x = rng.random((2, 10))
+    y = rng.random((2, 10))
+
+    a = func(x, y)
+    b = func(x[None, ...], y)
+    c = func(x, y[None, ...])
+
+    assert a.shape == (2, 3, 3)
+    assert b.shape == (1, 2, 3, 3)
+    assert c.shape == (1, 2, 3, 3)
+
+    np.testing.assert_allclose(a[None, ...], b)
+    np.testing.assert_allclose(b, c)
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis", "mom"),
+    [
+        ((2, 3, 4), 0, 3),
+        ((2, 3, 4), 1, 3),
+        ((2, 3, 4), 2, 3),
+    ],
+)
+def test_reduce_vals_keepdims(
+    shape: tuple[int, ...],
+    axis: int,
+    mom: int,
+    rng: np.random.Generator,
+    as_dataarray: bool,
+) -> None:
+    x = rng.random(shape)
+    if as_dataarray:
+        x = xr.DataArray(x)  # type: ignore[assignment]
+
+    kws = {"mom": mom, "axis": axis}
+
+    check = cmomy.reduce_vals(x, **kws, keepdims=False)  # type: ignore[call-overload]
+
+    new_shape = [*shape, *cmomy.utils.mom_to_mom_shape(mom)]
+    new_shape[axis] = 1
+    new_shape = tuple(new_shape)  # type: ignore[assignment]
+
+    out = cmomy.reduce_vals(x, **kws, keepdims=True)  # type: ignore[call-overload]
+    assert out.shape == new_shape
+
+    np.testing.assert_allclose(np.squeeze(out, axis), check)
+
+    cls = cmomy.xCentralMoments if as_dataarray else cmomy.CentralMoments
+    c = cls.from_vals(x, **kws, keepdims=True)  # type: ignore[attr-defined]
+    assert c.shape == new_shape
+
+    np.testing.assert_allclose(c, out)
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis", "mom_ndim"),
+    [
+        ((2, 3, 4, 3), 0, 1),
+        ((2, 3, 4, 3), 1, 1),
+        ((2, 3, 4, 3), 1, 2),
+        ((2, 3, 4, 3), 2, 1),
+    ],
+)
+def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) -> None:
+    x = rng.random(shape)
+    if as_dataarray:
+        x = xr.DataArray(x)
+
+    kws = {"mom_ndim": mom_ndim, "axis": axis}
+
+    check = cmomy.reduce_data(x, **kws, keepdims=False)
+
+    new_shape = list(shape)
+    new_shape[axis] = 1
+    new_shape = tuple(new_shape)  # type: ignore[assignment]
+
+    out = cmomy.reduce_data(x, **kws, keepdims=True)
+    assert out.shape == new_shape
+
+    np.testing.assert_allclose(np.squeeze(out, axis), check)
+
+    cls = cmomy.xCentralMoments if as_dataarray else cmomy.CentralMoments
+    c = cls(x, mom_ndim=mom_ndim).reduce(axis=axis, keepdims=True)
+    assert c.shape == new_shape
+
+    np.testing.assert_allclose(c, out)

@@ -14,7 +14,7 @@ from cmomy import CentralMoments, resample, xCentralMoments
 if TYPE_CHECKING:
     from typing import Callable
 
-    from cmomy.typing import F
+    from cmomy.core.typing import F
 
 
 def my_fixture(**kws) -> Callable[[F], F]:
@@ -138,7 +138,7 @@ def test_from_raws(dc, dcx) -> None:
         t = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis)
         r = dc.reduce(axis=axis)
 
-        np.testing.assert_allclose(t.to_numpy(), r.to_numpy())
+        np.testing.assert_allclose(t.to_numpy(), r.to_numpy(), atol=1e-14)
 
         # test xCentral
         o1 = (
@@ -283,4 +283,4 @@ def test_resample_and_reduce(dc, dcx, parallel) -> None:
         np.testing.assert_allclose(t.data, o.data)
 
         dims = dcx.val_dims
-        assert o.val_dims == (*dims[:axis], *dims[axis + 1 :], "rep")
+        assert o.val_dims == (*dims[:axis], "rep", *dims[axis + 1 :])

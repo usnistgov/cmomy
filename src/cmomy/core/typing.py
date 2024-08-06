@@ -1,6 +1,6 @@
 """
-Typing aliases (:mod:`cmomy.typing`)
-====================================
+Typing aliases (:mod:`cmomy.core.typing`)
+=========================================
 """
 
 from __future__ import annotations
@@ -19,28 +19,31 @@ from typing import (
 
 import numpy as np
 
-# import numba as nb
 # put outside to get autodoc typehints working...
 import pandas as pd  # noqa: TCH002
 import xarray as xr
 from numpy.typing import NDArray
 
-from ._typing_compat import TypeVar
+from .typing_compat import TypeVar
 
 if TYPE_CHECKING:
-    from ._typing_compat import TypeAlias
-    from ._typing_nested_sequence import (
+    from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
+    from .typing_compat import TypeAlias
+    from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
     )
-    from ._utils import _Missing  # pyright: ignore[reportPrivateUsage]
 
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
 
 # Axis/Dim reduction type
-AxisReduce = Union[int, None]
-DimsReduce = Union[Hashable, None]
+# TODO(wpk): convert int -> SupportsIndex?
+AxisReduce: TypeAlias = Union[int, None]
+DimsReduce: TypeAlias = Union[Hashable, None]
+AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
+AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
+DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
 
 # * Numpy Arrays
 # ** Aliases
@@ -62,6 +65,10 @@ FloatT = TypeVar(  # type: ignore[misc]
 FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
 DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 ScalarT = TypeVar("ScalarT", bound=np.generic)
+"""TypeVar of for np.generic dtype."""
+
+NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
+FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
 IntDTypeT: TypeAlias = np.int64
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 
@@ -100,7 +107,7 @@ DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
 
 
 # * Numba types
-# NumbaType = Union[nb.typing.Integer, nb.typing.Array]
+# NumbaType = Union[nb.typing.Integer, nb.typing.Array]  # noqa: ERA001
 # The above isn't working for pyright.  Just using any for now...
 NumbaType = Any
 
@@ -108,9 +115,10 @@ NumbaType = Any
 # NOTE: using the strict form for Moments
 # Passing in integer or Sequence[int] will work in almost all cases,
 # but will be flagged by typechecker...
-if TYPE_CHECKING:
-    Moments: TypeAlias = Union[int, tuple[int], tuple[int, int]]
-    MomentsStrict: TypeAlias = Union[tuple[int], tuple[int, int]]
+Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
+"""Moments type."""
+
+MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 
 Mom_NDim = Literal[1, 2]
 
@@ -164,3 +172,16 @@ if TYPE_CHECKING:
 
     # For indexed reducetion
     Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
+
+# SelectComponent
+SelectMoment = Literal[
+    "weight",
+    "ave",
+    "cov",
+    "var",
+    "xave",
+    "yave",
+    "xvar",
+    "yvar",
+]
+"""Selectable moment names."""

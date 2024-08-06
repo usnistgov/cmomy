@@ -10,13 +10,10 @@ import xarray as xr
 
 import cmomy
 from cmomy import CentralMoments, resample, xCentralMoments
-
-# import cmomy
-# from cmomy import xcentral
 from cmomy.random import default_rng
 
 if TYPE_CHECKING:
-    from cmomy.typing import Mom_NDim
+    from cmomy.core.typing import Mom_NDim
 
 
 def xtest(a, b) -> None:
@@ -107,33 +104,6 @@ def test_from_centralmoments() -> None:
     xr.testing.assert_allclose(
         cx0.to_values(),
         cx1.to_values(),
-    )
-
-
-def test__single_index_selector() -> None:
-    c = CentralMoments(np.arange(3), mom_ndim=1, dtype=np.float64).to_xcentralmoments()
-
-    xr.testing.assert_allclose(c._single_index_dataarray(0), xr.DataArray(0))
-    xr.testing.assert_allclose(c._single_index_dataarray(1), xr.DataArray(1))
-    xr.testing.assert_allclose(c._single_index_dataarray(2), xr.DataArray(2))
-
-    c = CentralMoments(
-        np.arange(3 * 3).reshape(3, 3), mom_ndim=2, dtype=np.float64
-    ).to_xcentralmoments()
-
-    xr.testing.assert_allclose(
-        c._single_index_dataarray(0),
-        xr.DataArray([0, 0], dims="variable", coords={"variable": ["mom_0", "mom_1"]}),
-    )
-
-    xr.testing.assert_allclose(
-        c._single_index_dataarray(1, dim_combined="v", coords_combined=["a", "b"]),
-        xr.DataArray([3, 1], dims="v", coords={"v": ["a", "b"]}),
-    )
-
-    xr.testing.assert_allclose(
-        c._single_index_dataarray(2),
-        xr.DataArray([6, 2], dims="variable", coords={"variable": ["mom_0", "mom_1"]}),
     )
 
 
@@ -239,9 +209,10 @@ def test_mean_var_simple(rng) -> None:
     x = xr.DataArray(rng.random((100, 4)), dims=("rec", "a"))
 
     c = xCentralMoments.from_vals(x, mom=3, dim="rec")
-
     xr.testing.assert_allclose(c.mean(), x.mean(dim="rec"))
     xr.testing.assert_allclose(c.var(), x.var(dim="rec"))
+
+    xr.testing.assert_allclose(c.cov(), c.var())
 
 
 def test_assign_xr_attr() -> None:
@@ -296,7 +267,7 @@ def test_push_vals_mult(other) -> None:
 def test_combine(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
-        t.push_data(scramble_xr(s.to_dataarray())[0], order="c")
+        t.push_data(scramble_xr(s.to_dataarray())[0])
     xtest(other.data_test_xr, t.to_dataarray())
 
     t = other.s_xr.zeros_like()
@@ -424,13 +395,12 @@ def test_resample_and_reduce(other, rng) -> None:
             np.testing.assert_allclose(t0.data, t1.data)
 
             # check dims
-            dims = list(other.s_xr.to_dataarray().dims)
-            dims.pop(axis)
-            dims = (*dims[: -other.mom_ndim], "hello", *dims[-other.mom_ndim :])  # type: ignore[assignment]
+            dims = other.s_xr.to_dataarray().dims
+            dims = (*dims[:axis], "hello", *dims[axis + 1 :])
             assert t1.to_dataarray().dims == dims
 
             # resample
-            tr = other.s.resample(idx, axis=axis)
+            tr = other.s.resample(idx, axis=axis, last=True)
 
             # note: tx may be in different order than tr
             tx = other.s_xr.isel(**{dim: xr.DataArray(idx, dims=["hello", dim])})
@@ -438,9 +408,6 @@ def test_resample_and_reduce(other, rng) -> None:
             np.testing.assert_allclose(
                 tr.data, tx.transpose(..., "hello", dim, *tx.mom_dims).data
             )
-
-            # # check dims
-            # assert tx.dims == ('hello', ) + other.s_xr.to_dataarray().dims
 
             # reduce
             xtest(t1.to_dataarray(), tx.reduce(dim=dim).to_dataarray())

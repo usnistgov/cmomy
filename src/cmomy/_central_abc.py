@@ -8,28 +8,32 @@ from typing import TYPE_CHECKING, Generic, cast
 import numpy as np
 from module_utilities import cached
 
-from ._lib.factory import factory_pusher
-from ._utils import (
+from ._lib.factory import factory_pusher, parallel_heuristic
+from .core.array_utils import (
+    axes_data_reduction,
     normalize_axis_index,
-    parallel_heuristic,
+)
+from .core.docstrings import docfiller
+from .core.prepare import (
     prepare_data_for_reduction,
-    prepare_values_for_push_val,
     prepare_values_for_reduction,
+)
+from .core.validate import (
     validate_axis,
     validate_floating_dtype,
     validate_mom_ndim,
 )
-from .docstrings import docfiller
+from .utils import assign_moment, moment_indexer
 
 if TYPE_CHECKING:
+    from collections.abc import Hashable, Sequence
     from typing import Any, Callable
 
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from ._lib.factory import Pusher
-    from ._typing_compat import Self
-    from .typing import (
+    from .core.typing import (
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
@@ -41,9 +45,11 @@ if TYPE_CHECKING:
         MomentsStrict,
         NDArrayAny,
         NDArrayInt,
+        SelectMoment,
     )
+    from .core.typing_compat import Self
 
-from .typing import ArrayT, FloatT
+from .core.typing import ArrayT, FloatT
 
 
 # * Main class ----------------------------------------------------------------
@@ -204,7 +210,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         return s + repr(self.to_values())
 
     def _repr_html_(self) -> str:  # noqa: PLW3201
-        from ._formatting import repr_html  # pyright: ignore[reportUnknownVariableType]
+        from .core.formatting import (
+            repr_html,  # pyright: ignore[reportUnknownVariableType]
+        )
 
         return repr_html(self)  # type: ignore[no-any-return,no-untyped-call]
 
@@ -251,7 +259,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
     # @staticmethod
     # def _set_default_axis(axis: int | None, default: int = -1) -> int:
-    #     return default if axis is None else axis
+    #     return default if axis is None else axis  # noqa: ERA001
 
     @property
     def _is_vector(self) -> bool:
@@ -396,12 +404,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         new_like
         zeros_like
         """
-        # return type(self)(data=self.to_values(), copy=True)
         return self.new_like(
             data=self.to_values(),
             verify=False,
             copy=True,
-            # copy_kws=copy_kws,
         )
 
     @docfiller.decorate
@@ -431,90 +437,98 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         )
 
     @docfiller.decorate
-    def assign_weight(self, weight: ArrayLike, copy: bool = True) -> Self:
+    def assign_moment(
+        self,
+        name: SelectMoment,
+        value: ArrayLike,
+        copy: bool = True,
+        squeeze: bool = True,
+    ) -> Self:
         """
-        Create object with updated weights
+        Create object with update weight, average, etc.
 
         Parameters
         ----------
-        {weight}
+        {select_name}
+        value : array-like
         copy : bool, default=True
             If ``True`` (default), copy the underlying moments data before update.
-            Otherwise, update weights in in place.
+            Otherwise, update weights underlying data in place.
+
+        Returns
+        -------
+        output : object
+            Same type as ``self`` with updated data.
 
         Returns
         -------
         output : object
             Same type as ``self``
         """
-        from . import convert
-
         return type(self)(
-            data=convert.assign_weight(
-                data=self.values,
-                weight=weight,
+            data=assign_moment(
+                data=self.to_values(),
+                name=name,
+                value=value,
                 mom_ndim=self._mom_ndim,
                 copy=copy,
+                squeeze=squeeze,
             ),
             mom_ndim=self._mom_ndim,
             fastpath=True,
         )
 
     # ** Access to underlying statistics ------------------------------------------
-    @cached.prop
-    def _weight_index(self) -> tuple[int | ellipsis, ...]:  # noqa: F821
-        index: tuple[int, ...] = (0,) * len(self.mom)
-        if self.val_ndim > 0:
-            return (..., *index)  # pyright: ignore[reportUnknownVariableType]
-        return index
+    def select_moment(
+        self,
+        name: SelectMoment,
+        *,
+        squeeze: bool = True,
+        dim_combined: str = "variable",
+        coords_combined: str | Sequence[Hashable] | None = None,
+        keep_attrs: bool | None = None,
+    ) -> ArrayT:
+        """
+        Select specific moments.
 
-    @cached.meth
-    def _single_index(self, val: int) -> tuple[ellipsis | int | list[int], ...]:  # noqa: F821
-        # index with things like data[..., 1,0] data[..., 0,1]
-        # index = (...,[1,0],[0,1])
-        dims = len(self.mom)
+        See Also
+        --------
+        .utils.select_moment
+        """
+        from .utils import select_moment
 
-        index: list[int] | list[list[int]]
-        if dims == 1:
-            index = [val]
+        return cast(
+            "ArrayT",
+            select_moment(  # type: ignore[call-overload]
+                self.to_values(),
+                name=name,
+                mom_ndim=self._mom_ndim,
+                dim_combined=dim_combined,
+                coords_combined=coords_combined,
+                squeeze=squeeze,
+                keep_attrs=keep_attrs,
+            ),
+        )
 
-        else:
-            # this is a bit more complicated
-            index = [[0] * dims for _ in range(dims)]
-            for i in range(dims):
-                index[i][i] = val
-
-        if self.val_ndim > 0:
-            return (..., *index)  # pyright: ignore[reportUnknownVariableType]
-        return tuple(index)
-
-    def _wrap_like(self, x: NDArrayAny) -> ArrayT:  # noqa: PLR6301
-        return x  # type: ignore[return-value]
-
-    def weight(self) -> float | ArrayT:
+    def weight(self) -> ArrayT:
         """Weight data."""
-        return cast(
-            "float | ArrayT",
-            self.to_values()[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
-        )
+        return self.select_moment("weight")
 
-    def mean(self) -> float | ArrayT:
+    def mean(self, squeeze: bool = True) -> ArrayT:
         """Mean (first moment)."""
-        return cast(
-            "float | ArrayT",
-            self.to_values()[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
-        )
+        return self.select_moment("ave", squeeze=squeeze)
 
-    def var(self) -> float | ArrayT:
+    def var(self, squeeze: bool = True) -> ArrayT:
         """Variance (second central moment)."""
-        return cast(
-            "float | ArrayT",
-            self.to_values()[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
-        )
+        return self.select_moment("var", squeeze=squeeze)
 
-    def std(self) -> float | ArrayT:
+    def std(self, squeeze: bool = True) -> ArrayT:
         """Standard deviation."""  # D401
-        return cast("float | ArrayT", np.sqrt(self.var()))
+        return np.sqrt(self.var(squeeze))  # type: ignore[return-value]
+
+    def cov(self) -> ArrayT:
+        """Covariance (or variance if ``mom_ndim==1``)."""
+        return self.select_moment("cov")
 
     def cmom(self) -> ArrayT:
         r"""
@@ -536,12 +550,19 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         -------
         output : ndarray or DataArray
         """
-        out = self.data.copy()
-        # zeroth central moment
-        out[self._weight_index] = 1
-        # first central moment
-        out[self._single_index(1)] = 0
-        return self._wrap_like(out)
+        # Set weight to 1
+        out = assign_moment(
+            self.to_values(), name="weight", value=1, mom_ndim=self._mom_ndim, copy=True
+        )
+
+        # Set first central moment to zero
+        return assign_moment(
+            out,
+            name="ave",
+            value=0,
+            mom_ndim=self._mom_ndim,
+            copy=False,
+        )
 
     def to_raw(self, *, weight: float | NDArrayAny | None = None) -> ArrayT:
         r"""
@@ -571,10 +592,12 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         """
         from . import convert
 
-        out = convert.moments_type(self._data, mom_ndim=self.mom_ndim, to="raw")
+        out = convert.moments_type(self.to_values(), mom_ndim=self._mom_ndim, to="raw")
         if weight is not None:
-            out[self._weight_index] = weight
-        return self._wrap_like(out)
+            out = assign_moment(
+                out, "weight", weight, mom_ndim=self._mom_ndim, copy=False
+            )
+        return out  # pyright: ignore[reportReturnType]
 
     def rmom(self) -> ArrayT:
         r"""
@@ -652,10 +675,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         data: ArrayLike,
         *,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
-        data = np.asarray(data, order=order, dtype=self.dtype)
+        data = np.asarray(data, dtype=self.dtype)
         self._pusher(parallel).data(data, self._data)
         return self
 
@@ -665,19 +687,19 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *,
         axis: AxisReduce | MissingType,
         parallel: bool | None = None,
-        order: ArrayOrder = None,
     ) -> Self:
-        datas = prepare_data_for_reduction(
+        axis, datas = prepare_data_for_reduction(
             data=datas,
             axis=axis,
             mom_ndim=self.mom_ndim,
             dtype=self.dtype,
-            order=order,
         )
+        axes = axes_data_reduction(mom_ndim=self.mom_ndim, axis=axis)
 
         self._pusher(parallel).datas(
             datas,
             self._data,
+            axes=axes,
         )
 
         return self
@@ -693,23 +715,17 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         self._check_y(y, self.mom_ndim)
 
         weight = 1.0 if weight is None else weight
 
-        x = np.asarray(x, dtype=self.dtype, order=order)
-        x0, *x1, weight = prepare_values_for_push_val(
-            x, *y, weight, dtype=self.dtype, order=order
-        )
-
+        x = np.asarray(x, dtype=self.dtype)
         self._pusher(parallel).val(
-            x0,
-            *x1,
-            weight,
             self._data,
+            x,
+            *(np.asarray(a, dtype=self.dtype) for a in (weight, *y)),
         )
         return self
 
@@ -719,28 +735,23 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *y: ArrayLike,
         axis: AxisReduce | MissingType,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         self._check_y(y, self.mom_ndim)
 
         weight = 1.0 if weight is None else weight
-        x = np.asarray(x, dtype=self.dtype, order=order)
-        x0, *x1, weight = prepare_values_for_reduction(
+        axis, args = prepare_values_for_reduction(
             x,
-            *y,
             weight,
+            *y,
             axis=axis,
             dtype=self.dtype,
-            order=order,
             narrays=self._mom_ndim + 1,
         )
 
         self._pusher(parallel).vals(
-            x0,
-            *x1,
-            weight,
             self._data,
+            *args,
         )
         return self
 
@@ -750,7 +761,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         data: Any,
         *,
-        order: ArrayOrder = None,
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -776,7 +786,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         datas: Any,
         *,
         axis: AxisReduce = -1,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -805,7 +814,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -840,7 +848,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *y: ArrayLike,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -868,13 +875,14 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     def randsamp_freq(
         self,
         *,
-        axis: AxisReduce = -1,
+        axis: AxisReduce | MissingType = -1,
         nrep: int | None = None,
         nsamp: int | None = None,
         indices: ArrayLike | None = None,
         freq: ArrayLike | None = None,
         check: bool = False,
         rng: np.random.Generator | None = None,
+        **kwargs: Any,
     ) -> NDArrayInt:
         """
         Interface to :func:`.resample.randsamp_freq`
@@ -911,17 +919,22 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             freq=freq,
             check=check,
             rng=rng,
+            **kwargs,
         )
 
-    @abstractmethod
     @docfiller.decorate
     def resample_and_reduce(
         self,
         *,
         freq: NDArrayInt,
-        axis: AxisReduce = -1,
+        axis: AxisReduce | MissingType = -1,
+        # freq: NDArrayInt | None = None,  # noqa: ERA001
+        # indices: NDArrayInt | None = None,  # noqa: ERA001
+        # nrep: NDArrayInt | None = None,  # noqa: ERA001
+        # rng: np.random.Generator | None = None,  # noqa: ERA001
         parallel: bool | None = None,
         order: ArrayOrder = None,
+        **kwargs: Any,
     ) -> Self:
         """
         Bootstrap resample and reduce.
@@ -937,7 +950,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         -------
         output : object
             Instance of calling class. Note that new object will have
-            ``(...,shape[axis-1], shape[axis+1], ..., nrep, mom0, ...)``,
+            ``(...,shape[axis-1], nrep, shape[axis+1], ...)``,
             where ``nrep = freq.shape[0]``.
 
 
@@ -949,14 +962,67 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         ~cmomy.resample.indices_to_freq : convert index sample to frequency sample
         ~cmomy.resample.resample_data : method to perform resampling
         """
+        self._raise_if_scalar()
+        from .resample import resample_data
+
+        data: ArrayT = resample_data(
+            self.to_values(),  # pyright: ignore[reportAssignmentType]
+            freq=freq,
+            mom_ndim=self._mom_ndim,
+            axis=axis,
+            parallel=parallel,
+            dtype=self.dtype,
+            **kwargs,
+        )
+        return type(self)(data=data, mom_ndim=self._mom_ndim, order=order)
+
+    @docfiller.decorate
+    def jackknife_and_reduce(
+        self,
+        *,
+        axis: AxisReduce | MissingType = -1,
+        parallel: bool | None = None,
+        order: ArrayOrder = None,
+        data_reduced: xr.DataArray | ArrayLike | None = None,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Jackknife resample and reduce
+
+        Parameters
+        ----------
+        {axis_data_and_dim}
+        {parallel}
+        {order}
+
+        Returns
+        -------
+        output : {klass}
+            Instance of calling class with jackknife resampling along ``axis``.
+        """
+        self._raise_if_scalar()
+        from .resample import jackknife_data
+
+        data: ArrayT = jackknife_data(  # pyright: ignore[reportAssignmentType]
+            self.to_values(),
+            mom_ndim=self._mom_ndim,
+            axis=axis,
+            data_reduced=data_reduced,
+            parallel=parallel,
+            **kwargs,
+        )
+
+        return type(self)(data=data, mom_ndim=self._mom_ndim, order=order)
 
     @abstractmethod
     @docfiller.decorate
     def reduce(
         self,
         *,
-        axis: AxisReduce = -1,
         by: Groups | None = None,
+        axis: AxisReduce = -1,
+        keepdims: bool = False,
+        move_axis_to_end: bool = False,
         order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
@@ -965,20 +1031,22 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         Parameters
         ----------
-        {axis_data_and_dim}
         {by}
+        {axis_data_and_dim}
+        {keepdims}
+        {move_axis_to_end}
         {order}
         {parallel}
 
         Returns
         -------
         output : {klass}
-            If ``by`` is ``None``, reduce all samples along ``axis``.
+            If ``by`` is ``None``, reduce all samples along ``axis``,
+            optionally keeping ``axis`` with size ``1`` if ``keepdims=True``.
             Otherwise, reduce for each unique value of ``by``. In this case,
-            output will have shape
-            ``(..., shape[axis-1], shape[axis+1], ..., ngroup, mom0, ...)``
-            where ``ngroups = np.max(by) + 1`` is the number of unique positive
-            values in ``by``.
+            output will have shape ``(..., shape[axis-1], ngroup,
+            shape[axis+1], ...)`` where ``ngroups = np.max(by) + 1``
+            is the number of unique positive values in ``by``.
 
         See Also
         --------
@@ -1047,9 +1115,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         if _reorder and hasattr(self, "mom_dims"):
             values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues, reportAttributeAccessIssue]
-            # else:
-            #     msg = "to specify `_reorder`, must have attribute `mom_dims`"
-            #     raise AttributeError(msg)
 
         return self.new_like(
             data=values,
@@ -1058,10 +1123,39 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             verify=_verify,
         )
 
+    @abstractmethod
+    @docfiller.decorate
+    def moveaxis(
+        self,
+        axis: int | tuple[int, ...],
+        dest: int | tuple[int, ...],
+    ) -> Self:
+        """
+        Generalized moveaxis
+
+        Parameters
+        ----------
+        {axis}
+        axis : int or sequence of int
+            Original positions of axes to move.
+        dest : int or sequence of int
+            Destination positions for each original axes.
+
+        Returns
+        -------
+        output : {klass}
+            Object with moved axes.  This is a view of the original data.
+
+        See Also
+        --------
+        .utils.moveaxis
+        numpy.moveaxis
+        """
+
     # ** Operators ----------------------------------------------------------------
     def _check_other(self, b: Self) -> None:
         """Check other object."""
-        if type(self) != type(b):
+        if type(self) is not type(b):
             raise TypeError
         if self.mom_ndim != b.mom_ndim or self.shape != b.shape:
             raise ValueError
@@ -1074,9 +1168,6 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     def __add__(self, b: Self) -> Self:
         """Add objects to new object."""
         self._check_other(b)
-        # new = self.copy()
-        # new.push_data(b.data)
-        # return new
         return self.copy().push_data(b.to_values())
 
     def __isub__(self, b: Self) -> Self:  # noqa: PYI034
@@ -1086,7 +1177,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         if not np.all(self.weight() >= b.weight()):
             raise ValueError
         data = b.to_values().copy()
-        data[self._weight_index] *= -1
+        data[moment_indexer("weight", self._mom_ndim)] *= -1
         return self.push_data(data)
 
     def __sub__(self, b: Self) -> Self:
@@ -1095,22 +1186,20 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         if not np.all(self.weight() >= b.weight()):
             raise ValueError
         new = b.copy()
-        new._data[self._weight_index] *= -1
-        # new.push_data(self.data)
-        # return new
+        new._data[moment_indexer("weight", self._mom_ndim)] *= -1
         return new.push_data(self.to_values())
 
     def __mul__(self, scale: float) -> Self:
         """New object with weight scaled by scale."""  # D401
         scale = float(scale)
         new = self.copy()
-        new._data[self._weight_index] *= scale
+        new._data[moment_indexer("weight", self._mom_ndim)] *= scale
         return new
 
     def __imul__(self, scale: float) -> Self:  # noqa: PYI034
         """Inplace multiply."""
         scale = float(scale)
-        self._data[self._weight_index] *= scale
+        self._data[moment_indexer("weight", self._mom_ndim)] *= scale
         return self
 
     # ** Constructors -------------------------------------------------------------
@@ -1156,9 +1245,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         mom: Moments,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
+        keepdims: bool = False,
         order: ArrayOrder = None,
-        parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
+        parallel: bool | None = None,
         # **kwargs: Any,
     ) -> Self:
         """
@@ -1175,9 +1266,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             broadcast to `x0.shape`
         {axis_and_dim}
         {mom}
+        {keepdims}
         {order}
-        {parallel}
         {dtype}
+        {out}
+        {parallel}
 
         Returns
         -------
@@ -1197,11 +1290,13 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         *y: ArrayLike,
         mom: Moments,
         freq: NDArrayInt,
-        axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
+        axis: AxisReduce = -1,
+        move_axis_to_end: bool = True,
         order: ArrayOrder = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
     ) -> Self:
         """
         Create from resample observations/values.
@@ -1219,10 +1314,12 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         {freq}
         {weight}
         {axis_and_dim}
+        {move_axis_to_end}
         {full_output}
         {order}
         {parallel}
         {dtype}
+        {out}
 
         Returns
         -------

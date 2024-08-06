@@ -7,6 +7,9 @@
    cmomy.random
    cmomy.convert
    cmomy.compile
+   cmomy.confidence_interval
+   cmomy.rolling
+   cmomy.utils
 
 
 
@@ -14,4 +17,4 @@
    :toctree: generated/
    :template: autodocsumm/module.rst
 
-   cmomy.typing
+   cmomy.core.typing

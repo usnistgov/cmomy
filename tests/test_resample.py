@@ -2,24 +2,22 @@
 # pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import CentralMoments, resample
 from cmomy.reduction import (
     resample_data_indexed,
 )
 
-# import cmomy
-# import cmomy.indexed
-# from cmomy import resample
-# from cmomy.resample import (  # , xbootstrap_confidence_interval
-#     bootstrap_confidence_interval,
-#     freq_to_indices,
-# )
+if TYPE_CHECKING:
+    from numpy.typing import DTypeLike
+
+    from cmomy.core.typing import Mom_NDim
 
 
 @pytest.mark.parametrize("ndat", [50])
@@ -105,7 +103,7 @@ def test_select_ndat() -> None:
 @parallel_parametrize
 @pytest.mark.parametrize("mom", [2, (2, 2)])
 def test_resample_vec(parallel, mom, rng):
-    x = rng.random((100, 10))
+    x = rng.random((50, 10))
     xx = x[..., None]
 
     xy: tuple[Any, ...]
@@ -136,18 +134,24 @@ def test_resample_vec(parallel, mom, rng):
         axis=0,
     )
 
-    np.testing.assert_allclose(cc1.data, cc2.data[0, ...])
+    np.testing.assert_allclose(cc1.data, cc2.data[:, 0, ...])
 
     # using indexed
     out1 = resample_data_indexed(
         c1.data, freq=freq, mom_ndim=c1.mom_ndim, parallel=parallel, axis=0
     )
-    np.testing.assert_allclose(cc1.data, out1)
+    np.testing.assert_allclose(
+        cc1.data,
+        out1,
+    )
 
     out2 = resample_data_indexed(
         c2.data, freq=freq, mom_ndim=c2.mom_ndim, parallel=parallel, axis=0
     )
-    np.testing.assert_allclose(cc2.data, out2)
+    np.testing.assert_allclose(
+        cc2.data,
+        out2,
+    )
 
 
 def test_resample_indices(rng) -> None:
@@ -196,6 +200,10 @@ def test_randsamp_freq() -> None:
 
     np.testing.assert_allclose(f0, f1)
 
+    # test short circuit
+    f2 = resample.randsamp_freq(freq=f1, check=False)
+    assert f1 is f2
+
     with pytest.raises(ValueError):
         resample.randsamp_freq(ndat=10)
 
@@ -235,55 +243,63 @@ def test_resample_resample_data(rng) -> None:
         v, freq=freq, mom_ndim=1, axis=-1, out=np.zeros((3, 5, 4)), dtype=np.float64
     )
 
-    np.testing.assert_allclose(c2.data, out)
-
-    out = resample_data_indexed(
-        v, freq=freq, mom_ndim=1, axis=-1, out=np.zeros((3, 5, 4)), dtype=np.float64
-    )
-    np.testing.assert_allclose(c2.data, out)
+    np.testing.assert_allclose(c2.moveaxis(0, -1).data, out)
 
     with pytest.raises(ValueError):
         resample.resample_data(c.data, freq=freq, mom_ndim=1, axis=1)
 
 
-def test_resample_resample_vals(rng) -> None:
-    x = rng.random((10, 3))
+@pytest.mark.parametrize(
+    ("move_axis_to_end", "shape", "out_shape"),
+    [
+        (True, (10, 3), (3, 5, 4)),
+        (False, (10, 3), (5, 3, 4)),
+    ],
+)
+def test_resample_resample_vals(rng, move_axis_to_end, shape, out_shape) -> None:
+    x = rng.random(shape)
 
     freq = resample.random_freq(nrep=5, ndat=10, rng=rng)
 
-    c = CentralMoments.from_resample_vals(x, freq=freq, mom=3, axis=0)
+    c = CentralMoments.from_resample_vals(
+        x, freq=freq, mom=3, axis=0, move_axis_to_end=move_axis_to_end
+    )
+    assert c.shape == out_shape
 
     out = resample.resample_vals(
         x,
         freq=freq,
         mom=3,
         axis=0,
+        move_axis_to_end=move_axis_to_end,
     )
     np.testing.assert_allclose(c.data, out)
 
-    with pytest.raises(TypeError):
-        resample.resample_vals(x, freq=freq, mom=[3])  # type: ignore[call-overload]
-
     with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq, mom=(3, 3, 3), axis=0)  # type: ignore[arg-type]
+        resample.resample_vals(
+            x, freq=freq[:, :-1], mom=3, axis=0, move_axis_to_end=move_axis_to_end
+        )
 
-    with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq[:, :-1], mom=3, axis=0)
-
-    out = np.zeros((3, 5, 4))
-    _ = resample.resample_vals(x, freq=freq, mom=3, out=out, axis=0)
+    out = np.zeros(out_shape)
+    _ = resample.resample_vals(
+        x, freq=freq, mom=3, out=out, axis=0, move_axis_to_end=move_axis_to_end
+    )
     np.testing.assert_allclose(c.data, out)
 
     out = np.zeros((4, 4, 4))
     with pytest.raises(ValueError):
-        resample.resample_vals(x, freq=freq, mom=3, out=out, axis=0)
+        resample.resample_vals(
+            x, freq=freq, mom=3, out=out, axis=0, move_axis_to_end=move_axis_to_end
+        )
 
-    c2 = CentralMoments.from_resample_vals(x, x, freq=freq, mom=(3, 3), axis=0)
+    c2 = CentralMoments.from_resample_vals(
+        x, x, freq=freq, mom=(3, 3), axis=0, move_axis_to_end=move_axis_to_end
+    )
 
     np.testing.assert_allclose(c2.data[..., :, 0], c.data)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_resample_vals(other, parallel) -> None:
     # test basic resampling
@@ -300,7 +316,7 @@ def test_resample_vals(other, parallel) -> None:
         np.testing.assert_allclose(datar, other.data_test_resamp)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_stats_resample_vals(other, parallel) -> None:
     if other.style == "total":
@@ -316,7 +332,7 @@ def test_stats_resample_vals(other, parallel) -> None:
         np.testing.assert_allclose(t.data, other.data_test_resamp)
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_resample_data(other, parallel, rng) -> None:
     nrep = 10
@@ -330,12 +346,8 @@ def test_resample_data(other, parallel, rng) -> None:
             idx = rng.choice(ndat, (nrep, ndat), replace=True)
             freq = resample.randsamp_freq(indices=idx, ndat=ndat)
 
-            if axis != 0:
-                data = np.rollaxis(data, axis, 0)
-            data = np.take(data, idx, axis=0)
-            data_ref = (
-                other.cls(data, mom_ndim=other.mom_ndim).reduce(axis=1).moveaxis(0, -1)
-            )
+            data = np.take(data, idx, axis=axis)
+            data_ref = other.cls(data, mom_ndim=other.mom_ndim).reduce(axis=axis + 1)
 
             t = other.s.resample_and_reduce(
                 freq=freq,
@@ -352,10 +364,13 @@ def test_resample_data(other, parallel, rng) -> None:
                 axis=axis,
                 parallel=parallel,
             )
-            np.testing.assert_allclose(data_ref, out)
+            np.testing.assert_allclose(
+                data_ref,
+                out,
+            )
 
 
-@pytest.mark.slow()
+@pytest.mark.slow
 @parallel_parametrize
 def test_resample_against_vals(other, parallel, rng) -> None:
     nrep = 10
@@ -374,7 +389,7 @@ def test_resample_against_vals(other, parallel, rng) -> None:
                 parallel=parallel,
             )
 
-            t1 = s.resample(idx, axis=axis, last=True).reduce(axis=-1)
+            t1 = s.resample(idx, axis=axis, last=False).reduce(axis=axis + 1)
 
             np.testing.assert_allclose(t0.to_values(), t1.to_values())
 
@@ -397,41 +412,10 @@ def test_resample_zero_weight(rng) -> None:
 
     # indexed:
     out = resample_data_indexed(c.data, freq=freq_zero, mom_ndim=2, axis=0)
-    np.testing.assert_allclose(c2.data, out)
-
-
-@pytest.mark.slow()
-def test_bootstrap_stats(other) -> None:
-    x = other.xdata
-    axis = other.axis
-    alpha = 0.05
-
-    # test styles
-    test = resample.bootstrap_confidence_interval(
-        x, stats_val=None, axis=axis, alpha=alpha
+    np.testing.assert_allclose(
+        c2.data,
+        out,
     )
-
-    p_low = 100 * (alpha / 2.0)
-    p_mid = 50
-    p_high = 100 - p_low
-
-    expected = np.percentile(x, [p_mid, p_low, p_high], axis=axis)
-    np.testing.assert_allclose(test, expected)
-
-    # 'mean'
-    test = resample.bootstrap_confidence_interval(
-        x, stats_val="mean", axis=axis, alpha=alpha
-    )
-
-    q_high = 100 * (alpha / 2.0)
-    q_low = 100 - q_high
-    stats_val = x.mean(axis=axis)
-    val = stats_val
-    low = 2 * stats_val - np.percentile(a=x, q=q_low, axis=axis)
-    high = 2 * stats_val - np.percentile(a=x, q=q_high, axis=axis)
-
-    expected = np.array([val, low, high])
-    np.testing.assert_allclose(test, expected)
 
 
 # # * Arbitrary number of samples in resample.
@@ -457,7 +441,7 @@ def test_resample_nsamp(other, parallel) -> None:
                     parallel=parallel,
                 )
 
-                t1 = s.resample(indices, axis=axis, last=True).reduce(axis=-1)
+                t1 = s.resample(indices, axis=axis, last=False).reduce(axis=axis + 1)
                 np.testing.assert_allclose(t0.to_values(), t1.to_values())
 
                 # test indexed resample
@@ -465,4 +449,245 @@ def test_resample_nsamp(other, parallel) -> None:
                 out = resample_data_indexed(
                     s.data, freq=freq, mom_ndim=s.mom_ndim, axis=axis, parallel=parallel
                 )
-                np.testing.assert_allclose(t0.to_values(), out)
+                np.testing.assert_allclose(
+                    t0.to_values(),
+                    out,
+                )
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis"),
+    [
+        ((10, 2, 4, 4), 0),
+        ((2, 10, 4, 4), 1),
+    ],
+)
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_jackknife_data(rng, mom_ndim, shape, axis) -> None:
+    data = rng.random(shape)
+    freq = resample.jackknife_freq(data.shape[axis])
+
+    out0 = resample.resample_data(data, mom_ndim=mom_ndim, freq=freq, axis=axis)
+    out1 = resample.jackknife_data(data, mom_ndim=mom_ndim, axis=axis)
+    np.testing.assert_allclose(
+        out0,
+        out1,
+    )
+
+    # using central moments
+    np.testing.assert_allclose(
+        out0,
+        cmomy.CentralMoments(data, mom_ndim=mom_ndim).jackknife_and_reduce(axis=axis),
+    )
+
+    # using xcentralMoments
+    cx = cmomy.CentralMoments(data, mom_ndim=mom_ndim).to_x()
+    np.testing.assert_allclose(out0, cx.jackknife_and_reduce(dim=cx.dims[axis]))
+
+    # using calculated data_reduced
+    data_reduced = cmomy.reduce_data(data, mom_ndim=mom_ndim, axis=axis)
+    out1 = resample.jackknife_data(
+        data,
+        mom_ndim=mom_ndim,
+        axis=axis,
+        data_reduced=data_reduced,
+    )
+    np.testing.assert_allclose(
+        out0,
+        out1,
+    )
+
+    # make sure we're actually using data_reduced
+    out1 = resample.jackknife_data(
+        data, mom_ndim=mom_ndim, axis=axis, data_reduced=np.zeros_like(data_reduced)
+    )
+    with pytest.raises(AssertionError):
+        np.testing.assert_allclose(out0, out1)
+
+    # dataarray
+    xdata = xr.DataArray(data, attrs={"hello": "there"})
+    dim = xdata.dims[axis]
+
+    xout0 = resample.resample_data(xdata, mom_ndim=mom_ndim, freq=freq, dim=dim)
+    np.testing.assert_allclose(out0, xout0)
+
+    xout1 = resample.jackknife_data(xdata, mom_ndim=mom_ndim, dim=dim)
+    xr.testing.assert_allclose(xout0, xout1)
+
+    # using data_reduced
+    xout1 = resample.jackknife_data(
+        xdata, mom_ndim=mom_ndim, axis=axis, data_reduced=data_reduced
+    )
+    xr.testing.assert_allclose(xout0, xout1)
+
+    xdata_reduced = cmomy.reduce_data(xdata, mom_ndim=mom_ndim, dim=dim)
+    xout1 = resample.jackknife_data(
+        xdata, mom_ndim=mom_ndim, dim=dim, data_reduced=xdata_reduced
+    )
+    xr.testing.assert_allclose(xout0, xout1)
+
+    # keep_attrs
+    xout0 = resample.resample_data(
+        xdata, mom_ndim=mom_ndim, freq=freq, dim=dim, keep_attrs=True
+    )
+    np.testing.assert_allclose(out0, xout0)
+
+    xout1 = resample.jackknife_data(xdata, mom_ndim=mom_ndim, dim=dim, keep_attrs=True)
+    xr.testing.assert_allclose(xout0, xout1)
+
+
+@pytest.mark.parametrize(("shape", "axis"), [((10, 4, 4), 0)])
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+@pytest.mark.parametrize("parallel", [True, False])
+@pytest.mark.parametrize("dtype", [np.float64, np.float32])
+def test_jackknife_data_extras(mom_ndim, shape, axis, parallel, dtype):
+    rng = np.random.default_rng(0)
+    data = rng.random(shape)
+
+    # using out parameter
+    out0 = resample.resample_data(
+        data,
+        mom_ndim=mom_ndim,
+        freq=resample.jackknife_freq(data.shape[axis]),
+        axis=axis,
+        dtype=dtype,
+    )
+
+    assert out0.dtype.type == dtype
+
+    data_reduced = cmomy.reduce_data(data, axis=axis, mom_ndim=mom_ndim, dtype=dtype)
+
+    out_ = np.zeros_like(out0, dtype=dtype)
+    out1 = resample.jackknife_data(
+        data,
+        mom_ndim=mom_ndim,
+        axis=axis,
+        parallel=parallel,
+        out=out_,
+        data_reduced=data_reduced.tolist(),
+    )
+
+    assert out_ is out1
+    np.testing.assert_allclose(out1, out0, rtol=1e-5)
+    assert out1.dtype.type == dtype
+
+    xdata = xr.DataArray(data)
+    xout1 = resample.jackknife_data(
+        xdata, mom_ndim=mom_ndim, axis=axis, rep_dim=None, dtype=dtype
+    )
+
+    np.testing.assert_allclose(xout1, out0, rtol=1e-5)
+    assert xout1.dtype.type == dtype
+    assert xout1.dims == xdata.dims
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis"),
+    [
+        ((50,), 0),
+        ((50, 2), 0),
+        ((2, 50), 1),
+    ],
+)
+@pytest.mark.parametrize("mom", [(3,), (3, 3)])
+@pytest.mark.parametrize("use_weight", [True, False])
+def test_jackknife_vals(rng, shape, axis, mom, use_weight) -> None:
+    x = rng.random(shape)
+
+    xy = (x,) if len(mom) == 1 else (x, x)
+    freq = resample.jackknife_freq(x.shape[axis])
+
+    weight = rng.random(shape) if use_weight else None
+
+    out0 = resample.resample_vals(*xy, freq=freq, mom=mom, weight=weight, axis=axis)
+    out1 = resample.jackknife_vals(*xy, mom=mom, weight=weight, axis=axis)
+    np.testing.assert_allclose(out0, out1)
+
+    data_reduced = cmomy.reduce_vals(*xy, mom=mom, weight=weight, axis=axis)
+    out1 = resample.jackknife_vals(
+        *xy, mom=mom, weight=weight, axis=axis, data_reduced=data_reduced
+    )
+    np.testing.assert_allclose(out0, out1)
+
+    for dxy in [
+        tuple(xr.DataArray(_) for _ in xy),
+        (xr.DataArray(xy[0]), *(_ for _ in xy[1:])),
+    ]:
+        xout1 = resample.jackknife_vals(*dxy, mom=mom, weight=weight, axis=axis)
+        np.testing.assert_allclose(out0, xout1)
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis"),
+    [
+        ((50,), 0),
+    ],
+)
+@pytest.mark.parametrize("mom", [(3,)])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64])
+def test_jackknife_vals_extras(shape, axis, mom: Mom_NDim, dtype: DTypeLike) -> None:
+    rng = np.random.default_rng(0)
+    x = rng.random(shape)
+    xy = (x,)
+
+    freq = resample.jackknife_freq(x.shape[axis])
+
+    out0 = resample.resample_vals(*xy, freq=freq, mom=mom, axis=axis, dtype=dtype)
+    assert out0.dtype.type == dtype
+
+    data_reduced = cmomy.reduce_vals(*xy, mom=mom, axis=axis, dtype=dtype)
+    out1 = resample.jackknife_vals(
+        *xy,
+        mom=mom,
+        axis=axis,
+        data_reduced=data_reduced.tolist(),
+        dtype=dtype,
+    )
+    np.testing.assert_allclose(out0, out1, rtol=1e-5)
+    assert out0.dtype.type == dtype
+
+    # using out
+    out_ = np.zeros_like(out0, dtype=dtype)
+    out1 = resample.jackknife_vals(*xy, mom=mom, axis=axis, out=out_)
+    np.testing.assert_allclose(out0, out1, rtol=1e-5)
+    assert out1 is out_
+
+    # wrong data_reduced shape...
+    with pytest.raises(ValueError, match=".* inconsistent with.*"):
+        out1 = resample.jackknife_vals(
+            *xy,
+            mom=mom,
+            axis=axis,
+            data_reduced=np.zeros((50, 2)),
+        )
+
+    dx = xr.DataArray(x)
+    xout1 = resample.jackknife_vals(dx, mom=mom, dim="dim_0", rep_dim=None, dtype=dtype)
+    np.testing.assert_allclose(out1, xout1)
+    assert xout1.dtype.type == dtype
+    assert xout1.dims == ("dim_0", "mom_0")
+
+    # inherit mom_dims from data_reduced
+
+    xdata_reduced = xr.DataArray(data_reduced, dims=["hello_moment"])
+
+    xout1 = resample.jackknife_vals(
+        dx,
+        mom=mom,
+        dim="dim_0",
+        data_reduced=xdata_reduced,
+        dtype=dtype,
+    )
+    np.testing.assert_allclose(xout1, out1)
+    assert xout1.dims == ("rep", "hello_moment")
+
+    xout1 = resample.jackknife_vals(
+        dx,
+        mom=mom,
+        dim="dim_0",
+        mom_dims="passed_moment",
+        data_reduced=data_reduced,
+        dtype=dtype,
+    )
+    np.testing.assert_allclose(xout1, out1)
+    assert xout1.dims == ("rep", "passed_moment")

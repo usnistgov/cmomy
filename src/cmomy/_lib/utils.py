@@ -11,7 +11,7 @@ from .decorators import is_in_unsafe_thread_pool, myjit
 if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
 
-    from ..typing import IntDTypeT, NDArrayAny
+    from cmomy.core.typing import IntDTypeT, NDArrayAny
 
 
 # * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
@@ -56,9 +56,7 @@ BINOMIAL_FACTOR = factory_binomial(OPTIONS["nmax"])
 
 # * resampling
 @myjit(
-    # indices[rep, nsamp], freqs[rep, ndat]
     signature=[
-        # (nb.int32[:, :], nb.int32[:, :]),
         (nb.int64[:, :], nb.int64[:, :]),
     ]
 )
@@ -79,7 +77,6 @@ def randsamp_indices_to_freq(
 
 @myjit(
     [
-        # (nb.int32[:, :],),
         (nb.int64[:, :],),
     ]
 )

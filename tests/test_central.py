@@ -8,10 +8,11 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import CentralMoments
 
 if TYPE_CHECKING:
-    from cmomy.typing import Mom_NDim
+    from cmomy.core.typing import Mom_NDim
 
 
 # Tests
@@ -242,7 +243,6 @@ def test_pipe(rng) -> None:
 
     c1 = c.pipe(lambda x: x + 1, _reorder=False)
     c2 = c.pipe("__add__", 1, _reorder=False)
-    # c3 = c.pipe("__add__", 1, _reorder=False, _check_mom=False)
 
     for cc in [c1, c2]:
         np.testing.assert_allclose(cc.data, c.data + 1)
@@ -385,11 +385,10 @@ def test_push_vals_mult(other) -> None:
     other.test_values(t.to_values())
 
 
-@pytest.mark.parametrize("order", ["C", None])
-def test_combine(other, order) -> None:
+def test_combine(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
-        t.push_data(s.to_values(), order=order)
+        t.push_data(s.to_values())
     other.test_values(t.to_values())
 
 
@@ -398,31 +397,22 @@ def test_init_reduce(other) -> None:
     t = other.cls(datas, mom_ndim=other.mom_ndim).reduce(axis=0)
     other.test_values(t.to_values())
 
+    out = cmomy.reduce_data(datas, axis=0, mom_ndim=other.mom_ndim)
+    other.test_values(out)
+
+
+def test_reduction_total(other) -> None:
+    if len(other.val_shape) > 0:
+        t = other.s.reshape(-1).reduce(axis=0)
+        out = cmomy.reduce_data(other.s.values, axis=None, mom_ndim=other.mom_ndim)
+        np.testing.assert_allclose(t, out)
+
 
 def test_push_datas(other) -> None:
     datas = np.array([s.to_numpy() for s in other.S])
     t = other.s.zeros_like()
     t.push_datas(datas, axis=0)
     other.test_values(t.to_values())
-
-
-# def test_push_stat(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         t = other.s.zeros_like()
-#         for s in other.S:
-#             t.push_stat(s.mean(), v=s.to_numpy()[..., 2:], weight=s.weight())
-#         other.test_values(t.to_values())
-
-
-# TODO(wpk): add this?
-# def test_push_stats(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         datas = np.array([s.to_numpy() for s in other.S])
-#         t = other.s.zeros_like()
-#         t.push_stats()
-#         for s in other.S:
-#             t.push_stat(s.mean(), v=s.to_numpy()[..., 2:], w=s.weight())
-#         other.test_values(t.to_values())
 
 
 @pytest.mark.parametrize(("val_shape", "mom"), [(None, 2), ((2, 2), (2, 2))])
@@ -451,68 +441,9 @@ def test_push_order_1(val_shape, mom, rng) -> None:
     c1 = CentralMoments.zeros(mom=mom1, val_shape=val_shape)  # type: ignore[call-overload]
     c2 = CentralMoments.from_vals(*xx, axis=0, mom=mom)
 
-    # if not cov:
-    #     a = x.mean(axis=0)
-    #     v = x.var(axis=0)
-    #     c1.push_stat(a, v, weight=100.0)
-    #     np.testing.assert_allclose(c1.weight(), c2.weight())
-    #     np.testing.assert_allclose(c1.mean(), c2.mean())
-
-    #     c1.zero()
-
     c1.push_vals(*xx, axis=0)
     np.testing.assert_allclose(c1.weight(), c2.weight())
     np.testing.assert_allclose(c1.mean(), c2.mean())
-
-
-# TODO(wpk): Add this back?
-# def test_from_stat(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         t = other.cls.from_stat(
-#             a=other.s.mean(),
-#             v=other.s.to_numpy()[..., 2:],
-#             w=other.s.weight(),
-#             mom=other.mom,
-#         )
-#         other.test_values(t.to_values())
-
-#         t = other.cls.from_stat(
-#             a=other.s.mean(),
-#             v=other.s.to_numpy()[..., 2:],
-#             w=other.s.weight(),
-#             mom=other.mom,
-#             dtype=np.float32,
-#             val_shape=t.val_shape,
-#         )
-
-#         other.test_values(t.to_values(), rtol=1e-4)
-
-
-# def test_from_stats(other) -> None:
-#     if other.s.mom_ndim == 1:
-#         a = np.array([s.mean() for s in other.S])
-#         v = np.array([s.to_numpy()[..., 2:] for s in other.S])
-#         w = np.array([s.weight() for s in other.S])
-
-#         t = other.s.zeros_like()
-#         t.push_stats(
-#             a=a,
-#             v=v,
-#             w=w,
-#             axis=0,
-#         )
-#         other.test_values(t.to_values())
-
-#         for val_shape in [None, other.s.val_shape]:
-#             t = other.cls.from_stats(
-#                 a=a, v=v, w=w, mom=other.s.mom, val_shape=val_shape
-#             )
-#             other.test_values(t.to_values())
-
-#     else:
-#         t = other.s.zeros_like()
-#         with pytest.raises(NotImplementedError):
-#             t.push_stats(1.0)
 
 
 def test_add(other) -> None:
@@ -610,8 +541,7 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
     c1 = CentralMoments(c.data[::2, ...], mom_ndim=mom_ndim)
     c2 = CentralMoments(c.data[1::2, ...], mom_ndim=mom_ndim)
 
-    # make axis last dimension before moments
-    c3 = (c1 + c2).moveaxis(0, -1)
+    c3 = c1 + c2  # .moveaxis(0, -1)
 
     np.testing.assert_allclose(
         c3.data,
@@ -633,9 +563,7 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
 
     np.testing.assert_allclose(c3.data, c.block(2, axis=1))
 
-    np.testing.assert_allclose(
-        c.block(None, axis=0).moveaxis(-1, 0).data[0, ...], c.reduce(axis=0)
-    )
+    np.testing.assert_allclose(c.block(None, axis=0).data[0, ...], c.reduce(axis=0))
     np.testing.assert_allclose(
         c.reduce(by=group_idx, axis=1).to_numpy(), c.block(2, axis=1).to_numpy()
     )
@@ -651,5 +579,39 @@ def test_block_odd_size(rng) -> None:
     c0 = CentralMoments(data, mom_ndim=1).block(3, axis=0)
 
     c1 = CentralMoments.from_vals(x[:9].reshape(3, -1), mom=2, axis=1)
-
     np.testing.assert_allclose(c0, c1)
+
+
+@pytest.mark.parametrize("shape", [(10,), (10, 3)])
+@pytest.mark.parametrize("mom", [(3,), (3, 3)])
+def test_assign_weight(rng, shape, mom) -> None:
+    import cmomy
+
+    x = rng.random(shape)
+    xy = (x,) if len(mom) == 1 else (x, x)
+
+    c1 = cmomy.CentralMoments.from_vals(*xy, mom=mom, axis=0)
+    c2 = cmomy.CentralMoments.from_vals(*xy, mom=mom, axis=0, weight=2)
+
+    cc = c1.assign_moment("weight", x.shape[0] * 2, copy=True)
+    np.testing.assert_allclose(cc.values, c2.values)
+    assert not np.shares_memory(cc.data, c1.data)
+
+    ca = c1.copy()
+    cc = ca.assign_moment("weight", x.shape[0] * 2, copy=False)
+    np.testing.assert_allclose(cc.values, c2.values)
+    np.testing.assert_allclose(cc.values, ca.values)
+    assert np.shares_memory(cc.data, ca.data)
+
+    # xcentral
+    cx1 = c1.to_x()
+    cx2 = c2.to_x()
+
+    ccx = cx1.assign_moment("weight", x.shape[0] * 2, copy=True)
+    xr.testing.assert_allclose(cx2.values, ccx.values)
+    assert not np.shares_memory(ccx.data, cx1.data)
+
+    ccx = cx1.assign_moment("weight", x.shape[0] * 2, copy=False)
+    xr.testing.assert_allclose(cx2.values, ccx.values)
+    xr.testing.assert_allclose(cx1.values, ccx.values)
+    assert np.shares_memory(ccx.data, cx1.data)
