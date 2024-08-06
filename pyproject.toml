@@ -200,6 +200,8 @@ lint.extend-ignore = [
     # "D102",    # - Missing docstring in public method
     # "D103",    # - Missing docstring in public function
     # "D202",    # - blank line after docstring
+    "DOC201", # - Missing return from documentation
+    "DOC202", # - Missing return from documentation
     "DOC501", # - Missing raises from documentation
 ]
 lint.per-file-ignores."**/*.ipynb" = [
@@ -222,6 +224,7 @@ lint.per-file-ignores."noxfile.py" = [
 ]
 lint.per-file-ignores."tests/*.py" = [
     "D",
+    "DOC",
     "S101",
 ]
 lint.per-file-ignores."tests/test_central_2.py" = [
@@ -230,6 +233,7 @@ lint.per-file-ignores."tests/test_central_2.py" = [
 lint.per-file-ignores."tools/*.py" = [
     "A",
     "D102",
+    "DOC201",
     "S",
     "SLF001",
 ]
@@ -262,6 +266,9 @@ lint.extend-per-file-ignores."src/**/core/formatting.py" = [
     "ANN",
     "D",
     "SLF001",
+]
+lint.extend-per-file-ignores."src/**/{typing,random}.py" = [
+    "A005",
 ]
 # Project specific ignores (avoid changing per-file-ignores directly)
 lint.extend-per-file-ignores."tests/**/*.py" = [
