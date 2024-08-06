@@ -2,10 +2,10 @@
 #    uv pip compile --python-version=3.11 --annotation-style=line -o requirements/lock/py311-test-notebook.txt requirements/test-notebook.txt
 appnope==0.1.4            # via ipykernel
 asttokens==2.4.1          # via stack-data
-attrs==23.2.0             # via jsonschema, referencing
+attrs==24.2.0             # via jsonschema, referencing
 comm==0.2.2               # via ipykernel
-coverage==7.6.0           # via nbval, pytest-cov
-debugpy==1.8.2            # via ipykernel
+coverage==7.6.1           # via nbval, pytest-cov
+debugpy==1.8.5            # via ipykernel
 decorator==5.1.1          # via ipython
 docstring-inheritance==2.2.0  # via -r requirements/test-notebook.txt
 execnet==2.1.1            # via pytest-xdist
@@ -45,9 +45,9 @@ pytest-sugar==1.0.0       # via -r requirements/test-notebook.txt
 pytest-xdist==3.6.1       # via -r requirements/test-notebook.txt
 python-dateutil==2.9.0.post0  # via jupyter-client, pandas
 pytz==2024.1              # via pandas
-pyzmq==26.0.3             # via ipykernel, jupyter-client
+pyzmq==26.1.0             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
-rpds-py==0.19.1           # via jsonschema, referencing
+rpds-py==0.20.0           # via jsonschema, referencing
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar
