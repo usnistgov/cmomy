@@ -77,3 +77,5 @@ Pre-loaded modules
    ~cmomy.reduction
    ~cmomy.resample
    ~cmomy.convert
+   ~cmomy.utils
+   ~cmomy.rolling

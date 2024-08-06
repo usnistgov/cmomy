@@ -1,4 +1,7 @@
-"""Routines to calculate confidence intervals from resampled data."""
+"""
+Routines to calculate confidence intervals from resampled data (:mod:`cmomy.confidence_interval`)
+=================================================================================================
+"""
 
 from __future__ import annotations
 
