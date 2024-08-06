@@ -188,9 +188,6 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         return self.dims[-self.mom_ndim :]
 
     # ** top level creation/copy/new ----------------------------------------------
-    def _wrap_like(self, x: NDArrayAny) -> xr.DataArray:
-        return self._xdata.copy(data=x)
-
     @overload
     def new_like(
         self,
@@ -365,62 +362,33 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
             mom_ndim=2,
         )
 
-    @docfiller_inherit_abc()
-    def assign_weight(
-        self, weight: ArrayLike | xr.DataArray, copy: bool = True
-    ) -> Self:
-        return super().assign_weight(weight=weight, copy=copy)
-
     # ** Access to underlying statistics ------------------------------------------
-    # TODO(wpk): add overload
-    def _single_index_selector(
-        self,
-        val: int,
-        dim_combined: str = "variable",
-    ) -> dict[Hashable, Any]:
-        idxs = self._single_index(val)[-self.mom_ndim :]
-        return {
-            dim: (idx if self._mom_ndim == 1 else xr.DataArray(idx, dims=dim_combined))
-            for dim, idx in zip(self.mom_dims, idxs)
-        }
-
-    def _single_index_dataarray(
-        self,
-        val: int,
-        dim_combined: str = "variable",
-        coords_combined: str | Sequence[Hashable] | None = None,
-    ) -> xr.DataArray:
-        if coords_combined is None:
-            coords_combined = self.mom_dims
-
-        selector = self._single_index_selector(
-            val=val,
-            dim_combined=dim_combined,
-        )
-
-        out = self.to_dataarray().isel(selector)
-        if self._mom_ndim > 1:
-            out = out.assign_coords(coords={dim_combined: list(coords_combined)})  # pyright: ignore[reportUnknownMemberType]
-        return out
-
     def mean(
         self,
+        squeeze: bool = True,
         dim_combined: str = "variable",
         coords_combined: str | Sequence[Hashable] | None = None,
     ) -> xr.DataArray:
         """Return mean/first moment(s) of data."""
-        return self._single_index_dataarray(
-            val=1, dim_combined=dim_combined, coords_combined=coords_combined
+        return self.select_moment(
+            "ave",
+            squeeze=squeeze,
+            dim_combined=dim_combined,
+            coords_combined=coords_combined,
         )
 
     def var(
         self,
+        squeeze: bool = True,
         dim_combined: str = "variable",
         coords_combined: str | Sequence[Hashable] | None = None,
     ) -> xr.DataArray:
         """Return variance (second central moment) of data."""
-        return self._single_index_dataarray(
-            val=2, dim_combined=dim_combined, coords_combined=coords_combined
+        return self.select_moment(
+            "var",
+            squeeze=squeeze,
+            dim_combined=dim_combined,
+            coords_combined=coords_combined,
         )
 
     # ** xarray specific methods --------------------------------------------------

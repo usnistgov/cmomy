@@ -127,7 +127,7 @@ def _do_test(func, *args, expected, **kwargs):
             (5, 1, 2),
         ),
         (cmomy.convert.moments_type, "convert", {"mom_ndim": 1}, (5, 1, 2)),
-        (cmomy.convert.vals_to_data, "convert", {"mom": 2}, (5, 1, 2, 3)),
+        (cmomy.utils.vals_to_data, "convert", {"mom": 2}, (5, 1, 2, 3)),
         (cmomy.convert.cumulative, "reduce", {"mom_ndim": 1}, (5, 1, 2)),
         (
             "from_resample_vals",

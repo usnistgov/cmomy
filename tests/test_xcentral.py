@@ -107,33 +107,6 @@ def test_from_centralmoments() -> None:
     )
 
 
-def test__single_index_selector() -> None:
-    c = CentralMoments(np.arange(3), mom_ndim=1, dtype=np.float64).to_xcentralmoments()
-
-    xr.testing.assert_allclose(c._single_index_dataarray(0), xr.DataArray(0))
-    xr.testing.assert_allclose(c._single_index_dataarray(1), xr.DataArray(1))
-    xr.testing.assert_allclose(c._single_index_dataarray(2), xr.DataArray(2))
-
-    c = CentralMoments(
-        np.arange(3 * 3).reshape(3, 3), mom_ndim=2, dtype=np.float64
-    ).to_xcentralmoments()
-
-    xr.testing.assert_allclose(
-        c._single_index_dataarray(0),
-        xr.DataArray([0, 0], dims="variable", coords={"variable": ["mom_0", "mom_1"]}),
-    )
-
-    xr.testing.assert_allclose(
-        c._single_index_dataarray(1, dim_combined="v", coords_combined=["a", "b"]),
-        xr.DataArray([3, 1], dims="v", coords={"v": ["a", "b"]}),
-    )
-
-    xr.testing.assert_allclose(
-        c._single_index_dataarray(2),
-        xr.DataArray([6, 2], dims="variable", coords={"variable": ["mom_0", "mom_1"]}),
-    )
-
-
 def test_transpose() -> None:
     c = xCentralMoments.zeros(
         val_shape=(2, 3), mom=(4, 6), dims=("a", "b", "mom_0", "mom_1")
@@ -236,9 +209,10 @@ def test_mean_var_simple(rng) -> None:
     x = xr.DataArray(rng.random((100, 4)), dims=("rec", "a"))
 
     c = xCentralMoments.from_vals(x, mom=3, dim="rec")
-
     xr.testing.assert_allclose(c.mean(), x.mean(dim="rec"))
     xr.testing.assert_allclose(c.var(), x.var(dim="rec"))
+
+    xr.testing.assert_allclose(c.cov(), c.var())
 
 
 def test_assign_xr_attr() -> None:

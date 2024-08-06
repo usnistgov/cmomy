@@ -56,6 +56,18 @@ Confidence intervals (from :mod:`cmomy.confidence_interval`)
 
    ~cmomy.confidence_interval.bootstrap_confidence_interval
 
+
+Central moment array utilities (from :mod:`cmomy.utils`)
+--------------------------------------------------------
+
+.. autosummary::
+
+   ~cmomy.utils.moveaxis
+   ~cmomy.utils.select_moment
+   ~cmomy.utils.assign_moment
+
+
+
 Pre-loaded modules
 ------------------
 

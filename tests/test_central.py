@@ -579,5 +579,39 @@ def test_block_odd_size(rng) -> None:
     c0 = CentralMoments(data, mom_ndim=1).block(3, axis=0)
 
     c1 = CentralMoments.from_vals(x[:9].reshape(3, -1), mom=2, axis=1)
-
     np.testing.assert_allclose(c0, c1)
+
+
+@pytest.mark.parametrize("shape", [(10,), (10, 3)])
+@pytest.mark.parametrize("mom", [(3,), (3, 3)])
+def test_assign_weight(rng, shape, mom) -> None:
+    import cmomy
+
+    x = rng.random(shape)
+    xy = (x,) if len(mom) == 1 else (x, x)
+
+    c1 = cmomy.CentralMoments.from_vals(*xy, mom=mom, axis=0)
+    c2 = cmomy.CentralMoments.from_vals(*xy, mom=mom, axis=0, weight=2)
+
+    cc = c1.assign_moment("weight", x.shape[0] * 2, copy=True)
+    np.testing.assert_allclose(cc.values, c2.values)
+    assert not np.shares_memory(cc.data, c1.data)
+
+    ca = c1.copy()
+    cc = ca.assign_moment("weight", x.shape[0] * 2, copy=False)
+    np.testing.assert_allclose(cc.values, c2.values)
+    np.testing.assert_allclose(cc.values, ca.values)
+    assert np.shares_memory(cc.data, ca.data)
+
+    # xcentral
+    cx1 = c1.to_x()
+    cx2 = c2.to_x()
+
+    ccx = cx1.assign_moment("weight", x.shape[0] * 2, copy=True)
+    xr.testing.assert_allclose(cx2.values, ccx.values)
+    assert not np.shares_memory(ccx.data, cx1.data)
+
+    ccx = cx1.assign_moment("weight", x.shape[0] * 2, copy=False)
+    xr.testing.assert_allclose(cx2.values, ccx.values)
+    xr.testing.assert_allclose(cx1.values, ccx.values)
+    assert np.shares_memory(ccx.data, cx1.data)

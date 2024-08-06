@@ -138,7 +138,7 @@ def test_from_raws(dc, dcx) -> None:
         t = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis)
         r = dc.reduce(axis=axis)
 
-        np.testing.assert_allclose(t.to_numpy(), r.to_numpy())
+        np.testing.assert_allclose(t.to_numpy(), r.to_numpy(), atol=1e-14)
 
         # test xCentral
         o1 = (

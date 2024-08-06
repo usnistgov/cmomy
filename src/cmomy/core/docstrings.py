@@ -185,6 +185,30 @@ def _dummy_docstrings() -> None:
         dimensions) in output. Otherwise, place sampled dimension at same
         position as input ``axis``.
 
+    select_name | name : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar"}
+        Name of moment(s) to select.
+
+        - ``"weight"`` : weights
+        - ``"ave"`` : Averages.
+        - ``"var"``: Variance. The last dimension is of size ``mom_ndim``.
+        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variace if ``mom_ndim == 1``.
+        - ``"xave"``: Average of first variable.
+        - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
+        - ``"xvar"``: Variance of first variable.
+        - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+
+        Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape
+        ``data.shape[:-mom_ndim]``. Names ``"ave", "var"`` imply shape
+        ``(*data.shape[:-mom_ndim], mom_ndim)``, unless ``mom_ndim == 1`` and
+        ``squeeze = True``.
+    select_squeeze | squeeze : bool, default=False
+        If True, squeeze last dimension if ``name`` is one of ``ave`` or ``var`` and ``mom_ndim == 1``.
+    select_dim_combined | dim_combined: str, optional
+        Name of new dimension for options ``name`` that can select multiple dimensions.
+    select_coords_combined | coords_combined: str or sequence of str, optional
+        Coordates to assign to ``dim_combined``.  Defaults to names of moments dimension(s)
+
+
     """
 
 

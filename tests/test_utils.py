@@ -2,11 +2,19 @@
 # pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 import xarray as xr
 
 from cmomy import utils
+from cmomy.core.utils import mom_to_mom_ndim
+
+if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+
+    from cmomy.core.typing import Mom_NDim, NDArrayAny
 
 
 def _do_test(func, *args, expected=None, match=None, **kwargs):
@@ -119,7 +127,7 @@ def _do_test_select_moment_mom_ndim(
     if (
         isinstance(out, xr.DataArray)
         and kwargs["name"] in {"ave", "var"}
-        and (mom_ndim != 1 or not kwargs.get("squeeze", False))
+        and (mom_ndim != 1 or not kwargs.get("squeeze", True))
     ):
         dim_combined = dim_combined or "variable"
         if coords_combined is None:
@@ -145,10 +153,10 @@ def _do_test_select_moment_mom_ndim(
     ("kwargs", "index"),
     [
         ({"name": "weight"}, (..., 0)),
-        ({"name": "ave"}, (..., [1])),
-        ({"name": "var"}, (..., [2])),
-        ({"name": "ave", "squeeze": True}, (..., 1)),
-        ({"name": "var", "squeeze": True}, (..., 2)),
+        ({"name": "ave"}, (..., 1)),
+        ({"name": "var"}, (..., 2)),
+        ({"name": "ave", "squeeze": False}, (..., [1])),
+        ({"name": "var", "squeeze": False}, (..., [2])),
         ({"name": "xave"}, (..., 1)),
         ({"name": "xvar"}, (..., 2)),
         ({"name": "cov"}, (..., 2)),
@@ -210,3 +218,199 @@ def test_select_moment_mom_ndim_2(
     _do_test_select_moment_mom_ndim(
         data, 2, index, dim_combined, coords_combined, **kwargs
     )
+
+
+def _do_test_assign_moment_mom_ndim(
+    data,
+    mom_ndim,
+    index,
+    copy,
+    scalar,
+    **kwargs,
+):
+    value: float | NDArrayAny | xr.DataArray
+    if scalar:
+        value = -10
+    elif isinstance(data, xr.DataArray):
+        value = xr.full_like(data[index], -10)
+    else:
+        shape = data[index].shape
+        if len(shape) > 2:
+            shape = shape[-2:]
+        value = np.full(shape, fill_value=-10)
+
+    check = data.copy()
+    check[index] = value
+
+    out = utils.assign_moment(
+        data,
+        value=value,
+        **kwargs,
+        copy=copy,
+        mom_ndim=mom_ndim,
+    )
+
+    if not copy:
+        assert np.shares_memory(out, data)
+
+    np.testing.assert_allclose(out, check)
+
+
+@pytest.mark.parametrize(
+    "shape",
+    [
+        (3,),
+        (2, 3),
+        (1, 2, 3),
+    ],
+)
+@pytest.mark.parametrize(
+    ("kwargs", "index"),
+    [
+        ({"name": "weight"}, (..., 0)),
+        ({"name": "ave"}, (..., 1)),
+        ({"name": "var"}, (..., 2)),
+        ({"name": "ave", "squeeze": False}, (..., [1])),
+        ({"name": "var", "squeeze": False}, (..., [2])),
+        ({"name": "xave"}, (..., 1)),
+        ({"name": "xvar"}, (..., 2)),
+        ({"name": "cov"}, (..., 2)),
+    ],
+)
+@pytest.mark.parametrize("scalar", [True, False])
+@pytest.mark.parametrize("copy", [True, False])
+def test_assign_moment_mom_ndim_1(
+    rng,
+    shape,
+    kwargs,
+    index,
+    as_dataarray,
+    scalar,
+    copy,
+) -> None:
+    data = rng.random(shape)
+    if as_dataarray:
+        data = xr.DataArray(data)
+
+    _do_test_assign_moment_mom_ndim(data, 1, index, scalar=scalar, copy=copy, **kwargs)
+
+
+@pytest.mark.parametrize(
+    "shape",
+    [
+        (3, 3),
+        (2, 3, 3),
+        (1, 2, 3, 3),
+    ],
+)
+@pytest.mark.parametrize(
+    ("kwargs", "index"),
+    [
+        ({"name": "weight"}, (..., 0, 0)),
+        ({"name": "ave"}, (..., [1, 0], [0, 1])),
+        ({"name": "var"}, (..., [2, 0], [0, 2])),
+        ({"name": "xave"}, (..., 1, 0)),
+        ({"name": "xvar"}, (..., 2, 0)),
+        ({"name": "yave"}, (..., 0, 1)),
+        ({"name": "yvar"}, (..., 0, 2)),
+        ({"name": "cov"}, (..., 1, 1)),
+    ],
+)
+@pytest.mark.parametrize("scalar", [True, False])
+@pytest.mark.parametrize("copy", [True, False])
+def test_assign_moment_mom_ndim_2(
+    rng,
+    shape,
+    kwargs,
+    index,
+    as_dataarray,
+    scalar,
+    copy,
+) -> None:
+    data = rng.random(shape)
+    if as_dataarray:
+        data = xr.DataArray(data)
+
+    _do_test_assign_moment_mom_ndim(data, 2, index, scalar=scalar, copy=copy, **kwargs)
+
+
+# * Vals -> Data
+@pytest.mark.parametrize(
+    ("xshape", "yshape", "wshape", "mom", "out_shape"),
+    [
+        ((2,), None, None, (2,), (2, 3)),
+        (None, None, (2,), (2,), (2, 3)),
+        ((2, 3), None, (4, 1, 1), (2,), (4, 2, 3, 3)),
+        ((2,), (2,), None, (2, 2), (2, 3, 3)),
+        ((1, 2), (3, 1, 1), None, (2, 2), (3, 1, 2, 3, 3)),
+        ((2,), (2,), (1, 2), (2, 2), (1, 2, 3, 3)),
+    ],
+)
+def test_vals_to_data(xshape, yshape, wshape, mom, out_shape) -> None:
+    w: ArrayLike = 0.1 if wshape is None else np.full(wshape, 0.1)
+    x: ArrayLike = 0.2 if xshape is None else np.full(xshape, 0.2)
+    y: ArrayLike = 0.3 if yshape is None else np.full(yshape, 0.3)
+
+    xy: tuple[ArrayLike, ...] = (x,) if len(mom) == 1 else (x, y)
+    out = utils.vals_to_data(*xy, weight=w, mom=mom)
+    assert out.shape == out_shape
+
+    mom_ndim = mom_to_mom_ndim(mom)
+
+    np.testing.assert_allclose(
+        utils.select_moment(out, "weight", mom_ndim=mom_ndim), 0.1
+    )
+    np.testing.assert_allclose(utils.select_moment(out, "xave", mom_ndim=mom_ndim), 0.2)
+    if mom_ndim == 2:
+        np.testing.assert_allclose(
+            utils.select_moment(out, "yave", mom_ndim=mom_ndim), 0.3
+        )
+
+    np.testing.assert_allclose(
+        out.sum(),
+        (
+            np.prod(out.shape[: -len(mom)])
+            * (0.1 + 0.2 + (0.0 if len(mom) == 1 else 0.3))
+        ),
+    )
+
+
+def test_vals_to_data_errors() -> None:
+    x = np.zeros(3)
+
+    with pytest.raises(ValueError):
+        utils.vals_to_data(x, mom=(2, 2))
+
+    with pytest.raises(ValueError):
+        utils.vals_to_data(x, x, mom=2)
+
+
+def test_vals_to_data_xarray() -> None:
+    x = xr.DataArray(np.full((1, 2), 0.2), dims=["a", "b"])
+    out = utils.vals_to_data(x, weight=0.1, mom=2, dtype=np.float32)
+    assert out.dtype.type == np.float32
+    assert out.dims == ("a", "b", "mom_0")
+    assert out.shape == (1, 2, 3)
+
+    y = xr.DataArray(np.full((3, 4), 0.3), dims=["c", "d"])
+
+    out0 = utils.vals_to_data(x, y, weight=0.1, mom=(2, 2), mom_dims=("x", "y"))
+    assert out0.dims == ("c", "d", "a", "b", "x", "y")
+    assert out0.shape == (3, 4, 1, 2, 3, 3)
+
+    out = xr.DataArray(
+        np.zeros((1, 2, 3, 4, 3, 3), dtype=np.float32),
+        dims=["a", "b", "c", "d", "x", "y"],
+    )
+
+    w = xr.full_like(x, 0.1)
+    check = utils.vals_to_data(x, y, weight=w, out=out, mom=(2, 2))
+    assert check.data is out.data
+
+    xr.testing.assert_allclose(out0, out.transpose(*out0.dims))
+    mom_ndim: Mom_NDim = 2
+    np.testing.assert_allclose(
+        utils.select_moment(out, "weight", mom_ndim=mom_ndim), 0.1
+    )
+    np.testing.assert_allclose(utils.select_moment(out, "xave", mom_ndim=mom_ndim), 0.2)
+    np.testing.assert_allclose(utils.select_moment(out, "yave", mom_ndim=mom_ndim), 0.3)

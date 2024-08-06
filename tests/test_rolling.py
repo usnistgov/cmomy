@@ -2,6 +2,7 @@
 # pyright:  reportArgumentType=false, reportAssignmentType=false
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -15,7 +16,7 @@ from cmomy import rolling
 if TYPE_CHECKING:
     from typing import TypedDict
 
-    from cmomy.core.typing import Mom_NDim, MomentsStrict
+    from cmomy.core.typing import Mom_NDim, MomentsStrict, NDArrayAny, SelectMoment
 
     class RollingDict(TypedDict):
         window: int
@@ -115,6 +116,12 @@ def test_construct_rolling_window_array_mom_ndim(as_dataarray) -> None:
 
 
 # * Move data
+def _do_test_select(out, name, mom_ndim, expected, atol=1e-14):
+    np.testing.assert_allclose(
+        cmomy.select_moment(out, name, mom_ndim=mom_ndim), expected, atol=atol
+    )
+
+
 @pytest.mark.parametrize(
     ("shape", "axis"),
     [
@@ -144,7 +151,7 @@ def test_rolling_data(
     if as_dataarray:
         x = dx
 
-    data = cmomy.convert.vals_to_data(
+    data = cmomy.utils.vals_to_data(
         x,
         mom=3,
     )
@@ -156,8 +163,11 @@ def test_rolling_data(
         **kws,
     )
 
-    np.testing.assert_allclose(out[..., 1], r.mean())
-    np.testing.assert_allclose(out[..., 2], r.var(ddof=0))
+    for name, expected in [
+        ("ave", r.mean()),
+        ("var", r.var(ddof=0)),
+    ]:
+        _do_test_select(out, name, 1, expected)
 
     # vals
     out2 = rolling.rolling_vals(x, axis=axis, mom=3, move_axis_to_end=False, **kws)
@@ -201,11 +211,8 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
         w[idx, ...] = 0.0
 
     xy = (x,) if mom_ndim == 1 else (x, y)
-    widx = (..., 0) if mom_ndim == 1 else (..., 0, 0)
-    xidx = (..., 1) if mom_ndim == 1 else (..., 1, 0)
-    x2idx = (..., 2) if mom_ndim == 1 else (..., 2, 0)
 
-    data = cmomy.convert.vals_to_data(
+    data = cmomy.utils.vals_to_data(
         *xy,
         weight=w,
         mom=mom,
@@ -225,39 +232,48 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     )
 
     np.testing.assert_allclose(out, outd, atol=1e-14)
-
     # just to make sure, we also use construct
     data_rolling = rolling.construct_rolling_window_array(
         data, axis=0, fill_value=0.0, mom_ndim=mom_ndim, **kws
     )
 
+    select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
+
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
-    count = (data_rolling[widx] != 0.0).sum(axis=-1)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
 
     outc = np.where(
-        count[(..., *(None,) * mom_ndim)]
+        np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
         np.nan,
     )
-    w2 = outc[widx]
+    w2 = select(outc, "weight")
     w2[np.isnan(w2)] = 0.0
     np.testing.assert_allclose(outc, out, atol=1e-14)
 
-    # compare to pands
+    # compare to pandas
     rx = pd.DataFrame(x).rolling(**kws)
     rw = pd.DataFrame(w).replace(0.0, np.nan).rolling(**kws)
 
-    np.testing.assert_allclose(out[widx], rw.sum().fillna(0.0))
-    np.testing.assert_allclose(out[xidx], rx.mean())
-    np.testing.assert_allclose(out[x2idx], rx.var(ddof=0), atol=1e-14)
+    _tests = [
+        ("weight", rw.sum().fillna(0.0)),
+        ("xave", rx.mean()),
+        ("xvar", rx.var(ddof=0)),
+    ]
 
     if mom_ndim == 2:
         dfy = pd.DataFrame(y)
         ry = dfy.rolling(**kws)
-        np.testing.assert_allclose(out[..., 0, 1], ry.mean())
-        np.testing.assert_allclose(out[..., 0, 2], ry.var(ddof=0), atol=1e-14)
-        np.testing.assert_allclose(out[..., 1, 1], rx.cov(dfy, ddof=0), atol=1e-14)
+        _tests = [
+            *_tests,
+            ("yave", ry.mean()),
+            ("yvar", ry.var(ddof=0)),
+            ("cov", rx.cov(dfy, ddof=0)),
+        ]
+
+    for name, expected in _tests:
+        _do_test_select(out, name, mom_ndim, expected)
 
 
 @pytest.mark.parametrize("mom_ndim", [1, 2])
@@ -265,11 +281,9 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
 @pytest.mark.parametrize("min_periods", [None, 2])
 @pytest.mark.parametrize("center", [False, True])
 @pytest.mark.parametrize("missing", [True, False])
-def test_rolling_weights(  # noqa: PLR0914
-    rng, mom_ndim, window, min_periods, center, missing
-) -> None:
+def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) -> None:
     # test unequal weights...
-    data = rng.random((100, 3, 3))
+    data: NDArrayAny = rng.random((100, 3, 3))
 
     kws: RollingDict = {"window": window, "min_periods": min_periods, "center": center}
 
@@ -287,37 +301,34 @@ def test_rolling_weights(  # noqa: PLR0914
     )
 
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
-    count = (data_rolling[(..., *((0,) * mom_ndim))] != 0.0).sum(axis=-1)
+    select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
+
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
 
     outc = np.where(
-        count[(..., *((None,) * mom_ndim))]
+        np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
         np.nan,
     )
-    w2 = outc[(..., *(0,) * mom_ndim)]
+    w2 = select(outc, "weight", mom_ndim=mom_ndim)
     w2[np.isnan(w2)] = 0.0
 
     np.testing.assert_allclose(out, outc)
 
     # testing val
-    w = data[(..., *(0,) * mom_ndim)]
-    x = data[(..., *(1,) * mom_ndim)]
-    y = data[(..., *(2,) * mom_ndim)]
+    mom_names: list[SelectMoment] = ["weight", "xave"]
+    if mom_ndim == 2:
+        mom_names += ["yave"]
+
+    w, *xy = (select(data, name) for name in mom_names)
 
     mom = (3,) * mom_ndim
+    out = rolling.rolling_vals(*xy, weight=w, **kws, axis=0, mom=mom)  # pyright: ignore[reportCallIssue]
 
-    xy = (x,) if mom_ndim == 1 else (x, y)
+    wr, *xyr = (select(data_rolling, name) for name in mom_names)
 
-    out = rolling.rolling_vals(*xy, weight=w, **kws, axis=0, mom=mom)
-
-    wr = data_rolling[(..., *(0,) * mom_ndim)]
-    xr = data_rolling[(..., *(1,) * mom_ndim)]
-    yr = data_rolling[(..., *(2,) * mom_ndim)]
-
-    xyr = (xr,) if mom_ndim == 1 else (xr, yr)
-
-    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=-1)
+    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=-1)  # pyright: ignore[reportCallIssue]
     count = (wr != 0.0).sum(axis=-1)
 
     outc = np.where(
@@ -326,10 +337,10 @@ def test_rolling_weights(  # noqa: PLR0914
         outc,
         np.nan,
     )
-    w2 = outc[(..., *(0,) * mom_ndim)]
+    w2 = select(outc, "weight")
     w2[np.isnan(w2)] = 0.0
 
-    outc = np.moveaxis(outc, 0, -(mom_ndim + 1))
+    outc = cmomy.moveaxis(outc, 0, -1, mom_ndim=mom_ndim)
     np.testing.assert_allclose(out, outc, atol=1e-14)
 
 
@@ -365,17 +376,18 @@ def test_rolling_data_from_constructed_windows(
     )
     out2 = cmomy.reduce_data(data_rolling, axis=-1, mom_ndim=mom_ndim)
     # clean up counts...
-    count = (data_rolling[(..., *((0,) * mom_ndim))] != 0.0).sum(axis=-1)
+    select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
 
     out2 = np.where(
-        count[(..., *((None,) * mom_ndim))]
+        np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         out2,
         np.nan,
     )
 
     # nan weights -> 0
-    w = out2[(..., *(0,) * mom_ndim)]
+    w = cmomy.select_moment(out2, "weight", mom_ndim=mom_ndim)
     w[np.isnan(w)] = 0.0
     out2 = cmomy.convert.assign_weight(out2, w, mom_ndim=mom_ndim, copy=False)
 
@@ -415,11 +427,8 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
         w[idx, ...] = 0.0
 
     xy = (x,) if mom_ndim == 1 else (x, y)
-    widx = (..., 0) if mom_ndim == 1 else (..., 0, 0)
-    xidx = (..., 1) if mom_ndim == 1 else (..., 1, 0)
-    x2idx = (..., 2) if mom_ndim == 1 else (..., 2, 0)
 
-    data = cmomy.convert.vals_to_data(
+    data = cmomy.utils.vals_to_data(
         *xy,
         weight=w,
         mom=mom,
@@ -434,17 +443,20 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     rx = pd.DataFrame(x).ewm(**kws)
     rw = pd.DataFrame(w).replace(0.0, np.nan).ewm(**kws)
 
-    if adjust:
-        np.testing.assert_allclose(out[widx], rw.sum().fillna(0.0))
-    np.testing.assert_allclose(out[xidx], rx.mean())
-    np.testing.assert_allclose(out[x2idx], rx.var(bias=True))
+    _tests = [("weight", rw.sum().fillna(0.0))] if adjust else []
+    _tests += [("xave", rx.mean()), ("xvar", rx.var(bias=True))]
 
     if mom_ndim == 2:
         dfy = pd.DataFrame(y)
         ry = dfy.ewm(**kws)
-        np.testing.assert_allclose(out[..., 0, 1], ry.mean())
-        np.testing.assert_allclose(out[..., 0, 2], ry.var(bias=True))
-        np.testing.assert_allclose(out[..., 1, 1], rx.cov(dfy, bias=True))
+        _tests += [
+            ("yave", ry.mean()),
+            ("yvar", ry.var(bias=True)),
+            ("cov", rx.cov(dfy, bias=True)),
+        ]
+
+    for name, expected in _tests:
+        _do_test_select(out, name, mom_ndim, expected)
 
 
 @pytest.mark.parametrize(
@@ -473,7 +485,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
     # move to original position
     out = np.moveaxis(out, -2, axis)
 
-    data = cmomy.convert.vals_to_data(
+    data = cmomy.utils.vals_to_data(
         x,
         mom=1,
     )
@@ -537,7 +549,7 @@ def test_rolling_exp_weight(
     weight = rng.random(shape)
     xy = tuple(rng.random(shape) for _ in range(mom_ndim))
 
-    data = cmomy.convert.vals_to_data(
+    data = cmomy.utils.vals_to_data(
         *xy,
         weight=weight,
         mom=mom,
@@ -592,7 +604,7 @@ def test_rolling_exp_multiple_alpha(
     weight = rng.random(shape)
     xy = tuple(rng.random(shape) for _ in range(mom_ndim))
 
-    data = cmomy.convert.vals_to_data(*xy, weight=weight, mom=mom)
+    data = cmomy.utils.vals_to_data(*xy, weight=weight, mom=mom)
 
     a = rolling.rolling_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust

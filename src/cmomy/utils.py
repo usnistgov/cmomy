@@ -10,13 +10,15 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 import xarray as xr
 
-from .core.array_utils import normalize_axis_tuple
+from .core.array_utils import normalize_axis_tuple, select_dtype
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
 from .core.utils import mom_to_mom_shape as mom_to_mom_shape  # noqa: PLC0414
 from .core.validate import (
     validate_axis_mult,
+    validate_mom_and_mom_ndim,
+    validate_mom_dims,
     validate_mom_ndim,
 )
 from .core.xr_utils import select_axis_dim_mult
@@ -27,14 +29,22 @@ if TYPE_CHECKING:
         Sequence,
     )
 
-    from numpy.typing import NDArray
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .core.typing import (
+        ArrayLikeArg,
+        DTypeLikeArg,
+        FloatT,
+        KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomDims,
+        Moments,
+        NDArrayAny,
         ScalarT,
         SelectMoment,
     )
+    from .core.typing_compat import EllipsisType
 
 
 @overload
@@ -147,12 +157,57 @@ def moveaxis(
 
 
 # * Selecting subsets of data -------------------------------------------------
+@docfiller.decorate
+def moment_indexer(
+    name: SelectMoment | str, mom_ndim: Mom_NDim, squeeze: bool = True
+) -> tuple[EllipsisType | int | list[int], ...]:
+    """
+    Get indexer for moments
+
+    Parameters
+    ----------
+    {select_name}
+    {mom_ndim}
+    {select_squeeze}
+
+    Returns
+    -------
+    indexer : tuple
+    """
+    idx: tuple[int, ...] | tuple[list[int], ...]
+    if name == "weight":
+        idx = (0,) if mom_ndim == 1 else (0, 0)
+    elif name == "ave":
+        idx = ((1,) if squeeze else ([1],)) if mom_ndim == 1 else ([1, 0], [0, 1])
+    elif name == "var":
+        idx = ((2,) if squeeze else ([2],)) if mom_ndim == 1 else ([2, 0], [0, 2])
+    elif name == "cov":
+        idx = (2,) if mom_ndim == 1 else (1, 1)
+    elif name == "xave":
+        idx = (1,) if mom_ndim == 1 else (1, 0)
+    elif name == "xvar":
+        idx = (2,) if mom_ndim == 1 else (2, 0)
+
+    else:
+        if name == "yave":
+            idx = (0, 1)
+        elif name == "yvar":
+            idx = (0, 2)
+        else:
+            msg = f"Unknown option {name}."
+            raise ValueError(msg)
+        if mom_ndim != 2:
+            msg = f"{name} requires mom_ndim == 2"
+            raise ValueError(msg)
+    return (..., *idx)
+
+
 @overload
 def select_moment(
     data: xr.DataArray,
     name: SelectMoment,
-    mom_ndim: Mom_NDim,
     *,
+    mom_ndim: Mom_NDim,
     dim_combined: str = ...,
     coords_combined: str | Sequence[Hashable] | None = ...,
     keep_attrs: bool | None = ...,
@@ -161,23 +216,23 @@ def select_moment(
 def select_moment(
     data: NDArray[ScalarT],
     name: SelectMoment,
-    mom_ndim: Mom_NDim,
     *,
+    mom_ndim: Mom_NDim,
     dim_combined: str = ...,
     coords_combined: str | Sequence[Hashable] | None = ...,
     keep_attrs: bool | None = ...,
 ) -> NDArray[ScalarT]: ...
 
 
-def select_moment(  # noqa: C901, PLR0912
+def select_moment(
     data: xr.DataArray | NDArray[ScalarT],
     name: SelectMoment,
-    mom_ndim: Mom_NDim,
     *,
-    squeeze: bool = False,
+    mom_ndim: Mom_NDim,
+    squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
-    keep_attrs: bool | None = None,
+    keep_attrs: KeepAttrs = None,
 ) -> xr.DataArray | NDArray[ScalarT]:
     """
     Select specific moments for a central moments array.
@@ -186,29 +241,10 @@ def select_moment(  # noqa: C901, PLR0912
     ----------
     {data}
     {mom_ndim}
-    name : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar"}
-        Name of moment(s) to select.
-
-        - ``"weight"`` : weights
-        - ``"ave"`` : Averages.
-        - ``"var"``: Variance. The last dimension is of size ``mom_ndim``.
-        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variace if ``mom_ndim == 1``.
-        - ``"xave"``: Average of first variable.
-        - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
-        - ``"xvar"``: Variance of first variable.
-        - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
-
-        Moments ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` will have
-        shape ``data.shape[:-mom_ndim]``. Moments ``"ave", "var"`` result in
-        output of shape ``(*data.shape[:-mom_ndim], mom_ndim)``, unless
-        ``mom_ndim == 1`` and ``squeeze = True``.
-
-    squeeze : bool, default=False
-        If True, squeeze last dimension if ``name`` is one of ``ave`` or ``var`` and ``mom_ndim == 1``.
-    dim_combined: str, optional
-        Name of new dimension for options ``name`` that can select multiple dimensions.
-    coords_combined: str or sequence of str, optional
-        Coordates to assign to ``dim_combined``.  Defaults to names of moments dimension(s)
+    {select_name}
+    {select_squeeze}
+    {select_dim_combined}
+    {select_coords_combined}
     {keep_attrs}
 
     Returns
@@ -216,28 +252,32 @@ def select_moment(  # noqa: C901, PLR0912
     output : ndarray or DataArray
         Same type as ``data``. If ``name`` is ``ave`` or ``var``, the last
         dimensions of ``output`` has shape ``mom_ndim`` with each element
-        corresponding to the `ith` variable. Otherwise, ``output.shape ==
-        data.shape[:-mom_ndim]``.  Note that ``output`` may be a view of ``data``.
+        corresponding to the `ith` variable. If ``squeeze=True`` and
+        `mom_ndim==1`, this last dimension is removed. For all other ``name``
+        options ``output.shape == data.shape[:-mom_ndim]``. Note that
+        ``output`` may be a view of ``data``.
 
 
     Examples
     --------
     >>> data = np.arange(2 * 3).reshape(2, 3)
-    >>> select_moment(data, "weight", 1)
+    >>> select_moment(data, "weight", mom_ndim=1)
     array([0, 3])
-    >>> select_moment(data, "ave", 1)
+    >>> select_moment(data, "ave", mom_ndim=1)
+    array([1, 4])
+
+    Note that with ``squeeze = False ``, selecting ``ave`` and ``var`` will
+    result in the last dimension having size ``mom_ndim``. If ``squeeze =
+    True`` (the default) and ``mom_ndim==1``, this dimension will be removed
+
+    >>> select_moment(data, "ave", mom_ndim=1, squeeze=False)
     array([[1],
            [4]])
 
-    Note that by default, selecting ``ave`` and ``var`` will result in the last dimension having
-    size ``mom_ndim``.  If ``squeeze = True`` is passed and ``mom_ndim==1``, this dimension will be removed
 
-    >>> select_moment(data, "ave", 1, squeeze=True)
-    array([1, 4])
-
-    >>> select_moment(data, "xave", 2)
+    >>> select_moment(data, "xave", mom_ndim=2)
     array(3)
-    >>> select_moment(data, "cov", 2)
+    >>> select_moment(data, "cov", mom_ndim=2)
     array(4)
     """
     if isinstance(data, xr.DataArray):
@@ -280,30 +320,278 @@ def select_moment(  # noqa: C901, PLR0912
         msg = f"{data.ndim=} must be >= {mom_ndim=}"
         raise ValueError(msg)
 
-    idx: tuple[int, ...] | tuple[list[int], ...]
-    if name == "weight":
-        idx = (0,) if mom_ndim == 1 else (0, 0)
-    elif name == "ave":
-        idx = ((1,) if squeeze else ([1],)) if mom_ndim == 1 else ([1, 0], [0, 1])
-    elif name == "var":
-        idx = ((2,) if squeeze else ([2],)) if mom_ndim == 1 else ([2, 0], [0, 2])
-    elif name == "cov":
-        idx = (2,) if mom_ndim == 1 else (1, 1)
-    elif name == "xave":
-        idx = (1,) if mom_ndim == 1 else (1, 0)
-    elif name == "xvar":
-        idx = (2,) if mom_ndim == 1 else (2, 0)
+    idx = moment_indexer(name, mom_ndim, squeeze)
 
-    else:
-        if name == "yave":
-            idx = (0, 1)
-        elif name == "yvar":
-            idx = (0, 2)
+    return data[idx]
+
+
+# * Assign value(s)
+@overload
+def assign_moment(
+    data: xr.DataArray,
+    name: SelectMoment,
+    value: ArrayLike | xr.DataArray,
+    *,
+    mom_ndim: Mom_NDim,
+    squeeze: bool = True,
+    copy: bool = True,
+) -> xr.DataArray: ...
+@overload
+def assign_moment(
+    data: NDArray[ScalarT],
+    name: SelectMoment,
+    value: ArrayLike | xr.DataArray,
+    *,
+    mom_ndim: Mom_NDim,
+    squeeze: bool = True,
+    copy: bool = True,
+) -> NDArray[ScalarT]: ...
+
+
+@docfiller.decorate
+def assign_moment(
+    data: xr.DataArray | NDArray[ScalarT],
+    name: SelectMoment,
+    value: ArrayLike | xr.DataArray,
+    *,
+    mom_ndim: Mom_NDim,
+    squeeze: bool = True,
+    copy: bool = True,
+) -> xr.DataArray | NDArray[ScalarT]:
+    """
+    Update weights of moments array.
+
+    Parameters
+    ----------
+    data : ndarray or DataArray
+        Moments array.
+    {select_name}
+    value : array-like
+        Value to assign to moment ``name``.
+    {mom_ndim}
+    {select_squeeze}
+    copy : bool, default=True
+        If ``True`` (the default), return new array with updated weights.
+        Otherwise, return the original array with weights updated inplace.
+
+    Returns
+    -------
+    output : ndarray or DataArray
+        Same type as ``data`` with moment ``name`` updated to ``value``.
+
+    See Also
+    --------
+    select_moment
+
+    Examples
+    --------
+    >>> data = np.arange(3)
+    >>> data
+    array([0, 1, 2])
+
+    >>> assign_moment(data, "weight", -1, mom_ndim=1)
+    array([-1,  1,  2])
+
+    >>> assign_moment(data, "ave", -1, mom_ndim=1)
+    array([ 0, -1,  2])
+
+    >>> assign_moment(data, "var", -1, mom_ndim=1)
+    array([ 0,  1, -1])
+
+
+    For multidimensional data, the passed ``value`` must conform to the
+    selected data
+
+
+    >>> data = np.arange(2 * 3).reshape(2, 3)
+
+    Selecting ``ave`` for this data with ``mom_ndim=1`` and ``squeeze=False`` would have shape ``(2, 1)``.
+
+    >>> assign_moment(data, "ave", np.ones((2, 1)), mom_ndim=1, squeeze=False)
+    array([[0, 1, 2],
+           [3, 1, 5]])
+
+    The ``squeeze`` parameter has the same meaning as for :func:`select_moment`
+
+    >>> assign_moment(data, "ave", np.ones(2), mom_ndim=1, squeeze=True)
+    array([[0, 1, 2],
+           [3, 1, 5]])
+
+    """
+    out = data.copy() if copy else data
+    out[moment_indexer(name, validate_mom_ndim(mom_ndim), squeeze)] = value
+
+    return out
+
+
+# * Vals -> Data
+@overload
+def vals_to_data(
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | xr.DataArray | None = ...,
+    mom_dims: MomDims | None = ...,
+) -> xr.DataArray: ...
+# Array
+@overload
+def vals_to_data(
+    x: ArrayLikeArg[FloatT],
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: None = ...,
+    out: None = ...,
+    mom_dims: MomDims | None = ...,
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArray[FloatT],
+    mom_dims: MomDims | None = ...,
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    out: None = ...,
+    mom_dims: MomDims | None = ...,
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    mom_dims: MomDims | None = ...,
+) -> NDArrayAny: ...
+
+
+def vals_to_data(
+    x: ArrayLike | xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | None = None,
+    dtype: DTypeLike = None,
+    out: NDArrayAny | xr.DataArray | None = None,
+    mom_dims: MomDims | None = None,
+) -> NDArrayAny | xr.DataArray:
+    """
+    Convert `values` to `central moments array`.
+
+    This allows passing `values` based observations to `data` routines.
+    See examples below for more details
+
+    Parameters
+    ----------
+    x : array-like or DataArray
+        First value.
+    *y : array-like or DataArray
+        Secondary value (if comoments).
+    {mom}
+    {weight}
+    {dtype}
+    {out}
+
+    Returns
+    -------
+    data : ndarray or DataArray
+
+    Notes
+    -----
+    Values ``x``, ``y`` and ``weight`` must be broadcastable.
+
+    Examples
+    --------
+    >>> w = np.full((2), 0.1)
+    >>> x = np.full((1, 2), 0.2)
+    >>> out = vals_to_data(x, weight=w, mom=2)
+    >>> out.shape
+    (1, 2, 3)
+    >>> print(out[..., 0])
+    [[0.1 0.1]]
+    >>> print(out[..., 1])
+    [[0.2 0.2]]
+    >>> y = np.full((2, 1, 2), 0.3)
+    >>> out = vals_to_data(x, y, weight=w, mom=(2, 2))
+    >>> out.shape
+    (2, 1, 2, 3, 3)
+    >>> print(out[..., 0, 0])
+    [[[0.1 0.1]]
+    <BLANKLINE>
+     [[0.1 0.1]]]
+    >>> print(out[..., 1, 0])
+    [[[0.2 0.2]]
+    <BLANKLINE>
+     [[0.2 0.2]]]
+    >>> print(out[..., 0, 1])
+    [[[0.3 0.3]]
+    <BLANKLINE>
+     [[0.3 0.3]]]
+    """
+    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+    dtype = select_dtype(x, out=out, dtype=dtype)
+    weight = 1.0 if weight is None else weight
+    if len(y) != mom_ndim - 1:
+        msg = "Supply single value for ``y`` if and only if ``mom_ndim==2``."
+        raise ValueError(msg)
+
+    if isinstance(x, xr.DataArray):
+        if isinstance(out, xr.DataArray) and mom_dims is None:
+            mom_dims = out.dims[-mom_ndim:]
         else:
-            msg = f"Unknown option {name}."
-            raise ValueError(msg)
-        if mom_ndim != 2:
-            msg = f"{name} requires mom_ndim == 2"
-            raise ValueError(msg)
+            mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+        # Do this for consistency with numpy version
+        # In numpy version, ``x`` sets the right hand most dimensions.
+        # xr.apply_ufunc (which calls xr.broadcast) acts left to right.
+        # that is, if call a  func(x, y, z), the dimensions in ``x`` will
+        # be the left most dimensions
+        return xr.apply_ufunc(  # type: ignore[no-any-return]
+            lambda out, weight, *args, **kwargs: vals_to_data(  # pyright: ignore[reportUnknownLambdaType]
+                *args[-1::-1],  # pyright: ignore[reportUnknownArgumentType]
+                weight=weight,  # pyright: ignore[reportUnknownArgumentType]
+                out=out,  # pyright: ignore[reportUnknownArgumentType]
+                **kwargs,  # pyright: ignore[reportUnknownArgumentType]
+            ),
+            out,
+            weight,
+            *y,
+            x,
+            input_core_dims=[mom_dims, *((),) * (mom_ndim + 1)],
+            output_core_dims=[mom_dims],
+            kwargs={
+                "dtype": dtype,
+                "mom": mom,
+            },
+        )
 
-    return data[(..., *idx)]
+    x, weight, *y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))  # type: ignore[assignment]
+    if out is None:
+        val_shape: tuple[int, ...] = np.broadcast_shapes(
+            *(_.shape for _ in (x, *y, weight))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportAttributeAccessIssue, reportUnknownArgumentType]
+        )
+        out = np.zeros((*val_shape, *mom_to_mom_shape(mom)), dtype=dtype)
+    else:
+        out[...] = 0.0
+
+    out = assign_moment(out, "weight", weight, mom_ndim=mom_ndim, copy=False)
+    out = assign_moment(out, "xave", x, mom_ndim=mom_ndim, copy=False)
+
+    if mom_ndim == 2:
+        out = assign_moment(out, "yave", y[0], mom_ndim=mom_ndim, copy=False)
+
+    return out

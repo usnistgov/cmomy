@@ -22,7 +22,7 @@ if TYPE_CHECKING:
         resample_data,  # noqa: TCH004
         resample_vals,  # noqa: TCH004
     )
-    from .utils import moveaxis
+    from .utils import assign_moment, moveaxis, select_moment  # noqa: TCH004
 
 
 else:
@@ -52,14 +52,12 @@ else:
                 "resample_data",
                 "resample_vals",
             ],
-            "utils": ["moveaxis"],
+            "utils": ["moveaxis", "select_moment", "assign_moment"],
         },
     )
 
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
-
-from .utils import moveaxis
 
 try:
     __version__ = _version("cmomy")
@@ -72,6 +70,7 @@ __email__ = "wpk@nist.gov"
 __all__ = [
     "CentralMoments",
     "__version__",
+    "assign_moment",
     "bootstrap_confidence_interval",
     "concat",
     "convert",
@@ -89,6 +88,7 @@ __all__ = [
     "resample_data",
     "resample_vals",
     "rolling",
+    "select_moment",
     "utils",
     "xCentralMoments",
 ]

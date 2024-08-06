@@ -440,30 +440,34 @@ def test_vals_to_data() -> None:
     outAny: NDArray[Any] = np.zeros((4,), dtype=np.float32)
 
     if TYPE_CHECKING:
-        assert_type(convert.vals_to_data(x32, mom=1), NDArray[np.float32])
-        assert_type(convert.vals_to_data(x64, mom=1), NDArray[np.float64])
+        assert_type(cmomy.utils.vals_to_data(x32, mom=1), NDArray[np.float32])
+        assert_type(cmomy.utils.vals_to_data(x64, mom=1), NDArray[np.float64])
 
         assert_type(
-            convert.vals_to_data(x32, mom=1, dtype=np.float64), NDArray[np.float64]
+            cmomy.utils.vals_to_data(x32, mom=1, dtype=np.float64), NDArray[np.float64]
         )
         assert_type(
-            convert.vals_to_data(x64, mom=1, dtype=np.float32), NDArray[np.float32]
+            cmomy.utils.vals_to_data(x64, mom=1, dtype=np.float32), NDArray[np.float32]
         )
 
-        assert_type(convert.vals_to_data(x32, mom=1, out=out64), NDArray[np.float64])
-        assert_type(convert.vals_to_data(x64, mom=1, out=out32), NDArray[np.float32])
+        assert_type(
+            cmomy.utils.vals_to_data(x32, mom=1, out=out64), NDArray[np.float64]
+        )
+        assert_type(
+            cmomy.utils.vals_to_data(x64, mom=1, out=out32), NDArray[np.float32]
+        )
 
         assert_type(
-            convert.vals_to_data(x32, mom=1, out=out64, dtype=np.float32),
+            cmomy.utils.vals_to_data(x32, mom=1, out=out64, dtype=np.float32),
             NDArray[np.float64],
         )
         assert_type(
-            convert.vals_to_data(x64, mom=1, out=out32, dtype=np.float64),
+            cmomy.utils.vals_to_data(x64, mom=1, out=out32, dtype=np.float64),
             NDArray[np.float32],
         )
 
         assert_type(
-            convert.vals_to_data(x32, mom=1, out=outAny, dtype=np.float32),
+            cmomy.utils.vals_to_data(x32, mom=1, out=outAny, dtype=np.float32),
             NDArray[Any],
         )
 
@@ -471,36 +475,36 @@ def test_vals_to_data() -> None:
         assert_type(xc, NDArray[Any])
 
         # Would like this to default to np.float64
-        assert_type(convert.vals_to_data(xc, mom=1), NDArray[Any])
+        assert_type(cmomy.utils.vals_to_data(xc, mom=1), NDArray[Any])
         assert_type(
-            convert.vals_to_data(xc, mom=1, dtype=np.float32), NDArray[np.float32]
+            cmomy.utils.vals_to_data(xc, mom=1, dtype=np.float32), NDArray[np.float32]
         )
         assert_type(
-            convert.vals_to_data([1, 2, 3], mom=1, dtype=np.float32),
+            cmomy.utils.vals_to_data([1, 2, 3], mom=1, dtype=np.float32),
             NDArray[np.float32],
         )
         assert_type(
-            convert.vals_to_data([1, 2, 3], mom=1, dtype=np.float64),
+            cmomy.utils.vals_to_data([1, 2, 3], mom=1, dtype=np.float64),
             NDArray[np.float64],
         )
 
         assert_type(
-            convert.vals_to_data([1, 2, 3], mom=1, dtype="f8"),
+            cmomy.utils.vals_to_data([1, 2, 3], mom=1, dtype="f8"),
             NDArray[Any],
         )
         assert_type(
-            convert.vals_to_data(x32, mom=1, dtype="f8"),
+            cmomy.utils.vals_to_data(x32, mom=1, dtype="f8"),
             NDArray[Any],
         )
         assert_type(
-            convert.vals_to_data(xc, mom=1, dtype="f8"),
+            cmomy.utils.vals_to_data(xc, mom=1, dtype="f8"),
             NDArray[Any],
         )
 
-        assert_type(convert.vals_to_data([1.0, 2.0, 3.0], mom=1), NDArray[Any])
+        assert_type(cmomy.utils.vals_to_data([1.0, 2.0, 3.0], mom=1), NDArray[Any])
 
         xx = xr.DataArray(x32)
-        assert_type(convert.vals_to_data(xx, mom=1), xr.DataArray)
+        assert_type(cmomy.utils.vals_to_data(xx, mom=1), xr.DataArray)
 
 
 def test_convert_moments_to_comoments() -> None:
@@ -580,7 +584,7 @@ def test_moments_to_comoments() -> None:
         assert_type(cAny.to_x().moments_to_comoments(mom=(2, -1)), xCentralMoments[Any])
 
 
-def test_update_weight() -> None:
+def test_assign_moment_central() -> None:
     if TYPE_CHECKING:
         x32 = np.array([1, 2, 3, 4], dtype=np.float32)
         x64 = np.array([1, 2, 3, 4], dtype=np.float64)
@@ -588,13 +592,17 @@ def test_update_weight() -> None:
         c64 = CentralMoments(x64, mom_ndim=1)
         cAny = CentralMoments([1, 2, 3, 4], mom_ndim=1)
 
-        assert_type(c32.assign_weight(1.0), CentralMoments[np.float32])
-        assert_type(c64.assign_weight(1.0), CentralMoments[np.float64])
-        assert_type(cAny.assign_weight(1.0), CentralMoments[Any])
+        assert_type(c32.assign_moment("weight", 1.0), CentralMoments[np.float32])
+        assert_type(c64.assign_moment("weight", 1.0), CentralMoments[np.float64])
+        assert_type(cAny.assign_moment("weight", 1.0), CentralMoments[Any])
 
-        assert_type(c32.to_x().assign_weight(1.0), xCentralMoments[np.float32])
-        assert_type(c64.to_x().assign_weight(1.0), xCentralMoments[np.float64])
-        assert_type(cAny.to_x().assign_weight(1.0), xCentralMoments[Any])
+        assert_type(
+            c32.to_x().assign_moment("weight", 1.0), xCentralMoments[np.float32]
+        )
+        assert_type(
+            c64.to_x().assign_moment("weight", 1.0), xCentralMoments[np.float64]
+        )
+        assert_type(cAny.to_x().assign_moment("weight", 1.0), xCentralMoments[Any])
 
 
 def test_concat() -> None:

@@ -23,8 +23,10 @@ from .core.validate import (
     validate_floating_dtype,
     validate_mom_ndim,
 )
+from .utils import assign_moment, moment_indexer
 
 if TYPE_CHECKING:
+    from collections.abc import Hashable, Sequence
     from typing import Any, Callable
 
     import xarray as xr
@@ -43,6 +45,7 @@ if TYPE_CHECKING:
         MomentsStrict,
         NDArrayAny,
         NDArrayInt,
+        SelectMoment,
     )
     from .core.typing_compat import Self
 
@@ -434,89 +437,98 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         )
 
     @docfiller.decorate
-    def assign_weight(self, weight: ArrayLike, copy: bool = True) -> Self:
+    def assign_moment(
+        self,
+        name: SelectMoment,
+        value: ArrayLike,
+        copy: bool = True,
+        squeeze: bool = True,
+    ) -> Self:
         """
-        Create object with updated weights
+        Create object with update weight, average, etc.
 
         Parameters
         ----------
-        {weight}
+        {select_name}
+        value : array-like
         copy : bool, default=True
             If ``True`` (default), copy the underlying moments data before update.
-            Otherwise, update weights in in place.
+            Otherwise, update weights underlying data in place.
+
+        Returns
+        -------
+        output : object
+            Same type as ``self`` with updated data.
 
         Returns
         -------
         output : object
             Same type as ``self``
         """
-        from . import convert
-
         return type(self)(
-            data=convert.assign_weight(
-                data=self.values,
-                weight=weight,
+            data=assign_moment(
+                data=self.to_values(),
+                name=name,
+                value=value,
                 mom_ndim=self._mom_ndim,
                 copy=copy,
+                squeeze=squeeze,
             ),
             mom_ndim=self._mom_ndim,
             fastpath=True,
         )
 
     # ** Access to underlying statistics ------------------------------------------
-    @cached.prop
-    def _weight_index(self) -> tuple[int | ellipsis, ...]:  # noqa: F821
-        index: tuple[int, ...] = (0,) * len(self.mom)
-        if self.val_ndim > 0:
-            return (..., *index)  # pyright: ignore[reportUnknownVariableType]
-        return index
+    def select_moment(
+        self,
+        name: SelectMoment,
+        *,
+        squeeze: bool = True,
+        dim_combined: str = "variable",
+        coords_combined: str | Sequence[Hashable] | None = None,
+        keep_attrs: bool | None = None,
+    ) -> ArrayT:
+        """
+        Select specific moments.
 
-    @cached.meth
-    def _single_index(self, val: int) -> tuple[ellipsis | int | list[int], ...]:  # noqa: F821
-        # index with things like data[..., 1,0] data[..., 0,1], index = (...,[1,0],[0,1])
-        dims = len(self.mom)
+        See Also
+        --------
+        .utils.select_moment
+        """
+        from .utils import select_moment
 
-        index: list[int] | list[list[int]]
-        if dims == 1:
-            index = [val]
+        return cast(
+            "ArrayT",
+            select_moment(  # type: ignore[call-overload]
+                self.to_values(),
+                name=name,
+                mom_ndim=self._mom_ndim,
+                dim_combined=dim_combined,
+                coords_combined=coords_combined,
+                squeeze=squeeze,
+                keep_attrs=keep_attrs,
+            ),
+        )
 
-        else:
-            # this is a bit more complicated
-            index = [[0] * dims for _ in range(dims)]
-            for i in range(dims):
-                index[i][i] = val
-
-        if self.val_ndim > 0:
-            return (..., *index)  # pyright: ignore[reportUnknownVariableType]
-        return tuple(index)
-
-    def _wrap_like(self, x: NDArrayAny) -> ArrayT:  # noqa: PLR6301
-        return x  # type: ignore[return-value]
-
-    def weight(self) -> float | ArrayT:
+    def weight(self) -> ArrayT:
         """Weight data."""
-        return cast(
-            "float | ArrayT",
-            self.to_values()[self._weight_index],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
-        )
+        return self.select_moment("weight")
 
-    def mean(self) -> float | ArrayT:
+    def mean(self, squeeze: bool = True) -> ArrayT:
         """Mean (first moment)."""
-        return cast(
-            "float | ArrayT",
-            self.to_values()[self._single_index(1)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
-        )
+        return self.select_moment("ave", squeeze=squeeze)
 
-    def var(self) -> float | ArrayT:
+    def var(self, squeeze: bool = True) -> ArrayT:
         """Variance (second central moment)."""
-        return cast(
-            "float | ArrayT",
-            self.to_values()[self._single_index(2)],  # pyright: ignore[reportGeneralTypeIssues, reportIndexIssue]
-        )
+        return self.select_moment("var", squeeze=squeeze)
 
-    def std(self) -> float | ArrayT:
+    def std(self, squeeze: bool = True) -> ArrayT:
         """Standard deviation."""  # D401
-        return cast("float | ArrayT", np.sqrt(self.var()))
+        return np.sqrt(self.var(squeeze))  # type: ignore[return-value]
+
+    def cov(self) -> ArrayT:
+        """Covariance (or variance if ``mom_ndim==1``)."""
+        return self.select_moment("cov")
 
     def cmom(self) -> ArrayT:
         r"""
@@ -538,12 +550,19 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         -------
         output : ndarray or DataArray
         """
-        out = self.data.copy()
-        # zeroth central moment
-        out[self._weight_index] = 1
-        # first central moment
-        out[self._single_index(1)] = 0
-        return self._wrap_like(out)
+        # Set weight to 1
+        out = assign_moment(
+            self.to_values(), name="weight", value=1, mom_ndim=self._mom_ndim, copy=True
+        )
+
+        # Set first central moment to zero
+        return assign_moment(
+            out,
+            name="ave",
+            value=0,
+            mom_ndim=self._mom_ndim,
+            copy=False,
+        )
 
     def to_raw(self, *, weight: float | NDArrayAny | None = None) -> ArrayT:
         r"""
@@ -573,10 +592,12 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         """
         from . import convert
 
-        out = convert.moments_type(self._data, mom_ndim=self.mom_ndim, to="raw")
+        out = convert.moments_type(self.to_values(), mom_ndim=self._mom_ndim, to="raw")
         if weight is not None:
-            out[self._weight_index] = weight
-        return self._wrap_like(out)
+            out = assign_moment(
+                out, "weight", weight, mom_ndim=self._mom_ndim, copy=False
+            )
+        return out  # pyright: ignore[reportReturnType]
 
     def rmom(self) -> ArrayT:
         r"""
@@ -1156,7 +1177,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         if not np.all(self.weight() >= b.weight()):
             raise ValueError
         data = b.to_values().copy()
-        data[self._weight_index] *= -1
+        data[moment_indexer("weight", self._mom_ndim)] *= -1
         return self.push_data(data)
 
     def __sub__(self, b: Self) -> Self:
@@ -1165,20 +1186,20 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         if not np.all(self.weight() >= b.weight()):
             raise ValueError
         new = b.copy()
-        new._data[self._weight_index] *= -1
+        new._data[moment_indexer("weight", self._mom_ndim)] *= -1
         return new.push_data(self.to_values())
 
     def __mul__(self, scale: float) -> Self:
         """New object with weight scaled by scale."""  # D401
         scale = float(scale)
         new = self.copy()
-        new._data[self._weight_index] *= scale
+        new._data[moment_indexer("weight", self._mom_ndim)] *= scale
         return new
 
     def __imul__(self, scale: float) -> Self:  # noqa: PYI034
         """Inplace multiply."""
         scale = float(scale)
-        self._data[self._weight_index] *= scale
+        self._data[moment_indexer("weight", self._mom_ndim)] *= scale
         return self
 
     # ** Constructors -------------------------------------------------------------
