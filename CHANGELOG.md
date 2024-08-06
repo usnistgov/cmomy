@@ -18,6 +18,23 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.16.0 — 2024-08-06
+
+### Added
+
+- Added `rolling` module for rolling mean and exponential rolling mean.
+- Added `bootstrap_confidence_interval` method to calculate confidence intervals
+- Added `moveaxis` function to cleanly handle axes movement of central moments
+  array
+- Added `select_moment` method to select specific moments (weight, average, etc)
+  from a central moments array
+- Added `assign_moment` method to assign values to specific moments.
+- Added `vals_to_data` to simplify using `_data` methods for raw values.
+- Added `jackknife_` an routines to perform jackknife analysis.
+- Update `_vals` routines to properly place the `axis` parameter in result.
+- Added `move_axis_to_end` option to most routines.
+- Added `keepdims` option from `reduce_data` and `reduce_vals`
+
 ## v0.15.0 — 2024-06-21
 
 ### Added
