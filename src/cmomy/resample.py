@@ -909,8 +909,8 @@ def jackknife_freq(
     --------
     jackknife_vals
     jackknife_data
-    reduce_vals
-    reduce_data
+    .reduction.reduce_vals
+    .reduction.reduce_data
 
     References
     ----------
@@ -1032,7 +1032,7 @@ def jackknife_data(
     """
     Perform jackknife resample and moments data.
 
-    This uses moments addition/subtraction (see :class:`.CentralMoments.__sub__`) to speed up jackknife resampling.
+    This uses moments addition/subtraction to speed up jackknife resampling.
 
     Parameters
     ----------

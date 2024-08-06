@@ -1,6 +1,6 @@
 """
 Typing aliases (:mod:`cmomy.core.typing`)
-====================================
+=========================================
 """
 
 from __future__ import annotations
@@ -65,6 +65,8 @@ FloatT = TypeVar(  # type: ignore[misc]
 FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
 DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 ScalarT = TypeVar("ScalarT", bound=np.generic)
+"""TypeVar of for np.generic dtype."""
+
 NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
 FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
 IntDTypeT: TypeAlias = np.int64
@@ -113,9 +115,10 @@ NumbaType = Any
 # NOTE: using the strict form for Moments
 # Passing in integer or Sequence[int] will work in almost all cases,
 # but will be flagged by typechecker...
-if TYPE_CHECKING:
-    Moments: TypeAlias = Union[int, tuple[int], tuple[int, int]]
-    MomentsStrict: TypeAlias = Union[tuple[int], tuple[int, int]]
+Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
+"""Moments type."""
+
+MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 
 Mom_NDim = Literal[1, 2]
 
@@ -170,14 +173,15 @@ if TYPE_CHECKING:
     # For indexed reducetion
     Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 
-    # SelectComponent
-    SelectMoment = Literal[
-        "weight",
-        "ave",
-        "cov",
-        "var",
-        "xave",
-        "yave",
-        "xvar",
-        "yvar",
-    ]
+# SelectComponent
+SelectMoment = Literal[
+    "weight",
+    "ave",
+    "cov",
+    "var",
+    "xave",
+    "yave",
+    "xvar",
+    "yvar",
+]
+"""Selectable moment names."""

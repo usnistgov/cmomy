@@ -224,6 +224,7 @@ def select_moment(
 ) -> NDArray[ScalarT]: ...
 
 
+@docfiller.decorate
 def select_moment(
     data: xr.DataArray | NDArray[ScalarT],
     name: SelectMoment,
@@ -481,6 +482,7 @@ def vals_to_data(
 ) -> NDArrayAny: ...
 
 
+@docfiller.decorate
 def vals_to_data(
     x: ArrayLike | xr.DataArray,
     *y: ArrayLike | xr.DataArray,

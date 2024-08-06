@@ -190,11 +190,11 @@ def _dummy_docstrings() -> None:
 
         - ``"weight"`` : weights
         - ``"ave"`` : Averages.
-        - ``"var"``: Variance. The last dimension is of size ``mom_ndim``.
+        - ``"var"``: Variance.
         - ``"cov"``: Covariance if ``mom_ndim == 2``, or variace if ``mom_ndim == 1``.
         - ``"xave"``: Average of first variable.
-        - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
         - ``"xvar"``: Variance of first variable.
+        - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
         - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
 
         Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape
