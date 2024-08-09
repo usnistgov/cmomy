@@ -942,7 +942,7 @@ def lint(
 
 # ** type checking
 @add_opts
-def typing(  # noqa: C901
+def typing(
     session: nox.Session,
     opts: SessionParams,
 ) -> None:

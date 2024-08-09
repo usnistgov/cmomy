@@ -76,21 +76,18 @@ def rolling_vals(
         wi_valid = wi != 0.0
         wold_valid = wold != 0.0
 
-        if wi_valid and wold_valid:
-            _push.push_val(x0[i], x1[i], wi, data_tmp)
-            _push.push_val(x0[i_old], x1[i_old], -wold, data_tmp)
-
-        elif wi_valid:
-            _push.push_val(x0[i], x1[i], wi, data_tmp)
+        if wi_valid:
             count += 1
-        elif wold_valid:
-            # special case.  If new weight is ==0, then we have a problem
-            # assume we are subtracting the only positive element and are going back to zero
-            if wold == data_tmp[0, 0]:
-                data_tmp[...] = 0.0
-            else:
-                _push.push_val(x0[i_old], x1[i_old], -wold, data_tmp)
+            _push.push_val(x0[i], x1[i], wi, data_tmp)
+
+        if wold_valid:
             count -= 1
+            if wold < data_tmp[0, 0]:
+                _push.push_val(x0[i_old], x1[i_old], -wold, data_tmp)
+            else:
+                # special case.  If new weight is ==0, then we have a problem
+                # assume we are subtracting the only positive element and are going back to zero
+                data_tmp[...] = 0.0
 
         if count >= min_count:
             out[i, ...] = data_tmp
@@ -150,21 +147,17 @@ def rolling_data(
         wi_valid = wi != 0.0
         wold_valid = wold != 0.0
 
-        if wi_valid and wold_valid:
-            _push.push_data(data[i, ...], data_tmp)
-            _push.push_data_scale(data[i_old, ...], -1.0, data_tmp)
-
-        elif wi_valid:
-            _push.push_data(data[i, ...], data_tmp)
+        if wi_valid:
             count += 1
-        elif wold_valid:
-            # special case.  If new weight is ==0, then we have a problem
-            # assume we are subtracting the only positive element and are going back to zero
-            if wold == data_tmp[0, 0]:
-                data_tmp[...] = 0.0
-            else:
-                _push.push_data_scale(data[i_old, ...], -1.0, data_tmp)
+            _push.push_data(data[i, ...], data_tmp)
+        if wold_valid:
             count -= 1
+            if wold < data_tmp[0, 0]:
+                _push.push_data_scale(data[i_old, ...], -1.0, data_tmp)
+            else:
+                # special case.  If new weight is ==0, then we have a problem
+                # assume we are subtracting the only positive element and are going back to zero
+                data_tmp[...] = 0.0
 
         if count >= min_count:
             out[i, ...] = data_tmp
@@ -226,10 +219,9 @@ def rolling_exp_vals(
 
         if wi != 0.0:
             count += 1
-            if adjust:
-                _push.push_val(x0[i], x1[i], wi, data_tmp)
-            else:
-                _push.push_val(x0[i], x1[i], w[i] * alphai, data_tmp)
+            scale = wi if adjust else wi * alphai
+            _push.push_val(x0[i], x1[i], scale, data_tmp)
+            if not adjust:
                 old_weight += alphai
                 data_tmp[..., 0, 0] /= old_weight
                 old_weight = 1.0
@@ -288,10 +280,9 @@ def rolling_exp_data(
 
         if wi != 0.0:
             count += 1
-            if adjust:
-                _push.push_data(data[i, ...], data_tmp)
-            else:
-                _push.push_data_scale(data[i, ...], alphai, data_tmp)
+            scale = 1.0 if adjust else alphai
+            _push.push_data_scale(data[i, ...], scale, data_tmp)
+            if not adjust:
                 old_weight += alphai
                 data_tmp[..., 0, 0] /= old_weight
                 old_weight = 1.0

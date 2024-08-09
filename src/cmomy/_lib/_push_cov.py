@@ -14,13 +14,15 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import FloatT, NDGeneric
 
+_INLINE: bool | None = None
+
 
 @myjit(
     signature=[
         (nb.float32, nb.float32, nb.float32, nb.float32[:, :]),
         (nb.float64, nb.float64, nb.float64, nb.float64[:, :]),
     ],
-    inline=True,
+    inline=_INLINE,
 )
 def push_val(
     x0: NDGeneric[FloatT],
@@ -99,7 +101,7 @@ def push_val(
         (nb.float32[:, :], nb.float32[:, :]),
         (nb.float64[:, :], nb.float64[:, :]),
     ],
-    inline=True,
+    inline=_INLINE,
 )
 def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     w = data[0, 0]
@@ -178,7 +180,7 @@ def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
         (nb.float32[:, :], nb.float32, nb.float32[:, :]),
         (nb.float64[:, :], nb.float64, nb.float64[:, :]),
     ],
-    inline=True,
+    inline=_INLINE,
 )
 def push_data_scale(
     data: NDArray[FloatT], scale: float | FloatT, out: NDArray[FloatT]

@@ -293,8 +293,10 @@ lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 lint.isort.known-first-party = [
     "cmomy",
 ]
+lint.mccabe.max-complexity = 12
 lint.pydocstyle.convention = "numpy"
 lint.pylint.max-args = 15
+lint.pylint.max-branches = 15
 lint.pylint.max-positional-args = 15
 lint.pylint.max-public-methods = 30
 lint.preview = true

@@ -273,7 +273,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
     # * To/from xarray ------------------------------------------------------------
     @docfiller.decorate
-    def to_dataarray(  # noqa: PLR0912
+    def to_dataarray(
         self,
         *,
         dims: XArrayDimsType = None,
