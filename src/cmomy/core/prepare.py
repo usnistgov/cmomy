@@ -28,6 +28,7 @@ if TYPE_CHECKING:
         Iterable,
         Sequence,
     )
+    from typing import Any
 
     from numpy.typing import ArrayLike, NDArray
 
@@ -249,10 +250,15 @@ def xprepare_out_for_resample_data(
     mom_ndim: Mom_NDim | None,
     axis: int,
     move_axis_to_end: bool,
+    data: Any = None,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
     if out is None:
         return out
+
+    if isinstance(data, xr.Dataset):
+        msg = "Cannot specify ``out`` for Dataset input."
+        raise ValueError(msg)  # noqa: TRY004
 
     if move_axis_to_end:
         # out should already be in correct order

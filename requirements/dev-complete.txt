@@ -29,4 +29,4 @@ pytest-xdist
 scipy;python_version=="3.11"
 scriv
 typing-extensions
-xarray>=0.16
+xarray>=2023.9.0

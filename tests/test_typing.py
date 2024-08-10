@@ -252,6 +252,9 @@ def test_reduce_data() -> None:
         xx = xr.DataArray(x32)
         assert_type(reduce_data(xx, mom_ndim=1), xr.DataArray)
 
+        ds = xx.to_dataset(name="hello")
+        assert_type(reduce_data(ds, mom_ndim=1), xr.Dataset)
+
 
 def test_convert() -> None:
     x32 = np.array([1, 2, 3], dtype=np.float32)

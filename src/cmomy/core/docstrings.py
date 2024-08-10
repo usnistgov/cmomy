@@ -98,6 +98,10 @@ def _dummy_docstrings() -> None:
     mom_dims : hashable or tuple of hashable
         Name of moment dimensions. Defaults to ``("mom_0",)`` for
         ``mom_ndim==1`` and ``(mom_0, mom_1)`` for ``mom_ndim==2``
+    mom_dims_data | mom_dims : hashable or tuple of hashable
+        Name of moment dimensions. Defaults to ``data.dims[-mom_ndim:]``. This
+        is primarily used if ``data`` is a :class:`~xarray.Dataset`, and the
+        first variable does not contain moments data.
     attrs : mapping
         Attributes of output
     coords : mapping
@@ -120,9 +124,11 @@ def _dummy_docstrings() -> None:
     data : DataArray or ndarray
         Moment collection array
     data_numpy | data : ndarray
-        Moments collection array.  It is assumed moment dimensions are last.
+        Moments array.  It is assumed moment dimensions are last.
     data_numpy_or_dataarray | data : ndarray or DataArray
-        Moments collection array.  It is assumed moment dimensions are last.
+        Moments array.  It is assumed moment dimensions are last.
+    data_numpy_or_dataarray_or_dataset | data : ndarray or DataArray or Dataset
+        Moments array(s).  It is assumed moment dimensions are last.
     parallel : bool, default=True
         flags to `numba.njit`
     rng : :class:`~numpy.random.Generator`
@@ -207,8 +213,10 @@ def _dummy_docstrings() -> None:
         Name of new dimension for options ``name`` that can select multiple dimensions.
     select_coords_combined | coords_combined: str or sequence of str, optional
         Coordates to assign to ``dim_combined``.  Defaults to names of moments dimension(s)
-
-
+    on_missing_core_dim : {"raise", "copy", "drop"}
+        How to handle missing core dimensions on input variables.
+    apply_ufunc_kwargs : dict-like
+        Extra parameters to :func:`xarray.apply_ufunc`
     """
 
 

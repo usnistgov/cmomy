@@ -48,7 +48,7 @@ numba==0.60.0             # via -r requirements/dev-complete.txt
 numpy==2.0.1              # via numba, pandas, pandas-stubs, scipy, xarray, -r requirements/dev-complete.txt
 packaging==24.1           # via ipykernel, lazy-loader, nox, pipx, pytest, pytest-sugar, xarray, -r requirements/dev-complete.txt
 pandas==2.2.2             # via xarray
-pandas-stubs==2.2.2.240603  # via -r requirements/dev-complete.txt
+pandas-stubs==2.2.2.240807  # via -r requirements/dev-complete.txt
 parso==0.8.4              # via jedi
 pexpect==4.9.0            # via ipython
 pipx==1.6.0               # via -r requirements/dev-complete.txt
@@ -67,7 +67,7 @@ pytest-sugar==1.0.0       # via -r requirements/dev-complete.txt
 pytest-xdist==3.6.1       # via -r requirements/dev-complete.txt
 python-dateutil==2.9.0.post0  # via jupyter-client, pandas
 pytz==2024.1              # via pandas
-pyyaml==6.0.1             # via pre-commit
+pyyaml==6.0.2             # via pre-commit
 pyzmq==26.1.0             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
 requests==2.32.3          # via scriv

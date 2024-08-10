@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import xarray as xr
+
 from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .missing import MISSING
 from .validate import (
+    validate_mom_dims,
     validate_not_none,
 )
 
@@ -17,22 +20,50 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
-    import xarray as xr
-
     from .typing import (
+        ApplyUFuncKwargs,
         AxisReduce,
         AxisReduceMult,
         DimsReduce,
         DimsReduceMult,
+        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
+        MomDimsStrict,
     )
+
+
+# * apply_ufunc_kws
+def get_apply_ufunc_kwargs(
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    dask: str = "forbidden",
+    dask_gufunc_kwargs: Mapping[str, Any] | None = None,
+    output_sizes: Mapping[Hashable, int] | None = None,
+    output_dtypes: Any = None,
+) -> dict[str, Any]:
+    """Create apply_ufunc_kwargs dict."""
+    out: dict[str, Any] = {} if apply_ufunc_kwargs is None else dict(apply_ufunc_kwargs)
+    if on_missing_core_dim:
+        out["on_missing_core_dim"] = on_missing_core_dim
+
+    out.setdefault("dask", dask)
+    out.setdefault(
+        "dask_gufunc_kwargs",
+        {} if dask_gufunc_kwargs is None else dict(dask_gufunc_kwargs),
+    )
+
+    if output_sizes:
+        out["dask_gufunc_kwargs"].setdefault("output_sizes", output_sizes)
+    if output_dtypes:
+        out.setdefault("output_dtypes", output_dtypes)
+    return out
 
 
 # * Select axis/dim -----------------------------------------------------------
 def select_axis_dim(
-    data: xr.DataArray,
+    data: xr.DataArray | xr.Dataset,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     default_axis: AxisReduce | MissingType = MISSING,
@@ -43,6 +74,12 @@ def select_axis_dim(
     # for now, disallow None values
     axis = validate_not_none(axis, "axis")
     dim = validate_not_none(dim, "dim")
+
+    if isinstance(data, xr.Dataset):
+        if axis is not MISSING or dim is MISSING:
+            msg = "For Dataset, must specify ``dim`` value other than ``None`` only."
+            raise ValueError(msg)
+        return 0, dim
 
     default_axis = validate_not_none(default_axis, "default_axis")
     default_dim = validate_not_none(default_dim, "default_dim")
@@ -80,19 +117,36 @@ def select_axis_dim(
     return axis, dim
 
 
-def select_axis_dim_mult(
-    data: xr.DataArray,
+def select_axis_dim_mult(  # noqa: C901
+    data: xr.DataArray | xr.Dataset,
     axis: AxisReduceMult | MissingType = MISSING,
     dim: DimsReduceMult | MissingType = MISSING,
     default_axis: AxisReduceMult | MissingType = MISSING,
     default_dim: DimsReduceMult | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
+    mom_dims: MomDimsStrict | None = None,
 ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
     """
     Produce axis/dim tuples from input.
 
     This is like `select_axis_dim`, but allows multiple values in axis/dim.
     """
+    if isinstance(data, xr.Dataset):
+        if axis is not MISSING or dim is MISSING:
+            msg = "For Dataset, must specify ``dim`` value only."
+            raise ValueError(msg)
+
+        if dim is None:
+            dim = tuple(data.dims)
+
+            if mom_dims is None and mom_ndim is not None:
+                mom_dims = validate_mom_dims(None, mom_ndim, data)
+
+            if mom_dims is not None:
+                dim = tuple(d for d in dim if d not in mom_dims)
+
+        return (), (dim,) if isinstance(dim, str) else dim  # type: ignore[return-value]
+
     # Allow None, which implies choosing all dimensions...
     if axis is MISSING and dim is MISSING:
         if default_axis is not MISSING and default_dim is MISSING:

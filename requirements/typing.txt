@@ -16,4 +16,4 @@ packaging
 pandas-stubs
 pytest
 typing-extensions
-xarray>=0.16
+xarray>=2023.9.0

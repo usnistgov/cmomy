@@ -22,4 +22,4 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - typing-extensions
-  - xarray>=0.16
+  - xarray>=2023.9.0

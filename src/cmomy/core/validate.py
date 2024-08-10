@@ -206,6 +206,10 @@ def validate_mom_dims(
 ) -> MomDimsStrict:
     """Validate mom_dims to correct form."""
     if mom_dims is None:
+        if isinstance(out, xr.Dataset):
+            # select first array in dataset
+            out = out[next(iter(out))]
+
         if isinstance(out, xr.DataArray):
             return cast("MomDimsStrict", out.dims[-mom_ndim:])
 

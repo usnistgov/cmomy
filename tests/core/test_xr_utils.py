@@ -83,6 +83,37 @@ def test_select_axis_dim_mult(data, kws, expected) -> None:
     _do_test(xr_utils.select_axis_dim_mult, data, expected=expected, **kws)
 
 
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+            }
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"axis": 0}, ValueError),
+        ({"dim": None}, ((), ("a", "b", "mom"))),
+        ({"dim": None, "mom_ndim": 1}, ((), ("a", "b"))),
+        # This is exactly what select does.  It calculates mom_dims from dimensions of "first"
+        # array.
+        ({"dim": None, "mom_ndim": 2}, ((), ("a",))),
+        ({"dim": "a"}, ((), ("a",))),
+        ({"dim": "b"}, ((), ("b",))),
+        ({"dim": ("a", "b")}, ((), ("a", "b"))),
+    ],
+)
+def test_select_axis_dim_mult_dataset(data, kws, expected) -> None:
+    _do_test(xr_utils.select_axis_dim_mult, data, expected=expected, **kws)
+
+
 @pytest.mark.parametrize("drop", [False, True])
 @pytest.mark.parametrize(
     "indexer",

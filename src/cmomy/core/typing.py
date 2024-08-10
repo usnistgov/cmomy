@@ -185,3 +185,10 @@ SelectMoment = Literal[
     "yvar",
 ]
 """Selectable moment names."""
+
+
+MissingCoreDimOptions = Literal["raise", "copy", "drop"]
+"""What to do if missing a core dimension."""
+
+if TYPE_CHECKING:
+    ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]

@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 import numba as nb
 
 from . import _push
-from .decorators import myguvectorize, myjit
+from .decorators import myguvectorize
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 
 _PARALLEL = True  # Auto generated from indexed.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
-_jit = partial(myjit, parallel=_PARALLEL)
 
 
 @_vectorize(

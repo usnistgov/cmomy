@@ -19,7 +19,7 @@ license-files = { paths = [
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
-requires-python = ">=3.8,<3.13"
+requires-python = ">=3.9,<3.13"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
@@ -27,7 +27,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -45,7 +44,7 @@ dependencies = [
     "numba>=0.58",
     "numpy>1.24",
     "typing-extensions",
-    "xarray>=0.16",
+    "xarray>=2023.9.0",
 ]
 optional-dependencies.dev = [
     "cmomy[dev-extras,test,typing,pipxrun,nbval,test-scipy]",
@@ -87,7 +86,7 @@ optional-dependencies.pipxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.374",
+    "pyright>=1.1.375",
     "twine>=5.0.0",
 ]
 optional-dependencies.test = [
@@ -559,7 +558,6 @@ envs = [
     "test-extras",
 ]
 python = [
-    "3.8",
     "3.9",
     "3.10",
     "3.11",

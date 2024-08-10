@@ -22,5 +22,5 @@ dependencies:
   - pytest-xdist
   - scipy
   - typing-extensions
-  - xarray>=0.16
+  - xarray>=2023.9.0
   - pip

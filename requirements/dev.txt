@@ -26,4 +26,4 @@ pytest-sugar
 pytest-xdist
 scipy;python_version=="3.11"
 typing-extensions
-xarray>=0.16
+xarray>=2023.9.0
