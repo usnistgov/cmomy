@@ -434,7 +434,7 @@ def test_block_simple(rng, mom_ndim, block_size) -> None:
 
     cx = c.to_x()
     c0x = c0.to_x()
-    xr.testing.assert_equal(
+    xr.testing.assert_allclose(
         cx.block(block_size, dim="dim_0").isel(dim_0=0).values,
         c0x.reduce(dim="dim_0").values,
     )

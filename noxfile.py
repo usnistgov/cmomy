@@ -304,6 +304,17 @@ def add_opts(
 
 
 # * Environments------------------------------------------------------------------------
+# ** test-all
+@nox.session(name="test-all", python=False)
+def test_all(session: Session) -> None:
+    """Run all tests and coverage"""
+    for py in PYTHON_ALL_VERSIONS:
+        session.notify(f"test-{py}")
+    session.notify("test-numpy1")
+    session.notify("test-notebook")
+    session.notify("coverage")
+
+
 # ** Dev (conda)
 @add_opts
 def dev(
@@ -725,11 +736,14 @@ def test_numpy1(
         ).install_all(log_session=opts.log_session, update_package=opts.update_package)
     )
 
+    # only test tests for numpy1
+    test_opts = [*(opts.test_opts or []), "tests"]
+
     _test(
         session=session,
         run=opts.test_run,
         test_no_pytest=opts.test_no_pytest,
-        test_opts=opts.test_opts,
+        test_opts=test_opts,
         no_cov=opts.no_cov,
         test_no_numba=opts.test_no_numba,
     )

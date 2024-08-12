@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 # * apply_ufunc_kws
 def get_apply_ufunc_kwargs(
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    on_missing_core_dim: MissingCoreDimOptions | None = None,
     dask: str = "forbidden",
     dask_gufunc_kwargs: Mapping[str, Any] | None = None,
     output_sizes: Mapping[Hashable, int] | None = None,

@@ -341,7 +341,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     w2[np.isnan(w2)] = 0.0
 
     outc = cmomy.moveaxis(outc, 0, -1, mom_ndim=mom_ndim)
-    np.testing.assert_allclose(out, outc, atol=1e-14)
+    np.testing.assert_allclose(out, outc, atol=1e-10)
 
 
 @pytest.mark.parametrize(

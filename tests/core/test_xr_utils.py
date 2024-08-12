@@ -19,6 +19,57 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
 
 
 @pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        (
+            {"apply_ufunc_kwargs": None},
+            {"dask": "forbidden", "dask_gufunc_kwargs": {}},
+        ),
+        (
+            {"apply_ufunc_kwargs": {"on_missing_core_dim": "copy"}},
+            {
+                "on_missing_core_dim": "copy",
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {},
+            },
+        ),
+        (
+            {
+                "apply_ufunc_kwargs": {"on_missing_core_dim": "copy"},
+                "on_missing_core_dim": "raise",
+            },
+            {
+                "on_missing_core_dim": "raise",
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {},
+            },
+        ),
+        (
+            {"output_sizes": {"rec": 2}},
+            {"dask": "forbidden", "dask_gufunc_kwargs": {"output_sizes": {"rec": 2}}},
+        ),
+        (
+            {"output_sizes": {"rec": 2}, "dask_gufunc_kwargs": {"hello": "there"}},
+            {
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {"hello": "there", "output_sizes": {"rec": 2}},
+            },
+        ),
+        (
+            {"output_dtypes": float},
+            {
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {},
+                "output_dtypes": float,
+            },
+        ),
+    ],
+)
+def test_get_apply_ufunc_kwargs(kws, expected) -> None:
+    _do_test(xr_utils.get_apply_ufunc_kwargs, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
     "data", [xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom"))]
 )
 @pytest.mark.parametrize(
@@ -41,6 +92,30 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
     ],
 )
 def test_select_axis_dim(data, kws, expected) -> None:
+    _do_test(xr_utils.select_axis_dim, data, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+            }
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"axis": 0}, ValueError),
+        ({"dim": "a"}, (0, "a")),
+    ],
+)
+def test_select_axis_dim_dataset(data, kws, expected) -> None:
     _do_test(xr_utils.select_axis_dim, data, expected=expected, **kws)
 
 

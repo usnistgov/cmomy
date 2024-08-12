@@ -167,3 +167,55 @@ def test_xprepare_values_for_reduction_1(
         assert y.shape == other.shape
         assert x.dtype == np.dtype(dtype or np.float64)
         assert y.dtype == np.dtype(dtype or np.float64)
+
+
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+            },
+            np.zeros((3, 2, 4)),
+        ),
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": True,
+            },
+            np.zeros((2, 3, 4)),
+        ),
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+                "data": np.zeros((2, 3, 4)),
+            },
+            np.zeros((3, 2, 4)),
+        ),
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+                "data": xr.Dataset({"data0": xr.DataArray(np.zeros((2, 3, 4)))}),
+            },
+            ValueError,
+        ),
+    ],
+)
+def test_xprepare_out_for_resample_data(kws, expected) -> None:
+    func = prepare.xprepare_out_for_resample_data
+    if isinstance(expected, type):
+        with pytest.raises(expected):
+            func(**kws)
+    else:
+        np.testing.assert_allclose(func(**kws), expected)

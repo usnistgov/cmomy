@@ -193,8 +193,22 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
     cls = cmomy.xCentralMoments if as_dataarray else cmomy.CentralMoments
     c = cls(x, mom_ndim=mom_ndim).reduce(axis=axis, keepdims=True)
     assert c.shape == new_shape
-
     np.testing.assert_allclose(c, out)
+
+
+@pytest.mark.parametrize(
+    ("shape", "kws"),
+    [
+        ((10, 3, 4), {"axis": 0, "mom_ndim": 1}),
+        ((10, 3, 4), {"axis": (0, 1), "mom_ndim": 1}),
+        ((10, 3, 4), {"axis": 0, "mom_ndim": 2}),
+    ],
+)
+def test_reduce_data_use_reduce(rng, shape, kws) -> None:
+    data = xr.DataArray(rng.random(shape))
+    a = cmomy.reduce_data(data, **kws, use_reduce=True)
+    b = cmomy.reduce_data(data, **kws, use_reduce=False)
+    xr.testing.assert_allclose(a, b)
 
 
 @pytest.mark.parametrize(
@@ -287,6 +301,11 @@ def test_reduce_data_grouped_dataset(rng, kwargs, shapes_and_dims) -> None:
         }
     )
 
+    # coordinates along sampled dimension
+    ds = ds.assign_coords(
+        {kwargs["dim"]: (kwargs["dim"], range(ds.sizes[kwargs["dim"]]))}
+    )
+
     n = ds.sizes[kwargs["dim"]]
     n0 = n // 2
     by = [0] * n0 + [1] * (n - n0)
@@ -295,10 +314,90 @@ def test_reduce_data_grouped_dataset(rng, kwargs, shapes_and_dims) -> None:
 
     for name in ds:
         da = ds[name]
+        if kwargs["dim"] in da.dims and (
+            "mom_dims" not in kwargs or kwargs["mom_dims"] in da.dims
+        ):
+            da = cmomy.reduce_data_grouped(
+                da,
+                **kwargs,
+                by=by,
+                move_axis_to_end=True,
+            )
+        xr.testing.assert_allclose(out[name], da)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "shapes_and_dims"),
+    [
+        (
+            {"mom_ndim": 1, "dim": "a", "coords_policy": "first"},
+            [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom"))],
+        ),
+        (
+            {"mom_ndim": 1, "dim": "b", "coords_policy": "last"},
+            [((2, 10, 3), ("a", "b", "mom")), ((10, 3), ("b", "mom"))],
+        ),
+        (
+            {
+                "mom_ndim": 1,
+                "dim": "a",
+                "coords_policy": "groups",
+                "group_dim": "group",
+            },
+            [
+                ((10, 2, 3, 3), ("a", "b", "mom0", "mom1")),
+                ((2, 3, 3), ("b", "mom0", "mom1")),
+            ],
+        ),
+        (
+            {"mom_ndim": 2, "dim": "b"},
+            [
+                ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
+                ((10, 3, 3), ("b", "mom0", "mom1")),
+            ],
+        ),
+        # different moment names
+        (
+            {"mom_ndim": 1, "dim": "a", "mom_dims": "mom"},
+            [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom_other"))],
+        ),
+    ],
+)
+def test_reduce_data_indexed_dataset(rng, kwargs, shapes_and_dims) -> None:
+    ds = xr.Dataset(
+        {
+            name: xr.DataArray(rng.random(shape), dims=dims)
+            for name, (shape, dims) in zip(["data0", "data1"], shapes_and_dims)
+        }
+    )
+
+    # coordinates along sampled dimension
+    ds = ds.assign_coords(
+        {kwargs["dim"]: (kwargs["dim"], range(ds.sizes[kwargs["dim"]]))}
+    )
+
+    n = ds.sizes[kwargs["dim"]]
+    n0 = n // 2
+    by = [0] * n0 + [1] * (n - n0)
+
+    kwargs["groups"], kwargs["index"], kwargs["group_start"], kwargs["group_end"] = (
+        cmomy.reduction.factor_by_to_index(by)
+    )
+    coords_policy = kwargs.pop("coords_policy", "first")
+    out = cmomy.reduction.reduce_data_indexed(ds, **kwargs, coords_policy=coords_policy)
+
+    for name in ds:
         da = ds[name]
         if kwargs["dim"] in da.dims and (
             "mom_dims" not in kwargs or kwargs["mom_dims"] in da.dims
         ):
-            da = cmomy.reduce_data_grouped(da, **kwargs, by=by, move_axis_to_end=True)
-
+            da = cmomy.reduction.reduce_data_indexed(
+                da,
+                **kwargs,
+                move_axis_to_end=True,
+                # right now, first and last are not supported for datasets...
+                coords_policy=None
+                if coords_policy in {"first", "last"}
+                else coords_policy,
+            )
         xr.testing.assert_allclose(out[name], da)

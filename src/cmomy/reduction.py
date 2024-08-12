@@ -459,6 +459,12 @@ def reduce_data(
     {out}
     {dim_mult}
     {keep_attrs}
+    use_reduce : bool
+        If ``True``, use ``data.reduce(reduce_data, ....)`` for
+        :class:`~xarray.DataArray` or :class:`~xarray.Dataset` ``data``.
+        Otherwise, use :func:`~xarray.apply_ufunc` for reduction. The later
+        will preserve dask based arrays while the former will greedily convert
+        dask data to :class:`~numpy.ndarray` arrays.
     {mom_dims_data}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
