@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING
 
 import numba as nb
 
+from ._binomial import BINOMIAL_FACTOR
 from .decorators import myjit
-from .utils import BINOMIAL_FACTOR
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray

@@ -5,10 +5,6 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, NamedTuple, cast
 
-from numpy.typing import NDArray
-
-from .utils import supports_parallel
-
 if TYPE_CHECKING:
     from types import ModuleType
     from typing import Any, Callable, Protocol
@@ -174,6 +170,23 @@ if TYPE_CHECKING:
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
+
+
+# * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
+def supports_parallel() -> bool:
+    """
+    Checks if system supports parallel numba functions.
+
+    If an unsafe thread pool is detected, return ``False``.
+
+    Returns
+    -------
+    bool :
+        ``True`` if supports parallel.  ``False`` otherwise.
+    """
+    from .decorators import is_in_unsafe_thread_pool
+
+    return not is_in_unsafe_thread_pool()
 
 
 # * Heuristic for parallel

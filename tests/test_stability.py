@@ -5,7 +5,7 @@ import numpy as np
 import pytest
 
 from cmomy import CentralMoments
-from cmomy._lib.utils import factory_binomial
+from cmomy._lib._binomial import factory_binomial
 from cmomy.reduction import reduce_vals
 
 

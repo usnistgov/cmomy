@@ -14,6 +14,12 @@ import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
+from ._lib.factory import (
+    factory_jackknife_data,
+    factory_jackknife_vals,
+    factory_resample_data,
+    factory_resample_vals,
+)
 from .core.array_utils import (
     axes_data_reduction,
     get_axes_from_values,
@@ -720,8 +726,6 @@ def resample_data(  # noqa: PLR0913
 
     _check_freq(freq, data.shape[axis])
 
-    from ._lib.factory import factory_resample_data
-
     return factory_resample_data(
         mom_ndim=mom_ndim,
         parallel=parallel,
@@ -1031,8 +1035,6 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
         # x, weight, *y
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
-
-    from ._lib.factory import factory_resample_vals
 
     factory_resample_vals(
         mom_ndim=mom_ndim,
@@ -1390,8 +1392,6 @@ def jackknife_data(
     # add axes for data_reduced
     axes = [axes_data[1:], axes_data, axes_mom]
 
-    from ._lib.factory import factory_jackknife_data
-
     return factory_jackknife_data(
         mom_ndim=mom_ndim,
         parallel=parallel,
@@ -1693,7 +1693,6 @@ def jackknife_vals(  # noqa: PLR0914
         # out
         (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
     ]
-    from ._lib.factory import factory_jackknife_vals
 
     return factory_jackknife_vals(
         mom_ndim=mom_ndim,
