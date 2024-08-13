@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from functools import partial
+from typing import Any
 
 import numpy as np
 import pytest
@@ -257,6 +258,131 @@ def test_reduce_data_dataset(rng, mom_ndim, dim, shapes_and_dims) -> None:
         da = ds[name]
         if dim is None or dim in da.dims:
             da = cmomy.reduce_data(da, dim=dim, mom_ndim=mom_ndim)
+
+        xr.testing.assert_allclose(out[name], da)
+
+
+@pytest.fixture(params=range(9))
+def fixture_reduce_vals_dataset(request, rng) -> Any:  # noqa: PLR0915
+    """Ugly way to do things, but works."""
+    mom = (3,)
+    # missing an axis on data1
+    dim = "a"
+
+    data0 = xr.DataArray(rng.random((10, 2)), dims=("a", "b"))
+    data1 = xr.DataArray(
+        rng.random(
+            (2),
+        ),
+        dims=("b"),
+    )
+    dx = xr.Dataset({"data0": data0, "data1": data1})
+
+    idx = 0
+    if request.param == idx:
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": None, "weight": None}
+
+    idx += 1
+    if request.param == idx:
+        weight = xr.DataArray(rng.random(10), dims="a")
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": None, "weight": weight}
+
+    idx += 1
+    if request.param == idx:
+        weight = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="a"),
+                "data1": xr.DataArray(rng.random(10), dims="a"),
+            }
+        )
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": None, "weight": weight}
+
+    # both have axis
+    dim = "b"
+    data0 = xr.DataArray(rng.random((2, 10)), dims=("a", "b"))
+    data1 = xr.DataArray(rng.random(10), dims=("b"))
+    dx = xr.Dataset({"data0": data0, "data1": data1})
+
+    idx += 1
+    if request.param == idx:
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": None, "weight": None}
+
+    idx += 1
+    if request.param == idx:
+        weight = xr.DataArray(rng.random(10), dims="b")
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": None, "weight": weight}
+    idx += 1
+    if request.param == idx:
+        weight = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="b"),
+                "data1": xr.DataArray(rng.random((2, 10)), dims=("a", "b")),
+            }
+        )
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": None, "weight": weight}
+
+    # mom_ndim -> 2
+    mom = (3, 3)
+    dim = "b"
+    data0 = xr.DataArray(rng.random((2, 10)), dims=("a", "b"))
+    data1 = xr.DataArray(
+        rng.random(
+            (10),
+        ),
+        dims=("b"),
+    )
+    dx = xr.Dataset({"data0": data0, "data1": data1})
+
+    idx += 1
+    if request.param == idx:
+        y = xr.DataArray(rng.random(10), dims="b")
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": y, "weight": None}
+
+    idx += 1
+    if request.param == idx:
+        y = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="b"),
+                "data1": xr.DataArray(rng.random((2, 10)), dims=("a", "b")),
+            },
+        )
+        weight = xr.DataArray(rng.random(10), dims="b")
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": y, "weight": weight}
+
+    idx += 1
+    if request.param == idx:
+        y = xr.DataArray(rng.random((2, 10)), dims=("a", "b"))
+        weight = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="b"),
+                "data1": xr.DataArray(rng.random((2, 10)), dims=("a", "b")),
+            }
+        )
+        yield {"kwargs": {"mom": mom, "dim": dim}, "x": dx, "y": y, "weight": weight}
+
+
+def test_reduce_vals_dataset(fixture_reduce_vals_dataset):
+    kwargs, x, y, weight = (
+        fixture_reduce_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
+    )
+
+    out = cmomy.reduce_vals(*((x,) if y is None else (x, y)), weight=weight, **kwargs)
+
+    for name in x:
+        da = x[name]
+        if kwargs["dim"] in da.dims:
+            if y is not None:
+                dy = y if isinstance(y, xr.DataArray) else y[name]
+                xy = (da, dy)
+            else:
+                xy = (da,)
+
+            if weight is not None:
+                w = weight if isinstance(weight, xr.DataArray) else weight[name]
+            else:
+                w = weight
+
+            da = cmomy.reduce_vals(*xy, **kwargs, weight=w)
 
         xr.testing.assert_allclose(out[name], da)
 

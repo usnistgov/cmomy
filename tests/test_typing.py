@@ -200,6 +200,9 @@ def test_reduce_vals() -> None:
         xx = xr.DataArray(x32)
         assert_type(reduce_vals(xx, mom=3), xr.DataArray)
 
+        ds = xx.to_dataset()
+        assert_type(reduce_vals(ds, mom=3), xr.Dataset)
+
 
 def test_reduce_data() -> None:
     x32 = np.array([1, 2, 3], dtype=np.float32)
@@ -715,6 +718,8 @@ def test_reduce_data_grouped() -> None:
         xx = xr.DataArray(x32)
         assert_type(reduce_data_grouped(xx, mom_ndim=1, by=by), xr.DataArray)
 
+        assert_type(reduce_data_grouped(xx.to_dataset(), mom_ndim=1, by=by), xr.Dataset)
+
 
 def test_reduce_data_indexed() -> None:
     x32 = np.array([1, 2, 3], dtype=np.float32)
@@ -902,6 +907,16 @@ def test_reduce_data_indexed() -> None:
             ),
             xr.DataArray,
         )
+        assert_type(
+            reduce_data_indexed(
+                xx.to_dataset(),
+                mom_ndim=1,
+                index=index,
+                group_start=group_start,
+                group_end=group_end,
+            ),
+            xr.Dataset,
+        )
 
 
 def test_resample_data() -> None:
@@ -967,6 +982,7 @@ def test_resample_data() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(resample_data(xx, freq=freq, mom_ndim=1), xr.DataArray)
+        assert_type(resample_data(xx.to_dataset(), freq=freq, mom_ndim=1), xr.Dataset)
 
 
 def test_jackknife_data() -> None:
@@ -1028,6 +1044,7 @@ def test_jackknife_data() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(jackknife_data(xx, mom_ndim=1), xr.DataArray)
+        assert_type(jackknife_data(xx.to_dataset(), mom_ndim=1), xr.Dataset)
 
 
 def test_resample_vals() -> None:

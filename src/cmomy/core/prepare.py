@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
-    from numpy.typing import ArrayLike, NDArray
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
         AxisReduce,
@@ -39,6 +39,7 @@ if TYPE_CHECKING:
         MissingType,
         Mom_NDim,
         MomentsStrict,
+        NDArrayAny,
         ScalarT,
     )
 
@@ -68,7 +69,7 @@ def prepare_data_for_reduction(
 # * Vals
 def prepare_values_for_reduction(
     target: ArrayLike,
-    *args: ArrayLike,
+    *args: ArrayLike | xr.Dataset,
     narrays: int,
     axis: AxisReduce | MissingType = MISSING,
     dtype: DTypeLikeArg[ScalarT],
@@ -111,55 +112,8 @@ def prepare_values_for_reduction(
     return -1 if move_axis_to_end else axis_neg, (target, *others)
 
 
-def xprepare_values_for_reduction(
-    target: xr.DataArray,
-    *args: ArrayLike | xr.DataArray,
-    narrays: int,
-    dim: DimsReduce | MissingType,
-    axis: AxisReduce | MissingType,
-    dtype: DTypeLikeArg[ScalarT],
-) -> tuple[list[Sequence[Hashable]], list[xr.DataArray | NDArray[ScalarT]]]:
-    """
-    Convert input value arrays to correct form for reduction.
-
-    Parameters
-    ----------
-        narrays : int
-        The total number of expected arrays.  len(args) + 1 must equal narrays.
-
-    Returns
-    -------
-    input_core_dims : list[list[Hashable]]
-    tuple_of_arrays : tuple of DataArray or ndarray
-    """
-    if len(args) + 1 != narrays:
-        msg = f"Number of arrays {len(args) + 1} != {narrays}"
-        raise ValueError(msg)
-
-    axis, dim = select_axis_dim(
-        target,
-        axis=axis,
-        dim=dim,
-    )
-
-    dtype = target.dtype if dtype is None else dtype  # pyright: ignore[reportUnnecessaryComparison]
-    nsamp = target.sizes[dim]
-    axis_neg = positive_to_negative_index(axis, target.ndim)
-
-    arrays = [
-        xprepare_secondary_value_for_reduction(
-            a, axis=axis_neg, nsamp=nsamp, dtype=dtype
-        )
-        for a in (target, *args)
-    ]
-    # NOTE: Go with list[Sequence[...]] here so that `input_core_dims` can
-    # be updated later with less restriction...
-    input_core_dims: list[Sequence[Hashable]] = [[dim]] * len(arrays)
-    return input_core_dims, arrays
-
-
 def prepare_secondary_value_for_reduction(
-    x: ArrayLike,
+    x: ArrayLike | xr.Dataset,
     axis: int,
     nsamp: int,
     dtype: DTypeLikeArg[ScalarT],
@@ -184,6 +138,10 @@ def prepare_secondary_value_for_reduction(
         passed through `_prepare_target_value_for_reduction`
 
     """
+    if isinstance(x, xr.Dataset):
+        msg = "Passed Dataset as secondary value with array primary value."
+        raise TypeError(msg)
+
     out: NDArray[ScalarT] = np.asarray(x, dtype=dtype)
     if out.ndim == 0:
         return np.broadcast_to(out, nsamp)
@@ -203,13 +161,72 @@ def prepare_secondary_value_for_reduction(
     return out
 
 
+def xprepare_values_for_reduction(
+    target: xr.Dataset | xr.DataArray,
+    *args: ArrayLike | xr.DataArray | xr.Dataset,
+    narrays: int,
+    dim: DimsReduce | MissingType,
+    axis: AxisReduce | MissingType,
+    dtype: DTypeLike,
+) -> tuple[list[Sequence[Hashable]], list[xr.Dataset | xr.DataArray | NDArrayAny]]:
+    """
+    Convert input value arrays to correct form for reduction.
+
+    Parameters
+    ----------
+        narrays : int
+        The total number of expected arrays.  len(args) + 1 must equal narrays.
+
+    Returns
+    -------
+    input_core_dims : list[list[Hashable]]
+    tuple_of_arrays : tuple of DataArray or ndarray
+    """
+    if len(args) + 1 != narrays:
+        msg = f"Number of arrays {len(args) + 1} != {narrays}"
+        raise ValueError(msg)
+
+    axis, dim = select_axis_dim(
+        target,
+        axis=axis,
+        dim=dim,
+    )
+
+    # TODO(wpk): look closer at dtype and dataset
+    dtype = (
+        target.dtype if (isinstance(target, xr.DataArray) and dtype is None) else dtype
+    )  # pyright: ignore[reportUnnecessaryComparison]
+    nsamp = target.sizes[dim]
+
+    axis_neg = positive_to_negative_index(
+        axis,
+        # if dataset, Use first variable as template...
+        ndim=(
+            target[next(iter(target))] if isinstance(target, xr.Dataset) else target
+        ).ndim,
+    )
+
+    arrays = [
+        xprepare_secondary_value_for_reduction(
+            a, axis=axis_neg, nsamp=nsamp, dtype=dtype
+        )
+        for a in (target, *args)
+    ]
+    # NOTE: Go with list[Sequence[...]] here so that `input_core_dims` can
+    # be updated later with less restriction...
+    input_core_dims: list[Sequence[Hashable]] = [[dim]] * len(arrays)
+    return input_core_dims, arrays
+
+
 def xprepare_secondary_value_for_reduction(
-    x: xr.DataArray | ArrayLike,
+    x: xr.Dataset | xr.DataArray | ArrayLike,
     axis: int,
     nsamp: int,
-    dtype: DTypeLikeArg[ScalarT],
-) -> xr.DataArray | NDArray[ScalarT]:
+    dtype: DTypeLike,
+) -> xr.Dataset | xr.DataArray | NDArrayAny:
     """Prepare secondary values for reduction."""
+    if isinstance(x, xr.Dataset):
+        return x
     if isinstance(x, xr.DataArray):
         return x.astype(dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
     return prepare_secondary_value_for_reduction(
@@ -219,7 +236,7 @@ def xprepare_secondary_value_for_reduction(
 
 # * Out
 def xprepare_out_for_resample_vals(
-    target: xr.DataArray,
+    target: xr.DataArray | xr.Dataset,
     out: NDArray[ScalarT] | None,
     dim: DimsReduce,
     mom_ndim: Mom_NDim,
@@ -231,6 +248,10 @@ def xprepare_out_for_resample_vals(
 
     # if isinstance(out, xr.DataArray):
     #     return out  # noqa: ERA001
+
+    if isinstance(target, xr.Dataset):
+        msg = "Cannot specify ``out`` for Dataset input."
+        raise ValueError(msg)  # noqa: TRY004
 
     if move_axis_to_end:
         # out should already be in correct order

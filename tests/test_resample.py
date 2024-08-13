@@ -691,3 +691,304 @@ def test_jackknife_vals_extras(shape, axis, mom: Mom_NDim, dtype: DTypeLike) -> 
     )
     np.testing.assert_allclose(xout1, out1)
     assert xout1.dims == ("rep", "passed_moment")
+
+
+# * Dataset
+@pytest.mark.parametrize(
+    ("mom_ndim", "dim", "shapes_and_dims"),
+    [
+        (1, "a", [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom"))]),
+        (1, "b", [((2, 10, 3), ("a", "b", "mom")), ((10, 3), ("b", "mom"))]),
+        (
+            2,
+            "a",
+            [
+                ((10, 2, 3, 3), ("a", "b", "mom0", "mom1")),
+                ((2, 3, 3), ("b", "mom0", "mom1")),
+            ],
+        ),
+        (
+            2,
+            "b",
+            [
+                ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
+                ((10, 3, 3), ("b", "mom0", "mom1")),
+            ],
+        ),
+    ],
+)
+@pytest.mark.parametrize("paired", [True, False])
+def test_resample_data_dataset(rng, mom_ndim, dim, shapes_and_dims, paired) -> None:
+    ds = xr.Dataset(
+        {
+            name: xr.DataArray(rng.random(shape), dims=dims)
+            for name, (shape, dims) in zip(["data0", "data1"], shapes_and_dims)
+        }
+    )
+
+    _rng = np.random.default_rng(0)
+
+    if paired:
+        dfreq = xr.DataArray(
+            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng), dims=["rep", dim]
+        )
+    else:
+        dfreq = xr.Dataset(
+            dict(
+                zip(
+                    ["data0", "data1"],
+                    [
+                        xr.DataArray(
+                            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng),
+                            dims=["rep", dim],
+                        )
+                        for _ in range(2)
+                    ],
+                )
+            )
+        )
+
+    out = cmomy.resample_data(ds, dim=dim, mom_ndim=mom_ndim, freq=dfreq)
+
+    for name in ds:
+        da = ds[name]
+        if dim in da.dims:
+            da = cmomy.resample_data(
+                da,
+                dim=dim,
+                mom_ndim=mom_ndim,
+                freq=dfreq if paired else dfreq[name],
+                move_axis_to_end=True,
+            )
+
+        xr.testing.assert_allclose(out[name], da)
+
+    xr.testing.assert_allclose(
+        out,
+        cmomy.resample_data(
+            ds,
+            dim=dim,
+            mom_ndim=mom_ndim,
+            nrep=20,
+            rng=np.random.default_rng(0),
+            paired=paired,
+        ),
+    )
+
+
+@pytest.fixture(params=range(9))
+def fixture_resample_vals_dataset(request, rng) -> Any:  # noqa: PLR0915
+    """Ugly way to do things, but works."""
+    mom = (3,)
+    # missing an axis on data1
+    dim = "a"
+
+    data0 = xr.DataArray(rng.random((10, 2)), dims=("a", "b"))
+    data1 = xr.DataArray(
+        rng.random(
+            (2),
+        ),
+        dims=("b"),
+    )
+    dx = xr.Dataset({"data0": data0, "data1": data1})
+
+    idx = 0
+    if request.param == idx:
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": None,
+            "weight": None,
+        }
+
+    idx += 1
+    if request.param == idx:
+        weight = xr.DataArray(rng.random(10), dims="a")
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": None,
+            "weight": weight,
+        }
+
+    idx += 1
+    if request.param == idx:
+        weight = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="a"),
+                "data1": xr.DataArray(rng.random(10), dims="a"),
+            }
+        )
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": None,
+            "weight": weight,
+        }
+
+    # both have axis
+    dim = "b"
+    data0 = xr.DataArray(rng.random((2, 10)), dims=("a", "b"))
+    data1 = xr.DataArray(rng.random(10), dims=("b"))
+    dx = xr.Dataset({"data0": data0, "data1": data1})
+
+    idx += 1
+    if request.param == idx:
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": None,
+            "weight": None,
+        }
+
+    idx += 1
+    if request.param == idx:
+        weight = xr.DataArray(rng.random(10), dims="b")
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": None,
+            "weight": weight,
+        }
+    idx += 1
+    if request.param == idx:
+        weight = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="b"),
+                "data1": xr.DataArray(rng.random((2, 10)), dims=("a", "b")),
+            }
+        )
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": None,
+            "weight": weight,
+        }
+
+    # mom_ndim -> 2
+    mom = (3, 3)
+    dim = "b"
+    data0 = xr.DataArray(rng.random((2, 10)), dims=("a", "b"))
+    data1 = xr.DataArray(
+        rng.random(
+            (10),
+        ),
+        dims=("b"),
+    )
+    dx = xr.Dataset({"data0": data0, "data1": data1})
+
+    idx += 1
+    if request.param == idx:
+        y = xr.DataArray(rng.random(10), dims="b")
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": y,
+            "weight": None,
+        }
+
+    idx += 1
+    if request.param == idx:
+        y = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="b"),
+                "data1": xr.DataArray(rng.random((2, 10)), dims=("a", "b")),
+            },
+        )
+        weight = xr.DataArray(rng.random(10), dims="b")
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": y,
+            "weight": weight,
+        }
+
+    idx += 1
+    if request.param == idx:
+        y = xr.DataArray(rng.random((2, 10)), dims=("a", "b"))
+        weight = xr.Dataset(
+            {
+                "data0": xr.DataArray(rng.random(10), dims="b"),
+                "data1": xr.DataArray(rng.random((2, 10)), dims=("a", "b")),
+            }
+        )
+        yield {
+            "idx": idx,
+            "kwargs": {"mom": mom, "dim": dim},
+            "x": dx,
+            "y": y,
+            "weight": weight,
+        }
+
+
+@pytest.mark.parametrize("paired", [True, False])
+def test_reduce_vals_dataset(fixture_resample_vals_dataset, paired) -> None:
+    kwargs, x, y, weight = (
+        fixture_resample_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
+    )
+
+    dim = kwargs["dim"]
+    _rng = np.random.default_rng(0)
+    if paired:
+        dfreq = xr.DataArray(
+            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng), dims=["rep", dim]
+        )
+    else:
+        dfreq = xr.Dataset(
+            dict(
+                zip(
+                    ["data0", "data1"],
+                    [
+                        xr.DataArray(
+                            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng),
+                            dims=["rep", dim],
+                        )
+                        for _ in range(2)
+                    ],
+                )
+            )
+        )
+
+    xy = (x,) if y is None else (x, y)
+    out = cmomy.resample_vals(*xy, weight=weight, **kwargs, freq=dfreq)
+
+    for name in x:
+        da = x[name]
+        if kwargs["dim"] in da.dims:
+            if y is not None:
+                dy = y if isinstance(y, xr.DataArray) else y[name]
+                _xy = (da, dy)
+            else:
+                _xy = (da,)
+
+            if weight is not None:
+                w = weight if isinstance(weight, xr.DataArray) else weight[name]
+            else:
+                w = weight
+
+            da = cmomy.resample_vals(
+                *_xy, weight=w, **kwargs, freq=dfreq if paired else dfreq[name]
+            )
+
+        xr.testing.assert_allclose(out[name], da)
+
+    # testing paired
+    xr.testing.assert_allclose(
+        out,
+        cmomy.resample_vals(
+            *xy,
+            weight=weight,
+            **kwargs,
+            nrep=20,
+            rng=np.random.default_rng(0),
+            paired=paired,
+        ),
+    )

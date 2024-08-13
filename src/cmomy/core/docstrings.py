@@ -74,6 +74,13 @@ def _dummy_docstrings() -> None:
         See :func:`~cmomy.resample.randsamp_freq`.
     nrep : int
         Number of resample replicates.
+    nrep_optional | nrep : int, optional
+        Construct ``freq`` (see :func:`.randsamp_freq`) with ``nrep`` replicates if ``freq`` is not passed directly.
+    paired : bool
+        If ``False`` and generating ``freq`` from ``nrep``, and input data is a
+        :class:`~xarray.Dataset`, Generate unique ``freq`` for each variable in
+        ``data``. If ``True``, treat all variables in ``data`` as paired, and
+        use same ``freq`` for each.
     nsamp : int
         Number of samples in a single resampled replicate. Defaults to size of
         data along sampled axis.
@@ -189,7 +196,9 @@ def _dummy_docstrings() -> None:
     move_axis_to_end : bool
         If ``True``, place sampled dimension at end (just before moments
         dimensions) in output. Otherwise, place sampled dimension at same
-        position as input ``axis``.
+        position as input ``axis``. Note that if the result is a
+        :class:`xarray.Dataset` object, then ``move_axis_to_end = True``
+        always.
 
     select_name | name : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar"}
         Name of moment(s) to select.

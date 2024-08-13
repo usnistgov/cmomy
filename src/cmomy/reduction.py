@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
+from cmomy.core.utils import mom_to_mom_shape
+
 from ._lib.factory import (
     factory_reduce_data,
     factory_reduce_data_grouped,
@@ -72,7 +74,6 @@ if TYPE_CHECKING:
         Mom_NDim,
         MomDims,
         Moments,
-        MomentsStrict,
         NDArrayAny,
         NDArrayInt,
     )
@@ -80,6 +81,25 @@ if TYPE_CHECKING:
 
 # * Reduce vals ---------------------------------------------------------------
 # ** overloads
+# TODO(wpk): Also allow y to be a dataset...
+@overload
+def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
+    x: xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    keepdims: bool = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.Dataset: ...
 @overload
 def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.DataArray,
@@ -95,6 +115,8 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 # array
 @overload
@@ -112,6 +134,8 @@ def reduce_vals(
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -129,6 +153,8 @@ def reduce_vals(
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -146,6 +172,8 @@ def reduce_vals(
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -163,16 +191,18 @@ def reduce_vals(
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
 
 
 # TODO(wpk): add tests for keepdims...
 @docfiller.decorate
 def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
-    x: ArrayLike | xr.DataArray,
-    *y: ArrayLike | xr.DataArray,
+    x: ArrayLike | xr.DataArray | xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | None = None,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     axis: AxisReduce | MissingType = MISSING,
     keepdims: bool = False,
     parallel: bool | None = None,
@@ -182,13 +212,15 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-) -> NDArrayAny | xr.DataArray:
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
     """
     Reduce values to central (co)moments.
 
     Parameters
     ----------
-    x : ndarray or DataArray
+    x : ndarray or DataArray or Dataset
         Values to analyze.
     *y : array-like or DataArray
         Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
@@ -205,10 +237,12 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     {dim}
     {mom_dims}
     {keep_attrs}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------
-    out : ndarray or DataArray
+    out : ndarray or DataArray or Dataset
         Central moments array of same type as ``x``. ``out.shape = shape +
         (mom0, ...)`` where ``shape = np.broadcast_shapes(*(a.shape for a in
         (x_, *y_, weight_)))[:-1]`` and ``x_``, ``y_`` and ``weight_`` are the
@@ -221,10 +255,12 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     numpy.broadcast_shapes
     """
     mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    dtype = select_dtype(x, out=out, dtype=dtype)
     weight = 1.0 if weight is None else weight
 
-    if isinstance(x, xr.DataArray):
+    if isinstance(x, (xr.DataArray, xr.Dataset)):
+        if isinstance(x, xr.DataArray):
+            dtype = select_dtype(x, out=out, dtype=dtype)
+
         input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -235,30 +271,50 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
             dtype=dtype,
         )
 
-        mom_dims_strict = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
         dim = input_core_dims[0][0]
+        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
+            apply_ufunc_kwargs,
+            on_missing_core_dim=on_missing_core_dim,
+            dask="parallelized",
+            output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom)), **{dim: 1}),
+            # NOTE: for now just use np.float64 as the output dtype.
+            # see https://github.com/pydata/xarray/issues/1699
+            output_dtypes=np.float64,
+        )
 
-        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            _reduce_vals,
+        # NOTE: going this way so that dtype can be passed along from xr.Datasets
+        def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
+            x, weight, *y = args
+            return reduce_vals(x, *y, weight=weight, **kwargs)  # pyright: ignore[reportUnknownVariableType]
+
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _func,
+            # _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
-            output_core_dims=[(dim, *mom_dims_strict)],
+            output_core_dims=[(dim, *mom_dims)],
             exclude_dims={dim},
             kwargs={
                 "mom": mom_validated,
-                "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "axis_neg": -1,
+                "axis": -1,
                 "keepdims": True,
-                "out": out,
+                "out": None if isinstance(x, xr.Dataset) else out,
+                "dtype": dtype,
             },
             keep_attrs=keep_attrs,
-        ).transpose(..., *x.dims, *mom_dims_strict)
+            **apply_ufunc_kwargs,
+        )
 
+        if isinstance(x, xr.DataArray):
+            xout = xout.transpose(..., *x.dims, *mom_dims)
         if not keepdims:
             xout = xout.squeeze(dim)
+
         return xout
 
+    dtype = select_dtype(x, out=out, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
@@ -269,31 +325,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
         move_axis_to_end=False,
     )
 
-    return _reduce_vals(
-        *args,
-        mom=mom_validated,
-        mom_ndim=mom_ndim,
-        axis_neg=axis_neg,
-        parallel=parallel,
-        out=out,
-        keepdims=keepdims,
-    )
-
-
-# Low level
-def _reduce_vals(
-    x0: NDArray[FloatT],
-    w: NDArray[FloatT],
-    *x1: NDArray[FloatT],
-    mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
-    axis_neg: int,
-    parallel: bool | None = None,
-    out: NDArray[FloatT] | None = None,
-    keepdims: bool = False,
-) -> NDArray[FloatT]:
-    args: tuple[NDArray[FloatT], ...] = (x0, w, *x1)  # type: ignore[arg-type]
-    out = prepare_out_from_values(out, *args, mom=mom, axis_neg=axis_neg)
+    out = prepare_out_from_values(out, *args, mom=mom_validated, axis_neg=axis_neg)
 
     axes: AxesGUFunc = [
         # out
