@@ -126,7 +126,7 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     c2x = c2.to_x(mom_dims=("a", "b"))
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims=("a", "b")).values, c2x.values
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).values, c2x.values
     )
 
     # raise error for mom_ndim=2
@@ -138,13 +138,13 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     cx = c.to_x(attrs={"hello": "there"})
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims=("a", "b")).values, c2x.values
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).values, c2x.values
     )
 
     c2x = c2.to_x(mom_dims=("a", "b"), attrs={"hello": "there"})
     xr.testing.assert_allclose(
         cx.moments_to_comoments(
-            mom=(1, -1), mom_dims=("a", "b"), keep_attrs=True
+            mom=(1, -1), mom_dims2=("a", "b"), keep_attrs=True
         ).values,
         c2x.values,
     )

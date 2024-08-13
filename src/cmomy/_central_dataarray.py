@@ -332,7 +332,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         self,
         *,
         mom: tuple[int, int],
-        mom_dims: MomDims | None = None,
+        mom_dims2: MomDims | None = None,
         keep_attrs: KeepAttrs = None,
     ) -> Self:
         """
@@ -340,7 +340,9 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
 
         Parameters
         ----------
-        {mom_dims}
+        {mom_dims_data}
+        mom_dims2 : tuple of str
+            Moment dimensions for output.
         {keep_attrs}
 
         See Also
@@ -356,7 +358,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 self.to_values(),
                 mom=mom,
                 dtype=self.dtype,
-                mom_dims=mom_dims,
+                mom_dims1=self.mom_dims,
+                mom_dims2=mom_dims2,
                 keep_attrs=keep_attrs,
             ),
             mom_ndim=2,

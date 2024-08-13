@@ -485,12 +485,27 @@ def _validate_mom_moments_to_comoments(
 
 @overload
 def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
+    values: xr.Dataset,
+    *,
+    mom: tuple[int, int],
+    dtype: DTypeLike = ...,
+    mom_dims1: MomDims | None = ...,
+    mom_dims2: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.Dataset: ...
+@overload
+def moments_to_comoments(
     values: xr.DataArray,
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    mom_dims: MomDims | None = ...,
+    mom_dims1: MomDims | None = ...,
+    mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 # array
 @overload
@@ -499,8 +514,11 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: None = ...,
-    mom_dims: MomDims | None = ...,
+    mom_dims1: MomDims | None = ...,
+    mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -509,8 +527,11 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: DTypeLikeArg[FloatT],
-    mom_dims: MomDims | None = ...,
+    mom_dims1: MomDims | None = ...,
+    mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -519,20 +540,26 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    mom_dims: MomDims | None = ...,
+    mom_dims1: MomDims | None = ...,
+    mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
 def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
-    values: ArrayLike | xr.DataArray,
+    values: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = None,
-    mom_dims: MomDims | None = None,
+    mom_dims1: MomDims | None = None,
+    mom_dims2: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-) -> NDArrayAny | xr.DataArray:
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
     """
     Convert from moments to comoments data.
 
@@ -543,7 +570,13 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
         dimension is the moments dimension.
     {mom_moments_to_comoments}
     {dtype}
-    {mom_dims}
+    mom_dims1 : str or tuple of str
+        Optional name of moment dimension of input (``mom_ndim=1``) data.  Defaults to
+        ``first.dims[-mom_ndim]`` where ``first`` is either ``values`` if a DataArray
+        or the first variable of ``values`` if a Dataset.  You may need to pass this value
+        if ``values`` is a Dataset.
+    mom_dims2 : tuple of str
+        Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
     {keep_attrs}
 
     Returns
@@ -551,11 +584,6 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     output : ndarray or DataArray
         Co-moments array.  Same type as ``values``.
 
-
-    Notes
-    -----
-    ``mom_dims`` and ``keep_attrs`` are used only if ``values`` is a
-    :class:`~xarray.DataArray`.
 
     Examples
     --------
@@ -599,18 +627,47 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     Note that this also works for raw moments.
 
     """
-    if isinstance(values, xr.DataArray):
-        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=2)
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            moments_to_comoments,
-            values,
-            input_core_dims=[values.dims],
-            output_core_dims=[[*values.dims[:-1], *mom_dims]],
-            exclude_dims={values.dims[-1]},
-            kwargs={"mom": mom, "dtype": dtype},
-            keep_attrs=keep_attrs,
+    if isinstance(values, (xr.DataArray, xr.Dataset)):
+        mom_dim_in, *_ = validate_mom_dims(mom_dims1, mom_ndim=1, out=values)
+        mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
+
+        if mom_dim_in in mom_dims2:
+            # give this a temporary name for simplicity:
+            old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
+            values = values.rename({old_name: mom_dim_in})
+
+        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
+            apply_ufunc_kwargs,
+            on_missing_core_dim=on_missing_core_dim,
+            dask="parallelized",
+            output_sizes=dict(
+                zip(
+                    mom_dims2,
+                    mom_to_mom_shape(
+                        _validate_mom_moments_to_comoments(
+                            mom, values.sizes[mom_dim_in] - 1
+                        )
+                    ),
+                )
+            ),
+            # NOTE: for now just use np.float64 as the output dtype.
+            # see https://github.com/pydata/xarray/issues/1699
+            output_dtypes=select_dtype(values, out=None, dtype=dtype) or np.float64,
         )
 
+        xout: xr.DataArray = xr.apply_ufunc(  # type: ignore[no-any-return]
+            moments_to_comoments,
+            values,
+            input_core_dims=[[mom_dim_in]],
+            output_core_dims=[mom_dims2],
+            kwargs={"mom": mom, "dtype": dtype},
+            keep_attrs=keep_attrs,
+            **apply_ufunc_kwargs,
+        )
+
+        return xout
+
+    # numpy
     dtype = select_dtype(values, out=None, dtype=dtype)
     values = np.asarray(values, dtype=dtype)
 
@@ -618,54 +675,6 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)
     for i, j in np.ndindex(*out.shape[-2:]):
         out[..., i, j] = values[..., i + j]
-    return out
-
-
-# * Update weights
-@overload
-def assign_weight(
-    data: xr.DataArray,
-    weight: ArrayLike | xr.DataArray,
-    *,
-    mom_ndim: Mom_NDim,
-    copy: bool = ...,
-) -> xr.DataArray: ...
-@overload
-def assign_weight(
-    data: NDArray[FloatT],
-    weight: ArrayLike,
-    *,
-    mom_ndim: Mom_NDim,
-    copy: bool = ...,
-) -> NDArray[FloatT]: ...
-
-
-@docfiller.decorate
-def assign_weight(
-    data: NDArray[FloatT] | xr.DataArray,
-    weight: ArrayLike | xr.DataArray,
-    *,
-    mom_ndim: Mom_NDim,
-    copy: bool = True,
-) -> NDArray[FloatT] | xr.DataArray:
-    """
-    Update weights of moments array.
-
-    Parameters
-    ----------
-    data : ndarray or DataArray
-        Moments array.
-    {weight}
-    {mom_ndim}
-    copy : bool, default=True
-        If ``True`` (the default), return new array with updated weights.
-        Otherwise, return the original array with weights updated inplace.
-    """
-    out = data.copy() if copy else data
-    if mom_ndim == 1:
-        out[..., 0] = weight
-    else:
-        out[..., 0, 0] = weight
     return out
 
 
