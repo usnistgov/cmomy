@@ -174,6 +174,15 @@ def test_xprepare_values_for_reduction_1(
     [
         (
             {
+                "out": None,
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+            },
+            None,
+        ),
+        (
+            {
                 "out": np.zeros((2, 3, 4)),
                 "mom_ndim": 1,
                 "axis": 0,
@@ -214,8 +223,10 @@ def test_xprepare_values_for_reduction_1(
 )
 def test_xprepare_out_for_resample_data(kws, expected) -> None:
     func = prepare.xprepare_out_for_resample_data
-    if isinstance(expected, type):
+    if expected is None:
+        assert func(**kws) is None
+    elif isinstance(expected, type):
         with pytest.raises(expected):
             func(**kws)
     else:
-        np.testing.assert_allclose(func(**kws), expected)
+        np.testing.assert_allclose(func(**kws), expected)  # type: ignore[arg-type]

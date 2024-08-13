@@ -926,12 +926,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     def resample_and_reduce(
         self,
         *,
-        freq: NDArrayInt,
         axis: AxisReduce | MissingType = -1,
-        # freq: NDArrayInt | None = None,  # noqa: ERA001
-        # indices: NDArrayInt | None = None,  # noqa: ERA001
-        # nrep: NDArrayInt | None = None,  # noqa: ERA001
-        # rng: np.random.Generator | None = None,  # noqa: ERA001
+        freq: ArrayLike | None = None,
+        nrep: int | None = None,
+        rng: np.random.Generator | None = None,
         parallel: bool | None = None,
         order: ArrayOrder = None,
         **kwargs: Any,
@@ -941,8 +939,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
 
         Parameters
         ----------
-        {freq}
         {axis_data_and_dim}
+        {freq}
+        {nrep_optional}
+        {rng}
         {parallel}
         {order}
 
@@ -968,6 +968,8 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         data: ArrayT = resample_data(
             self.to_values(),  # pyright: ignore[reportAssignmentType]
             freq=freq,
+            nrep=nrep,
+            rng=rng,
             mom_ndim=self._mom_ndim,
             axis=axis,
             parallel=parallel,

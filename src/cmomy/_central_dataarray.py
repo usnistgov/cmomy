@@ -1125,9 +1125,11 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
     def resample_and_reduce(
         self,
         *,
-        freq: NDArrayInt,
         dim: DimsReduce | MissingType = MISSING,
         axis: AxisReduce | MissingType = MISSING,
+        freq: ArrayLike | xr.DataArray | None = None,
+        nrep: int | None = None,
+        rng: np.random.Generator | None = None,
         rep_dim: str = "rep",
         parallel: bool | None = None,
         order: ArrayOrder = None,
@@ -1191,6 +1193,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         """
         return super().resample_and_reduce(
             freq=freq,
+            nrep=nrep,
+            rng=rng,
             axis=axis,
             parallel=parallel,
             order=order,

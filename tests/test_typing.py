@@ -10,9 +10,9 @@ from cmomy.resample import random_freq, resample_vals
 
 if TYPE_CHECKING:
     import sys
-    from typing import Any
+    from typing import Any, Union
 
-    from numpy.typing import NDArray
+    from numpy.typing import ArrayLike, NDArray
 
     import cmomy
     from cmomy import convert, rolling
@@ -203,6 +203,11 @@ def test_reduce_vals() -> None:
         ds = xx.to_dataset()
         assert_type(reduce_vals(ds, mom=3), xr.Dataset)
 
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            reduce_vals(g, mom=3), Union[xr.DataArray, xr.Dataset, NDArray[Any]]
+        )
+
 
 def test_reduce_data() -> None:
     x32 = np.array([1, 2, 3], dtype=np.float32)
@@ -257,6 +262,11 @@ def test_reduce_data() -> None:
 
         ds = xx.to_dataset(name="hello")
         assert_type(reduce_data(ds, mom_ndim=1), xr.Dataset)
+
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            reduce_data(g, mom_ndim=1), Union[xr.DataArray, xr.Dataset, NDArray[Any]]
+        )
 
 
 def test_convert() -> None:
@@ -326,6 +336,13 @@ def test_convert() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(convert.moments_type(xx, mom_ndim=1), xr.DataArray)
+        assert_type(convert.moments_type(xx.to_dataset(), mom_ndim=1), xr.Dataset)
+
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            convert.moments_type(g, mom_ndim=1),
+            Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+        )
 
 
 def test_moveaxis() -> None:
@@ -435,6 +452,12 @@ def test_cumulative() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(convert.cumulative(xx, mom_ndim=1), xr.DataArray)
+        assert_type(convert.cumulative(xx.to_dataset(), mom_ndim=1), xr.Dataset)
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            convert.cumulative(g, mom_ndim=1),
+            Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+        )
 
 
 def test_vals_to_data() -> None:
@@ -567,6 +590,14 @@ def test_convert_moments_to_comoments() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(convert.moments_to_comoments(xx, mom=(2, -1)), xr.DataArray)
+        assert_type(
+            convert.moments_to_comoments(xx.to_dataset(), mom=(2, -1)), xr.Dataset
+        )
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            convert.moments_to_comoments(g, mom=(2, -1)),
+            Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+        )
 
 
 def test_moments_to_comoments() -> None:
@@ -719,6 +750,12 @@ def test_reduce_data_grouped() -> None:
         assert_type(reduce_data_grouped(xx, mom_ndim=1, by=by), xr.DataArray)
 
         assert_type(reduce_data_grouped(xx.to_dataset(), mom_ndim=1, by=by), xr.Dataset)
+
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            reduce_data_grouped(g, mom_ndim=1, by=by),
+            Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+        )
 
 
 def test_reduce_data_indexed() -> None:
@@ -918,6 +955,18 @@ def test_reduce_data_indexed() -> None:
             xr.Dataset,
         )
 
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            reduce_data_indexed(
+                g,
+                mom_ndim=1,
+                index=index,
+                group_start=group_start,
+                group_end=group_end,
+            ),
+            Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+        )
+
 
 def test_resample_data() -> None:
     from cmomy.resample import random_freq, resample_data
@@ -984,6 +1033,12 @@ def test_resample_data() -> None:
         assert_type(resample_data(xx, freq=freq, mom_ndim=1), xr.DataArray)
         assert_type(resample_data(xx.to_dataset(), freq=freq, mom_ndim=1), xr.Dataset)
 
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            resample_data(g, freq=freq, mom_ndim=1),
+            Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+        )
+
 
 def test_jackknife_data() -> None:
     from cmomy.resample import jackknife_data
@@ -1045,6 +1100,10 @@ def test_jackknife_data() -> None:
         xx = xr.DataArray(x32)
         assert_type(jackknife_data(xx, mom_ndim=1), xr.DataArray)
         assert_type(jackknife_data(xx.to_dataset(), mom_ndim=1), xr.Dataset)
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            jackknife_data(g, mom_ndim=1), Union[xr.DataArray, xr.Dataset, NDArray[Any]]
+        )
 
 
 def test_resample_vals() -> None:
@@ -1106,6 +1165,14 @@ def test_resample_vals() -> None:
         xx = xr.DataArray(x32)
         assert_type(resample_vals(xx, freq=freq, mom=3), xr.DataArray)
 
+        assert_type(resample_vals(xx.to_dataset(), freq=freq, mom=3), xr.Dataset)
+
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            resample_vals(g, freq=freq, mom=3),
+            Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+        )
+
 
 def test_jackknife_vals() -> None:
     from cmomy.resample import jackknife_vals
@@ -1157,6 +1224,12 @@ def test_jackknife_vals() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(jackknife_vals(xx, mom=3), xr.DataArray)
+        assert_type(jackknife_vals(xx.to_dataset(), mom=3), xr.Dataset)
+
+        g: ArrayLike | xr.DataArray | xr.Dataset = xc
+        assert_type(
+            jackknife_vals(g, mom=3), Union[xr.DataArray, xr.Dataset, NDArray[Any]]
+        )
 
 
 def test_centralmoments_zeros() -> None:

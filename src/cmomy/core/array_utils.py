@@ -151,19 +151,29 @@ _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
 @overload
 def select_dtype(
     x: xr.Dataset,
+    *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
 ) -> None | np.dtype[np.float32] | np.dtype[np.float64]: ...
 @overload
 def select_dtype(
     x: xr.DataArray | ArrayLike,
+    *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
 ) -> np.dtype[np.float32] | np.dtype[np.float64]: ...
+@overload
+def select_dtype(
+    x: xr.Dataset | xr.DataArray | ArrayLike,
+    *,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+) -> None | np.dtype[np.float32] | np.dtype[np.float64]: ...
 
 
 def select_dtype(
-    x: xr.Dataset | xr.DataArray | ArrayLike,
+    x: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
 ) -> None | np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:

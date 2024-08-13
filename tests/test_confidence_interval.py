@@ -136,9 +136,10 @@ def xtheta_hat(xdata: xr.DataArray, mom, axis) -> xr.DataArray:
 
 
 @pytest.fixture
-def xtheta_boot(xdata: xr.DataArray, mom: Moments, freq, axis) -> xr.DataArray:
+def xtheta_boot(
+    xdata: xr.DataArray, mom: Moments, freq: NDArrayAny, axis
+) -> xr.DataArray:
     out = cmomy.resample_vals(xdata, mom=mom, axis=axis, freq=freq)
-
     dims_out = list(out.dims)
     dims_out[axis] = out.dims[-2]
     dims_out[-2] = out.dims[axis]

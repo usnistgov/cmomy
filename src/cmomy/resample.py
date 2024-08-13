@@ -459,7 +459,7 @@ def resample_data(
     data: xr.Dataset,
     *,
     mom_ndim: Mom_NDim,
-    freq: NDArrayInt | xr.DataArray | xr.Dataset | None = ...,
+    freq: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     paired: bool = ...,
@@ -480,7 +480,7 @@ def resample_data(
     data: xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
-    freq: NDArrayInt | xr.DataArray | None = ...,
+    freq: ArrayLike | xr.DataArray | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     paired: bool = ...,
@@ -502,7 +502,7 @@ def resample_data(
     data: ArrayLikeArg[FloatT],
     *,
     mom_ndim: Mom_NDim,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     paired: bool = ...,
@@ -521,10 +521,10 @@ def resample_data(
 # out
 @overload
 def resample_data(
-    data: Any,
+    data: ArrayLike,
     *,
     mom_ndim: Mom_NDim,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     paired: bool = ...,
@@ -543,10 +543,10 @@ def resample_data(
 # dtype
 @overload
 def resample_data(
-    data: Any,
+    data: ArrayLike,
     *,
     mom_ndim: Mom_NDim,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     paired: bool = ...,
@@ -565,10 +565,10 @@ def resample_data(
 # fallback
 @overload
 def resample_data(
-    data: Any,
+    data: ArrayLike,
     *,
     mom_ndim: Mom_NDim,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     paired: bool = ...,
@@ -595,7 +595,7 @@ def resample_data(  # noqa: PLR0913
     data: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     mom_ndim: Mom_NDim,
-    freq: NDArrayInt | xr.DataArray | xr.Dataset | None = None,
+    freq: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     nrep: int | None = None,
     rng: np.random.Generator | None = None,
     paired: bool = True,
@@ -712,7 +712,7 @@ def resample_data(  # noqa: PLR0913
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
-        freq=freq,
+        freq=freq,  # type: ignore[arg-type]  # Should do better for this...
         rng=rng,
         nrep=nrep,
         dtype=dtype,
@@ -740,11 +740,11 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
-    freq: NDArrayInt | xr.DataArray | xr.Dataset | None = ...,
+    freq: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     paired: bool = ...,
-    weight: ArrayLike | xr.DataArray | None = ...,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
@@ -763,7 +763,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
-    freq: NDArrayInt | xr.DataArray | None = ...,
+    freq: ArrayLike | xr.DataArray | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     weight: ArrayLike | xr.DataArray | None = ...,
@@ -786,7 +786,7 @@ def resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
     mom: Moments,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     weight: ArrayLike | None = ...,
@@ -806,10 +806,10 @@ def resample_vals(
 # out
 @overload
 def resample_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     weight: ArrayLike | None = ...,
@@ -829,10 +829,10 @@ def resample_vals(
 # dtype
 @overload
 def resample_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     weight: ArrayLike | None = ...,
@@ -852,10 +852,10 @@ def resample_vals(
 # fallback
 @overload
 def resample_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
-    freq: NDArrayInt | None = ...,
+    freq: ArrayLike | None = ...,
     nrep: int | None = ...,
     rng: np.random.Generator | None = ...,
     weight: ArrayLike | None = ...,
@@ -880,7 +880,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
     x: ArrayLike | xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
-    freq: NDArrayInt | xr.DataArray | xr.Dataset | None = None,
+    freq: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     nrep: int | None = None,
     rng: np.random.Generator | None = None,
     paired: bool = True,
@@ -1027,7 +1027,12 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
     )
 
     freq = randsamp_freq(
-        data=args[0], axis=axis_neg, freq=freq, rng=rng, nrep=nrep, dtype=dtype
+        data=args[0],
+        axis=axis_neg,
+        freq=freq,  # type: ignore[arg-type]  # because of Dataset....
+        rng=rng,
+        nrep=nrep,
+        dtype=dtype,
     )
 
     out = prepare_out_from_values(
@@ -1105,7 +1110,7 @@ def jackknife_freq(
 @overload
 def jackknife_data(
     data: xr.Dataset,
-    data_reduced: xr.Dataset | xr.DataArray | ArrayLike | None = ...,
+    data_reduced: xr.Dataset | None = ...,
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
@@ -1160,7 +1165,7 @@ def jackknife_data(
 # out
 @overload
 def jackknife_data(
-    data: Any,
+    data: ArrayLike,
     data_reduced: xr.DataArray | ArrayLike | None = ...,
     *,
     mom_ndim: Mom_NDim,
@@ -1179,7 +1184,7 @@ def jackknife_data(
 # dtype
 @overload
 def jackknife_data(
-    data: Any,
+    data: ArrayLike,
     data_reduced: xr.DataArray | ArrayLike | None = ...,
     *,
     mom_ndim: Mom_NDim,
@@ -1198,7 +1203,7 @@ def jackknife_data(
 # fallback
 @overload
 def jackknife_data(
-    data: Any,
+    data: ArrayLike,
     data_reduced: xr.DataArray | ArrayLike | None = ...,
     *,
     mom_ndim: Mom_NDim,
@@ -1338,7 +1343,7 @@ def jackknife_data(
             dask="parallelized",
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(data, out, dtype) or np.float64,
+            output_dtypes=select_dtype(data, out=out, dtype=dtype) or np.float64,
         )
 
         core_dims = [dim, *mom_dims]
@@ -1415,11 +1420,11 @@ def jackknife_data(
 # xarray
 @overload
 def jackknife_vals(
-    x: xr.DataArray,
-    *y: xr.DataArray | ArrayLike,
+    x: xr.Dataset,
+    *y: ArrayLike | xr.Dataset,
     mom: Moments,
-    data_reduced: xr.DataArray | ArrayLike | None = ...,
-    weight: xr.DataArray | ArrayLike | None = ...,
+    data_reduced: xr.Dataset | None = ...,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
@@ -1430,6 +1435,28 @@ def jackknife_vals(
     rep_dim: str | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.Dataset: ...
+@overload
+def jackknife_vals(
+    x: xr.DataArray,
+    *y: ArrayLike | xr.DataArray,
+    mom: Moments,
+    data_reduced: ArrayLike | xr.DataArray | None = ...,
+    weight: ArrayLike | xr.DataArray | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    move_axis_to_end: bool = ...,
+    parallel: bool | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    rep_dim: str | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 # array
 @overload
@@ -1449,11 +1476,13 @@ def jackknife_vals(
     rep_dim: str | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def jackknife_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
     data_reduced: ArrayLike | None = ...,
@@ -1468,11 +1497,13 @@ def jackknife_vals(
     rep_dim: str | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def jackknife_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
     data_reduced: ArrayLike | None = ...,
@@ -1487,11 +1518,13 @@ def jackknife_vals(
     rep_dim: str | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def jackknife_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
     data_reduced: ArrayLike | None = ...,
@@ -1506,16 +1539,18 @@ def jackknife_vals(
     rep_dim: str | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
 def jackknife_vals(  # noqa: PLR0914
-    x: xr.Dataset | xr.DataArray | ArrayLike,
-    *y: xr.Dataset | xr.DataArray | ArrayLike,
+    x: ArrayLike | xr.DataArray | xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
-    data_reduced: xr.Dataset | xr.DataArray | ArrayLike | None = None,
-    weight: xr.Dataset | xr.DataArray | ArrayLike | None = None,
+    data_reduced: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = True,
     parallel: bool | None = None,
@@ -1575,8 +1610,8 @@ def jackknife_vals(  # noqa: PLR0914
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
         if data_reduced is None:
-            data_reduced = reduce_vals(
-                x,
+            data_reduced = reduce_vals(  # type: ignore[misc]
+                x,  # type: ignore[arg-type]
                 *y,
                 mom=mom,
                 weight=weight,
@@ -1630,7 +1665,7 @@ def jackknife_vals(  # noqa: PLR0914
             output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(x, out, dtype) or np.float64,
+            output_dtypes=select_dtype(x, out=out, dtype=dtype) or np.float64,
         )
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
@@ -1667,11 +1702,11 @@ def jackknife_vals(  # noqa: PLR0914
     # numpy
     dtype = select_dtype(x, out=out, dtype=dtype)
     if data_reduced is None:
-        data_reduced = reduce_vals(
-            x,
-            *y,
+        data_reduced = reduce_vals(  # type: ignore[misc]
+            x,  # type: ignore[arg-type]
+            *y,  # type: ignore[arg-type]
             mom=mom,
-            weight=weight,
+            weight=weight,  # type: ignore[arg-type]
             axis=axis,
             parallel=parallel,
             dtype=dtype,
@@ -1709,4 +1744,4 @@ def jackknife_vals(  # noqa: PLR0914
         mom_ndim=mom_ndim,
         parallel=parallel,
         size=args[0].size,
-    )(data_reduced, *args, out=out, axes=axes)
+    )(data_reduced, *args, out=out, axes=axes)  # type: ignore[arg-type]

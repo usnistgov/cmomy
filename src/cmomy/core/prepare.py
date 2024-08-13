@@ -230,7 +230,11 @@ def xprepare_secondary_value_for_reduction(
     if isinstance(x, xr.DataArray):
         return x.astype(dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
     return prepare_secondary_value_for_reduction(
-        x, axis=axis, nsamp=nsamp, dtype=dtype, move_axis_to_end=True
+        x,
+        axis=axis,
+        nsamp=nsamp,
+        dtype=dtype,  # type: ignore[arg-type]
+        move_axis_to_end=True,
     )
 
 
