@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 
 
 # * Moment validation ---------------------------------------------------------
-def is_mom_ndim(mom_ndim: int) -> TypeGuard[Mom_NDim]:
+def is_mom_ndim(mom_ndim: int | None) -> TypeGuard[Mom_NDim]:
     """Validate mom_ndim."""
     return mom_ndim in {1, 2}
 
@@ -45,7 +45,7 @@ def is_mom_tuple(mom: tuple[int, ...]) -> TypeGuard[MomentsStrict]:
     return len(mom) in {1, 2} and all(m > 0 for m in mom)
 
 
-def validate_mom_ndim(mom_ndim: int) -> Mom_NDim:
+def validate_mom_ndim(mom_ndim: int | None) -> Mom_NDim:
     """Raise error if mom_ndim invalid."""
     if is_mom_ndim(mom_ndim):
         return mom_ndim

@@ -660,7 +660,7 @@ def resample_data(  # noqa: PLR0913
             output_sizes={rep_dim: _select_nrep(freq, nrep, rep_dim)},
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
+            output_dtypes=select_dtype(data, out=out, dtype=dtype) or np.float64,
         )
 
         def _func(
@@ -944,9 +944,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
-        if isinstance(x, xr.DataArray):
-            dtype = select_dtype(x, out=out, dtype=dtype)
-
+        dtype = select_dtype(x, out=out, dtype=dtype)
         input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -1340,7 +1338,7 @@ def jackknife_data(
             dask="parallelized",
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
+            output_dtypes=select_dtype(data, out, dtype) or np.float64,
         )
 
         core_dims = [dim, *mom_dims]
@@ -1632,7 +1630,7 @@ def jackknife_vals(  # noqa: PLR0914
             output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
+            output_dtypes=select_dtype(x, out, dtype) or np.float64,
         )
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:

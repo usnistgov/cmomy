@@ -256,11 +256,9 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     """
     mom_validated, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
+    dtype = select_dtype(x, out=out, dtype=dtype)
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
-        if isinstance(x, xr.DataArray):
-            dtype = select_dtype(x, out=out, dtype=dtype)
-
         input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -280,7 +278,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
             output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom)), **{dim: 1}),
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
+            output_dtypes=dtype or np.float64,
         )
 
         # NOTE: going this way so that dtype can be passed along from xr.Datasets
@@ -314,7 +312,6 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
 
         return xout
 
-    dtype = select_dtype(x, out=out, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
@@ -507,6 +504,7 @@ def reduce_data(
         Reduced data array with shape ``data.shape`` with ``axis`` removed.
         Same type as input ``data``.
     """
+    dtype = select_dtype(data, out=out, dtype=dtype)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
 
@@ -529,7 +527,7 @@ def reduce_data(
             dask="parallelized",
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
+            output_dtypes=dtype or np.float64,
         )
 
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -551,7 +549,6 @@ def reduce_data(
         return xout
 
     mom_ndim = validate_mom_ndim(mom_ndim)
-    dtype = select_dtype(data, out=out, dtype=dtype)
 
     # special to support multiple reduction dimensions...
     data = np.asarray(data, dtype=dtype)
@@ -900,6 +897,7 @@ def reduce_data_grouped(
 
 
     """
+    dtype = select_dtype(data, out=out, dtype=dtype)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
@@ -911,7 +909,7 @@ def reduce_data_grouped(
             output_sizes={dim: np.max(by) + 1},
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
+            output_dtypes=dtype or np.float64,
         )
 
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -947,7 +945,6 @@ def reduce_data_grouped(
         return xout
 
     # Numpy
-    dtype = select_dtype(data, out=out, dtype=dtype)
     mom_ndim = validate_mom_ndim(mom_ndim)
 
     axis, data = prepare_data_for_reduction(  # pyright: ignore[reportArgumentType]
@@ -1357,6 +1354,7 @@ def reduce_data_indexed(  # noqa: PLR0913
       * group    (group) <U1 12B 'a' 'b' 'c'
     Dimensions without coordinates: mom
     """
+    dtype = select_dtype(data, out=out, dtype=dtype)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
@@ -1368,7 +1366,7 @@ def reduce_data_indexed(  # noqa: PLR0913
             output_sizes={dim: len(group_start)},  # type: ignore[arg-type]
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
+            output_dtypes=dtype or np.float64,
         )
 
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -1426,8 +1424,6 @@ def reduce_data_indexed(  # noqa: PLR0913
         return xout
 
     mom_ndim = validate_mom_ndim(mom_ndim)
-    dtype = select_dtype(data, out=out, dtype=dtype)
-
     axis, data = prepare_data_for_reduction(  # pyright: ignore[reportAssignmentType]
         data=data,
         axis=axis,

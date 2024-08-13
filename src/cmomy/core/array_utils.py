@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
+import xarray as xr
 
 from .validate import (
     validate_mom_ndim,
@@ -16,7 +17,6 @@ if TYPE_CHECKING:
         Sequence,
     )
 
-    import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
@@ -148,13 +148,35 @@ def raise_if_wrong_shape(
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
 
 
+@overload
+def select_dtype(
+    x: xr.Dataset,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+) -> None | np.dtype[np.float32] | np.dtype[np.float64]: ...
+@overload
 def select_dtype(
     x: xr.DataArray | ArrayLike,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
-) -> np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
-    """Select a dtype from, in order, out, dtype, or passed array."""
-    if out is not None:
+) -> np.dtype[np.float32] | np.dtype[np.float64]: ...
+
+
+def select_dtype(
+    x: xr.Dataset | xr.DataArray | ArrayLike,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+) -> None | np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
+    """
+    Select a dtype from, in order, out, dtype, or passed array.
+
+    If pass in a Dataset, return dtype
+    """
+    if isinstance(x, xr.Dataset):
+        if dtype is None:
+            return dtype
+        dtype = np.dtype(dtype)
+    elif out is not None:
         dtype = out.dtype  # pyright: ignore[reportUnknownMemberType]
     elif dtype is not None:
         dtype = np.dtype(dtype)
