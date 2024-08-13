@@ -945,7 +945,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
         dtype = select_dtype(x, out=out, dtype=dtype)
-        input_core_dims, xargs = xprepare_values_for_reduction(
+        dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -955,7 +955,6 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
             narrays=mom_ndim + 1,
         )
 
-        dim = input_core_dims[0][0]
         out = xprepare_out_for_resample_vals(
             target=x,
             out=out,
@@ -1628,7 +1627,7 @@ def jackknife_vals(  # noqa: PLR0914
         if isinstance(x, xr.DataArray):
             dtype = select_dtype(x, out=out, dtype=dtype)
 
-        input_core_dims, xargs = xprepare_values_for_reduction(
+        dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -1638,7 +1637,6 @@ def jackknife_vals(  # noqa: PLR0914
             narrays=mom_ndim + 1,
         )
 
-        dim = input_core_dims[0][0]
         out = xprepare_out_for_resample_vals(
             target=x,
             out=out,

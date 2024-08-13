@@ -68,7 +68,11 @@ def test_construct_rolling_window_array(shape, axis, window, center, as_dataarra
     r = xdata.rolling(
         {xdata.dims[a]: win for a, win in zip(_axis, _window)}, center=center
     )
-    c = r.construct({xdata.dims[a]: f"_rolling_{a}" for a in _axis})
+
+    window_dims = [f"_rolling_{a}" for a in _axis]
+    c = r.construct({xdata.dims[a]: w for a, w in zip(_axis, window_dims)}).transpose(
+        *window_dims, ...
+    )
 
     if as_dataarray:
         data = xdata
@@ -103,11 +107,11 @@ def test_construct_rolling_window_array_mom_ndim(as_dataarray) -> None:
     out2 = func(data, axis=axis, mom_ndim=2, window=3)
 
     np.testing.assert_allclose(
-        cmomy.moveaxis(out, (-2, -1), (-3, -2)),
+        out,
         out1,
     )
     np.testing.assert_allclose(
-        cmomy.moveaxis(out, (-2, -1), (-4, -3)),
+        out,
         out2,
     )
 
@@ -239,8 +243,8 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
 
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
-    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
+    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -300,10 +304,10 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
         data, axis=0, fill_value=0.0, mom_ndim=mom_ndim, **kws
     )
 
-    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
+    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -328,8 +332,8 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
 
     wr, *xyr = (select(data_rolling, name) for name in mom_names)
 
-    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=-1)  # pyright: ignore[reportCallIssue]
-    count = (wr != 0.0).sum(axis=-1)
+    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=0)  # pyright: ignore[reportCallIssue]
+    count = (wr != 0.0).sum(axis=0)
 
     outc = np.where(
         count[(..., *((None,) * mom_ndim))]
@@ -374,10 +378,10 @@ def test_rolling_data_from_constructed_windows(
     data_rolling = rolling.construct_rolling_window_array(
         data, axis=axis, window=window, center=center, fill_value=0.0, mom_ndim=mom_ndim
     )
-    out2 = cmomy.reduce_data(data_rolling, axis=-1, mom_ndim=mom_ndim)
+    out2 = cmomy.reduce_data(data_rolling, axis=0, mom_ndim=mom_ndim)
     # clean up counts...
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
     out2 = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))

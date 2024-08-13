@@ -421,7 +421,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
 
     def stack(
         self,
-        dimensions: Mapping[Any, Sequence[Hashable]] | None = None,
+        dim: Mapping[Any, Sequence[Hashable]] | None = None,
         *,
         _reorder: bool = True,
         _copy: bool | None = False,
@@ -494,7 +494,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         """
         return self.pipe(
             "stack",
-            dimensions=dimensions,
+            dim,
             _reorder=_reorder,
             _order=_order,
             _copy=_copy,
@@ -950,7 +950,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
 
         weight = 1.0 if weight is None else weight
 
-        input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
+        dim, input_core_dims, (x0, w, *x1) = xprepare_values_for_reduction(
             x,
             weight,
             *y,

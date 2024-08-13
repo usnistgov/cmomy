@@ -168,7 +168,11 @@ def xprepare_values_for_reduction(
     dim: DimsReduce | MissingType,
     axis: AxisReduce | MissingType,
     dtype: DTypeLike,
-) -> tuple[list[Sequence[Hashable]], list[xr.Dataset | xr.DataArray | NDArrayAny]]:
+) -> tuple[
+    str | Sequence[Hashable],
+    list[Sequence[Hashable]],
+    list[xr.Dataset | xr.DataArray | NDArrayAny],
+]:
     """
     Convert input value arrays to correct form for reduction.
 
@@ -215,7 +219,7 @@ def xprepare_values_for_reduction(
     # NOTE: Go with list[Sequence[...]] here so that `input_core_dims` can
     # be updated later with less restriction...
     input_core_dims: list[Sequence[Hashable]] = [[dim]] * len(arrays)
-    return input_core_dims, arrays
+    return dim, input_core_dims, arrays
 
 
 def xprepare_secondary_value_for_reduction(

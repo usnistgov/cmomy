@@ -133,7 +133,7 @@ def test_xprepare_values_for_reduction_1(
     target = xr.DataArray(np.ones(xshape, dtype=dtype))
     other = np.ones(yshape, dtype=np.float32)
 
-    core_dims, (x, y) = prepare.xprepare_values_for_reduction(
+    dim_out, core_dims, (x, y) = prepare.xprepare_values_for_reduction(
         target,
         other,
         narrays=2,
@@ -142,6 +142,7 @@ def test_xprepare_values_for_reduction_1(
         dtype=dtype,
     )
 
+    assert dim_out == dim
     assert core_dims == [[dim]] * 2
 
     assert x.shape == xshape2
@@ -152,7 +153,7 @@ def test_xprepare_values_for_reduction_1(
     if xshape == yshape:
         # also do xr test
         other = xr.DataArray(other)  # type: ignore[assignment]
-        core_dims, (x, y) = prepare.xprepare_values_for_reduction(
+        dim_out, core_dims, (x, y) = prepare.xprepare_values_for_reduction(
             target,
             other,
             narrays=2,
@@ -161,6 +162,7 @@ def test_xprepare_values_for_reduction_1(
             dtype=dtype,
         )
 
+        assert dim_out == dim
         assert core_dims == [[dim]] * 2
 
         assert x.shape == xshape2

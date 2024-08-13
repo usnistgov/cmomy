@@ -252,6 +252,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.Dataset: ...
@@ -267,6 +268,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
@@ -283,6 +285,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
+    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -299,6 +302,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -315,6 +319,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -331,6 +336,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: Any = ...,
+    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...

@@ -22,6 +22,7 @@ from .core.missing import MISSING
 from .core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
+    xprepare_out_for_resample_data,
     xprepare_out_for_resample_vals,
     xprepare_values_for_reduction,
 )
@@ -35,6 +36,7 @@ from .core.validate import (
     validate_mom_ndim,
 )
 from .core.xr_utils import (
+    get_apply_ufunc_kwargs,
     select_axis_dim,
     select_axis_dim_mult,
 )
@@ -46,6 +48,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .core.typing import (
+        ApplyUFuncKwargs,
         ArrayLikeArg,
         AxesGUFunc,
         AxisReduce,
@@ -55,6 +58,7 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
+        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -66,6 +70,21 @@ if TYPE_CHECKING:
 
 
 # * Moving average
+@overload
+def construct_rolling_window_array(
+    x: xr.Dataset,
+    window: int | Sequence[int],
+    axis: AxisReduceMult | MissingType = ...,
+    center: bool | Sequence[bool] = ...,
+    stride: int | Sequence[int] = ...,
+    fill_value: ArrayLike = ...,
+    mom_ndim: Mom_NDim | None = ...,
+    # xarray specific
+    dim: DimsReduceMult | MissingType = ...,
+    window_dim: str | Sequence[str] | None = ...,
+    keep_attrs: bool | None = ...,
+    **kwargs: Any,
+) -> xr.Dataset: ...
 @overload
 def construct_rolling_window_array(
     x: xr.DataArray,
@@ -115,7 +134,7 @@ def construct_rolling_window_array(
 
 @docfiller.decorate
 def construct_rolling_window_array(
-    x: NDArrayAny | xr.DataArray,
+    x: NDArrayAny | xr.DataArray | xr.Dataset,
     window: int | Sequence[int],
     axis: AxisReduceMult | MissingType = MISSING,
     center: bool | Sequence[bool] = False,
@@ -127,13 +146,13 @@ def construct_rolling_window_array(
     window_dim: str | Sequence[str] | None = None,
     keep_attrs: bool | None = None,
     **kwargs: Any,
-) -> NDArrayAny | xr.DataArray:
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
     """
     Convert an array to one with rolling windows.
 
     Parameters
     ----------
-    x : array or DataArray
+    x : array or DataArray or Dataset
         Input array.
     axis : int or iterable of int
         To sample along.
@@ -151,16 +170,13 @@ def construct_rolling_window_array(
         Names of output window dimension(s).
     {keep_attrs}
     **kwargs
-        Extra arguments to :meth:`xarray.DataArray.rolling`.
+        Extra arguments to :meth:`xarray.DataArray.rolling` or :meth:`xarray.Dataset.rolling`.
 
 
     Returns
     -------
     output : array
-        Array of shape ``(*shape, window)`` if ``mom_ndim = None`` or
-        ``(*shape[:-mom_ndim], window, *shape[-mom_ndim:])`` if ``mom_ndim is
-        not None``. That is, the new window dimension is placed at the end, but
-        before any moment dimensions if they are specified.
+        Array of shape ``(window, *shape)``.
 
     Notes
     -----
@@ -175,32 +191,30 @@ def construct_rolling_window_array(
     --------
     >>> x = np.arange(5).astype(float)
     >>> construct_rolling_window_array(x, window=4, axis=0)
-    array([[nan, nan, nan,  0.],
-           [nan, nan,  0.,  1.],
-           [nan,  0.,  1.,  2.],
-           [ 0.,  1.,  2.,  3.],
-           [ 1.,  2.,  3.,  4.]])
+    array([[nan, nan, nan,  0.,  1.],
+           [nan, nan,  0.,  1.,  2.],
+           [nan,  0.,  1.,  2.,  3.],
+           [ 0.,  1.,  2.,  3.,  4.]])
 
     >>> dx = xr.DataArray(x)
     >>> construct_rolling_window_array(dx, window=4, center=True, dim="dim_0")
-    <xarray.DataArray (dim_0: 5, rolling_dim_0: 4)> Size: 160B
-    array([[nan, nan,  0.,  1.],
-           [nan,  0.,  1.,  2.],
-           [ 0.,  1.,  2.,  3.],
-           [ 1.,  2.,  3.,  4.],
-           [ 2.,  3.,  4., nan]])
-    Dimensions without coordinates: dim_0, rolling_dim_0
+    <xarray.DataArray (rolling_dim_0: 4, dim_0: 5)> Size: 160B
+    array([[nan, nan,  0.,  1.,  2.],
+           [nan,  0.,  1.,  2.,  3.],
+           [ 0.,  1.,  2.,  3.,  4.],
+           [ 1.,  2.,  3.,  4., nan]])
+    Dimensions without coordinates: rolling_dim_0, dim_0
 
     See Also
     --------
     xarray.DataArray.rolling
     xarray.core.rolling.DataArrayRolling.construct
     """
-    if isinstance(x, xr.DataArray):
+    if isinstance(x, (xr.DataArray, xr.Dataset)):
         mom_ndim = validate_mom_ndim(mom_ndim) if mom_ndim is not None else mom_ndim
         axis, dim = select_axis_dim_mult(x, axis=axis, dim=dim, mom_ndim=mom_ndim)
 
-        nroll = len(axis)
+        nroll = len(dim)
         window = (window,) * nroll if isinstance(window, int) else window
         center = (center,) * nroll if isinstance(center, bool) else center
         stride = (stride,) * nroll if isinstance(stride, int) else stride
@@ -228,10 +242,9 @@ def construct_rolling_window_array(
             keep_attrs=keep_attrs,
         )
 
-        if mom_ndim is not None:
-            xout = xout.transpose(..., *x.dims[-mom_ndim:])
-
-        return xout
+        # for safety, move window_dim to front...
+        # this avoids it being placed after any moment dimensions...
+        return xout.transpose(*window_dim, ...)
 
     return construct_rolling_window_array(  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
         x=xr.DataArray(x),
@@ -272,6 +285,26 @@ def _optional_zero_missing_weight(
 # ** Data
 @overload
 def rolling_data(  # pyright: ignore[reportOverlappingOverload]
+    data: xr.Dataset,
+    *,
+    window: int,
+    axis: AxisReduce | MissingType = ...,
+    mom_ndim: Mom_NDim = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    move_axis_to_end: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.Dataset: ...
+@overload
+def rolling_data(
     data: xr.DataArray,
     *,
     window: int,
@@ -286,6 +319,9 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 # Array
 @overload
@@ -304,11 +340,14 @@ def rolling_data(
     dtype: None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def rolling_data(
-    data: Any,
+    data: ArrayLike,
     *,
     window: int,
     axis: AxisReduce | MissingType = ...,
@@ -322,11 +361,14 @@ def rolling_data(
     dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def rolling_data(
-    data: Any,
+    data: ArrayLike,
     *,
     window: int,
     axis: AxisReduce | MissingType = ...,
@@ -340,11 +382,14 @@ def rolling_data(
     dtype: DTypeLikeArg[FloatT],
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def rolling_data(
-    data: Any,
+    data: ArrayLike,
     *,
     window: int,
     axis: AxisReduce | MissingType = ...,
@@ -354,16 +399,19 @@ def rolling_data(
     zero_missing_weights: bool = ...,
     move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
-    out: Any = ...,
-    dtype: Any = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
 def rolling_data(  # pyright: ignore[reportOverlappingOverload]
-    data: ArrayLike | xr.DataArray,
+    data: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     window: int,
     axis: AxisReduce | MissingType = MISSING,
@@ -377,13 +425,16 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     dtype: DTypeLike = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
-) -> NDArrayAny | xr.DataArray:
+    mom_dims: MomDims | None = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
     """
     Moving average of central moments array.
 
     Parameters
     ----------
-    data : array-like or xarray.DataArray
+    data : array-like or DataArray or Dataset
     {window}
     {axis}
     {mom_ndim}
@@ -395,38 +446,62 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     {out}
     {dtype}
     {dim}
+    {mom_dims_data}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------
-    out : ndarray or DataArray
+    out : ndarray or DataArray or Dataset
         Moving average data, of same shape and type as ``data``.
     """
-    if isinstance(data, xr.DataArray):
+    if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
-        if move_axis_to_end:
-            axis = -1
-            data = data.transpose(..., dim, *data.dims[-mom_ndim:])
-
-        return data.copy(
-            data=rolling_data(
-                data.to_numpy(),  # pyright: ignore[reportUnknownMemberType]
-                window=window,
-                axis=axis,
-                mom_ndim=mom_ndim,
-                min_periods=min_periods,
-                center=center,
-                parallel=parallel,
-                zero_missing_weights=zero_missing_weights,
-                dtype=dtype,
-                out=out,
-                move_axis_to_end=False,
-            )
+        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
+            apply_ufunc_kwargs,
+            on_missing_core_dim=on_missing_core_dim,
+            dask="parallelized",
+            # NOTE: for now just use np.float64 as the output dtype.
+            # see https://github.com/pydata/xarray/issues/1699
+            output_dtypes=select_dtype(data, out=out, dtype=dtype) or np.float64,
         )
 
-    mom_ndim = validate_mom_ndim(mom_ndim)
-    dtype = select_dtype(data, out=out, dtype=dtype)
+        core_dims = [[dim, *mom_dims]]
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            rolling_data,
+            data,
+            input_core_dims=core_dims,
+            output_core_dims=core_dims,
+            kwargs={
+                "window": window,
+                "axis": -1,
+                "mom_ndim": mom_ndim,
+                "min_periods": min_periods,
+                "center": center,
+                "parallel": parallel,
+                "zero_missing_weights": zero_missing_weights,
+                "dtype": dtype,
+                "out": xprepare_out_for_resample_data(
+                    out,
+                    mom_ndim=mom_ndim,
+                    axis=axis,
+                    move_axis_to_end=move_axis_to_end,
+                    data=data,
+                ),
+                "move_axis_to_end": False,
+            },
+            **apply_ufunc_kwargs,
+        )
 
+        if not move_axis_to_end and isinstance(xout, xr.DataArray):
+            xout = xout.transpose(*data.dims)
+        return xout
+
+    # numpy
+    dtype = select_dtype(data, out=out, dtype=dtype)
+    mom_ndim = validate_mom_ndim(mom_ndim)
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,
@@ -643,11 +718,8 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     dtype = select_dtype(x, out=out, dtype=dtype)
     weight = 1.0 if weight is None else weight
 
-    # if passing center, then don't use the out parameter.
-    # out = None if center else out  # noqa: ERA001
-
-    if isinstance(x, xr.DataArray):
-        input_core_dims, xargs = xprepare_values_for_reduction(
+    if isinstance(x, (xr.DataArray, xr.Dataset)):
+        dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -657,7 +729,6 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
             dtype=dtype,
         )
 
-        dim = input_core_dims[0][0]
         out = xprepare_out_for_resample_vals(
             target=x,
             out=out,
@@ -1153,7 +1224,7 @@ def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, xr.DataArray):
-        input_core_dims, xargs = xprepare_values_for_reduction(
+        dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             alpha,
@@ -1164,7 +1235,6 @@ def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
             dtype=dtype,
         )
 
-        dim = input_core_dims[0][0]
         out = xprepare_out_for_resample_vals(
             target=x,
             out=out,

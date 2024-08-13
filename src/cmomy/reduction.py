@@ -222,7 +222,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     ----------
     x : ndarray or DataArray or Dataset
         Values to analyze.
-    *y : array-like or DataArray
+    *y : array-like or DataArray or Dataset
         Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
         to broadcast to ``x`` or be 1d array with length ``x.shape[axis]``.
     {mom}
@@ -258,7 +258,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
-        input_core_dims, xargs = xprepare_values_for_reduction(
+        dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
             *y,
@@ -269,7 +269,6 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
         )
 
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
-        dim = input_core_dims[0][0]
         apply_ufunc_kwargs = get_apply_ufunc_kwargs(
             apply_ufunc_kwargs,
             on_missing_core_dim=on_missing_core_dim,
