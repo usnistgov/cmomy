@@ -274,7 +274,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
             apply_ufunc_kwargs,
             on_missing_core_dim=on_missing_core_dim,
             dask="parallelized",
-            output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom)), **{dim: 1}),
+            output_sizes={dim: 1, **dict(zip(mom_dims, mom_to_mom_shape(mom)))},
             # NOTE: for now just use np.float64 as the output dtype.
             # see https://github.com/pydata/xarray/issues/1699
             output_dtypes=select_dtype(x, out=out, dtype=dtype) or np.float64,
@@ -443,7 +443,7 @@ def reduce_data(
     keepdims: bool = ...,
     parallel: bool | None = ...,
     dtype: DTypeLike = ...,
-    out: None = ...,
+    out: NDArrayAny | None = ...,
     dim: DimsReduceMult | MissingType = ...,
     keep_attrs: bool | None = ...,
     use_reduce: bool = ...,

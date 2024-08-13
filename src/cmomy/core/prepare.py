@@ -194,7 +194,7 @@ def xprepare_values_for_reduction(
 
     # TODO(wpk): look closer at dtype and dataset
     dtype = (
-        target.dtype if (isinstance(target, xr.DataArray) and dtype is None) else dtype
+        target.dtype if (isinstance(target, xr.DataArray) and dtype is None) else dtype  # pyright: ignore[reportUnknownMemberType]
     )  # pyright: ignore[reportUnnecessaryComparison]
     nsamp = target.sizes[dim]
 

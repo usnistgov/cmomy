@@ -395,6 +395,7 @@ exclude = [
 ]
 check_untyped_defs = true
 strict = true
+always_true = [ "MYPY_ONLY" ]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -411,6 +412,7 @@ module = [
 ]
 
 [tool.pyright]
+defineConstant = { MYPY_ONLY = false }
 include = [
     "src",
     "tests",
