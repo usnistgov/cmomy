@@ -55,7 +55,7 @@ def get_apply_ufunc_kwargs(
     )
 
     if output_sizes:
-        out["dask_gufunc_kwargs"].setdefault("output_sizes", output_sizes)
+        out["dask_gufunc_kwargs"].setdefault("output_sizes", dict(output_sizes))
     if output_dtypes:
         out.setdefault("output_dtypes", output_dtypes)
     return out

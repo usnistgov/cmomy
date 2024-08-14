@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
 # pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
@@ -226,13 +226,17 @@ def _do_test_assign_moment_mom_ndim(
     index,
     copy,
     scalar,
+    name,
     **kwargs,
 ):
     value: float | NDArrayAny | xr.DataArray
     if scalar:
         value = -10
     elif isinstance(data, xr.DataArray):
-        value = xr.full_like(data[index], -10)
+        template = utils.select_moment(
+            data, name, mom_ndim=mom_ndim, squeeze=kwargs.get("squeeze", True)
+        )
+        value = xr.full_like(template, -10)
     else:
         shape = data[index].shape
         if len(shape) > 2:
@@ -240,11 +244,15 @@ def _do_test_assign_moment_mom_ndim(
         value = np.full(shape, fill_value=-10)
 
     check = data.copy()
-    check[index] = value
+    if isinstance(check, xr.DataArray):
+        check.values[index] = value  # noqa: PD011
+    else:
+        check[index] = value
 
     out = utils.assign_moment(
         data,
         value=value,
+        name=name,
         **kwargs,
         copy=copy,
         mom_ndim=mom_ndim,

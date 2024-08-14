@@ -21,25 +21,29 @@ from .core.validate import (
     validate_mom_dims,
     validate_mom_ndim,
 )
-from .core.xr_utils import select_axis_dim_mult
+from .core.xr_utils import get_apply_ufunc_kwargs, select_axis_dim_mult
 
 if TYPE_CHECKING:
     from collections.abc import (
         Hashable,
         Sequence,
     )
+    from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .core.typing import (
+        ApplyUFuncKwargs,
         ArrayLikeArg,
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
+        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
         Moments,
+        MomentsStrict,
         NDArrayAny,
         ScalarT,
         SelectMoment,
@@ -226,7 +230,7 @@ def select_moment(
 
 @docfiller.decorate
 def select_moment(
-    data: xr.DataArray | NDArray[ScalarT],
+    data: NDArray[ScalarT] | xr.DataArray | xr.Dataset,
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim,
@@ -234,7 +238,10 @@ def select_moment(
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
     keep_attrs: KeepAttrs = None,
-) -> xr.DataArray | NDArray[ScalarT]:
+    mom_dims: MomDims | None = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArray[ScalarT] | xr.DataArray | xr.Dataset:
     """
     Select specific moments for a central moments array.
 
@@ -247,6 +254,9 @@ def select_moment(
     {select_dim_combined}
     {select_coords_combined}
     {keep_attrs}
+    {mom_dims_data}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------
@@ -281,52 +291,90 @@ def select_moment(
     >>> select_moment(data, "cov", mom_ndim=2)
     array(4)
     """
-    if isinstance(data, xr.DataArray):
-        input_core_dims = [data.dims]
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    if isinstance(data, (xr.DataArray, xr.Dataset)):
+        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim, out=data)
+
+        # input/output dimensions
+        input_core_dims = [mom_dims]
+        output_core_dims: list[list[Hashable]]
+        output_sizes: dict[Hashable, int] | None
         if name in {"ave", "var"} and (mom_ndim != 1 or not squeeze):
-            output_core_dims = [(*data.dims[:-mom_ndim], dim_combined)]
+            output_core_dims = [[dim_combined]]
+            output_sizes = {dim_combined: mom_ndim}
+
             if coords_combined is None:
-                coords_combined = data.dims[-mom_ndim:]
+                coords_combined = mom_dims
             elif isinstance(coords_combined, str):
                 coords_combined = [coords_combined]
             if len(coords_combined) != mom_ndim:
                 msg = f"{len(coords_combined)=} must equal {mom_ndim=}"
                 raise ValueError(msg)
-
         else:
-            output_core_dims = [data.dims[:-mom_ndim]]
+            output_core_dims = [[]]
+            output_sizes = None
             coords_combined = None
 
-        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            select_moment,
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _select_moment,
             data,
             input_core_dims=input_core_dims,
             output_core_dims=output_core_dims,
             kwargs={
-                "name": name,
                 "mom_ndim": mom_ndim,
+                "name": name,
                 "squeeze": squeeze,
             },
             keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes=output_sizes,
+                output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
+                if isinstance(data, xr.DataArray)
+                else np.float64,
+            ),
         )
-
         if coords_combined is not None and dim_combined in xout.dims:
             xout = xout.assign_coords(  # pyright: ignore[reportUnknownMemberType]
                 {dim_combined: (dim_combined, list(coords_combined))}
             )
         return xout
 
-    mom_ndim = validate_mom_ndim(mom_ndim)
+    return _select_moment(
+        data,
+        mom_ndim=mom_ndim,
+        name=name,
+        squeeze=squeeze,
+    )
+
+
+def _select_moment(
+    data: NDArray[ScalarT],
+    *,
+    mom_ndim: Mom_NDim,
+    name: SelectMoment,
+    squeeze: bool,
+) -> NDArray[ScalarT]:
     if data.ndim < mom_ndim:
         msg = f"{data.ndim=} must be >= {mom_ndim=}"
         raise ValueError(msg)
-
     idx = moment_indexer(name, mom_ndim, squeeze)
-
     return data[idx]
 
 
 # * Assign value(s)
+@overload
+def assign_moment(
+    data: xr.Dataset,
+    name: SelectMoment,
+    value: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    mom_ndim: Mom_NDim,
+    squeeze: bool = True,
+    copy: bool = True,
+) -> xr.Dataset: ...
 @overload
 def assign_moment(
     data: xr.DataArray,
@@ -351,14 +399,19 @@ def assign_moment(
 
 @docfiller.decorate
 def assign_moment(
-    data: xr.DataArray | NDArray[ScalarT],
+    data: NDArray[ScalarT] | xr.DataArray | xr.Dataset,
     name: SelectMoment,
-    value: ArrayLike | xr.DataArray,
+    value: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = True,
     copy: bool = True,
-) -> xr.DataArray | NDArray[ScalarT]:
+    keep_attrs: KeepAttrs = None,
+    mom_dims: MomDims | None = None,
+    dim_combined: Hashable | None = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArray[ScalarT] | xr.DataArray | xr.Dataset:
     """
     Update weights of moments array.
 
@@ -367,13 +420,15 @@ def assign_moment(
     data : ndarray or DataArray
         Moments array.
     {select_name}
-    value : array-like
+    value : array-like or DataArray or Dataset
         Value to assign to moment ``name``.
+        These values will be broadcast over the selected moment from ``data``.
     {mom_ndim}
     {select_squeeze}
     copy : bool, default=True
         If ``True`` (the default), return new array with updated weights.
         Otherwise, return the original array with weights updated inplace.
+        Note that a copy is always created for a ``dask`` backed object.
 
     Returns
     -------
@@ -419,9 +474,70 @@ def assign_moment(
            [3, 1, 5]])
 
     """
-    out = data.copy() if copy else data
-    out[moment_indexer(name, validate_mom_ndim(mom_ndim), squeeze)] = value
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    if isinstance(data, (xr.DataArray, xr.Dataset)):
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
+        # figure out values shape...
+        input_core_dims: list[Sequence[Hashable]]
+        if name in {"ave", "var"} and (mom_ndim != 1 or not squeeze):
+            if dim_combined is None:
+                if isinstance(value, (xr.DataArray, xr.Dataset)):
+                    dim_combined = validate_mom_dims(dim_combined, 1, value)[0]
+                    # make sure this is unique
+                    dim_combined_orig, dim_combined = (
+                        dim_combined,
+                        f"_new_{dim_combined}",
+                    )
+                    value = value.rename({dim_combined_orig: dim_combined})
+                else:
+                    # dummy variable for array...
+                    dim_combined = "_new_dim_combined"
+            input_core_dims = [mom_dims, [dim_combined]]
+
+        else:
+            input_core_dims = [mom_dims, []]
+
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _assign_moment,
+            data,
+            value,
+            input_core_dims=input_core_dims,
+            output_core_dims=[mom_dims],
+            kwargs={
+                "name": name,
+                "mom_ndim": mom_ndim,
+                "squeeze": squeeze,
+                "copy": copy,
+            },
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
+                if isinstance(data, xr.DataArray)
+                else np.float64,
+            ),
+        )
+        return xout
+
+    return _assign_moment(
+        data, value, name=name, mom_ndim=mom_ndim, squeeze=squeeze, copy=copy
+    )
+
+
+def _assign_moment(
+    data: NDArray[ScalarT],
+    value: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    name: SelectMoment,
+    mom_ndim: Mom_NDim,
+    squeeze: bool,
+    copy: bool,
+) -> NDArray[ScalarT]:
+    out = data.copy() if copy else data
+    out[moment_indexer(name, mom_ndim, squeeze)] = value
     return out
 
 
@@ -491,6 +607,9 @@ def vals_to_data(
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
     mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | xr.DataArray:
     """
     Convert `values` to `central moments array`.
@@ -552,39 +671,84 @@ def vals_to_data(
         msg = "Supply single value for ``y`` if and only if ``mom_ndim==2``."
         raise ValueError(msg)
 
-    if isinstance(x, xr.DataArray):
+    if isinstance(x, (xr.DataArray, xr.Dataset)):
         if isinstance(out, xr.DataArray) and mom_dims is None:
             mom_dims = out.dims[-mom_ndim:]
         else:
             mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
-        # Do this for consistency with numpy version
-        # In numpy version, ``x`` sets the right hand most dimensions.
-        # xr.apply_ufunc (which calls xr.broadcast) acts left to right.
-        # that is, if call a  func(x, y, z), the dimensions in ``x`` will
-        # be the left most dimensions
+
+        # Explicitly select type depending on out
+        # This is needed to make apply_ufunc work with dask data
+        # can't pass None value in that case...
+        out = None if isinstance(x, xr.Dataset) else out
+        input_core_dims: list[Sequence[Hashable]] = [[]] * (mom_ndim + 1)
+        args: list[Any] = [weight, *y, x]
+        if out is None:
+
+            def _func(*args: Any, **kwargs: Any) -> Any:
+                weight, *y, x = args
+                return _vals_to_data(x, *y, weight=weight, out=None, **kwargs)
+        else:
+            # TODO(wpk): Is this really needed?  changes order of result, but so what?
+            args = [out, *args]
+            input_core_dims = [mom_dims, *input_core_dims]
+
+            def _func(*args: Any, **kwargs: Any) -> Any:
+                _out, weight, *y, x = args
+                return _vals_to_data(x, *y, weight=weight, out=_out, **kwargs)
+
         return xr.apply_ufunc(  # type: ignore[no-any-return]
-            lambda out, weight, *args, **kwargs: vals_to_data(  # pyright: ignore[reportUnknownLambdaType]
-                *args[-1::-1],  # pyright: ignore[reportUnknownArgumentType]
-                weight=weight,  # pyright: ignore[reportUnknownArgumentType]
-                out=out,  # pyright: ignore[reportUnknownArgumentType]
-                **kwargs,  # pyright: ignore[reportUnknownArgumentType]
-            ),
-            out,
-            weight,
-            *y,
-            x,
-            input_core_dims=[mom_dims, *((),) * (mom_ndim + 1)],
+            _func,
+            *args,
+            input_core_dims=input_core_dims,
             output_core_dims=[mom_dims],
             kwargs={
-                "dtype": dtype,
                 "mom": mom,
+                "mom_ndim": mom_ndim,
+                "dtype": dtype,
+                "fastpath": False,
             },
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom)))
+                if out is None
+                else None,
+                output_dtypes=dtype or np.float64,
+            ),
         )
+
+    return _vals_to_data(
+        x,
+        *y,
+        weight=weight,
+        mom=mom,
+        mom_ndim=mom_ndim,
+        out=out,
+        dtype=dtype,
+        fastpath=True,
+    )
+
+
+def _vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    weight: ArrayLike,
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+    fastpath: bool,
+) -> NDArrayAny | xr.DataArray:
+    if not fastpath:
+        dtype = select_dtype(x, out=out, dtype=dtype)
 
     x, weight, *y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))  # type: ignore[assignment]
     if out is None:
         val_shape: tuple[int, ...] = np.broadcast_shapes(
-            *(_.shape for _ in (x, *y, weight))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportAttributeAccessIssue, reportUnknownArgumentType]
+            *(_.shape for _ in (x, *y, weight))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownArgumentType]
         )
         out = np.zeros((*val_shape, *mom_to_mom_shape(mom)), dtype=dtype)
     else:

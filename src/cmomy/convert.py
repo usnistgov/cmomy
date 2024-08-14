@@ -11,6 +11,10 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
+from ._lib.factory import (
+    factory_convert,
+    factory_cumulative,
+)
 from .core.array_utils import (
     axes_data_reduction,
     select_dtype,
@@ -212,6 +216,7 @@ def moments_type(
 
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
+    mom_ndim = validate_mom_ndim(mom_ndim)
     if isinstance(values_in, (xr.DataArray, xr.Dataset)):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -235,11 +240,7 @@ def moments_type(
         )
         return xout
 
-    mom_ndim = validate_mom_ndim(mom_ndim)
     values_in = np.asarray(values_in, dtype=dtype)
-
-    from ._lib.factory import factory_convert
-
     return factory_convert(mom_ndim=mom_ndim, to=to)(values_in, out=out)
 
 
@@ -409,6 +410,8 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
 
 
     """
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(values_in, out=out, dtype=dtype)
     if isinstance(values_in, (xr.DataArray, xr.Dataset)):
         dtype = select_dtype(values_in, out=out, dtype=dtype)
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
@@ -447,20 +450,14 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         return xout
 
     # Numpy
-    mom_ndim = validate_mom_ndim(mom_ndim)
-    dtype = select_dtype(values_in, out=out, dtype=dtype)
-
     axis, values_in = prepare_data_for_reduction(
         values_in,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,
+        dtype=dtype,  # type: ignore[arg-type]
         move_axis_to_end=move_axis_to_end,
     )
-
     axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
-
-    from ._lib.factory import factory_cumulative
 
     return factory_cumulative(
         mom_ndim=mom_ndim,
@@ -637,6 +634,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     Note that this also works for raw moments.
 
     """
+    dtype = select_dtype(values, out=None, dtype=dtype)
     if isinstance(values, (xr.DataArray, xr.Dataset)):
         mom_dim_in, *_ = validate_mom_dims(mom_dims1, mom_ndim=1, out=values)
         mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
@@ -646,25 +644,6 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             values = values.rename({old_name: mom_dim_in})
 
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            output_sizes=dict(
-                zip(
-                    mom_dims2,
-                    mom_to_mom_shape(
-                        _validate_mom_moments_to_comoments(
-                            mom, values.sizes[mom_dim_in] - 1
-                        )
-                    ),
-                )
-            ),
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(values, out=None, dtype=dtype) or np.float64,
-        )
-
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_to_comoments,
             values,
@@ -672,15 +651,28 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
             output_core_dims=[mom_dims2],
             kwargs={"mom": mom, "dtype": dtype},
             keep_attrs=keep_attrs,
-            **apply_ufunc_kwargs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes=dict(
+                    zip(
+                        mom_dims2,
+                        mom_to_mom_shape(
+                            _validate_mom_moments_to_comoments(
+                                mom, values.sizes[mom_dim_in] - 1
+                            )
+                        ),
+                    )
+                ),
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
         return xout
 
     # numpy
-    dtype = select_dtype(values, out=None, dtype=dtype)
     values = np.asarray(values, dtype=dtype)
-
     mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
     out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)
     for i, j in np.ndindex(*out.shape[-2:]):

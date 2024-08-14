@@ -256,8 +256,8 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     """
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
+    dtype = select_dtype(x, out=out, dtype=dtype)
     if isinstance(x, (xr.DataArray, xr.Dataset)):
-        dtype = select_dtype(x, out=out, dtype=dtype)
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
@@ -279,10 +279,11 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
                 "mom": mom,
                 "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "axis": -1,
+                "axis_neg": -1,
                 "keepdims": True,
                 "out": None if isinstance(x, xr.Dataset) else out,
                 "dtype": dtype,
+                "fastpath": False,
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -301,45 +302,48 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
         return xout
 
     # Numpy
-    return _reduce_vals(
-        x,
-        weight,
-        *y,
-        mom=mom,
-        mom_ndim=mom_ndim,
-        out=out,
-        dtype=dtype,
-        axis=axis,
-        parallel=parallel,
-        keepdims=keepdims,
-    )
-
-
-def _reduce_vals(
-    x: ArrayLike,
-    weight: ArrayLike | xr.DataArray | xr.Dataset,
-    *y: ArrayLike | xr.DataArray | xr.Dataset,
-    mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
-    out: NDArrayAny | None,
-    dtype: DTypeLike,
-    axis: AxisReduce | MissingType,
-    parallel: bool | None,
-    keepdims: bool,
-) -> NDArrayAny:
-    dtype = select_dtype(x, out=out, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
         *y,
         axis=axis,
-        dtype=dtype,
+        dtype=dtype,  # type: ignore[arg-type]
         narrays=mom_ndim + 1,
         move_axis_to_end=False,
     )
 
-    out = prepare_out_from_values(out, *args, mom=mom, axis_neg=axis_neg)
+    return _reduce_vals(
+        *args,
+        mom=mom,
+        mom_ndim=mom_ndim,
+        out=out,
+        dtype=dtype,
+        axis_neg=axis_neg,
+        parallel=parallel,
+        keepdims=keepdims,
+        fastpath=True,
+    )
 
+
+def _reduce_vals(
+    x: NDArrayAny,
+    weight: NDArrayAny,
+    *y: NDArrayAny,
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    out: NDArrayAny | None,
+    dtype: DTypeLike,
+    axis_neg: int,
+    parallel: bool | None,
+    keepdims: bool,
+    fastpath: bool = False,
+) -> NDArrayAny:
+    args = [x, weight, *y]
+    if not fastpath:
+        dtype = select_dtype(x, out=out, dtype=dtype)
+        args = [np.asarray(a, dtype=dtype) for a in args]
+
+    out = prepare_out_from_values(out, *args, mom=mom, axis_neg=axis_neg)
     axes: AxesGUFunc = [
         # out
         tuple(range(-mom_ndim, 0)),
@@ -521,8 +525,8 @@ def reduce_data(
         Same type as input ``data``.
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(data, out=out, dtype=dtype)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
-        dtype = select_dtype(data, out=out, dtype=dtype)
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         if use_reduce:
             return data.reduce(  # pyright: ignore[reportUnknownMemberType]
@@ -546,8 +550,10 @@ def reduce_data(
                 "mom_ndim": mom_ndim,
                 "axis": range(-len(dim), 0),
                 "out": None if isinstance(data, xr.Dataset) else out,
-                "parallel": parallel,
                 "dtype": dtype,
+                "parallel": parallel,
+                "keepdims": False,
+                "fastpath": False,
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -569,6 +575,7 @@ def reduce_data(
         dtype=dtype,
         parallel=parallel,
         keepdims=keepdims,
+        fastpath=True,
     )
 
 
@@ -580,10 +587,13 @@ def _reduce_data(
     dtype: DTypeLike,
     parallel: bool | None,
     keepdims: bool = False,
+    fastpath: bool = False,
 ) -> NDArrayAny:
-    dtype = select_dtype(data, out=out, dtype=dtype)
-    # special to support multiple reduction dimensions...
+    if not fastpath:
+        dtype = select_dtype(data, out=out, dtype=dtype)
+
     data = np.asarray(data, dtype=dtype)
+    # special to support multiple reduction dimensions...
     ndim = data.ndim - mom_ndim
     axis_tuple = normalize_axis_tuple(
         axis,
@@ -930,6 +940,9 @@ def reduce_data_grouped(
 
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(data, out=out, dtype=dtype)
+    by = np.asarray(by, dtype=np.int64)
+
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
@@ -954,6 +967,7 @@ def reduce_data_grouped(
                     data=data,
                 ),
                 "parallel": parallel,
+                "fastpath": False,
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -961,7 +975,7 @@ def reduce_data_grouped(
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={dim: np.max(by) + 1},
-                output_dtypes=select_dtype(data, out=out, dtype=dtype) or np.float64,
+                output_dtypes=dtype or np.float64,
             ),
         )
 
@@ -983,12 +997,13 @@ def reduce_data_grouped(
         dtype=dtype,
         out=out,
         parallel=parallel,
+        fastpath=True,
     )
 
 
 def _reduce_data_grouped(
     data: ArrayLike,
-    by: ArrayLike,
+    by: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType,
@@ -996,22 +1011,23 @@ def _reduce_data_grouped(
     dtype: DTypeLike,
     out: NDArrayAny | None,
     parallel: bool | None,
+    fastpath: bool,
 ) -> NDArrayAny:
-    dtype = select_dtype(data, out=out, dtype=dtype)
+    if not fastpath:
+        dtype = select_dtype(data, out=out, dtype=dtype)
 
+    # NOTE: keep prepare here to get axis correct..
     axis, data = prepare_data_for_reduction(  # pyright: ignore[reportArgumentType]
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,
+        dtype=dtype,  # type: ignore[arg-type]
         move_axis_to_end=move_axis_to_end,
     )
 
     # include inner core dims for by
     axes = axes_data_reduction((-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
 
-    # check by
-    by = np.asarray(by, dtype=np.int64)
     if len(by) != data.shape[axis]:
         msg = f"{len(by)=} != {data.shape[axis]=}"
         raise ValueError(msg)
@@ -1407,8 +1423,8 @@ def reduce_data_indexed(  # noqa: PLR0913
     Dimensions without coordinates: mom
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(data, out=out, dtype=dtype)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
-        dtype = select_dtype(data, out=out, dtype=dtype)
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
 
@@ -1435,6 +1451,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 ),
                 "move_axis_to_end": False,
                 "parallel": parallel,
+                "fastpath": False,
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -1486,6 +1503,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         scale=scale,
         move_axis_to_end=move_axis_to_end,
         parallel=parallel,
+        fastpath=True,
     )
 
 
@@ -1502,16 +1520,21 @@ def _reduce_data_indexed(
     scale: ArrayLike | None,
     move_axis_to_end: bool,
     parallel: bool | None,
+    fastpath: bool = False,
 ) -> NDArrayAny:
-    dtype = select_dtype(data, out=out, dtype=dtype)
+    if not fastpath:
+        dtype = select_dtype(data, out=out, dtype=dtype)
+
     axis, data = prepare_data_for_reduction(  # pyright: ignore[reportAssignmentType]
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,
+        dtype=dtype,  # type: ignore[arg-type]
         move_axis_to_end=move_axis_to_end,
     )
 
+    # TODO(wpk): move this to `reduce_data_indexed`.
+    # will need to properly handle getting `ndat`
     index, group_start, group_end = _validate_index(
         ndat=data.shape[axis],
         index=index,
