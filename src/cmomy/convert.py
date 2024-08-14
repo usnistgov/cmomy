@@ -69,6 +69,7 @@ def moments_type(
     to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -81,6 +82,7 @@ def moments_type(
     to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -94,6 +96,7 @@ def moments_type(
     to: ConvertStyle = ...,
     out: None = ...,
     dtype: None = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -107,6 +110,7 @@ def moments_type(
     to: ConvertStyle = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -120,6 +124,7 @@ def moments_type(
     to: ConvertStyle = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -133,6 +138,7 @@ def moments_type(
     to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -147,6 +153,7 @@ def moments_type(
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -165,6 +172,7 @@ def moments_type(
     {out}
     {dtype}
     {move_axis_to_end}
+    {keep_attrs}
     {mom_dims_data}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
@@ -206,16 +214,6 @@ def moments_type(
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if isinstance(values_in, (xr.DataArray, xr.Dataset)):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
-
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=dtype or np.float64,
-        )
-
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_type,
             values_in,
@@ -227,7 +225,13 @@ def moments_type(
                 "out": None if isinstance(values_in, xr.Dataset) else out,
                 "dtype": dtype,
             },
-            **apply_ufunc_kwargs,
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=dtype or np.float64,
+            ),
         )
         return xout
 
@@ -354,6 +358,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -374,6 +379,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     {parallel}
     {out}
     {dtype}
+    {keep_attrs}
     {mom_dims_data}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
@@ -404,19 +410,10 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
 
     """
     if isinstance(values_in, (xr.DataArray, xr.Dataset)):
+        dtype = select_dtype(values_in, out=out, dtype=dtype)
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
+        core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, values_in)]]
 
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(values_in, out=out, dtype=dtype) or np.float64,
-        )
-
-        core_dims = [[dim, *mom_dims]]
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             cumulative,
             values_in,
@@ -436,7 +433,13 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
                 "dtype": dtype,
                 "move_axis_to_end": False,
             },
-            **apply_ufunc_kwargs,
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
         if not move_axis_to_end and isinstance(xout, xr.DataArray):

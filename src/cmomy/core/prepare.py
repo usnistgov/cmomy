@@ -169,7 +169,7 @@ def xprepare_values_for_reduction(
     axis: AxisReduce | MissingType,
     dtype: DTypeLike,
 ) -> tuple[
-    str | Sequence[Hashable],
+    Hashable,
     list[Sequence[Hashable]],
     list[xr.Dataset | xr.DataArray | NDArrayAny],
 ]:
@@ -196,12 +196,7 @@ def xprepare_values_for_reduction(
         dim=dim,
     )
 
-    # TODO(wpk): look closer at dtype and dataset
-    dtype = (
-        target.dtype if (isinstance(target, xr.DataArray) and dtype is None) else dtype  # pyright: ignore[reportUnknownMemberType]
-    )  # pyright: ignore[reportUnnecessaryComparison]
     nsamp = target.sizes[dim]
-
     axis_neg = positive_to_negative_index(
         axis,
         # if dataset, Use first variable as template...
@@ -232,7 +227,7 @@ def xprepare_secondary_value_for_reduction(
     if isinstance(x, xr.Dataset):
         return x
     if isinstance(x, xr.DataArray):
-        return x.astype(dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
+        return x if dtype is None else x.astype(dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
     return prepare_secondary_value_for_reduction(
         x,
         axis=axis,

@@ -147,8 +147,8 @@ def test_xprepare_values_for_reduction_1(
 
     assert x.shape == xshape2
     assert y.shape == yshape2
-    assert x.dtype == np.dtype(dtype or np.float64)
-    assert y.dtype == np.dtype(dtype or np.float64)
+    assert x.dtype == np.dtype(dtype or target.dtype)
+    assert y.dtype == np.dtype(dtype or other.dtype)
 
     if xshape == yshape:
         # also do xr test
@@ -167,8 +167,8 @@ def test_xprepare_values_for_reduction_1(
 
         assert x.shape == xshape2
         assert y.shape == other.shape
-        assert x.dtype == np.dtype(dtype or np.float64)
-        assert y.dtype == np.dtype(dtype or np.float64)
+        assert x.dtype == np.dtype(dtype or target.dtype)
+        assert y.dtype == np.dtype(dtype or other.dtype)
 
 
 @pytest.mark.parametrize(

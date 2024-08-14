@@ -646,22 +646,14 @@ def resample_data(  # noqa: PLR0913
     random_freq
     randsamp_freq
     """
+    mom_ndim = validate_mom_ndim(mom_ndim)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
+        dtype = select_dtype(data, out=out, dtype=dtype)
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
         if isinstance(data, xr.Dataset) and freq is None and paired:
             freq = randsamp_freq(ndat=data.sizes[dim], nrep=nrep, rng=rng)
-
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            output_sizes={rep_dim: _select_nrep(freq, nrep, rep_dim)},
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(data, out=out, dtype=dtype) or np.float64,
-        )
 
         def _func(
             data: NDArrayAny, freq: NDArrayAny | None, **kwargs: Any
@@ -690,7 +682,13 @@ def resample_data(  # noqa: PLR0913
                 "rng": rng,
             },
             keep_attrs=keep_attrs,
-            **apply_ufunc_kwargs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes={rep_dim: _select_nrep(freq, nrep, rep_dim)},
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
         if not move_axis_to_end and isinstance(data, xr.DataArray):
@@ -698,7 +696,6 @@ def resample_data(  # noqa: PLR0913
             xout = xout.transpose(*dims_order)
         return xout
 
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
     axis, data = prepare_data_for_reduction(
         data,
@@ -876,7 +873,7 @@ def resample_vals(
 
 # ** public api
 @docfiller.decorate
-def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR0914, PLR0913
+def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR0913
     x: ArrayLike | xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
@@ -955,13 +952,6 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
             narrays=mom_ndim + 1,
         )
 
-        out = xprepare_out_for_resample_vals(
-            target=x,
-            out=out,
-            dim=dim,
-            mom_ndim=mom_ndim,
-            move_axis_to_end=move_axis_to_end,
-        )
         mom_dims = validate_mom_dims(
             mom_dims=mom_dims,
             mom_ndim=mom_ndim,
@@ -969,19 +959,6 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
 
         if isinstance(x, xr.Dataset) and freq is None and paired:
             freq = randsamp_freq(ndat=x.sizes[dim], nrep=nrep, rng=rng)
-
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            output_sizes={
-                rep_dim: _select_nrep(freq, nrep, rep_dim),
-                **dict(zip(mom_dims, mom_to_mom_shape(mom))),
-            },
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=np.float64,
-        )
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
             x, weight, *y, freq = args
@@ -997,12 +974,27 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
                 "mom": mom_validated,
                 "parallel": parallel,
                 "axis": -1,
-                "out": out,
+                "out": xprepare_out_for_resample_vals(
+                    target=x,
+                    out=out,
+                    dim=dim,
+                    mom_ndim=mom_ndim,
+                    move_axis_to_end=move_axis_to_end,
+                ),
                 "nrep": nrep,
                 "rng": rng,
             },
             keep_attrs=keep_attrs,
-            **apply_ufunc_kwargs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes={
+                    rep_dim: _select_nrep(freq, nrep, rep_dim),
+                    **dict(zip(mom_dims, mom_to_mom_shape(mom))),
+                },
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
         if not move_axis_to_end and isinstance(x, xr.DataArray):
@@ -1014,6 +1006,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
 
         return xout
 
+    # Numpy
     dtype = select_dtype(x, out=out, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
         x,
@@ -1333,19 +1326,10 @@ def jackknife_data(
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 
+        dtype = select_dtype(data, out=out, dtype=dtype)
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        core_dims = [dim, *validate_mom_dims(mom_dims, mom_ndim, data)]
 
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(data, out=out, dtype=dtype) or np.float64,
-        )
-
-        core_dims = [dim, *mom_dims]
         xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             jackknife_data,
             data,
@@ -1366,7 +1350,12 @@ def jackknife_data(
                 "axis": -1,
             },
             keep_attrs=keep_attrs,
-            **apply_ufunc_kwargs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
         if not move_axis_to_end and isinstance(data, xr.DataArray):
@@ -1544,7 +1533,7 @@ def jackknife_vals(
 
 
 @docfiller.decorate
-def jackknife_vals(  # noqa: PLR0914
+def jackknife_vals(
     x: ArrayLike | xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
@@ -1624,9 +1613,7 @@ def jackknife_vals(  # noqa: PLR0914
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 
-        if isinstance(x, xr.DataArray):
-            dtype = select_dtype(x, out=out, dtype=dtype)
-
+        dtype = select_dtype(x, out=out, dtype=dtype)
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -1636,35 +1623,15 @@ def jackknife_vals(  # noqa: PLR0914
             dtype=dtype,
             narrays=mom_ndim + 1,
         )
-
-        out = xprepare_out_for_resample_vals(
-            target=x,
-            out=out,
-            dim=dim,
-            mom_ndim=mom_ndim,
-            move_axis_to_end=move_axis_to_end,
-        )
-
         mom_dims = validate_mom_dims(
             mom_dims=mom_dims, mom_ndim=mom_ndim, out=data_reduced
         )
-
         input_core_dims = [
             # x, weight, *y,
             *input_core_dims,
             # data_reduced
             mom_dims,
         ]
-
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(x, out=out, dtype=dtype) or np.float64,
-        )
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
             x, weight, *y, data_reduced = args
@@ -1682,22 +1649,33 @@ def jackknife_vals(  # noqa: PLR0914
                 "mom": mom,
                 "parallel": parallel,
                 "axis": -1,
-                "out": out,
+                "out": xprepare_out_for_resample_vals(
+                    target=x,
+                    out=out,
+                    dim=dim,
+                    mom_ndim=mom_ndim,
+                    move_axis_to_end=move_axis_to_end,
+                ),
                 "dtype": dtype,
             },
             keep_attrs=keep_attrs,
-            **apply_ufunc_kwargs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
         if not move_axis_to_end and isinstance(x, xr.DataArray):
             xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
-
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
 
         return xout
 
-    # numpy
+    # Numpy
     dtype = select_dtype(x, out=out, dtype=dtype)
     if data_reduced is None:
         data_reduced = reduce_vals(  # type: ignore[misc]

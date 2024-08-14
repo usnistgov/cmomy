@@ -299,6 +299,7 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -319,6 +320,7 @@ def rolling_data(
     dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -340,6 +342,7 @@ def rolling_data(
     dtype: None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -361,6 +364,7 @@ def rolling_data(
     dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -382,6 +386,7 @@ def rolling_data(
     dtype: DTypeLikeArg[FloatT],
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -403,6 +408,7 @@ def rolling_data(
     dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -410,7 +416,7 @@ def rolling_data(
 
 
 @docfiller.decorate
-def rolling_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_data(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR0913
     data: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     window: int,
@@ -425,6 +431,7 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     dtype: DTypeLike = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
+    keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -446,6 +453,7 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     {out}
     {dtype}
     {dim}
+    {keep_attrs}
     {mom_dims_data}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
@@ -456,19 +464,10 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
         Moving average data, of same shape and type as ``data``.
     """
     if isinstance(data, (xr.DataArray, xr.Dataset)):
+        dtype = select_dtype(data, out=out, dtype=dtype)
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, data)]]
 
-        apply_ufunc_kwargs = get_apply_ufunc_kwargs(
-            apply_ufunc_kwargs,
-            on_missing_core_dim=on_missing_core_dim,
-            dask="parallelized",
-            # NOTE: for now just use np.float64 as the output dtype.
-            # see https://github.com/pydata/xarray/issues/1699
-            output_dtypes=select_dtype(data, out=out, dtype=dtype) or np.float64,
-        )
-
-        core_dims = [[dim, *mom_dims]]
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             rolling_data,
             data,
@@ -492,7 +491,13 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
                 ),
                 "move_axis_to_end": False,
             },
-            **apply_ufunc_kwargs,
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
         if not move_axis_to_end and isinstance(xout, xr.DataArray):
@@ -548,6 +553,28 @@ def rolling_data(  # pyright: ignore[reportOverlappingOverload]
 # * Vals
 @overload
 def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
+    x: xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
+    mom: Moments,
+    window: int,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
+    axis: AxisReduce | MissingType = ...,
+    min_periods: int | None = ...,
+    center: bool = ...,
+    zero_missing_weights: bool = ...,
+    move_axis_to_end: bool = ...,
+    parallel: bool | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    # xarray specific
+    dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.Dataset: ...
+@overload
+def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -565,6 +592,8 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 # array
 @overload
@@ -586,11 +615,13 @@ def rolling_vals(
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def rolling_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
     window: int,
@@ -607,11 +638,13 @@ def rolling_vals(
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def rolling_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
     window: int,
@@ -628,11 +661,13 @@ def rolling_vals(
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def rolling_vals(
-    x: Any,
+    x: ArrayLike,
     *y: ArrayLike,
     mom: Moments,
     window: int,
@@ -643,22 +678,24 @@ def rolling_vals(
     zero_missing_weights: bool = ...,
     move_axis_to_end: bool = ...,
     parallel: bool | None = ...,
-    out: Any = ...,
-    dtype: Any = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
-def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
-    x: ArrayLike | xr.DataArray,
-    *y: ArrayLike | xr.DataArray,
+def rolling_vals(  # pyright: ignore[reportOverlappingOverload] # noqa: PLR0913, PLR0914
+    x: ArrayLike | xr.DataArray | xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
     window: int,
-    weight: ArrayLike | xr.DataArray | None = None,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     axis: AxisReduce | MissingType = MISSING,
     min_periods: int | None = None,
     center: bool = False,
@@ -671,7 +708,9 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-) -> NDArrayAny | xr.DataArray:
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
     """
     Moving average of central moments generated by values.
 
@@ -698,6 +737,8 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     {dim}
     {mom_dims}
     {keep_attrs}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------
@@ -715,10 +756,10 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     numpy.broadcast_shapes
     """
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    dtype = select_dtype(x, out=out, dtype=dtype)
     weight = 1.0 if weight is None else weight
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
+        dtype = select_dtype(x, out=out, dtype=dtype)
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -728,40 +769,50 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
             narrays=mom_ndim + 1,
             dtype=dtype,
         )
-
-        out = xprepare_out_for_resample_vals(
-            target=x,
-            out=out,
-            dim=dim,
-            mom_ndim=mom_ndim,
-            move_axis_to_end=move_axis_to_end,
-        )
-
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
-        xout: xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            _rolling_vals,
+        def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
+            x, weight, *y = args
+            return rolling_vals(x, *y, weight=weight, **kwargs)
+
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _func,
             *xargs,
             input_core_dims=input_core_dims,
             output_core_dims=[[dim, *mom_dims]],
             kwargs={
                 "mom": mom,
-                "mom_ndim": mom_ndim,
                 "parallel": parallel,
-                "out": out,
+                "out": xprepare_out_for_resample_vals(
+                    target=x,
+                    out=out,
+                    dim=dim,
+                    mom_ndim=mom_ndim,
+                    move_axis_to_end=move_axis_to_end,
+                ),
                 "center": center,
                 "window": window,
                 "min_periods": min_periods,
                 "zero_missing_weights": zero_missing_weights,
-                "axis_neg": -1,
+                "axis": -1,
             },
             keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
+                # NOTE: for now just use np.float64 as the output dtype.
+                # see https://github.com/pydata/xarray/issues/1699
+                output_dtypes=dtype or np.float64,
+            ),
         )
-
-        if not move_axis_to_end:
+        if not move_axis_to_end and isinstance(xout, xr.DataArray):
             xout = xout.transpose(..., *x.dims, *mom_dims)
         return xout
 
+    # Numpy
+    dtype = select_dtype(x, out=out, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
@@ -772,35 +823,6 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
         move_axis_to_end=move_axis_to_end,
     )
 
-    return _rolling_vals(
-        *args,
-        mom=mom,
-        mom_ndim=mom_ndim,
-        parallel=parallel,
-        out=out,
-        center=center,
-        window=window,
-        min_periods=min_periods,
-        zero_missing_weights=zero_missing_weights,
-        axis_neg=axis_neg,
-    )
-
-
-def _rolling_vals(
-    x: NDArray[FloatT],
-    w: NDArray[FloatT],
-    *y: NDArray[FloatT],
-    mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
-    parallel: bool | None,
-    out: NDArray[FloatT] | None,
-    center: bool,
-    window: int,
-    min_periods: int | None,
-    zero_missing_weights: bool,
-    axis_neg: int,
-) -> NDArray[FloatT]:
-    args: tuple[NDArray[FloatT], ...] = (x, w, *y)  # type: ignore[arg-type]
     axes_args: AxesGUFunc = get_axes_from_values(*args, axis_neg=axis_neg)
 
     shift = (-window // 2) + 1 if center else None
@@ -822,16 +844,21 @@ def _rolling_vals(
         (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
     ]
 
-    min_periods = window if min_periods is None else min_periods
-    data_tmp = np.zeros(mom_to_mom_shape(mom), dtype=x.dtype)
-
     from ._lib.factory import factory_rolling_vals
 
     out = factory_rolling_vals(
         mom_ndim=mom_ndim,
         parallel=parallel,
-        size=x.size,
-    )(data_tmp, window, min_periods, *args, out=out, axes=axes)
+        size=args[0].size,
+    )(
+        # data_tmp
+        np.zeros(mom_to_mom_shape(mom), dtype=dtype),
+        window,
+        window if min_periods is None else min_periods,
+        *args,
+        out=out,
+        axes=axes,
+    )
 
     if shift is not None:
         valid = [slice(None)] * out.ndim

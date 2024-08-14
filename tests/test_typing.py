@@ -1817,6 +1817,13 @@ def test_rolling_vals() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(rolling.rolling_vals(xx, mom=3, window=3), xr.DataArray)
+        assert_type(rolling.rolling_vals(xx.to_dataset(), mom=3, window=3), xr.Dataset)
+        if MYPY_ONLY:
+            g: ArrayLike | xr.DataArray | xr.Dataset = xc
+            assert_type(
+                rolling.rolling_vals(g, mom=3, window=3),
+                Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+            )
 
 
 def test_rolling_exp_data() -> None:
