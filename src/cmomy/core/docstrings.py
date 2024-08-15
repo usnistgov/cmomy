@@ -65,10 +65,18 @@ def _dummy_docstrings() -> None:
         If True, and ``x=(x0, x1)``, then perform 'smart' broadcasting.
         In this case, if ``x1.ndim = 1`` and ``len(x1) == x0.shape[axis]``, then
         broadcast `x1` to ``x0.shape``.
-    freq : array of int
+    freq : array-like of int
         Array of shape ``(nrep, size)`` where `nrep` is the number of replicates and
         ``size = self.shape[axis]``.  `freq` is the weight that each sample contributes
         to resamples values.  See :func:`~cmomy.resample.randsamp_freq`
+    freq_xarray | freq : array-like, DataArray, or Dataset of int
+        Array of shape ``(nrep, size)`` where `nrep` is the number of
+        replicates and ``size = self.shape[axis]``. `freq` is the weight that
+        each sample contributes to resamples values. If ``freq`` is an
+        :mod:`xarray` object, it is assumed that the dimensions are in order of
+        ``(rep_dim, dim)`` where ``rep_dim`` and ``dim`` are the name of the
+        replicated and sampled dimension, respectively.
+        See :func:`~cmomy.resample.randsamp_freq`
     indices : array of int
         Array of shape ``(nrep, size)``.  If passed, create `freq` from indices.
         See :func:`~cmomy.resample.randsamp_freq`.

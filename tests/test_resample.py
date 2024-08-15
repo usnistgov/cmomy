@@ -49,6 +49,59 @@ def test_freq_indices(ndat, rng) -> None:
         resample.freq_to_indices(freq)
 
 
+@pytest.mark.parametrize("style", ["array-like", "array", "dataarray", "dataset"])
+@pytest.mark.parametrize(
+    ("nrep", "ndat", "nsamp"),
+    [
+        (20, 10, None),
+        (20, 10, 5),
+    ],
+)
+def test_freq_indices_2(rng, nrep, ndat, nsamp, style) -> None:
+    indices = resample.random_indices(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng)
+
+    if style == "array-like":
+        idx = indices.tolist()
+    elif style == "array":
+        idx = indices
+    elif style == "dataarray":
+        idx = xr.DataArray(indices)
+    elif style == "dataset":
+        idx = xr.Dataset(
+            {
+                "x0": xr.DataArray(indices),
+                "x1": xr.DataArray(
+                    resample.random_indices(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng)
+                ),
+            }
+        )
+
+    assert_allclose = (
+        xr.testing.assert_allclose
+        if isinstance(idx, (xr.DataArray, xr.Dataset))
+        else np.testing.assert_allclose
+    )
+
+    freq0 = resample.indices_to_freq(idx, ndat=ndat)
+    freq1 = resample.randsamp_freq(indices=idx, ndat=ndat)
+
+    assert_allclose(freq0, freq1)
+
+    # round trip
+    idx1 = resample.freq_to_indices(freq0, shuffle=False)
+    assert (
+        type(freq0)
+        is type(freq1)
+        is type(idx1)
+        is (np.ndarray if style == "array-like" else type(idx))
+    )
+    if isinstance(idx, xr.Dataset):
+        assert_allclose(idx1, idx.map(np.sort, axis=-1))
+    else:
+        np.testing.assert_allclose(idx1, np.sort(idx, axis=-1))
+    assert_allclose(freq0, resample.indices_to_freq(idx1, ndat=ndat))
+
+
 parallel_parametrize = pytest.mark.parametrize(
     "parallel", [True, False]
 )  # True, False])
@@ -100,58 +153,28 @@ def test_select_ndat() -> None:
         resample.select_ndat(xdata)
 
 
-@parallel_parametrize
-@pytest.mark.parametrize("mom", [2, (2, 2)])
-def test_resample_vec(parallel, mom, rng):
-    x = rng.random((50, 10))
-    xx = x[..., None]
-
-    xy: tuple[Any, ...]
-    xxyy: tuple[Any, ...]
-
-    if isinstance(mom, tuple):
-        xy = (x, x)
-        xxyy = (xx, xx)
+@pytest.mark.parametrize(
+    ("freq", "nrep", "expected"),
+    [
+        (None, None, ValueError),
+        (None, 10, 10),
+        (np.zeros((10, 2)), 5, 10),
+        (xr.DataArray(np.zeros((10, 2)), dims=["rep", "dim"]), 5, 10),
+        (
+            xr.Dataset({"a": xr.DataArray(np.zeros((10, 2)), dims=["rep", "dim"])}),
+            5,
+            10,
+        ),
+    ],
+)
+def test__select_nrep(freq, nrep, expected) -> None:
+    func = resample._select_nrep
+    kwargs = {"freq": freq, "nrep": nrep, "rep_dim": "rep"}
+    if isinstance(expected, type):
+        with pytest.raises(expected):
+            func(**kwargs)
     else:
-        xy = (x,)
-        xxyy = (xx,)
-
-    c1 = CentralMoments.from_vals(*xy, axis=0, mom=mom)
-    c2 = CentralMoments.from_vals(*xxyy, axis=0, mom=mom)
-
-    np.testing.assert_allclose(c1.data, c2.data[:, 0, ...])
-
-    freq = c1.randsamp_freq(nrep=10, axis=0)
-
-    cc1 = c1.resample_and_reduce(
-        freq=freq,
-        parallel=parallel,
-        axis=0,
-    )
-    cc2 = c2.resample_and_reduce(
-        freq=freq,
-        parallel=parallel,
-        axis=0,
-    )
-
-    np.testing.assert_allclose(cc1.data, cc2.data[:, 0, ...])
-
-    # using indexed
-    out1 = resample_data_indexed(
-        c1.data, freq=freq, mom_ndim=c1.mom_ndim, parallel=parallel, axis=0
-    )
-    np.testing.assert_allclose(
-        cc1.data,
-        out1,
-    )
-
-    out2 = resample_data_indexed(
-        c2.data, freq=freq, mom_ndim=c2.mom_ndim, parallel=parallel, axis=0
-    )
-    np.testing.assert_allclose(
-        cc2.data,
-        out2,
-    )
+        assert func(**kwargs) == expected
 
 
 def test_resample_indices(rng) -> None:
@@ -194,33 +217,137 @@ def test_validate_resample_array() -> None:
 
 
 def test_randsamp_freq() -> None:
-    f0 = resample.randsamp_freq(nrep=10, ndat=5, rng=np.random.default_rng(0))
+    ndat = 5
+    nrep = 10
 
-    f1 = resample.random_freq(nrep=10, ndat=5, rng=np.random.default_rng(0))
-
+    f0 = resample.randsamp_freq(nrep=nrep, ndat=ndat, rng=np.random.default_rng(0))
+    f1 = resample.random_freq(nrep=nrep, ndat=ndat, rng=np.random.default_rng(0))
     np.testing.assert_allclose(f0, f1)
 
     # test short circuit
     f2 = resample.randsamp_freq(freq=f1, check=False)
     assert f1 is f2
 
+    f2 = resample.randsamp_freq(nrep=nrep, ndat=ndat, freq=f1, check=True)
+    assert f1 is f2
+
     with pytest.raises(ValueError):
         resample.randsamp_freq(ndat=10)
 
+    with pytest.raises(ValueError, match=".*has wrong ndat.*"):
+        _ = resample.randsamp_freq(ndat=10, nrep=nrep, freq=f1, check=True)
 
-def test_randsamp_freq_2() -> None:
-    nrep = 200
-    ndat = 100
 
-    freq = resample.randsamp_freq(nrep=nrep, ndat=ndat)
+def _get_zero_rng():
+    return np.random.default_rng(0)
 
-    np.testing.assert_allclose(
-        freq, resample.randsamp_freq(ndat=ndat, nrep=nrep, freq=freq, check=True)
+
+@pytest.mark.parametrize(
+    "expected", [resample.random_freq(nrep=10, ndat=5, rng=_get_zero_rng())]
+)
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"data": np.zeros((5, 2)), "axis": 0},
+        {"data": xr.DataArray(np.zeros((5, 2))), "dim": "dim_0"},
+        {"data": xr.Dataset({"x0": xr.DataArray(np.zeros((5, 2)))}), "dim": "dim_0"},
+        # test that mom_ndim -> mom_dims removed x1
+        {
+            "data": xr.Dataset(
+                {
+                    "x0": xr.DataArray(
+                        np.zeros((5, 2, 3, 3)), dims=["a", "b", "mom0", "mom1"]
+                    ),
+                    "x1": xr.DataArray(np.zeros(5), dims=["a"]),
+                }
+            ),
+            "dim": "a",
+            "mom_ndim": 2,
+            "paired": False,
+        },
+    ],
+)
+def test_randsamp_freq_data(expected, kwargs) -> None:
+    out = resample.randsamp_freq(**kwargs, nrep=10, rng=_get_zero_rng())
+    np.testing.assert_allclose(out, expected)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "data0": xr.DataArray(
+                    np.zeros((2, 3, 4, 3, 3)), dims=["a", "b", "c", "mom0", "mom1"]
+                ),
+                "data1": xr.DataArray(
+                    np.zeros((2, 5, 3, 3)), dims=["a", "d", "momA", "momB"]
+                ),
+                "data2": xr.DataArray(
+                    np.zeros((2, 3, 3, 3)), dims=["a", "b", "mom0", "mom1"]
+                ),
+            }
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    ("dim", "paired", "kws", "names"),
+    [
+        ("a", True, {}, []),
+        ("b", True, {}, []),
+        ("c", True, {}, []),
+        ("d", True, {}, []),
+        ("a", False, {}, ["data0", "data1", "data2"]),
+        ("b", False, {}, ["data0", "data2"]),
+        # result in dataset with one variable -> DataArray...
+        ("c", False, {}, []),
+        ("d", False, {}, []),
+        # passing mom_dims
+        ("a", False, {"mom_dims": ("mom0", "mom1")}, ["data0", "data2"]),
+        ("a", False, {"mom_dims": ("momA", "momB")}, []),
+    ],
+)
+def test_randsamp_freq_dataset(
+    data,
+    dim,
+    paired,
+    kws,
+    names,
+) -> None:
+    nrep = 10
+    rep_dim = "rep"
+    kwargs = {"nrep": nrep, "rep_dim": rep_dim, "paired": paired, **kws}
+
+    # paired
+    out = resample.randsamp_freq(
+        data=data,
+        dim=dim,
+        **kwargs,
+        rng=_get_zero_rng(),
     )
 
-    # bad ndata
-    with pytest.raises(ValueError, match=".*has wrong ndat.*"):
-        _ = resample.randsamp_freq(ndat=10, nrep=nrep, freq=freq, check=True)
+    if names:
+        rng = _get_zero_rng()
+        expected = xr.Dataset(
+            {
+                k: xr.DataArray(
+                    resample.random_freq(ndat=data.sizes[dim], nrep=nrep, rng=rng),
+                    dims=[rep_dim, dim],
+                )
+                for k in names
+            }
+        )
+    else:
+        # Single dataarray
+        expected = xr.DataArray(
+            resample.random_freq(ndat=data.sizes[dim], nrep=nrep, rng=_get_zero_rng()),
+            dims=[rep_dim, dim],
+        )
+
+    xr.testing.assert_allclose(out, expected)
+
+    # and should get back self from this
+    assert resample.randsamp_freq(freq=out, check=False, dtype=None) is out
 
 
 def test_resample_resample_data(rng) -> None:
@@ -314,6 +441,60 @@ def test_resample_vals(other, parallel) -> None:
         )
 
         np.testing.assert_allclose(datar, other.data_test_resamp)
+
+
+@parallel_parametrize
+@pytest.mark.parametrize("mom", [2, (2, 2)])
+def test_resample_vec(parallel, mom, rng):
+    x = rng.random((50, 10))
+    xx = x[..., None]
+
+    xy: tuple[Any, ...]
+    xxyy: tuple[Any, ...]
+
+    if isinstance(mom, tuple):
+        xy = (x, x)
+        xxyy = (xx, xx)
+    else:
+        xy = (x,)
+        xxyy = (xx,)
+
+    c1 = CentralMoments.from_vals(*xy, axis=0, mom=mom)
+    c2 = CentralMoments.from_vals(*xxyy, axis=0, mom=mom)
+
+    np.testing.assert_allclose(c1.data, c2.data[:, 0, ...])
+
+    freq = c1.randsamp_freq(nrep=10, axis=0)
+
+    cc1 = c1.resample_and_reduce(
+        freq=freq,
+        parallel=parallel,
+        axis=0,
+    )
+    cc2 = c2.resample_and_reduce(
+        freq=freq,
+        parallel=parallel,
+        axis=0,
+    )
+
+    np.testing.assert_allclose(cc1.data, cc2.data[:, 0, ...])
+
+    # using indexed
+    out1 = resample_data_indexed(
+        c1.data, freq=freq, mom_ndim=c1.mom_ndim, parallel=parallel, axis=0
+    )
+    np.testing.assert_allclose(
+        cc1.data,
+        out1,
+    )
+
+    out2 = resample_data_indexed(
+        c2.data, freq=freq, mom_ndim=c2.mom_ndim, parallel=parallel, axis=0
+    )
+    np.testing.assert_allclose(
+        cc2.data,
+        out2,
+    )
 
 
 @pytest.mark.slow

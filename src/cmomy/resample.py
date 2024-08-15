@@ -46,6 +46,7 @@ from .core.validate import (
 )
 from .core.xr_utils import (
     get_apply_ufunc_kwargs,
+    raise_if_dataset,
     select_axis_dim,
 )
 from .random import validate_rng
@@ -79,82 +80,13 @@ if TYPE_CHECKING:
 
 # * Resampling utilities ------------------------------------------------------
 @docfiller.decorate
-def freq_to_indices(
-    freq: NDArray[IntDTypeT],
-    shuffle: bool = True,
-    rng: np.random.Generator | None = None,
-) -> NDArray[IntDTypeT]:
-    """
-    Convert a frequency array to indices array.
-
-    This creates an "indices" array that is compatible with "freq" array.
-    Note that by default, the indices for a single sample (along output[k, :])
-    are randomly shuffled.  If you pass `shuffle=False`, then the output will
-    be something like [[0,0,..., 1,1,..., 2,2, ...]].
-
-    Parameters
-    ----------
-    {freq}
-    shuffle :
-        If ``True`` (default), shuffle values for each row.
-    {rng}
-
-    Returns
-    -------
-    ndarray :
-        Indices array of shape ``(nrep, nsamp)`` where ``nsamp = freq[k,
-        :].sum()`` where `k` is any row.
-    """
-    indices_all: list[NDArrayAny] = []
-
-    # validate freq -> indices
-    nsamps = freq.sum(-1)  # pyright: ignore[reportUnknownMemberType]
-    if any(nsamps[0] != nsamps):
-        msg = "Inconsistent number of samples from freq array"
-        raise ValueError(msg)
-
-    for f in freq:
-        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))  # pyright: ignore[reportUnknownArgumentType]
-        indices_all.append(indices)
-
-    out = np.array(indices_all, dtype=freq.dtype)
-
-    if shuffle:
-        rng = validate_rng(rng)
-        rng.shuffle(out, axis=1)
-
-    return out
-
-
-def indices_to_freq(
-    indices: NDArray[IntDTypeT], ndat: int | None = None
-) -> NDArray[IntDTypeT]:
-    """
-    Convert indices to frequency array.
-
-    It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp == ndat``.
-    For cases that ``nsamp != ndat``, pass in ``ndat``.
-    """
-    from ._lib.utils import (
-        randsamp_indices_to_freq,  # pyright: ignore[reportUnknownVariableType]
-    )
-
-    ndat = indices.shape[1] if ndat is None else ndat
-    freq = np.zeros((indices.shape[0], ndat), dtype=indices.dtype)
-
-    randsamp_indices_to_freq(indices, freq)
-
-    return freq
-
-
-@docfiller.decorate
 def random_indices(
     nrep: int,
     ndat: int,
     nsamp: int | None = None,
     rng: np.random.Generator | None = None,
     replace: bool = True,
-) -> NDArrayAny:
+) -> NDArray[IntDTypeT]:
     """
     Create indices for random resampling (bootstrapping).
 
@@ -183,7 +115,7 @@ def random_freq(
     nsamp: int | None = None,
     rng: np.random.Generator | None = None,
     replace: bool = True,
-) -> NDArrayAny:
+) -> NDArray[IntDTypeT]:
     """
     Create frequencies for random resampling (bootstrapping).
 
@@ -205,9 +137,150 @@ def random_freq(
     )
 
 
+@overload
+def freq_to_indices(
+    freq: xr.Dataset,
+    *,
+    shuffle: bool = ...,
+    rng: np.random.Generator | None = ...,
+) -> xr.Dataset: ...
+@overload
+def freq_to_indices(
+    freq: xr.DataArray,
+    *,
+    shuffle: bool = ...,
+    rng: np.random.Generator | None = ...,
+) -> xr.DataArray: ...
+@overload
+def freq_to_indices(
+    freq: ArrayLike,
+    *,
+    shuffle: bool = ...,
+    rng: np.random.Generator | None = ...,
+) -> NDArray[IntDTypeT]: ...
+
+
+@docfiller.decorate
+def freq_to_indices(
+    freq: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    shuffle: bool = True,
+    rng: np.random.Generator | None = None,
+) -> NDArray[IntDTypeT] | xr.DataArray | xr.Dataset:
+    """
+    Convert a frequency array to indices array.
+
+    This creates an "indices" array that is compatible with "freq" array.
+    Note that by default, the indices for a single sample (along output[k, :])
+    are randomly shuffled.  If you pass `shuffle=False`, then the output will
+    be something like [[0,0,..., 1,1,..., 2,2, ...]].
+
+    Parameters
+    ----------
+    {freq_xarray}
+    shuffle :
+        If ``True`` (default), shuffle values for each row.
+    {rng}
+
+    Returns
+    -------
+    ndarray :
+        Indices array of shape ``(nrep, nsamp)`` where ``nsamp = freq[k,
+        :].sum()`` where `k` is any row.
+    """
+    if isinstance(freq, (xr.DataArray, xr.Dataset)):
+        rep_dim, dim = freq.dims
+        return xr.apply_ufunc(
+            freq_to_indices,
+            freq,
+            input_core_dims=[[rep_dim, dim]],
+            output_core_dims=[[rep_dim, dim]],
+            # possible for data dimension to change size.
+            exclude_dims={dim},
+            kwargs={"shuffle": shuffle, "rng": rng},
+        )
+
+    freq = np.asarray(freq, dtype=np.int64)
+    indices_all: list[NDArrayAny] = []
+
+    # validate freq -> indices
+    nsamps = freq.sum(-1)  # pyright: ignore[reportUnknownMemberType]
+    if any(nsamps[0] != nsamps):
+        msg = "Inconsistent number of samples from freq array"
+        raise ValueError(msg)
+
+    for f in freq:
+        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))  # pyright: ignore[reportUnknownArgumentType]
+        indices_all.append(indices)
+
+    out = np.array(indices_all, dtype=freq.dtype)
+
+    if shuffle:
+        rng = validate_rng(rng)
+        rng.shuffle(out, axis=1)
+    return out
+
+
+@overload
+def indices_to_freq(
+    indices: xr.Dataset,
+    *,
+    ndat: int | None = ...,
+) -> xr.Dataset: ...
+@overload
+def indices_to_freq(
+    indices: xr.DataArray,
+    *,
+    ndat: int | None = ...,
+) -> xr.DataArray: ...
+@overload
+def indices_to_freq(
+    indices: ArrayLike,
+    *,
+    ndat: int | None = ...,
+) -> NDArray[IntDTypeT]: ...
+
+
+def indices_to_freq(
+    indices: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    ndat: int | None = None,
+) -> NDArray[IntDTypeT] | xr.DataArray | xr.Dataset:
+    """
+    Convert indices to frequency array.
+
+    It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp ==
+    ndat``. For cases that ``nsamp != ndat``, pass in ``ndat`` explicitl.
+    """
+    if isinstance(indices, (xr.DataArray, xr.Dataset)):
+        # assume dims are in order (rep, dim)
+        rep_dim, dim = indices.dims
+        ndat = ndat or indices.sizes[dim]
+        return xr.apply_ufunc(
+            indices_to_freq,
+            indices,
+            input_core_dims=[[rep_dim, dim]],
+            output_core_dims=[[rep_dim, dim]],
+            # allow for possibility that dim will change size...
+            exclude_dims={dim},
+            kwargs={"ndat": ndat},
+        )
+
+    from ._lib.utils import (
+        randsamp_indices_to_freq,  # pyright: ignore[reportUnknownVariableType]
+    )
+
+    indices = np.asarray(indices, np.int64)
+    ndat = indices.shape[1] if ndat is None else ndat
+    freq = np.zeros((indices.shape[0], ndat), dtype=indices.dtype)
+    randsamp_indices_to_freq(indices, freq)
+
+    return freq
+
+
 @docfiller.decorate
 def select_ndat(
-    data: xr.Dataset | xr.DataArray | NDArrayAny,
+    data: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
@@ -218,12 +291,10 @@ def select_ndat(
 
     Parameters
     ----------
-    data : ndarray or DataArray or Dataset
+    data : ndarray, DataArray, Dataset
     {axis}
     {dim}
-    mom_ndim : int, optional
-        If specified, then treat ``data`` as a moments array, and wrap negative
-        values for ``axis`` relative to value dimensions only.
+    {mom_ndim_optional}
 
     Returns
     -------
@@ -252,6 +323,7 @@ def select_ndat(
         return data.sizes[dim]
 
     if isinstance(axis, int):
+        data = np.asarray(data)
         axis = normalize_axis_index(axis, data.ndim, mom_ndim=mom_ndim)
         return data.shape[axis]
     msg = "Must specify integer axis for array input."
@@ -266,7 +338,19 @@ def _validate_resample_array(
     is_freq: bool,
     check: bool = True,
     dtype: DTypeLike = np.int64,
-) -> NDArrayAny:
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
+    if isinstance(x, (xr.DataArray, xr.Dataset)):
+        return xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _validate_resample_array,
+            x,
+            kwargs={
+                "ndat": ndat,
+                "nrep": nrep,
+                "is_freq": is_freq,
+                "check": check,
+                "dtype": dtype,
+            },
+        )
     x = np.asarray(x, dtype=dtype)
     if check:
         name = "freq" if is_freq else "indices"
@@ -292,22 +376,49 @@ def _validate_resample_array(
     return x
 
 
-def _select_nrep(
-    freq: ArrayLike | xr.DataArray | xr.Dataset | None,
-    nrep: int | None,
-    rep_dim: str,
-) -> int:
-    if freq is not None:
-        return (
-            freq.sizes[rep_dim]
-            if isinstance(freq, (xr.DataArray, xr.Dataset))
-            else np.shape(freq)[0]
+def _randsamp_freq_dataarray_or_dataset(
+    data: xr.DataArray | xr.Dataset,
+    *,
+    nrep: int,
+    ndat: int,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    nsamp: int | None = None,
+    rep_dim: str = "rep",
+    paired: bool = True,
+    mom_ndim: Mom_NDim | None = None,
+    mom_dims: MomDims | None = None,
+    rng: np.random.Generator | None = None,
+) -> xr.DataArray | xr.Dataset:
+    """Create a resampling DataArray or Dataset."""
+    dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)[1]
+
+    def _get_unique_freq() -> xr.DataArray:
+        return xr.DataArray(
+            random_freq(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng, replace=True),
+            dims=[rep_dim, dim],
         )
 
-    if nrep is not None:
-        return nrep
-    msg = "Must specify either freq or nrep"
-    raise ValueError(msg)
+    if paired or isinstance(data, xr.DataArray):
+        return _get_unique_freq()
+
+    # generate non-paired dataset
+    if mom_ndim:
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+    elif mom_dims:
+        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)
+        mom_ndim = validate_mom_ndim(len(mom_dims))
+    else:
+        mom_dims = ()
+    dims = {dim, *mom_dims}
+    out: dict[str, xr.DataArray] = {}
+    for name, da in data.items():
+        if dims.issubset(da.dims):
+            out[name] = _get_unique_freq()
+    if len(out) == 1:
+        # return just a dataarray in this case
+        return next(iter(out.values()))
+    return xr.Dataset(out)
 
 
 @docfiller.decorate
@@ -316,16 +427,19 @@ def randsamp_freq(
     ndat: int | None = None,
     nrep: int | None = None,
     nsamp: int | None = None,
-    indices: ArrayLike | None = None,
-    freq: ArrayLike | None = None,
+    indices: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+    freq: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     data: xr.Dataset | xr.DataArray | NDArrayAny | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
-    check: bool = False,
+    mom_dims: MomDims | None = None,
+    rep_dim: str = "rep",
+    paired: bool = True,
     rng: np.random.Generator | None = None,
     dtype: DTypeLike = np.int64,
-) -> NDArrayInt:
+    check: bool = False,
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
     """
     Convenience function to create frequency table for resampling.
 
@@ -402,10 +516,11 @@ def randsamp_freq(
            [1, 0, 2],
            [0, 2, 1],
            [1, 0, 2]])
-
     """
     # short circuit the most likely scenario...
     if freq is not None and not check:
+        if isinstance(freq, (xr.DataArray, xr.Dataset)):
+            return freq if dtype is None else freq.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
         return np.asarray(freq, dtype=dtype)
 
     if ndat is None:
@@ -423,7 +538,6 @@ def randsamp_freq(
             is_freq=True,
             dtype=dtype,
         )
-
     elif indices is not None:
         indices = _validate_resample_array(
             indices,
@@ -432,22 +546,51 @@ def randsamp_freq(
             check=check,
             is_freq=False,
         )
-
         freq = indices_to_freq(indices, ndat=ndat)
-
-    elif nrep is not None:
+    elif nrep is None:
+        msg = "must specify freq, indices, or nrep"
+        raise ValueError(msg)
+    elif isinstance(data, (xr.DataArray, xr.Dataset)):
+        freq = _randsamp_freq_dataarray_or_dataset(
+            data,
+            nrep=nrep,
+            axis=axis,
+            dim=dim,
+            nsamp=nsamp,
+            ndat=ndat,
+            rep_dim=rep_dim,
+            paired=paired,
+            mom_ndim=mom_ndim,
+            mom_dims=mom_dims,
+            rng=rng,
+        )
+    else:
         freq = random_freq(
             nrep=nrep, ndat=ndat, nsamp=nsamp, rng=validate_rng(rng), replace=True
         )
 
-    else:
-        msg = "must specify freq, indices, or nrep"
-        raise ValueError(msg)
-
-    return freq
+    return freq if dtype is None else freq.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
 
 
 # * Utilities
+def _select_nrep(
+    freq: ArrayLike | xr.DataArray | xr.Dataset | None,
+    nrep: int | None,
+    rep_dim: str,
+) -> int:
+    if freq is not None:
+        return (
+            freq.sizes[rep_dim]
+            if isinstance(freq, (xr.DataArray, xr.Dataset))
+            else np.shape(freq)[0]
+        )
+
+    if nrep is not None:
+        return nrep
+    msg = "Must specify either freq or nrep"
+    raise ValueError(msg)
+
+
 def _check_freq(freq: NDArrayAny, ndat: int) -> None:
     if freq.shape[1] != ndat:
         msg = f"{freq.shape[1]=} != {ndat=}"
@@ -1478,9 +1621,7 @@ def _jackknife_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if isinstance(data_reduced, xr.Dataset):
-        msg = "Passed Dataset for reduce_data in array context."
-        raise TypeError(msg)
+    raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
 
     data_reduced = np.asarray(data_reduced, dtype=dtype)
     axis, data = prepare_data_for_reduction(
@@ -1815,9 +1956,8 @@ def _jackknife_vals(
         dtype = select_dtype(x, out=out, dtype=dtype)
         args = [np.asarray(a, dtype=dtype) for a in args]
 
-    if isinstance(data_reduced, xr.Dataset):
-        msg = "Passed Dataset for reduce_data in array context."
-        raise TypeError(msg)
+    raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
+
     data_reduced = np.asarray(data_reduced, dtype=dtype)
     if data_reduced.shape[-mom_ndim:] != mom_to_mom_shape(mom):
         msg = f"{data_reduced.shape[-mom_ndim:]=} inconsistent with {mom=}"

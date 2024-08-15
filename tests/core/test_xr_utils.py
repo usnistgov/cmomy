@@ -231,3 +231,14 @@ def test_move_mom_dims_to_end(x, kws, expected) -> None:
             xr_utils.move_mom_dims_to_end(x, **kws)
     else:
         assert xr_utils.move_mom_dims_to_end(x, **kws).dims == expected
+
+
+def test_raise_if_dataset() -> None:
+    x = xr.Dataset()
+
+    with pytest.raises(TypeError, match="Dataset not allowed."):
+        xr_utils.raise_if_dataset(x)
+
+    msg = "hello there"
+    with pytest.raises(TypeError, match=msg):
+        xr_utils.raise_if_dataset(x, msg=msg)

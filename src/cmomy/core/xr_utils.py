@@ -251,3 +251,9 @@ def replace_coords_from_isel(
         coords[coord_name] = coord_value
 
     return da_selected._replace(coords=coords, indexes=indexes)  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
+
+
+def raise_if_dataset(*args: Any, msg: str = "Dataset not allowed.") -> None:
+    """Raise TypeError if value is a Dataset."""
+    if any(isinstance(x, xr.Dataset) for x in args):
+        raise TypeError(msg)
