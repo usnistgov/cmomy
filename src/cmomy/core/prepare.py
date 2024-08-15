@@ -19,6 +19,7 @@ from .validate import (
     validate_axis,
 )
 from .xr_utils import (
+    raise_if_dataset,
     select_axis_dim,
 )
 
@@ -138,9 +139,7 @@ def prepare_secondary_value_for_reduction(
         passed through `_prepare_target_value_for_reduction`
 
     """
-    if isinstance(x, xr.Dataset):
-        msg = "Passed Dataset as secondary value with array primary value."
-        raise TypeError(msg)
+    raise_if_dataset(x, "Passed Dataset as secondary value with array primary value.")
 
     out: NDArray[ScalarT] = np.asarray(x, dtype=dtype)
     if out.ndim == 0:
@@ -246,15 +245,9 @@ def xprepare_out_for_resample_vals(
     move_axis_to_end: bool,
 ) -> NDArray[ScalarT] | None:
     """Prepare out for resampling"""
-    if out is None:
-        return out
-
-    # if isinstance(out, xr.DataArray):
-    #     return out  # noqa: ERA001
-
-    if isinstance(target, xr.Dataset):
-        msg = "Cannot specify ``out`` for Dataset input."
-        raise ValueError(msg)  # noqa: TRY004
+    # NOTE: silently ignore out of datasets.
+    if out is None or isinstance(target, xr.Dataset):
+        return None
 
     if move_axis_to_end:
         # out should already be in correct order
@@ -277,12 +270,8 @@ def xprepare_out_for_resample_data(
     data: Any = None,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
-    if out is None:
-        return out
-
-    if isinstance(data, xr.Dataset):
-        msg = "Cannot specify ``out`` for Dataset input."
-        raise ValueError(msg)  # noqa: TRY004
+    if out is None or isinstance(data, xr.Dataset):
+        return None
 
     if move_axis_to_end:
         # out should already be in correct order

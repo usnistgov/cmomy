@@ -793,30 +793,33 @@ def resample_data(  # noqa: PLR0913
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
+    freq = randsamp_freq(
+        data=data,
+        freq=freq,
+        nrep=nrep,
+        rng=rng,
+        dim=dim,
+        axis=axis,
+        rep_dim=rep_dim,
+        mom_dims=mom_dims,
+        mom_ndim=mom_ndim,
+        paired=paired,
+        dtype=dtype,
+    )
+
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
-        if isinstance(data, xr.Dataset) and freq is None and paired:
-            freq = randsamp_freq(ndat=data.sizes[dim], nrep=nrep, rng=rng)
-
-        # special case on freq...
-        xargs: list[Any] = [data]
-        input_core_dims = [[dim, *mom_dims]]
-        if freq is not None:
-            xargs.append(freq)
-            input_core_dims.append([rep_dim, dim])
-
         xout: xr.Dataset | xr.DataArray = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_data,
-            *xargs,
-            input_core_dims=input_core_dims,
+            data,
+            freq,
+            input_core_dims=[[dim, *mom_dims], [rep_dim, dim]],
             output_core_dims=[[rep_dim, *mom_dims]],
             kwargs={
                 "mom_ndim": mom_ndim,
                 "axis": -1,
-                "nrep": nrep,
-                "rng": rng,
                 "dtype": dtype,
                 "out": xprepare_out_for_resample_data(
                     out,
@@ -849,8 +852,6 @@ def resample_data(  # noqa: PLR0913
         freq,
         mom_ndim=mom_ndim,
         axis=axis,
-        rng=rng,
-        nrep=nrep,
         dtype=dtype,
         out=out,
         parallel=parallel,
@@ -865,8 +866,6 @@ def _resample_data(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType,
-    rng: np.random.Generator | None,
-    nrep: int | None,
     dtype: DTypeLike,
     out: NDArrayAny | None,
     parallel: bool | None,
@@ -876,22 +875,13 @@ def _resample_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
+    freq = np.asarray(freq, dtype=dtype)
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,
         mom_ndim=mom_ndim,
         dtype=dtype,  # type: ignore[arg-type]
         move_axis_to_end=move_axis_to_end,
-    )
-
-    freq = randsamp_freq(
-        data=data,
-        axis=axis,
-        mom_ndim=mom_ndim,
-        freq=freq,  # type: ignore[arg-type]  # Should do better for this...
-        rng=rng,
-        nrep=nrep,
-        dtype=dtype,
     )
 
     # include inner core dimensions for freq
@@ -1120,6 +1110,18 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
+    freq = randsamp_freq(
+        data=x,
+        freq=freq,
+        nrep=nrep,
+        rng=rng,
+        dim=dim,
+        axis=axis,
+        rep_dim=rep_dim,
+        paired=paired,
+        dtype=dtype,
+    )
+
     if isinstance(x, (xr.DataArray, xr.Dataset)):
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
@@ -1136,32 +1138,19 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
             mom_ndim=mom_ndim,
         )
 
-        if isinstance(x, xr.Dataset) and freq is None and paired:
-            freq = randsamp_freq(ndat=x.sizes[dim], nrep=nrep, rng=rng)
-
-        if freq is None:
-
-            def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-                x, w, *y = args
-                return _resample_vals(x, w, *y, freq=None, **kwargs)
-        else:
-            xargs = [*xargs, freq]  # type: ignore[list-item]
-            input_core_dims = [*input_core_dims, [rep_dim, dim]]
-
-            def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-                x, w, *y, _freq = args
-                return _resample_vals(x, w, *y, freq=_freq, **kwargs)
+        def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
+            x, w, *y, _freq = args
+            return _resample_vals(x, w, *y, freq=_freq, **kwargs)
 
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
             *xargs,
-            input_core_dims=input_core_dims,
+            freq,
+            input_core_dims=[*input_core_dims, [rep_dim, dim]],
             output_core_dims=[[rep_dim, *mom_dims]],
             kwargs={
                 "mom": mom,
                 "mom_ndim": mom_ndim,
-                "nrep": nrep,
-                "rng": rng,
                 "axis_neg": -1,
                 "parallel": parallel,
                 "dtype": dtype,
@@ -1212,8 +1201,6 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
         freq=freq,
         mom=mom,
         mom_ndim=mom_ndim,
-        nrep=nrep,
-        rng=rng,
         axis_neg=axis_neg,
         parallel=parallel,
         dtype=dtype,
@@ -1229,8 +1216,6 @@ def _resample_vals(
     freq: ArrayLike | xr.DataArray | xr.Dataset | None,
     mom: MomentsStrict,
     mom_ndim: Mom_NDim,
-    nrep: int | None,
-    rng: np.random.Generator | None,
     axis_neg: int,
     parallel: bool | None,
     dtype: DTypeLike,
@@ -1242,15 +1227,7 @@ def _resample_vals(
         dtype = select_dtype(x, out=out, dtype=dtype)
         args = [np.asarray(a, dtype=dtype) for a in args]
 
-    freq = randsamp_freq(
-        data=args[0],
-        axis=axis_neg,
-        freq=freq,  # type: ignore[arg-type]  # because of Dataset....
-        rng=rng,
-        nrep=nrep,
-        dtype=dtype,
-    )
-
+    freq = np.asarray(freq, dtype=dtype)
     out = prepare_out_from_values(
         out,
         *args,

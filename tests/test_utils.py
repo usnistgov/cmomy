@@ -227,6 +227,7 @@ def _do_test_assign_moment_mom_ndim(
     copy,
     scalar,
     name,
+    use_xr_value=True,
     **kwargs,
 ):
     value: float | NDArrayAny | xr.DataArray
@@ -237,6 +238,10 @@ def _do_test_assign_moment_mom_ndim(
             data, name, mom_ndim=mom_ndim, squeeze=kwargs.get("squeeze", True)
         )
         value = xr.full_like(template, -10)
+        if not use_xr_value:
+            value = np.asarray(value)
+            kwargs = {"dim_combined": "new_thing", **kwargs}
+
     else:
         shape = data[index].shape
         if len(shape) > 2:
@@ -301,6 +306,11 @@ def test_assign_moment_mom_ndim_1(
         data = xr.DataArray(data)
 
     _do_test_assign_moment_mom_ndim(data, 1, index, scalar=scalar, copy=copy, **kwargs)
+
+    if as_dataarray:
+        _do_test_assign_moment_mom_ndim(
+            data, 1, index, scalar=scalar, copy=copy, use_xr_value=False, **kwargs
+        )
 
 
 @pytest.mark.parametrize(

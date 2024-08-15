@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+import xarray as xr
 
 from cmomy.core import array_utils
 
 
 # * catch all args only test
 def _do_test(func, *args, expected=None, match=None, **kwargs):
-    if isinstance(expected, type):
+    if isinstance(expected, type) and issubclass(expected, Exception):
         with pytest.raises(expected, match=match):
             func(*args, **kwargs)
     else:
@@ -129,6 +130,49 @@ def test_raise_if_wrong_shape() -> None:
     array_utils.raise_if_wrong_shape(x, (2, 3, 4))
     with pytest.raises(ValueError):
         array_utils.raise_if_wrong_shape(x, (1, 2, 3, 4))
+
+
+def _e(dtype):
+    return np.empty(2, dtype=dtype)
+
+
+def _x(dtype):
+    return xr.DataArray(_e(dtype))
+
+
+def _s(dtype):
+    return xr.Dataset({"x": _x(dtype)})
+
+
+@pytest.mark.parametrize(
+    ("x", "out", "dtype", "expected"),
+    [
+        # array
+        (_e(np.float64), None, None, np.float64),
+        (_e(np.float64), _e(np.float32), None, np.float32),
+        (_e(np.float64), None, np.float32, np.float32),
+        (_e(np.float16), _e(np.float32), np.float64, np.float32),
+        (_e(np.float16), None, None, ValueError),
+        # dataarray
+        (_x(np.float64), None, None, np.float64),
+        (_x(np.float64), _x(np.float32), None, np.float32),
+        (_x(np.float64), None, np.float32, np.float32),
+        (_x(np.float16), _x(np.float32), np.float64, np.float32),
+        (_x(np.float16), None, None, ValueError),
+        # dataset
+        (_s(np.float64), None, None, None),
+        (_s(np.float64), _s(np.float32), None, None),
+        (_s(np.float64), None, np.float32, np.float32),
+        (_s(np.float16), _s(np.float32), np.float64, np.float64),
+        (_s(np.float16), None, None, None),
+    ],
+)
+def test_select_dtype(x, out, dtype, expected) -> None:
+    def func(*args, **kwargs):
+        out = array_utils.select_dtype(*args, **kwargs)
+        return out if out is None else out.type
+
+    _do_test(func, x, expected=expected, out=out, dtype=dtype)
 
 
 @pytest.mark.parametrize(

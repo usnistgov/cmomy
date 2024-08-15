@@ -211,6 +211,7 @@ def test_xprepare_values_for_reduction_1(
             },
             np.zeros((3, 2, 4)),
         ),
+        # Silently ignore passing out value for dataset output...
         (
             {
                 "out": np.zeros((2, 3, 4)),
@@ -219,7 +220,7 @@ def test_xprepare_values_for_reduction_1(
                 "move_axis_to_end": False,
                 "data": xr.Dataset({"data0": xr.DataArray(np.zeros((2, 3, 4)))}),
             },
-            ValueError,
+            None,
         ),
     ],
 )

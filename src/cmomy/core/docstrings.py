@@ -177,7 +177,8 @@ def _dummy_docstrings() -> None:
         Sequence of length ``by.max() + 1`` to assign as coordinates for ``group_dim``.
     out : ndarray
         Optional output array. If specified, output will be a reference to this
-        array.
+        array.  Note that if the output if method returns a :class:`~xarray.Dataset`, then this
+        option is ignored.
     order : {"C", "F", "A", "K"}, optional
         Order argument to :func:`numpy.asarray`.
     weight : array-like, optional

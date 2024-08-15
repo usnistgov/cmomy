@@ -875,7 +875,8 @@ def test_jackknife_vals_extras(shape, axis, mom: Mom_NDim, dtype: DTypeLike) -> 
 
 
 # * Dataset
-@pytest.mark.parametrize(
+
+marks_data_dataset = pytest.mark.parametrize(
     ("mom_ndim", "dim", "shapes_and_dims"),
     [
         (1, "a", [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom"))]),
@@ -898,8 +899,14 @@ def test_jackknife_vals_extras(shape, axis, mom: Mom_NDim, dtype: DTypeLike) -> 
         ),
     ],
 )
+
+
+@marks_data_dataset
+@pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [True, False])
-def test_resample_data_dataset(rng, mom_ndim, dim, shapes_and_dims, paired) -> None:
+def test_resample_data_dataset(
+    rng, mom_ndim, dim, shapes_and_dims, nrep, paired
+) -> None:
     ds = xr.Dataset(
         {
             name: xr.DataArray(rng.random(shape), dims=dims)
@@ -907,30 +914,10 @@ def test_resample_data_dataset(rng, mom_ndim, dim, shapes_and_dims, paired) -> N
         }
     )
 
-    _rng = np.random.default_rng(0)
-
-    if paired:
-        dfreq = xr.DataArray(
-            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng), dims=["rep", dim]
-        )
-    else:
-        dfreq = xr.Dataset(
-            dict(
-                zip(
-                    ["data0", "data1"],
-                    [
-                        xr.DataArray(
-                            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng),
-                            dims=["rep", dim],
-                        )
-                        for _ in range(2)
-                    ],
-                )
-            )
-        )
+    _rng = _get_zero_rng()
+    dfreq = cmomy.randsamp_freq(data=ds, dim=dim, nrep=nrep, rng=_rng, paired=paired)
 
     out = cmomy.resample_data(ds, dim=dim, mom_ndim=mom_ndim, freq=dfreq)
-
     for name in ds:
         da = ds[name]
         if dim in da.dims:
@@ -938,12 +925,13 @@ def test_resample_data_dataset(rng, mom_ndim, dim, shapes_and_dims, paired) -> N
                 da,
                 dim=dim,
                 mom_ndim=mom_ndim,
-                freq=dfreq if paired else dfreq[name],
+                freq=dfreq if isinstance(dfreq, xr.DataArray) else dfreq[name],
                 move_axis_to_end=True,
             )
 
         xr.testing.assert_allclose(out[name], da)
 
+    # indirect
     xr.testing.assert_allclose(
         out,
         cmomy.resample_data(
@@ -951,10 +939,34 @@ def test_resample_data_dataset(rng, mom_ndim, dim, shapes_and_dims, paired) -> N
             dim=dim,
             mom_ndim=mom_ndim,
             nrep=20,
-            rng=np.random.default_rng(0),
+            rng=_get_zero_rng(),
             paired=paired,
         ),
     )
+
+
+@marks_data_dataset
+def test_jackknife_data_dataset(rng, mom_ndim, dim, shapes_and_dims) -> None:
+    ds = xr.Dataset(
+        {
+            name: xr.DataArray(rng.random(shape), dims=dims)
+            for name, (shape, dims) in zip(["data0", "data1"], shapes_and_dims)
+        }
+    )
+
+    out = cmomy.resample.jackknife_data(ds, dim=dim, mom_ndim=mom_ndim)
+
+    for name in ds:
+        da = ds[name]
+        if dim in da.dims:
+            da = cmomy.resample.jackknife_data(
+                da,
+                dim=dim,
+                mom_ndim=mom_ndim,
+                move_axis_to_end=True,
+            )
+
+        xr.testing.assert_allclose(out[name], da)
 
 
 @pytest.fixture(params=range(9))
@@ -1110,33 +1122,17 @@ def fixture_resample_vals_dataset(request, rng) -> Any:  # noqa: PLR0915
         }
 
 
+@pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [True, False])
-def test_reduce_vals_dataset(fixture_resample_vals_dataset, paired) -> None:
+def test_reduce_vals_dataset(fixture_resample_vals_dataset, paired, nrep) -> None:
     kwargs, x, y, weight = (
         fixture_resample_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
     )
 
     dim = kwargs["dim"]
-    _rng = np.random.default_rng(0)
-    if paired:
-        dfreq = xr.DataArray(
-            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng), dims=["rep", dim]
-        )
-    else:
-        dfreq = xr.Dataset(
-            dict(
-                zip(
-                    ["data0", "data1"],
-                    [
-                        xr.DataArray(
-                            cmomy.randsamp_freq(ndat=10, nrep=20, rng=_rng),
-                            dims=["rep", dim],
-                        )
-                        for _ in range(2)
-                    ],
-                )
-            )
-        )
+    _rng = _get_zero_rng()
+
+    dfreq = cmomy.randsamp_freq(data=x, dim=dim, nrep=nrep, rng=_rng, paired=paired)
 
     xy = (x,) if y is None else (x, y)
     out = cmomy.resample_vals(*xy, weight=weight, **kwargs, freq=dfreq)
@@ -1156,20 +1152,56 @@ def test_reduce_vals_dataset(fixture_resample_vals_dataset, paired) -> None:
                 w = weight
 
             da = cmomy.resample_vals(
-                *_xy, weight=w, **kwargs, freq=dfreq if paired else dfreq[name]
+                *_xy,
+                weight=w,
+                **kwargs,
+                freq=dfreq if isinstance(dfreq, xr.DataArray) else dfreq[name],
             )
 
         xr.testing.assert_allclose(out[name], da)
 
-    # testing paired
+    # testing indirect
     xr.testing.assert_allclose(
         out,
         cmomy.resample_vals(
             *xy,
             weight=weight,
             **kwargs,
-            nrep=20,
-            rng=np.random.default_rng(0),
+            nrep=nrep,
+            rng=_get_zero_rng(),
             paired=paired,
         ),
     )
+
+
+def test_jackknife_vals_dataset(fixture_resample_vals_dataset) -> None:
+    kwargs, x, y, weight = (
+        fixture_resample_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
+    )
+
+    kwargs["dim"]
+
+    xy = (x,) if y is None else (x, y)
+    out = cmomy.resample.jackknife_vals(*xy, weight=weight, **kwargs)
+
+    for name in x:
+        da = x[name]
+        if kwargs["dim"] in da.dims:
+            if y is not None:
+                dy = y if isinstance(y, xr.DataArray) else y[name]
+                _xy = (da, dy)
+            else:
+                _xy = (da,)
+
+            if weight is not None:
+                w = weight if isinstance(weight, xr.DataArray) else weight[name]
+            else:
+                w = weight
+
+            da = cmomy.resample.jackknife_vals(
+                *_xy,
+                weight=w,
+                **kwargs,
+            )
+
+        xr.testing.assert_allclose(out[name], da)
