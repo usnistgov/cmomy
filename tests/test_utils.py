@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import utils
 from cmomy.core.utils import mom_to_mom_ndim
 
@@ -267,6 +268,19 @@ def _do_test_assign_moment_mom_ndim(
         assert np.shares_memory(out, data)
 
     np.testing.assert_allclose(out, check)
+
+    # CentralMoments
+    c0 = (
+        cmomy.xCentralMoments
+        if isinstance(data, xr.DataArray)
+        else cmomy.CentralMoments
+    )(data, mom_ndim=mom_ndim)
+    c1 = c0.assign_moment(name=name, value=value, **kwargs, copy=copy)
+
+    np.testing.assert_allclose(out, c1.values)
+
+    if not copy:
+        assert np.shares_memory(c0.values, c1.values)
 
 
 @pytest.mark.parametrize(

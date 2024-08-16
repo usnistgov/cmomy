@@ -129,6 +129,12 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
         cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).values, c2x.values
     )
 
+    # same mom name as original
+    xr.testing.assert_allclose(
+        cx.moments_to_comoments(mom=(1, -1)).values,
+        c2x.values.rename({"a": "mom_0", "b": "mom_1"}),  # noqa: PD011
+    )
+
     # raise error for mom_ndim=2
     for _c in [c2, c2x]:
         with pytest.raises(ValueError, match="Only implemented for.*"):

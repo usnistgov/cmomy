@@ -34,11 +34,14 @@ if TYPE_CHECKING:
 
     from ._lib.factory import Pusher
     from .core.typing import (
+        ApplyUFuncKwargs,
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
         DataCasting,
         Groups,
+        KeepAttrs,
+        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         Moments,
@@ -441,8 +444,13 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         self,
         name: SelectMoment,
         value: ArrayLike,
-        copy: bool = True,
+        *,
         squeeze: bool = True,
+        copy: bool = True,
+        keep_attrs: KeepAttrs = None,
+        dim_combined: Hashable | None = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Create object with update weight, average, etc.
@@ -471,8 +479,13 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
                 name=name,
                 value=value,
                 mom_ndim=self._mom_ndim,
-                copy=copy,
                 squeeze=squeeze,
+                copy=copy,
+                keep_attrs=keep_attrs,
+                mom_dims=getattr(self, "mom_dims", None),
+                dim_combined=dim_combined,
+                on_missing_core_dim=on_missing_core_dim,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
             mom_ndim=self._mom_ndim,
             fastpath=True,
@@ -486,7 +499,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         squeeze: bool = True,
         dim_combined: str = "variable",
         coords_combined: str | Sequence[Hashable] | None = None,
-        keep_attrs: bool | None = None,
+        keep_attrs: KeepAttrs = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> ArrayT:
         """
         Select specific moments.
@@ -507,6 +522,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
                 coords_combined=coords_combined,
                 squeeze=squeeze,
                 keep_attrs=keep_attrs,
+                mom_dims=getattr(self, "mom_dims", None),
+                on_missing_core_dim=on_missing_core_dim,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
         )
 

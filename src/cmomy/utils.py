@@ -208,13 +208,31 @@ def moment_indexer(
 
 @overload
 def select_moment(
+    data: xr.Dataset,
+    name: SelectMoment,
+    *,
+    mom_ndim: Mom_NDim,
+    squeeze: bool = ...,
+    dim_combined: str = ...,
+    coords_combined: str | Sequence[Hashable] | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.Dataset: ...
+@overload
+def select_moment(
     data: xr.DataArray,
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim,
+    squeeze: bool = ...,
     dim_combined: str = ...,
     coords_combined: str | Sequence[Hashable] | None = ...,
-    keep_attrs: bool | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 @overload
 def select_moment(
@@ -222,9 +240,13 @@ def select_moment(
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim,
+    squeeze: bool = ...,
     dim_combined: str = ...,
     coords_combined: str | Sequence[Hashable] | None = ...,
-    keep_attrs: bool | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    mom_dims: MomDims | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[ScalarT]: ...
 
 
@@ -372,8 +394,13 @@ def assign_moment(
     value: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     mom_ndim: Mom_NDim,
-    squeeze: bool = True,
-    copy: bool = True,
+    squeeze: bool = ...,
+    copy: bool = ...,
+    keep_attrs: KeepAttrs = ...,
+    mom_dims: MomDims | None = ...,
+    dim_combined: Hashable | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.Dataset: ...
 @overload
 def assign_moment(
@@ -382,8 +409,13 @@ def assign_moment(
     value: ArrayLike | xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
-    squeeze: bool = True,
-    copy: bool = True,
+    squeeze: bool = ...,
+    copy: bool = ...,
+    keep_attrs: KeepAttrs = ...,
+    mom_dims: MomDims | None = ...,
+    dim_combined: Hashable | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 @overload
 def assign_moment(
@@ -392,8 +424,13 @@ def assign_moment(
     value: ArrayLike | xr.DataArray,
     *,
     mom_ndim: Mom_NDim,
-    squeeze: bool = True,
-    copy: bool = True,
+    squeeze: bool = ...,
+    copy: bool = ...,
+    keep_attrs: KeepAttrs = ...,
+    mom_dims: MomDims | None = ...,
+    dim_combined: Hashable | None = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[ScalarT]: ...
 
 
