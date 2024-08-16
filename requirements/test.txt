@@ -7,6 +7,7 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
+dask;python_version=="3.11"
 docstring-inheritance
 lazy-loader
 module-utilities>=0.6

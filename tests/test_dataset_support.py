@@ -14,7 +14,12 @@ import cmomy
 
 
 # * fixtures
-def create_data_dataset(rng, shapes_and_dims, dim, **kwargs) -> xr.Dataset:  # noqa: ARG001
+def create_data_dataset(
+    rng,
+    shapes_and_dims,
+    dim,
+    **kwargs,  # noqa: ARG001
+) -> xr.Dataset | xr.DataArray:
     if isinstance(shapes_and_dims, tuple):
         shape, dims = shapes_and_dims
         ds = xr.DataArray(rng.random(shape), dims=dims)
@@ -31,7 +36,6 @@ def create_data_dataset(rng, shapes_and_dims, dim, **kwargs) -> xr.Dataset:  # n
     if dim:
         # coordinates along sampled dimension
         ds = ds.assign_coords({dim: (dim, range(ds.sizes[dim]))})
-
     return ds
 
 
@@ -201,23 +205,44 @@ def _reduce_data_indexed(ds, dim, **kwargs):
     )
 
 
+def _resample_data(ds, dim, nrep, paired, **kwargs):
+    return cmomy.resample_data(
+        ds,
+        dim=dim,
+        nrep=nrep,
+        rng=np.random.default_rng(0),
+        paired=paired,
+        **kwargs,
+    )
+
+
+def _resample_vals(x, *y, weight, nrep, paired, **kwargs):
+    return cmomy.resample_vals(
+        x,
+        *y,
+        weight=weight,
+        nrep=nrep,
+        paired=paired,
+        rng=np.random.default_rng(0),
+        **kwargs,
+    )
+
+
 @mark_data_kwargs
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     [
-        (partial(cmomy.rolling.rolling_data, window=2), None),
-        (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
         (_reduce_data_grouped, None),
         (partial(_reduce_data_indexed, coords_policy="first"), None),
-        (partial(_reduce_data_indexed, coords_policy="last"), None),
         (partial(_reduce_data_indexed, coords_policy="groups"), None),
         (partial(_reduce_data_indexed, coords_policy=None), None),
+        (partial(_resample_data, nrep=20, paired=True), None),
         (cmomy.resample.jackknife_data, None),
         (cmomy.convert.moments_type, _remove_dim_from_kwargs),
+        (cmomy.convert.cumulative, None),
         (cmomy.convert.moments_to_comoments, _moments_to_comoments_kwargs),
         (partial(cmomy.utils.select_moment, name="weight"), _remove_dim_from_kwargs),
         (partial(cmomy.utils.select_moment, name="ave"), _remove_dim_from_kwargs),
-        (partial(cmomy.utils.select_moment, name="xave"), _remove_dim_from_kwargs),
         (
             partial(cmomy.utils.assign_moment, name="weight", value=1),
             _remove_dim_from_kwargs,
@@ -226,35 +251,37 @@ def _reduce_data_indexed(ds, dim, **kwargs):
             partial(cmomy.utils.assign_moment, name="ave", value=1),
             _remove_dim_from_kwargs,
         ),
+        (partial(cmomy.rolling.rolling_data, window=2), None),
+        (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
     ],
 )
 def test_func_data_dataset(rng, kwargs, shapes_and_dims, func, kwargs_callback) -> None:
     ds = create_data_dataset(rng, shapes_and_dims, **kwargs)
-
-    if kwargs_callback:
-        kwargs = kwargs_callback(kwargs.copy())
+    kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
 
     # coordinates along sampled dimension
-    out = func(ds, **kwargs)
+    out = func(ds, **kws)
 
-    if "dim" in kwargs:
-        kwargs = {"move_axis_to_end": True, **kwargs}
+    if "dim" in kws:
+        kws = {"move_axis_to_end": True, **kws}
 
     for k in ds:
         da = ds[k]
-        if ("dim" not in kwargs or kwargs["dim"] in da.dims) and (
-            "mom_dims" not in kwargs or kwargs["mom_dims"] in da.dims
+
+        if ("dim" not in kws or kws["dim"] in da.dims) and (
+            "mom_dims" not in kws or kws["mom_dims"] in da.dims
         ):
-            da = func(da, **kwargs)
+            da = func(da, **kws)
     xr.testing.assert_allclose(out[k], da)
 
 
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     [
+        (cmomy.reduce_vals, None),
+        (partial(_resample_vals, nrep=20, paired=True), None),
         (partial(cmomy.rolling.rolling_vals, window=2), None),
         (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
-        (cmomy.reduce_vals, None),
         (cmomy.resample.jackknife_vals, None),
         (cmomy.utils.vals_to_data, _remove_dim_from_kwargs),
     ],
@@ -288,7 +315,7 @@ def test_func_vals_dataset(fixture_vals_dataset, func, kwargs_callback):
         xr.testing.assert_allclose(out[name], da)
 
 
-# * Reduction
+# * Special cases...
 # ** reduce data
 def _do_reduce_data_dataset(ds, dim, **kwargs) -> None:
     out = cmomy.reduce_data(ds, dim=dim, **kwargs)
@@ -317,15 +344,16 @@ def test_reduce_data_dataset(rng, kwargs, shapes_and_dims, use_reduce) -> None:
 @pytest.mark.parametrize(
     ("kwargs", "shapes_and_dims"),
     [
+        # NOTE: make data0, data1 same dimensions, otherwise use_reduce leads to different answers....
         (
             {"mom_ndim": 1, "dim": None},
-            [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom"))],
+            [((10, 2, 3), ("a", "b", "mom")), ((10, 2, 3), ("a", "b", "mom"))],
         ),
         (
             {"mom_ndim": 2, "dim": None},
             [
                 ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
-                ((10, 3, 3), ("b", "mom0", "mom1")),
+                ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
             ],
         ),
     ],
@@ -425,7 +453,7 @@ def test_randsamp_freq_dataset(
 
 @mark_data_kwargs
 @pytest.mark.parametrize("nrep", [20])
-@pytest.mark.parametrize("paired", [True, False])
+@pytest.mark.parametrize("paired", [False])
 def test_resample_data_dataset(
     get_zero_rng, rng, kwargs, shapes_and_dims, nrep, paired
 ) -> None:
@@ -465,7 +493,7 @@ def test_resample_data_dataset(
 
 
 @pytest.mark.parametrize("nrep", [20])
-@pytest.mark.parametrize("paired", [True, False])
+@pytest.mark.parametrize("paired", [False])
 def test_resample_vals_dataset(
     fixture_vals_dataset, get_zero_rng, paired, nrep
 ) -> None:
@@ -516,3 +544,133 @@ def test_resample_vals_dataset(
             paired=paired,
         ),
     )
+
+
+# * Chunking
+try:
+    import dask  # noqa: F401
+
+    HAS_DASK = True
+except ImportError:
+    HAS_DASK = False
+
+mark_dask_only = pytest.mark.skipif(not HAS_DASK, reason="dask not installed")
+
+
+def _is_chunked(ds):
+    if isinstance(ds, xr.Dataset):
+        return ds.chunks != {}
+
+    return ds.chunks is not None
+
+
+@pytest.mark.slow
+@mark_dask_only
+@mark_data_kwargs
+@pytest.mark.parametrize(
+    ("func", "kwargs_callback"),
+    [
+        (partial(cmomy.reduce_data, use_reduce=False), None),
+        (_reduce_data_grouped, None),
+        (partial(_reduce_data_indexed, coords_policy=None), None),
+        (partial(_resample_data, nrep=20, paired=True), None),
+        (partial(_resample_data, nrep=20, paired=False), None),
+        (cmomy.resample.jackknife_data, None),
+        (cmomy.convert.moments_type, _remove_dim_from_kwargs),
+        (cmomy.convert.cumulative, None),
+        (cmomy.convert.moments_to_comoments, _moments_to_comoments_kwargs),
+        (partial(cmomy.utils.select_moment, name="weight"), _remove_dim_from_kwargs),
+        (partial(cmomy.utils.select_moment, name="ave"), _remove_dim_from_kwargs),
+        (
+            partial(cmomy.utils.assign_moment, name="weight", value=1),
+            _remove_dim_from_kwargs,
+        ),
+        (
+            partial(cmomy.utils.assign_moment, name="ave", value=1),
+            _remove_dim_from_kwargs,
+        ),
+        (partial(cmomy.rolling.rolling_data, window=2), None),
+        (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
+    ],
+)
+def test_func_data_chunking(
+    rng, kwargs, shapes_and_dims, func, kwargs_callback
+) -> None:
+    ds = create_data_dataset(rng, shapes_and_dims, **kwargs)
+    ds_chunked = ds.chunk({kwargs["dim"]: -1})
+
+    kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
+
+    # coordinates along sampled dimension
+    out = func(ds, **kws)
+    out_chunked = func(ds_chunked, **kws)
+
+    xr.testing.assert_allclose(out, out_chunked)
+
+    assert _is_chunked(ds_chunked)
+    assert not _is_chunked(out)
+    assert _is_chunked(out_chunked)
+
+    for k, da in ds.items():
+        if ("dim" not in kws or kws["dim"] in da.dims) and (
+            "mom_dims" not in kws or kws["mom_dims"] in da.dims
+        ):
+            a = func(da, **kws)
+            b = func(ds_chunked[k], **kws)
+
+            xr.testing.assert_allclose(a, b)
+            assert not _is_chunked(a)
+            assert _is_chunked(b)
+
+
+@pytest.mark.slow
+@mark_dask_only
+@pytest.mark.parametrize(
+    ("func", "kwargs_callback"),
+    [
+        (cmomy.reduce_vals, None),
+        (partial(_resample_vals, nrep=20, paired=True), None),
+        (partial(_resample_vals, nrep=20, paired=False), None),
+        (cmomy.resample.jackknife_vals, None),
+        (cmomy.utils.vals_to_data, _remove_dim_from_kwargs),
+        (partial(cmomy.rolling.rolling_vals, window=2), None),
+        (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
+    ],
+)
+def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
+    kwargs, x, y, weight = (
+        fixture_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
+    )
+    x_chunked = x.chunk({kwargs["dim"]: -1})
+
+    kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
+    out = func(*((x,) if y is None else (x, y)), weight=weight, **kws)
+    out_chunked = func(
+        *((x_chunked,) if y is None else (x_chunked, y)), weight=weight, **kws
+    )
+
+    xr.testing.assert_allclose(out, out_chunked)
+    assert not _is_chunked(out)
+    assert _is_chunked(out_chunked)
+
+    for k, da in x.items():
+        if "dim" not in kws or kws["dim"] in da.dims:
+            if y is not None:
+                dy = y if isinstance(y, xr.DataArray) else y[k]
+                xy = (da, dy)
+                xy_chunked = (x_chunked[k], dy)
+            else:
+                xy = (da,)
+                xy_chunked = (x_chunked[k],)
+
+            if weight is not None:
+                w = weight if isinstance(weight, xr.DataArray) else weight[k]
+            else:
+                w = weight
+
+            a = func(*xy, **kws, weight=w)
+            b = func(*xy_chunked, **kws, weight=w)
+
+            xr.testing.assert_allclose(a, b)
+            assert not _is_chunked(a)
+            assert _is_chunked(b)

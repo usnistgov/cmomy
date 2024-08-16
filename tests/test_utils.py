@@ -239,9 +239,11 @@ def _do_test_assign_moment_mom_ndim(
             data, name, mom_ndim=mom_ndim, squeeze=kwargs.get("squeeze", True)
         )
         value = xr.full_like(template, -10)
+        if "variable" in value.dims:
+            kwargs["dim_combined"] = "variable"
+
         if not use_xr_value:
             value = np.asarray(value)
-            kwargs = {"dim_combined": "new_thing", **kwargs}
 
     else:
         shape = data[index].shape

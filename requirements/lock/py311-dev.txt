@@ -4,9 +4,12 @@ appnope==0.1.4            # via ipykernel
 argcomplete==3.5.0        # via nox
 asttokens==2.4.1          # via stack-data
 attrs==24.2.0             # via jsonschema, referencing
+click==8.1.7              # via dask
+cloudpickle==3.0.0        # via dask
 colorlog==6.8.2           # via nox
 comm==0.2.2               # via ipykernel
 coverage==7.6.1           # via nbval, pytest-cov
+dask==2024.8.0            # via -r requirements/dev.txt
 debugpy==1.8.5            # via ipykernel
 decorator==5.1.1          # via ipython
 distlib==0.3.8            # via virtualenv
@@ -15,6 +18,8 @@ execnet==2.1.1            # via pytest-xdist
 executing==2.0.1          # via stack-data
 fastjsonschema==2.20.0    # via nbformat
 filelock==3.15.4          # via virtualenv
+fsspec==2024.6.1          # via dask
+importlib-metadata==8.2.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev.txt
 ipython==8.26.0           # via ipykernel, -r requirements/dev.txt
@@ -25,6 +30,7 @@ jupyter-client==8.6.2     # via ipykernel, nbclient, nbval
 jupyter-core==5.7.2       # via ipykernel, jupyter-client, nbclient, nbformat
 lazy-loader==0.4          # via -r requirements/dev.txt
 llvmlite==0.43.0          # via numba
+locket==1.0.0             # via partd
 matplotlib-inline==0.1.7  # via ipykernel, ipython
 module-utilities==0.9.0   # via -r requirements/dev.txt
 nbclient==0.10.0          # via -r requirements/dev.txt
@@ -34,10 +40,11 @@ nest-asyncio==1.6.0       # via ipykernel
 nox==2024.4.15            # via -r requirements/dev.txt
 numba==0.60.0             # via -r requirements/dev.txt
 numpy==2.0.1              # via numba, pandas, pandas-stubs, scipy, xarray, -r requirements/dev.txt
-packaging==24.1           # via ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray, -r requirements/dev.txt
+packaging==24.1           # via dask, ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray, -r requirements/dev.txt
 pandas==2.2.2             # via xarray
 pandas-stubs==2.2.2.240807  # via -r requirements/dev.txt
 parso==0.8.4              # via jedi
+partd==1.4.2              # via dask
 pexpect==4.9.0            # via ipython
 platformdirs==4.2.2       # via jupyter-core, virtualenv
 pluggy==1.5.0             # via pytest
@@ -53,6 +60,7 @@ pytest-sugar==1.0.0       # via -r requirements/dev.txt
 pytest-xdist==3.6.1       # via -r requirements/dev.txt
 python-dateutil==2.9.0.post0  # via jupyter-client, pandas
 pytz==2024.1              # via pandas
+pyyaml==6.0.2             # via dask
 pyzmq==26.1.0             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
 rpds-py==0.20.0           # via jsonschema, referencing
@@ -60,6 +68,8 @@ scipy==1.14.0             # via -r requirements/dev.txt
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar
+tomli==2.0.1              # via coverage
+toolz==0.12.1             # via dask, partd
 tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 types-pytz==2024.1.0.20240417  # via pandas-stubs
@@ -68,3 +78,4 @@ tzdata==2024.1            # via pandas
 virtualenv==20.26.3       # via nox
 wcwidth==0.2.13           # via prompt-toolkit
 xarray==2024.7.0          # via -r requirements/dev.txt
+zipp==3.20.0              # via importlib-metadata

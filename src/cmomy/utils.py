@@ -466,6 +466,8 @@ def assign_moment(
         If ``True`` (the default), return new array with updated weights.
         Otherwise, return the original array with weights updated inplace.
         Note that a copy is always created for a ``dask`` backed object.
+    dim_combined : str, optional
+        Must supply if passing in multiple values for ``name="ave"`` etc.
 
     Returns
     -------
@@ -517,21 +519,8 @@ def assign_moment(
 
         # figure out values shape...
         input_core_dims: list[Sequence[Hashable]]
-        if name in {"ave", "var"} and (mom_ndim != 1 or not squeeze):
-            if dim_combined is None:
-                if isinstance(value, (xr.DataArray, xr.Dataset)):
-                    dim_combined = validate_mom_dims(dim_combined, 1, value)[0]
-                    # make sure this is unique
-                    dim_combined_orig, dim_combined = (
-                        dim_combined,
-                        f"_new_{dim_combined}",
-                    )
-                    value = value.rename({dim_combined_orig: dim_combined})
-                else:
-                    # dummy variable for array...
-                    dim_combined = "_new_dim_combined"
+        if name in {"ave", "var"} and (mom_ndim != 1 or not squeeze) and dim_combined:
             input_core_dims = [mom_dims, [dim_combined]]
-
         else:
             input_core_dims = [mom_dims, []]
 

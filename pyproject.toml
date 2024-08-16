@@ -96,6 +96,7 @@ optional-dependencies.test = [
     "pytest-xdist",
 ]
 optional-dependencies.test-scipy = [
+    "dask; python_version=='3.11'",
     "scipy; python_version=='3.11'",
 ]
 optional-dependencies.tools = [
