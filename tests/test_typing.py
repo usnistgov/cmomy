@@ -387,6 +387,12 @@ def test_select_moment() -> None:
             cmomy.utils.select_moment(xr.DataArray(xAny), "weight", mom_ndim=1),
             xr.DataArray,
         )
+        assert_type(
+            cmomy.utils.select_moment(
+                xr.DataArray(xAny).to_dataset(), "weight", mom_ndim=1
+            ),
+            xr.Dataset,
+        )
 
 
 def test_cumulative() -> None:
@@ -543,6 +549,14 @@ def test_vals_to_data() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(cmomy.utils.vals_to_data(xx, mom=1), xr.DataArray)
+        assert_type(cmomy.utils.vals_to_data(xx.to_dataset(), mom=1), xr.Dataset)
+
+        if MYPY_ONLY:
+            g: ArrayLike | xr.DataArray | xr.Dataset = xc
+            assert_type(
+                convert.utils.vals_to_data(g, mom=1),
+                Union[xr.DataArray, xr.Dataset, NDArray[Any]],
+            )
 
 
 def test_convert_moments_to_comoments() -> None:

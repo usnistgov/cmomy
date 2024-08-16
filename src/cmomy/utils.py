@@ -21,7 +21,10 @@ from .core.validate import (
     validate_mom_dims,
     validate_mom_ndim,
 )
-from .core.xr_utils import get_apply_ufunc_kwargs, select_axis_dim_mult
+from .core.xr_utils import (
+    get_apply_ufunc_kwargs,
+    select_axis_dim_mult,
+)
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -443,9 +446,9 @@ def assign_moment(
     mom_ndim: Mom_NDim,
     squeeze: bool = True,
     copy: bool = True,
-    keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     dim_combined: Hashable | None = None,
+    mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[ScalarT] | xr.DataArray | xr.Dataset:
@@ -465,9 +468,14 @@ def assign_moment(
     copy : bool, default=True
         If ``True`` (the default), return new array with updated weights.
         Otherwise, return the original array with weights updated inplace.
-        Note that a copy is always created for a ``dask`` backed object.
+        Note that a copy is always created for a ``dask`` backed object.j
     dim_combined : str, optional
-        Must supply if passing in multiple values for ``name="ave"`` etc.
+        Name of dimensions for multiple values. Must supply if passing in
+        multiple values for ``name="ave"`` etc.
+    {mom_dims_data}
+    {keep_attrs}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------
@@ -570,6 +578,19 @@ def _assign_moment(
 # * Vals -> Data
 @overload
 def vals_to_data(
+    x: xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
+    mom: Moments,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | xr.DataArray | None = ...,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.Dataset: ...
+@overload
+def vals_to_data(
     x: xr.DataArray,
     *y: ArrayLike | xr.DataArray,
     mom: Moments,
@@ -577,6 +598,9 @@ def vals_to_data(
     dtype: DTypeLike = ...,
     out: NDArrayAny | xr.DataArray | None = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> xr.DataArray: ...
 # Array
 @overload
@@ -588,6 +612,9 @@ def vals_to_data(
     dtype: None = ...,
     out: None = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -599,6 +626,9 @@ def vals_to_data(
     dtype: DTypeLike = ...,
     out: NDArray[FloatT],
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -610,6 +640,9 @@ def vals_to_data(
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -621,22 +654,25 @@ def vals_to_data(
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
 def vals_to_data(
-    x: ArrayLike | xr.DataArray,
-    *y: ArrayLike | xr.DataArray,
+    x: ArrayLike | xr.DataArray | xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | None = None,
+    weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | xr.DataArray:
+) -> NDArrayAny | xr.DataArray | xr.Dataset:
     """
     Convert `values` to `central moments array`.
 
@@ -760,8 +796,8 @@ def vals_to_data(
 
 def _vals_to_data(
     x: ArrayLike,
-    *y: ArrayLike,
-    weight: ArrayLike,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
+    weight: ArrayLike | xr.DataArray | xr.Dataset,
     mom: MomentsStrict,
     mom_ndim: Mom_NDim,
     out: NDArrayAny | xr.DataArray | None,
@@ -771,19 +807,19 @@ def _vals_to_data(
     if not fastpath:
         dtype = select_dtype(x, out=out, dtype=dtype)
 
-    x, weight, *y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))  # type: ignore[assignment]
+    _x, _w, *_y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))  # type: ignore[assignment]
     if out is None:
         val_shape: tuple[int, ...] = np.broadcast_shapes(
-            *(_.shape for _ in (x, *y, weight))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownArgumentType]
+            *(_.shape for _ in (_x, *_y, _w))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownArgumentType]
         )
         out = np.zeros((*val_shape, *mom_to_mom_shape(mom)), dtype=dtype)
     else:
         out[...] = 0.0
 
-    out = assign_moment(out, "weight", weight, mom_ndim=mom_ndim, copy=False)
-    out = assign_moment(out, "xave", x, mom_ndim=mom_ndim, copy=False)
+    out = assign_moment(out, "weight", _w, mom_ndim=mom_ndim, copy=False)
+    out = assign_moment(out, "xave", _x, mom_ndim=mom_ndim, copy=False)
 
     if mom_ndim == 2:
-        out = assign_moment(out, "yave", y[0], mom_ndim=mom_ndim, copy=False)
+        out = assign_moment(out, "yave", _y[0], mom_ndim=mom_ndim, copy=False)
 
     return out

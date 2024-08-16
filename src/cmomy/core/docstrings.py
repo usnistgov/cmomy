@@ -228,7 +228,7 @@ def _dummy_docstrings() -> None:
     select_squeeze | squeeze : bool, default=False
         If True, squeeze last dimension if ``name`` is one of ``ave`` or ``var`` and ``mom_ndim == 1``.
     select_dim_combined | dim_combined: str, optional
-        Name of new dimension for options ``name`` that can select multiple dimensions.
+        Name of dimension for options that produce multiple values (e.g., ``name="ave"``).
     select_coords_combined | coords_combined: str or sequence of str, optional
         Coordates to assign to ``dim_combined``.  Defaults to names of moments dimension(s)
     on_missing_core_dim : {"raise", "copy", "drop"}
