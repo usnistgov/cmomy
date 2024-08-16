@@ -358,7 +358,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 self.to_values(),
                 mom=mom,
                 dtype=self.dtype,
-                mom_dims1=self.mom_dims,
+                mom_dims=self.mom_dims,
                 mom_dims2=mom_dims2,
                 keep_attrs=keep_attrs,
             ),

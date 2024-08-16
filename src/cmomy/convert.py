@@ -496,7 +496,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    mom_dims1: MomDims | None = ...,
+    mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -508,7 +508,7 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    mom_dims1: MomDims | None = ...,
+    mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -521,7 +521,7 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: None = ...,
-    mom_dims1: MomDims | None = ...,
+    mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -534,7 +534,7 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: DTypeLikeArg[FloatT],
-    mom_dims1: MomDims | None = ...,
+    mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -547,7 +547,7 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    mom_dims1: MomDims | None = ...,
+    mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -561,7 +561,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = None,
-    mom_dims1: MomDims | None = None,
+    mom_dims: MomDims | None = None,
     mom_dims2: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
@@ -577,7 +577,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
         dimension is the moments dimension.
     {mom_moments_to_comoments}
     {dtype}
-    mom_dims1 : str or tuple of str
+    mom_dims : str or tuple of str
         Optional name of moment dimension of input (``mom_ndim=1``) data.  Defaults to
         ``first.dims[-mom_ndim]`` where ``first`` is either ``values`` if a DataArray
         or the first variable of ``values`` if a Dataset.  You may need to pass this value
@@ -636,7 +636,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     """
     dtype = select_dtype(values, out=None, dtype=dtype)
     if isinstance(values, (xr.DataArray, xr.Dataset)):
-        mom_dim_in, *_ = validate_mom_dims(mom_dims1, mom_ndim=1, out=values)
+        mom_dim_in, *_ = validate_mom_dims(mom_dims, mom_ndim=1, out=values)
         mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
 
         if mom_dim_in in mom_dims2:

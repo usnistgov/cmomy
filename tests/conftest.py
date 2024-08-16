@@ -386,3 +386,8 @@ def other(request):
 @pytest.fixture(params=[True, False])
 def as_dataarray(request):
     return request.param
+
+
+@pytest.fixture(scope="session")
+def get_zero_rng():
+    return lambda: np.random.default_rng(0)

@@ -1,4 +1,8 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
+"""
+Not completely sure how this fits in...
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
