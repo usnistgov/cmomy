@@ -468,7 +468,7 @@ def assign_moment(
     copy : bool, default=True
         If ``True`` (the default), return new array with updated weights.
         Otherwise, return the original array with weights updated inplace.
-        Note that a copy is always created for a ``dask`` backed object.j
+        Note that a copy is always created for a ``dask`` backed object.
     dim_combined : str, optional
         Name of dimensions for multiple values. Must supply if passing in
         multiple values for ``name="ave"`` etc.
@@ -694,9 +694,13 @@ def vals_to_data(
     -------
     data : ndarray or DataArray
 
+
     Notes
     -----
     Values ``x``, ``y`` and ``weight`` must be broadcastable.
+
+    Note that if input data is a chunked dask array, then ``out`` is ignored, and a new
+    array is always created.
 
     Examples
     --------

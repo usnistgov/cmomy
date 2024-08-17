@@ -674,3 +674,83 @@ def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
             xr.testing.assert_allclose(a, b)
             assert not _is_chunked(a)
             assert _is_chunked(b)
+
+
+@pytest.mark.slow
+@mark_dask_only
+@pytest.mark.parametrize(
+    ("func", "kwargs_callback"),
+    [
+        (partial(cmomy.reduce_data, use_reduce=False), None),
+        (_reduce_data_grouped, None),
+        (partial(_reduce_data_indexed, coords_policy=None), None),
+        (partial(_resample_data, nrep=20, paired=True), None),
+        (partial(_resample_data, nrep=20, paired=False), None),
+        (cmomy.resample.jackknife_data, None),
+        (cmomy.convert.moments_type, _remove_dim_from_kwargs),
+        (cmomy.convert.cumulative, None),
+        (partial(cmomy.rolling.rolling_data, window=2), None),
+        (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
+    ],
+)
+@pytest.mark.parametrize(
+    ("dim", "mom_ndim", "shape"),
+    [
+        ("dim_0", 1, (10, 3)),
+        ("dim_0", 2, (10, 3, 3)),
+    ],
+)
+def test_func_data_chunking_out_parameter(
+    rng, func, kwargs_callback, dim, mom_ndim, shape
+) -> None:
+    data = xr.DataArray(rng.random(shape))
+    data_chunked = data.chunk({dim: -1})
+
+    kws = {"dim": dim, "mom_ndim": mom_ndim}
+    kws = kws if kwargs_callback is None else kwargs_callback(kws)
+
+    res = func(data, **kws)
+
+    out = np.zeros_like(res)
+    res_chunk = func(data_chunked, **kws, out=out)
+
+    xr.testing.assert_allclose(res, res_chunk)
+    assert _is_chunked(res_chunk)
+    assert np.shares_memory(res_chunk.compute(), out)
+
+
+@pytest.mark.slow
+@mark_dask_only
+@pytest.mark.parametrize(
+    ("func", "kwargs_callback"),
+    [
+        (cmomy.reduce_vals, None),
+        (partial(_resample_vals, nrep=20, paired=True), None),
+        (partial(_resample_vals, nrep=20, paired=False), None),
+        (cmomy.resample.jackknife_vals, None),
+        # (cmomy.utils.vals_to_data, _remove_dim_from_kwargs),  # noqa: ERA001
+        (partial(cmomy.rolling.rolling_vals, window=2), None),
+        (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
+    ],
+)
+@pytest.mark.parametrize(
+    ("dim", "mom", "shape"),
+    [
+        ("dim_0", 3, (10,)),
+    ],
+)
+def test_func_vals_chunking_out_parameter(rng, func, kwargs_callback, dim, mom, shape):
+    data = xr.DataArray(rng.random(shape))
+    data_chunked = data.chunk({dim: -1})
+
+    kws = {"dim": dim, "mom": mom, "weight": None}
+    kws = kws if kwargs_callback is None else kwargs_callback(kws)
+
+    res = func(data, **kws)
+
+    out = np.zeros_like(res)
+    res_chunk = func(data_chunked, **kws, out=out)
+
+    xr.testing.assert_allclose(res, res_chunk)
+    assert _is_chunked(res_chunk)
+    assert np.shares_memory(res_chunk.compute(), out)
