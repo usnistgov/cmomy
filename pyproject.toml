@@ -233,7 +233,7 @@ lint.per-file-ignores."tests/test_central_2.py" = [
 lint.per-file-ignores."tools/*.py" = [
     "A",
     "D102",
-    "DOC201",
+    "DOC",
     "S",
     "SLF001",
 ]
