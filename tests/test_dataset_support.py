@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment, arg-type"
 # pyright: reportCallIssue=false, reportArgumentType=false
 
 from __future__ import annotations
@@ -473,7 +473,7 @@ def test_resample_data_dataset(
             da = cmomy.resample_data(
                 da,
                 **kwargs,
-                freq=dfreq if isinstance(dfreq, xr.DataArray) else dfreq[name],
+                freq=dfreq if isinstance(dfreq, xr.DataArray) else dfreq[name],  # type: ignore[index]
                 move_axis_to_end=True,
             )
 
@@ -548,7 +548,7 @@ def test_resample_vals_dataset(
 
 # * Chunking
 try:
-    import dask  # noqa: F401
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]
 
     HAS_DASK = True
 except ImportError:

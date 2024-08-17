@@ -52,6 +52,7 @@ from .core.xr_utils import (
 from .random import validate_rng
 
 if TYPE_CHECKING:
+    from collections.abc import Hashable
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -190,7 +191,7 @@ def freq_to_indices(
     """
     if isinstance(freq, (xr.DataArray, xr.Dataset)):
         rep_dim, dim = freq.dims
-        return xr.apply_ufunc(
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             freq_to_indices,
             freq,
             input_core_dims=[[rep_dim, dim]],
@@ -199,6 +200,7 @@ def freq_to_indices(
             exclude_dims={dim},
             kwargs={"shuffle": shuffle, "rng": rng},
         )
+        return xout
 
     freq = np.asarray(freq, dtype=np.int64)
     indices_all: list[NDArrayAny] = []
@@ -256,7 +258,7 @@ def indices_to_freq(
         # assume dims are in order (rep, dim)
         rep_dim, dim = indices.dims
         ndat = ndat or indices.sizes[dim]
-        return xr.apply_ufunc(
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             indices_to_freq,
             indices,
             input_core_dims=[[rep_dim, dim]],
@@ -265,6 +267,7 @@ def indices_to_freq(
             exclude_dims={dim},
             kwargs={"ndat": ndat},
         )
+        return xout
 
     from ._lib.utils import (
         randsamp_indices_to_freq,  # pyright: ignore[reportUnknownVariableType]
@@ -340,7 +343,7 @@ def _validate_resample_array(
     dtype: DTypeLike = np.int64,
 ) -> NDArrayAny | xr.DataArray | xr.Dataset:
     if isinstance(x, (xr.DataArray, xr.Dataset)):
-        return xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _validate_resample_array,
             x,
             kwargs={
@@ -351,6 +354,8 @@ def _validate_resample_array(
                 "dtype": dtype,
             },
         )
+        return xout
+
     x = np.asarray(x, dtype=dtype)
     if check:
         name = "freq" if is_freq else "indices"
@@ -406,12 +411,12 @@ def _randsamp_freq_dataarray_or_dataset(
     if mom_ndim:
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
     elif mom_dims:
-        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)
+        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]
         mom_ndim = validate_mom_ndim(len(mom_dims))
     else:
         mom_dims = ()
     dims = {dim, *mom_dims}
-    out: dict[str, xr.DataArray] = {}
+    out: dict[Hashable, xr.DataArray] = {}
     for name, da in data.items():
         if dims.issubset(da.dims):
             out[name] = _get_unique_freq()
@@ -424,12 +429,12 @@ def _randsamp_freq_dataarray_or_dataset(
 @docfiller.decorate
 def randsamp_freq(
     *,
+    freq: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+    indices: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     ndat: int | None = None,
     nrep: int | None = None,
     nsamp: int | None = None,
-    indices: ArrayLike | xr.DataArray | xr.Dataset | None = None,
-    freq: ArrayLike | xr.DataArray | xr.Dataset | None = None,
-    data: xr.Dataset | xr.DataArray | NDArrayAny | None = None,
+    data: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,

@@ -1107,7 +1107,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         """
         from .resample import randsamp_freq
 
-        return randsamp_freq(
+        return randsamp_freq(  # type: ignore[return-value]
             data=self.values,
             mom_ndim=self._mom_ndim,
             axis=axis,

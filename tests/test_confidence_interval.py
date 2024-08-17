@@ -95,7 +95,7 @@ def mom() -> Moments:
 
 @pytest.fixture
 def freq(data, axis, nrep) -> NDArrayAny:
-    return cmomy.randsamp_freq(
+    return cmomy.randsamp_freq(  # type: ignore[return-value]
         data=data, axis=axis, nrep=nrep, rng=np.random.default_rng(0)
     )
 

@@ -239,7 +239,7 @@ class Data:
 
     @cached.prop
     def freq(self) -> NDArrayAny:
-        return cmomy.resample.randsamp_freq(indices=self.indices, ndat=self.ndat)
+        return cmomy.resample.randsamp_freq(indices=self.indices, ndat=self.ndat)  # type: ignore[return-value]
 
     @cached.prop
     def xdata_resamp(self) -> NDArrayAny:

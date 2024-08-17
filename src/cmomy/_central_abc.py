@@ -512,20 +512,17 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         """
         from .utils import select_moment
 
-        return cast(
-            "ArrayT",
-            select_moment(  # type: ignore[call-overload]
-                self.to_values(),
-                name=name,
-                mom_ndim=self._mom_ndim,
-                dim_combined=dim_combined,
-                coords_combined=coords_combined,
-                squeeze=squeeze,
-                keep_attrs=keep_attrs,
-                mom_dims=getattr(self, "mom_dims", None),
-                on_missing_core_dim=on_missing_core_dim,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            ),
+        return select_moment(
+            self.to_values(),
+            name=name,
+            mom_ndim=self._mom_ndim,
+            dim_combined=dim_combined,
+            coords_combined=coords_combined,
+            squeeze=squeeze,
+            keep_attrs=keep_attrs,
+            mom_dims=getattr(self, "mom_dims", None),
+            on_missing_core_dim=on_missing_core_dim,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
     def weight(self) -> ArrayT:
@@ -927,8 +924,8 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         """
         from .resample import randsamp_freq
 
-        return randsamp_freq(
-            data=self.values,
+        return randsamp_freq(  # type: ignore[return-value]
+            data=self.to_values(),
             mom_ndim=self._mom_ndim,
             axis=axis,
             nrep=nrep,

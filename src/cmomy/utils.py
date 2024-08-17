@@ -807,7 +807,7 @@ def _vals_to_data(
     if not fastpath:
         dtype = select_dtype(x, out=out, dtype=dtype)
 
-    _x, _w, *_y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))  # type: ignore[assignment]
+    _x, _w, *_y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))
     if out is None:
         val_shape: tuple[int, ...] = np.broadcast_shapes(
             *(_.shape for _ in (_x, *_y, _w))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownArgumentType]

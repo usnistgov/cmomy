@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, assignment"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, assignment, arg-type"
 # pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 

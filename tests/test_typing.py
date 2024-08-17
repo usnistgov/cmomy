@@ -554,7 +554,7 @@ def test_vals_to_data() -> None:
         if MYPY_ONLY:
             g: ArrayLike | xr.DataArray | xr.Dataset = xc
             assert_type(
-                convert.utils.vals_to_data(g, mom=1),
+                cmomy.utils.vals_to_data(g, mom=1),
                 Union[xr.DataArray, xr.Dataset, NDArray[Any]],
             )
 
