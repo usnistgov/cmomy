@@ -46,6 +46,7 @@ from .core.xr_utils import (
     replace_coords_from_isel,
     select_axis_dim,
     select_axis_dim_mult,
+    select_ndat,
 )
 
 if TYPE_CHECKING:
@@ -1426,6 +1427,13 @@ def reduce_data_indexed(  # noqa: PLR0913
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
+    index, group_start, group_end = _validate_index(
+        ndat=select_ndat(data, axis=axis, dim=dim, mom_ndim=mom_ndim),
+        index=index,
+        group_start=group_start,
+        group_end=group_end,
+    )
+
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
@@ -1533,15 +1541,6 @@ def _reduce_data_indexed(
         mom_ndim=mom_ndim,
         dtype=dtype,  # type: ignore[arg-type]
         move_axis_to_end=move_axis_to_end,
-    )
-
-    # TODO(wpk): move this to `reduce_data_indexed`.
-    # will need to properly handle getting `ndat`
-    index, group_start, group_end = _validate_index(
-        ndat=data.shape[axis],
-        index=index,
-        group_start=group_start,
-        group_end=group_end,
     )
 
     if scale is None:

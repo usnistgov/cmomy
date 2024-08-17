@@ -4,9 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
 import xarray as xr
 
 from .array_utils import normalize_axis_index, normalize_axis_tuple
+from .docstrings import docfiller
 from .missing import MISSING
 from .validate import (
     validate_mom_dims,
@@ -19,6 +21,8 @@ if TYPE_CHECKING:
         Mapping,
     )
     from typing import Any
+
+    from numpy.typing import ArrayLike
 
     from .typing import (
         ApplyUFuncKwargs,
@@ -257,3 +261,56 @@ def raise_if_dataset(*args: Any, msg: str = "Dataset not allowed.") -> None:
     """Raise TypeError if value is a Dataset."""
     if any(isinstance(x, xr.Dataset) for x in args):
         raise TypeError(msg)
+
+
+# * select ndat
+@docfiller.decorate
+def select_ndat(
+    data: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: Mom_NDim | None = None,
+) -> int:
+    """
+    Determine ndat from array.
+
+    Parameters
+    ----------
+    data : ndarray, DataArray, Dataset
+    {axis}
+    {dim}
+    {mom_ndim_optional}
+
+    Returns
+    -------
+    int
+        size of ``data`` along specified ``axis`` or ``dim``
+
+    Examples
+    --------
+    >>> data = np.zeros((2, 3, 4))
+    >>> select_ndat(data, axis=1)
+    3
+    >>> select_ndat(data, axis=-1, mom_ndim=2)
+    2
+
+
+    >>> xdata = xr.DataArray(data, dims=["x", "y", "mom"])
+    >>> select_ndat(xdata, dim="y")
+    3
+    >>> select_ndat(xdata, dim="mom", mom_ndim=1)
+    Traceback (most recent call last):
+    ...
+    ValueError: Cannot select moment dimension. axis=2, dim='mom'.
+    """
+    if isinstance(data, (xr.DataArray, xr.Dataset)):
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        return data.sizes[dim]
+
+    if isinstance(axis, int):
+        data = np.asarray(data)
+        axis = normalize_axis_index(axis, data.ndim, mom_ndim=mom_ndim)
+        return data.shape[axis]
+    msg = "Must specify integer axis for array input."
+    raise TypeError(msg)

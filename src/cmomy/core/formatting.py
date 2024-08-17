@@ -116,3 +116,58 @@ def repr_html(x):
         out = fm._obj_repr(values, header_components, sections)
 
     return out
+
+
+def repr_html_wrapper(x):
+    """Create html output."""
+    # build the cmomy header
+    obj_type = type(x).__name__
+
+    keys = [k for k in ["mom_dims"] if hasattr(x, k)]
+
+    attrs = {}
+    for k in keys:
+        v = getattr(x, k)
+        if len(v) > 0:
+            attrs[k] = tuple_to_str(v)
+
+    dims = {}
+    for k in ["val_shape", "mom"]:
+        if k in attrs:
+            dims[k] = attrs.pop(k)
+
+    header_components = [
+        f"<div class='xr-obj-type'>{obj_type}</div>",
+        fm.format_dims(dims, {}),
+    ]
+
+    sections = [
+        fm._mapping_section(
+            mapping=attrs,
+            name="Info",
+            details_func=fm.summarize_attrs,
+            max_items_collapse=5,
+            expand_option_name="display_expand_attrs",
+        )
+    ]
+
+    values = x.obj
+    if hasattr(values, "_repr_html_"):
+        sections += []
+
+        out = fm._obj_repr(
+            values,
+            header_components,
+            sections,
+        )
+
+        out += values._repr_html_()
+
+    else:
+        sections += [numpy_section(x.data)]
+        header_components += [
+            f"<div class='xr-obj-type'>{type(values)}</div>",
+        ]
+        out = fm._obj_repr(values, header_components, sections)
+
+    return out

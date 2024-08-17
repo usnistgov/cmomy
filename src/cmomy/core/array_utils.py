@@ -210,19 +210,3 @@ def optional_keepdims(
     if keepdims:
         return np.expand_dims(x, axis)
     return x
-
-
-# def optional_move_end_to_axis(
-#     out: NDArray[ScalarT],
-#     *,
-#     mom_ndim: Mom_NDim,
-#     axis: int,
-# ) -> NDArray[ScalarT]:
-#     """
-#     Move 'last' axis back to original position
-
-#     Note that this assumes axis is negative (relative to end of array), and relative to `mom_dim`.
-#     """
-#     if axis != -1:
-#         np.moveaxis(out, -(mom_ndim + 1), axis - mom_ndim)  # noqa: ERA001
-#     return out  # noqa: ERA001
