@@ -42,6 +42,7 @@ if TYPE_CHECKING:
 
     from ._central_numpy import CentralMoments
     from .core.typing import (
+        ApplyUFuncKwargs,
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
@@ -52,12 +53,14 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT2,
         Groups,
+        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
         Moments,
         NDArrayAny,
         NDArrayInt,
+        SelectMoment,
         XArrayAttrsType,
         XArrayCoordsType,
         XArrayDimsType,
@@ -363,6 +366,30 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 keep_attrs=keep_attrs,
             ),
             mom_ndim=2,
+        )
+
+    @docfiller_inherit_abc()
+    def assign_moment(
+        self,
+        moment: Mapping[SelectMoment, ArrayLike | xr.DataArray] | None = None,
+        *,
+        squeeze: bool = True,
+        copy: bool = True,
+        keep_attrs: KeepAttrs = None,
+        dim_combined: Hashable | None = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+        **moment_kwargs: ArrayLike | xr.DataArray,
+    ) -> Self:
+        return super().assign_moment(
+            moment,
+            squeeze=squeeze,
+            copy=copy,
+            keep_attrs=keep_attrs,
+            dim_combined=dim_combined,
+            on_missing_core_dim=on_missing_core_dim,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
+            **moment_kwargs,
         )
 
     # ** Access to underlying statistics ------------------------------------------

@@ -209,8 +209,24 @@ def _dummy_docstrings() -> None:
         :class:`xarray.Dataset` object, then ``move_axis_to_end = True``
         always.
 
-    select_name | name : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar"}
+    select_moment_name | moment : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar"}
         Name of moment(s) to select.
+
+        - ``"weight"`` : weights
+        - ``"ave"`` : Averages.
+        - ``"var"``: Variance.
+        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variace if ``mom_ndim == 1``.
+        - ``"xave"``: Average of first variable.
+        - ``"xvar"``: Variance of first variable.
+        - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
+        - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+
+        Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape
+        ``data.shape[:-mom_ndim]``. Names ``"ave", "var"`` imply shape
+        ``(*data.shape[:-mom_ndim], mom_ndim)``, unless ``mom_ndim == 1`` and
+        ``squeeze = True``.
+    assign_moment_mapping | moment : mapping of str to array-like.
+        Mapping from moment name to new value.  Allowed moment names are:
 
         - ``"weight"`` : weights
         - ``"ave"`` : Averages.

@@ -26,7 +26,7 @@ from .core.validate import (
 from .utils import assign_moment, moment_indexer
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable, Sequence
+    from collections.abc import Hashable, Mapping, Sequence
     from typing import Any, Callable
 
     import xarray as xr
@@ -442,8 +442,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
     @docfiller.decorate
     def assign_moment(
         self,
-        name: SelectMoment,
-        value: ArrayLike,
+        moment: Mapping[SelectMoment, ArrayLike] | None = None,
         *,
         squeeze: bool = True,
         copy: bool = True,
@@ -451,13 +450,14 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         dim_combined: Hashable | None = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+        **moment_kwargs: ArrayLike,
     ) -> Self:
         """
         Create object with update weight, average, etc.
 
         Parameters
         ----------
-        {select_name}
+        {assign_moment_mapping}
         value : array-like
         copy : bool, default=True
             If ``True`` (default), copy the underlying moments data before update.
@@ -476,8 +476,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         return type(self)(
             data=assign_moment(
                 data=self.to_values(),
-                name=name,
-                value=value,
+                moment=moment,
                 mom_ndim=self._mom_ndim,
                 squeeze=squeeze,
                 copy=copy,
@@ -486,6 +485,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
                 dim_combined=dim_combined,
                 on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
+                **moment_kwargs,
             ),
             mom_ndim=self._mom_ndim,
             fastpath=True,
@@ -566,17 +566,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         output : ndarray or DataArray
         """
         # Set weight to 1
-        out = assign_moment(
-            self.to_values(), name="weight", value=1, mom_ndim=self._mom_ndim, copy=True
-        )
-
-        # Set first central moment to zero
         return assign_moment(
-            out,
-            name="ave",
-            value=0,
+            self.to_values(),
+            {"weight": 1, "ave": 0},
             mom_ndim=self._mom_ndim,
-            copy=False,
+            copy=True,
         )
 
     def to_raw(self, *, weight: float | NDArrayAny | None = None) -> ArrayT:
@@ -608,9 +602,10 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         from . import convert
 
         out = convert.moments_type(self.to_values(), mom_ndim=self._mom_ndim, to="raw")
+
         if weight is not None:
             out = assign_moment(
-                out, "weight", weight, mom_ndim=self._mom_ndim, copy=False
+                out, {"weight": weight}, mom_ndim=self._mom_ndim, copy=False
             )
         return out  # pyright: ignore[reportReturnType]
 

@@ -244,11 +244,11 @@ def _resample_vals(x, *y, weight, nrep, paired, **kwargs):
         (partial(cmomy.utils.select_moment, name="weight"), _remove_dim_from_kwargs),
         (partial(cmomy.utils.select_moment, name="ave"), _remove_dim_from_kwargs),
         (
-            partial(cmomy.utils.assign_moment, name="weight", value=1),
+            partial(cmomy.utils.assign_moment, weight=1),
             _remove_dim_from_kwargs,
         ),
         (
-            partial(cmomy.utils.assign_moment, name="ave", value=1),
+            partial(cmomy.utils.assign_moment, ave=1),
             _remove_dim_from_kwargs,
         ),
         (partial(cmomy.rolling.rolling_data, window=2), None),
@@ -582,11 +582,11 @@ def _is_chunked(ds):
         (partial(cmomy.utils.select_moment, name="weight"), _remove_dim_from_kwargs),
         (partial(cmomy.utils.select_moment, name="ave"), _remove_dim_from_kwargs),
         (
-            partial(cmomy.utils.assign_moment, name="weight", value=1),
+            partial(cmomy.utils.assign_moment, weight=1),
             _remove_dim_from_kwargs,
         ),
         (
-            partial(cmomy.utils.assign_moment, name="ave", value=1),
+            partial(cmomy.utils.assign_moment, ave=1),
             _remove_dim_from_kwargs,
         ),
         (partial(cmomy.rolling.rolling_data, window=2), None),

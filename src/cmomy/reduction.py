@@ -1468,7 +1468,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
-                output_sizes={dim: len(group_start)},  # type: ignore[arg-type]
+                output_sizes={dim: len(group_start)},
                 output_dtypes=dtype or np.float64,
             ),
         )
@@ -1524,9 +1524,9 @@ def _reduce_data_indexed(
     mom_ndim: Mom_NDim,
     dtype: DTypeLike,
     out: NDArrayAny | None,
-    index: ArrayLike,
-    group_start: ArrayLike,
-    group_end: ArrayLike,
+    index: NDArrayAny,
+    group_start: NDArrayAny,
+    group_end: NDArrayAny,
     scale: ArrayLike | None,
     move_axis_to_end: bool,
     parallel: bool | None,

@@ -259,8 +259,7 @@ def _do_test_assign_moment_mom_ndim(
 
     out = utils.assign_moment(
         data,
-        value=value,
-        name=name,
+        {name: value},
         **kwargs,
         copy=copy,
         mom_ndim=mom_ndim,
@@ -277,7 +276,7 @@ def _do_test_assign_moment_mom_ndim(
         if isinstance(data, xr.DataArray)
         else cmomy.CentralMoments
     )(data, mom_ndim=mom_ndim)
-    c1 = c0.assign_moment(name=name, value=value, **kwargs, copy=copy)
+    c1 = c0.assign_moment({name: value}, **kwargs, copy=copy)
 
     np.testing.assert_allclose(out, c1.values)
 
@@ -366,6 +365,47 @@ def test_assign_moment_mom_ndim_2(
         data = xr.DataArray(data)
 
     _do_test_assign_moment_mom_ndim(data, 2, index, scalar=scalar, copy=copy, **kwargs)
+
+
+_rng = np.random.default_rng(0)
+
+
+@pytest.mark.parametrize(
+    ("data", "mom_ndim"),
+    [
+        (_rng.random(3), 1),
+        (_rng.random((3, 3)), 1),
+        (_rng.random((3, 3, 3)), 1),
+        (_rng.random((3, 3)), 2),
+        (_rng.random((3, 3, 3)), 2),
+        (_rng.random((3, 3, 3, 3)), 2),
+    ],
+)
+@pytest.mark.parametrize(
+    "wrapper",
+    [lambda x: x, xr.DataArray, lambda x: xr.Dataset({"x": xr.DataArray(x)})],
+)
+@pytest.mark.parametrize(
+    "moment",
+    [
+        {"weight": 0, "ave": 1},
+        {"weight": 0, "var": 1},
+    ],
+)
+def test_assign_moment_multiple(data, mom_ndim, wrapper, moment) -> None:
+    kwargs = {"mom_ndim": mom_ndim}
+    data = wrapper(data)
+
+    expected = data
+    for k, v in moment.items():
+        expected = cmomy.assign_moment(expected, {k: v}, **kwargs)
+
+    out = cmomy.assign_moment(data, moment, **kwargs)
+
+    if isinstance(data, np.ndarray):
+        np.testing.assert_allclose(expected, out)
+    else:
+        xr.testing.assert_allclose(expected, out)
 
 
 # * Vals -> Data

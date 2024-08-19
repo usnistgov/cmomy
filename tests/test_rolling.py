@@ -393,7 +393,7 @@ def test_rolling_data_from_constructed_windows(
     # nan weights -> 0
     w = cmomy.select_moment(out2, "weight", mom_ndim=mom_ndim)
     w[np.isnan(w)] = 0.0
-    out2 = cmomy.utils.assign_moment(out2, "weight", w, mom_ndim=mom_ndim, copy=False)
+    out2 = cmomy.utils.assign_moment(out2, weight=w, mom_ndim=mom_ndim, copy=False)
 
     np.testing.assert_allclose(out, out2)
 

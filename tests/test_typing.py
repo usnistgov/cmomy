@@ -654,17 +654,13 @@ def test_assign_moment_central() -> None:
         c64 = CentralMoments(x64, mom_ndim=1)
         cAny = CentralMoments([1, 2, 3, 4], mom_ndim=1)
 
-        assert_type(c32.assign_moment("weight", 1.0), CentralMoments[np.float32])
-        assert_type(c64.assign_moment("weight", 1.0), CentralMoments[np.float64])
-        assert_type(cAny.assign_moment("weight", 1.0), CentralMoments[Any])
+        assert_type(c32.assign_moment(weight=1.0), CentralMoments[np.float32])
+        assert_type(c64.assign_moment(weight=1.0), CentralMoments[np.float64])
+        assert_type(cAny.assign_moment(weight=1.0), CentralMoments[Any])
 
-        assert_type(
-            c32.to_x().assign_moment("weight", 1.0), xCentralMoments[np.float32]
-        )
-        assert_type(
-            c64.to_x().assign_moment("weight", 1.0), xCentralMoments[np.float64]
-        )
-        assert_type(cAny.to_x().assign_moment("weight", 1.0), xCentralMoments[Any])
+        assert_type(c32.to_x().assign_moment(weight=1.0), xCentralMoments[np.float32])
+        assert_type(c64.to_x().assign_moment(weight=1.0), xCentralMoments[np.float64])
+        assert_type(cAny.to_x().assign_moment(weight=1.0), xCentralMoments[Any])
 
 
 def test_concat() -> None:

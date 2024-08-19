@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
+from xarray.namedarray.utils import either_dict_or_kwargs
 
 from .core.array_utils import normalize_axis_tuple, select_dtype
 from .core.docstrings import docfiller
@@ -29,6 +30,8 @@ from .core.xr_utils import (
 if TYPE_CHECKING:
     from collections.abc import (
         Hashable,
+        Iterable,
+        Mapping,
         Sequence,
     )
     from typing import Any
@@ -173,7 +176,7 @@ def moment_indexer(
 
     Parameters
     ----------
-    {select_name}
+    {select_moment_name}
     {mom_ndim}
     {select_squeeze}
 
@@ -274,7 +277,7 @@ def select_moment(
     ----------
     {data}
     {mom_ndim}
-    {select_name}
+    {select_moment_name}
     {select_squeeze}
     {select_dim_combined}
     {select_coords_combined}
@@ -393,8 +396,7 @@ def _select_moment(
 @overload
 def assign_moment(
     data: xr.Dataset,
-    name: SelectMoment,
-    value: ArrayLike | xr.DataArray | xr.Dataset,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | xr.Dataset] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = ...,
@@ -404,12 +406,12 @@ def assign_moment(
     dim_combined: Hashable | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
 ) -> xr.Dataset: ...
 @overload
 def assign_moment(
     data: xr.DataArray,
-    name: SelectMoment,
-    value: ArrayLike | xr.DataArray,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = ...,
@@ -419,12 +421,12 @@ def assign_moment(
     dim_combined: Hashable | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
 ) -> xr.DataArray: ...
 @overload
 def assign_moment(
     data: NDArray[ScalarT],
-    name: SelectMoment,
-    value: ArrayLike | xr.DataArray,
+    moment: Mapping[SelectMoment, ArrayLike] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = ...,
@@ -434,14 +436,14 @@ def assign_moment(
     dim_combined: Hashable | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
 ) -> NDArray[ScalarT]: ...
 
 
 @docfiller.decorate
 def assign_moment(
     data: NDArray[ScalarT] | xr.DataArray | xr.Dataset,
-    name: SelectMoment,
-    value: ArrayLike | xr.DataArray | xr.Dataset,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | xr.Dataset] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = True,
@@ -451,18 +453,16 @@ def assign_moment(
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+    **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,  # pyright: ignore[reportRedeclaration]
 ) -> NDArray[ScalarT] | xr.DataArray | xr.Dataset:
-    """
+    r"""
     Update weights of moments array.
 
     Parameters
     ----------
     data : ndarray or DataArray
         Moments array.
-    {select_name}
-    value : array-like or DataArray or Dataset
-        Value to assign to moment ``name``.
-        These values will be broadcast over the selected moment from ``data``.
+    {assign_moment_mapping}
     {mom_ndim}
     {select_squeeze}
     copy : bool, default=True
@@ -476,6 +476,8 @@ def assign_moment(
     {keep_attrs}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
+    **moment_kwargs
+        Keyword argument form of ``moment``.  Must provide either ``moment`` or ``moment_kwargs``.
 
     Returns
     -------
@@ -492,13 +494,13 @@ def assign_moment(
     >>> data
     array([0, 1, 2])
 
-    >>> assign_moment(data, "weight", -1, mom_ndim=1)
+    >>> assign_moment(data, weight=-1, mom_ndim=1)
     array([-1,  1,  2])
 
-    >>> assign_moment(data, "ave", -1, mom_ndim=1)
+    >>> assign_moment(data, ave=-1, mom_ndim=1)
     array([ 0, -1,  2])
 
-    >>> assign_moment(data, "var", -1, mom_ndim=1)
+    >>> assign_moment(data, var=-1, mom_ndim=1)
     array([ 0,  1, -1])
 
 
@@ -510,36 +512,49 @@ def assign_moment(
 
     Selecting ``ave`` for this data with ``mom_ndim=1`` and ``squeeze=False`` would have shape ``(2, 1)``.
 
-    >>> assign_moment(data, "ave", np.ones((2, 1)), mom_ndim=1, squeeze=False)
+    >>> assign_moment(data, ave=np.ones((2, 1)), mom_ndim=1, squeeze=False)
     array([[0, 1, 2],
            [3, 1, 5]])
 
     The ``squeeze`` parameter has the same meaning as for :func:`select_moment`
 
-    >>> assign_moment(data, "ave", np.ones(2), mom_ndim=1, squeeze=True)
+    >>> assign_moment(data, ave=np.ones(2), mom_ndim=1, squeeze=True)
     array([[0, 1, 2],
            [3, 1, 5]])
 
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
+
+    # get names ands values
+    moment_kwargs = either_dict_or_kwargs(  # type: ignore[assignment]
+        moment if moment is None else dict(moment),
+        moment_kwargs,
+        "assign_moment",
+    )
+
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
         # figure out values shape...
-        input_core_dims: list[Sequence[Hashable]]
-        if name in {"ave", "var"} and (mom_ndim != 1 or not squeeze) and dim_combined:
-            input_core_dims = [mom_dims, [dim_combined]]
-        else:
-            input_core_dims = [mom_dims, []]
+        input_core_dims: list[Sequence[Hashable]] = [mom_dims]
+        for name in moment_kwargs:
+            if (
+                name in {"ave", "var"}
+                and (mom_ndim != 1 or not squeeze)
+                and dim_combined
+            ):
+                input_core_dims.append([dim_combined])
+            else:
+                input_core_dims.append([])
 
         xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _assign_moment,
             data,
-            value,
+            *moment_kwargs.values(),
             input_core_dims=input_core_dims,
             output_core_dims=[mom_dims],
             kwargs={
-                "name": name,
+                "names": moment_kwargs.keys(),
                 "mom_ndim": mom_ndim,
                 "squeeze": squeeze,
                 "copy": copy,
@@ -557,21 +572,27 @@ def assign_moment(
         return xout
 
     return _assign_moment(
-        data, value, name=name, mom_ndim=mom_ndim, squeeze=squeeze, copy=copy
+        data,
+        *moment_kwargs.values(),
+        names=moment_kwargs.keys(),  # type: ignore[arg-type]
+        mom_ndim=mom_ndim,
+        squeeze=squeeze,
+        copy=copy,
     )
 
 
 def _assign_moment(
     data: NDArray[ScalarT],
-    value: ArrayLike | xr.DataArray | xr.Dataset,
-    *,
-    name: SelectMoment,
+    *values: ArrayLike | xr.DataArray | xr.Dataset,
+    names: Iterable[SelectMoment],
     mom_ndim: Mom_NDim,
     squeeze: bool,
     copy: bool,
 ) -> NDArray[ScalarT]:
     out = data.copy() if copy else data
-    out[moment_indexer(name, mom_ndim, squeeze)] = value
+
+    for name, value in zip(names, values):
+        out[moment_indexer(name, mom_ndim, squeeze)] = value
     return out
 
 
@@ -820,10 +841,10 @@ def _vals_to_data(
     else:
         out[...] = 0.0
 
-    out = assign_moment(out, "weight", _w, mom_ndim=mom_ndim, copy=False)
-    out = assign_moment(out, "xave", _x, mom_ndim=mom_ndim, copy=False)
-
+    moment_kwargs: dict[SelectMoment, NDArrayAny | xr.DataArray] = {
+        "weight": _w,
+        "xave": _x,
+    }
     if mom_ndim == 2:
-        out = assign_moment(out, "yave", _y[0], mom_ndim=mom_ndim, copy=False)
-
-    return out
+        moment_kwargs["yave"] = _y[0]
+    return assign_moment(out, moment_kwargs, mom_ndim=mom_ndim, copy=False)
