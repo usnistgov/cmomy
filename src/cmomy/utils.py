@@ -197,7 +197,8 @@ def moment_indexer(
         idx = (1,) if mom_ndim == 1 else (1, 0)
     elif name == "xvar":
         idx = (2,) if mom_ndim == 1 else (2, 0)
-
+    elif name == "all":
+        idx = ()
     else:
         if name == "yave":
             idx = (0, 1)
@@ -321,16 +322,17 @@ def select_moment(
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
-        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim, out=data)
+        if name == "all":
+            return data
 
+        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim, out=data)
         # input/output dimensions
         input_core_dims = [mom_dims]
-        output_core_dims: list[list[Hashable]]
+        output_core_dims: list[Sequence[Hashable]]
         output_sizes: dict[Hashable, int] | None
         if name in {"ave", "var"} and (mom_ndim != 1 or not squeeze):
             output_core_dims = [[dim_combined]]
             output_sizes = {dim_combined: mom_ndim}
-
             if coords_combined is None:
                 coords_combined = mom_dims
             elif isinstance(coords_combined, str):

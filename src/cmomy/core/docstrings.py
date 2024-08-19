@@ -220,6 +220,7 @@ def _dummy_docstrings() -> None:
         - ``"xvar"``: Variance of first variable.
         - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
         - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+        - ``"all"``: All values.
 
         Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape
         ``data.shape[:-mom_ndim]``. Names ``"ave", "var"`` imply shape
@@ -236,6 +237,7 @@ def _dummy_docstrings() -> None:
         - ``"xvar"``: Variance of first variable.
         - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
         - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+        - ``"all"``: All values.
 
         Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape
         ``data.shape[:-mom_ndim]``. Names ``"ave", "var"`` imply shape

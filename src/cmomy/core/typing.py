@@ -37,6 +37,10 @@ if TYPE_CHECKING:
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
 
+# New typing types
+GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
+
+
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
 AxisReduce: TypeAlias = Union[int, None]
@@ -183,6 +187,7 @@ SelectMoment = Literal[
     "yave",
     "xvar",
     "yvar",
+    "all",
 ]
 """Selectable moment names."""
 

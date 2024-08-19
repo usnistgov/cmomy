@@ -458,10 +458,11 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         Parameters
         ----------
         {assign_moment_mapping}
-        value : array-like
+        {select_squeeze}
         copy : bool, default=True
-            If ``True`` (default), copy the underlying moments data before update.
-            Otherwise, update weights underlying data in place.
+            If ``True`` (the default), return new array with updated weights.
+            Otherwise, return the original array with weights updated inplace.
+            Note that a copy is always created for a ``dask`` backed object.
 
         Returns
         -------
