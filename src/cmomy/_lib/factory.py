@@ -173,6 +173,7 @@ if TYPE_CHECKING:
 
 
 # * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
+@lru_cache
 def supports_parallel() -> bool:
     """
     Checks if system supports parallel numba functions.
@@ -193,19 +194,14 @@ def supports_parallel() -> bool:
 def parallel_heuristic(
     parallel: bool | None,
     size: int | None = None,
-    cutoff: int | None = None,
-    mom_ndim: Mom_NDim | None = None,
+    cutoff: int = 10_000,
 ) -> bool:
     """Default parallel."""
     if parallel is not None:
         return parallel and supports_parallel()
-    if size is None:
+    if size is None or not supports_parallel():
         return False
-
-    cutoff = cutoff or 10000
-    size = size if mom_ndim is None else size * mom_ndim
-
-    return size > cutoff and supports_parallel()
+    return size > cutoff
 
 
 class Pusher(NamedTuple):
@@ -220,12 +216,10 @@ class Pusher(NamedTuple):
 @lru_cache
 def factory_pusher(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = None,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> Pusher:
     """Factory method to get pusher functions."""
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     _push_mod: ModuleType
     if mom_ndim == 1 and parallel:
@@ -249,11 +243,9 @@ def factory_pusher(
 @lru_cache
 def factory_resample_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> ResampleVals:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
         if parallel:
@@ -272,11 +264,9 @@ def factory_resample_vals(
 @lru_cache
 def factory_resample_data(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> ResampleData:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
     if mom_ndim == 1 and parallel:
         from .resample_parallel import resample_data_fromzero
     elif mom_ndim == 1:
@@ -292,11 +282,9 @@ def factory_resample_data(
 @lru_cache
 def factory_jackknife_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> JackknifeVals:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
         if parallel:
@@ -315,11 +303,9 @@ def factory_jackknife_vals(
 @lru_cache
 def factory_jackknife_data(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> JackknifeData:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
     if mom_ndim == 1 and parallel:
         from .resample_parallel import jackknife_data_fromzero
     elif mom_ndim == 1:
@@ -335,11 +321,9 @@ def factory_jackknife_data(
 @lru_cache
 def factory_reduce_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> ReduceVals:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
     if mom_ndim == 1:
         if parallel:
             from .push_parallel import reduce_vals as _reduce
@@ -357,11 +341,9 @@ def factory_reduce_vals(
 @lru_cache
 def factory_reduce_data(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> ReduceData:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
         from .push_parallel import reduce_data_fromzero
@@ -378,12 +360,9 @@ def factory_reduce_data(
 @lru_cache
 def factory_reduce_data_grouped(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> ReduceDataGrouped:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
-
+    parallel = parallel and supports_parallel()
     if mom_ndim == 1 and parallel:
         from .indexed_parallel import reduce_data_grouped
     elif mom_ndim == 1:
@@ -399,11 +378,9 @@ def factory_reduce_data_grouped(
 @lru_cache
 def factory_reduce_data_indexed(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> ReduceDataIndexed:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
         from .indexed_parallel import reduce_data_indexed_fromzero
@@ -441,12 +418,10 @@ def factory_convert(mom_ndim: Mom_NDim = 1, to: ConvertStyle = "central") -> Con
 @lru_cache
 def factory_cumulative(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
+    parallel: bool = True,
     inverse: bool = False,
-    size: int | None = None,
-    cutoff: int | None = None,
 ) -> Convert:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
     if inverse:
         if mom_ndim == 1 and parallel:
             from .push_parallel import cumulative_inverse as func
@@ -473,11 +448,9 @@ def factory_cumulative(
 @lru_cache
 def factory_rolling_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> RollingVals:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
         if parallel:
@@ -496,11 +469,9 @@ def factory_rolling_vals(
 @lru_cache
 def factory_rolling_data(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> RollingData:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
         from .rolling_parallel import rolling_data
@@ -517,11 +488,9 @@ def factory_rolling_data(
 @lru_cache
 def factory_rolling_exp_vals(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> RollingExpVals:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
         if parallel:
@@ -540,11 +509,9 @@ def factory_rolling_exp_vals(
 @lru_cache
 def factory_rolling_exp_data(
     mom_ndim: Mom_NDim = 1,
-    parallel: bool | None = True,
-    size: int | None = None,
-    cutoff: int | None = None,
+    parallel: bool = True,
 ) -> RollingExpData:
-    parallel = parallel_heuristic(parallel, size=size, cutoff=cutoff, mom_ndim=mom_ndim)
+    parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
         from .rolling_parallel import rolling_exp_data

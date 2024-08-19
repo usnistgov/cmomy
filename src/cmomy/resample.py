@@ -19,6 +19,7 @@ from ._lib.factory import (
     factory_jackknife_vals,
     factory_resample_data,
     factory_resample_vals,
+    parallel_heuristic,
 )
 from .core.array_utils import (
     axes_data_reduction,
@@ -847,8 +848,7 @@ def _resample_data(
 
     return factory_resample_data(
         mom_ndim=mom_ndim,
-        parallel=parallel,
-        size=data.size,
+        parallel=parallel_heuristic(parallel, size=data.size),
     )(freq, data, out=out, axes=axes)
 
 
@@ -1200,8 +1200,7 @@ def _resample_vals(
 
     factory_resample_vals(
         mom_ndim=mom_ndim,
-        parallel=parallel,
-        size=args[0].size,
+        parallel=parallel_heuristic(parallel, size=args[0].size * mom_ndim),
     )(out, freq, *args, axes=axes)
 
     return out
@@ -1569,8 +1568,7 @@ def _jackknife_data(
 
     return factory_jackknife_data(
         mom_ndim=mom_ndim,
-        parallel=parallel,
-        size=data.size,
+        parallel=parallel_heuristic(parallel, size=data.size),
     )(data_reduced, data, out=out, axes=axes)
 
 
@@ -1904,6 +1902,5 @@ def _jackknife_vals(
 
     return factory_jackknife_vals(
         mom_ndim=mom_ndim,
-        parallel=parallel,
-        size=args[0].size,
+        parallel=parallel_heuristic(parallel, size=args[0].size * mom_ndim),
     )(data_reduced, *args, out=out, axes=axes)

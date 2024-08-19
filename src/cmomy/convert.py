@@ -14,6 +14,7 @@ import xarray as xr
 from ._lib.factory import (
     factory_convert,
     factory_cumulative,
+    parallel_heuristic,
 )
 from .core.array_utils import (
     axes_data_reduction,
@@ -462,8 +463,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     return factory_cumulative(
         mom_ndim=mom_ndim,
         inverse=inverse,
-        parallel=parallel,
-        size=values_in.size,
+        parallel=parallel_heuristic(parallel, values_in.size),
     )(values_in, out=out, axes=axes)
 
 

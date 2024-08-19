@@ -64,14 +64,11 @@ if TYPE_CHECKING:
         ((False, 100, 100), False),
         ((False, 101, 100), False),
         # no size
-        ((None, None, None), False),
+        ((None, None), False),
         ((None, None, 100), False),
-        # mom_ndim
-        ((None, 51, 100, 2), True),
-        ((None, 50, 100, 2), False),
         # no cutoff
-        ((None, 1000, None), False),
-        ((None, 10001, None), True),
+        ((None, 1000), False),
+        ((None, 10001), True),
     ],
 )
 def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
