@@ -1768,10 +1768,12 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         x: xr.DataArray,
         *y: ArrayLike | xr.DataArray,
         mom: Moments,
-        freq: NDArrayInt,
         weight: ArrayLike | xr.DataArray | None = ...,
         axis: AxisReduce | MissingType = ...,
         dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | xr.DataArray | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
         move_axis_to_end: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
@@ -1788,10 +1790,12 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         x: xr.DataArray,
         *y: ArrayLike | xr.DataArray,
         mom: Moments,
-        freq: NDArrayInt,
         weight: ArrayLike | xr.DataArray | None = ...,
         axis: AxisReduce | MissingType = ...,
         dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | xr.DataArray | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
         move_axis_to_end: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
@@ -1808,10 +1812,12 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         x: xr.DataArray,
         *y: ArrayLike | xr.DataArray,
         mom: Moments,
-        freq: NDArrayInt,
         weight: ArrayLike | xr.DataArray | None = ...,
         axis: AxisReduce | MissingType = ...,
         dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | xr.DataArray | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
         move_axis_to_end: bool = ...,
         order: ArrayOrder = ...,
         parallel: bool | None = ...,
@@ -1824,15 +1830,17 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
 
     @classmethod
     @docfiller.decorate
-    def from_resample_vals(
+    def from_resample_vals(  # noqa: PLR0913
         cls,
         x: xr.DataArray,
         *y: ArrayLike | xr.DataArray,
         mom: Moments,
-        freq: NDArrayInt,
         weight: ArrayLike | xr.DataArray | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        freq: ArrayLike | xr.DataArray | None = None,
+        nrep: int | None = None,
+        rng: np.random.Generator | None = None,
         move_axis_to_end: bool = True,
         order: ArrayOrder = None,
         parallel: bool | None = None,
@@ -1855,9 +1863,11 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         *y : array-like or DataArray
             Additional values (needed if ``len(mom) > 1``).
         {mom}
-        {freq}
         {weight}
         {axis_and_dim}
+        {freq}
+        {nrep}
+        {rng}
         {move_axis_to_end}
         {order}
         {parallel}
@@ -1906,6 +1916,8 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
                 x,
                 *y,
                 freq=freq,
+                nrep=nrep,
+                rng=rng,
                 mom=mom_strict,
                 weight=weight,
                 axis=axis,

@@ -1302,7 +1302,9 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         x: ArrayT,
         *y: ArrayLike,
         mom: Moments,
-        freq: NDArrayInt,
+        freq: Any = None,
+        nrep: int | None = None,
+        rng: np.random.Generator | None = None,
         weight: ArrayLike | None = None,
         axis: AxisReduce = -1,
         move_axis_to_end: bool = True,
@@ -1325,6 +1327,8 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             Additional values (needed if ``len(mom) > 1``).
         {mom}
         {freq}
+        {nrep}
+        {rng}
         {weight}
         {axis_and_dim}
         {move_axis_to_end}

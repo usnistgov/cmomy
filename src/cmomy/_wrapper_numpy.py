@@ -1,40 +1,27 @@
-"""
-Central moments/comoments routines from :class:`np.ndarray` objects
--------------------------------------------------------------------.
-"""
+"""Wrapper object for numpy arrays"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Generic, overload
 
 import numpy as np
-import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]
 import xarray as xr
 
-# pandas needed for autdoc typehints
-from numpy.typing import NDArray
+from cmomy.core.validate import validate_floating_dtype
 
-from ._central_abc import CentralMomentsABC
-from .core.array_utils import (
-    arrayorder_to_arrayorder_cf,
-)
+from .core.array_utils import normalize_axis_index
 from .core.compat import copy_if_needed
-from .core.docstrings import docfiller_central as docfiller
-from .core.utils import (
-    mom_to_mom_shape,
-)
+from .core.utils import mom_to_mom_shape
 from .core.validate import (
     validate_axis,
     validate_mom_and_mom_ndim,
 )
-from .utils import moveaxis
 
 if TYPE_CHECKING:
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._central_dataarray import xCentralMoments
     from .core.typing import (
         ArrayLikeArg,
         ArrayOrder,
@@ -43,13 +30,12 @@ if TYPE_CHECKING:
         AxisReduce,
         DataCasting,
         DTypeLikeArg,
-        FloatT2,
         Groups,
-        Mom_NDim,
         MomDims,
         Moments,
         NDArrayAny,
-        NDArrayInt,
+        ScalarT,
+        ScalarT2,
         XArrayAttrsType,
         XArrayCoordsType,
         XArrayDimsType,
@@ -58,184 +44,208 @@ if TYPE_CHECKING:
     )
     from .core.typing_compat import Self
 
-from .core.typing import FloatT
 
-docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
-docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
+from numpy.typing import NDArray
+
+from ._wrapper_abc import CentralWrapperABC
+from .core.docstrings import docfiller
+from .core.typing import Mom_NDim, MomentsStrict, ScalarT
+
+docfiller_abc = docfiller.factory_from_parent(CentralWrapperABC)
+docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralWrapperABC)
 
 
-# * CentralMoments ------------------------------------------------------------
-@docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
-class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]):  # type: ignore[type-var]
-    """Wrapper of :class:`numpy.ndarray` based central moments data."""
+@docfiller.inherit(CentralWrapperABC)  # noqa: PLR0904
+class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT]):  # type: ignore[type-var]
+    r"""
+    Wrapper to calculate central moments of :class:`~numpy.ndarray` backed arrays.
+
+    Parameters
+    ----------
+    {copy}
+    {order}
+    {dtype}
+
+    """
 
     @overload
     def __init__(
         self,
-        data: ArrayLikeArg[FloatT],
+        obj: ArrayLikeArg[ScalarT],
         *,
         mom_ndim: Mom_NDim = ...,
         copy: bool | None = ...,
-        order: ArrayOrder = ...,
         dtype: None = ...,
+        order: ArrayOrder = ...,
         fastpath: bool = ...,
     ) -> None: ...
     @overload
     def __init__(
         self,
-        data: Any,
+        obj: ArrayLike,
         *,
         mom_ndim: Mom_NDim = ...,
         copy: bool | None = ...,
+        dtype: DTypeLikeArg[ScalarT],
         order: ArrayOrder = ...,
-        dtype: DTypeLikeArg[FloatT],
         fastpath: bool = ...,
     ) -> None: ...
     @overload
     def __init__(
         self,
-        data: Any,
+        obj: ArrayLike,
         *,
         mom_ndim: Mom_NDim = ...,
         copy: bool | None = ...,
-        order: ArrayOrder = ...,
         dtype: DTypeLike = ...,
+        order: ArrayOrder = ...,
         fastpath: bool = ...,
     ) -> None: ...
 
     def __init__(
         self,
-        data: ArrayLike,
+        obj: ArrayLike,
         *,
         mom_ndim: Mom_NDim = 1,
         copy: bool | None = None,
-        order: ArrayOrder = None,
         dtype: DTypeLike = None,
+        order: ArrayOrder = None,
         fastpath: bool = False,
     ) -> None:
-        if fastpath:
-            self.set_values(data)  # type: ignore[arg-type]
-            self._cache = {}
-            self._mom_ndim = mom_ndim
-        else:
-            super().__init__(
-                data=np.array(
-                    data, dtype=dtype, order=order, copy=copy_if_needed(copy)
-                ),
-                mom_ndim=mom_ndim,
+        if not fastpath:
+            obj = np.array(
+                obj,
+                dtype=dtype,
+                copy=copy_if_needed(copy),
+                order=order,
             )
-
-    def set_values(self, values: NDArray[FloatT]) -> None:
-        if not isinstance(values, np.ndarray):  # pyright: ignore[reportUnnecessaryIsInstance]
-            msg = f"Must pass ndarray as data.  Not {type(values)=}"
+        elif not isinstance(obj, np.ndarray):  # pyright: ignore[reportUnnecessaryIsInstance]
+            msg = f"Must pass ndarray as data.  Not {type(obj)=}"
             raise TypeError(msg)
-        self._data = values
 
-    def to_values(self) -> NDArray[FloatT]:
-        return self._data
+        super().__init__(
+            obj,  # pyright: ignore[reportUnknownArgumentType]
+            mom_ndim=mom_ndim,
+            fastpath=fastpath,
+        )
 
-    # * top level creation/copy/new -----------------------------------------------
+    def _validate_dtype(self) -> None:
+        _ = validate_floating_dtype(self.obj.dtype)
+
+    @property
+    def mom_shape(self) -> MomentsStrict:
+        return self.obj.shape[-self._mom_ndim :]  # type: ignore[return-value]
+
     @overload
     def new_like(
         self,
-        data: NDArray[FloatT2],
+        obj: NDArray[ScalarT2],
         *,
         copy: bool | None = ...,
-        order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
-    ) -> CentralMoments[FloatT2]: ...
+        fastpath: bool = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
     @overload
     def new_like(
         self,
-        data: Any = ...,
+        obj: Any = ...,
         *,
         copy: bool | None = ...,
-        order: ArrayOrder = ...,
         verify: bool = ...,
-        dtype: DTypeLikeArg[FloatT2],
-    ) -> CentralMoments[FloatT2]: ...
+        dtype: DTypeLikeArg[ScalarT2],
+        fastpath: bool = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
     @overload
     def new_like(
         self,
-        data: None = ...,
+        obj: None = ...,
         *,
         copy: bool | None = ...,
-        order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: None = ...,
+        fastpath: bool = ...,
     ) -> Self: ...
     @overload
     def new_like(
         self,
-        data: Any = ...,
+        obj: Any = ...,
         *,
         copy: bool | None = ...,
-        order: ArrayOrder = ...,
         verify: bool = ...,
         dtype: Any = ...,
-    ) -> CentralMoments[Any]: ...
+        fastpath: bool = ...,
+    ) -> CentralWrapperNumpy[Any]: ...
 
     @docfiller_abc()
     def new_like(
         self,
-        data: NDArrayAny | None = None,
+        obj: NDArrayAny | None = None,
         *,
         copy: bool | None = None,
-        order: ArrayOrder = None,
         verify: bool = False,
         dtype: DTypeLike = None,
-    ) -> CentralMoments[Any]:
+        fastpath: bool = False,
+    ) -> CentralWrapperNumpy[Any]:
         """
         Examples
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralMoments.from_vals(rng.random(10), mom=3, axis=0)
+        >>> da = CentralWrapperNumpy.from_vals(rng.random(10), mom=3, axis=0)
         >>> da
-        <CentralMoments(val_shape=(), mom=(3,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([10.    ,  0.5505,  0.1014, -0.0178])
 
         >>> da2 = da.new_like().zero()
         >>> da2
-        <CentralMoments(val_shape=(), mom=(3,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([0., 0., 0., 0.])
 
         >>> da
-        <CentralMoments(val_shape=(), mom=(3,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([10.    ,  0.5505,  0.1014, -0.0178])
-
         """
-        if data is None:
-            data = np.zeros(
-                self.shape,
-                order=arrayorder_to_arrayorder_cf(order),
-                dtype=dtype or self.dtype,
+        if fastpath:
+            return type(self)(
+                obj=np.zeros_like(self._obj, dtype=dtype) if obj is None else obj,
+                mom_ndim=self._mom_ndim,
+                fastpath=True,
             )
+
+        if obj is None:
+            obj = np.zeros_like(self.obj, dtype=dtype)
         else:
-            self._check_array_mom_shape(data)
-            if verify and data.shape != self.shape:
-                msg = f"{data.shape=} != {self.shape=}"
+            self._raise_if_wrong_mom_shape(obj.shape[-self.mom_ndim :])
+            if verify and obj.shape != self.obj.shape:
+                msg = f"{obj.shape=} != {self.obj.shape=}"
                 raise ValueError(msg)
 
         return type(self)(
-            data=data,
+            obj=obj,
             copy=copy,
             mom_ndim=self.mom_ndim,
-            order=order,
             dtype=dtype,
+        )
+
+    def _new_like(self, obj: NDArray[ScalarT]) -> Self:
+        self._raise_if_wrong_mom_shape(obj.shape[-self._mom_ndim :])
+        return type(self)(
+            obj=obj,
+            mom_ndim=self._mom_ndim,
+            fastpath=True,
         )
 
     @overload
     def astype(
         self,
-        dtype: DTypeLikeArg[FloatT2],
+        dtype: DTypeLikeArg[ScalarT2],
         *,
         order: ArrayOrder = ...,
         casting: DataCasting = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralMoments[FloatT2]: ...
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
     @overload
     def astype(
         self,
@@ -245,7 +255,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         casting: DataCasting = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralMoments[np.float64]: ...
+    ) -> CentralWrapperNumpy[np.float64]: ...
     @overload
     def astype(
         self,
@@ -255,7 +265,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         casting: DataCasting = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralMoments[Any]: ...
+    ) -> CentralWrapperNumpy[Any]: ...
 
     @docfiller_abc()
     def astype(
@@ -266,7 +276,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         casting: DataCasting = None,
         subok: bool | None = None,
         copy: bool = False,
-    ) -> CentralMoments[Any]:
+    ) -> CentralWrapperNumpy[Any]:
         return super().astype(
             dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
@@ -302,52 +312,53 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralMoments.from_vals(rng.random((10, 1, 2)), axis=0, mom=2)
+        >>> da = CentralWrapperNumpy(rng.random((1, 2, 4)), mom_ndim=1)
         >>> da
-        <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
 
         Default constructor
 
         >>> da.to_dataarray()
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
 
         Setting attributes
 
         >>> da.to_dataarray()
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da
-        <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
 
         """
-        data = self.data
+        data = self.obj
         if copy:
             data = data.copy()
 
         if template is not None:
             out = template.copy(data=data)
         else:
+            val_ndim = self.obj.ndim - self.mom_ndim
             if dims is None:
-                dims = tuple(f"dim_{i}" for i in range(self.val_ndim))
+                dims = tuple(f"dim_{i}" for i in range(val_ndim))
             elif isinstance(dims, str):
                 dims = (dims,)
             else:
                 # try to convert to tuple
                 dims = tuple(dims)  # type: ignore[arg-type]
 
-            if len(dims) == self.ndim:
+            if len(dims) == self.obj.ndim:
                 dims_output = dims
 
-            elif len(dims) == self.val_ndim:
+            elif len(dims) == val_ndim:
                 if mom_dims is None:
                     mom_dims = tuple(f"mom_{i}" for i in range(self.mom_ndim))
                 elif isinstance(mom_dims, str):
@@ -363,7 +374,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 dims_output = dims + mom_dims
 
             else:
-                msg = f"Problem with {dims}, {mom_dims}.  Total length should be {self.ndim}"
+                msg = f"Problem with {dims}, {mom_dims}.  Total length should be {self.obj.ndim}"
                 raise ValueError(msg)
             out = xr.DataArray(
                 data, dims=dims_output, coords=coords, attrs=attrs, name=name
@@ -371,107 +382,9 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
         return out
 
-    @docfiller.decorate
-    def to_xcentralmoments(
-        self,
-        *,
-        dims: XArrayDimsType = None,
-        attrs: XArrayAttrsType = None,
-        coords: XArrayCoordsType = None,
-        name: XArrayNameType = None,
-        indexes: XArrayIndexesType = None,
-        mom_dims: MomDims | None = None,
-        template: xr.DataArray | None = None,
-        copy: bool = False,
-    ) -> xCentralMoments[FloatT]:
-        """
-        Create an :class:`xarray.DataArray` representation of underlying data.
+    # TODO(wpk): to_x...
 
-        Parameters
-        ----------
-        {xr_params}
-        {copy_tf}
-
-        Returns
-        -------
-        output : xCentralMoments
-
-        See Also
-        --------
-        to_dataarray
-
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMoments.from_vals(rng.random((10, 1, 2)), axis=0, mom=2)
-        >>> da
-        <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-
-        Default constructor
-
-        >>> da.to_xcentralmoments()
-        <xCentralMoments(val_shape=(1, 2), mom=(2,))>
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-        Dimensions without coordinates: dim_0, dim_1, mom_0
-
-        Setting attributes
-
-        >>> da.to_xcentralmoments()
-        <xCentralMoments(val_shape=(1, 2), mom=(2,))>
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-        Dimensions without coordinates: dim_0, dim_1, mom_0
-        >>> da
-        <CentralMoments(val_shape=(1, 2), mom=(2,))>
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-
-        """
-        from ._central_dataarray import xCentralMoments
-
-        data = self.to_dataarray(
-            dims=dims,
-            attrs=attrs,
-            coords=coords,
-            name=name,
-            indexes=indexes,
-            mom_dims=mom_dims,
-            template=template,
-            copy=copy,
-        )
-        return xCentralMoments(data=data, mom_ndim=self.mom_ndim)  # , fastpath=True)
-
-    def to_x(
-        self,
-        *,
-        dims: XArrayDimsType = None,
-        attrs: XArrayAttrsType = None,
-        coords: XArrayCoordsType = None,
-        name: XArrayNameType = None,
-        indexes: XArrayIndexesType = None,
-        mom_dims: MomDims | None = None,
-        template: xr.DataArray | None = None,
-        copy: bool = False,
-    ) -> xCentralMoments[FloatT]:
-        """Alias to :meth:`to_xcentralmoments`."""
-        return self.to_xcentralmoments(
-            dims=dims,
-            attrs=attrs,
-            coords=coords,
-            name=name,
-            indexes=indexes,
-            mom_dims=mom_dims,
-            template=template,
-            copy=copy,
-        )
-
-    # * pushing routines ----------------------------------------------------------
+    # ** Pushing --------------------------------------------------------------
     @docfiller_inherit_abc()
     def push_data(
         self,
@@ -486,25 +399,26 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         >>> rng = cmomy.random.default_rng(0)
         >>> xs = rng.random((2, 10))
         >>> datas = [cmomy.reduce_vals(x, mom=2, axis=0) for x in xs]
-        >>> da = CentralMoments(datas[0], mom_ndim=1)
+        >>> da = CentralWrapperNumpy(datas[0], mom_ndim=1)
         >>> da
-        <CentralMoments(val_shape=(), mom=(2,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([10.    ,  0.5505,  0.1014])
 
 
         >>> da.push_data(datas[1])
-        <CentralMoments(val_shape=(), mom=(2,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
 
         Which is equivalent to
 
-        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2, axis=0)
-        <CentralMoments(val_shape=(), mom=(2,))>
+        >>> CentralWrapperNumpy.from_vals(xs.reshape(-1), mom=2, axis=0)
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
         """
-        return self._push_data_numpy(data, parallel=parallel)
+        self._obj = self._push_data_numpy(self._obj, data, parallel=parallel)
+        return self
 
     @docfiller_inherit_abc()
     def push_datas(
@@ -521,19 +435,22 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         >>> rng = cmomy.random.default_rng(0)
         >>> xs = rng.random((2, 10))
         >>> datas = cmomy.reduce_vals(xs, axis=1, mom=2)
-        >>> da = CentralMoments.zeros(mom=2)
+        >>> da = CentralWrapperNumpy.zeros(mom=2)
         >>> da.push_datas(datas, axis=0)
-        <CentralMoments(val_shape=(), mom=(2,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
 
         Which is equivalent to
 
-        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2, axis=0)
-        <CentralMoments(val_shape=(), mom=(2,))>
+        >>> CentralWrapperNumpy.from_vals(xs.reshape(-1), mom=2, axis=0)
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
-        return self._push_datas_numpy(datas, axis=axis, parallel=parallel)
+        self._obj = self._push_datas_numpy(
+            self._obj, datas, axis=axis, parallel=parallel
+        )
+        return self
 
     @docfiller_inherit_abc()
     def push_val(
@@ -552,12 +469,12 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         >>> y = rng.random(10)
         >>> w = rng.random(10)
 
-        >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
+        >>> da = CentralWrapperNumpy.zeros(val_shape=(2,), mom=(2, 2))
         >>> for xx, yy, ww in zip(x, y, w):
         ...     _ = da.push_val(xx, yy, weight=ww)
 
         >>> da
-        <CentralMoments(val_shape=(2,), mom=(2, 2))>
+        <CentralWrapperNumpy(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -569,8 +486,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
         Which is the same as
 
-        >>> CentralMoments.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
-        <CentralMoments(val_shape=(2,), mom=(2, 2))>
+        >>> CentralWrapperNumpy.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        <CentralWrapperNumpy(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -580,7 +497,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        return self._push_val_numpy(x, *y, weight=weight, parallel=parallel)
+        self._obj = self._push_val_numpy(self._obj, x, weight, *y, parallel=parallel)
+        return self
 
     @docfiller_inherit_abc()
     def push_vals(
@@ -600,9 +518,9 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         >>> y = rng.random(10)
         >>> w = rng.random(10)
 
-        >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
+        >>> da = CentralWrapperNumpy.zeros(val_shape=(2,), mom=(2, 2))
         >>> da.push_vals(x, y, weight=w, axis=0)
-        <CentralMoments(val_shape=(2,), mom=(2, 2))>
+        <CentralWrapperNumpy(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -614,8 +532,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
 
         Which is the same as
 
-        >>> CentralMoments.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
-        <CentralMoments(val_shape=(2,), mom=(2, 2))>
+        >>> CentralWrapperNumpy.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        <CentralWrapperNumpy(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -625,9 +543,12 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        return self._push_vals_numpy(x, *y, weight=weight, axis=axis, parallel=parallel)
+        self._obj = self._push_vals_numpy(
+            self._obj, x, weight, *y, axis=axis, parallel=parallel
+        )
+        return self
 
-    # ** Reduction ----------------------------------------------------------------
+    # * Other -----------------------------------------------------------------
     @docfiller_inherit_abc()
     def reduce(
         self,
@@ -636,50 +557,462 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         axis: AxisReduce = -1,
         keepdims: bool = False,
         move_axis_to_end: bool = False,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
     ) -> Self:
-        self._raise_if_scalar()
         if by is None:
             from .reduction import reduce_data
 
-            data = reduce_data(
-                self._data,
+            obj = reduce_data(
+                self._obj,
                 mom_ndim=self._mom_ndim,
                 axis=axis,
                 parallel=parallel,
-                dtype=self.dtype,
                 keepdims=keepdims,
             )
-
         else:
             from .reduction import reduce_data_grouped
 
-            data = reduce_data_grouped(
-                self._data,
+            obj = reduce_data_grouped(
+                self._obj,
                 mom_ndim=self._mom_ndim,
                 by=by,
                 axis=axis,
                 move_axis_to_end=move_axis_to_end,
                 parallel=parallel,
-                dtype=self.dtype,
             )
+        return self._new_like(obj)
 
-        return type(self)(
-            data=data.astype(self.dtype, order=order, copy=False),
-            mom_ndim=self._mom_ndim,
-            fastpath=True,
+    # ** Constructors ----------------------------------------------------------
+    @overload
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | int | None = ...,
+        dtype: None = ...,
+        order: ArrayOrderCF = ...,
+    ) -> CentralWrapperNumpy[np.float64]: ...
+    @overload
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | int | None = ...,
+        dtype: DTypeLikeArg[ScalarT2],
+        order: ArrayOrderCF = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    @overload
+    @classmethod
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | int | None = ...,
+        dtype: DTypeLike = ...,
+        order: ArrayOrderCF = ...,
+    ) -> Self: ...
+
+    @classmethod
+    @docfiller_abc()
+    def zeros(
+        cls,
+        *,
+        mom: Moments,
+        val_shape: tuple[int, ...] | int | None = None,
+        dtype: DTypeLike = None,
+        order: ArrayOrderCF = None,
+    ) -> CentralWrapperNumpy[Any] | Self:
+        """
+        Parameters
+        ----------
+        {mom}
+        {val_shape}
+        {dtype}
+        {order}
+        """
+        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+
+        vshape: tuple[int, ...]
+        if val_shape is None:
+            vshape = ()
+        elif isinstance(val_shape, int):
+            vshape = (val_shape,)
+        else:
+            vshape = val_shape
+
+        # add in moments
+        shape: tuple[int, ...] = (*vshape, *mom_to_mom_shape(mom))
+
+        return cls(np.zeros(shape, dtype=dtype, order=order), mom_ndim=mom_ndim)
+
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLikeArg[ScalarT2],
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = -1,
+        weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
+        dtype: None = ...,
+        out: None = ...,
+        parallel: bool | None = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    # out
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = -1,
+        weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
+        dtype: DTypeLike = ...,
+        out: NDArray[ScalarT2],
+        parallel: bool | None = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    # dtype
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = -1,
+        weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
+        dtype: DTypeLikeArg[ScalarT2],
+        out: None = ...,
+        parallel: bool | None = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    # fallback
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = -1,
+        weight: ArrayLike | None = ...,
+        keepdims: bool = ...,
+        dtype: DTypeLike = ...,
+        out: NDArrayAny | None = ...,
+        parallel: bool | None = ...,
+    ) -> Self: ...
+
+    @classmethod
+    @docfiller_abc()
+    def from_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = -1,
+        weight: ArrayLike | None = None,
+        keepdims: bool = False,
+        dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
+        parallel: bool | None = None,
+    ) -> CentralWrapperNumpy[Any] | Self:
+        """
+        Examples
+        --------
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> x = rng.random((100, 3))
+        >>> da = CentralWrapperNumpy.from_vals(x, axis=0, mom=2)
+        >>> da
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[1.0000e+02, 5.5313e-01, 8.8593e-02],
+               [1.0000e+02, 5.5355e-01, 7.1942e-02],
+               [1.0000e+02, 5.1413e-01, 1.0407e-01]])
+        """
+        mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+
+        from .reduction import reduce_vals
+
+        data = reduce_vals(
+            x,
+            *y,
+            mom=mom_strict,
+            weight=weight,
+            axis=axis,
+            keepdims=keepdims,
+            dtype=dtype,
+            out=out,
+            parallel=parallel,
         )
+        return cls(obj=data, mom_ndim=mom_ndim)
+
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: ArrayLikeArg[ScalarT2],
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
+        parallel: bool | None = ...,
+        dtype: None = ...,
+        out: None = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLike = ...,
+        out: NDArray[ScalarT2],
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLikeArg[ScalarT2],
+        out: None = ...,
+    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
+        parallel: bool | None = ...,
+        dtype: DTypeLike = ...,
+        out: NDArrayAny | None = ...,
+    ) -> Self: ...
+
+    @classmethod
+    @docfiller_abc()
+    def from_resample_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = -1,
+        freq: ArrayLike | None = None,
+        nrep: int | None = None,
+        rng: np.random.Generator | None = None,
+        move_axis_to_end: bool = True,
+        weight: ArrayLike | None = None,
+        parallel: bool | None = None,
+        dtype: DTypeLike = None,
+        out: NDArrayAny | None = None,
+    ) -> CentralWrapperNumpy[Any]:
+        """
+        Examples
+        --------
+        >>> from cmomy.random import default_rng
+        >>> from cmomy.resample import random_freq
+        >>> rng = default_rng(0)
+        >>> ndat, nrep = 10, 3
+        >>> x = rng.random(ndat)
+        >>> freq = random_freq(nrep=nrep, ndat=ndat)
+        >>> da = CentralWrapperNumpy.from_resample_vals(x, freq=freq, axis=0, mom=2)
+        >>> da
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[10.    ,  0.5397,  0.0757],
+               [10.    ,  0.5848,  0.0618],
+               [10.    ,  0.5768,  0.0564]])
+
+        Note that this is equivalent to (though in general faster than)
+
+        >>> from cmomy.resample import freq_to_indices
+        >>> indices = freq_to_indices(freq)
+        >>> x_resamp = np.take(x, indices, axis=0)
+        >>> da = CentralWrapperNumpy.from_vals(x_resamp, axis=1, mom=2)
+        >>> da
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[10.    ,  0.5397,  0.0757],
+               [10.    ,  0.5848,  0.0618],
+               [10.    ,  0.5768,  0.0564]])
+
+        """
+        from .resample import resample_vals
+
+        mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+        data = resample_vals(
+            x,
+            *y,
+            freq=freq,
+            nrep=nrep,
+            rng=rng,
+            mom=mom_strict,
+            axis=axis,
+            move_axis_to_end=move_axis_to_end,
+            weight=weight,
+            parallel=parallel,
+            dtype=dtype,
+            out=out,
+        )
+
+        return cls(obj=data, mom_ndim=mom_ndim)
+
+    @classmethod
+    @docfiller_abc()
+    def from_raw(
+        cls,
+        raw: NDArray[ScalarT],
+        *,
+        mom_ndim: Mom_NDim,
+    ) -> Self:
+        """
+        Examples
+        --------
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> x = rng.random(10)
+        >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
+
+        >>> dx_raw = CentralWrapperNumpy.from_raw(raw_x, mom_ndim=1)
+        >>> print(dx_raw.mean())
+        0.5505105129032412
+        >>> dx_raw.cmom()
+        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
+
+        Which is equivalent to creating raw moments from values
+        >>> dx_cen = CentralWrapperNumpy.from_vals(x, axis=0, mom=4)
+        >>> print(dx_cen.mean())
+        0.5505105129032413
+        >>> dx_cen.cmom()
+        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
+
+        But note that calculating using from_raw can lead to
+        numerical issues.  For example
+
+        >>> y = x + 10000
+        >>> raw_y = (y[:, None] ** np.arange(5)).mean(axis=0)
+        >>> dy_raw = CentralWrapperNumpy.from_raw(raw_y, mom_ndim=1)
+        >>> print(dy_raw.mean() - 10000)
+        0.5505105129050207
+
+        Note that the central moments don't match!
+
+        >>> np.isclose(dy_raw.cmom(), dx_raw.cmom())
+        array([ True,  True,  True, False, False])
+
+        >>> dy_cen = CentralWrapperNumpy.from_vals(y, axis=0, mom=4)
+        >>> print(dy_cen.mean() - 10000)
+        0.5505105129032017
+        >>> dy_cen.cmom()  # this matches above
+        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
+        """
+        return super().from_raw(raw=raw, mom_ndim=mom_ndim)
+
+    # * Custom for this class -------------------------------------------------
+    def _raise_if_scalar(self, message: str | None = None) -> None:
+        if self._obj.ndim <= self.mom_ndim:
+            if message is None:  # pragma: no cover
+                message = "Not implemented for scalar"
+            raise ValueError(message)
+
+    @docfiller.decorate
+    def reshape(
+        self,
+        shape: tuple[int, ...],
+        *,
+        order: ArrayOrderCFA = None,
+    ) -> Self:
+        """
+        Create a new object with reshaped data.
+
+        Parameters
+        ----------
+        shape : int or tuple
+            shape of values part of data.
+        order : {{"C", "F", "A"}}, optional
+            Parameter to :func:`numpy.reshape`. Note that this parameter has
+            nothing to do with the output data order. Rather, it is how the
+            data is read for the reshape.
+
+        Returns
+        -------
+        output : CentralWrapperNumpy
+            Output object with reshaped data.  This will be a view if possilble;
+            otherwise, it will be copy.
+
+        See Also
+        --------
+        numpy.reshape
+        new_like
+
+        Examples
+        --------
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> da = CentralWrapperNumpy.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
+        >>> da
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[[10.    ,  0.5205,  0.0452],
+                [10.    ,  0.4438,  0.0734],
+                [10.    ,  0.5038,  0.1153]],
+        <BLANKLINE>
+               [[10.    ,  0.5238,  0.1272],
+                [10.    ,  0.628 ,  0.0524],
+                [10.    ,  0.412 ,  0.0865]]])
+
+        >>> da.reshape(shape=(-1,))
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[10.    ,  0.5205,  0.0452],
+               [10.    ,  0.4438,  0.0734],
+               [10.    ,  0.5038,  0.1153],
+               [10.    ,  0.5238,  0.1272],
+               [10.    ,  0.628 ,  0.0524],
+               [10.    ,  0.412 ,  0.0865]])
+        """
+        self._raise_if_scalar()
+        shape = (shape,) if isinstance(shape, int) else shape
+        new_shape = (*shape, *self.mom_shape)
+        obj = self._obj.reshape(new_shape, order=order)
+        # TODO(wpk):  figure out how to better implement new_like to make this work correctly...
+        return self._new_like(obj)
 
     @docfiller.decorate
     def resample(
         self,
-        indices: NDArrayInt,
+        indices: ArrayLike,
         *,
         axis: AxisReduce = -1,
         last: bool = False,
-        order: ArrayOrder = None,
-    ) -> CentralMoments[FloatT]:
+    ) -> Self:
         """
         Create a new object sampled from index.
 
@@ -701,27 +1034,23 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
             (if ``last=False``) or shape
             ``(..., shape[axis-1], shape[axis+1], ..., nrep, nsamp, mom_0, ...)``
             (if ``last=True``),
-            where ``shape=self.data`` and ``nrep, nsamp = indices.shape``.
+            where ``shape=self.obj.shape`` and ``nrep, nsamp = indices.shape``.
 
 
         """
         self._raise_if_scalar()
         axis = validate_axis(axis)
 
-        data = self.data
-        last_dim = self.val_ndim - 1
+        obj = self.obj
+        last_dim = obj.ndim - self.mom_ndim - 1
         if last and axis != last_dim:
-            data = np.moveaxis(data, axis, last_dim)
+            obj = np.moveaxis(obj, axis, last_dim)
             axis = last_dim
 
-        out = np.take(data, indices, axis=axis)  # pyright: ignore[reportUnknownMemberType]
+        indices = np.asarray(indices, dtype=np.int64)
+        obj = np.take(obj, indices, axis=axis)  # pyright: ignore[reportUnknownMemberType]
 
-        return type(self)(
-            data=out,
-            mom_ndim=self.mom_ndim,
-            copy=None,  # pyright: ignore[reportUnknownMemberType]
-            order=order,
-        )
+        return self._new_like(obj)
 
     @docfiller.decorate
     def block(
@@ -729,7 +1058,6 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         block_size: int | None,
         *,
         axis: AxisReduce = -1,
-        order: ArrayOrder = None,
         parallel: bool | None = None,
         # **kwargs: Any,
     ) -> Self:
@@ -761,8 +1089,8 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         """
         self._raise_if_scalar()
 
-        axis = self._wrap_axis(axis)
-        n = self.shape[axis]
+        axis = normalize_axis_index(validate_axis(axis), self._obj.ndim, self._mom_ndim)
+        n = self._obj.shape[axis]
 
         if block_size is None:
             block_size = n
@@ -773,456 +1101,46 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         if len(by) != n:
             by = np.pad(by, (0, n - len(by)), mode="constant", constant_values=-1)
 
-        return self.reduce(axis=axis, by=by, order=order, parallel=parallel)
+        return self.reduce(axis=axis, by=by, parallel=parallel)
 
-    # ** Manipulation -------------------------------------------------------------
-    @docfiller.decorate
-    def reshape(
-        self: CentralMoments[FloatT2],
-        shape: tuple[int, ...],
-        *,
-        order: ArrayOrderCFA = None,
-    ) -> CentralMoments[FloatT2]:
+    def fill(self, value: Any = 0) -> Self:
         """
-        Create a new object with reshaped data.
+        Fill data with value.
 
         Parameters
         ----------
-        shape : int or tuple
-            shape of values part of data.
-        order : {{"C", "F", "A"}}, optional
-            Parameter to :func:`numpy.reshape`. Note that this parameter has
-            nothing to do with the output data order. Rather, it is how the
-            data is read for the reshape.
+        value : scalar
+            Value to insert into `self.data`
 
         Returns
         -------
-        output : CentralMoments
-            Output object with reshaped data.  This will be a view if possilble;
-            otherwise, it will be copy.
+        self : object
+            Same type as calling class.
+            Same object as caller with data filled with `values`
+        """
+        self._obj.fill(value)
+        return self
+
+    def zero(self) -> Self:
+        """
+        Zero out underlying data.
+
+        Returns
+        -------
+        self : object
+            Same type as calling class.
+            Same object with data filled with zeros.
 
         See Also
         --------
-        numpy.reshape
-        new_like
-
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMoments.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
-        >>> da
-        <CentralMoments(val_shape=(2, 3), mom=(2,))>
-        array([[[10.    ,  0.5205,  0.0452],
-                [10.    ,  0.4438,  0.0734],
-                [10.    ,  0.5038,  0.1153]],
-        <BLANKLINE>
-               [[10.    ,  0.5238,  0.1272],
-                [10.    ,  0.628 ,  0.0524],
-                [10.    ,  0.412 ,  0.0865]]])
-
-        >>> da.reshape(shape=(-1,))
-        <CentralMoments(val_shape=(6,), mom=(2,))>
-        array([[10.    ,  0.5205,  0.0452],
-               [10.    ,  0.4438,  0.0734],
-               [10.    ,  0.5038,  0.1153],
-               [10.    ,  0.5238,  0.1272],
-               [10.    ,  0.628 ,  0.0524],
-               [10.    ,  0.412 ,  0.0865]])
+        fill
         """
-        self._raise_if_scalar()
-        shape = (shape,) if isinstance(shape, int) else shape
-        new_shape = (*shape, *self.mom_shape)
-        data = self._data.reshape(new_shape, order=order)
-        return self.new_like(data=data)
+        return self.fill(value=0.0)
 
-    @docfiller_inherit_abc()
-    def moveaxis(
-        self,
-        axis: int | tuple[int, ...],
-        dest: int | tuple[int, ...],
-    ) -> Self:
-        """
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMoments.from_vals(rng.random((10, 1, 2, 3)), axis=0, mom=2)
-        >>> da.moveaxis((2, 1), (0, 2))
-        <CentralMoments(val_shape=(3, 1, 2), mom=(2,))>
-        array([[[[10.    ,  0.5205,  0.0452],
-                 [10.    ,  0.5238,  0.1272]]],
-        <BLANKLINE>
-        <BLANKLINE>
-               [[[10.    ,  0.4438,  0.0734],
-                 [10.    ,  0.628 ,  0.0524]]],
-        <BLANKLINE>
-        <BLANKLINE>
-               [[[10.    ,  0.5038,  0.1153],
-                 [10.    ,  0.412 ,  0.0865]]]])
-        """
-        self._raise_if_scalar()
-        return self.pipe(
-            moveaxis,
-            axis=axis,
-            dest=dest,
-            mom_ndim=self.mom_ndim,
-        )
+    def _check_other_conformable(self, b: Self) -> None:
+        if self.obj.shape != b.obj.shape:
+            msg = "shape input={self.obj.shape} != other shape = {b.obj.shape}"
+            raise ValueError(msg)
 
-    # ** Constructors ----------------------------------------------------------
-    @overload  # type: ignore[override]
-    @classmethod
-    def zeros(  # type: ignore[overload-overlap]
-        cls,
-        *,
-        mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
-        dtype: None = ...,
-        order: ArrayOrderCF | None = ...,
-    ) -> CentralMoments[np.float64]: ...
-    @overload
-    @classmethod
-    def zeros(
-        cls,
-        *,
-        mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
-        dtype: DTypeLikeArg[FloatT2],
-        order: ArrayOrderCF | None = ...,
-    ) -> CentralMoments[FloatT2]: ...
-    @overload
-    @classmethod
-    def zeros(
-        cls,
-        *,
-        mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
-        dtype: DTypeLike,
-        order: ArrayOrderCF | None = ...,
-    ) -> Self: ...
-
-    @classmethod
-    @docfiller_abc()
-    def zeros(
-        cls,
-        *,
-        mom: Moments,
-        val_shape: tuple[int, ...] | int | None = None,
-        dtype: DTypeLike = None,
-        order: ArrayOrderCF | None = None,
-    ) -> CentralMoments[Any] | Self:
-        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-
-        vshape: tuple[int, ...]
-        if val_shape is None:
-            vshape = ()
-        elif isinstance(val_shape, int):
-            vshape = (val_shape,)
-        else:
-            vshape = val_shape
-
-        # add in moments
-        shape: tuple[int, ...] = (*vshape, *mom_to_mom_shape(mom))
-
-        data = np.zeros(shape, dtype=dtype, order=order)
-        return cls(data=data, mom_ndim=mom_ndim)
-
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: ArrayLikeArg[FloatT2],
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = -1,
-        weight: ArrayLike | None = ...,
-        keepdims: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: None = ...,
-        out: None = ...,
-        parallel: bool | None = ...,
-    ) -> CentralMoments[FloatT2]: ...
-    # out
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = -1,
-        weight: ArrayLike | None = ...,
-        keepdims: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: DTypeLike = ...,
-        out: NDArray[FloatT2],
-        parallel: bool | None = ...,
-    ) -> CentralMoments[FloatT2]: ...
-    # dtype
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = -1,
-        weight: ArrayLike | None = ...,
-        keepdims: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: DTypeLikeArg[FloatT2],
-        out: None = ...,
-        parallel: bool | None = ...,
-    ) -> CentralMoments[FloatT2]: ...
-    # fallback
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = -1,
-        weight: ArrayLike | None = ...,
-        keepdims: bool = ...,
-        order: ArrayOrder = ...,
-        dtype: DTypeLike = ...,
-        out: NDArrayAny | None = ...,
-        parallel: bool | None = ...,
-    ) -> Self: ...
-
-    @classmethod
-    @docfiller_abc()
-    def from_vals(
-        cls,
-        x: ArrayLike,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = -1,
-        weight: ArrayLike | None = None,
-        keepdims: bool = False,
-        order: ArrayOrder = None,
-        dtype: DTypeLike = None,
-        out: NDArrayAny | None = None,
-        parallel: bool | None = None,
-    ) -> CentralMoments[Any] | Self:
-        """
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> x = rng.random((100, 3))
-        >>> da = CentralMoments.from_vals(x, axis=0, mom=2)
-        >>> da
-        <CentralMoments(val_shape=(3,), mom=(2,))>
-        array([[1.0000e+02, 5.5313e-01, 8.8593e-02],
-               [1.0000e+02, 5.5355e-01, 7.1942e-02],
-               [1.0000e+02, 5.1413e-01, 1.0407e-01]])
-        """
-        mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-
-        from .reduction import reduce_vals
-
-        data = reduce_vals(
-            x,
-            *y,
-            mom=mom_strict,
-            weight=weight,
-            axis=axis,
-            keepdims=keepdims,
-            dtype=dtype,
-            out=out,
-            parallel=parallel,
-        )
-        return cls(data=data, mom_ndim=mom_ndim, order=order)
-
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: ArrayLikeArg[FloatT2],
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = ...,
-        freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: np.random.Generator | None = ...,
-        move_axis_to_end: bool = ...,
-        weight: ArrayLike | None = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
-        dtype: None = ...,
-        out: None = ...,
-    ) -> CentralMoments[FloatT2]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = ...,
-        freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: np.random.Generator | None = ...,
-        move_axis_to_end: bool = ...,
-        weight: ArrayLike | None = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
-        dtype: DTypeLike = ...,
-        out: NDArray[FloatT2],
-    ) -> CentralMoments[FloatT2]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = ...,
-        freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: np.random.Generator | None = ...,
-        move_axis_to_end: bool = ...,
-        weight: ArrayLike | None = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
-        dtype: DTypeLikeArg[FloatT2],
-        out: None = ...,
-    ) -> CentralMoments[FloatT2]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = ...,
-        freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: np.random.Generator | None = ...,
-        move_axis_to_end: bool = ...,
-        weight: ArrayLike | None = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
-        dtype: DTypeLike = ...,
-        out: NDArrayAny | None = ...,
-    ) -> Self: ...
-
-    @classmethod
-    @docfiller_abc()
-    def from_resample_vals(
-        cls,
-        x: ArrayLike,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = -1,
-        freq: ArrayLike | None = None,
-        nrep: int | None = None,
-        rng: np.random.Generator | None = None,
-        move_axis_to_end: bool = True,
-        weight: ArrayLike | None = None,
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-        dtype: DTypeLike = None,
-        out: NDArrayAny | None = None,
-    ) -> CentralMoments[Any]:
-        """
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> from cmomy.resample import random_freq
-        >>> rng = default_rng(0)
-        >>> ndat, nrep = 10, 3
-        >>> x = rng.random(ndat)
-        >>> freq = random_freq(nrep=nrep, ndat=ndat)
-        >>> da = CentralMoments.from_resample_vals(x, freq=freq, axis=0, mom=2)
-        >>> da
-        <CentralMoments(val_shape=(3,), mom=(2,))>
-        array([[10.    ,  0.5397,  0.0757],
-               [10.    ,  0.5848,  0.0618],
-               [10.    ,  0.5768,  0.0564]])
-
-        Note that this is equivalent to (though in general faster than)
-
-        >>> from cmomy.resample import freq_to_indices
-        >>> indices = freq_to_indices(freq)
-        >>> x_resamp = np.take(x, indices, axis=0)
-        >>> da = CentralMoments.from_vals(x_resamp, axis=1, mom=2)
-        >>> da
-        <CentralMoments(val_shape=(3,), mom=(2,))>
-        array([[10.    ,  0.5397,  0.0757],
-               [10.    ,  0.5848,  0.0618],
-               [10.    ,  0.5768,  0.0564]])
-
-        """
-        from .resample import resample_vals
-
-        mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        data = resample_vals(
-            x,
-            *y,
-            freq=freq,
-            nrep=nrep,
-            rng=rng,
-            mom=mom_strict,
-            axis=axis,
-            move_axis_to_end=move_axis_to_end,
-            weight=weight,
-            parallel=parallel,
-            dtype=dtype,
-            out=out,
-        )
-
-        return cls(data=data, mom_ndim=mom_ndim, order=order)
-
-    @classmethod
-    @docfiller_abc()
-    def from_raw(
-        cls,
-        raw: NDArray[FloatT],
-        *,
-        mom_ndim: Mom_NDim,
-    ) -> Self:
-        """
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> x = rng.random(10)
-        >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
-
-        >>> dx_raw = CentralMoments.from_raw(raw_x, mom_ndim=1)
-        >>> print(dx_raw.mean())
-        0.5505105129032412
-        >>> dx_raw.cmom()
-        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
-
-        Which is equivalent to creating raw moments from values
-        >>> dx_cen = CentralMoments.from_vals(x, axis=0, mom=4)
-        >>> print(dx_cen.mean())
-        0.5505105129032413
-        >>> dx_cen.cmom()
-        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
-
-        But note that calculating using from_raw can lead to
-        numerical issues.  For example
-
-        >>> y = x + 10000
-        >>> raw_y = (y[:, None] ** np.arange(5)).mean(axis=0)
-        >>> dy_raw = CentralMoments.from_raw(raw_y, mom_ndim=1)
-        >>> print(dy_raw.mean() - 10000)
-        0.5505105129050207
-
-        Note that the central moments don't match!
-
-        >>> np.isclose(dy_raw.cmom(), dx_raw.cmom())
-        array([ True,  True,  True, False, False])
-
-        >>> dy_cen = CentralMoments.from_vals(y, axis=0, mom=4)
-        >>> print(dy_cen.mean() - 10000)
-        0.5505105129032017
-        >>> dy_cen.cmom()  # this matches above
-        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
-        """
-        return super().from_raw(raw=raw, mom_ndim=mom_ndim)  # type: ignore[arg-type]
+    def std(self, squeeze: bool = True) -> NDArray[ScalarT]:
+        return np.sqrt(self.var(squeeze=squeeze))

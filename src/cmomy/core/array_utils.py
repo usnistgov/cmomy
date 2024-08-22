@@ -43,6 +43,16 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
 
 
 # * Axis normalizer -----------------------------------------------------------
+def _validate_ndim(ndim: int, mom_ndim: int | None) -> int:
+    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
+    if ndim <= 0:
+        msg = "No dimension to reduce/sample over."
+        if mom_ndim:
+            msg += " Trying to select moment dimensions."
+        raise ValueError(msg)
+    return ndim
+
+
 def normalize_axis_index(
     axis: int,
     ndim: int,
@@ -54,7 +64,7 @@ def normalize_axis_index(
         np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
-    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
+    ndim = _validate_ndim(ndim, mom_ndim)
     return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]
 
 
@@ -70,11 +80,9 @@ def normalize_axis_tuple(
         np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
-    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
-
+    ndim = _validate_ndim(ndim, mom_ndim)
     if axis is None:
         return tuple(range(ndim))
-
     return np_normalize_axis_tuple(axis, ndim, msg_prefix, allow_duplicate)  # type: ignore[no-any-return,unused-ignore]
 
 

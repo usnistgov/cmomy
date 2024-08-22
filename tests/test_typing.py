@@ -18,6 +18,7 @@ if TYPE_CHECKING:
 
     import cmomy
     from cmomy import convert, rolling
+    from cmomy._wrapper_numpy import CentralWrapperNumpy
     from cmomy.reduction import (
         reduce_data,
         reduce_data_grouped,
@@ -62,6 +63,50 @@ def test_centralmoments_init() -> None:
 
         assert_type(CentralMoments[np.float32]([1, 2, 3]), CentralMoments[np.float32])
         assert_type(CentralMoments[np.float64]([1, 2, 3]), CentralMoments[np.float64])
+
+
+def test_wrapper_numpy_init() -> None:
+    x32 = np.array([1, 2, 3], dtype=np.float32)
+    x64 = np.array([1, 2, 3], dtype=np.float64)
+
+    if TYPE_CHECKING:
+        assert_type(
+            CentralWrapperNumpy(x32, mom_ndim=1), CentralWrapperNumpy[np.float32]
+        )
+        assert_type(
+            CentralWrapperNumpy(x64, mom_ndim=1), CentralWrapperNumpy[np.float64]
+        )
+        assert_type(
+            CentralWrapperNumpy(x64, mom_ndim=1, dtype=np.float32),
+            CentralWrapperNumpy[np.float32],
+        )
+        assert_type(
+            CentralWrapperNumpy(x32, mom_ndim=1, dtype=np.float64),
+            CentralWrapperNumpy[np.float64],
+        )
+        assert_type(
+            CentralWrapperNumpy([1, 2, 3], mom_ndim=1), CentralWrapperNumpy[Any]
+        )
+
+        assert_type(
+            CentralWrapperNumpy([1, 2, 3], mom_ndim=1, dtype=np.float32),
+            CentralWrapperNumpy[np.float32],
+        )
+        assert_type(
+            CentralWrapperNumpy([1, 2, 3], mom_ndim=1, dtype=np.dtype("f8")),
+            CentralWrapperNumpy[np.float64],
+        )
+        assert_type(
+            CentralWrapperNumpy[Any]([1, 2, 3], mom_ndim=1, dtype="f8"),
+            CentralWrapperNumpy[Any],
+        )
+
+        assert_type(
+            CentralWrapperNumpy[np.float32]([1, 2, 3]), CentralWrapperNumpy[np.float32]
+        )
+        assert_type(
+            CentralWrapperNumpy[np.float64]([1, 2, 3]), CentralWrapperNumpy[np.float64]
+        )
 
 
 def test_xcentralmoments_init() -> None:

@@ -1,0 +1,403 @@
+# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pyright: reportCallIssue=false, reportArgumentType=false
+from __future__ import annotations
+
+import functools
+import operator
+
+import numpy as np
+import pytest
+
+import cmomy
+from cmomy._wrapper_numpy import CentralWrapperNumpy
+
+
+@pytest.fixture(
+    params=[
+        # shape, mom_ndim
+        (3, 1),
+        ((10, 3), 1),
+        ((10, 3, 3), 2),
+    ]
+)
+def wrapped(rng, request) -> CentralWrapperNumpy[np.float64]:
+    shape, mom_ndim = request.param
+    data = rng.random(shape)
+    return CentralWrapperNumpy(data, mom_ndim=mom_ndim)
+
+
+def test_check_dtype(wrapped) -> None:
+    assert wrapped.obj.dtype.type == np.float64
+
+
+def test_mom(wrapped) -> None:
+    assert wrapped.mom_shape == wrapped.obj.shape[-wrapped.mom_ndim :]
+
+
+def test_new_like(wrapped) -> None:
+    np.testing.assert_allclose(wrapped.new_like().obj, np.zeros_like(wrapped.obj))
+
+    out = np.ones_like(wrapped.obj)
+    assert wrapped.new_like(out).obj is out
+
+    # new with different shape but same moments
+
+    out = np.ones(wrapped.obj.shape[-wrapped.mom_ndim :])
+    wrapped.new_like(out, verify=False)
+
+    # but with verify get an error
+    if out.shape != wrapped.obj.shape:
+        with pytest.raises(ValueError):
+            wrapped.new_like(out, verify=True)
+
+    # wrong shape
+    out = np.ones((5,))
+    with pytest.raises(ValueError):
+        wrapped.new_like(out, verify=False)
+
+    # using fastpath
+    new = wrapped.new_like(out, fastpath=True)
+
+    assert new.obj.shape == (5,)
+    assert new.mom_ndim == wrapped.mom_ndim
+
+
+def test_astype(wrapped) -> None:
+    assert wrapped.astype(None).obj is wrapped.obj
+    assert wrapped.astype(None, copy=True).obj is not wrapped.obj
+    assert wrapped.astype(np.float32).obj.dtype.type == np.float32
+    assert wrapped.astype(None, order="F").obj.flags["F_CONTIGUOUS"]
+
+
+def test_zeros_like(wrapped) -> None:
+    new = wrapped.zeros_like()
+    assert new.obj.shape == wrapped.obj.shape
+    assert new.mom_ndim == wrapped.mom_ndim
+    np.testing.assert_allclose(new.obj, 0)
+
+
+def test_copy(wrapped) -> None:
+    new = wrapped.copy()
+    assert new.obj.shape == wrapped.obj.shape
+    assert new.mom_ndim == wrapped.mom_ndim
+    np.testing.assert_allclose(new.obj, wrapped.obj)
+    assert not np.shares_memory(new.obj, wrapped.obj)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "mom_ndim", "shape"),
+    [
+        ({"mom": 3}, 1, (4,)),
+        ({"mom": (3, 3)}, 2, (4, 4)),
+        ({"val_shape": 3, "mom": 3}, 1, (3, 4)),
+        ({"val_shape": (2, 3), "mom": 3}, 1, (2, 3, 4)),
+        ({"val_shape": 3, "mom": (3, 3)}, 2, (3, 4, 4)),
+        ({"val_shape": (2, 3), "mom": (3, 3)}, 2, (2, 3, 4, 4)),
+    ],
+)
+def test_zeros(kwargs, mom_ndim, shape) -> None:
+    c = CentralWrapperNumpy.zeros(**kwargs)
+    assert c.mom_ndim == mom_ndim
+    assert c.obj.shape == shape
+
+
+def test__raises() -> None:
+    new = CentralWrapperNumpy.zeros(mom=(1, 1))
+    with pytest.raises(ValueError):
+        new._raise_if_not_mom_ndim_1()
+
+    with pytest.raises(ValueError):
+        new._raise_not_implemented()
+
+    with pytest.raises(ValueError):
+        new._raise_if_wrong_mom_shape((2,))
+
+
+def test_to_dataarray() -> None:
+    c = CentralWrapperNumpy.zeros(mom=4, val_shape=(2, 3))
+
+    assert c.to_dataarray(dims=("a", "b")).dims == ("a", "b", "mom_0")
+    assert c.to_dataarray(dims=("a", "b"), mom_dims="mom").dims == ("a", "b", "mom")
+
+    with pytest.raises(ValueError):
+        c.to_dataarray(dims=("a", "b"), mom_dims=("mom0", "mom1"))
+
+    assert c.to_dataarray(dims=("a", "b", "c")).dims == ("a", "b", "c")
+
+    with pytest.raises(ValueError):
+        c.to_dataarray(dims=("a",))
+
+    with pytest.raises(ValueError):
+        c.to_dataarray(dims=("a", "b", "c", "d"))
+
+    out = c.to_dataarray(copy=True)
+    assert not np.shares_memory(out, c.obj)
+
+    out = c.to_dataarray(copy=False)
+    assert np.shares_memory(out, c.obj)
+
+
+@pytest.mark.parametrize(
+    ("val_shape", "mom"),
+    [
+        ((10,), (3,)),
+        ((10, 3), (3,)),
+        ((10,), (3, 3)),
+        ((10, 3), (3, 3)),
+    ],
+)
+@pytest.mark.parametrize("use_weight", [False, True])
+def test_vals(rng, val_shape, mom, use_weight):
+    xy = tuple(rng.random(val_shape) for _ in mom)
+
+    weight = rng.random(val_shape) if use_weight else None
+
+    expected = cmomy.reduce_vals(*xy, weight=weight, axis=0, mom=mom)
+
+    c = CentralWrapperNumpy.zeros(mom=mom, val_shape=val_shape[1:])
+
+    c.push_vals(*xy, weight=weight, axis=0)
+    np.testing.assert_allclose(expected, c)
+
+    c.zero()
+
+    if weight is not None:
+        for *_xy, w in zip(*xy, weight):
+            c.push_val(*_xy, weight=w)
+    else:
+        for _xy in zip(*xy):
+            c.push_val(*_xy)
+    np.testing.assert_allclose(expected, c)
+
+    # from_vals
+    c = CentralWrapperNumpy.from_vals(*xy, weight=weight, axis=0, mom=mom)
+    np.testing.assert_allclose(c, expected)
+
+    # resample...
+    c = CentralWrapperNumpy.from_resample_vals(
+        *xy, weight=weight, axis=0, mom=mom, nrep=20, rng=np.random.default_rng(0)
+    )
+    expected = cmomy.resample_vals(
+        *xy, weight=weight, axis=0, mom=mom, nrep=20, rng=np.random.default_rng(0)
+    )
+    np.testing.assert_allclose(c, expected)
+
+
+def test_push_data_simple(wrapped: CentralWrapperNumpy) -> None:
+    new = wrapped.zeros_like()
+    new.push_data(wrapped.obj)
+    np.testing.assert_allclose(new, wrapped)
+
+
+@pytest.mark.parametrize(
+    ("shape", "mom_ndim"),
+    [
+        ((10, 4), 1),
+        ((10, 3, 4), 1),
+        ((10, 4, 4), 2),
+        ((10, 3, 4, 4), 2),
+    ],
+)
+def test_push_data(rng, shape, mom_ndim) -> None:
+    data = rng.random(shape)
+
+    check = cmomy.reduce_data(data, axis=0, mom_ndim=mom_ndim)
+
+    c = CentralWrapperNumpy(np.zeros(shape[1:]), mom_ndim=mom_ndim)
+    c.push_datas(data, axis=0)
+    np.testing.assert_allclose(c, check)
+
+    c.zero()
+    for d in data:
+        c.push_data(d)
+
+    np.testing.assert_allclose(c, check)
+
+
+@pytest.mark.parametrize(
+    ("shape", "mom_ndim"),
+    [
+        ((10, 4), 1),
+        ((10, 3, 4), 1),
+        ((10, 4, 4), 2),
+        ((10, 3, 4, 4), 2),
+    ],
+)
+def test_cumulative(rng, shape, mom_ndim) -> None:
+    data = rng.random(shape)
+    check = cmomy.convert.cumulative(data, axis=0, mom_ndim=mom_ndim)
+    c = CentralWrapperNumpy(data, mom_ndim=mom_ndim)
+    np.testing.assert_allclose(c.cumulative(axis=0), check)
+
+
+@pytest.mark.parametrize("shape", [(4,), (10, 4)])
+def test_moments_to_comoments(rng, shape) -> None:
+    data = rng.random(shape)
+
+    check = cmomy.convert.moments_to_comoments(data, mom=(2, -1))
+
+    c = CentralWrapperNumpy(data, mom_ndim=1)
+
+    np.testing.assert_allclose(check, c.moments_to_comoments(mom=(2, -1)))
+
+
+@pytest.mark.parametrize(
+    ("attr", "name"),
+    [
+        ("weight", "weight"),
+        ("mean", "ave"),
+        ("var", "var"),
+        (
+            "std",
+            lambda data, mom_ndim: np.sqrt(
+                cmomy.select_moment(data, "var", mom_ndim=mom_ndim)
+            ),
+        ),
+        ("cov", "cov"),
+        (
+            "cmom",
+            lambda data, mom_ndim: cmomy.assign_moment(
+                data, {"weight": 1, "ave": 0}, mom_ndim=mom_ndim, copy=True
+            ),
+        ),
+        (
+            "rmom",
+            lambda data, mom_ndim: cmomy.assign_moment(
+                cmomy.convert.moments_type(data, mom_ndim=mom_ndim, to="raw"),
+                weight=1.0,
+                mom_ndim=mom_ndim,
+                copy=False,
+            ),
+        ),
+    ],
+)
+def test_select_moment(wrapped, attr, name) -> None:
+    val = getattr(wrapped, attr)()
+    data, mom_ndim = wrapped.obj, wrapped.mom_ndim
+    if isinstance(name, str):
+        check = cmomy.select_moment(data, name, mom_ndim=mom_ndim)
+    elif callable(name):
+        check = name(data, mom_ndim)
+    np.testing.assert_allclose(val, check)
+
+
+@pytest.mark.parametrize(
+    ("shape", "mom_ndim"),
+    [
+        ((10, 4), 1),
+        ((10, 3, 4), 1),
+        ((10, 4, 4), 2),
+        ((10, 3, 4, 4), 2),
+    ],
+)
+def test_opertors(rng, shape, mom_ndim) -> None:
+    data = rng.random(shape)
+    c = CentralWrapperNumpy(data, mom_ndim=mom_ndim)
+
+    # test addition
+    check = c.reduce(axis=0)
+
+    out = functools.reduce(operator.add, c)
+    np.testing.assert_allclose(out, check)
+
+    # test inplace add
+    c1 = c[0].zeros_like()
+    for cc in c:
+        c1 += cc
+    np.testing.assert_allclose(c1, check)
+
+    # test subtraction
+    check = cmomy.reduce_data(data[:-1], axis=0, mom_ndim=mom_ndim)
+    c1 = c.reduce(axis=0) - c[-1]
+    np.testing.assert_allclose(check, c1)
+
+    # inplace subtraction
+    c1 = c.reduce(axis=0)
+    c1 -= c[-1]
+    np.testing.assert_allclose(check, c1)
+
+    # test multiple
+    check = cmomy.assign_moment(
+        data,
+        {"weight": cmomy.select_moment(data, "weight", mom_ndim=mom_ndim) * 2},
+        mom_ndim=mom_ndim,
+    )
+
+    c2 = c * 2
+    np.testing.assert_allclose(check, c2)
+
+    c2 = c.copy()
+    c2 *= 2
+    np.testing.assert_allclose(check, c2)
+
+
+@pytest.mark.parametrize(
+    ("shape", "mom_ndim", "axis", "dest"),
+    [
+        ((2, 3, 4), 1, 1, 0),
+        ((1, 2, 3, 4), 1, (0, -1), (1, 0)),
+        ((1, 2, 3, 4), 2, 0, -1),
+        ((1, 2, 3, 4, 5), 2, (1, 2), (0, -1)),
+    ],
+)
+def test_moveaxis(rng, shape, mom_ndim, axis, dest) -> None:
+    data = rng.random(shape)
+    check = cmomy.moveaxis(data, axis, dest, mom_ndim=mom_ndim)
+    c = CentralWrapperNumpy(data, mom_ndim=mom_ndim)
+
+    np.testing.assert_equal(check, c.moveaxis(axis, dest))
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["weight", "ave", "xvar"],
+)
+def test_assign_moment(rng, wrapped, name) -> None:
+    v = rng.random()
+    m = {name: v}
+
+    c = wrapped.assign_moment(m)
+
+    data, mom_ndim = wrapped.obj, wrapped.mom_ndim
+    check = cmomy.assign_moment(data, m, mom_ndim=mom_ndim)
+
+    np.testing.assert_allclose(check, c)
+
+
+@pytest.mark.parametrize(
+    ("attr", "func", "fkws"),
+    [
+        (
+            "resample_and_reduce",
+            cmomy.resample_data,
+            lambda: {"nrep": 10, "rng": np.random.default_rng(0)},
+        ),
+        ("jackknife_and_reduce", cmomy.resample.jackknife_data, lambda: {}),  # noqa: PIE807
+        ("reduce", cmomy.reduce_data, lambda: {}),  # noqa: PIE807
+    ],
+)
+def test_reduce(wrapped, attr, func, fkws) -> None:
+    data, mom_ndim = wrapped.obj, wrapped.mom_ndim
+    meth = getattr(wrapped, attr)
+    if data.ndim - mom_ndim > 0:
+        r = meth(axis=0, **fkws())
+        check = func(data, axis=0, mom_ndim=mom_ndim, **fkws())
+        np.testing.assert_allclose(r, check)
+
+    else:
+        with pytest.raises(ValueError, match="No dimension to reduce.*"):
+            meth(axis=0, **fkws())
+
+
+def test_from_raw(wrapped) -> None:
+    data, mom_ndim = wrapped.obj, wrapped.mom_ndim
+
+    raw = wrapped.to_raw()
+    new = CentralWrapperNumpy.from_raw(raw, mom_ndim=wrapped.mom_ndim)
+
+    np.testing.assert_allclose(
+        raw, cmomy.convert.moments_type(data, mom_ndim=mom_ndim, to="raw")
+    )
+    np.testing.assert_allclose(
+        new, cmomy.convert.moments_type(raw, mom_ndim=mom_ndim, to="central")
+    )

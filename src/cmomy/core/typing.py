@@ -71,6 +71,8 @@ DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 ScalarT = TypeVar("ScalarT", bound=np.generic)
 """TypeVar of for np.generic dtype."""
 
+ScalarT2 = TypeVar("ScalarT2", bound=np.generic)
+
 NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
 FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
 IntDTypeT: TypeAlias = np.int64

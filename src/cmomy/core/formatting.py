@@ -164,7 +164,7 @@ def repr_html_wrapper(x):
         out += values._repr_html_()
 
     else:
-        sections += [numpy_section(x.data)]
+        sections += [numpy_section(x.obj)]
         header_components += [
             f"<div class='xr-obj-type'>{type(values)}</div>",
         ]
