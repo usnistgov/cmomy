@@ -123,12 +123,12 @@ def repr_html_wrapper(x):
     # build the cmomy header
     obj_type = type(x).__name__
 
-    keys = [k for k in ["mom_dims"] if hasattr(x, k)]
+    keys = [k for k in ["mom", "mom_dims"] if hasattr(x, k)]
 
     attrs = {}
     for k in keys:
         v = getattr(x, k)
-        if len(v) > 0:
+        if len(v) > 0:  # pragma: no cover
             attrs[k] = tuple_to_str(v)
 
     dims = {}

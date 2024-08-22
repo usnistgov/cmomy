@@ -4,12 +4,19 @@ from __future__ import annotations
 
 import functools
 import operator
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
 
 import cmomy
 from cmomy._wrapper_numpy import CentralWrapperNumpy
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any
+
+    from cmomy.core.typing import SelectMoment
 
 
 @pytest.fixture(
@@ -24,6 +31,24 @@ def wrapped(rng, request) -> CentralWrapperNumpy[np.float64]:
     shape, mom_ndim = request.param
     data = rng.random(shape)
     return CentralWrapperNumpy(data, mom_ndim=mom_ndim)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "error", "match"),
+    [
+        ({"obj": np.zeros((2, 3, 4)), "mom_ndim": 3}, ValueError, None),
+        (
+            {"obj": np.zeros((2, 1)), "mom_ndim": 1},
+            ValueError,
+            "Moments must be positive",
+        ),
+        ({"obj": [1, 2, 3], "mom_ndim": 1, "fastpath": True}, TypeError, "Must pass.*"),
+        ({"obj": np.zeros(3, dtype=np.float16), "mom_ndim": 1}, ValueError, None),
+    ],
+)
+def test_init_raises(kwargs, error, match) -> None:
+    with pytest.raises(error, match=match):
+        CentralWrapperNumpy(**kwargs)
 
 
 def test_check_dtype(wrapped) -> None:
@@ -165,8 +190,8 @@ def test_vals(rng, val_shape, mom, use_weight):
         for *_xy, w in zip(*xy, weight):
             c.push_val(*_xy, weight=w)
     else:
-        for _xy in zip(*xy):
-            c.push_val(*_xy)
+        for args in zip(*xy):
+            c.push_val(*args)
     np.testing.assert_allclose(expected, c)
 
     # from_vals
@@ -183,7 +208,20 @@ def test_vals(rng, val_shape, mom, use_weight):
     np.testing.assert_allclose(c, expected)
 
 
-def test_push_data_simple(wrapped: CentralWrapperNumpy) -> None:
+@pytest.mark.parametrize("c", [CentralWrapperNumpy.zeros(mom=(3, 3))])
+@pytest.mark.parametrize(
+    "args",
+    [
+        (1,),
+        (1, 1, 1),
+    ],
+)
+def test_push_val_wrong_numpy(c, args) -> None:
+    with pytest.raises(ValueError):
+        c.push_val(*args)
+
+
+def test_push_data_simple(wrapped: CentralWrapperNumpy[Any]) -> None:
     new = wrapped.zeros_like()
     new.push_data(wrapped.obj)
     np.testing.assert_allclose(new, wrapped)
@@ -271,11 +309,13 @@ def test_moments_to_comoments(rng, shape) -> None:
         ),
     ],
 )
-def test_select_moment(wrapped, attr, name) -> None:
+def test_select_moment(
+    wrapped: CentralWrapperNumpy[Any], attr, name: str | Callable[..., Any]
+) -> None:
     val = getattr(wrapped, attr)()
     data, mom_ndim = wrapped.obj, wrapped.mom_ndim
     if isinstance(name, str):
-        check = cmomy.select_moment(data, name, mom_ndim=mom_ndim)
+        check = cmomy.select_moment(data, cast("SelectMoment", name), mom_ndim=mom_ndim)
     elif callable(name):
         check = name(data, mom_ndim)
     np.testing.assert_allclose(val, check)
@@ -329,6 +369,21 @@ def test_opertors(rng, shape, mom_ndim) -> None:
     c2 = c.copy()
     c2 *= 2
     np.testing.assert_allclose(check, c2)
+
+
+def test_operator_raises() -> None:
+    c0 = CentralWrapperNumpy.zeros(mom=3)
+    c1 = CentralWrapperNumpy.zeros(mom=4)
+    c2 = CentralWrapperNumpy.zeros(mom=3).assign_moment({"weight": 1})
+
+    with pytest.raises(TypeError):
+        _ = c0 + 1  # type: ignore[operator]
+
+    with pytest.raises(ValueError):
+        _ = c0 + c1
+
+    with pytest.raises(ValueError):
+        _ = c0 - c2
 
 
 @pytest.mark.parametrize(

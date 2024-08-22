@@ -27,7 +27,9 @@ from .utils import assign_moment
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Hashable, Mapping, Sequence
-    from typing import NoReturn
+    from typing import (
+        NoReturn,
+    )
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
@@ -37,6 +39,7 @@ if TYPE_CHECKING:
         ArrayOrder,
         AxisReduce,
         DataCasting,
+        DimsReduce,
         Groups,
         KeepAttrs,
         MissingCoreDimOptions,
@@ -98,15 +101,12 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         # must have positive moments
         if any(m <= 0 for m in self.mom):
-            msg = "moments must be positive"
+            msg = "Moments must be positive"
             raise ValueError(msg)
 
         self._validate_dtype()
 
-    @abstractmethod
-    def _validate_dtype(self) -> None:
-        pass
-
+    # ** Standard properties --------------------------------------------------
     @property
     def obj(self) -> GenArrayT:
         return self._obj
@@ -122,7 +122,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     @property
     @abstractmethod
     def mom_shape(self) -> MomentsStrict:
-        pass
+        """Shape of moments dimensions."""
 
     def __repr__(self) -> str:
         """Repr for class."""
@@ -144,17 +144,8 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         """Used by np.array(self)."""  # D401
         return np.asarray(self._obj, dtype=dtype)
 
-    def __getitem__(self, key: Any) -> Self:
-        """
-        Get new object by indexing.
-
-        Note that only objects with the same moment(s) shape are allowed.
-
-        If you want to extract data in general, use `self.to_values()[....]`.
-        """
-        return self._new_like(obj=self.obj[key])
-
-    # ** creation -------------------------------------------------------------
+    # ** Create/copy/new ------------------------------------------------------
+    @abstractmethod
     def _new_like(self, obj: GenArrayT) -> Self:
         """Create new object with same properties (mom_ndim, etc) as self"""
 
@@ -304,6 +295,10 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         if mom_shape != self.mom_shape:
             msg = f"Moments shape={mom_shape} != {self.mom_shape=}"
             raise ValueError(msg)
+
+    @abstractmethod
+    def _validate_dtype(self) -> None:
+        """Validate dtype of obj"""
 
     # ** Pushing routines -----------------------------------------------------
     def _pusher(self, parallel: bool | None = None, size: int | None = None) -> Pusher:
@@ -515,46 +510,48 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         """
 
     # ** Operators ------------------------------------------------------------
-    def _check_other(self, b: Self) -> None:
+    def _check_other(self, other: Self) -> None:
         """Check other object."""
-        if type(self) is not type(b):
-            msg = f"{type(self)=} != {type(b)=}"
+        if type(self) is not type(other):
+            msg = f"{type(self)=} != {type(other)=}"
             raise TypeError(msg)
-        if self.mom_ndim != b.mom_ndim:
-            msg = f"{self.mom_ndim} != {b.mom_ndim=}"
+        if self.mom_shape != other.mom_shape:
+            msg = f"{self.mom_shape=} != {other.mom_shape=}"
             raise ValueError(msg)
-        self._check_other_conformable(b)
+        self._check_other_conformable(other)
 
-    def _check_other_conformable(self, b: Self) -> None:  # noqa: ARG002, PLR6301
-        msg = "Operation not supported."
-        raise NotImplementedError(msg)
+    def _check_other_conformable(self, other: Self) -> None:
+        """Add any subclass specific checks to this"""
+        # pragma: no cover
 
-    def __iadd__(self, b: Self) -> Self:  # noqa: PYI034
+    def __iadd__(self, other: Self) -> Self:  # noqa: PYI034
         """Self adder."""
-        self._check_other(b)
-        return self.push_data(b.obj)
+        self._check_other(other)
+        return self.push_data(other.obj)
 
-    def __add__(self, b: Self) -> Self:
+    def __add__(self, other: Self) -> Self:
         """Add objects to new object."""
-        self._check_other(b)
-        return self.copy().push_data(b.obj)
+        self._check_other(other)
+        return self.copy().push_data(other.obj)
 
-    def __isub__(self, b: Self) -> Self:  # noqa: PYI034
+    def _get_sub_other(self, other: Self) -> Self:
+        if isinstance(self.obj, xr.Dataset):
+            msg = "Not implemented for dataset"
+            raise TypeError(msg)
+        self._check_other(other)
+        if not np.all(self.weight() >= other.weight()):  # pyright: ignore[reportCallIssue, reportArgumentType]
+            msg = "weights of `self` must by >= weights of `other`"
+            raise ValueError(msg)
+        return other.assign_moment(weight=-other.weight(), copy=True)
+
+    def __isub__(self, other: Self) -> Self:  # noqa: PYI034
         """Inplace subtraction."""
         # NOTE: consider implementint push_data_scale routine to make this cleaner
-        self._check_other(b)
-        if not np.all(self.weight() >= b.weight()):
-            raise ValueError
-        b = b.assign_moment(weight=-b.weight(), copy=True)
-        return self.push_data(b.obj)
+        return self.push_data(self._get_sub_other(other)._obj)
 
-    def __sub__(self, b: Self) -> Self:
+    def __sub__(self, other: Self) -> Self:
         """Subtract objects."""
-        self._check_other(b)
-        if not np.all(self.weight() >= b.weight()):
-            raise ValueError
-        new = b.assign_moment(weight=-b.weight(), copy=True)
-        return new.push_data(self.obj)
+        return self._get_sub_other(other).push_data(self._obj)
 
     def __mul__(self, scale: float) -> Self:
         """New object with weight scaled by scale."""  # D401
@@ -757,7 +754,14 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     # ** Interface to .convert ------------------------------------------------
     @docfiller.decorate
     def cumulative(
-        self, axis: AxisReduce | MissingType = MISSING, **kwargs: Any
+        self,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
+        move_axis_to_end: bool = False,
+        parallel: bool | None = None,
+        keep_attrs: KeepAttrs = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
         """
         Convert to cumulative moments.
@@ -775,13 +779,27 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         return cumulative(
             self._obj,
-            axis=axis,
             mom_ndim=self._mom_ndim,
-            **kwargs,
+            inverse=False,
+            out=None,
+            dtype=None,
+            mom_dims=getattr(self, "mom_dims", None),
+            axis=axis,
+            dim=dim,
+            move_axis_to_end=move_axis_to_end,
+            parallel=parallel,
+            keep_attrs=keep_attrs,
+            on_missing_core_dim=on_missing_core_dim,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
     @docfiller.decorate
-    def moments_to_comoments(self, *, mom: tuple[int, int], **kwargs: Any) -> Self:
+    def moments_to_comoments(
+        self,
+        *,
+        mom: tuple[int, int],
+        **kwargs: Any,
+    ) -> Self:
         """
         Convert moments (mom_ndim=1) to comoments (mom_ndim=2).
 
@@ -823,10 +841,6 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     def var(self, squeeze: bool = True) -> GenArrayT:
         """Variance (second central moment)."""
         return self.select_moment("var", squeeze=squeeze)
-
-    def std(self, squeeze: bool = True) -> GenArrayT:
-        """Standard deviation."""  # D401
-        raise NotImplementedError
 
     def cov(self) -> GenArrayT:
         """Covariance (or variance if ``mom_ndim==1``)."""
@@ -923,7 +937,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         self,
         *,
         axis: AxisReduce | MissingType = -1,
-        freq: ArrayLike | None = None,
+        freq: Any = None,
         nrep: int | None = None,
         rng: np.random.Generator | None = None,
         parallel: bool | None = None,
@@ -959,18 +973,19 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         """
         from .resample import resample_data
 
-        obj = resample_data(  # pyright: ignore[reportUnknownVariableType]  # Not sure what's going on here...
-            self._obj,
-            freq=freq,
-            nrep=nrep,
-            rng=rng,
-            mom_ndim=self._mom_ndim,
-            axis=axis,
-            parallel=parallel,
-            **kwargs,
+        # pyright error due to `freq` above...
+        return self._new_like(
+            obj=resample_data(
+                self._obj,  # pyright: ignore[reportArgumentType]
+                mom_ndim=self._mom_ndim,
+                nrep=nrep,
+                rng=rng,
+                axis=axis,
+                freq=freq,
+                parallel=parallel,
+                **kwargs,
+            ),
         )
-
-        return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]
 
     @docfiller.decorate
     def jackknife_and_reduce(
@@ -1073,7 +1088,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         --------
         numpy.zeros
         """
-        raise NotImplementedError
+        raise NotImplementedError  # pragma: no cover
 
     @classmethod
     @abstractmethod

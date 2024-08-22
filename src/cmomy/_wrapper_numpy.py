@@ -18,6 +18,7 @@ from .core.validate import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike
@@ -129,13 +130,29 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
             fastpath=fastpath,
         )
 
-    def _validate_dtype(self) -> None:
-        _ = validate_floating_dtype(self.obj.dtype)
-
+    # * Properties ------------------------------------------------------------
     @property
     def mom_shape(self) -> MomentsStrict:
         return self.obj.shape[-self._mom_ndim :]  # type: ignore[return-value]
 
+    def __getitem__(self, key: Any) -> Self:
+        """
+        Get new object by indexing.
+
+        Note that only objects with the same moment(s) shape are allowed.
+
+        If you want to extract data in general, use `self.to_values()[....]`.
+        """
+        if self.mom_ndim >= self.obj.ndim:
+            msg = "Can only use __getitem__ with extra dimensions."
+            raise ValueError(msg)
+        return self._new_like(obj=self.obj[key])
+
+    def __iter__(self) -> Iterator[Self]:
+        for k in range(self._obj.shape[0]):
+            yield self[k]
+
+    # ** Create/copy/new ------------------------------------------------------
     @overload
     def new_like(
         self,
@@ -281,108 +298,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
             dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
 
-    # * To/from xarray ------------------------------------------------------------
-    @docfiller.decorate
-    def to_dataarray(
-        self,
-        *,
-        dims: XArrayDimsType = None,
-        attrs: XArrayAttrsType = None,
-        coords: XArrayCoordsType = None,
-        name: XArrayNameType = None,
-        indexes: XArrayIndexesType = None,  # noqa: ARG002
-        mom_dims: MomDims | None = None,
-        template: xr.DataArray | None = None,
-        copy: bool = False,
-    ) -> xr.DataArray:
-        """
-        Create a :class:`xarray.DataArray` representation of underlying data.
-
-        Parameters
-        ----------
-        {xr_params}
-        {copy_tf}
-
-        Returns
-        -------
-        output : DataArray
-
-
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralWrapperNumpy(rng.random((1, 2, 4)), mom_ndim=1)
-        >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
-        array([[[0.637 , 0.2698, 0.041 , 0.0165],
-                [0.8133, 0.9128, 0.6066, 0.7295]]])
-
-        Default constructor
-
-        >>> da.to_dataarray()
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
-        array([[[0.637 , 0.2698, 0.041 , 0.0165],
-                [0.8133, 0.9128, 0.6066, 0.7295]]])
-        Dimensions without coordinates: dim_0, dim_1, mom_0
-
-        Setting attributes
-
-        >>> da.to_dataarray()
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
-        array([[[0.637 , 0.2698, 0.041 , 0.0165],
-                [0.8133, 0.9128, 0.6066, 0.7295]]])
-        Dimensions without coordinates: dim_0, dim_1, mom_0
-        >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
-        array([[[0.637 , 0.2698, 0.041 , 0.0165],
-                [0.8133, 0.9128, 0.6066, 0.7295]]])
-
-        """
-        data = self.obj
-        if copy:
-            data = data.copy()
-
-        if template is not None:
-            out = template.copy(data=data)
-        else:
-            val_ndim = self.obj.ndim - self.mom_ndim
-            if dims is None:
-                dims = tuple(f"dim_{i}" for i in range(val_ndim))
-            elif isinstance(dims, str):
-                dims = (dims,)
-            else:
-                # try to convert to tuple
-                dims = tuple(dims)  # type: ignore[arg-type]
-
-            if len(dims) == self.obj.ndim:
-                dims_output = dims
-
-            elif len(dims) == val_ndim:
-                if mom_dims is None:
-                    mom_dims = tuple(f"mom_{i}" for i in range(self.mom_ndim))
-                elif isinstance(mom_dims, str):
-                    mom_dims = (mom_dims,)
-                else:
-                    # try to convert to tuple
-                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]
-
-                if len(mom_dims) != self.mom_ndim:
-                    msg = f"{mom_dims=} != {self.mom_ndim=}"
-                    raise ValueError(msg)
-
-                dims_output = dims + mom_dims
-
-            else:
-                msg = f"Problem with {dims}, {mom_dims}.  Total length should be {self.obj.ndim}"
-                raise ValueError(msg)
-            out = xr.DataArray(
-                data, dims=dims_output, coords=coords, attrs=attrs, name=name
-            )
-
-        return out
-
-    # TODO(wpk): to_x...
+    # ** Utils ----------------------------------------------------------------
+    def _validate_dtype(self) -> None:
+        _ = validate_floating_dtype(self.obj.dtype)
 
     # ** Pushing --------------------------------------------------------------
     @docfiller_inherit_abc()
@@ -548,7 +466,17 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         )
         return self
 
-    # * Other -----------------------------------------------------------------
+    # ** Operators ------------------------------------------------------------
+    def _check_other_conformable(self, other: Self) -> None:
+        if self.obj.shape != other.obj.shape:
+            msg = "shape input={self.obj.shape} != other shape = {other.obj.shape}"
+            raise ValueError(msg)
+
+    # ** Access to underlying statistics --------------------------------------
+    def std(self, squeeze: bool = True) -> NDArray[ScalarT]:
+        return np.sqrt(self.var(squeeze=squeeze))
+
+    # ** Interface to .reduction ----------------------------------------------
     @docfiller_inherit_abc()
     def reduce(
         self,
@@ -1137,10 +1065,105 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         """
         return self.fill(value=0.0)
 
-    def _check_other_conformable(self, b: Self) -> None:
-        if self.obj.shape != b.obj.shape:
-            msg = "shape input={self.obj.shape} != other shape = {b.obj.shape}"
-            raise ValueError(msg)
+    # * To/from xarray ------------------------------------------------------------
+    @docfiller.decorate
+    def to_dataarray(
+        self,
+        *,
+        dims: XArrayDimsType = None,
+        attrs: XArrayAttrsType = None,
+        coords: XArrayCoordsType = None,
+        name: XArrayNameType = None,
+        indexes: XArrayIndexesType = None,  # noqa: ARG002
+        mom_dims: MomDims | None = None,
+        template: xr.DataArray | None = None,
+        copy: bool = False,
+    ) -> xr.DataArray:
+        """
+        Create a :class:`xarray.DataArray` representation of underlying data.
 
-    def std(self, squeeze: bool = True) -> NDArray[ScalarT]:
-        return np.sqrt(self.var(squeeze=squeeze))
+        Parameters
+        ----------
+        {xr_params}
+        {copy_tf}
+
+        Returns
+        -------
+        output : DataArray
+
+
+        Examples
+        --------
+        >>> from cmomy.random import default_rng
+        >>> rng = default_rng(0)
+        >>> da = CentralWrapperNumpy(rng.random((1, 2, 4)), mom_ndim=1)
+        >>> da
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
+
+        Default constructor
+
+        >>> da.to_dataarray()
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
+        Dimensions without coordinates: dim_0, dim_1, mom_0
+
+        Setting attributes
+
+        >>> da.to_dataarray()
+        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
+        Dimensions without coordinates: dim_0, dim_1, mom_0
+        >>> da
+        <CentralWrapperNumpy(mom_ndim=1)>
+        array([[[0.637 , 0.2698, 0.041 , 0.0165],
+                [0.8133, 0.9128, 0.6066, 0.7295]]])
+
+        """
+        data = self.obj
+        if copy:
+            data = data.copy()
+
+        if template is not None:
+            out = template.copy(data=data)
+        else:
+            val_ndim = self.obj.ndim - self.mom_ndim
+            if dims is None:
+                dims = tuple(f"dim_{i}" for i in range(val_ndim))
+            elif isinstance(dims, str):
+                dims = (dims,)
+            else:
+                # try to convert to tuple
+                dims = tuple(dims)  # type: ignore[arg-type]
+
+            if len(dims) == self.obj.ndim:
+                dims_output = dims
+
+            elif len(dims) == val_ndim:
+                if mom_dims is None:
+                    mom_dims = tuple(f"mom_{i}" for i in range(self.mom_ndim))
+                elif isinstance(mom_dims, str):
+                    mom_dims = (mom_dims,)
+                else:
+                    # try to convert to tuple
+                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]
+
+                if len(mom_dims) != self.mom_ndim:
+                    msg = f"{mom_dims=} != {self.mom_ndim=}"
+                    raise ValueError(msg)
+
+                dims_output = dims + mom_dims
+
+            else:
+                msg = f"Problem with {dims}, {mom_dims}.  Total length should be {self.obj.ndim}"
+                raise ValueError(msg)
+            out = xr.DataArray(
+                data, dims=dims_output, coords=coords, attrs=attrs, name=name
+            )
+
+        return out
+
+    # TODO(wpk): to_x...

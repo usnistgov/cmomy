@@ -40,8 +40,12 @@ from .core.xr_utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-    from typing import Any
+    from collections.abc import (
+        Iterable,
+    )
+    from typing import (
+        Any,
+    )
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
@@ -258,6 +262,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -274,6 +279,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -291,6 +297,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -308,6 +315,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -325,6 +333,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
@@ -342,6 +351,7 @@ def cumulative(
     parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: Any = ...,
+    keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
