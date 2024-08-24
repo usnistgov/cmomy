@@ -39,6 +39,8 @@ if TYPE_CHECKING:
 
 # New typing types
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
+GenXArrayT = TypeVar("GenXArrayT", xr.DataArray, xr.Dataset)
+GenXArrayT2 = TypeVar("GenXArrayT2", xr.DataArray, xr.Dataset)
 
 
 # Axis/Dim reduction type

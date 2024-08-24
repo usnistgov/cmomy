@@ -93,6 +93,7 @@ def default_rng(seed: SEED_TYPES | None = None) -> np.random.Generator:
     return get_internal_rng()
 
 
+# TODO(wpk): Allow passing in seed as rng
 def validate_rng(
     rng: np.random.Generator | None, seed: int | None = None
 ) -> np.random.Generator:

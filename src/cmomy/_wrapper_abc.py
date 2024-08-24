@@ -155,9 +155,10 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         self,
         obj: GenArrayT | None = None,
         *,
-        copy: bool | None = None,
         verify: bool = False,
+        copy: bool | None = None,
         dtype: DTypeLike = None,
+        order: ArrayOrder = None,
         fastpath: bool = False,
     ) -> Self:
         """
@@ -167,10 +168,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         ----------
         data : {t_array}
             data for new object
-        {copy}
-        {order}
         {verify}
+        {copy}
         {dtype}
+        {order}
+        {fastpath}
 
         Returns
         -------
@@ -257,11 +259,6 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     def copy(self) -> Self:
         """
         Create a new object with copy of data.
-
-        Parameters
-        ----------
-        **copy_kws
-            passed to parameter ``copy_kws`` in method :meth:`new_like`
 
         Returns
         -------
@@ -634,8 +631,8 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     @docfiller.decorate
     def moveaxis(
         self,
-        axis: int | tuple[int, ...],
-        dest: int | tuple[int, ...],
+        axis: int | tuple[int, ...] | MissingType = MISSING,
+        dest: int | tuple[int, ...] | MissingType = MISSING,
         **kwargs: Any,
     ) -> Self:
         """
@@ -684,7 +681,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         dim_combined: str = "variable",
         coords_combined: str | Sequence[Hashable] | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        on_missing_core_dim: MissingCoreDimOptions = "drop",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
         """
@@ -749,7 +746,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             mom_dims=getattr(self, "mom_dims", None),
             **kwargs,
         )
-        return self.new_like(obj=obj, fastpath=True)
+        return self._new_like(obj=obj)
 
     # ** Interface to .convert ------------------------------------------------
     @docfiller.decorate
@@ -993,7 +990,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         *,
         axis: AxisReduce | MissingType = -1,
         parallel: bool | None = None,
-        data_reduced: GenArrayT | None = None,
+        data_reduced: Self | GenArrayT | None = None,
         **kwargs: Any,
     ) -> Self:
         """
@@ -1011,6 +1008,9 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             Instance of calling class with jackknife resampling along ``axis``.
         """
         from .resample import jackknife_data
+
+        if isinstance(data_reduced, CentralWrapperABC):
+            data_reduced = data_reduced.obj
 
         return self._new_like(
             obj=jackknife_data(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
@@ -1197,6 +1197,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         raw: GenArrayT,
         *,
         mom_ndim: Mom_NDim,
+        **kwargs: Any,
     ) -> Self:
         """
         Create object from raw moment data.
@@ -1229,6 +1230,6 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         from . import convert
 
         return cls(
-            obj=convert.moments_type(raw, mom_ndim=mom_ndim, to="central"),  # pyright: ignore[reportArgumentType]
+            obj=convert.moments_type(raw, mom_ndim=mom_ndim, to="central", **kwargs),  # pyright: ignore[reportArgumentType]
             mom_ndim=mom_ndim,
         )

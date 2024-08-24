@@ -80,11 +80,9 @@ def test_new_like(wrapped) -> None:
     with pytest.raises(ValueError):
         wrapped.new_like(out, verify=False)
 
-    # using fastpath
-    new = wrapped.new_like(out, fastpath=True)
-
-    assert new.obj.shape == (5,)
-    assert new.mom_ndim == wrapped.mom_ndim
+    # using fastpath, should still catch this
+    with pytest.raises(ValueError):
+        wrapped.new_like(out, fastpath=True)
 
 
 def test_astype(wrapped) -> None:

@@ -2,26 +2,31 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
-import xarray as xr
+
+from cmomy.core.typing import MomentsStrict
 
 from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .docstrings import docfiller
 from .missing import MISSING
 from .validate import (
+    is_dataset,
+    is_xarray,
     validate_mom_dims,
     validate_not_none,
 )
 
 if TYPE_CHECKING:
     from collections.abc import (
+        Collection,
         Hashable,
         Mapping,
     )
     from typing import Any
 
+    import xarray as xr
     from numpy.typing import ArrayLike
 
     from .typing import (
@@ -35,6 +40,8 @@ if TYPE_CHECKING:
         Mom_NDim,
         MomDims,
         MomDimsStrict,
+        MomentsStrict,
+        NDArrayAny,
     )
 
 
@@ -79,7 +86,7 @@ def select_axis_dim(
     axis = validate_not_none(axis, "axis")
     dim = validate_not_none(dim, "dim")
 
-    if isinstance(data, xr.Dataset):
+    if is_dataset(data):
         if axis is not MISSING or dim is MISSING:
             msg = "For Dataset, must specify ``dim`` value other than ``None`` only."
             raise ValueError(msg)
@@ -135,7 +142,7 @@ def select_axis_dim_mult(  # noqa: C901
 
     This is like `select_axis_dim`, but allows multiple values in axis/dim.
     """
-    if isinstance(data, xr.Dataset):
+    if is_dataset(data):
         if axis is not MISSING or dim is MISSING:
             msg = "For Dataset, must specify ``dim`` value only."
             raise ValueError(msg)
@@ -259,7 +266,7 @@ def replace_coords_from_isel(
 
 def raise_if_dataset(*args: Any, msg: str = "Dataset not allowed.") -> None:
     """Raise TypeError if value is a Dataset."""
-    if any(isinstance(x, xr.Dataset) for x in args):
+    if any(is_dataset(x) for x in args):
         raise TypeError(msg)
 
 
@@ -304,7 +311,7 @@ def select_ndat(
     ...
     ValueError: Cannot select moment dimension. axis=2, dim='mom'.
     """
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         return data.sizes[dim]
 
@@ -314,3 +321,22 @@ def select_ndat(
         return data.shape[axis]
     msg = "Must specify integer axis for array input."
     raise TypeError(msg)
+
+
+def get_mom_shape(
+    data: NDArrayAny | xr.DataArray | xr.Dataset,
+    mom_dims: MomDimsStrict,
+) -> MomentsStrict:
+    """Extract moments shape from xarray object."""
+    if isinstance(data, np.ndarray):
+        mom_shape = data.shape[-len(mom_dims) :]
+    else:
+        mom_shape = tuple(data.sizes[m] for m in mom_dims)
+    return cast("MomentsStrict", mom_shape)
+
+
+def contains_dims(
+    data: xr.DataArray | xr.Dataset, dims: str | Collection[Hashable]
+) -> bool:
+    """Wheater data contains `dims`."""
+    return all(d in data.dims for d in dims)

@@ -34,6 +34,28 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
 
+# * TypeGuards ----------------------------------------------------------------
+def is_dataarray(x: Any) -> TypeGuard[xr.DataArray]:
+    """Typeguard dataarray."""
+    return isinstance(x, xr.DataArray)
+
+
+def is_dataset(x: Any) -> TypeGuard[xr.Dataset]:
+    """Typeguard dataset"""
+    return isinstance(x, xr.Dataset)
+
+
+def is_xarray(x: Any) -> TypeGuard[xr.Dataset | xr.DataArray]:
+    """Typeguard xarray object"""
+    return isinstance(x, (xr.DataArray, xr.Dataset))
+
+
+def are_same_type(*args: Any) -> bool:
+    """Check if all args are the same type."""
+    type0: Any = type(args[0])
+    return any(type0 is not type(a) for a in args[1:])
+
+
 # * Moment validation ---------------------------------------------------------
 def is_mom_ndim(mom_ndim: int | None) -> TypeGuard[Mom_NDim]:
     """Validate mom_ndim."""
@@ -135,6 +157,7 @@ def validate_mom_and_mom_ndim(
 @docfiller.decorate
 def validate_floating_dtype(
     dtype: DTypeLike,
+    name: Hashable = "array",
 ) -> None | np.dtype[np.float32] | np.dtype[np.float64]:
     """
     Validate that dtype is conformable float32 or float64.
@@ -160,7 +183,7 @@ def validate_floating_dtype(
     if dtype.type in {np.float32, np.float64}:
         return dtype  # type: ignore[return-value]
 
-    msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
+    msg = f"{dtype=} not supported for {name}.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
 
 
@@ -206,11 +229,11 @@ def validate_mom_dims(
 ) -> MomDimsStrict:
     """Validate mom_dims to correct form."""
     if mom_dims is None:
-        if isinstance(out, xr.Dataset):
+        if is_dataset(out):
             # select first array in dataset
             out = out[next(iter(out))]
 
-        if isinstance(out, xr.DataArray):
+        if is_dataarray(out):
             return cast("MomDimsStrict", out.dims[-mom_ndim:])
 
         if mom_ndim == 1:

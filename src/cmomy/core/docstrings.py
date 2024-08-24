@@ -253,6 +253,8 @@ def _dummy_docstrings() -> None:
         How to handle missing core dimensions on input variables.
     apply_ufunc_kwargs : dict-like
         Extra parameters to :func:`xarray.apply_ufunc`
+    fastpath : bool
+        Internal variable.
     """
 
 
