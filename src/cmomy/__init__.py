@@ -11,6 +11,8 @@ if TYPE_CHECKING:
     from . import convert, random, reduction, resample, rolling, utils  # noqa: TCH004
     from ._central_dataarray import xCentralMoments  # noqa: TCH004
     from ._central_numpy import CentralMoments  # noqa: TCH004
+    from ._wrapper_numpy import CentralWrapperNumpy  # noqa: TCH004
+    from ._wrapper_xarray import CentralWrapperXArray  # noqa: TCH004
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TCH004
     from .convert import concat  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
@@ -42,6 +44,8 @@ else:
             "convert": ["concat"],
             "_central_numpy": ["CentralMoments"],
             "_central_dataarray": ["xCentralMoments"],
+            "_wrapper_numpy": ["CentralWrapperNumpy"],
+            "_wrapper_xarray": ["CentraWrapperXArray"],
             "confidence_interval": ["bootstrap_confidence_interval"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
@@ -69,6 +73,8 @@ __email__ = "wpk@nist.gov"
 
 __all__ = [
     "CentralMoments",
+    "CentralWrapperNumpy",
+    "CentralWrapperXArray",
     "__version__",
     "assign_moment",
     "bootstrap_confidence_interval",

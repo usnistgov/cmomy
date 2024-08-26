@@ -396,6 +396,11 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
+    Returns
+    -------
+    out : ndarray or DataArray or Dataset
+        Same type as ``values_in``, with moments accumulated over ``axis``.
+
     Examples
     --------
     >>> import cmomy
@@ -595,6 +600,8 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     mom_dims2 : tuple of str
         Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
     {keep_attrs}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------

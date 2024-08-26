@@ -84,6 +84,8 @@ if TYPE_CHECKING:
 # * Reduce vals ---------------------------------------------------------------
 # ** overloads
 # TODO(wpk): Also allow y to be a dataset...
+
+
 @overload
 def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     x: xr.Dataset,

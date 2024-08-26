@@ -51,7 +51,7 @@ if TYPE_CHECKING:
 from numpy.typing import NDArray
 
 from ._wrapper_abc import CentralWrapperABC
-from .core.docstrings import docfiller
+from .core.docstrings import docfiller_wrapper_numpy as docfiller
 from .core.typing import ScalarT
 
 docfiller_abc = docfiller.factory_from_parent(CentralWrapperABC)
@@ -132,7 +132,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
             fastpath=fastpath,
         )
 
-    # * Properties ------------------------------------------------------------
+    # ** Properties ------------------------------------------------------------
     @property
     def mom_shape(self) -> MomentsStrict:
         return self.obj.shape[-self._mom_ndim :]  # type: ignore[return-value]
@@ -477,11 +477,8 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
             msg = "shape input={self.obj.shape} != other shape = {other.obj.shape}"
             raise ValueError(msg)
 
-    # ** Access to underlying statistics --------------------------------------
-    def std(self, squeeze: bool = True) -> NDArray[ScalarT]:
-        return np.sqrt(self.var(squeeze=squeeze))
-
-    # ** Interface to .reduction ----------------------------------------------
+    # ** Interface to modules -------------------------------------------------
+    # *** .reduction ----------------------------------------------------------
     @docfiller_inherit_abc()
     def reduce(
         self,
@@ -514,6 +511,10 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
                 parallel=parallel,
             )
         return self._new_like(obj)
+
+    # ** Access to underlying statistics --------------------------------------
+    def std(self, squeeze: bool = True) -> NDArray[ScalarT]:
+        return np.sqrt(self.var(squeeze=squeeze))
 
     # ** Constructors ----------------------------------------------------------
     @overload
@@ -826,6 +827,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         raw: NDArray[ScalarT],
         *,
         mom_ndim: Mom_NDim,
+        **kwargs: Any,
     ) -> Self:
         """
         Examples
@@ -868,9 +870,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         >>> dy_cen.cmom()  # this matches above
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
         """
-        return super().from_raw(raw=raw, mom_ndim=mom_ndim)
+        return super().from_raw(raw=raw, mom_ndim=mom_ndim, **kwargs)
 
-    # * Custom for this class -------------------------------------------------
+    # ** Custom for this class -------------------------------------------------
     def _raise_if_scalar(self, message: str | None = None) -> None:
         if self._obj.ndim <= self.mom_ndim:
             if message is None:  # pragma: no cover
@@ -936,7 +938,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         new_shape = (*shape, *self.mom_shape)
         obj = self._obj.reshape(new_shape, order=order)
         # TODO(wpk):  figure out how to better implement new_like to make this work correctly...
-        return self.new_like(obj)
+        return self.new_like(obj)  # type: ignore[return-value]
 
     @docfiller.decorate
     def resample(
@@ -983,7 +985,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         indices = np.asarray(indices, dtype=np.int64)
         obj = np.take(obj, indices, axis=axis)  # pyright: ignore[reportUnknownMemberType]
 
-        return self.new_like(obj)
+        return self.new_like(obj)  # type: ignore[return-value]
 
     @docfiller.decorate
     def block(
@@ -1069,7 +1071,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         """
         return self.fill(value=0.0)
 
-    # * To/from xarray ------------------------------------------------------------
+    # ** To/from xarray ------------------------------------------------------------
     @docfiller.decorate
     def to_dataarray(
         self,
@@ -1203,16 +1205,16 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralMoments.from_vals(rng.random((10, 1, 2)), axis=0, mom=2)
+        >>> da = CentralWrapperNumpy.from_vals(rng.random((10, 1, 2)), axis=0, mom=2)
         >>> da
-        <CentralMoments(val_shape=(1, 2), mom=(2,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
 
         Default constructor
 
-        >>> da.to_xcentralmoments()
-        <CentralWrapperXArray(val_shape=(1, 2), mom=(2,))>
+        >>> da.to_x()
+        <CentralWrapperXArray(mom_ndim=1)>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
@@ -1220,14 +1222,14 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
 
         Setting attributes
 
-        >>> da.to_xcentralmoments()
-        <CentralWrapperXArray(val_shape=(1, 2), mom=(2,))>
+        >>> da.to_x()
+        <CentralWrapperXArray(mom_ndim=1)>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da
-        <CentralMoments(val_shape=(1, 2), mom=(2,))>
+        <CentralWrapperNumpy(mom_ndim=1)>
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
 

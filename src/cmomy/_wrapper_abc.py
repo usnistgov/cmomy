@@ -106,17 +106,20 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         self._validate_dtype()
 
-    # ** Standard properties --------------------------------------------------
+    # ** Properties -----------------------------------------------------------
     @property
     def obj(self) -> GenArrayT:
+        """Underlying object."""
         return self._obj
 
     @property
     def mom_ndim(self) -> Mom_NDim:
+        """Number of moment dimensions."""
         return self._mom_ndim
 
     @property
     def mom(self) -> MomentsStrict:
+        """Moments tuple."""
         return mom_shape_to_mom(self.mom_shape)
 
     @property
@@ -147,7 +150,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     # ** Create/copy/new ------------------------------------------------------
     @abstractmethod
     def _new_like(self, obj: GenArrayT) -> Self:
-        """Create new object with same properties (mom_ndim, etc) as self"""
+        """Create new object with same properties (mom_ndim, etc) as self with no checks and fastpath"""
 
     @abstractmethod
     @docfiller.decorate
@@ -166,8 +169,8 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        data : {t_array}
-            data for new object
+        obj : {t_array}
+            Data for new object.  Must be conformable to ``self.obj``.
         {verify}
         {copy}
         {dtype}
@@ -228,15 +231,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         numpy.ndarray.astype
         """
         validate_floating_dtype(dtype)
-
         kwargs = {"order": order, "casting": casting, "subok": subok, "copy": copy}
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
-        return type(self)(
+        return self._new_like(
             obj=self._obj.astype(dtype, **kwargs),  # type: ignore[arg-type]
-            mom_ndim=self._mom_ndim,
-            # Already validated dtype, so can use fastpath
-            fastpath=True,
         )
 
     @docfiller.decorate
@@ -297,7 +296,13 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     def _validate_dtype(self) -> None:
         """Validate dtype of obj"""
 
-    # ** Pushing routines -----------------------------------------------------
+    @staticmethod
+    def _check_y(y: tuple[Any, ...], mom_ndim: int) -> None:
+        if len(y) + 1 != mom_ndim:
+            msg = f"Number of arrays {len(y) + 1} != {mom_ndim=}"
+            raise ValueError(msg)
+
+    # ** Pushing --------------------------------------------------------------
     def _pusher(self, parallel: bool | None = None, size: int | None = None) -> Pusher:
         return factory_pusher(
             mom_ndim=self._mom_ndim, parallel=parallel_heuristic(parallel, size=size)
@@ -337,12 +342,6 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             axes=axes,
         )
         return out
-
-    @staticmethod
-    def _check_y(y: tuple[ArrayLike, ...], mom_ndim: int) -> None:
-        if len(y) + 1 != mom_ndim:
-            msg = f"Number of arrays {len(y) + 1} != {mom_ndim=}"
-            raise ValueError(msg)
 
     def _push_val_numpy(
         self,
@@ -403,9 +402,8 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        data : array-like
-            Accumulation array of same form as ``self.data``
-        {order}
+        data :
+            Accumulation array conformable to ``self.obj``.
         {parallel}
 
         Returns
@@ -430,11 +428,8 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         ----------
         datas : array-like, {t_array}
             Collection of accumulation arrays to push onto ``self``.
-            This should have shape like `(nrec,) + self.shape`
-            if `axis=0`, where `nrec` is the number of data objects to sum.
         {axis_data_and_dim}
         {parallel}
-        {order}
 
         Returns
         -------
@@ -456,13 +451,12 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        x : array
+        x : array-like, {t_array}
             Values to push onto ``self``.
-        *y : array-like, optional
-            Additional Values (needed if ``mom_ndim > 1``)
-        weight : int, float, array-like, optional
+        *y : array-like, {t_array}
+            Additional values (needed if ``mom_ndim > 1``)
+        weight : int, float, array-like, {t_array}
             Weight of each sample.  If scalar, broadcast `w.shape` to `x0.shape`.
-        {order}
         {parallel}
 
         Returns
@@ -497,7 +491,6 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         weight : int, float, array-like, optional
             Weight of each sample.  If scalar, broadcast to `x0.shape`
         {axis_and_dim}
-        {order}
         {parallel}
 
         Returns
@@ -560,7 +553,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         self._obj = self.assign_moment(weight=self.weight() * scale, copy=False)._obj
         return self
 
-    # ** Apply function to obj ------------------------------------------------
+    # ** Pipe -----------------------------------------------------------------
     def pipe(
         self,
         func_or_method: Callable[..., Any] | str,
@@ -568,6 +561,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         _reorder: bool = True,
         _copy: bool | None = None,
         _verify: bool = False,
+        _fastpath: bool = False,
         **kwargs: Any,
     ) -> Self:
         """
@@ -625,9 +619,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             obj=values,
             copy=_copy,
             verify=_verify,
+            fastpath=_fastpath,
         )
 
-    # ** Interface to .utils --------------------------------------------------
+    # ** Interface to modules -------------------------------------------------
+    # *** .utils --------------------------------------------------------------
     @docfiller.decorate
     def moveaxis(
         self,
@@ -640,11 +636,12 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        {axis}
         axis : int or sequence of int
             Original positions of axes to move.
         dest : int or sequence of int
             Destination positions for each original axes.
+        **kwargs
+            Extra arguments to :func:`.utils.moveaxis`
 
         Returns
         -------
@@ -673,6 +670,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             obj=obj,
         )
 
+    @docfiller.decorate
     def select_moment(
         self,
         name: SelectMoment,
@@ -686,6 +684,26 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     ) -> GenArrayT:
         """
         Select specific moments.
+
+        Parameters
+        ----------
+        {select_moment_name}
+        {select_squeeze}
+        {select_dim_combined}
+        {select_coords_combined}
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
+
+        Returns
+        -------
+        output : ndarray or DataArray or Dataset.
+            Same type as ``self.obj``. If ``name`` is ``ave`` or ``var``, the last
+            dimensions of ``output`` has shape ``mom_ndim`` with each element
+            corresponding to the `ith` variable. If ``squeeze=True`` and
+            `mom_ndim==1`, this last dimension is removed. For all other ``name``
+            options, output has shape of input with moment dimensions removed.
+
 
         See Also
         --------
@@ -713,7 +731,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         *,
         squeeze: bool = True,
         copy: bool = True,
-        **kwargs: Any,
+        dim_combined: Hashable | None = None,
+        keep_attrs: KeepAttrs = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+        **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,  # pyright: ignore[reportRedeclaration]
     ) -> Self:
         """
         Create object with update weight, average, etc.
@@ -726,16 +748,24 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             If ``True`` (the default), return new array with updated weights.
             Otherwise, return the original array with weights updated inplace.
             Note that a copy is always created for a ``dask`` backed object.
+        dim_combined : str, optional
+            Name of dimensions for multiple values. Must supply if passing in
+            multiple values for ``name="ave"`` etc.
+        {mom_dims_data}
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
+        **moment_kwargs
+            Keyword argument form of ``moment``.  Must provide either ``moment`` or ``moment_kwargs``.
 
         Returns
         -------
         output : object
             Same type as ``self`` with updated data.
 
-        Returns
-        -------
-        output : object
-            Same type as ``self``
+        See Also
+        --------
+        .utils.assign_moment
         """
         obj = assign_moment(
             data=self._obj,
@@ -744,11 +774,15 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             squeeze=squeeze,
             copy=copy,
             mom_dims=getattr(self, "mom_dims", None),
-            **kwargs,
+            dim_combined=dim_combined,
+            keep_attrs=keep_attrs,
+            on_missing_core_dim=on_missing_core_dim,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
+            **moment_kwargs,
         )
         return self._new_like(obj=obj)
 
-    # ** Interface to .convert ------------------------------------------------
+    # *** .convert ------------------------------------------------------------
     @docfiller.decorate
     def cumulative(
         self,
@@ -771,6 +805,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         Returns
         -------
         output : {t_array}
+            Same type as ``self.obj``, with moments accumulated over ``axis``.
+
+        See Also
+        --------
+        .convert.cumulative
         """
         from cmomy.convert import cumulative
 
@@ -806,8 +845,8 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
         Return
         ------
-        object
-            New object with ``mom_ndim=2``.
+        output : {klass}
+            Same type as ``self`` with ``mom_ndim=2``.
 
         See Also
         --------
@@ -820,13 +859,151 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             convert.moments_to_comoments(  # pyright: ignore[reportArgumentType]
                 self._obj,
                 mom=mom,
-                mom_dims=getattr(self, "mom_dims", None),
                 **kwargs,
             ),
             mom_ndim=2,
         )
 
-    # ** Access to underlying statistics ------------------------------------------
+    # *** .resample -----------------------------------------------------------
+    @docfiller.decorate
+    def resample_and_reduce(
+        self,
+        *,
+        axis: AxisReduce | MissingType = -1,
+        freq: Any = None,
+        nrep: int | None = None,
+        rng: np.random.Generator | None = None,
+        parallel: bool | None = None,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Bootstrap resample and reduce.
+
+        Parameters
+        ----------
+        {axis_data_and_dim}
+        {freq}
+        {nrep_optional}
+        {rng}
+        {parallel}
+        {order}
+
+        Returns
+        -------
+        output : object
+            Instance of calling class. Note that new object will have
+            ``(...,shape[axis-1], nrep, shape[axis+1], ...)``,
+            where ``nrep = freq.shape[0]``.
+
+
+        See Also
+        --------
+        reduce
+        ~.resample.randsamp_freq : random frequency sample
+        ~.resample.freq_to_indices : convert frequency sample to index sample
+        ~.resample.indices_to_freq : convert index sample to frequency sample
+        ~.resample.resample_data : method to perform resampling
+        """
+        from .resample import resample_data
+
+        # pyright error due to `freq` above...
+        return self._new_like(
+            obj=resample_data(
+                self._obj,  # pyright: ignore[reportArgumentType]
+                mom_ndim=self._mom_ndim,
+                nrep=nrep,
+                rng=rng,
+                axis=axis,
+                freq=freq,
+                parallel=parallel,
+                **kwargs,
+            ),
+        )
+
+    @docfiller.decorate
+    def jackknife_and_reduce(
+        self,
+        *,
+        axis: AxisReduce | MissingType = -1,
+        parallel: bool | None = None,
+        data_reduced: Self | GenArrayT | None = None,
+        **kwargs: Any,
+    ) -> Self:
+        """
+        Jackknife resample and reduce
+
+        Parameters
+        ----------
+        {axis_data_and_dim}
+        {parallel}
+        data_reduced : array or {klass}
+            Data reduced along ``axis``. Array of same type as ``self.obj`` or
+            same type as ``self``.
+        **kwargs
+        Extra arguments to :func:`.resample.jackknife_data`
+
+        Returns
+        -------
+        output : {klass}
+            Instance of calling class with jackknife resampling along ``axis``.
+        """
+        from .resample import jackknife_data
+
+        if isinstance(data_reduced, type(self)):
+            data_reduced = data_reduced.obj
+
+        return self._new_like(
+            obj=jackknife_data(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
+                self._obj,  # pyright: ignore[reportArgumentType]
+                mom_ndim=self._mom_ndim,
+                axis=axis,
+                data_reduced=data_reduced,  # type: ignore[arg-type] # pyright: ignore[reportArgumentType]
+                parallel=parallel,
+                **kwargs,
+            )
+        )
+
+    # *** .reduction ----------------------------------------------------------
+    @abstractmethod
+    @docfiller.decorate
+    def reduce(
+        self,
+        *,
+        by: Groups | None = None,
+        axis: AxisReduce = -1,
+        keepdims: bool = False,
+        move_axis_to_end: bool = False,
+        parallel: bool | None = None,
+    ) -> Self:
+        """
+        Create new object reduce along axis.
+
+        Parameters
+        ----------
+        {by}
+        {axis_data_and_dim}
+        {keepdims}
+        {move_axis_to_end}
+        {order}
+        {parallel}
+
+        Returns
+        -------
+        output : {klass}
+            If ``by`` is ``None``, reduce all samples along ``axis``,
+            optionally keeping ``axis`` with size ``1`` if ``keepdims=True``.
+            Otherwise, reduce for each unique value of ``by``. In this case,
+            output will have shape ``(..., shape[axis-1], ngroup,
+            shape[axis+1], ...)`` where ``ngroups = np.max(by) + 1``
+            is the number of unique positive values in ``by``.
+
+        See Also
+        --------
+        ~.reduction.reduce_data
+        ~.reduction.reduce_data_grouped
+        """
+
+    # ** Access to underlying statistics --------------------------------------
     def weight(self) -> GenArrayT:
         """Weight data."""
         return self.select_moment("weight")
@@ -927,141 +1104,6 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         cmom
         """
         return self.to_raw(weight=1.0)
-
-    # * Interface to .resample ------------------------------------------------
-    @docfiller.decorate
-    def resample_and_reduce(
-        self,
-        *,
-        axis: AxisReduce | MissingType = -1,
-        freq: Any = None,
-        nrep: int | None = None,
-        rng: np.random.Generator | None = None,
-        parallel: bool | None = None,
-        **kwargs: Any,
-    ) -> Self:
-        """
-        Bootstrap resample and reduce.
-
-        Parameters
-        ----------
-        {axis_data_and_dim}
-        {freq}
-        {nrep_optional}
-        {rng}
-        {parallel}
-        {order}
-
-        Returns
-        -------
-        output : object
-            Instance of calling class. Note that new object will have
-            ``(...,shape[axis-1], nrep, shape[axis+1], ...)``,
-            where ``nrep = freq.shape[0]``.
-
-
-        See Also
-        --------
-        reduce
-        ~.resample.randsamp_freq : random frequency sample
-        ~.resample.freq_to_indices : convert frequency sample to index sample
-        ~.resample.indices_to_freq : convert index sample to frequency sample
-        ~.resample.resample_data : method to perform resampling
-        """
-        from .resample import resample_data
-
-        # pyright error due to `freq` above...
-        return self._new_like(
-            obj=resample_data(
-                self._obj,  # pyright: ignore[reportArgumentType]
-                mom_ndim=self._mom_ndim,
-                nrep=nrep,
-                rng=rng,
-                axis=axis,
-                freq=freq,
-                parallel=parallel,
-                **kwargs,
-            ),
-        )
-
-    @docfiller.decorate
-    def jackknife_and_reduce(
-        self,
-        *,
-        axis: AxisReduce | MissingType = -1,
-        parallel: bool | None = None,
-        data_reduced: Self | GenArrayT | None = None,
-        **kwargs: Any,
-    ) -> Self:
-        """
-        Jackknife resample and reduce
-
-        Parameters
-        ----------
-        {axis_data_and_dim}
-        {parallel}
-        {order}
-
-        Returns
-        -------
-        output : {klass}
-            Instance of calling class with jackknife resampling along ``axis``.
-        """
-        from .resample import jackknife_data
-
-        if isinstance(data_reduced, CentralWrapperABC):
-            data_reduced = data_reduced.obj
-
-        return self._new_like(
-            obj=jackknife_data(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
-                self._obj,  # pyright: ignore[reportArgumentType]
-                mom_ndim=self._mom_ndim,
-                axis=axis,
-                data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
-                parallel=parallel,
-                **kwargs,
-            )
-        )
-
-    # ** Interface to .reduction ----------------------------------------------
-    @abstractmethod
-    @docfiller.decorate
-    def reduce(
-        self,
-        *,
-        by: Groups | None = None,
-        axis: AxisReduce = -1,
-        keepdims: bool = False,
-        move_axis_to_end: bool = False,
-        parallel: bool | None = None,
-    ) -> Self:
-        """
-        Create new object reduce along axis.
-
-        Parameters
-        ----------
-        {by}
-        {axis_data_and_dim}
-        {keepdims}
-        {move_axis_to_end}
-        {order}
-        {parallel}
-
-        Returns
-        -------
-        output : {klass}
-            If ``by`` is ``None``, reduce all samples along ``axis``,
-            optionally keeping ``axis`` with size ``1`` if ``keepdims=True``.
-            Otherwise, reduce for each unique value of ``by``. In this case,
-            output will have shape ``(..., shape[axis-1], ngroup,
-            shape[axis+1], ...)`` where ``ngroups = np.max(by) + 1``
-            is the number of unique positive values in ``by``.
-
-        See Also
-        --------
-        ~.reduction.reduce_data
-        ~.reduction.reduce_data_grouped
-        """
 
     # ** Constructors ---------------------------------------------------------
     @classmethod

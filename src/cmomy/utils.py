@@ -289,13 +289,12 @@ def select_moment(
 
     Returns
     -------
-    output : ndarray or DataArray
+    output : ndarray or DataArray or Dataset.
         Same type as ``data``. If ``name`` is ``ave`` or ``var``, the last
         dimensions of ``output`` has shape ``mom_ndim`` with each element
         corresponding to the `ith` variable. If ``squeeze=True`` and
         `mom_ndim==1`, this last dimension is removed. For all other ``name``
-        options ``output.shape == data.shape[:-mom_ndim]``. Note that
-        ``output`` may be a view of ``data``.
+        options, output has shape of input with moment dimensions removed.
 
 
     Examples

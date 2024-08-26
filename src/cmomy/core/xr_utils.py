@@ -110,7 +110,7 @@ def select_axis_dim(
 
     if dim is not MISSING:
         axis = data.get_axis_num(dim)
-        if axis >= data.ndim - (0 if mom_ndim is None else mom_ndim):
+        if axis >= data.ndim - (0 if mom_ndim is None else mom_ndim):  # pyright: ignore[reportOperatorIssue]
             msg = f"Cannot select moment dimension. {axis=}, {dim=}."
             raise ValueError(msg)
 
@@ -125,7 +125,7 @@ def select_axis_dim(
         msg = f"Unknown dim {dim} and axis {axis}"
         raise TypeError(msg)
 
-    return axis, dim
+    return axis, dim  # pyright: ignore[reportReturnType]
 
 
 def select_axis_dim_mult(  # noqa: C901
@@ -155,7 +155,6 @@ def select_axis_dim_mult(  # noqa: C901
 
             if mom_dims is not None:
                 dim = tuple(d for d in dim if d not in mom_dims)
-
         return (), (dim,) if isinstance(dim, str) else dim  # type: ignore[return-value]
 
     # Allow None, which implies choosing all dimensions...
@@ -178,7 +177,7 @@ def select_axis_dim_mult(  # noqa: C901
 
     if dim is not MISSING:
         dim_ = (
-            data.dims[:ndim]
+            data.dims[:ndim]  # type: ignore[index,assignment]
             if dim is None
             else (dim,)
             if isinstance(dim, str)
