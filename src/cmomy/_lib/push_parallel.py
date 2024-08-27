@@ -35,6 +35,10 @@ def push_val(
     _push.push_val(x, w, out)
 
 
+# NOTE(wpk): I've played with changing to to
+# dummy_mom, x, w -> out
+# (like for reduce_vals_fromzero)
+# But it's about 10% slower than this.
 @_decorator(
     "(mom),(sample),(sample)",
     [
@@ -70,6 +74,9 @@ def reduce_vals_fromzero(
         _push.push_val(x[i], w[i], out)
 
 
+# NOTE(wpk): Also played with converting this to
+# data -> out
+# but a bit slower than doing inplace update
 @_decorator(
     "(mom),(mom)",
     signature=[

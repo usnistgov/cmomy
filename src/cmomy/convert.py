@@ -54,7 +54,9 @@ if TYPE_CHECKING:
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
+        ArrayOrder,
         AxisReduce,
+        Casting,
         ConvertStyle,
         DimsReduce,
         DTypeLikeArg,
@@ -79,6 +81,8 @@ def moments_type(
     to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -93,6 +97,8 @@ def moments_type(
     to: ConvertStyle = ...,
     out: None = ...,
     dtype: None = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -107,6 +113,8 @@ def moments_type(
     to: ConvertStyle = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -121,6 +129,8 @@ def moments_type(
     to: ConvertStyle = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -135,6 +145,8 @@ def moments_type(
     to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -150,6 +162,8 @@ def moments_type(
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
@@ -168,6 +182,8 @@ def moments_type(
         If ``"central"`` convert from raw to central moments.
     {out}
     {dtype}
+    {casting}
+    {order}
     {move_axis_to_end}
     {keep_attrs}
     {mom_dims_data}
@@ -222,6 +238,8 @@ def moments_type(
                 "to": to,
                 "out": None if isinstance(values_in, xr.Dataset) else out,
                 "dtype": dtype,
+                "casting": casting,
+                "order": order,
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -234,7 +252,9 @@ def moments_type(
         return xout
 
     values_in = np.asarray(values_in, dtype=dtype)
-    return factory_convert(mom_ndim=mom_ndim, to=to)(values_in, out=out)
+    return factory_convert(mom_ndim=mom_ndim, to=to)(
+        values_in, out=out, casting=casting, order=order
+    )
 
 
 # * Moments to Cumulative moments
@@ -247,9 +267,11 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -265,9 +287,11 @@ def cumulative(
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -283,9 +307,11 @@ def cumulative(
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -301,9 +327,11 @@ def cumulative(
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -319,9 +347,11 @@ def cumulative(
     mom_ndim: Mom_NDim = ...,
     inverse: bool = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: Any = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
@@ -338,9 +368,11 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     mom_ndim: Mom_NDim = 1,
     inverse: bool = False,
     move_axis_to_end: bool = False,
-    parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
+    parallel: bool | None = None,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
@@ -359,9 +391,11 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         Default is to create a cumulative moments array.  Pass ``inverse=True`` to convert from
         cumulative moments array back to normal moments.
     {move_axis_to_end}
-    {parallel}
     {out}
     {dtype}
+    {casting}
+    {order}
+    {parallel}
     {keep_attrs}
     {mom_dims_data}
     {on_missing_core_dim}
@@ -421,6 +455,8 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
                     data=values_in,
                 ),
                 "dtype": dtype,
+                "casting": casting,
+                "order": order,
                 "move_axis_to_end": False,
             },
             keep_attrs=keep_attrs,
@@ -450,7 +486,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         mom_ndim=mom_ndim,
         inverse=inverse,
         parallel=parallel_heuristic(parallel, values_in.size),
-    )(values_in, out=out, axes=axes)
+    )(values_in, out=out, axes=axes, casting=casting, order=order)
 
 
 # * Moments to  Comoments

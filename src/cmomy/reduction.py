@@ -337,11 +337,11 @@ def _reduce_vals(
     *y: NDArrayAny,
     mom: MomentsStrict,
     mom_ndim: Mom_NDim,
+    axis_neg: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
     order: ArrayOrder,
-    axis_neg: int,
     parallel: bool | None,
     keepdims: bool,
     fastpath: bool = False,
@@ -383,10 +383,12 @@ def reduce_data(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dtype: DTypeLike = ...,
-    out: NDArrayAny | None = ...,
     dim: DimsReduceMult | MissingType = ...,
     keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
@@ -401,10 +403,12 @@ def reduce_data(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
+    out: None = ...,
+    dtype: None = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dtype: None = ...,
-    out: None = ...,
     dim: DimsReduceMult | MissingType = ...,
     keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
@@ -419,10 +423,12 @@ def reduce_data(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dtype: DTypeLike = ...,
-    out: NDArray[FloatT],
     dim: DimsReduceMult | MissingType = ...,
     keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
@@ -437,10 +443,12 @@ def reduce_data(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dtype: DTypeLikeArg[FloatT],
-    out: None = ...,
     dim: DimsReduceMult | MissingType = ...,
     keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
@@ -455,10 +463,12 @@ def reduce_data(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dtype: DTypeLike = ...,
-    out: NDArrayAny | None = ...,
     dim: DimsReduceMult | MissingType = ...,
     keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
@@ -475,10 +485,12 @@ def reduce_data(
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult | MissingType = MISSING,
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
     keepdims: bool = False,
     parallel: bool | None = None,
-    dtype: DTypeLike = None,
-    out: NDArrayAny | None = None,
     # xarray specific
     dim: DimsReduceMult | MissingType = MISSING,
     keep_attrs: KeepAttrs = None,
@@ -497,10 +509,12 @@ def reduce_data(
     {data_numpy_or_dataarray_or_dataset}
     {mom_ndim}
     {axis_data_mult}
+    {out}
+    {dtype}
+    {casting}
+    {order}
     {keepdims}
     {parallel}
-    {dtype}
-    {out}
     {dim_mult}
     {keep_attrs}
     use_reduce : bool
@@ -534,8 +548,10 @@ def reduce_data(
                 keepdims=keepdims,
                 mom_ndim=mom_ndim,
                 parallel=parallel,
-                dtype=dtype,
                 out=out,
+                dtype=dtype,
+                casting=casting,
+                order=order,
             )
 
         else:
@@ -553,6 +569,8 @@ def reduce_data(
                     "parallel": parallel,
                     "keepdims": False,
                     "fastpath": False,
+                    "casting": casting,
+                    "order": order,
                 },
                 keep_attrs=keep_attrs,
                 **get_apply_ufunc_kwargs(
@@ -572,6 +590,8 @@ def reduce_data(
         axis=validate_axis_mult(axis),
         out=out,
         dtype=dtype,
+        casting=casting,
+        order=order,
         parallel=parallel,
         keepdims=keepdims,
         fastpath=True,
@@ -584,6 +604,8 @@ def _reduce_data(
     axis: AxisReduceMult,
     out: NDArrayAny | None,
     dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
     parallel: bool | None,
     keepdims: bool = False,
     fastpath: bool = False,
@@ -612,7 +634,7 @@ def _reduce_data(
     out = factory_reduce_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
-    )(data, out=out, dtype=dtype)
+    )(data, out=out, dtype=dtype, casting=casting, order=order)
 
     return optional_keepdims(
         out,
@@ -719,9 +741,11 @@ def reduce_data_grouped(
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     group_dim: str | None = ...,
@@ -740,9 +764,11 @@ def reduce_data_grouped(
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     group_dim: str | None = ...,
@@ -761,9 +787,11 @@ def reduce_data_grouped(
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     group_dim: str | None = ...,
@@ -782,9 +810,11 @@ def reduce_data_grouped(
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     group_dim: str | None = ...,
@@ -803,9 +833,11 @@ def reduce_data_grouped(
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     group_dim: str | None = ...,
@@ -819,16 +851,18 @@ def reduce_data_grouped(
 
 # ** public
 @docfiller.decorate
-def reduce_data_grouped(
+def reduce_data_grouped(  # noqa: PLR0913
     data: ArrayLike | GenXArrayT,
     by: ArrayLike,
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = False,
-    parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
+    parallel: bool | None = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
     group_dim: str | None = None,
@@ -944,6 +978,8 @@ def reduce_data_grouped(
                     move_axis_to_end=move_axis_to_end,
                     data=data,
                 ),
+                "casting": casting,
+                "order": order,
                 "parallel": parallel,
                 "fastpath": False,
             },
@@ -974,6 +1010,8 @@ def reduce_data_grouped(
         move_axis_to_end=move_axis_to_end,
         dtype=dtype,
         out=out,
+        casting=casting,
+        order=order,
         parallel=parallel,
         fastpath=True,
     )
@@ -987,6 +1025,8 @@ def _reduce_data_grouped(
     axis: AxisReduce | MissingType,
     move_axis_to_end: bool,
     dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
     out: NDArrayAny | None,
     parallel: bool | None,
     fastpath: bool,
@@ -1021,7 +1061,16 @@ def _reduce_data_grouped(
     return factory_reduce_data_grouped(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
-    )(dummy_group, data, by, out=out, axes=axes, dtype=dtype)
+    )(
+        dummy_group,
+        data,
+        by,
+        out=out,
+        axes=axes,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
 
 # * Indexed -------------------------------------------------------------------
@@ -1155,9 +1204,11 @@ def reduce_data_indexed(
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
     coords_policy: CoordsPolicy = ...,
@@ -1180,9 +1231,11 @@ def reduce_data_indexed(
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
     coords_policy: CoordsPolicy = ...,
@@ -1205,9 +1258,11 @@ def reduce_data_indexed(
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
     coords_policy: CoordsPolicy = ...,
@@ -1230,9 +1285,11 @@ def reduce_data_indexed(
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
     coords_policy: CoordsPolicy = ...,
@@ -1255,9 +1312,11 @@ def reduce_data_indexed(
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLike = ...,
+    casting: Casting = ...,
+    order: ArrayOrder = ...,
+    parallel: bool | None = ...,
     # xarray specific...
     dim: DimsReduce | MissingType = ...,
     coords_policy: CoordsPolicy = ...,
@@ -1282,9 +1341,11 @@ def reduce_data_indexed(  # noqa: PLR0913
     scale: ArrayLike | None = None,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = False,
-    parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
+    parallel: bool | None = None,
     # xarray specific...
     dim: DimsReduce | MissingType = MISSING,
     coords_policy: CoordsPolicy = "first",
@@ -1399,7 +1460,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "group_start": group_start,
                 "group_end": group_end,
                 "scale": scale,
-                "dtype": dtype,
+                "move_axis_to_end": False,
                 "out": xprepare_out_for_resample_data(
                     out,
                     mom_ndim=mom_ndim,
@@ -1407,7 +1468,9 @@ def reduce_data_indexed(  # noqa: PLR0913
                     move_axis_to_end=move_axis_to_end,
                     data=data,
                 ),
-                "move_axis_to_end": False,
+                "dtype": dtype,
+                "casting": casting,
+                "order": order,
                 "parallel": parallel,
                 "fastpath": False,
             },
@@ -1453,13 +1516,15 @@ def reduce_data_indexed(  # noqa: PLR0913
         data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,
-        out=out,
         index=index,
         group_start=group_start,
         group_end=group_end,
         scale=scale,
         move_axis_to_end=move_axis_to_end,
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
         parallel=parallel,
         fastpath=True,
     )
@@ -1470,13 +1535,15 @@ def _reduce_data_indexed(
     *,
     axis: AxisReduce | MissingType,
     mom_ndim: Mom_NDim,
-    dtype: DTypeLike,
-    out: NDArrayAny | None,
     index: NDArrayAny,
     group_start: NDArrayAny,
     group_end: NDArrayAny,
     scale: ArrayLike | None,
     move_axis_to_end: bool,
+    out: NDArrayAny | None,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
     parallel: bool | None,
     fastpath: bool = False,
 ) -> NDArrayAny:
@@ -1507,7 +1574,18 @@ def _reduce_data_indexed(
     return factory_reduce_data_indexed(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
-    )(data, index, group_start, group_end, scale, axes=axes, out=out, dtype=dtype)
+    )(
+        data,
+        index,
+        group_start,
+        group_end,
+        scale,
+        axes=axes,
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
 
 # * For testing purposes
@@ -1518,9 +1596,11 @@ def resample_data_indexed(
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = False,
-    parallel: bool = True,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
+    parallel: bool = True,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
     coords_policy: CoordsPolicy = "first",
@@ -1545,6 +1625,8 @@ def resample_data_indexed(
         parallel=parallel,
         out=out,  # pyright: ignore[reportArgumentType]
         dtype=dtype,
+        casting=casting,
+        order=order,
         dim=dim,
         coords_policy=coords_policy,
         group_dim=group_dim,
