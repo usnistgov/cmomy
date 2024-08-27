@@ -209,6 +209,17 @@ def select_dtype(
     raise ValueError(msg)
 
 
+def asarray_maybe_recast(
+    data: ArrayLike, dtype: DTypeLike = None, recast: bool = False
+) -> NDArrayAny:
+    """Perform asarray with optional recast to `dtype` if not already an array."""
+    if isinstance(data, np.ndarray):
+        if recast and dtype is not None:
+            return np.asarray(data, dtype=dtype)
+        return data  # pyright: ignore[reportUnknownVariableType]
+    return np.asarray(data, dtype=dtype)
+
+
 def optional_keepdims(
     x: NDArray[ScalarT],
     *,

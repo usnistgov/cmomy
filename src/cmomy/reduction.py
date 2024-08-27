@@ -311,7 +311,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
         weight,
         *y,
         axis=axis,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=dtype,
         narrays=mom_ndim + 1,
         move_axis_to_end=False,
     )
@@ -366,7 +366,15 @@ def _reduce_vals(
     out = factory_reduce_vals(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * mom_ndim),
-    )(dummy_mom, *args, out=out, axes=axes, dtype=dtype, casting=casting, order=order)
+    )(
+        dummy_mom,
+        *args,
+        out=out,
+        axes=axes,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
     return optional_keepdims(
         out,
@@ -536,8 +544,8 @@ def reduce_data(
         Same type as input ``data``.
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
-    dtype = select_dtype(data, out=out, dtype=dtype)
     if isinstance(data, (xr.DataArray, xr.Dataset)):
+        dtype = select_dtype(data, out=out, dtype=dtype)
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         xout: GenXArrayT
         if use_reduce:
@@ -584,6 +592,9 @@ def reduce_data(
         return xout
 
     # Numpy
+    data = np.asarray(data)
+    dtype = select_dtype(data, out=out, dtype=dtype)
+
     return _reduce_data(
         data,
         mom_ndim=mom_ndim,
@@ -599,7 +610,7 @@ def reduce_data(
 
 
 def _reduce_data(
-    data: ArrayLike,
+    data: NDArrayAny,
     mom_ndim: Mom_NDim,
     axis: AxisReduceMult,
     out: NDArrayAny | None,
@@ -613,7 +624,6 @@ def _reduce_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    data = np.asarray(data, dtype=dtype)
     # special to support multiple reduction dimensions...
     ndim = data.ndim - mom_ndim
     axis_tuple = normalize_axis_tuple(
@@ -634,7 +644,13 @@ def _reduce_data(
     out = factory_reduce_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
-    )(data, out=out, dtype=dtype, casting=casting, order=order)
+    )(
+        data,
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
     return optional_keepdims(
         out,
@@ -1035,11 +1051,12 @@ def _reduce_data_grouped(
         dtype = select_dtype(data, out=out, dtype=dtype)
 
     # NOTE: keep prepare here to get axis correct..
-    axis, data = prepare_data_for_reduction(  # pyright: ignore[reportArgumentType]
+    axis, data = prepare_data_for_reduction(
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=None,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
 
@@ -1056,8 +1073,7 @@ def _reduce_data_grouped(
         raise ValueError(msg)
 
     ngroup = by.max() + 1
-    dummy_group = dummy_array(ngroup, dtype=np.bool_)
-
+    dummy_group = dummy_array(ngroup, dtype=dtype)
     return factory_reduce_data_grouped(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -1067,9 +1083,9 @@ def _reduce_data_grouped(
         by,
         out=out,
         axes=axes,
-        dtype=dtype,
         casting=casting,
         order=order,
+        signature=(dtype, dtype, np.int64, dtype),
     )
 
 
@@ -1550,11 +1566,12 @@ def _reduce_data_indexed(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    axis, data = prepare_data_for_reduction(  # pyright: ignore[reportAssignmentType]
+    axis, data = prepare_data_for_reduction(
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=None,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
 
@@ -1580,11 +1597,11 @@ def _reduce_data_indexed(
         group_start,
         group_end,
         scale,
-        axes=axes,
         out=out,
-        dtype=dtype,
+        axes=axes,
         casting=casting,
         order=order,
+        signature=(dtype, np.int64, np.int64, np.int64, dtype, dtype),
     )
 
 

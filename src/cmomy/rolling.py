@@ -18,6 +18,7 @@ from ._lib.factory import (
     parallel_heuristic,
 )
 from .core.array_utils import (
+    asarray_maybe_recast,
     axes_data_reduction,
     dummy_array,
     get_axes_from_values,
@@ -534,8 +535,9 @@ def _rolling_data(
         data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,
+        dtype=None,
         move_axis_to_end=move_axis_to_end,
+        recast=False,
     )
 
     shift = (-window // 2) + 1 if center else None
@@ -567,6 +569,7 @@ def _rolling_data(
         axes=axes,
         casting=casting,
         order=order,
+        signature=(dtype, np.int64, np.int64, dtype, dtype),
     )
 
     if shift is not None:
@@ -910,6 +913,7 @@ def _rolling_vals(
         *args,
         out=out,
         axes=axes,
+        dtype=dtype,
         casting=casting,
         order=order,
     )
@@ -1185,11 +1189,12 @@ def _rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
         data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,
+        dtype=None,
         move_axis_to_end=move_axis_to_end,
+        recast=False,
     )
 
-    alpha = np.asarray(alpha, dtype=dtype)
+    alpha = asarray_maybe_recast(alpha, dtype, recast=False)
     if alpha.ndim == 0:
         alpha = np.broadcast_to(alpha, data.shape[axis])
         alpha_axis = -1
@@ -1227,6 +1232,7 @@ def _rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
         axes=axes,
         casting=casting,
         order=order,
+        signature=(dtype, dtype, np.bool_, np.int64, dtype, dtype),
     )
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)
@@ -1566,6 +1572,7 @@ def _rolling_exp_vals(
         *args,
         out=out,
         axes=axes,
+        dtype=dtype,
         casting=casting,
         order=order,
     )

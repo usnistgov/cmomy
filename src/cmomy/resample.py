@@ -22,6 +22,7 @@ from ._lib.factory import (
     parallel_heuristic,
 )
 from .core.array_utils import (
+    asarray_maybe_recast,
     axes_data_reduction,
     dummy_array,
     get_axes_from_values,
@@ -818,12 +819,13 @@ def _resample_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    freq = np.asarray(freq, dtype=dtype)
+    freq = asarray_maybe_recast(freq, dtype=dtype, recast=False)  # type: ignore[arg-type]
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=None,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
 
@@ -838,7 +840,15 @@ def _resample_data(
     return factory_resample_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
-    )(freq, data, out=out, axes=axes, dtype=dtype, casting=casting, order=order)
+    )(
+        freq,
+        data,
+        out=out,
+        axes=axes,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
 
 # * Resample vals
@@ -1127,7 +1137,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
         weight,
         *y,
         axis=axis,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=dtype,
         narrays=mom_ndim + 1,
         move_axis_to_end=move_axis_to_end,
     )
@@ -1546,12 +1556,13 @@ def _jackknife_data(
 
     raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
 
-    data_reduced = np.asarray(data_reduced, dtype=dtype)
+    data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)  # type: ignore[arg-type]
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=None,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
     axes_data, axes_mom = axes_data_reduction(
@@ -1563,7 +1574,15 @@ def _jackknife_data(
     return factory_jackknife_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
-    )(data_reduced, data, out=out, axes=axes, dtype=dtype, casting=casting, order=order)
+    )(
+        data_reduced,
+        data,
+        out=out,
+        axes=axes,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
 
 # * Jackknife vals
@@ -1836,7 +1855,7 @@ def jackknife_vals(  # noqa: PLR0913
         weight,
         *y,
         axis=axis,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=dtype,
         narrays=mom_ndim + 1,
         move_axis_to_end=move_axis_to_end,
     )

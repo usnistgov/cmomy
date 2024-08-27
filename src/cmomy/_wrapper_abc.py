@@ -325,6 +325,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             axis=axis,
             mom_ndim=self.mom_ndim,
             dtype=out.dtype,
+            recast=True,
         )
         axes = axes_data_reduction(mom_ndim=self.mom_ndim, axis=axis)
 

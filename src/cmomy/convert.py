@@ -253,7 +253,11 @@ def moments_type(
 
     values_in = np.asarray(values_in, dtype=dtype)
     return factory_convert(mom_ndim=mom_ndim, to=to)(
-        values_in, out=out, casting=casting, order=order
+        values_in,
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
     )
 
 
@@ -477,7 +481,8 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         values_in,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=None,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
     axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
@@ -486,7 +491,14 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         mom_ndim=mom_ndim,
         inverse=inverse,
         parallel=parallel_heuristic(parallel, values_in.size),
-    )(values_in, out=out, axes=axes, casting=casting, order=order)
+    )(
+        values_in,
+        out=out,
+        axes=axes,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
 
 # * Moments to  Comoments

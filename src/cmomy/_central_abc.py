@@ -704,6 +704,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
             axis=axis,
             mom_ndim=self.mom_ndim,
             dtype=self.dtype,
+            recast=True,
         )
         axes = axes_data_reduction(mom_ndim=self.mom_ndim, axis=axis)
 

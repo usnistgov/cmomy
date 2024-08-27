@@ -156,7 +156,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller_inherit_abc()
     def new_like(  # type: ignore[override]
         self,
-        obj: NDArrayAny | xr.DataArray | xr.Dataset | None = None,
+        obj: NDArrayAny | GenXArrayT | None = None,
         *,
         copy: bool | None = None,
         deep: bool = True,
@@ -170,41 +170,44 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         deep : bool
             Parameter to :meth:`~xarray.Dataset.copy` or :meth:`~xarray.DataArray.copy`.
         """
+        obj_: GenXArrayT
         if obj is None:
             # TODO(wpk): different type for dtype in xarray.
-            obj = xr.zeros_like(self._obj, dtype=dtype)  # type: ignore[arg-type]
+            obj_ = xr.zeros_like(self._obj, dtype=dtype)  # type: ignore[arg-type]
             copy = False
             dtype = None
         elif isinstance(obj, np.ndarray):
             if is_dataarray(self._obj):
-                obj = self._obj.copy(data=obj)
+                obj_ = self._obj.copy(data=obj)  # type: ignore[assignment]
             msg = "Can only pass an array for wrapped DataArray."
             raise TypeError(msg)
+        else:
+            obj_ = obj
 
-        assert is_xarray(obj)  # noqa: S101
-        if are_same_type(self._obj, obj):
+        assert is_xarray(obj_)  # noqa: S101
+        if are_same_type(self._obj, obj_):
             msg = f"Can only pass in objects conformable to {type(self._obj)}"
             raise TypeError(msg)
 
         # minimal check on shape and that mom_dims are present....
-        self._raise_if_wrong_mom_shape(get_mom_shape(obj, self._mom_dims))
-        if not contains_dims(obj, self._mom_dims):
+        self._raise_if_wrong_mom_shape(get_mom_shape(obj_, self._mom_dims))
+        if not contains_dims(obj_, self._mom_dims):
             msg = f"Cannot create new from object without {self._mom_dims}"
             raise ValueError(msg)
 
-        if verify and self._obj.sizes != obj.sizes:
-            msg = f"{self.obj.sizes=} != {obj.sizes=}"
+        if verify and self._obj.sizes != obj_.sizes:
+            msg = f"{self.obj.sizes=} != obj.sizes={obj_.sizes}"
             raise ValueError(msg)
 
         if not fastpath:
             copy = False if copy is None else copy
             if dtype:
-                obj = obj.astype(dtype, copy=copy)  # pyright: ignore[reportUnknownMemberType]
+                obj_ = obj_.astype(dtype, copy=copy)  # type: ignore[assignment]
             elif copy:
-                obj = obj.copy(deep=deep)
+                obj_ = obj_.copy(deep=deep)  # type: ignore[assignment]
 
         return type(self)(
-            obj=obj,  # type: ignore[arg-type]
+            obj=obj_,  # type: ignore[arg-type]
             mom_ndim=self._mom_ndim,
             mom_dims=self._mom_dims,
             fastpath=fastpath,
@@ -304,8 +307,9 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
                 datas,  # type: ignore[arg-type]
                 axis=axis,
                 mom_ndim=self._mom_ndim,
-                dtype=self._dtype,  # type: ignore[arg-type]
+                dtype=self._dtype,
                 move_axis_to_end=True,
+                recast=True,
             )
             dim = "_dummy123"
         else:
@@ -399,7 +403,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
                 weight,
                 *y,
                 axis=axis,
-                dtype=self._dtype,  # type: ignore[arg-type]
+                dtype=self._dtype,
                 narrays=self._mom_ndim + 1,
                 move_axis_to_end=True,
             )

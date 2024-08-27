@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 
 from .array_utils import (
+    asarray_maybe_recast,
     normalize_axis_index,
     positive_to_negative_index,
 )
@@ -33,7 +34,6 @@ if TYPE_CHECKING:
     from .typing import (
         AxisReduce,
         DimsReduce,
-        DTypeLikeArg,
         MissingType,
         Mom_NDim,
         NDArrayAny,
@@ -46,11 +46,12 @@ def prepare_data_for_reduction(
     data: ArrayLike,
     axis: AxisReduce | MissingType,
     mom_ndim: Mom_NDim,
-    dtype: DTypeLikeArg[ScalarT],
+    dtype: DTypeLike,
+    recast: bool = True,
     move_axis_to_end: bool = False,
-) -> tuple[int, NDArray[ScalarT]]:
+) -> tuple[int, NDArrayAny]:
     """Convert central moments array to correct form for reduction."""
-    data = np.asarray(data, dtype=dtype)
+    data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
     axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim)
 
     if move_axis_to_end:
@@ -69,9 +70,10 @@ def prepare_values_for_reduction(
     *args: ArrayLike | xr.Dataset,
     narrays: int,
     axis: AxisReduce | MissingType = MISSING,
-    dtype: DTypeLikeArg[ScalarT],
+    dtype: DTypeLike,
+    recast: bool = True,
     move_axis_to_end: bool = True,
-) -> tuple[int, tuple[NDArray[ScalarT], ...]]:
+) -> tuple[int, tuple[NDArrayAny, ...]]:
     """
     Convert input value arrays to correct form for reduction.
 
@@ -87,7 +89,7 @@ def prepare_values_for_reduction(
         msg = f"Number of arrays {len(args) + 1} != {narrays}"
         raise ValueError(msg)
 
-    target = np.asarray(target, dtype=dtype)
+    target = asarray_maybe_recast(target, dtype=dtype, recast=recast)
     axis = normalize_axis_index(validate_axis(axis), target.ndim)
     nsamp = target.shape[axis]
 
@@ -95,12 +97,13 @@ def prepare_values_for_reduction(
     if move_axis_to_end and axis_neg != -1:
         target = np.moveaxis(target, axis_neg, -1)
 
-    others: Iterable[NDArray[ScalarT]] = (
+    others: Iterable[NDArrayAny] = (
         prepare_secondary_value_for_reduction(
             x=x,
             axis=axis_neg,
             nsamp=nsamp,
             dtype=target.dtype,
+            recast=recast,
             move_axis_to_end=move_axis_to_end,
         )
         for x in args
@@ -113,10 +116,11 @@ def prepare_secondary_value_for_reduction(
     x: ArrayLike | xr.Dataset,
     axis: int,
     nsamp: int,
-    dtype: DTypeLikeArg[ScalarT],
+    dtype: DTypeLike,
+    recast: bool,
     *,
     move_axis_to_end: bool = True,
-) -> NDArray[ScalarT]:
+) -> NDArrayAny:
     """
     Prepare value array (x1, w) for reduction.
 
@@ -137,7 +141,7 @@ def prepare_secondary_value_for_reduction(
     """
     raise_if_dataset(x, "Passed Dataset as secondary value with array primary value.")
 
-    out: NDArray[ScalarT] = np.asarray(x, dtype=dtype)
+    out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=recast)  # type: ignore[arg-type]
     if out.ndim == 0:
         return np.broadcast_to(out, nsamp)
 
@@ -163,6 +167,7 @@ def xprepare_values_for_reduction(
     dim: DimsReduce | MissingType,
     axis: AxisReduce | MissingType,
     dtype: DTypeLike,
+    recast: bool = True,
 ) -> tuple[
     Hashable,
     list[Sequence[Hashable]],
@@ -202,7 +207,11 @@ def xprepare_values_for_reduction(
 
     arrays = [
         xprepare_secondary_value_for_reduction(
-            a, axis=axis_neg, nsamp=nsamp, dtype=dtype
+            a,
+            axis=axis_neg,
+            nsamp=nsamp,
+            dtype=dtype,
+            recast=recast,
         )
         for a in (target, *args)
     ]
@@ -217,17 +226,19 @@ def xprepare_secondary_value_for_reduction(
     axis: int,
     nsamp: int,
     dtype: DTypeLike,
+    recast: bool,
 ) -> xr.Dataset | xr.DataArray | NDArrayAny:
     """Prepare secondary values for reduction."""
     if isinstance(x, xr.Dataset):
         return x
     if isinstance(x, xr.DataArray):
-        return x if dtype is None else x.astype(dtype=dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
+        return x.astype(dtype, copy=False) if recast and dtype is not None else x  # pyright: ignore[reportUnknownMemberType]
     return prepare_secondary_value_for_reduction(
         x,
         axis=axis,
         nsamp=nsamp,
-        dtype=dtype,  # type: ignore[arg-type]
+        dtype=dtype,
+        recast=recast,
         move_axis_to_end=True,
     )
 
