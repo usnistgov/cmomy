@@ -54,6 +54,38 @@ def reduce_vals(
 
 
 @_decorator(
+    "(mom0, mom1),(sample),(sample),(sample) -> (mom0, mom1)",
+    [
+        (
+            nb.float32[:, :],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:, :],
+        ),
+        (
+            nb.float64[:, :],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:, :],
+        ),
+    ],
+    writable=None,
+)
+def reduce_vals_fromzero(
+    dummy_mom: NDArray[FloatT],  # noqa: ARG001
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    x1: NDArray[FloatT],
+    out: NDArray[FloatT],
+) -> None:
+    out[...] = 0.0
+    for i in range(len(x0)):
+        _push.push_val(x0[i], x1[i], w[i], out)
+
+
+@_decorator(
     "(mom0, mom1), (mom0, mom1)",
     [
         (nb.float32[:, :], nb.float32[:, :]),

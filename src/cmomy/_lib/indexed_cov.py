@@ -13,7 +13,6 @@ from .decorators import myguvectorize
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-if TYPE_CHECKING:
     from cmomy.core.typing import FloatT, NDArrayInt
 
 
@@ -22,25 +21,33 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample,mom0,mom1),(sample),(group,mom0,mom1)",
+    "(group),(sample,mom0,mom1),(sample) -> (group,mom0,mom1)",
     [
         (
+            nb.float32[:],
             nb.float32[:, :, :],
             nb.int64[:],
             nb.float32[:, :, :],
         ),
         (
+            nb.float64[:],
             nb.float64[:, :, :],
             nb.int64[:],
             nb.float64[:, :, :],
         ),
     ],
+    writable=None,
 )
-def reduce_data_grouped(
-    data: NDArray[FloatT], group_idx: NDArrayInt, out: NDArray[FloatT]
+def reduce_data_grouped_fromzero(
+    dummy_group: NDArray[FloatT],  # noqa: ARG001
+    data: NDArray[FloatT],
+    group_idx: NDArrayInt,
+    out: NDArray[FloatT],
 ) -> None:
     assert data.shape[1:] == out.shape[1:]
     assert group_idx.max() < out.shape[0]
+
+    out[...] = 0.0
     for s in range(data.shape[0]):
         group = group_idx[s]
         if group >= 0:

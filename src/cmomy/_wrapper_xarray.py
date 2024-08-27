@@ -889,9 +889,9 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     def from_vals(
         cls,
         x: GenXArrayT,
-        *y: ArrayLike | xr.DataArray | xr.Dataset,
+        *y: ArrayLike | xr.DataArray | GenXArrayT,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         mom_dims: MomDims | None = None,
@@ -939,11 +939,11 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim)
         return cls(
-            obj=reduce_vals(  # type: ignore[misc]
+            obj=reduce_vals(
                 x,  # pyright: ignore[reportArgumentType]
-                *y,  # type: ignore[arg-type]
+                *y,
                 mom=mom,
-                weight=weight,  # type: ignore[arg-type]
+                weight=weight,
                 axis=axis,
                 dim=dim,
                 mom_dims=mom_dims,
@@ -964,12 +964,12 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     def from_resample_vals(  # noqa: PLR0913
         cls,
         x: GenXArrayT,
-        *y: ArrayLike | xr.DataArray | xr.Dataset,
+        *y: ArrayLike | xr.DataArray | GenXArrayT,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        freq: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+        freq: ArrayLike | xr.DataArray | GenXArrayT | None = None,
         nrep: int | None = None,
         rng: np.random.Generator | None = None,
         move_axis_to_end: bool = True,
@@ -1047,14 +1047,14 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         from .resample import resample_vals
 
         return cls(
-            obj=resample_vals(  # type: ignore[misc]
+            obj=resample_vals(
                 x,  # pyright: ignore[reportArgumentType]
-                *y,  # type: ignore[arg-type]
-                freq=freq,  # type: ignore[arg-type]
+                *y,
+                freq=freq,
                 nrep=nrep,
                 rng=rng,
                 mom=mom,
-                weight=weight,  # type: ignore[arg-type]
+                weight=weight,
                 axis=axis,
                 dim=dim,
                 move_axis_to_end=move_axis_to_end,
@@ -1149,7 +1149,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     ) -> Self:
         """Assign coordinates to data and return new object."""
         return self._new_like(
-            self._obj.assign_coords(coords, **coords_kwargs),
+            self._obj.assign_coords(coords, **coords_kwargs),  # pyright: ignore[reportUnknownMemberType]
         )
 
     def assign_attrs(self, *args: Any, **kwargs: Any) -> Self:

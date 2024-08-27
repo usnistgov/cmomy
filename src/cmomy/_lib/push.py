@@ -59,8 +59,8 @@ def reduce_vals(
     ],
     writable=None,
 )
-def reduce_vals_from_zero(
-    mom_dummy: NDArray[FloatT],  # noqa: ARG001
+def reduce_vals_fromzero(
+    dummy_mom: NDArray[FloatT],  # noqa: ARG001
     x: NDArray[FloatT],
     w: NDArray[FloatT],
     out: NDArray[FloatT],

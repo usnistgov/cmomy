@@ -158,7 +158,7 @@ class Data:
 
     @cached.prop
     def data_test(self) -> NDArrayAny:
-        return cmomy.reduction.reduce_vals(  # type: ignore[return-value]
+        return cmomy.reduction.reduce_vals(
             *self.xy_tuple,
             mom=self.mom,
             weight=self.w,
@@ -282,7 +282,7 @@ class Data:
     @cached.prop
     def data_test_resamp(self) -> NDArrayAny:
         return np.moveaxis(
-            cmomy.reduction.reduce_vals(  # type: ignore[arg-type]
+            cmomy.reduction.reduce_vals(
                 *self.xy_tuple_resamp,
                 mom=self.mom,
                 weight=self.w_resamp,

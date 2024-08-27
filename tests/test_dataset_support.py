@@ -463,7 +463,7 @@ def test_resample_data_dataset(
         data=ds, **kwargs, nrep=nrep, rng=get_zero_rng(), paired=paired
     )
 
-    out = cmomy.resample_data(ds, **kwargs, freq=dfreq)
+    out = cmomy.resample_data(ds, **kwargs, freq=dfreq)  # type: ignore[type-var]
     dim = kwargs["dim"]
     for name in ds:
         da = ds[name]

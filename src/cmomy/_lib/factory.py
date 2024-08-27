@@ -11,21 +11,27 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
-    from cmomy.core.typing import ConvertStyle, FloatT, Mom_NDim, NDArrayInt
+    from cmomy.core.typing import (
+        ConvertStyle,
+        FloatT,
+        Mom_NDim,
+        NDArrayInt,
+    )
 
     # Resample signature
     # These don't play well with pyright and overloading...
     class ResampleVals(Protocol):
         def __call__(
             self,
-            out: NDArray[FloatT],
+            dummy_mom: NDArray[FloatT],
             freq: NDArrayInt,
             x: NDArray[FloatT],
             w: NDArray[FloatT],
             /,
             *y: NDArray[FloatT],
+            out: NDArray[FloatT] | None = None,
             **kwargs: Any,
-        ) -> tuple[()]: ...
+        ) -> NDArray[FloatT]: ...
 
     class ResampleData(Protocol):
         def __call__(
@@ -64,13 +70,14 @@ if TYPE_CHECKING:
     class ReduceVals(Protocol):
         def __call__(
             self,
-            out: NDArray[FloatT],
+            dummy_mom: NDArray[FloatT],
             x: NDArray[FloatT],
             w: NDArray[FloatT],
             /,
             *y: NDArray[FloatT],
+            out: NDArray[FloatT] | None = None,
             **kwargs: Any,
-        ) -> tuple[()]: ...
+        ) -> NDArray[FloatT]: ...
 
     class ReduceData(Protocol):
         def __call__(
@@ -85,12 +92,13 @@ if TYPE_CHECKING:
     class ReduceDataGrouped(Protocol):
         def __call__(
             self,
+            dummy_group: NDArray[FloatT],
             data: NDArray[FloatT],
             group_idx: NDArrayInt,
-            out: NDArray[FloatT],
             /,
+            out: NDArray[FloatT] | None = None,
             **kwargs: Any,
-        ) -> tuple[()]: ...
+        ) -> NDArray[FloatT]: ...
 
     # Indexed
     class ReduceDataIndexed(Protocol):
@@ -249,15 +257,15 @@ def factory_resample_vals(
 
     if mom_ndim == 1:
         if parallel:
-            from .resample_parallel import resample_vals as _resample
+            from .resample_parallel import resample_vals_fromzero as _resample
         else:
-            from .resample import resample_vals as _resample
+            from .resample import resample_vals_fromzero as _resample
         return cast("ResampleVals", _resample)
 
     if parallel:
-        from .resample_cov_parallel import resample_vals as _resample_cov
+        from .resample_cov_parallel import resample_vals_fromzero as _resample_cov
     else:
-        from .resample_cov import resample_vals as _resample_cov
+        from .resample_cov import resample_vals_fromzero as _resample_cov
     return cast("ResampleVals", _resample_cov)
 
 
@@ -326,15 +334,15 @@ def factory_reduce_vals(
     parallel = parallel and supports_parallel()
     if mom_ndim == 1:
         if parallel:
-            from .push_parallel import reduce_vals as _reduce
+            from .push_parallel import reduce_vals_fromzero as _reduce
         else:
-            from .push import reduce_vals as _reduce
+            from .push import reduce_vals_fromzero as _reduce
         return cast("ReduceVals", _reduce)
 
     if parallel:
-        from .push_cov_parallel import reduce_vals as _reduce_cov
+        from .push_cov_parallel import reduce_vals_fromzero as _reduce_cov
     else:
-        from .push_cov import reduce_vals as _reduce_cov
+        from .push_cov import reduce_vals_fromzero as _reduce_cov
     return cast("ReduceVals", _reduce_cov)
 
 
@@ -364,15 +372,15 @@ def factory_reduce_data_grouped(
 ) -> ReduceDataGrouped:
     parallel = parallel and supports_parallel()
     if mom_ndim == 1 and parallel:
-        from .indexed_parallel import reduce_data_grouped
+        from .indexed_parallel import reduce_data_grouped_fromzero
     elif mom_ndim == 1:
-        from .indexed import reduce_data_grouped
+        from .indexed import reduce_data_grouped_fromzero
     elif parallel:
-        from .indexed_cov_parallel import reduce_data_grouped
+        from .indexed_cov_parallel import reduce_data_grouped_fromzero
     else:
-        from .indexed_cov import reduce_data_grouped
+        from .indexed_cov import reduce_data_grouped_fromzero
 
-    return cast("ReduceDataGrouped", reduce_data_grouped)
+    return cast("ReduceDataGrouped", reduce_data_grouped_fromzero)
 
 
 @lru_cache

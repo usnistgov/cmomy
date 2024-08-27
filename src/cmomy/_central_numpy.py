@@ -41,7 +41,7 @@ if TYPE_CHECKING:
         ArrayOrderCF,
         ArrayOrderCFA,
         AxisReduce,
-        DataCasting,
+        Casting,
         DTypeLikeArg,
         FloatT2,
         Groups,
@@ -232,7 +232,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         dtype: DTypeLikeArg[FloatT2],
         *,
         order: ArrayOrder = ...,
-        casting: DataCasting = ...,
+        casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
     ) -> CentralMoments[FloatT2]: ...
@@ -242,7 +242,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         dtype: None,
         *,
         order: ArrayOrder = ...,
-        casting: DataCasting = ...,
+        casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
     ) -> CentralMoments[np.float64]: ...
@@ -252,7 +252,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         dtype: DTypeLike,
         *,
         order: ArrayOrder = ...,
-        casting: DataCasting = ...,
+        casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
     ) -> CentralMoments[Any]: ...
@@ -263,7 +263,7 @@ class CentralMoments(CentralMomentsABC[FloatT, NDArray[FloatT]], Generic[FloatT]
         dtype: DTypeLike,
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> CentralMoments[Any]:

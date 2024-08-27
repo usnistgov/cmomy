@@ -38,7 +38,7 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
-        DataCasting,
+        Casting,
         Groups,
         KeepAttrs,
         MissingCoreDimOptions,
@@ -316,7 +316,7 @@ class CentralMomentsABC(ABC, Generic[FloatT, ArrayT]):
         dtype: DTypeLike,
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> Self:

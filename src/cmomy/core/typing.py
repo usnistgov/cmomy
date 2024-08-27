@@ -20,11 +20,11 @@ from typing import (
 import numpy as np
 
 # put outside to get autodoc typehints working...
-import pandas as pd  # noqa: TCH002
+import pandas as pd
 import xarray as xr
 from numpy.typing import NDArray
 
-from .typing_compat import TypeVar
+from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
@@ -36,13 +36,44 @@ if TYPE_CHECKING:
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
-
-# New typing types
+# * TypeVars
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
 GenXArrayT = TypeVar("GenXArrayT", xr.DataArray, xr.Dataset)
 GenXArrayT2 = TypeVar("GenXArrayT2", xr.DataArray, xr.Dataset)
+DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
+
+#: TypeVar of array types with restriction
+ArrayT = TypeVar(  # type: ignore[misc]
+    "ArrayT",
+    NDArray[np.float32],
+    NDArray[np.float64],
+    xr.DataArray,
+    default=NDArray[np.float64],
+)
+
+FuncType = Callable[..., Any]
+F = TypeVar("F", bound=FuncType)
+
+#: TypeVar of floating point precision (np.float32, np.float64, default=Any)
+FloatT = TypeVar(  # type: ignore[misc]
+    "FloatT",
+    np.float32,
+    np.float64,
+    default=Any,  # pyright: ignore[reportGeneralTypeIssues]
+)
+FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
+
+#: TypeVar of for np.generic dtype.
+ScalarT = TypeVar("ScalarT", bound=np.generic)
+ScalarT2 = TypeVar("ScalarT2", bound=np.generic)
+
+FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
+DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
+NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
 
 
+# * Aliases
+# ** Numpy
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
 AxisReduce: TypeAlias = Union[int, None]
@@ -51,32 +82,14 @@ AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
 AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
 DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
 
-# * Numpy Arrays
-# ** Aliases
+# Types
 DTypeAny: TypeAlias = Any
 FloatDTypes = Union[np.float32, np.float64]
 LongIntDType: TypeAlias = np.int64
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
 NDArrayFloats = NDArray[FloatDTypes]
+NDArrayBool = NDArray[np.bool_]
 NDArrayInt = NDArray[LongIntDType]
-# ** Types
-FloatT = TypeVar(  # type: ignore[misc]
-    "FloatT",
-    np.float32,
-    np.float64,
-    default=Any,  # pyright: ignore[reportGeneralTypeIssues]
-)
-"""TypeVar of floating point precision (np.float32, np.float64, default=Any)"""
-
-FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
-DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
-ScalarT = TypeVar("ScalarT", bound=np.generic)
-"""TypeVar of for np.generic dtype."""
-
-ScalarT2 = TypeVar("ScalarT2", bound=np.generic)
-
-NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
-FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
 IntDTypeT: TypeAlias = np.int64
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 
@@ -107,13 +120,6 @@ ArrayLikeArg = Union[
 ]
 
 
-# ** Literals
-ArrayOrder = Literal["C", "F", "A", "K", None]
-ArrayOrderCFA = Literal["C", "F", "A", None]
-ArrayOrderCF = Literal["C", "F", None]
-DataCasting = Literal["no", "equiv", "safe", "same_kind", "unsafe", None]
-
-
 # * Numba types
 # NumbaType = Union[nb.typing.Integer, nb.typing.Array]  # noqa: ERA001
 # The above isn't working for pyright.  Just using any for now...
@@ -123,65 +129,43 @@ NumbaType = Any
 # NOTE: using the strict form for Moments
 # Passing in integer or Sequence[int] will work in almost all cases,
 # but will be flagged by typechecker...
+#: Moments type
 Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
-"""Moments type."""
-
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
-
 Mom_NDim = Literal[1, 2]
-
-# * Generic array
-ArrayT = TypeVar(  # type: ignore[misc]
-    "ArrayT",
-    NDArray[np.float32],
-    NDArray[np.float64],
-    xr.DataArray,
-    default=NDArray[np.float64],
-)
-"""TypeVar of array type."""
-
-# * Dummy function
-FuncType = Callable[..., Any]
-F = TypeVar("F", bound=FuncType)
 
 # * Xarray specific stuff
 # fix if using autodoc typehints...
 
-if TYPE_CHECKING:
-    MomDims = Union[Hashable, tuple[Hashable], tuple[Hashable, Hashable]]
-    MomDimsStrict = Union[tuple[Hashable], tuple[Hashable, Hashable]]
+MomDims = Union[Hashable, "tuple[Hashable]", "tuple[Hashable, Hashable]"]
+MomDimsStrict = Union["tuple[Hashable]", "tuple[Hashable, Hashable]"]
 
-    IndexAny: TypeAlias = "pd.Index[Any]"
-    XArrayCoordsType: TypeAlias = Union[
-        Sequence[Union[Sequence[Any], IndexAny, xr.DataArray]],
-        Mapping[Any, Any],
-        None,
-    ]
+IndexAny: TypeAlias = "pd.Index[Any]"
+XArrayCoordsType: TypeAlias = Union[
+    Mapping[Any, Any],
+    None,
+]
+XArrayAttrsType: TypeAlias = Optional[Mapping[Any, Any]]
+XArrayNameType: TypeAlias = Optional[Hashable]
+XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
+XArrayIndexesType: TypeAlias = Any
+Dims = Union[str, Collection[Hashable], EllipsisType, None]  # pyright: ignore[reportGeneralTypeIssues]
+KeepAttrs: TypeAlias = Union[
+    Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
+    bool,
+    None,
+]
+Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
+ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
 
-    XArrayAttrsType: TypeAlias = Optional[Mapping[Any, Any]]
-    XArrayNameType: TypeAlias = Optional[Hashable]
-    XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
-    XArrayIndexesType: TypeAlias = Any
-
-    Dims = Union[str, Collection[Hashable], ellipsis, None]  # noqa: F821  # pyright: ignore[reportGeneralTypeIssues]
-
-    # literals
-    VerifyValuesStyles: TypeAlias = Literal[
-        "val", "vals", "data", "datas", "var", "vars"
-    ]
-    CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
-    KeepAttrs: TypeAlias = Union[
-        Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
-        bool,
-        None,
-    ]
-
-    ConvertStyle = Literal["central", "raw"]
-
-    # For indexed reducetion
-    Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
-
-# SelectComponent
+# * Literals
+ArrayOrder = Literal["C", "F", "A", "K", None]
+ArrayOrderCFA = Literal["C", "F", "A", None]
+ArrayOrderCF = Literal["C", "F", None]
+Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
+#: What to do if missing a core dimensions.
+MissingCoreDimOptions = Literal["raise", "copy", "drop"]
+#: Selectable moment names.
 SelectMoment = Literal[
     "weight",
     "ave",
@@ -193,11 +177,6 @@ SelectMoment = Literal[
     "yvar",
     "all",
 ]
-"""Selectable moment names."""
-
-
-MissingCoreDimOptions = Literal["raise", "copy", "drop"]
-"""What to do if missing a core dimension."""
-
-if TYPE_CHECKING:
-    ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
+ConvertStyle = Literal["central", "raw"]
+VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
+CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]

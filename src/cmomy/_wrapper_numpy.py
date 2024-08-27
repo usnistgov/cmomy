@@ -30,7 +30,7 @@ if TYPE_CHECKING:
         ArrayOrderCF,
         ArrayOrderCFA,
         AxisReduce,
-        DataCasting,
+        Casting,
         DTypeLikeArg,
         Groups,
         Mom_NDim,
@@ -264,7 +264,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         dtype: DTypeLikeArg[ScalarT2],
         *,
         order: ArrayOrder = ...,
-        casting: DataCasting = ...,
+        casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
     ) -> CentralWrapperNumpy[ScalarT2]: ...
@@ -274,7 +274,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         dtype: None,
         *,
         order: ArrayOrder = ...,
-        casting: DataCasting = ...,
+        casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
     ) -> CentralWrapperNumpy[np.float64]: ...
@@ -284,7 +284,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         dtype: DTypeLike,
         *,
         order: ArrayOrder = ...,
-        casting: DataCasting = ...,
+        casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
     ) -> CentralWrapperNumpy[Any]: ...
@@ -295,7 +295,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         dtype: DTypeLike,
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> CentralWrapperNumpy[Any]:

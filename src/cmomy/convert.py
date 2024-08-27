@@ -59,6 +59,7 @@ if TYPE_CHECKING:
         DimsReduce,
         DTypeLikeArg,
         FloatT,
+        GenXArrayT,
         KeepAttrs,
         MissingCoreDimOptions,
         MissingType,
@@ -72,7 +73,7 @@ if TYPE_CHECKING:
 # * Convert between raw and central moments
 @overload
 def moments_type(
-    values_in: xr.Dataset,
+    values_in: GenXArrayT,
     *,
     mom_ndim: Mom_NDim,
     to: ConvertStyle = ...,
@@ -82,20 +83,7 @@ def moments_type(
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.Dataset: ...
-@overload
-def moments_type(
-    values_in: xr.DataArray,
-    *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.DataArray: ...
+) -> GenXArrayT: ...
 # array
 @overload
 def moments_type(
@@ -156,7 +144,7 @@ def moments_type(
 
 @docfiller.decorate
 def moments_type(
-    values_in: ArrayLike | xr.DataArray | xr.Dataset,
+    values_in: ArrayLike | GenXArrayT,
     *,
     mom_ndim: Mom_NDim,
     to: ConvertStyle = "central",
@@ -166,7 +154,7 @@ def moments_type(
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | xr.DataArray | xr.Dataset:
+) -> NDArrayAny | GenXArrayT:
     r"""
     Convert between central and raw moments type.
 
@@ -224,7 +212,7 @@ def moments_type(
     mom_ndim = validate_mom_ndim(mom_ndim)
     if isinstance(values_in, (xr.DataArray, xr.Dataset)):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
-        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_type,
             values_in,
             input_core_dims=[mom_dims],
@@ -252,7 +240,7 @@ def moments_type(
 # * Moments to Cumulative moments
 @overload
 def cumulative(  # pyright: ignore[reportOverlappingOverload]
-    values_in: xr.Dataset,
+    values_in: GenXArrayT,
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
@@ -266,24 +254,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.Dataset: ...
-@overload
-def cumulative(  # pyright: ignore[reportOverlappingOverload]
-    values_in: xr.DataArray,
-    *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.DataArray: ...
+) -> GenXArrayT: ...
 # array
 @overload
 def cumulative(
@@ -360,7 +331,7 @@ def cumulative(
 
 @docfiller.decorate
 def cumulative(  # pyright: ignore[reportOverlappingOverload]
-    values_in: ArrayLike | xr.DataArray | xr.Dataset,
+    values_in: ArrayLike | GenXArrayT,
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
@@ -374,7 +345,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | xr.DataArray | xr.Dataset:
+) -> NDArrayAny | GenXArrayT:
     """
     Convert between moments array and cumulative moments array.
 
@@ -433,7 +404,7 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, values_in)]]
 
-        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             cumulative,
             values_in,
             input_core_dims=core_dims,
@@ -507,7 +478,7 @@ def _validate_mom_moments_to_comoments(
 
 @overload
 def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
-    values: xr.Dataset,
+    values: GenXArrayT,
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
@@ -516,19 +487,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.Dataset: ...
-@overload
-def moments_to_comoments(
-    values: xr.DataArray,
-    *,
-    mom: tuple[int, int],
-    dtype: DTypeLike = ...,
-    mom_dims: MomDims | None = ...,
-    mom_dims2: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.DataArray: ...
+) -> GenXArrayT: ...
 # array
 @overload
 def moments_to_comoments(
@@ -572,7 +531,7 @@ def moments_to_comoments(
 
 @docfiller.decorate
 def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
-    values: ArrayLike | xr.DataArray | xr.Dataset,
+    values: ArrayLike | GenXArrayT,
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = None,
@@ -581,7 +540,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | xr.DataArray | xr.Dataset:
+) -> NDArrayAny | GenXArrayT:
     """
     Convert from moments to comoments data.
 
@@ -661,7 +620,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             values = values.rename({old_name: mom_dim_in})
 
-        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_to_comoments,
             values,
             input_core_dims=[[mom_dim_in]],
@@ -691,7 +650,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     # numpy
     values = np.asarray(values, dtype=dtype)
     mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
-    out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)
+    out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)  # type: ignore[union-attr]
     for i, j in np.ndindex(*out.shape[-2:]):
         out[..., i, j] = values[..., i + j]
     return out
@@ -700,12 +659,12 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
 # * concat
 @overload
 def concat(
-    arrays: Iterable[xr.DataArray],
+    arrays: Iterable[GenXArrayT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> xr.DataArray: ...
+) -> GenXArrayT: ...
 @overload
 def concat(
     arrays: Iterable[CentralMoments[FloatT]],
@@ -734,7 +693,7 @@ def concat(
 
 @docfiller.decorate
 def concat(
-    arrays: Iterable[xr.DataArray]
+    arrays: Iterable[GenXArrayT]
     | Iterable[CentralMoments[Any]]
     | Iterable[xCentralMoments[Any]]
     | Iterable[NDArrayAny],
@@ -742,7 +701,7 @@ def concat(
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     **kwargs: Any,
-) -> xr.DataArray | CentralMoments[Any] | xCentralMoments[Any] | NDArrayAny:
+) -> GenXArrayT | CentralMoments[Any] | xCentralMoments[Any] | NDArrayAny:
     """
     Concatenate moments objects.
 
@@ -849,11 +808,11 @@ def concat(
             **kwargs,
         )
 
-    if isinstance(first, xr.DataArray):
+    if isinstance(first, (xr.DataArray, xr.Dataset)):
         if dim is MISSING or dim is None or dim in first.dims:
             axis, dim = select_axis_dim(first, axis=axis, dim=dim, default_axis=0)
         # otherwise, assume adding a new dimension...
-        return cast("xr.DataArray", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
+        return cast("GenXArrayT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
 
     return type(first)(  # type: ignore[call-arg, return-value]
         concat(

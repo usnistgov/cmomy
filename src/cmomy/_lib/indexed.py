@@ -20,25 +20,33 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample,mom),(sample),(group,mom)",
+    "(group),(sample,mom),(sample) -> (group,mom)",
     [
         (
+            nb.float32[:],
             nb.float32[:, :],
             nb.int64[:],
             nb.float32[:, :],
         ),
         (
+            nb.float64[:],
             nb.float64[:, :],
             nb.int64[:],
             nb.float64[:, :],
         ),
     ],
+    writable=None,
 )
-def reduce_data_grouped(
-    data: NDArray[FloatT], group_idx: NDArrayInt, out: NDArray[FloatT]
+def reduce_data_grouped_fromzero(
+    dummy_group: NDArray[FloatT],  # noqa: ARG001
+    data: NDArray[FloatT],
+    group_idx: NDArrayInt,
+    out: NDArray[FloatT],
 ) -> None:
     assert data.shape[1:] == out.shape[1:]
     assert group_idx.max() < out.shape[0]
+
+    out[...] = 0.0
     for s in range(data.shape[0]):
         group = group_idx[s]
         if group >= 0:

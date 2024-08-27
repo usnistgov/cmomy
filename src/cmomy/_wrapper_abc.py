@@ -38,7 +38,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         ArrayOrder,
         AxisReduce,
-        DataCasting,
+        Casting,
         DimsReduce,
         Groups,
         KeepAttrs,
@@ -189,7 +189,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         dtype: DTypeLike,
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> Self:
@@ -202,15 +202,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             Typecode of data-type to cast the array data.  Note that a value of None will
             upcast to ``np.float64``.  This is the same behaviour as :func:`~numpy.asarray`.
         {order}
-        casting : {{'no', 'equiv', 'safe', 'same_kind', 'unsafe'}}, optional
-            Controls what kind of data casting may occur.
-
-            - 'no' means the data types should not be cast at all.
-            - 'equiv' means only byte-order changes are allowed.
-            - 'safe' means only casts which can preserve values are allowed.
-            - 'same_kind' means only safe casts or casts within a kind,
-              like float64 to float32, are allowed.
-            - 'unsafe' (default) means any data conversions may be done.
+        {casting}
 
         subok : bool, optional
             If True, then sub-classes will be passed-through, otherwise the
@@ -957,7 +949,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
                 self._obj,  # pyright: ignore[reportArgumentType]
                 mom_ndim=self._mom_ndim,
                 axis=axis,
-                data_reduced=data_reduced,  # type: ignore[arg-type] # pyright: ignore[reportArgumentType]
+                data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
                 parallel=parallel,
                 **kwargs,
             )

@@ -12,9 +12,6 @@ from .array_utils import (
     positive_to_negative_index,
 )
 from .missing import MISSING
-from .utils import (
-    mom_to_mom_shape,
-)
 from .validate import (
     validate_axis,
 )
@@ -39,7 +36,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         MissingType,
         Mom_NDim,
-        MomentsStrict,
         NDArrayAny,
         ScalarT,
     )
@@ -279,30 +275,3 @@ def xprepare_out_for_resample_data(
 
     shift = 0 if mom_ndim is None else mom_ndim
     return np.moveaxis(out, axis, -(shift + 1))
-
-
-def prepare_out_from_values(
-    out: NDArray[ScalarT] | None,
-    *args: NDArray[ScalarT],
-    mom: MomentsStrict,
-    axis_neg: int,
-    axis_new_size: int | None = None,
-) -> NDArray[ScalarT]:
-    """Pass in axis if this is a reduction and will be removing axis_neg"""
-    if out is not None:
-        out.fill(0.0)
-        return out
-
-    val_shape: tuple[int, ...] = np.broadcast_shapes(
-        args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
-    )
-
-    # need to normalize
-    axis = normalize_axis_index(axis_neg, len(val_shape))
-    if axis_new_size is None:
-        val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
-    else:
-        val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
-
-    out_shape = (*val_shape, *mom_to_mom_shape(mom))
-    return np.zeros(out_shape, dtype=args[0].dtype)

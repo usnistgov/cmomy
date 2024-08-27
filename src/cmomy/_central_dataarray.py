@@ -46,8 +46,8 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
+        Casting,
         CoordsPolicy,
-        DataCasting,
         Dims,
         DimsReduce,
         DTypeLikeArg,
@@ -291,7 +291,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         dtype: DTypeLikeArg[FloatT2],
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> xCentralMoments[FloatT2]: ...
@@ -301,7 +301,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         dtype: None,
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> xCentralMoments[np.float64]: ...
@@ -311,7 +311,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         dtype: DTypeLike,
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> xCentralMoments[Any]: ...
@@ -322,7 +322,7 @@ class xCentralMoments(CentralMomentsABC[FloatT, xr.DataArray]):  # noqa: N801
         dtype: DTypeLike,
         *,
         order: ArrayOrder = None,
-        casting: DataCasting = None,
+        casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
     ) -> xCentralMoments[Any]:

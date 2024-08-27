@@ -246,9 +246,14 @@ def test_reduce_vals() -> None:
 
         xx = xr.DataArray(x32)
         assert_type(reduce_vals(xx, mom=3), xr.DataArray)
+        assert_type(reduce_vals(xx, xx, mom=(3, 3)), xr.DataArray)
+        assert_type(reduce_vals(xx, xx, weight=xx, mom=(3, 3)), xr.DataArray)
 
         ds = xx.to_dataset()
         assert_type(reduce_vals(ds, mom=3), xr.Dataset)
+        assert_type(reduce_vals(ds, xx, mom=(3, 3)), xr.Dataset)
+        assert_type(reduce_vals(ds, ds, mom=(3, 3)), xr.Dataset)
+        assert_type(reduce_vals(ds, ds, weight=xx, mom=(3, 3)), xr.Dataset)
 
         if MYPY_ONLY:
             # TODO(wpk): would love to figure out how to get pyright to give this
@@ -404,6 +409,7 @@ def test_moveaxis() -> None:
     xAny: NDArray[Any] = xint
 
     if TYPE_CHECKING:
+        assert_type(x32, NDArray[np.float32])
         assert_type(cmomy.moveaxis(x32, mom_ndim=1), NDArray[np.float32])
         assert_type(cmomy.moveaxis(x64, mom_ndim=1), NDArray[np.float64])
         assert_type(cmomy.moveaxis(xint, mom_ndim=1), NDArray[np.int64])

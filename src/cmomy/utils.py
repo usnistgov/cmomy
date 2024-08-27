@@ -43,6 +43,7 @@ if TYPE_CHECKING:
         ArrayLikeArg,
         DTypeLikeArg,
         FloatT,
+        GenXArrayT,
         KeepAttrs,
         MissingCoreDimOptions,
         MissingType,
@@ -215,7 +216,7 @@ def moment_indexer(
 
 @overload
 def select_moment(
-    data: xr.Dataset,
+    data: GenXArrayT,
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim,
@@ -226,21 +227,7 @@ def select_moment(
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.Dataset: ...
-@overload
-def select_moment(
-    data: xr.DataArray,
-    name: SelectMoment,
-    *,
-    mom_ndim: Mom_NDim,
-    squeeze: bool = ...,
-    dim_combined: str = ...,
-    coords_combined: str | Sequence[Hashable] | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.DataArray: ...
+) -> GenXArrayT: ...
 @overload
 def select_moment(
     data: NDArray[ScalarT],
@@ -259,7 +246,7 @@ def select_moment(
 
 @docfiller.decorate
 def select_moment(
-    data: NDArray[ScalarT] | xr.DataArray | xr.Dataset,
+    data: NDArray[ScalarT] | GenXArrayT,
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim,
@@ -270,7 +257,7 @@ def select_moment(
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArray[ScalarT] | xr.DataArray | xr.Dataset:
+) -> NDArray[ScalarT] | GenXArrayT:
     """
     Select specific moments for a central moments array.
 
@@ -344,7 +331,7 @@ def select_moment(
             output_sizes = None
             coords_combined = None
 
-        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _select_moment,
             data,
             input_core_dims=input_core_dims,
@@ -396,8 +383,8 @@ def _select_moment(
 # * Assign value(s)
 @overload
 def assign_moment(
-    data: xr.Dataset,
-    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | xr.Dataset] | None = None,
+    data: GenXArrayT,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | GenXArrayT] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = ...,
@@ -408,22 +395,7 @@ def assign_moment(
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
-) -> xr.Dataset: ...
-@overload
-def assign_moment(
-    data: xr.DataArray,
-    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray] | None = None,
-    *,
-    mom_ndim: Mom_NDim,
-    squeeze: bool = ...,
-    copy: bool = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    dim_combined: Hashable | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-    **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
-) -> xr.DataArray: ...
+) -> GenXArrayT: ...
 @overload
 def assign_moment(
     data: NDArray[ScalarT],
@@ -443,8 +415,8 @@ def assign_moment(
 
 @docfiller.decorate
 def assign_moment(
-    data: NDArray[ScalarT] | xr.DataArray | xr.Dataset,
-    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | xr.Dataset] | None = None,
+    data: NDArray[ScalarT] | GenXArrayT,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | GenXArrayT] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = True,
@@ -455,7 +427,7 @@ def assign_moment(
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,  # pyright: ignore[reportRedeclaration]
-) -> NDArray[ScalarT] | xr.DataArray | xr.Dataset:
+) -> NDArray[ScalarT] | GenXArrayT:
     r"""
     Update weights of moments array.
 
@@ -548,7 +520,7 @@ def assign_moment(
             else:
                 input_core_dims.append([])
 
-        xout: xr.DataArray | xr.Dataset = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _assign_moment,
             data,
             *moment_kwargs.values(),
@@ -600,30 +572,17 @@ def _assign_moment(
 # * Vals -> Data
 @overload
 def vals_to_data(
-    x: xr.Dataset,
-    *y: ArrayLike | xr.DataArray | xr.Dataset,
+    x: GenXArrayT,
+    *y: ArrayLike | xr.DataArray | GenXArrayT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
+    weight: ArrayLike | xr.DataArray | GenXArrayT | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | xr.DataArray | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.Dataset: ...
-@overload
-def vals_to_data(
-    x: xr.DataArray,
-    *y: ArrayLike | xr.DataArray,
-    mom: Moments,
-    weight: ArrayLike | xr.DataArray | None = ...,
-    dtype: DTypeLike = ...,
-    out: NDArrayAny | xr.DataArray | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> xr.DataArray: ...
+) -> GenXArrayT: ...
 # Array
 @overload
 def vals_to_data(
@@ -652,6 +611,20 @@ def vals_to_data(
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
+# out
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    mom: Moments,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLike = ...,
+    out: xr.DataArray,
+    mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
+    on_missing_core_dim: MissingCoreDimOptions = ...,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+) -> xr.DataArray: ...
 # dtype
 @overload
 def vals_to_data(
@@ -684,17 +657,17 @@ def vals_to_data(
 
 @docfiller.decorate
 def vals_to_data(
-    x: ArrayLike | xr.DataArray | xr.Dataset,
-    *y: ArrayLike | xr.DataArray | xr.Dataset,
+    x: ArrayLike | GenXArrayT,
+    *y: ArrayLike | xr.DataArray | GenXArrayT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+    weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | xr.DataArray | xr.Dataset:
+) -> NDArrayAny | GenXArrayT:
     """
     Convert `values` to `central moments array`.
 
@@ -775,7 +748,7 @@ def vals_to_data(
 
             def _func(*args: Any, **kwargs: Any) -> Any:
                 weight, *y, x = args
-                return _vals_to_data(x, *y, weight=weight, out=None, **kwargs)
+                return _vals_to_data(x, *y, weight=weight, out=None, **kwargs)  # type: ignore[has-type]
         else:
             # TODO(wpk): Is this really needed?  changes order of result, but so what?
             args = [out, *args]
@@ -783,7 +756,7 @@ def vals_to_data(
 
             def _func(*args: Any, **kwargs: Any) -> Any:
                 _out, weight, *y, x = args
-                return _vals_to_data(x, *y, weight=weight, out=_out, **kwargs)
+                return _vals_to_data(x, *y, weight=weight, out=_out, **kwargs)  # type: ignore[has-type]
 
         return xr.apply_ufunc(  # type: ignore[no-any-return]
             _func,
@@ -808,7 +781,7 @@ def vals_to_data(
             ),
         )
 
-    return _vals_to_data(
+    return _vals_to_data(  # type: ignore[return-value]
         x,
         *y,
         weight=weight,

@@ -57,23 +57,39 @@ def resample_data_fromzero(
 
 
 @_vectorize(
-    "(replicate,mom),(replicate,sample),(sample),(sample)",
+    "(mom),(replicate,sample),(sample),(sample) -> (replicate,mom)",
     [
-        (nb.float32[:, :], nb.float32[:, :], nb.float32[:], nb.float32[:]),
-        (nb.float64[:, :], nb.float64[:, :], nb.float64[:], nb.float64[:]),
+        (
+            nb.float32[:],
+            nb.float32[:, :],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:, :],
+        ),
+        (
+            nb.float64[:],
+            nb.float64[:, :],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:, :],
+        ),
     ],
+    writable=None,
 )
-def resample_vals(
-    out: NDArray[FloatT],
+def resample_vals_fromzero(
+    dummy_mom: NDArray[FloatT],  # noqa: ARG001
     freq: NDArray[FloatT],
     x: NDArray[FloatT],
     w: NDArray[FloatT],
+    out: NDArray[FloatT],
 ) -> None:
     nrep, nsamp = freq.shape
 
     assert len(w) == nsamp
     assert x.shape == w.shape
     assert out.shape[0] == nrep
+
+    out[...] = 0.0
 
     for irep in range(nrep):
         for isamp in range(nsamp):
