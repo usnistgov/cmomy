@@ -25,7 +25,7 @@ def test_fix_test(other) -> None:
 
 
 def test_s(other) -> None:
-    xtest(other.data_test_xr, other.s_xr.to_dataarray())
+    xtest(other.data_test_xr, other.s_xr.obj)
 
 
 def scramble_xr(*args: xr.DataArray, rng=None) -> tuple[xr.DataArray, ...]:
@@ -46,21 +46,20 @@ def scramble_xr(*args: xr.DataArray, rng=None) -> tuple[xr.DataArray, ...]:
 def test_new_like() -> None:
     c = xCentralMoments.zeros(mom=2, val_shape=(2, 3), dims=("a", "b", "mom"))
 
-    n = c.new_like(data=c.to_dataarray())
+    n = c.new_like(obj=c.obj)
 
-    n.data[...] = 1
+    n.obj[...] = 1
 
-    np.testing.assert_allclose(c.data, n.data)
+    np.testing.assert_allclose(c, n)
 
-    c.zero()
+    c.obj[...] = 0.0
 
-    data = np.ones_like(c.data)
-
+    data = np.ones_like(c.obj)
     n = c.new_like(data)
 
-    n.data[...] = 1
+    n.obj[...] = 1
 
-    np.testing.assert_allclose(n.data, data)
+    np.testing.assert_allclose(n, data)
 
 
 def test_new_like2() -> None:
@@ -75,35 +74,22 @@ def test_new_like2() -> None:
     assert x1.shape == (2, 3, 3)
     assert x1.dims == ("a", "b", "mom")
 
-    x2 = CentralMoments(np.zeros((2, 3, 4)), mom_ndim=1).to_xcentralmoments(
-        dims=("a", "b", "mom")
-    )
+    x2 = CentralMoments(np.zeros((2, 3, 4)), mom_ndim=1).to_x(dims=("a", "b", "mom"))
 
     assert x2.shape == (2, 3, 4)
     assert x2.dims == ("a", "b", "mom")
 
-    with pytest.raises(ValueError, match=r".*has wrong mom_shape.*"):
-        c.new_like(xr.DataArray(np.zeros((2, 3, 4))))
+    with pytest.raises(ValueError, match=r".*Moments shape.*"):
+        c.new_like(xr.DataArray(np.zeros((2, 3, 4)), dims=c.dims))
 
-    with pytest.raises(ValueError, match=r".*shape.*"):
-        c.new_like(xr.DataArray(np.zeros((2, 2, 3, 3))), verify=True)
+    with pytest.raises(ValueError, match=r".*sizes.*"):
+        c.new_like(
+            xr.DataArray(np.zeros((2, 2, 3, 3)), dims=("hello", *c.dims)), verify=True
+        )
 
     assert (
         c.new_like(np.zeros((2, 3, 3), dtype=np.float32), verify=True).dtype.type
         == np.float32
-    )
-
-
-def test_from_centralmoments() -> None:
-    c = CentralMoments.zeros(mom=2, val_shape=(2, 3))
-
-    cx0 = c.to_x()
-
-    cx1 = xCentralMoments.from_centralmoments(c)
-
-    xr.testing.assert_allclose(
-        cx0.to_values(),
-        cx1.to_values(),
     )
 
 
@@ -121,17 +107,17 @@ def test_create(other) -> None:
 
     # from array
     t.push_vals(*other.xy_tuple, weight=other.w, axis=other.axis)
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
     # from xarray
-    t.zero()
+    t.obj[...] = 0.0
 
     t.push_vals(
         *scramble_xr(*other.xy_tuple_xr),
         weight=scramble_xr(other.w_xr)[0],
         dim="rec",
     )
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_zeros() -> None:
@@ -158,33 +144,31 @@ def test_xarray_methods(mom_ndim: Mom_NDim) -> None:
     c = xCentralMoments(xdata, mom_ndim=mom_ndim)
 
     xr.testing.assert_equal(
-        c.assign_coords({"a": a_coords}).to_values(),
+        c.assign_coords({"a": a_coords}).obj,
         xdata.assign_coords({"a": a_coords}),
     )
 
     xdata2 = xdata.assign_coords(a=a_coords, b=b_coords, c=c_coords)
     c2 = c.assign_coords(a=a_coords, b=b_coords, c=c_coords)
-    xr.testing.assert_equal(c2.to_values(), xdata2)
+    xr.testing.assert_equal(c2.obj, xdata2)
 
     # set_index
     c3 = c2.assign_coords(x=x_coords, y=y_coords).set_index(a=["x", "y"])
     xdata3 = xdata2.assign_coords(x=x_coords, y=y_coords).set_index(a=["x", "y"])
 
     xr.testing.assert_allclose(
-        c3.to_values(),
+        c3.obj,
         xdata3,
     )
 
     # reset_index
-    xr.testing.assert_allclose(c3.reset_index("a").to_values(), xdata3.reset_index("a"))
+    xr.testing.assert_allclose(c3.reset_index("a").obj, xdata3.reset_index("a"))
 
     # drop_vars
-    xr.testing.assert_allclose(c3.drop_vars("x").to_values(), xdata3.drop_vars("x"))
+    xr.testing.assert_allclose(c3.drop_vars("x").obj, xdata3.drop_vars("x"))
 
     # swap_dims
-    xr.testing.assert_allclose(
-        c3.swap_dims(a="hello").to_values(), xdata3.swap_dims(a="hello")
-    )
+    xr.testing.assert_allclose(c3.swap_dims(a="hello").obj, xdata3.swap_dims(a="hello"))
 
 
 def test_from_vals(other) -> None:
@@ -193,8 +177,8 @@ def test_from_vals(other) -> None:
         weight=other.w,
         mom=other.mom,
         axis=other.axis,
-    ).to_xcentralmoments()
-    xtest(other.data_test_xr, t.to_dataarray())
+    ).to_x()
+    xtest(other.data_test_xr, t.obj)
 
     t = xCentralMoments.from_vals(
         *scramble_xr(*other.xy_tuple_xr),
@@ -202,7 +186,7 @@ def test_from_vals(other) -> None:
         dim="rec",
         mom=other.mom,
     )
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_mean_var_simple(rng) -> None:
@@ -244,36 +228,36 @@ def test_push_val(other) -> None:
         t = other.s_xr.zeros_like()
         for ww, xx in zip(other.w, other.xdata):
             t.push_val(xx, weight=ww)
-        xtest(other.data_test_xr, t.to_dataarray())
+        xtest(other.data_test_xr, t.obj)
 
-        t.zero()
+        t.obj[...] = 0.0
         for ww, xx in zip(other.w_xr, other.xdata_xr):
             t.push_val(scramble_xr(xx)[0], weight=scramble_xr(ww)[0])
-        xtest(other.data_test_xr, t.to_dataarray())
+        xtest(other.data_test_xr, t.obj)
 
 
 def test_push_vals_mult(other) -> None:
     t = other.s_xr.zeros_like()
     for ww, xx in zip(other.W, other.X):
         t.push_vals(*xx, weight=ww, axis=other.axis)
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
-    t.zero()
+    t.obj[...] = 0.0
     for ww, xx in zip(other.W_xr, other.X_xr):
         t.push_vals(*scramble_xr(*xx), weight=scramble_xr(ww)[0], dim="rec")
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_combine(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
-        t.push_data(scramble_xr(s.to_dataarray())[0])
-    xtest(other.data_test_xr, t.to_dataarray())
+        t.push_data(scramble_xr(s.obj)[0])
+    xtest(other.data_test_xr, t.obj)
 
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
         t.push_data(s.to_numpy())
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_init() -> None:
@@ -282,7 +266,7 @@ def test_init() -> None:
     c = CentralMoments(
         data,
         mom_ndim=1,
-    ).to_xcentralmoments(dims=("a", "b", "mom"))
+    ).to_x(dims=("a", "b", "mom"))
 
     assert c.dims == ("a", "b", "mom")
     assert c.mom == (3,)
@@ -304,71 +288,71 @@ def test_init_reduce(other) -> None:
 
     cmomy.random.default_rng(0)
 
-    datas = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
+    datas = xr.concat([s.obj for s in other.S_xr], dim="rec")
     datas = scramble_xr(datas)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
     t = other.cls_xr(
         datas,
         mom_ndim=other.mom_ndim,
     ).reduce(dim="rec")
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_push_datas(other) -> None:
-    datas_orig = xr.concat([s.to_dataarray() for s in other.S_xr], dim="rec")
+    datas_orig = xr.concat([s.obj for s in other.S_xr], dim="rec")
 
     datas = scramble_xr(datas_orig)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
 
     # push xarrays
     t = other.s_xr.zeros_like()
     t.push_datas(datas, dim="rec")
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
     # push numpy arrays
     t = other.s_xr.zeros_like()
     t.push_datas(datas_orig.to_numpy(), axis=datas_orig.get_axis_num("rec"))
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_add(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
         t += s
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_sum(other) -> None:
     t = sum(other.S_xr, other.s_xr.zeros_like())
-    xtest(other.data_test_xr, t.to_dataarray())  # pyright: ignore[reportAttributeAccessIssue]
+    xtest(other.data_test_xr, t.obj)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_iadd(other) -> None:
     t = other.s_xr.zeros_like()
     for s in other.S_xr:
         t += s
-    xtest(other.data_test_xr, t.to_dataarray())
+    xtest(other.data_test_xr, t.obj)
 
 
 def test_sub(other) -> None:
     t = other.s_xr - sum(other.S_xr[1:], other.s_xr.zeros_like())
-    xtest(t.to_dataarray(), other.S_xr[0].to_dataarray())
+    xtest(t.obj, other.S_xr[0].obj)
 
 
 def test_isub(other) -> None:
     t = other.s_xr.copy()
     for s in other.S_xr[1:]:
         t -= s
-    xtest(t.to_dataarray(), other.S_xr[0].to_dataarray())
+    xtest(t.obj, other.S_xr[0].obj)
 
 
 def test_mult(other) -> None:
     s = other.s_xr
 
-    xtest((s * 2).to_dataarray(), (s + s).to_dataarray())
+    xtest((s * 2).obj, (s + s).obj)
 
     t = s.copy()
     t *= 2
-    xtest(t.to_dataarray(), (s + s).to_dataarray())
+    xtest(t.obj, (s + s).obj)
 
 
 def test_resample_and_reduce(other, rng) -> None:
@@ -392,12 +376,12 @@ def test_resample_and_reduce(other, rng) -> None:
             with pytest.raises(ValueError):
                 other.s_xr.resample_and_reduce(freq=freq, dim="mom_0")
 
-            np.testing.assert_allclose(t0.data, t1.data)
+            np.testing.assert_allclose(t0, t1)
 
             # check dims
-            dims = other.s_xr.to_dataarray().dims
+            dims = other.s_xr.obj.dims
             dims = (*dims[:axis], "hello", *dims[axis + 1 :])
-            assert t1.to_dataarray().dims == dims
+            assert t1.obj.dims == dims
 
             # resample
             tr = other.s.resample(idx, axis=axis, last=True)
@@ -406,16 +390,16 @@ def test_resample_and_reduce(other, rng) -> None:
             tx = other.s_xr.isel(**{dim: xr.DataArray(idx, dims=["hello", dim])})
 
             np.testing.assert_allclose(
-                tr.data, tx.transpose(..., "hello", dim, *tx.mom_dims).data
+                tr, tx.transpose(..., "hello", dim, *tx.mom_dims)
             )
 
             # reduce
-            xtest(t1.to_dataarray(), tx.reduce(dim=dim).to_dataarray())
+            xtest(t1.obj, tx.reduce(dim=dim).obj)
 
             # block:
             xtest(
-                t1.to_dataarray(),
-                tx.block(dim=dim, block_size=None).to_dataarray().isel({dim: 0}),
+                t1.obj,
+                tx.block(dim=dim, block_size=None).obj.isel({dim: 0}),
             )
 
 
@@ -435,8 +419,8 @@ def test_block_simple(rng, mom_ndim, block_size) -> None:
     cx = c.to_x()
     c0x = c0.to_x()
     xr.testing.assert_allclose(
-        cx.block(block_size, dim="dim_0").isel(dim_0=0).values,
-        c0x.reduce(dim="dim_0").values,
+        cx.block(block_size, dim="dim_0").isel(dim_0=0).obj,
+        c0x.reduce(dim="dim_0").obj,
     )
 
 
@@ -476,36 +460,36 @@ def test_reduce_groupby(rng, nsamp) -> None:  # noqa: PLR0914
     # using groups
     cx_group = cx.reduce(dim="x", by=codes, coords_policy="group", groups=groups)
 
-    np.testing.assert_allclose(cx_group.data[:, 1], mean_)
-    np.testing.assert_allclose(cx_group.data[:, 2], var_)
+    np.testing.assert_allclose(cx_group.to_numpy()[:, 1], mean_)
+    np.testing.assert_allclose(cx_group.to_numpy()[:, 2], var_)
 
     # using index
     cx_index = cx.assign_coords({"a": ("x", a), "b": ("x", b)}).set_index(x=["a", "b"])
 
     cx_group2 = cx_index.reduce(dim="x", by="x", coords_policy="group")
-    np.testing.assert_allclose(cx_group2.data[:, 1], mean_)
-    np.testing.assert_allclose(cx_group2.data[:, 2], var_)
+    np.testing.assert_allclose(cx_group2.to_numpy()[:, 1], mean_)
+    np.testing.assert_allclose(cx_group2.to_numpy()[:, 2], var_)
 
     with pytest.raises(AssertionError):
         # different coords
-        xr.testing.assert_allclose(cx_group.values, cx_group2.values)
+        xr.testing.assert_allclose(cx_group.obj, cx_group2.obj)
 
     cx_group3 = cx_index.reduce(dim="x", by="x", coords_policy="group", groups=groups)
-    np.testing.assert_allclose(cx_group2.data[:, 1], mean_)
-    np.testing.assert_allclose(cx_group2.data[:, 2], var_)
-    xr.testing.assert_allclose(cx_group.values, cx_group3.values)
+    np.testing.assert_allclose(cx_group2.to_numpy()[:, 1], mean_)
+    np.testing.assert_allclose(cx_group2.to_numpy()[:, 2], var_)
+    xr.testing.assert_allclose(cx_group.obj, cx_group3.obj)
 
     cx_first = cx_index.reduce(dim="x", by="x", coords_policy="first")
 
-    np.testing.assert_allclose(cx_first.data[:, 1], mean_)
-    np.testing.assert_allclose(cx_first.data[:, 2], var_)
-    xr.testing.assert_allclose(cx_group.values, cx_first.values)
+    np.testing.assert_allclose(cx_first.to_numpy()[:, 1], mean_)
+    np.testing.assert_allclose(cx_first.to_numpy()[:, 2], var_)
+    xr.testing.assert_allclose(cx_group.obj, cx_first.obj)
 
     cx_last = cx_index.reduce(dim="x", by="x", coords_policy="last", groups=groups)
 
-    np.testing.assert_allclose(cx_last.data[:, 1], mean_)
-    np.testing.assert_allclose(cx_last.data[:, 2], var_)
-    xr.testing.assert_allclose(cx_group.values, cx_last.values)
+    np.testing.assert_allclose(cx_last.to_numpy()[:, 1], mean_)
+    np.testing.assert_allclose(cx_last.to_numpy()[:, 2], var_)
+    xr.testing.assert_allclose(cx_group.obj, cx_last.obj)
 
 
 @pytest.mark.parametrize(
@@ -524,11 +508,11 @@ def test_isel(selector) -> None:
 
     if any(key in cx.mom_dims for key in selector):
         # check that this raises an error
-        with pytest.raises(ValueError, match=".*has wrong mom_shape.*"):
+        with pytest.raises(ValueError, match=".*Cannot create.*"):
             cx.isel(selector)
 
     else:
         xr.testing.assert_equal(
-            cx.isel(selector).to_values(),
-            cx.to_values().isel(selector),
+            cx.isel(selector).obj,
+            cx.obj.isel(selector),
         )

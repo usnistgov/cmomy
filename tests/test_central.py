@@ -39,20 +39,14 @@ def test_bad_dtype(dtype, ok) -> None:
             CentralMoments(data, mom_ndim=1)
 
 
-def test_values() -> None:
-    c = CentralMoments.zeros(mom=3)
-
-    assert c.values is c.to_values()  # noqa: PD011
-
-
 def test_getitem() -> None:
     c = CentralMoments.zeros(val_shape=(2, 3, 4), mom=3)
 
-    assert c[..., 0, :].shape == (2, 3, 4)
-    assert c[0, ...].shape == (3, 4, 4)
-    assert c[:, 1:, 2:, :].shape == (2, 2, 2, 4)
+    assert c[..., 0, :].obj.shape == (2, 3, 4)
+    assert c[0, ...].obj.shape == (3, 4, 4)
+    assert c[:, 1:, 2:, :].obj.shape == (2, 2, 2, 4)
 
-    with pytest.raises(ValueError, match=".*has wrong mom_shape.*"):
+    with pytest.raises(ValueError, match=".*Moments shape.*"):
         _ = c[..., 1:]
 
 
@@ -61,37 +55,37 @@ def test_new_like() -> None:
 
     x0 = c.new_like()
 
-    assert x0.shape == (2, 3, 3)
+    assert x0.obj.shape == (2, 3, 3)
 
     x1 = c.new_like(verify=True)
-    assert x1.shape == (2, 3, 3)
+    assert x1.obj.shape == (2, 3, 3)
 
     with pytest.raises(ValueError):
         c.new_like(np.zeros((2, 3, 4)), verify=True)
 
-    # veirfy correct mom_shape, incorrect leading shape
+    # veirfy correct mom_shape, incorrect leading obj.shape
     with pytest.raises(ValueError):
         c.new_like(np.zeros((3, 3, 3)), verify=True)
 
     # this should work fine without verify
-    assert c.new_like(np.zeros((3, 3)), verify=False).shape == (3, 3)
+    assert c.new_like(np.zeros((3, 3)), verify=False).obj.shape == (3, 3)
 
-    # no verify by wrong mom shape
+    # no verify by wrong mom obj.shape
     with pytest.raises(ValueError):
         c.new_like(np.zeros((3, 4)), verify=False)
 
 
 def test_zeros() -> None:
     c = CentralMoments.zeros(val_shape=2, mom=2)
-    assert c.shape == (2, 3)
+    assert c.obj.shape == (2, 3)
     assert c.mom == (2,)
 
     c = CentralMoments.zeros(mom=2)
-    assert c.shape == (3,)
+    assert c.obj.shape == (3,)
     assert c.mom == (2,)
 
     c = CentralMoments.zeros(mom=(2, 2))
-    assert c.shape == (3, 3)
+    assert c.obj.shape == (3, 3)
     assert c.mom == (2, 2)
 
 
@@ -116,17 +110,17 @@ def test_raises_zeros() -> None:
         val_shape=2,
         mom=2,
         order="C",
-    ).shape == (2, 3)
+    ).obj.shape == (2, 3)
 
 
 def test_raises_init() -> None:
     data = np.zeros((1, 2, 3))
 
     c = CentralMoments(data, mom_ndim=1, copy=False)
-    assert np.shares_memory(data, c.data)
+    assert np.shares_memory(data, c.obj)
 
     c = CentralMoments(data, mom_ndim=1, copy=True)
-    assert not np.shares_memory(data, c.data)
+    assert not np.shares_memory(data, c.obj)
 
 
 def test_cmom(other) -> None:
@@ -164,12 +158,12 @@ def test_to_dataarray() -> None:
 
     out[...] = 1
 
-    np.testing.assert_allclose(out, c.data + 1)
+    np.testing.assert_allclose(out, c.obj + 1)
 
     out = c.to_dataarray(copy=False)
     out[...] = 1
 
-    np.testing.assert_allclose(out, c.data)
+    np.testing.assert_allclose(out, c.obj)
 
 
 @pytest.mark.parametrize(
@@ -196,7 +190,7 @@ def test_to_dataarray2(mom_ndim, dims, mom_dims, dims_all) -> None:
 
     else:
         expected = xr.DataArray(
-            c.data,
+            c.obj,
             dims=dims_all,
         )
 
@@ -245,9 +239,9 @@ def test_pipe(rng) -> None:
     c2 = c.pipe("__add__", 1, _reorder=False)
 
     for cc in [c1, c2]:
-        np.testing.assert_allclose(cc.data, c.data + 1)
+        np.testing.assert_allclose(cc.obj, c.obj + 1)
 
-    np.testing.assert_allclose(cc.data, c.pipe(lambda x: x + 1))
+    np.testing.assert_allclose(cc.obj, c.pipe(lambda x: x + 1))
 
 
 def test_raise_if_scalar() -> None:
@@ -262,16 +256,16 @@ def test_raise_if_scalar() -> None:
         c.resample(indices=indices, axis=0)
 
     freq = np.zeros((100, 100), dtype=np.int64)
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(ValueError, match="No dimension.*"):
         c.resample_and_reduce(freq=freq, axis=0)
 
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(ValueError, match="No dimension.*"):
         c.reduce(axis=0)
 
     with pytest.raises(ValueError, match=match):
         c.reshape((2, 2))
 
-    with pytest.raises(ValueError, match=match):
+    with pytest.raises(ValueError, match="No dimension.*"):
         c.moveaxis(0, 1)
 
 
@@ -280,7 +274,7 @@ def test_raises_operations(rng) -> None:
 
     c0 = CentralMoments.from_vals(v, mom=2, axis=0)
 
-    data = CentralMoments.from_vals(v, mom=2, axis=0).data
+    data = CentralMoments.from_vals(v, mom=2, axis=0).obj
 
     with pytest.raises(TypeError):
         _ = c0 + data
@@ -298,41 +292,12 @@ def test_raises_operations(rng) -> None:
         c3 -= c0
 
 
-def test_wrap_axis() -> None:
-    c = CentralMoments.zeros(mom=3, val_shape=(2, 3, 4))
-
-    for axis, expected in [
-        (0, 0),
-        (1, 1),
-        (2, 2),
-        (3, "error"),
-        (-1, 2),
-        (-2, 1),
-        (-3, 0),
-        (-4, "error"),
-    ]:
-        if expected == "error":
-            with pytest.raises(Exception, match=".*out of bounds.*"):
-                c._wrap_axis(axis)
-
-        else:
-            assert c._wrap_axis(axis) == expected
-
-    assert c._wrap_axis(-2, ndim=2) == 0
-
-
-def test_ndim() -> None:
-    data = np.empty((1, 2, 3))
-    s = CentralMoments(data, mom_ndim=1)
-    assert data.ndim == s.ndim
-
-
 def test_other_data(other) -> None:
     np.testing.assert_allclose(other.data_fix, other.data_test)
 
 
 def test_s(other) -> None:
-    other.test_values(other.s.to_numpy())
+    other.test_values(np.asarray(other.s.obj))
 
 
 def test_push(other) -> None:
@@ -361,7 +326,7 @@ def test_from_vals(other) -> None:
         axis=other.axis,
         mom=other.mom,
     )
-    other.test_values(t.to_values())
+    other.test_values(t.obj)
 
     # test var:
     if other.s.mom_ndim == 1 and other.style is None:
@@ -375,27 +340,27 @@ def test_push_val(other) -> None:
         if other.s.mom_ndim == 1:
             for ww, xx in zip(other.w, other.xdata):
                 t.push_val(xx, weight=ww)
-            other.test_values(t.to_values())
+            other.test_values(t.obj)
 
 
 def test_push_vals_mult(other) -> None:
     t = other.s.zeros_like()
     for ww, xx, _ in zip(other.W, other.X, other.S):
         t.push_vals(*xx, weight=ww, axis=other.axis)
-    other.test_values(t.to_values())
+    other.test_values(t.obj)
 
 
 def test_combine(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
-        t.push_data(s.to_values())
-    other.test_values(t.to_values())
+        t.push_data(s.obj)
+    other.test_values(t.obj)
 
 
 def test_init_reduce(other) -> None:
     datas = np.array([s.to_numpy() for s in other.S])
     t = other.cls(datas, mom_ndim=other.mom_ndim).reduce(axis=0)
-    other.test_values(t.to_values())
+    other.test_values(t.obj)
 
     out = cmomy.reduce_data(datas, axis=0, mom_ndim=other.mom_ndim)
     other.test_values(out)
@@ -404,7 +369,7 @@ def test_init_reduce(other) -> None:
 def test_reduction_total(other) -> None:
     if len(other.val_shape) > 0:
         t = other.s.reshape(-1).reduce(axis=0)
-        out = cmomy.reduce_data(other.s.values, axis=None, mom_ndim=other.mom_ndim)
+        out = cmomy.reduce_data(other.s.obj, axis=None, mom_ndim=other.mom_ndim)
         np.testing.assert_allclose(t, out)
 
 
@@ -412,7 +377,7 @@ def test_push_datas(other) -> None:
     datas = np.array([s.to_numpy() for s in other.S])
     t = other.s.zeros_like()
     t.push_datas(datas, axis=0)
-    other.test_values(t.to_values())
+    other.test_values(t.obj)
 
 
 @pytest.mark.parametrize(("val_shape", "mom"), [(None, 2), ((2, 2), (2, 2))])
@@ -450,41 +415,41 @@ def test_add(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
         t += s
-    other.test_values(t.to_values())
+    other.test_values(t.obj)
 
 
 def test_sum(other) -> None:
     t = sum(other.S, other.s.zeros_like())
-    other.test_values(t.to_values())  # pyright: ignore[reportAttributeAccessIssue]
+    other.test_values(t.obj)  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_iadd(other) -> None:
     t = other.s.zeros_like()
     for s in other.S:
         t += s
-    other.test_values(t.to_values())
+    other.test_values(t.obj)
 
 
 def test_sub(other) -> None:
     t = other.s - sum(other.S[1:], other.s.zeros_like())
-    np.testing.assert_allclose(t.to_values(), other.S[0].to_values())
+    np.testing.assert_allclose(t.obj, other.S[0].obj)
 
 
 def test_isub(other) -> None:
     t = other.s.copy()
     for s in other.S[1:]:
         t -= s
-    np.testing.assert_allclose(t.to_values(), other.S[0].to_values())
+    np.testing.assert_allclose(t.obj, other.S[0].obj)
 
 
 def test_mult(other) -> None:
     s = other.s
 
-    np.testing.assert_allclose((s * 2).to_values(), (s + s).to_values())
+    np.testing.assert_allclose((s * 2).obj, (s + s).obj)
 
     t = s.copy()
     t *= 2
-    np.testing.assert_allclose(t.to_values(), (s + s).to_values())
+    np.testing.assert_allclose(t.obj, (s + s).obj)
 
 
 def test_reduce(other) -> None:
@@ -494,7 +459,7 @@ def test_reduce(other) -> None:
             t = other.s.reduce(axis=axis)
 
             f = other.cls(other.data_test, mom_ndim=other.mom_ndim).reduce(axis=axis)
-            np.testing.assert_allclose(t.data, f.data)
+            np.testing.assert_allclose(t.obj, f.obj)
 
 
 def test_reshape(other) -> None:
@@ -509,7 +474,7 @@ def test_reshape(other) -> None:
             new_shape2 = new_shape + other.s.mom_shape
 
             f = other.data_test.reshape(new_shape2)
-            np.testing.assert_allclose(t.data, f)
+            np.testing.assert_allclose(t.obj, f)
 
 
 def test_moveaxis(other) -> None:
@@ -522,7 +487,7 @@ def test_moveaxis(other) -> None:
 
             f = np.moveaxis(other.data_test, axis, 0)
 
-            np.testing.assert_allclose(t.data, f)
+            np.testing.assert_allclose(t.obj, f)
 
 
 @pytest.mark.parametrize("mom_ndim", [1, 2])
@@ -538,14 +503,14 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
         y = rng.random((10, 10, 10))
         c = CentralMoments.from_vals(x, y, axis=0, mom=mom)
 
-    c1 = CentralMoments(c.data[::2, ...], mom_ndim=mom_ndim)
-    c2 = CentralMoments(c.data[1::2, ...], mom_ndim=mom_ndim)
+    c1 = CentralMoments(c.obj[::2, ...], mom_ndim=mom_ndim)
+    c2 = CentralMoments(c.obj[1::2, ...], mom_ndim=mom_ndim)
 
     c3 = c1 + c2  # .moveaxis(0, -1)
 
     np.testing.assert_allclose(
-        c3.data,
-        c.block(2, axis=0).data,
+        c3.obj,
+        c.block(2, axis=0).obj,
     )
 
     # using grouped
@@ -555,15 +520,15 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
         c.block(2, axis=0).to_numpy(),
     )
 
-    c1 = CentralMoments(c.data[:, ::2, ...], mom_ndim=mom_ndim)
-    c2 = CentralMoments(c.data[:, 1::2, ...], mom_ndim=mom_ndim)
+    c1 = CentralMoments(c.obj[:, ::2, ...], mom_ndim=mom_ndim)
+    c2 = CentralMoments(c.obj[:, 1::2, ...], mom_ndim=mom_ndim)
 
     # move to last dimension
     c3 = (c1 + c2).moveaxis(1, -1)
 
-    np.testing.assert_allclose(c3.data, c.block(2, axis=1))
+    np.testing.assert_allclose(c3.obj, c.block(2, axis=1))
 
-    np.testing.assert_allclose(c.block(None, axis=0).data[0, ...], c.reduce(axis=0))
+    np.testing.assert_allclose(c.block(None, axis=0).obj[0, ...], c.reduce(axis=0))
     np.testing.assert_allclose(
         c.reduce(by=group_idx, axis=1).to_numpy(), c.block(2, axis=1).to_numpy()
     )

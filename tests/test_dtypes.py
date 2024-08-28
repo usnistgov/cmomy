@@ -235,6 +235,8 @@ dtype_base_mark = pytest.mark.parametrize("dtype_base", [np.float32, np.float64]
 cls_mark = pytest.mark.parametrize("cls", [CentralMoments, xCentralMoments])
 use_out_mark = pytest.mark.parametrize("use_out", [False, True])
 
+cls_numpy_mark = pytest.mark.parametrize("cls", [CentralMoments])
+
 
 @dtype_base_mark
 @dtype_mark
@@ -251,7 +253,7 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
     _do_test(func, expected=expected)
 
 
-@cls_mark
+@cls_numpy_mark
 @dtype_base_mark
 @dtype_mark
 def test_init(cls, dtype_base, dtype, expected) -> None:
@@ -271,10 +273,10 @@ def test_init(cls, dtype_base, dtype, expected) -> None:
 def test_new_like(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2, 3, 4), dtype=dtype)
     data_base = np.zeros((2, 3, 4), dtype=dtype_base)
-    if cls == xCentralMoments:
-        xdata = xr.DataArray(data)
 
     c = cls.zeros(mom=3, val_shape=(2, 3), dtype=dtype_base)
+    if cls == xCentralMoments:
+        xdata = xr.DataArray(data, dims=c.dims)
 
     assert c.dtype.type == dtype_base
 
@@ -284,20 +286,20 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
     elif dtype is None:
         assert c.new_like().dtype.type == dtype_base
         assert c.new_like(dtype=dtype).dtype.type == dtype_base
-        assert c.new_like(data=data).dtype.type == expected
-        assert c.new_like(data=data, dtype=dtype).dtype.type == expected
-        assert c.new_like(data=data_base).dtype.type == dtype_base
-        assert c.new_like(data=data_base, dtype=dtype).dtype.type == dtype_base
+        assert c.new_like(obj=data).dtype.type == expected
+        assert c.new_like(obj=data, dtype=dtype).dtype.type == expected
+        assert c.new_like(obj=data_base).dtype.type == dtype_base
+        assert c.new_like(obj=data_base, dtype=dtype).dtype.type == dtype_base
         if cls == xCentralMoments:
-            assert c.new_like(data=xdata, dtype=dtype).dtype.type == expected
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected
 
     else:
         assert c.new_like().dtype.type == dtype_base
         assert c.new_like(dtype=dtype).dtype.type == expected
-        assert c.new_like(data=data).dtype.type == expected
-        assert c.new_like(data=data, dtype=dtype).dtype.type == expected
-        assert c.new_like(data=data_base).dtype.type == dtype_base
-        assert c.new_like(data=data_base, dtype=dtype).dtype.type == expected
+        assert c.new_like(obj=data).dtype.type == expected
+        assert c.new_like(obj=data, dtype=dtype).dtype.type == expected
+        assert c.new_like(obj=data_base).dtype.type == dtype_base
+        assert c.new_like(obj=data_base, dtype=dtype).dtype.type == expected
         if cls == xCentralMoments:
-            assert c.new_like(data=xdata).dtype.type == expected
-            assert c.new_like(data=xdata, dtype=dtype).dtype.type == expected
+            assert c.new_like(obj=xdata).dtype.type == expected
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected

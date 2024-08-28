@@ -112,12 +112,8 @@ def test_central_randsamp_freq():
     c = CentralMoments.zeros(mom=4, val_shape=(10, 4))
 
     freq0 = resample.randsamp_freq(nrep=10, ndat=10, rng=np.random.default_rng(0))
-    freq1 = c.randsamp_freq(nrep=10, axis=0, rng=np.random.default_rng(0))
-
-    np.testing.assert_allclose(freq0, freq1)
-
     freq2 = resample.randsamp_freq(
-        data=c.data, axis=0, rng=np.random.default_rng(0), nrep=10
+        data=c.obj, axis=0, rng=np.random.default_rng(0), nrep=10
     )
     np.testing.assert_allclose(freq0, freq2)
 
@@ -273,25 +269,25 @@ def test_resample_resample_data(rng) -> None:
 
     c = CentralMoments.from_vals(x, mom=3, axis=0)
 
-    freq = c.randsamp_freq(nrep=5, axis=0, rng=rng)
+    freq = resample.randsamp_freq(data=c.obj, nrep=5, axis=0, rng=rng)
 
     with pytest.raises(ValueError):
         out = resample.resample_data(
-            c.data, freq=freq, mom_ndim=1, out=np.zeros((10, 3, 4)), axis=0
+            c.obj, freq=freq, mom_ndim=1, out=np.zeros((10, 3, 4)), axis=0
         )
 
     c2 = c.resample_and_reduce(freq=freq, axis=0)
 
-    v = c.moveaxis(0, 1).data
+    v = c.moveaxis(0, 1).obj
 
     out = resample.resample_data(
         v, freq=freq, mom_ndim=1, axis=-1, out=np.zeros((3, 5, 4)), dtype=np.float64
     )
 
-    np.testing.assert_allclose(c2.moveaxis(0, -1).data, out)
+    np.testing.assert_allclose(c2.moveaxis(0, -1).obj, out)
 
     with pytest.raises(ValueError):
-        resample.resample_data(c.data, freq=freq, mom_ndim=1, axis=1)
+        resample.resample_data(c.obj, freq=freq, mom_ndim=1, axis=1)
 
 
 @pytest.mark.parametrize(
@@ -318,7 +314,7 @@ def test_resample_resample_vals(rng, move_axis_to_end, shape, out_shape) -> None
         axis=0,
         move_axis_to_end=move_axis_to_end,
     )
-    np.testing.assert_allclose(c.data, out)
+    np.testing.assert_allclose(c.obj, out)
 
     with pytest.raises(ValueError):
         resample.resample_vals(
@@ -329,7 +325,7 @@ def test_resample_resample_vals(rng, move_axis_to_end, shape, out_shape) -> None
     _ = resample.resample_vals(
         x, freq=freq, mom=3, out=out, axis=0, move_axis_to_end=move_axis_to_end
     )
-    np.testing.assert_allclose(c.data, out)
+    np.testing.assert_allclose(c.obj, out)
 
     out = np.zeros((4, 4, 4))
     with pytest.raises(ValueError):
@@ -341,7 +337,7 @@ def test_resample_resample_vals(rng, move_axis_to_end, shape, out_shape) -> None
         x, x, freq=freq, mom=(3, 3), axis=0, move_axis_to_end=move_axis_to_end
     )
 
-    np.testing.assert_allclose(c2.data[..., :, 0], c.data)
+    np.testing.assert_allclose(c2.obj[..., :, 0], c.obj)
 
 
 @pytest.mark.slow
@@ -380,9 +376,9 @@ def test_resample_vec(parallel, mom, rng):
     c1 = CentralMoments.from_vals(*xy, axis=0, mom=mom)
     c2 = CentralMoments.from_vals(*xxyy, axis=0, mom=mom)
 
-    np.testing.assert_allclose(c1.data, c2.data[:, 0, ...])
+    np.testing.assert_allclose(c1.obj, c2.obj[:, 0, ...])
 
-    freq = c1.randsamp_freq(nrep=10, axis=0)
+    freq = resample.randsamp_freq(data=c1.obj, nrep=10, axis=0)
 
     cc1 = c1.resample_and_reduce(
         freq=freq,
@@ -395,22 +391,22 @@ def test_resample_vec(parallel, mom, rng):
         axis=0,
     )
 
-    np.testing.assert_allclose(cc1.data, cc2.data[:, 0, ...])
+    np.testing.assert_allclose(cc1.obj, cc2.obj[:, 0, ...])
 
     # using indexed
     out1 = resample_data_indexed(
-        c1.data, freq=freq, mom_ndim=c1.mom_ndim, parallel=parallel, axis=0
+        c1.obj, freq=freq, mom_ndim=c1.mom_ndim, parallel=parallel, axis=0
     )
     np.testing.assert_allclose(
-        cc1.data,
+        cc1.obj,
         out1,
     )
 
     out2 = resample_data_indexed(
-        c2.data, freq=freq, mom_ndim=c2.mom_ndim, parallel=parallel, axis=0
+        c2.obj, freq=freq, mom_ndim=c2.mom_ndim, parallel=parallel, axis=0
     )
     np.testing.assert_allclose(
-        cc2.data,
+        cc2.obj,
         out2,
     )
 
@@ -428,7 +424,7 @@ def test_stats_resample_vals(other, parallel) -> None:
             parallel=parallel,
             order="C",
         )
-        np.testing.assert_allclose(t.data, other.data_test_resamp)
+        np.testing.assert_allclose(t.obj, other.data_test_resamp)
 
 
 @pytest.mark.slow
@@ -437,7 +433,7 @@ def test_resample_data(other, parallel, rng) -> None:
     nrep = 10
 
     if len(other.val_shape) > 0:
-        for axis in range(other.s.val_ndim):
+        for axis in range(other.s.obj.ndim - other.s.mom_ndim):
             data = other.data_test
 
             ndat = data.shape[axis]
@@ -453,11 +449,11 @@ def test_resample_data(other, parallel, rng) -> None:
                 axis=axis,
                 parallel=parallel,
             )
-            np.testing.assert_allclose(data_ref, t.data)
+            np.testing.assert_allclose(data_ref, t.obj)
 
             # indexed
             out = resample_data_indexed(
-                other.s.data,
+                other.s.obj,
                 freq=freq,
                 mom_ndim=other.s.mom_ndim,
                 axis=axis,
@@ -477,7 +473,7 @@ def test_resample_against_vals(other, parallel, rng) -> None:
     if len(other.val_shape) > 0:
         s = other.s
 
-        for axis in range(s.val_ndim):
+        for axis in range(s.obj.ndim - s.mom_ndim):
             ndat = s.val_shape[axis]
             idx = rng.choice(ndat, (nrep, ndat), replace=True)
             freq = resample.indices_to_freq(idx)
@@ -490,16 +486,16 @@ def test_resample_against_vals(other, parallel, rng) -> None:
 
             t1 = s.resample(idx, axis=axis, last=False).reduce(axis=axis + 1)
 
-            np.testing.assert_allclose(t0.to_values(), t1.to_values())
+            np.testing.assert_allclose(t0, t1)
 
 
 def test_resample_zero_weight(rng) -> None:
     freq_zero = np.zeros((10, 10), dtype=int)
     c = CentralMoments.zeros(mom=(2, 2), val_shape=(10, 2))
-    c._data[...] = 10.0
+    c.obj[...] = 10.0
 
     c2 = c.resample_and_reduce(freq=freq_zero, axis=0)
-    np.testing.assert_allclose(c2.data, 0.0)
+    np.testing.assert_allclose(c2.obj, 0.0)
 
     x = rng.random((10, 10, 2))
 
@@ -507,12 +503,12 @@ def test_resample_zero_weight(rng) -> None:
 
     c2 = c.resample_and_reduce(freq=freq_zero, axis=0)
 
-    np.testing.assert_allclose(c2.data, 0.0)
+    np.testing.assert_allclose(c2.obj, 0.0)
 
     # indexed:
-    out = resample_data_indexed(c.data, freq=freq_zero, mom_ndim=2, axis=0)
+    out = resample_data_indexed(c.obj, freq=freq_zero, mom_ndim=2, axis=0)
     np.testing.assert_allclose(
-        c2.data,
+        c2.obj,
         out,
     )
 
@@ -527,7 +523,7 @@ def test_resample_nsamp(other, parallel) -> None:
     if len(other.val_shape) > 0:
         s = other.s
 
-        for axis in range(s.val_ndim):
+        for axis in range(s.obj.ndim - s.mom_ndim):
             ndat = s.val_shape[axis]
 
             for nsamp in [ndat + 1, ndat - 1]:
@@ -541,15 +537,15 @@ def test_resample_nsamp(other, parallel) -> None:
                 )
 
                 t1 = s.resample(indices, axis=axis, last=False).reduce(axis=axis + 1)
-                np.testing.assert_allclose(t0.to_values(), t1.to_values())
+                np.testing.assert_allclose(t0.obj, t1.obj)
 
                 # test indexed resample
 
                 out = resample_data_indexed(
-                    s.data, freq=freq, mom_ndim=s.mom_ndim, axis=axis, parallel=parallel
+                    s.obj, freq=freq, mom_ndim=s.mom_ndim, axis=axis, parallel=parallel
                 )
                 np.testing.assert_allclose(
-                    t0.to_values(),
+                    t0.obj,
                     out,
                 )
 

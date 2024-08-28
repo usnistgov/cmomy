@@ -155,12 +155,26 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         if self.mom_ndim >= self.obj.ndim:
             msg = "Can only use __getitem__ with extra dimensions."
             raise ValueError(msg)
-        return self._new_like(obj=self.obj[key])
+
+        obj = self.obj[key]
+        self._raise_if_wrong_mom_shape(obj.shape[-self._mom_ndim :])
+        return self._new_like(obj)
 
     @property
     def dtype(self) -> np.dtype[FloatingT]:
         """Dtype of wrapped array."""
         return self._obj.dtype
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        return self._obj.shape
+
+    @property
+    def val_shape(self) -> tuple[int, ...]:
+        return self._obj.shape[: -self._mom_ndim]
+
+    def to_numpy(self) -> NDArray[FloatingT]:
+        return self._obj
 
     def __iter__(self) -> Iterator[Self]:
         for k in range(self._obj.shape[0]):
@@ -753,9 +767,11 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         rng: np.random.Generator | None = ...,
         move_axis_to_end: bool = ...,
         weight: ArrayLike | None = ...,
-        parallel: bool | None = ...,
+        out: None = ...,
         dtype: None = ...,
-        out: None = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
     ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     @classmethod
@@ -770,43 +786,49 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         rng: np.random.Generator | None = ...,
         move_axis_to_end: bool = ...,
         weight: ArrayLike | None = ...,
-        parallel: bool | None = ...,
-        dtype: DTypeLike = ...,
         out: NDArray[FloatingT2],
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = ...,
-        freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: np.random.Generator | None = ...,
-        move_axis_to_end: bool = ...,
-        weight: ArrayLike | None = ...,
-        parallel: bool | None = ...,
-        dtype: DTypeLikeArg[FloatingT2],
-        out: None = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        mom: Moments,
-        axis: AxisReduce = ...,
-        freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: np.random.Generator | None = ...,
-        move_axis_to_end: bool = ...,
-        weight: ArrayLike | None = ...,
-        parallel: bool | None = ...,
         dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
+        out: None = ...,
+        dtype: DTypeLikeArg[FloatingT2],
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: Any,
+        *y: ArrayLike,
+        mom: Moments,
+        axis: AxisReduce = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: np.random.Generator | None = ...,
+        move_axis_to_end: bool = ...,
+        weight: ArrayLike | None = ...,
         out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
     ) -> Self: ...
 
     @classmethod
@@ -822,9 +844,11 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         rng: np.random.Generator | None = None,
         move_axis_to_end: bool = True,
         weight: ArrayLike | None = None,
-        parallel: bool | None = None,
-        dtype: DTypeLike = None,
         out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrderCF = None,
+        parallel: bool | None = None,
     ) -> CentralWrapperNumpy[Any]:
         """
         Examples
@@ -870,6 +894,8 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
             weight=weight,
             parallel=parallel,
             dtype=dtype,
+            casting=casting,
+            order=order,
             out=out,
         )
 
@@ -1304,3 +1330,6 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         return CentralWrapperXArray(
             obj=data, mom_ndim=self._mom_ndim
         )  # , fastpath=True)
+
+
+CentralMoments = CentralWrapperNumpy

@@ -191,7 +191,9 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
     np.testing.assert_allclose(np.squeeze(out, axis), check)
 
     cls = cmomy.xCentralMoments if as_dataarray else cmomy.CentralMoments
-    c = cls(x, mom_ndim=mom_ndim).reduce(axis=axis, keepdims=True)
+    c = cls(x, mom_ndim=mom_ndim).reduce(
+        axis=axis, keepdims=True, **({"use_reduce": True} if as_dataarray else {})
+    )
     assert c.shape == new_shape
     np.testing.assert_allclose(c, out)
 

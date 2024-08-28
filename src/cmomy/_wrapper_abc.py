@@ -32,6 +32,7 @@ if TYPE_CHECKING:
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayOrder,
+        ArrayOrderCF,
         AxisReduce,
         Casting,
         DimsReduce,
@@ -93,6 +94,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         if fastpath:
             return
 
+        # catchall to test ndim < mom_ndim
+        if len(self.mom) < self.mom_ndim:
+            msg = f"{len(self.mom)=} != {self.mom_ndim=}.  Possibly more mom_ndim than ndim."
+            raise ValueError(msg)
+
         # must have positive moments
         if any(m <= 0 for m in self.mom):
             msg = "Moments must be positive"
@@ -140,6 +146,9 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
     ) -> NDArrayAny:
         """Used by np.array(self)."""  # D401
         return np.asarray(self._obj, dtype=dtype)
+
+    def to_numpy(self) -> NDArrayAny:
+        return np.asarray(self)
 
     # ** Create/copy/new ------------------------------------------------------
     @abstractmethod
@@ -1103,9 +1112,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         weight: Any = None,
         axis: AxisReduce = -1,
         move_axis_to_end: bool = True,
-        parallel: bool | None = None,
-        dtype: DTypeLike = None,
         out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrderCF = None,
+        parallel: bool | None = None,
     ) -> Self:
         """
         Create from resample observations/values.
@@ -1127,9 +1138,11 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         {axis_and_dim}
         {move_axis_to_end}
         {full_output}
-        {parallel}
-        {dtype}
         {out}
+        {dtype}
+        {casting}
+        {order_cf}
+        {parallel}
 
         Returns
         -------

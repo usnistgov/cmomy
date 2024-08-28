@@ -278,10 +278,10 @@ def _do_test_assign_moment_mom_ndim(
     )(data, mom_ndim=mom_ndim)
     c1 = c0.assign_moment({name: value}, **kwargs, copy=copy)
 
-    np.testing.assert_allclose(out, c1.values)
+    np.testing.assert_allclose(out, c1)
 
     if not copy:
-        assert np.shares_memory(c0.values, c1.values)
+        assert np.shares_memory(c0, c1)
 
 
 @pytest.mark.parametrize(

@@ -183,7 +183,7 @@ class Data:
             for ww, xx in zip(self.W, self.X)
         ]
 
-    def to_values(self) -> NDArrayAny:
+    def to_numpy(self) -> NDArrayAny:
         return self.data_test
 
     def unpack(self, *args) -> Any:
@@ -193,7 +193,7 @@ class Data:
         return out
 
     def test_values(self, x, **kws) -> None:
-        np.testing.assert_allclose(self.to_values(), x, **kws)
+        np.testing.assert_allclose(self.to_numpy(), x, **kws)
 
     @property
     def raw(self) -> NDArrayAny | None:
@@ -299,7 +299,7 @@ class Data:
 
     @cached.prop
     def s_xr(self) -> xCentralMoments:
-        return self.s.to_xcentralmoments()
+        return self.s.to_x()
 
     @cached.prop
     def xdata_xr(self):

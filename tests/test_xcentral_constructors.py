@@ -60,7 +60,7 @@ def dc(xy, mom, axis):
 
 @my_fixture()
 def dcx(dc):
-    return dc.to_xcentralmoments()
+    return dc.to_x()
 
 
 def test_CS(dc, dcx) -> None:
@@ -70,43 +70,41 @@ def test_CS(dc, dcx) -> None:
 def test_init(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    t = CentralMoments(dc.data, mom_ndim=mom_ndim)
+    t = CentralMoments(dc.to_numpy(), mom_ndim=mom_ndim)
 
-    dims = [f"hello_{i}" for i in range(len(dc.data.shape))]
-    o1 = CentralMoments(dc.data, mom_ndim=mom_ndim).to_xcentralmoments(dims=dims)
+    dims = [f"hello_{i}" for i in range(len(dc.obj.shape))]
+    o1 = CentralMoments(dc.obj, mom_ndim=mom_ndim).to_x(dims=dims)
 
     np.testing.assert_allclose(t, o1)
 
     # create from xarray?
-    o2 = xCentralMoments(
-        dcx.to_dataarray().rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
-    )
-    xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
+    o2 = xCentralMoments(dcx.obj.rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim)
+    xr.testing.assert_allclose(o1.obj, o2.obj)
 
 
 def test_init_reduce(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    for axis in range(dc.val_ndim):
-        t = CentralMoments(dc.data, mom_ndim=mom_ndim).reduce(axis=axis)
+    for axis in range(dc.obj.ndim - dc.mom_ndim):
+        t = CentralMoments(dc.obj, mom_ndim=mom_ndim).reduce(axis=axis)
 
         dims = dcx.dims[:axis] + dcx.dims[axis + 1 :]
 
         o1 = (
             CentralMoments(
-                dc.data,
+                dc.obj,
                 mom_ndim=mom_ndim,
             )
             .reduce(axis=axis)
-            .to_xcentralmoments(dims=dims)
+            .to_x(dims=dims)
         )
 
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = xCentralMoments(dcx.to_dataarray(), mom_ndim=mom_ndim).reduce(dim=dim)
+        o2 = xCentralMoments(dcx.obj, mom_ndim=mom_ndim).reduce(dim=dim)
 
-        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
+        xr.testing.assert_allclose(o1.obj, o2.obj)
 
 
 def test_from_raw(dc, dcx) -> None:
@@ -114,7 +112,7 @@ def test_from_raw(dc, dcx) -> None:
 
     t = CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim)
 
-    o1 = CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim).to_xcentralmoments()
+    o1 = CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim).to_x()
 
     np.testing.assert_allclose(t, o1)
 
@@ -122,7 +120,7 @@ def test_from_raw(dc, dcx) -> None:
         dcx.to_raw(),
         mom_ndim=mom_ndim,
     )
-    xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
+    xr.testing.assert_allclose(o1.obj, o2.obj)
 
     if mom_ndim == 2:
         with pytest.raises(ValueError):
@@ -132,7 +130,7 @@ def test_from_raw(dc, dcx) -> None:
 def test_from_raws(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    for axis in range(dc.val_ndim):
+    for axis in range(dc.obj.ndim - dc.mom_ndim):
         # first test from raws
         raws = dc.to_raw()
         t = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis)
@@ -141,11 +139,7 @@ def test_from_raws(dc, dcx) -> None:
         np.testing.assert_allclose(t.to_numpy(), r.to_numpy(), atol=1e-14)
 
         # test xCentral
-        o1 = (
-            CentralMoments.from_raw(raws, mom_ndim=mom_ndim)
-            .reduce(axis=axis)
-            .to_xcentralmoments()
-        )
+        o1 = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis).to_x()
 
         np.testing.assert_allclose(t, o1)
 
@@ -160,14 +154,14 @@ def test_from_vals(xy, shape, mom) -> None:
     xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)
 
     for axis in range(len(shape)):
-        t = CentralMoments.from_vals(*xy, axis=axis, mom=mom).to_xcentralmoments()
+        t = CentralMoments.from_vals(*xy, axis=axis, mom=mom).to_x()
 
         # dims of output
         o1 = CentralMoments.from_vals(
             *xy,
             axis=axis,
             mom=mom,
-        ).to_xcentralmoments(dims=dims[:axis] + dims[axis + 1 :])
+        ).to_x(dims=dims[:axis] + dims[axis + 1 :])
         np.testing.assert_allclose(t, o1)
 
         o2 = xCentralMoments.from_vals(
@@ -176,7 +170,7 @@ def test_from_vals(xy, shape, mom) -> None:
             mom=mom,
         )
 
-        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
+        xr.testing.assert_allclose(o1.obj, o2.obj)
 
 
 def test_from_resample_vals(xy, shape, mom) -> None:
@@ -188,7 +182,7 @@ def test_from_resample_vals(xy, shape, mom) -> None:
 
         t = CentralMoments.from_resample_vals(
             *xy, freq=freq, axis=axis, mom=mom
-        ).to_xcentralmoments()  # type : ignore
+        ).to_x()  # type : ignore
 
         # dims of output
         o1 = CentralMoments.from_resample_vals(
@@ -196,7 +190,7 @@ def test_from_resample_vals(xy, shape, mom) -> None:
             axis=axis,
             mom=mom,
             freq=freq,
-        ).to_xcentralmoments(dims=(*dims[:axis], *dims[axis + 1 :], "rep"))
+        ).to_x(dims=(*dims[:axis], *dims[axis + 1 :], "rep"))
 
         np.testing.assert_allclose(t, o1)
 
@@ -207,7 +201,7 @@ def test_from_resample_vals(xy, shape, mom) -> None:
             freq=freq,  # w=xr.DataArray(1.0)  # NOTE: had this for coverage, but ignoring anyway...
         )
 
-        xr.testing.assert_allclose(o1.to_dataarray(), o2.to_dataarray())
+        xr.testing.assert_allclose(o1.obj, o2.obj)
 
 
 keep_attrs_mark = pytest.mark.parametrize("keep_attrs", [False, True])
@@ -275,12 +269,13 @@ def test_from_vals2(keep_attrs) -> None:
 
 @pytest.mark.parametrize("parallel", [None])
 def test_resample_and_reduce(dc, dcx, parallel) -> None:
-    for axis in range(dc.val_ndim):
+    val_ndim = dc.obj.ndim - dc.mom_ndim
+    for axis in range(val_ndim):
         freq = resample.random_freq(nrep=10, ndat=dc.val_shape[axis])
         t = dc.resample_and_reduce(freq=freq, axis=axis, parallel=parallel)
         o = dcx.resample_and_reduce(freq=freq, dim=dcx.dims[axis], parallel=parallel)
 
-        np.testing.assert_allclose(t.data, o.data)
+        np.testing.assert_allclose(t, o)
 
-        dims = dcx.val_dims
-        assert o.val_dims == (*dims[:axis], "rep", *dims[axis + 1 :])
+        dims = dcx.dims[:val_ndim]
+        assert o.dims[:val_ndim] == (*dims[:axis], "rep", *dims[axis + 1 :])

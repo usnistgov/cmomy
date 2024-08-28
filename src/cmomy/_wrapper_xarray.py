@@ -1,4 +1,4 @@
-"""Wrapper object for dataarrays"""
+"""Wrapper object for daataarrays"""
 
 from __future__ import annotations
 
@@ -145,6 +145,27 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             fastpath=True,
         )
 
+    @property
+    def dtype(self) -> np.dtype[Any]:
+        if is_dataarray(self._obj):
+            return self._obj.dtype
+        self._raise_notimplemented_for_dataset()
+        return None
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        if is_dataarray(self._obj):
+            return self._obj.shape
+        self._raise_notimplemented_for_dataset()
+        return None
+
+    @property
+    def val_shape(self) -> tuple[int, ...]:
+        if is_dataarray(self._obj):
+            return self._obj.shape[: -self._mom_ndim]
+        self._raise_notimplemented_for_dataset()
+        return None
+
     # ** Create/copy/new ------------------------------------------------------
     def _new_like(self, obj: XArrayT) -> Self:
         return type(self)(
@@ -171,6 +192,8 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         deep : bool
             Parameter to :meth:`~xarray.Dataset.copy` or :meth:`~xarray.DataArray.copy`.
         """
+        # TODO(wpk): edge case of passing in new xarray data with different dimensions.
+        # For now, this will raise an error.
         obj_: XArrayT
         if obj is None:
             # TODO(wpk): different type for dtype in xarray.
@@ -180,8 +203,9 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         elif isinstance(obj, np.ndarray):
             if is_dataarray(self._obj):
                 obj_ = self._obj.copy(data=obj)
-            msg = "Can only pass an array for wrapped DataArray."
-            raise TypeError(msg)
+            else:
+                msg = "Can only pass an array for wrapped DataArray."
+                raise TypeError(msg)
         else:
             obj_ = obj
 
@@ -191,10 +215,10 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             raise TypeError(msg)
 
         # minimal check on shape and that mom_dims are present....
-        self._raise_if_wrong_mom_shape(get_mom_shape(obj_, self._mom_dims))
         if not contains_dims(obj_, self._mom_dims):
             msg = f"Cannot create new from object without {self._mom_dims}"
             raise ValueError(msg)
+        self._raise_if_wrong_mom_shape(get_mom_shape(obj_, self._mom_dims))
 
         if verify and self._obj.sizes != obj_.sizes:
             msg = f"{self.obj.sizes=} != obj.sizes={obj_.sizes}"
@@ -228,6 +252,8 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             mom_dims=self._mom_dims,
             fastpath=True,
         )
+
+    # TODO(wpk): Add in astype with mapping of dtype for dataset
 
     # ** Utils ----------------------------------------------------------------
     def _validate_dtype(self) -> None:
@@ -535,7 +561,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
                 out,
                 *args,
                 casting=casting,
-                signature=(out.dtype,) * (len(out) + 1),
+                signature=(out.dtype,) * (len(args) + 1),
             )
             return out
 
@@ -1043,9 +1069,11 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         nrep: int | None = None,
         rng: np.random.Generator | None = None,
         move_axis_to_end: bool = True,
-        parallel: bool | None = None,
-        dtype: DTypeLike = None,
         out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrderCF = None,
+        parallel: bool | None = None,
         mom_dims: MomDims | None = None,
         rep_dim: str = "rep",
         keep_attrs: bool = True,
@@ -1072,9 +1100,11 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         {rng}
         {move_axis_to_end}
         {order}
-        {parallel}
-        {dtype}
         {out}
+        {dtype}
+        {casting}
+        {order_cf}
+        {parallel}
         {mom_dims}
         {rep_dim}
         {keep_attrs}
@@ -1136,6 +1166,8 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
                 dtype=dtype,
                 out=out,
+                casting=casting,
+                order=order,
             ),
             mom_ndim=mom_ndim,
             mom_dims=mom_dims,
@@ -1759,3 +1791,6 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             groups=range(nblock),
             **kwargs,
         )
+
+
+xCentralMoments = CentralWrapperXArray  # noqa: N816

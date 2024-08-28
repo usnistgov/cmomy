@@ -16,12 +16,12 @@ def test_to_raw_moments(other) -> None:
     if raw is not None:
         # straight convert
 
-        r = convert.moments_type(other.to_values(), mom_ndim=other.mom_ndim, to="raw")
+        r = convert.moments_type(other.to_numpy(), mom_ndim=other.mom_ndim, to="raw")
         np.testing.assert_allclose(r, raw)
 
         out = np.zeros_like(raw)
         _ = convert.moments_type(
-            other.to_values(), mom_ndim=other.mom_ndim, to="raw", out=out
+            other.to_numpy(), mom_ndim=other.mom_ndim, to="raw", out=out
         )
         np.testing.assert_allclose(out, raw)
 
@@ -53,11 +53,11 @@ def test_to_central_moments(other) -> None:
     raw = other.s.to_raw()
 
     cen = convert.moments_type(raw, to="central", mom_ndim=other.mom_ndim)
-    np.testing.assert_allclose(cen, other.to_values())
+    np.testing.assert_allclose(cen, other.to_numpy())
 
     # also test from raw method
     t = other.cls.from_raw(raw, mom_ndim=other.mom_ndim)
-    np.testing.assert_allclose(t.to_values(), other.to_values(), rtol=1e-6, atol=1e-14)
+    np.testing.assert_allclose(t.obj, other.to_numpy(), rtol=1e-6, atol=1e-14)
 
 
 def test_from_raw(other) -> None:
@@ -66,7 +66,7 @@ def test_from_raw(other) -> None:
         raws,
         mom_ndim=other.mom_ndim,
     ).reduce(axis=0)
-    np.testing.assert_allclose(t.to_values(), other.to_values())
+    np.testing.assert_allclose(t.obj, other.to_numpy())
 
 
 # * Moments to comoments
@@ -127,13 +127,13 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     c2x = c2.to_x(mom_dims=("a", "b"))
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).values, c2x.values
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).obj, c2x.obj
     )
 
     # same mom name as original
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1)).values,
-        c2x.values.rename({"a": "mom_0", "b": "mom_1"}),  # noqa: PD011
+        cx.moments_to_comoments(mom=(1, -1)).obj,
+        c2x.obj.rename({"a": "mom_0", "b": "mom_1"}),
     )
 
     # raise error for mom_ndim=2
@@ -145,15 +145,13 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     cx = c.to_x(attrs={"hello": "there"})
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).values, c2x.values
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).obj, c2x.obj
     )
 
     c2x = c2.to_x(mom_dims=("a", "b"), attrs={"hello": "there"})
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(
-            mom=(1, -1), mom_dims2=("a", "b"), keep_attrs=True
-        ).values,
-        c2x.values,
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b"), keep_attrs=True).obj,
+        c2x.obj,
     )
 
 
