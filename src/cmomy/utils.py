@@ -43,7 +43,6 @@ if TYPE_CHECKING:
         ArrayLikeArg,
         DTypeLikeArg,
         FloatT,
-        GenXArrayT,
         KeepAttrs,
         MissingCoreDimOptions,
         MissingType,
@@ -54,6 +53,7 @@ if TYPE_CHECKING:
         NDArrayAny,
         ScalarT,
         SelectMoment,
+        XArrayT,
     )
     from .core.typing_compat import EllipsisType
 
@@ -216,7 +216,7 @@ def moment_indexer(
 
 @overload
 def select_moment(
-    data: GenXArrayT,
+    data: XArrayT,
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim,
@@ -227,7 +227,7 @@ def select_moment(
     mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> GenXArrayT: ...
+) -> XArrayT: ...
 @overload
 def select_moment(
     data: NDArray[ScalarT],
@@ -246,7 +246,7 @@ def select_moment(
 
 @docfiller.decorate
 def select_moment(
-    data: NDArray[ScalarT] | GenXArrayT,
+    data: NDArray[ScalarT] | XArrayT,
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim,
@@ -257,7 +257,7 @@ def select_moment(
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArray[ScalarT] | GenXArrayT:
+) -> NDArray[ScalarT] | XArrayT:
     """
     Select specific moments for a central moments array.
 
@@ -331,7 +331,7 @@ def select_moment(
             output_sizes = None
             coords_combined = None
 
-        xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _select_moment,
             data,
             input_core_dims=input_core_dims,
@@ -383,8 +383,8 @@ def _select_moment(
 # * Assign value(s)
 @overload
 def assign_moment(
-    data: GenXArrayT,
-    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | GenXArrayT] | None = None,
+    data: XArrayT,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | XArrayT] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = ...,
@@ -395,7 +395,7 @@ def assign_moment(
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
-) -> GenXArrayT: ...
+) -> XArrayT: ...
 @overload
 def assign_moment(
     data: NDArray[ScalarT],
@@ -415,8 +415,8 @@ def assign_moment(
 
 @docfiller.decorate
 def assign_moment(
-    data: NDArray[ScalarT] | GenXArrayT,
-    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | GenXArrayT] | None = None,
+    data: NDArray[ScalarT] | XArrayT,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | XArrayT] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = True,
@@ -427,7 +427,7 @@ def assign_moment(
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,  # pyright: ignore[reportRedeclaration]
-) -> NDArray[ScalarT] | GenXArrayT:
+) -> NDArray[ScalarT] | XArrayT:
     r"""
     Update weights of moments array.
 
@@ -520,7 +520,7 @@ def assign_moment(
             else:
                 input_core_dims.append([])
 
-        xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _assign_moment,
             data,
             *moment_kwargs.values(),
@@ -572,17 +572,17 @@ def _assign_moment(
 # * Vals -> Data
 @overload
 def vals_to_data(
-    x: GenXArrayT,
-    *y: ArrayLike | xr.DataArray | GenXArrayT,
+    x: XArrayT,
+    *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | GenXArrayT | None = ...,
+    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | xr.DataArray | None = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
-) -> GenXArrayT: ...
+) -> XArrayT: ...
 # Array
 @overload
 def vals_to_data(
@@ -657,17 +657,17 @@ def vals_to_data(
 
 @docfiller.decorate
 def vals_to_data(
-    x: ArrayLike | GenXArrayT,
-    *y: ArrayLike | xr.DataArray | GenXArrayT,
+    x: ArrayLike | XArrayT,
+    *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
+    weight: ArrayLike | xr.DataArray | XArrayT | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | GenXArrayT:
+) -> NDArrayAny | XArrayT:
     """
     Convert `values` to `central moments array`.
 

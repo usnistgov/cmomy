@@ -38,8 +38,7 @@ if TYPE_CHECKING:
 
 # * TypeVars
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
-GenXArrayT = TypeVar("GenXArrayT", xr.DataArray, xr.Dataset)
-GenXArrayT2 = TypeVar("GenXArrayT2", xr.DataArray, xr.Dataset)
+XArrayT = TypeVar("XArrayT", xr.DataArray, xr.Dataset)
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
 
 #: TypeVar of array types with restriction
@@ -68,6 +67,8 @@ ScalarT = TypeVar("ScalarT", bound=np.generic)
 ScalarT2 = TypeVar("ScalarT2", bound=np.generic)
 
 FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
+FloatingT2 = TypeVar("FloatingT2", bound="np.floating[Any]")
+
 DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
 

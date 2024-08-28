@@ -68,14 +68,14 @@ if TYPE_CHECKING:
 
 from ._wrapper_abc import CentralWrapperABC
 from .core.docstrings import docfiller_wrapper_xarray as docfiller
-from .core.typing import GenXArrayT
+from .core.typing import XArrayT
 
 docfiller_abc = docfiller.factory_from_parent(CentralWrapperABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralWrapperABC)
 
 
 @docfiller.inherit(CentralWrapperABC)  # noqa: PLR0904
-class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
+class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
     """
     Parameters
     ----------
@@ -86,7 +86,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
 
     def __init__(
         self,
-        obj: GenXArrayT,
+        obj: XArrayT,
         mom_ndim: Mom_NDim = 1,
         mom_dims: MomDims | None = None,
         fastpath: bool = False,
@@ -146,7 +146,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         )
 
     # ** Create/copy/new ------------------------------------------------------
-    def _new_like(self, obj: GenXArrayT) -> Self:
+    def _new_like(self, obj: XArrayT) -> Self:
         return type(self)(
             obj=obj,
             mom_ndim=self._mom_ndim,
@@ -157,7 +157,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller_inherit_abc()
     def new_like(  # type: ignore[override]
         self,
-        obj: NDArrayAny | GenXArrayT | None = None,
+        obj: NDArrayAny | XArrayT | None = None,
         *,
         copy: bool | None = None,
         deep: bool = True,
@@ -171,7 +171,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         deep : bool
             Parameter to :meth:`~xarray.Dataset.copy` or :meth:`~xarray.DataArray.copy`.
         """
-        obj_: GenXArrayT
+        obj_: XArrayT
         if obj is None:
             # TODO(wpk): different type for dtype in xarray.
             obj_ = xr.zeros_like(self._obj, dtype=dtype)  # type: ignore[arg-type]
@@ -253,7 +253,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
 
     def _push_vals_dataarray(
         self,
-        obj: GenXArrayT,
+        obj: XArrayT,
         x: ArrayLike | xr.DataArray | xr.Dataset,
         *y: ArrayLike | xr.DataArray | xr.Dataset,
         weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
@@ -263,7 +263,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         keep_attrs: KeepAttrs = True,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> GenXArrayT:
+    ) -> XArrayT:
         self._check_y(y, self._mom_ndim)
         weight = 1.0 if weight is None else weight
 
@@ -316,7 +316,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller_inherit_abc()
     def push_data(
         self,
-        data: GenXArrayT | ArrayLike,
+        data: XArrayT | ArrayLike,
         *,
         casting: Casting = "same_kind",
         parallel: bool | None = False,
@@ -361,7 +361,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller_inherit_abc()
     def push_datas(
         self,
-        datas: GenXArrayT | ArrayLike,
+        datas: XArrayT | ArrayLike,
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
@@ -427,9 +427,9 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: ArrayLike | GenXArrayT,
-        *y: ArrayLike | xr.DataArray | GenXArrayT,
-        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
+        x: ArrayLike | XArrayT,
+        *y: ArrayLike | xr.DataArray | XArrayT,
+        weight: ArrayLike | xr.DataArray | XArrayT | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = False,
         keep_attrs: KeepAttrs = True,
@@ -480,9 +480,9 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller_inherit_abc()
     def push_vals(
         self,
-        x: ArrayLike | GenXArrayT,
-        *y: ArrayLike | xr.DataArray | GenXArrayT,
-        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
+        x: ArrayLike | XArrayT,
+        *y: ArrayLike | xr.DataArray | XArrayT,
+        weight: ArrayLike | xr.DataArray | XArrayT | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         casting: Casting = "same_kind",
@@ -731,7 +731,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        data_reduced: Self | GenXArrayT | None = None,
+        data_reduced: Self | XArrayT | None = None,
         parallel: bool | None = None,
         dtype: DTypeLike = None,
         out: NDArrayAny | None = None,
@@ -958,10 +958,10 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller.decorate
     def from_vals(
         cls,
-        x: GenXArrayT,
-        *y: ArrayLike | xr.DataArray | GenXArrayT,
+        x: XArrayT,
+        *y: ArrayLike | xr.DataArray | XArrayT,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
+        weight: ArrayLike | xr.DataArray | XArrayT | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         mom_dims: MomDims | None = None,
@@ -1033,13 +1033,13 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller.decorate
     def from_resample_vals(  # noqa: PLR0913
         cls,
-        x: GenXArrayT,
-        *y: ArrayLike | xr.DataArray | GenXArrayT,
+        x: XArrayT,
+        *y: ArrayLike | xr.DataArray | XArrayT,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
+        weight: ArrayLike | xr.DataArray | XArrayT | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        freq: ArrayLike | xr.DataArray | GenXArrayT | None = None,
+        freq: ArrayLike | xr.DataArray | XArrayT | None = None,
         nrep: int | None = None,
         rng: np.random.Generator | None = None,
         move_axis_to_end: bool = True,
@@ -1145,7 +1145,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     @docfiller.decorate
     def from_raw(  # type: ignore[override]
         cls,
-        raw: GenXArrayT,
+        raw: XArrayT,
         *,
         mom_ndim: Mom_NDim = 1,
         out: NDArrayAny | None = None,

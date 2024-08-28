@@ -39,13 +39,13 @@ if TYPE_CHECKING:
         AxisReduce,
         Casting,
         DTypeLikeArg,
+        FloatingT2,
         Groups,
         Mom_NDim,
         MomDims,
         Moments,
         MomentsStrict,
         NDArrayAny,
-        ScalarT2,
         XArrayAttrsType,
         XArrayCoordsType,
         XArrayDimsType,
@@ -59,14 +59,14 @@ from numpy.typing import NDArray
 
 from ._wrapper_abc import CentralWrapperABC
 from .core.docstrings import docfiller_wrapper_numpy as docfiller
-from .core.typing import ScalarT
+from .core.typing import FloatingT
 
 docfiller_abc = docfiller.factory_from_parent(CentralWrapperABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralWrapperABC)
 
 
 @docfiller.inherit(CentralWrapperABC)  # noqa: PLR0904
-class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT]):  # type: ignore[type-var]
+class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[FloatingT]):  # type: ignore[type-var]
     r"""
     Wrapper to calculate central moments of :class:`~numpy.ndarray` backed arrays.
 
@@ -81,7 +81,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
     @overload
     def __init__(
         self,
-        obj: ArrayLikeArg[ScalarT],
+        obj: ArrayLikeArg[FloatingT],
         *,
         mom_ndim: Mom_NDim = ...,
         copy: bool | None = ...,
@@ -96,7 +96,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         *,
         mom_ndim: Mom_NDim = ...,
         copy: bool | None = ...,
-        dtype: DTypeLikeArg[ScalarT],
+        dtype: DTypeLikeArg[FloatingT],
         order: ArrayOrder = ...,
         fastpath: bool = ...,
     ) -> None: ...
@@ -158,7 +158,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         return self._new_like(obj=self.obj[key])
 
     @property
-    def dtype(self) -> np.dtype[ScalarT]:
+    def dtype(self) -> np.dtype[FloatingT]:
         """Dtype of wrapped array."""
         return self._obj.dtype
 
@@ -167,7 +167,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
             yield self[k]
 
     # ** Create/copy/new ------------------------------------------------------
-    def _new_like(self, obj: NDArray[ScalarT]) -> Self:
+    def _new_like(self, obj: NDArray[FloatingT]) -> Self:
         return type(self)(
             obj=obj,
             mom_ndim=self._mom_ndim,
@@ -177,14 +177,14 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
     @overload
     def new_like(
         self,
-        obj: NDArray[ScalarT2],
+        obj: NDArray[FloatingT2],
         *,
         verify: bool = ...,
         copy: bool | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrder = ...,
         fastpath: bool = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     def new_like(
         self,
@@ -192,10 +192,10 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         *,
         verify: bool = ...,
         copy: bool | None = ...,
-        dtype: DTypeLikeArg[ScalarT2],
+        dtype: DTypeLikeArg[FloatingT2],
         order: ArrayOrder = ...,
         fastpath: bool = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     def new_like(
         self,
@@ -273,13 +273,13 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
     @overload
     def astype(
         self,
-        dtype: DTypeLikeArg[ScalarT2],
+        dtype: DTypeLikeArg[FloatingT2],
         *,
         order: ArrayOrder = ...,
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     def astype(
         self,
@@ -568,8 +568,8 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         return self._new_like(obj)
 
     # ** Access to underlying statistics --------------------------------------
-    def std(self, squeeze: bool = True) -> NDArray[ScalarT]:
-        return np.sqrt(self.var(squeeze=squeeze))
+    def std(self, squeeze: bool = True) -> NDArray[FloatingT]:
+        return np.sqrt(self.var(squeeze=squeeze))  # type: ignore[no-any-return]
 
     # ** Constructors ----------------------------------------------------------
     @overload
@@ -589,9 +589,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         *,
         mom: Moments,
         val_shape: tuple[int, ...] | int | None = ...,
-        dtype: DTypeLikeArg[ScalarT2],
+        dtype: DTypeLikeArg[FloatingT2],
         order: ArrayOrderCF = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     @classmethod
     def zeros(
@@ -640,7 +640,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
     @classmethod
     def from_vals(
         cls,
-        x: ArrayLikeArg[ScalarT2],
+        x: ArrayLikeArg[FloatingT2],
         *y: ArrayLike,
         mom: Moments,
         axis: AxisReduce = -1,
@@ -649,7 +649,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         dtype: None = ...,
         out: None = ...,
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     # out
     @overload
     @classmethod
@@ -662,9 +662,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         weight: ArrayLike | None = ...,
         keepdims: bool = ...,
         dtype: DTypeLike = ...,
-        out: NDArray[ScalarT2],
+        out: NDArray[FloatingT2],
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     # dtype
     @overload
     @classmethod
@@ -676,10 +676,10 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         axis: AxisReduce = -1,
         weight: ArrayLike | None = ...,
         keepdims: bool = ...,
-        dtype: DTypeLikeArg[ScalarT2],
+        dtype: DTypeLikeArg[FloatingT2],
         out: None = ...,
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     # fallback
     @overload
     @classmethod
@@ -744,7 +744,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
     @classmethod
     def from_resample_vals(
         cls,
-        x: ArrayLikeArg[ScalarT2],
+        x: ArrayLikeArg[FloatingT2],
         *y: ArrayLike,
         mom: Moments,
         axis: AxisReduce = ...,
@@ -756,7 +756,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         parallel: bool | None = ...,
         dtype: None = ...,
         out: None = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -772,8 +772,8 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         weight: ArrayLike | None = ...,
         parallel: bool | None = ...,
         dtype: DTypeLike = ...,
-        out: NDArray[ScalarT2],
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+        out: NDArray[FloatingT2],
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -788,9 +788,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         move_axis_to_end: bool = ...,
         weight: ArrayLike | None = ...,
         parallel: bool | None = ...,
-        dtype: DTypeLikeArg[ScalarT2],
+        dtype: DTypeLikeArg[FloatingT2],
         out: None = ...,
-    ) -> CentralWrapperNumpy[ScalarT2]: ...
+    ) -> CentralWrapperNumpy[FloatingT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -879,7 +879,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
     @docfiller_abc()
     def from_raw(
         cls,
-        raw: NDArray[ScalarT],
+        raw: NDArray[FloatingT],
         *,
         mom_ndim: Mom_NDim,
         **kwargs: Any,

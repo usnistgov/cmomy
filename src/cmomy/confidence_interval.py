@@ -34,19 +34,19 @@ if TYPE_CHECKING:
         DimsReduce,
         FloatDTypes,
         FloatingT,
-        GenXArrayT,
         KeepAttrs,
         MissingCoreDimOptions,
         MissingType,
         NDArrayAny,
+        XArrayT,
     )
 
 
 @overload
 def bootstrap_confidence_interval(
-    theta_boot: GenXArrayT,
-    theta_hat: GenXArrayT | None = ...,
-    theta_jack: GenXArrayT | None = ...,
+    theta_boot: XArrayT,
+    theta_hat: XArrayT | None = ...,
+    theta_jack: XArrayT | None = ...,
     *,
     alpha: float | FloatDTypes | Iterable[float | FloatDTypes] = ...,
     axis: AxisReduce | MissingType = ...,
@@ -57,7 +57,7 @@ def bootstrap_confidence_interval(
     keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> GenXArrayT: ...
+) -> XArrayT: ...
 
 
 @overload
@@ -80,9 +80,9 @@ def bootstrap_confidence_interval(
 
 @docfiller.decorate
 def bootstrap_confidence_interval(
-    theta_boot: GenXArrayT | NDArray[FloatingT],
-    theta_hat: float | FloatDTypes | NDArrayAny | GenXArrayT | None = None,
-    theta_jack: NDArrayAny | GenXArrayT | None = None,
+    theta_boot: XArrayT | NDArray[FloatingT],
+    theta_hat: float | FloatDTypes | NDArrayAny | XArrayT | None = None,
+    theta_jack: NDArrayAny | XArrayT | None = None,
     *,
     alpha: float | FloatDTypes | Iterable[float | FloatDTypes] = 0.05,
     axis: AxisReduce | MissingType = MISSING,
@@ -93,7 +93,7 @@ def bootstrap_confidence_interval(
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArray[FloatingT] | GenXArrayT:
+) -> NDArray[FloatingT] | XArrayT:
     r"""
     Create the bootstrap confidence interval.
 
@@ -217,7 +217,7 @@ def bootstrap_confidence_interval(
             # move axis to end for apply_ufunc
             return np.moveaxis(out, 0, -1)
 
-        args: list[GenXArrayT] = [theta_boot]
+        args: list[XArrayT] = [theta_boot]
         input_core_dims: list[list[Hashable]] = [[dim]]
         if method in {"basic", "bca"}:
             if not is_xarray(theta_hat):
@@ -232,7 +232,7 @@ def bootstrap_confidence_interval(
             args.append(theta_jack)
             input_core_dims.append(["_rep_jack"])
 
-        xout: GenXArrayT = (
+        xout: XArrayT = (
             xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 _func,
                 *args,
