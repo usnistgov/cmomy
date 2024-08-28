@@ -29,23 +29,23 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
     )
-    from .typing_compat import TypeGuard, TypeVar
+    from .typing_compat import TypeIs, TypeVar
 
     T = TypeVar("T")
 
 
 # * TypeGuards ----------------------------------------------------------------
-def is_dataarray(x: Any) -> TypeGuard[xr.DataArray]:
+def is_dataarray(x: object) -> TypeIs[xr.DataArray]:
     """Typeguard dataarray."""
     return isinstance(x, xr.DataArray)
 
 
-def is_dataset(x: Any) -> TypeGuard[xr.Dataset]:
+def is_dataset(x: Any) -> TypeIs[xr.Dataset]:
     """Typeguard dataset"""
     return isinstance(x, xr.Dataset)
 
 
-def is_xarray(x: Any) -> TypeGuard[xr.Dataset | xr.DataArray]:
+def is_xarray(x: Any) -> TypeIs[xr.Dataset | xr.DataArray]:
     """Typeguard xarray object"""
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
@@ -57,12 +57,12 @@ def are_same_type(*args: Any) -> bool:
 
 
 # * Moment validation ---------------------------------------------------------
-def is_mom_ndim(mom_ndim: int | None) -> TypeGuard[Mom_NDim]:
+def is_mom_ndim(mom_ndim: int | None) -> TypeIs[Mom_NDim]:
     """Validate mom_ndim."""
     return mom_ndim in {1, 2}
 
 
-def is_mom_tuple(mom: tuple[int, ...]) -> TypeGuard[MomentsStrict]:
+def is_mom_tuple(mom: tuple[int, ...]) -> TypeIs[MomentsStrict]:
     """Validate moment tuple"""
     return len(mom) in {1, 2} and all(m > 0 for m in mom)
 

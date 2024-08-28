@@ -13,7 +13,7 @@ cloudpickle==3.0.0        # via dask
 colorlog==6.8.2           # via nox
 comm==0.2.2               # via ipykernel
 coverage==7.6.1           # via nbval, pytest-cov
-dask==2024.8.0            # via -r requirements/dev-complete.txt
+dask==2024.8.1            # via -r requirements/dev-complete.txt
 debugpy==1.8.5            # via ipykernel
 decorator==5.1.1          # via ipython
 distlib==0.3.8            # via virtualenv
@@ -24,8 +24,8 @@ fastjsonschema==2.20.0    # via nbformat
 filelock==3.15.4          # via virtualenv
 fsspec==2024.6.1          # via dask
 identify==2.6.0           # via pre-commit
-idna==3.7                 # via requests
-importlib-metadata==8.2.0  # via dask
+idna==3.8                 # via requests
+importlib-metadata==8.4.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev-complete.txt
 ipython==8.26.0           # via ipykernel, -r requirements/dev-complete.txt
@@ -43,6 +43,8 @@ markupsafe==2.1.5         # via jinja2
 matplotlib-inline==0.1.7  # via ipykernel, ipython
 mdurl==0.1.2              # via markdown-it-py
 module-utilities==0.9.0   # via -r requirements/dev-complete.txt
+mypy==1.11.2              # via -r requirements/dev-complete.txt
+mypy-extensions==1.0.0    # via mypy
 nbclient==0.10.0          # via -r requirements/dev-complete.txt
 nbformat==5.10.4          # via nbclient, nbval
 nbval==0.11.0             # via -r requirements/dev-complete.txt
@@ -50,14 +52,14 @@ nest-asyncio==1.6.0       # via ipykernel
 nodeenv==1.9.1            # via pre-commit
 nox==2024.4.15            # via -r requirements/dev-complete.txt
 numba==0.60.0             # via -r requirements/dev-complete.txt
-numpy==2.0.1              # via numba, pandas, pandas-stubs, scipy, xarray, -r requirements/dev-complete.txt
+numpy==2.0.2              # via numba, pandas, pandas-stubs, scipy, xarray, -r requirements/dev-complete.txt
 packaging==24.1           # via dask, ipykernel, lazy-loader, nox, pipx, pytest, pytest-sugar, xarray, -r requirements/dev-complete.txt
 pandas==2.2.2             # via xarray
 pandas-stubs==2.2.2.240807  # via -r requirements/dev-complete.txt
 parso==0.8.4              # via jedi
 partd==1.4.2              # via dask
 pexpect==4.9.0            # via ipython
-pipx==1.6.0               # via -r requirements/dev-complete.txt
+pipx==1.7.1               # via -r requirements/dev-complete.txt
 platformdirs==4.2.2       # via jupyter-core, pipx, virtualenv
 pluggy==1.5.0             # via pytest
 pre-commit==3.8.0         # via -r requirements/dev-complete.txt
@@ -74,11 +76,11 @@ pytest-xdist==3.6.1       # via -r requirements/dev-complete.txt
 python-dateutil==2.9.0.post0  # via jupyter-client, pandas
 pytz==2024.1              # via pandas
 pyyaml==6.0.2             # via dask, pre-commit
-pyzmq==26.1.0             # via ipykernel, jupyter-client
+pyzmq==26.2.0             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
 requests==2.32.3          # via scriv
 rpds-py==0.20.0           # via jsonschema, referencing
-scipy==1.14.0             # via -r requirements/dev-complete.txt
+scipy==1.14.1             # via -r requirements/dev-complete.txt
 scriv==1.5.1              # via -r requirements/dev-complete.txt
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
@@ -88,11 +90,11 @@ toolz==0.12.1             # via dask, partd
 tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 types-pytz==2024.1.0.20240417  # via pandas-stubs
-typing-extensions==4.12.2  # via ipython, module-utilities, -r requirements/dev-complete.txt
+typing-extensions==4.12.2  # via ipython, module-utilities, mypy, -r requirements/dev-complete.txt
 tzdata==2024.1            # via pandas
 urllib3==2.2.2            # via requests
 userpath==1.9.2           # via pipx
 virtualenv==20.26.3       # via nox, pre-commit
 wcwidth==0.2.13           # via prompt-toolkit
 xarray==2024.7.0          # via -r requirements/dev-complete.txt
-zipp==3.20.0              # via importlib-metadata
+zipp==3.20.1              # via importlib-metadata

@@ -228,6 +228,23 @@ def _resample_vals(x, *y, weight, nrep, paired, **kwargs):
     )
 
 
+def _bootstrap_data(ds, dim, nrep, method, paired=True, **kwargs):
+    kwargs = kwargs.copy()
+    kwargs.pop("move_axis_to_end", None)
+
+    args = [_resample_data(ds, dim, nrep, paired=paired, **kwargs)]
+    if method in {"basic", "bca"}:
+        args.append(cmomy.reduce_data(ds, dim=dim, **kwargs))
+    if method == "bca":
+        args.append(cmomy.resample.jackknife_data(ds, dim=dim, **kwargs))
+
+    return cmomy.bootstrap_confidence_interval(
+        *args,
+        dim="rep",
+        method=method,
+    )
+
+
 @mark_data_kwargs
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
@@ -238,6 +255,8 @@ def _resample_vals(x, *y, weight, nrep, paired, **kwargs):
         (partial(_reduce_data_indexed, coords_policy=None), None),
         (partial(_resample_data, nrep=20, paired=True), None),
         (cmomy.resample.jackknife_data, None),
+        (partial(_bootstrap_data, nrep=20, method="percentile"), None),
+        (partial(_bootstrap_data, nrep=20, method="bca"), None),
         (cmomy.convert.moments_type, _remove_dim_from_kwargs),
         (cmomy.convert.cumulative, None),
         (cmomy.convert.moments_to_comoments, _moments_to_comoments_kwargs),
@@ -576,6 +595,8 @@ def _is_chunked(ds):
         (partial(_resample_data, nrep=20, paired=True), None),
         (partial(_resample_data, nrep=20, paired=False), None),
         (cmomy.resample.jackknife_data, None),
+        (partial(_bootstrap_data, nrep=20, method="percentile"), None),
+        (partial(_bootstrap_data, nrep=20, method="bca"), None),
         (cmomy.convert.moments_type, _remove_dim_from_kwargs),
         (cmomy.convert.cumulative, None),
         (cmomy.convert.moments_to_comoments, _moments_to_comoments_kwargs),

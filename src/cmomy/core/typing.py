@@ -180,3 +180,4 @@ SelectMoment = Literal[
 ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
 CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
+BootStrapMethod: TypeAlias = Literal["percentile", "basic", "bca"]

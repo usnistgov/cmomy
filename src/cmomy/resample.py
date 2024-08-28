@@ -1476,7 +1476,7 @@ def jackknife_data(  # noqa: PLR0913
             use_reduce=False,
         )
     elif not is_xarray(data_reduced):
-        data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)  # type: ignore[arg-type]
+        data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
@@ -1782,7 +1782,7 @@ def jackknife_vals(  # noqa: PLR0913
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
     elif not is_xarray(data_reduced):
-        data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)  # type: ignore[arg-type]
+        data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
         dim, input_core_dims, xargs = xprepare_values_for_reduction(

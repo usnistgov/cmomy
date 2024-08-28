@@ -177,7 +177,7 @@ def select_axis_dim_mult(  # noqa: C901
 
     if dim is not MISSING:
         dim_ = (
-            data.dims[:ndim]  # type: ignore[index,assignment]
+            data.dims[:ndim]
             if dim is None
             else (dim,)
             if isinstance(dim, str)

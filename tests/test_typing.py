@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     import cmomy
     from cmomy import convert, rolling
     from cmomy._wrapper_numpy import CentralWrapperNumpy
+    from cmomy._wrapper_xarray import CentralWrapperXArray
     from cmomy.reduction import (
         reduce_data,
         reduce_data_grouped,
@@ -140,6 +141,23 @@ def test_xcentralmoments_init() -> None:
             xCentralMoments(data32, mom_ndim=1, dtype="f8"),
             xCentralMoments[Any],
         )
+
+
+def test_wrapper_xarray_init() -> None:
+    data64 = xr.DataArray(np.zeros((10, 3, 4), dtype=np.float64))
+
+    if TYPE_CHECKING:
+        assert_type(
+            CentralWrapperXArray(data64, mom_ndim=1), CentralWrapperXArray[xr.DataArray]
+        )
+        assert_type(
+            CentralWrapperXArray(data64.to_dataset(), mom_ndim=1),
+            CentralWrapperXArray[xr.Dataset],
+        )
+
+        ds: Any = data64
+        assert_type(ds, Any)
+        assert_type(CentralWrapperXArray(ds, mom_ndim=1), CentralWrapperXArray[Any])
 
 
 def test_astype() -> None:
@@ -1182,6 +1200,32 @@ def test_jackknife_data() -> None:
                 jackknife_data(g, mom_ndim=1),
                 Union[xr.DataArray, xr.Dataset, NDArray[Any]],
             )
+
+
+def test_bootstrap_confidence_interval() -> None:
+    x32 = np.zeros((10, 3, 3), dtype=np.float32)
+    x64 = np.zeros((10, 3, 3), dtype=np.float64)
+
+    if TYPE_CHECKING:
+        assert_type(
+            cmomy.bootstrap_confidence_interval(x32),
+            NDArray[np.float32],
+        )
+
+        assert_type(
+            cmomy.bootstrap_confidence_interval(x64),
+            NDArray[np.float64],
+        )
+
+        da = xr.DataArray(x32)
+        assert_type(
+            cmomy.bootstrap_confidence_interval(da),
+            xr.DataArray,
+        )
+        assert_type(
+            cmomy.bootstrap_confidence_interval(da.to_dataset()),
+            xr.Dataset,
+        )
 
 
 def test_resample_vals() -> None:

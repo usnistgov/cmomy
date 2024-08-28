@@ -6,152 +6,94 @@ Routines to calculate confidence intervals from resampled data (:mod:`cmomy.conf
 from __future__ import annotations
 
 import warnings
-from typing import TYPE_CHECKING, cast, overload
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
+
+from cmomy.core.array_utils import select_dtype
 
 from .core.compat import copy_if_needed
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prob import ndtr, ndtri
-from .core.validate import validate_axis
-from .core.xr_utils import select_axis_dim
+from .core.validate import is_xarray, validate_axis
+from .core.xr_utils import get_apply_ufunc_kwargs, select_axis_dim
 
 if TYPE_CHECKING:
-    from typing import Literal
+    from collections.abc import Hashable
+    from typing import Any
 
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import NDArray
 
     from .core.typing import (
+        ApplyUFuncKwargs,
         AxisReduce,
+        BootStrapMethod,
         DimsReduce,
         FloatDTypes,
-        FloatT,
+        FloatingT,
+        GenXArrayT,
         KeepAttrs,
+        MissingCoreDimOptions,
         MissingType,
         NDArrayAny,
     )
 
 
-from collections.abc import Iterable
-
-
-class InstabilityWarning(UserWarning):
-    """Issued when results may be unstable."""
-
-    def __init__(self, msg: str | None = None) -> None:  # pragma: no cover
-        if msg is None:
-            msg = "Data instability encountered; results may not be reliable."
-        self.args = (msg,)
-
-
-def _compute_a(
-    theta_jack: NDArray[FloatT],
-    axis: int = -1,
-) -> FloatT | NDArray[FloatT]:
-    delta = theta_jack.mean(axis=axis, keepdims=True) - theta_jack
-    num = (delta**3).sum(axis=axis)
-    den = (delta**2).sum(axis=axis)
-    return num / (6.0 * den ** (1.5))  # type: ignore[no-any-return]
-
-
-def _percentile_of_score(
-    a: NDArrayAny, score: float | NDArrayAny, axis: int = -1
-) -> NDArray[np.float64]:
-    n = a.shape[axis]
-    return ((a < score).sum(axis=axis) + (a <= score).sum(axis=axis)) / (2 * n)  # type: ignore[no-any-return]
-
-
-def _compute_z0(
-    theta_hat: float | NDArrayAny,
-    theta_boot: NDArray[FloatT],
-    axis: int = -1,
-) -> NDArray[FloatT]:
-    percentile = _percentile_of_score(theta_boot, theta_hat, axis=axis)
-    return ndtri(percentile, dtype=theta_boot.dtype)
-
-
-# modified from scipy.stats._resampling._percentile_along_axis
-def _quantile_along_axis(
-    theta_boot: NDArray[FloatT], alpha: NDArray[FloatT], axis: int = -1
-) -> NDArray[FloatT]:
-    if axis != -1:
-        theta_boot = np.moveaxis(theta_boot, axis, -1)
-
-    shape: tuple[int, ...] = theta_boot.shape[:-1]
-    broadcast_shape: tuple[int, ...] = (
-        (*shape, alpha.shape[-1]) if theta_boot.ndim == alpha.ndim else shape
-    )
-    alpha = np.broadcast_to(alpha, broadcast_shape)
-    quantiles = np.zeros_like(alpha, dtype=theta_boot.dtype)
-
-    indices: tuple[int, ...]
-    for indices in np.ndindex(shape):
-        idx: tuple[int | slice, ...] = (*indices, slice(None))
-
-        alpha_i = alpha[idx]
-        if np.any(np.isnan(alpha_i)):  # pragma: no cover
-            # e.g. when bootstrap distribution has only one unique element
-            msg = (
-                "The BCa confidence interval cannot be calculated."
-                " This problem is known to occur when the distribution"
-                " is degenerate or the statistic is np.min."
-            )
-            warnings.warn(InstabilityWarning(msg), stacklevel=2)
-            quantiles[idx] = np.nan
-        else:
-            quantiles[idx] = np.quantile(theta_boot[idx], alpha_i)
-
-    return quantiles
-
-
 @overload
 def bootstrap_confidence_interval(
-    theta_boot: xr.DataArray,
-    theta_hat: float | FloatDTypes | NDArrayAny | xr.DataArray | None = ...,
-    theta_jack: NDArrayAny | xr.DataArray | None = ...,
+    theta_boot: GenXArrayT,
+    theta_hat: GenXArrayT | None = ...,
+    theta_jack: GenXArrayT | None = ...,
     *,
     alpha: float | FloatDTypes | Iterable[float | FloatDTypes] = ...,
     axis: AxisReduce | MissingType = ...,
-    method: Literal["percentile", "basic", "bca"] = ...,
+    method: BootStrapMethod = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     ci_dim: str = ...,
     keep_attrs: KeepAttrs = ...,
-) -> xr.DataArray: ...
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> GenXArrayT: ...
 
 
 @overload
 def bootstrap_confidence_interval(
-    theta_boot: NDArray[FloatT],
-    theta_hat: float | FloatDTypes | NDArrayAny | xr.DataArray | None = ...,
-    theta_jack: NDArrayAny | xr.DataArray | None = ...,
+    theta_boot: NDArray[FloatingT],
+    theta_hat: float | FloatDTypes | NDArrayAny | None = ...,
+    theta_jack: NDArrayAny | None = ...,
     *,
     alpha: float | FloatDTypes | Iterable[float | FloatDTypes] = ...,
     axis: AxisReduce | MissingType = ...,
-    method: Literal["percentile", "basic", "bca"] = ...,
+    method: BootStrapMethod = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
     ci_dim: str = ...,
     keep_attrs: KeepAttrs = ...,
-) -> NDArray[FloatT]: ...
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArray[FloatingT]: ...
 
 
 @docfiller.decorate
 def bootstrap_confidence_interval(
-    theta_boot: NDArray[FloatT] | xr.DataArray,
-    theta_hat: float | FloatDTypes | NDArrayAny | xr.DataArray | None = None,
-    theta_jack: NDArrayAny | xr.DataArray | None = None,
+    theta_boot: GenXArrayT | NDArray[FloatingT],
+    theta_hat: float | FloatDTypes | NDArrayAny | GenXArrayT | None = None,
+    theta_jack: NDArrayAny | GenXArrayT | None = None,
     *,
     alpha: float | FloatDTypes | Iterable[float | FloatDTypes] = 0.05,
     axis: AxisReduce | MissingType = MISSING,
-    method: Literal["percentile", "basic", "bca"] = "bca",
+    method: BootStrapMethod = "bca",
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
     ci_dim: str = "alpha",
     keep_attrs: KeepAttrs = None,
-) -> NDArray[FloatT] | xr.DataArray:
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArray[FloatingT] | GenXArrayT:
     r"""
     Create the bootstrap confidence interval.
 
@@ -166,7 +108,7 @@ def bootstrap_confidence_interval(
         values `'basic'`` and ``'bca'``. Note that this array should have shape
         as ``theta_boot`` with ``axis`` either removed, or of size ``1``.
     theta_jack : ndarray
-        Jackknife resampled data.  Needed for ``method`` ``'basic'``.
+        Jackknife resampled data.  Needed for ``method`` ``'bca'``.
         Note that this array should have the same shape as ``theta_boot`` except along ``axis``.
     alphas : float or iterable of floats
         The quantiles to use for confidence interval. If ``alpha`` is a float,
@@ -256,50 +198,95 @@ def bootstrap_confidence_interval(
 
     Moreover, you can use pre-averaged data.
     """
-    dtype: DTypeLike = theta_boot.dtype  # pyright: ignore[reportUnknownMemberType]
+    dtype = select_dtype(theta_boot, out=None, dtype=None)
     if isinstance(alpha, Iterable):
         alphas = np.array(list(alpha), dtype=dtype)
     else:
         alphas = np.asarray([alpha * 0.5, 1.0 - alpha * 0.5])
 
-    if isinstance(theta_boot, xr.DataArray):
+    if is_xarray(theta_boot):
         axis, dim = select_axis_dim(theta_boot, axis=axis, dim=dim)
 
-        if isinstance(theta_jack, xr.DataArray):
+        if is_xarray(theta_jack):
             theta_jack = theta_jack.rename({dim: "_rep_jack"})
         elif theta_jack is not None:
             theta_jack = np.moveaxis(np.asarray(theta_jack, dtype=dtype), axis, -1)
 
-        return cast(
-            xr.DataArray,
+        def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
+            out = _bootstrap_confidence_interval(*args, **kwargs)
+            # move axis to end for apply_ufunc
+            return np.moveaxis(out, 0, -1)
+
+        args: list[GenXArrayT] = [theta_boot]
+        input_core_dims: list[list[Hashable]] = [[dim]]
+        if method in {"basic", "bca"}:
+            if not is_xarray(theta_hat):
+                msg = "`theta_hat` must be an xarray object"
+                raise TypeError(msg)
+            args.append(theta_hat)
+            input_core_dims.append([])
+        if method == "bca":
+            if not is_xarray(theta_jack):
+                msg = "`theta_jack` must be an xarray object"
+                raise TypeError(msg)
+            args.append(theta_jack)
+            input_core_dims.append(["_rep_jack"])
+
+        xout: GenXArrayT = (
             xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-                lambda *args, **kwargs: np.moveaxis(  # pyright: ignore[reportUnknownLambdaType]
-                    bootstrap_confidence_interval(*args, **kwargs),  # pyright: ignore[reportUnknownArgumentType]
-                    0,
-                    -1,  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
-                ),
-                theta_boot,
-                theta_hat,
-                theta_jack,
-                input_core_dims=[[dim], [], ["_rep_jack"]],
+                _func,
+                *args,
+                input_core_dims=input_core_dims,
                 output_core_dims=[[ci_dim]],
                 kwargs={
+                    "alphas": alphas,
                     "axis": -1,
                     "method": method,
                 },
                 keep_attrs=keep_attrs,
+                **get_apply_ufunc_kwargs(
+                    apply_ufunc_kwargs,
+                    on_missing_core_dim=on_missing_core_dim,
+                    dask="parallelized",
+                    output_dtypes=dtype or np.float64,
+                    output_sizes={ci_dim: len(alphas)},
+                ),
             )
             .transpose(ci_dim, ...)
-            .assign_coords({ci_dim: alphas}),
+            .assign_coords({ci_dim: alphas})
         )
+        return xout
 
-    axis = validate_axis(axis)
+    # Numpy
+    assert not is_xarray(theta_hat)  # noqa: S101
+    assert not is_xarray(theta_jack)  # noqa: S101
+
+    return _bootstrap_confidence_interval(
+        theta_boot=theta_boot,
+        theta_hat=theta_hat,
+        theta_jack=theta_jack,
+        alphas=alphas,
+        axis=validate_axis(axis),
+        method=method,
+    )
+
+
+def _bootstrap_confidence_interval(
+    theta_boot: NDArray[FloatingT],
+    theta_hat: float | FloatDTypes | NDArrayAny | None = None,
+    theta_jack: NDArrayAny | None = None,
+    *,
+    alphas: NDArrayAny,
+    method: BootStrapMethod,
+    axis: int,
+) -> NDArray[FloatingT]:
+    dtype = theta_boot.dtype
     method_ = method.lower()
     if method_ in {"basic", "bca"}:
         if theta_hat is None:
             msg = f"Must specify theta_hat for {method=}"
             raise ValueError(msg)
-        theta_hat_: NDArray[FloatT] = np.array(
+        theta_hat_: NDArray[FloatingT] = np.array(
             theta_hat, ndmin=1, dtype=dtype, copy=copy_if_needed(None)
         )
 
@@ -307,7 +294,7 @@ def bootstrap_confidence_interval(
         if theta_hat_.ndim < theta_boot.ndim:
             theta_hat_ = np.expand_dims(theta_hat, axis=axis)
 
-    ci: NDArray[FloatT]
+    ci: NDArray[FloatingT]
     if method_ == "bca":
         theta_jack = np.asarray(theta_jack, dtype=dtype)
 
@@ -328,11 +315,71 @@ def bootstrap_confidence_interval(
     return ci
 
 
-# def ci_style(val: NDArray[FloatT], ci: NDArray[FloatT], style: Literal["delta", "pm"]) -> NDArray[FloatT]:
-#     if style is None:
-#         out = np.array([val, ci[0, ...], ci[1, ...])
-#     elif style == "delta":  # noqa: ERA001
-#         out = np.array([val, val - ci[0, ...], ci[1, ...] - val])  # noqa: ERA001
-#     elif style == "pm":  # noqa: ERA001
-#         out = np.array([val, (ci[1, ...] - ci[0, ...]) / 2.0])  # noqa: ERA001
-#     return out  # noqa: ERA001
+# * Utilities -----------------------------------------------------------------
+class InstabilityWarning(UserWarning):
+    """Issued when results may be unstable."""
+
+    def __init__(self, msg: str | None = None) -> None:  # pragma: no cover
+        if msg is None:
+            msg = "Data instability encountered; results may not be reliable."
+        self.args = (msg,)
+
+
+def _compute_a(
+    theta_jack: NDArray[FloatingT],
+    axis: int = -1,
+) -> FloatingT | NDArray[FloatingT]:
+    delta = theta_jack.mean(axis=axis, keepdims=True) - theta_jack
+    num = (delta**3).sum(axis=axis)
+    den = (delta**2).sum(axis=axis)
+    return num / (6.0 * den ** (1.5))  # type: ignore[no-any-return]
+
+
+def _percentile_of_score(
+    a: NDArrayAny, score: float | NDArrayAny, axis: int = -1
+) -> NDArray[np.float64]:
+    n = a.shape[axis]
+    return ((a < score).sum(axis=axis) + (a <= score).sum(axis=axis)) / (2 * n)  # type: ignore[no-any-return]
+
+
+def _compute_z0(
+    theta_hat: float | NDArrayAny,
+    theta_boot: NDArray[FloatingT],
+    axis: int = -1,
+) -> NDArray[FloatingT]:
+    percentile = _percentile_of_score(theta_boot, theta_hat, axis=axis)
+    return ndtri(percentile, dtype=theta_boot.dtype)
+
+
+# modified from scipy.stats._resampling._percentile_along_axis
+def _quantile_along_axis(
+    theta_boot: NDArray[FloatingT], alpha: NDArray[FloatingT], axis: int = -1
+) -> NDArray[FloatingT]:
+    if axis != -1:
+        theta_boot = np.moveaxis(theta_boot, axis, -1)
+
+    shape: tuple[int, ...] = theta_boot.shape[:-1]
+    broadcast_shape: tuple[int, ...] = (
+        (*shape, alpha.shape[-1]) if theta_boot.ndim == alpha.ndim else shape
+    )
+    alpha = np.broadcast_to(alpha, broadcast_shape)
+    quantiles = np.zeros_like(alpha, dtype=theta_boot.dtype)
+
+    indices: tuple[int, ...]
+    for indices in np.ndindex(shape):
+        idx: tuple[int | slice, ...] = (*indices, slice(None))
+
+        alpha_i = alpha[idx]
+        if np.any(np.isnan(alpha_i)):  # pragma: no cover
+            # e.g. when bootstrap distribution has only one unique element
+            msg = (
+                "The BCa confidence interval cannot be calculated."
+                " This problem is known to occur when the distribution"
+                " is degenerate or the statistic is np.min."
+            )
+            warnings.warn(InstabilityWarning(msg), stacklevel=2)
+            quantiles[idx] = np.nan
+        else:
+            quantiles[idx] = np.quantile(theta_boot[idx], alpha_i)
+
+    return quantiles

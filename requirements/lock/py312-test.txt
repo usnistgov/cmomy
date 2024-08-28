@@ -8,7 +8,7 @@ lazy-loader==0.4          # via -r requirements/test.txt
 llvmlite==0.43.0          # via numba
 module-utilities==0.9.0   # via -r requirements/test.txt
 numba==0.60.0             # via -r requirements/test.txt
-numpy==2.0.1              # via numba, pandas, xarray, -r requirements/test.txt
+numpy==2.0.2              # via numba, pandas, xarray, -r requirements/test.txt
 packaging==24.1           # via lazy-loader, pytest, pytest-sugar, xarray
 pandas==2.2.2             # via xarray
 pluggy==1.5.0             # via pytest

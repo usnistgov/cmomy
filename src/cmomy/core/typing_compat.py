@@ -18,9 +18,9 @@ else:
 
 
 if sys.version_info < (3, 13):
-    from typing_extensions import TypeVar
+    from typing_extensions import TypeIs, TypeVar
 else:  # pragma: no cover
-    from typing import TypeVar
+    from typing import TypeIs, TypeVar
 
 
 __all__ = [
@@ -28,5 +28,6 @@ __all__ = [
     "Self",
     "TypeAlias",
     "TypeGuard",
+    "TypeIs",
     "TypeVar",
 ]

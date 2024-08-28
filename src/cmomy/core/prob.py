@@ -3,14 +3,14 @@
 from __future__ import annotations
 
 from math import erf, sqrt
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike, NDArray
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .typing import DTypeLikeArg, FloatT
+    from .typing import DTypeLikeArg, FloatingT, NDArrayAny
 
 # so don't have to use scipy....
 _SQRT2 = sqrt(2)
@@ -26,8 +26,14 @@ ndtr = np.vectorize(_ndtr_py, [float])
 del _ndtr_py
 
 
+@overload
+def ndtri(p: ArrayLike, *, dtype: DTypeLikeArg[FloatingT]) -> NDArray[FloatingT]: ...
+@overload
+def ndtri(p: ArrayLike, *, dtype: DTypeLike = ...) -> NDArray[np.float64]: ...
+
+
 # fmt: off
-def ndtri(p: ArrayLike, dtype: DTypeLikeArg[FloatT] = np.float64) -> NDArray[FloatT]:  # type: ignore[assignment]
+def ndtri(p: ArrayLike, *, dtype: DTypeLike = np.float64) -> NDArrayAny:
     """Inverse of ndtr."""
     p = np.asarray(p, dtype=dtype)
     out = np.empty_like(p, dtype=p.dtype)

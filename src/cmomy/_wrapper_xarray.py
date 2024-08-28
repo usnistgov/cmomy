@@ -179,7 +179,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             dtype = None
         elif isinstance(obj, np.ndarray):
             if is_dataarray(self._obj):
-                obj_ = self._obj.copy(data=obj)  # type: ignore[assignment]
+                obj_ = self._obj.copy(data=obj)
             msg = "Can only pass an array for wrapped DataArray."
             raise TypeError(msg)
         else:
@@ -203,12 +203,12 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         if not fastpath:
             copy = False if copy is None else copy
             if dtype:
-                obj_ = obj_.astype(dtype, copy=copy)  # type: ignore[assignment]
+                obj_ = obj_.astype(dtype, copy=copy)  # pyright: ignore[reportUnknownMemberType]
             elif copy:
-                obj_ = obj_.copy(deep=deep)  # type: ignore[assignment]
+                obj_ = obj_.copy(deep=deep)
 
         return type(self)(
-            obj=obj_,  # type: ignore[arg-type]
+            obj=obj_,
             mom_ndim=self._mom_ndim,
             mom_dims=self._mom_dims,
             fastpath=fastpath,
@@ -395,7 +395,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
 
         elif is_dataarray(self._obj):
             axis, datas = prepare_data_for_reduction(
-                datas,  # type: ignore[arg-type]
+                datas,
                 axis=axis,
                 mom_ndim=self._mom_ndim,
                 dtype=self._dtype,
@@ -515,7 +515,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             )
         else:
             axis, xargs = prepare_values_for_reduction(
-                x,  # type: ignore[arg-type]
+                x,
                 weight,
                 *y,
                 axis=axis,
@@ -915,7 +915,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
     # ** Access to underlying statistics --------------------------------------
     def std(self, squeeze: bool = True) -> xr.DataArray:
         if is_dataarray(self._obj):
-            return np.sqrt(self.var(squeeze=squeeze))  # type: ignore[return-value, no-any-return]
+            return np.sqrt(self.var(squeeze=squeeze))  # type: ignore[return-value]
         self._raise_notimplemented_for_dataset()
         return None
 

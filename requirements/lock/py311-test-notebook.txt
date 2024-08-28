@@ -27,7 +27,7 @@ nbformat==5.10.4          # via nbval
 nbval==0.11.0             # via -r requirements/test-notebook.txt
 nest-asyncio==1.6.0       # via ipykernel
 numba==0.60.0             # via -r requirements/test-notebook.txt
-numpy==2.0.1              # via numba, pandas, xarray, -r requirements/test-notebook.txt
+numpy==2.0.2              # via numba, pandas, xarray, -r requirements/test-notebook.txt
 packaging==24.1           # via ipykernel, lazy-loader, pytest, pytest-sugar, xarray
 pandas==2.2.2             # via xarray
 parso==0.8.4              # via jedi
@@ -45,12 +45,13 @@ pytest-sugar==1.0.0       # via -r requirements/test-notebook.txt
 pytest-xdist==3.6.1       # via -r requirements/test-notebook.txt
 python-dateutil==2.9.0.post0  # via jupyter-client, pandas
 pytz==2024.1              # via pandas
-pyzmq==26.1.0             # via ipykernel, jupyter-client
+pyzmq==26.2.0             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
 rpds-py==0.20.0           # via jsonschema, referencing
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar
+tomli==2.0.1              # via coverage
 tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbformat
 typing-extensions==4.12.2  # via ipython, module-utilities, -r requirements/test-notebook.txt

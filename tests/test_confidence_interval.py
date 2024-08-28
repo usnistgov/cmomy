@@ -284,73 +284,46 @@ def test_xmean_3(
     np.testing.assert_allclose(scipy_boot_mean.confidence_interval.high, result[1, ...])
 
 
+@pytest.mark.parametrize("method", ["basic", "bca"])
 def test_xmean_2a(
     theta_hat,
     xtheta_boot,
     xtheta_jack,
     method,
     alpha,
-    scipy_boot_mean,
 ) -> None:
     from cmomy.confidence_interval import bootstrap_confidence_interval
 
-    result = bootstrap_confidence_interval(
-        theta_hat=theta_hat[..., 1],
-        theta_boot=xtheta_boot[..., 1],
-        theta_jack=xtheta_jack[..., 1],
-        dim="rep",
-        alpha=alpha,
-        method=method,
-    )
-
-    np.testing.assert_allclose(scipy_boot_mean.confidence_interval.low, result[0, ...])
-    np.testing.assert_allclose(scipy_boot_mean.confidence_interval.high, result[1, ...])
+    with pytest.raises(TypeError, match=".*`theta_hat`.*"):
+        _ = bootstrap_confidence_interval(
+            theta_hat=theta_hat[..., 1],
+            theta_boot=xtheta_boot[..., 1],
+            theta_jack=xtheta_jack[..., 1],
+            dim="rep",
+            alpha=alpha,
+            method=method,
+        )
 
 
+@pytest.mark.parametrize("method", ["bca"])
 def test_xmean_2b(
     xtheta_hat,
     xtheta_boot,
     theta_jack,
     method,
     alpha,
-    scipy_boot_mean,
 ) -> None:
     from cmomy.confidence_interval import bootstrap_confidence_interval
 
-    result = bootstrap_confidence_interval(
-        theta_hat=xtheta_hat[..., 1],
-        theta_boot=xtheta_boot[..., 1],
-        theta_jack=theta_jack[..., 1],
-        dim="rep",
-        alpha=alpha,
-        method=method,
-    )
-
-    np.testing.assert_allclose(scipy_boot_mean.confidence_interval.low, result[0, ...])
-    np.testing.assert_allclose(scipy_boot_mean.confidence_interval.high, result[1, ...])
-
-
-def test_xmean_1(
-    theta_hat,
-    xtheta_boot,
-    theta_jack,
-    method,
-    alpha,
-    scipy_boot_mean,
-) -> None:
-    from cmomy.confidence_interval import bootstrap_confidence_interval
-
-    result = bootstrap_confidence_interval(
-        theta_hat=theta_hat[..., 1],
-        theta_boot=xtheta_boot[..., 1],
-        theta_jack=theta_jack[..., 1] if method == "bca" else None,
-        dim="rep",
-        alpha=alpha,
-        method=method,
-    )
-
-    np.testing.assert_allclose(scipy_boot_mean.confidence_interval.low, result[0, ...])
-    np.testing.assert_allclose(scipy_boot_mean.confidence_interval.high, result[1, ...])
+    with pytest.raises(TypeError, match=".*`theta_jack`.*"):
+        _ = bootstrap_confidence_interval(
+            theta_hat=xtheta_hat[..., 1],
+            theta_boot=xtheta_boot[..., 1],
+            theta_jack=theta_jack[..., 1],
+            dim="rep",
+            alpha=alpha,
+            method=method,
+        )
 
 
 def test_var(

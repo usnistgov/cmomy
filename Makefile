@@ -135,6 +135,8 @@ mypy: ## Run mypy
 	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy
 pyright: ## Run pyright
 	$(PIPXRUN) $(PIPXRUN_OPTS) -c pyright
+pyright-watch: ## Run pyright in watch mode
+	$(PIPXRUN) $(PIPXRUN_OPTS) -c "pyright -w"
 typecheck: ## Run mypy and pyright
 	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy -c pyright
 
