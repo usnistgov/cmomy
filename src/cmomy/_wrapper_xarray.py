@@ -341,7 +341,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             )
             return out
 
-        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+        self._obj = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._obj,
             data,
@@ -407,7 +407,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             msg = "Must pass xarray object of same type as `self.obj` or arraylike if `self.obj` is a dataarray."
             raise ValueError(msg)
 
-        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+        self._obj = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._obj,
             datas,
@@ -458,7 +458,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             return out
 
         core_dims: list[Any] = [self.mom_dims, *([[]] * (2 + len(y)))]
-        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+        self._obj = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._obj,
             x,
@@ -515,7 +515,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             )
         else:
             axis, xargs = prepare_values_for_reduction(
-                x,
+                x,  # type: ignore[arg-type]
                 weight,
                 *y,
                 axis=axis,
@@ -539,7 +539,7 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             )
             return out
 
-        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+        self._obj = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
             self._obj,
             *xargs,

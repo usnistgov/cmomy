@@ -362,11 +362,9 @@ def _reduce_vals(
         order=order,
     )
 
-    mom_axes = tuple(range(-mom_ndim, 0))
-
     axes: AxesGUFunc = [
         # out
-        mom_axes,
+        tuple(range(-mom_ndim, 0)),
         # x, weight, *y
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
@@ -600,9 +598,8 @@ def reduce_data(
         return xout
 
     # Numpy
-    data = asarray_maybe_recast(data, dtype=dtype, recast=False)
     return _reduce_data(
-        data,
+        asarray_maybe_recast(data, dtype=dtype, recast=False),
         mom_ndim=mom_ndim,
         axis=validate_axis_mult(axis),
         out=out,
@@ -1392,9 +1389,11 @@ def reduce_data_indexed(  # noqa: PLR0913
         Weights of same size as ``index``.
     {axis_data}
     {move_axis_to_end}
-    {parallel}
     {out}
     {dtype}
+    {casting}
+    {order}
+    {parallel}
     {dim}
     {coords_policy}
     {group_dim}

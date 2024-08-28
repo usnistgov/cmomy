@@ -180,9 +180,9 @@ def _dummy_docstrings() -> None:
         array.  Note that if the output if method returns a :class:`~xarray.Dataset`, then this
         option is ignored.
     order : {"C", "F", "A", "K"}, optional
-        Order argument to :func:`numpy.asarray`.
+        Order argument.  See :func:`numpy.asarray`.
     order_cf | order : {"C", "F"}, optional
-        Order argument to :func:`numpy.zeros`.
+        Order argument. See :func:`numpy.zeros`.
     weight : array-like, optional
         Optional weights. Can be scalar, 1d array of length
         ``args[0].shape[axis]`` or array of same form as ``args[0]``.

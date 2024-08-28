@@ -71,7 +71,7 @@ optional-dependencies.docs = [
     "sphinxcontrib-spelling",
 ]
 optional-dependencies.mypy = [
-    "mypy>=1.11.1",
+    "mypy>=1.11.2",
 ]
 optional-dependencies.nbval = [
     "nbval",

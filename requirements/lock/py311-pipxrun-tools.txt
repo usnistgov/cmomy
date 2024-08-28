@@ -42,7 +42,7 @@ matplotlib-inline==0.1.7  # via ipython
 mdurl==0.1.2              # via markdown-it-py
 more-itertools==10.4.0    # via jaraco-classes, jaraco-functools
 msgpack==1.0.8            # via cachecontrol
-mypy==1.11.1              # via -r requirements/pipxrun-tools.txt
+mypy==1.11.2              # via -r requirements/pipxrun-tools.txt
 mypy-extensions==1.0.0    # via mypy
 nbqa==1.8.7               # via -r requirements/pipxrun-tools.txt
 nh3==0.2.18               # via readme-renderer

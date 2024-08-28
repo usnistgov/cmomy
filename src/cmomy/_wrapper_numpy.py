@@ -455,7 +455,6 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
 
         """
         self._check_y(y, self._mom_ndim)
-        weight = 1.0 if weight is None else weight
         self._pusher(parallel).val(
             self._obj,
             x,

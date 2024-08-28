@@ -17,6 +17,7 @@ from ._lib.factory import (
     parallel_heuristic,
 )
 from .core.array_utils import (
+    asarray_maybe_recast,
     axes_data_reduction,
     select_dtype,
 )
@@ -31,6 +32,7 @@ from .core.utils import (
     peek_at,
 )
 from .core.validate import (
+    is_dataarray,
     validate_mom_dims,
     validate_mom_ndim,
 )
@@ -55,6 +57,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrder,
+        ArrayOrderCF,
         AxisReduce,
         Casting,
         ConvertStyle,
@@ -229,7 +232,7 @@ def moments_type(
     if isinstance(values_in, (xr.DataArray, xr.Dataset)):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
         xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            moments_type,
+            _moments_type,
             values_in,
             input_core_dims=[mom_dims],
             output_core_dims=[mom_dims],
@@ -240,6 +243,7 @@ def moments_type(
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
+                "fastpath": is_dataarray(values_in),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -251,9 +255,33 @@ def moments_type(
         )
         return xout
 
-    values_in = np.asarray(values_in, dtype=dtype)
-    return factory_convert(mom_ndim=mom_ndim, to=to)(
+    return _moments_type(
         values_in,
+        out=out,
+        mom_ndim=mom_ndim,
+        to=to,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+        fastpath=True,
+    )
+
+
+def _moments_type(
+    values_in: ArrayLike,
+    out: NDArrayAny | None,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
+    fastpath: bool,
+) -> NDArrayAny:
+    if not fastpath:
+        dtype = select_dtype(values_in, out=out, dtype=dtype)
+
+    return factory_convert(mom_ndim=mom_ndim, to=to)(
+        values_in,  # type: ignore[arg-type]
         out=out,
         dtype=dtype,
         casting=casting,
@@ -438,19 +466,18 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if isinstance(values_in, (xr.DataArray, xr.Dataset)):
-        dtype = select_dtype(values_in, out=out, dtype=dtype)
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, values_in)]]
 
         xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            cumulative,
+            _cumulative,
             values_in,
             input_core_dims=core_dims,
             output_core_dims=core_dims,
             kwargs={
                 "mom_ndim": mom_ndim,
                 "inverse": inverse,
-                "axis": -1,
+                "axis": -(mom_ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
                     mom_ndim=mom_ndim,
@@ -458,10 +485,11 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
                     move_axis_to_end=move_axis_to_end,
                     data=values_in,
                 ),
+                "parallel": parallel,
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
-                "move_axis_to_end": False,
+                "fastpath": is_dataarray(values_in),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -485,8 +513,36 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         recast=False,
         move_axis_to_end=move_axis_to_end,
     )
-    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
+    return _cumulative(
+        values_in,
+        out=out,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        inverse=inverse,
+        parallel=parallel,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+        fastpath=True,
+    )
 
+
+def _cumulative(
+    values_in: NDArrayAny,
+    out: NDArrayAny | None,
+    axis: int,
+    mom_ndim: Mom_NDim,
+    inverse: bool,
+    parallel: bool | None,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
+    fastpath: bool,
+) -> NDArrayAny:
+    if not fastpath:
+        dtype = select_dtype(values_in, out=out, dtype=dtype)
+
+    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
     return factory_cumulative(
         mom_ndim=mom_ndim,
         inverse=inverse,
@@ -530,6 +586,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
+    order: ArrayOrderCF = ...,
     mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -543,6 +600,7 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: None = ...,
+    order: ArrayOrderCF = ...,
     mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -556,6 +614,7 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: DTypeLikeArg[FloatT],
+    order: ArrayOrderCF = ...,
     mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -569,6 +628,7 @@ def moments_to_comoments(
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = ...,
+    order: ArrayOrderCF = ...,
     mom_dims: MomDims | None = ...,
     mom_dims2: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -583,6 +643,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = None,
+    order: ArrayOrderCF = None,
     mom_dims: MomDims | None = None,
     mom_dims2: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
@@ -599,6 +660,7 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
         dimension is the moments dimension.
     {mom_moments_to_comoments}
     {dtype}
+    {order_cf}
     mom_dims : str or tuple of str
         Optional name of moment dimension of input (``mom_ndim=1``) data.  Defaults to
         ``first.dims[-mom_ndim]`` where ``first`` is either ``values`` if a DataArray
@@ -696,9 +758,13 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
         return xout
 
     # numpy
-    values = np.asarray(values, dtype=dtype)
+    values = asarray_maybe_recast(values, dtype=dtype, recast=False)
     mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
-    out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)  # type: ignore[union-attr]
+    out = np.empty(
+        (*values.shape[:-1], *mom_to_mom_shape(mom)),  # type: ignore[union-attr]
+        dtype=dtype,
+        order=order,
+    )
     for i, j in np.ndindex(*out.shape[-2:]):
         out[..., i, j] = values[..., i + j]
     return out

@@ -42,6 +42,7 @@ from .core.utils import (
 )
 from .core.validate import (
     is_dataarray,
+    is_xarray,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
@@ -538,12 +539,6 @@ def _select_nrep(
     raise ValueError(msg)
 
 
-def _check_freq(freq: NDArrayAny, ndat: int) -> None:
-    if freq.shape[1] != ndat:
-        msg = f"{freq.shape[1]=} != {ndat=}"
-        raise ValueError(msg)
-
-
 # * Resample data
 # ** overloads
 @overload
@@ -834,7 +829,6 @@ def _resample_data(
         (-2, -1),
         *axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True),
     ]
-    _check_freq(freq, data.shape[axis])
 
     return factory_resample_data(
         mom_ndim=mom_ndim,
@@ -1107,7 +1101,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
-                "fastpath": False,
+                "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -1145,7 +1139,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
 
     return _resample_vals(
         *args,
-        freq=freq_validated,
+        freq=freq_validated,  # type: ignore[arg-type]
         mom=mom,
         mom_ndim=mom_ndim,
         axis_neg=axis_neg,
@@ -1481,6 +1475,8 @@ def jackknife_data(  # noqa: PLR0913
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             use_reduce=False,
         )
+    elif not is_xarray(data_reduced):
+        data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)  # type: ignore[arg-type]
 
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
@@ -1494,8 +1490,7 @@ def jackknife_data(  # noqa: PLR0913
             output_core_dims=[core_dims],
             kwargs={
                 "mom_ndim": mom_ndim,
-                "axis": -1,
-                "move_axis_to_end": False,
+                "axis": -(mom_ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
                     mom_ndim=mom_ndim,
@@ -1507,7 +1502,7 @@ def jackknife_data(  # noqa: PLR0913
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
-                "fastpath": False,
+                "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -1525,12 +1520,22 @@ def jackknife_data(  # noqa: PLR0913
         return xout
 
     # numpy
+    axis, data = prepare_data_for_reduction(
+        data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        dtype=dtype,
+        recast=False,
+        move_axis_to_end=move_axis_to_end,
+    )
+
+    assert isinstance(data_reduced, np.ndarray)  # noqa: S101
+
     return _jackknife_data(
         data,
         data_reduced,
         mom_ndim=mom_ndim,
         axis=axis,
-        move_axis_to_end=move_axis_to_end,
         out=out,
         dtype=dtype,
         casting=casting,
@@ -1541,12 +1546,11 @@ def jackknife_data(  # noqa: PLR0913
 
 
 def _jackknife_data(
-    data: ArrayLike,
-    data_reduced: ArrayLike | xr.DataArray | xr.Dataset,
+    data: NDArrayAny,
+    data_reduced: NDArrayAny,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType,
-    move_axis_to_end: bool,
+    axis: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
@@ -1557,17 +1561,6 @@ def _jackknife_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
-
-    data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)  # type: ignore[arg-type]
-    axis, data = prepare_data_for_reduction(
-        data,
-        axis=axis,
-        mom_ndim=mom_ndim,
-        dtype=None,
-        recast=False,
-        move_axis_to_end=move_axis_to_end,
-    )
     axes_data, axes_mom = axes_data_reduction(
         mom_ndim=mom_ndim, axis=axis, out_has_axis=True
     )
@@ -1788,6 +1781,8 @@ def jackknife_vals(  # noqa: PLR0913
             on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
+    elif not is_xarray(data_reduced):
+        data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)  # type: ignore[arg-type]
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
@@ -1835,7 +1830,7 @@ def jackknife_vals(  # noqa: PLR0913
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
-                "fastpath": False,
+                "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -1865,9 +1860,11 @@ def jackknife_vals(  # noqa: PLR0913
         move_axis_to_end=move_axis_to_end,
     )
 
+    assert isinstance(data_reduced, np.ndarray)  # noqa: S101
+
     return _jackknife_vals(
         *args,
-        data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
+        data_reduced=data_reduced,  # pyright: ignore[reportUnknownArgumentType]
         mom=mom,
         mom_ndim=mom_ndim,
         axis_neg=axis_neg,
@@ -1884,7 +1881,7 @@ def _jackknife_vals(
     x: NDArrayAny,
     weight: NDArrayAny,
     *y: NDArrayAny,
-    data_reduced: ArrayLike | xr.DataArray | xr.Dataset,
+    data_reduced: NDArrayAny,
     mom: MomentsStrict,
     mom_ndim: Mom_NDim,
     axis_neg: int,
@@ -1901,7 +1898,6 @@ def _jackknife_vals(
 
     raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
 
-    data_reduced = np.asarray(data_reduced, dtype=dtype)
     if data_reduced.shape[-mom_ndim:] != mom_to_mom_shape(mom):
         msg = f"{data_reduced.shape[-mom_ndim:]=} inconsistent with {mom=}"
         raise ValueError(msg)
