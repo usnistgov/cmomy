@@ -43,6 +43,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         ArrayOrderCF,
         AxisReduce,
+        Casting,
         CoordsPolicy,
         Dims,
         DimsReduce,
@@ -250,126 +251,6 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
             return self._obj.dtype  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
         return None
 
-    def _push_data_dataarray(
-        self,
-        obj: GenXArrayT,
-        data: GenXArrayT | ArrayLike,
-        *,
-        parallel: bool | None = None,
-        keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> GenXArrayT:
-        def func(out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:
-            self._pusher(parallel).data(data, out)
-            return out
-
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            func,
-            obj,
-            data,
-            input_core_dims=[self.mom_dims, self.mom_dims],
-            output_core_dims=[self.mom_dims],
-            keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
-                apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
-                dask="parallelized",
-                output_dtypes=self._dtype or np.float64,
-            ),
-        )
-
-    def _push_datas_dataarray(
-        self,
-        obj: GenXArrayT,
-        datas: GenXArrayT | ArrayLike,
-        *,
-        axis: AxisReduce | MissingType,
-        dim: DimsReduce | MissingType,
-        parallel: bool | None,
-        keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> GenXArrayT:
-        def func(out: NDArrayAny, datas: NDArrayAny) -> NDArrayAny:
-            self._pusher(parallel).datas(datas, out)
-            return out
-
-        if is_xarray(datas):
-            axis, dim = select_axis_dim(
-                datas, axis=axis, dim=dim, mom_ndim=self._mom_ndim
-            )
-            if self._dtype is not None:
-                datas = datas.astype(self._dtype, copy=False)  # type: ignore[assignment]
-
-        elif is_dataarray(obj):
-            axis, datas = prepare_data_for_reduction(
-                datas,  # type: ignore[arg-type]
-                axis=axis,
-                mom_ndim=self._mom_ndim,
-                dtype=self._dtype,
-                move_axis_to_end=True,
-                recast=True,
-            )
-            dim = "_dummy123"
-        else:
-            msg = "Must pass xarray object of same type as `self.obj` or arraylike if `self.obj` is a dataarray."
-            raise ValueError(msg)
-
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            func,
-            obj,
-            datas,
-            input_core_dims=[self._mom_dims, [dim, *self._mom_dims]],
-            output_core_dims=[self._mom_dims],
-            keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
-                apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
-                dask="parallelized",
-                output_dtypes=self._dtype or np.float64,
-            ),
-        )
-
-    def _push_val_dataarray(
-        self,
-        obj: GenXArrayT,
-        x: ArrayLike | xr.DataArray | xr.Dataset,
-        *y: ArrayLike | xr.DataArray | xr.Dataset,
-        weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
-        parallel: bool | None = None,
-        keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> GenXArrayT:
-        self._check_y(y, self._mom_ndim)
-
-        def func(
-            out: NDArrayAny,
-            *args: NDArrayAny,
-        ) -> NDArrayAny:
-            self._pusher(parallel).val(out, *args)
-            return out
-
-        weight = 1.0 if weight is None else weight
-        core_dims: list[Any] = [self.mom_dims, *([[]] * (2 + len(y)))]
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            func,
-            obj,
-            x,
-            weight,
-            *y,
-            input_core_dims=core_dims,
-            output_core_dims=[self.mom_dims],
-            keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
-                apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
-                dask="parallelized",
-                output_dtypes=self._dtype or np.float64,
-            ),
-        )
-
     def _push_vals_dataarray(
         self,
         obj: GenXArrayT,
@@ -437,9 +318,44 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         self,
         data: GenXArrayT | ArrayLike,
         *,
+        casting: Casting = "same_kind",
         parallel: bool | None = False,
+        keep_attrs: KeepAttrs = True,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
-        self._obj = self._push_data_dataarray(self._obj, data, parallel=parallel)
+        """
+        Parameters
+        ----------
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
+        """
+
+        def func(out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:
+            self._pusher(parallel).data(
+                data,
+                out,
+                casting=casting,
+                signature=(out.dtype, out.dtype),
+            )
+            return out
+
+        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+            func,
+            self._obj,
+            data,
+            input_core_dims=[self._mom_dims, self._mom_dims],
+            output_core_dims=[self._mom_dims],
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=self._dtype or np.float64,
+            ),
+        )
+
         return self
 
     @docfiller_inherit_abc()
@@ -449,45 +365,195 @@ class CentralWrapperXArray(CentralWrapperABC[GenXArrayT]):
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        casting: Casting = "same_kind",
         parallel: bool | None = None,
+        keep_attrs: KeepAttrs = True,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
-        self._obj = self._push_datas_dataarray(
-            self._obj, datas, axis=axis, dim=dim, parallel=parallel
+        """
+        Parameters
+        ----------
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
+        """
+
+        def func(out: NDArrayAny, datas: NDArrayAny) -> NDArrayAny:
+            self._pusher(parallel).datas(
+                datas,
+                out,
+                casting=casting,
+                signature=(out.dtype, out.dtype),
+            )
+            return out
+
+        if is_xarray(datas):
+            axis, dim = select_axis_dim(
+                datas, axis=axis, dim=dim, mom_ndim=self._mom_ndim
+            )
+
+        elif is_dataarray(self._obj):
+            axis, datas = prepare_data_for_reduction(
+                datas,  # type: ignore[arg-type]
+                axis=axis,
+                mom_ndim=self._mom_ndim,
+                dtype=self._dtype,
+                move_axis_to_end=True,
+                recast=False,
+            )
+            dim = "_dummy123"
+        else:
+            msg = "Must pass xarray object of same type as `self.obj` or arraylike if `self.obj` is a dataarray."
+            raise ValueError(msg)
+
+        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+            func,
+            self._obj,
+            datas,
+            input_core_dims=[self._mom_dims, [dim, *self._mom_dims]],
+            output_core_dims=[self._mom_dims],
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=self._dtype or np.float64,
+            ),
         )
+
         return self
 
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: ArrayLike | xr.DataArray | xr.Dataset,
-        *y: ArrayLike | xr.DataArray | xr.Dataset,
-        weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+        x: ArrayLike | GenXArrayT,
+        *y: ArrayLike | xr.DataArray | GenXArrayT,
+        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
+        casting: Casting = "same_kind",
         parallel: bool | None = False,
+        keep_attrs: KeepAttrs = True,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
-        self._obj = self._push_val_dataarray(
-            self._obj, x, *y, weight=weight, parallel=parallel
+        """
+        Parameters
+        ----------
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
+        """
+        self._check_y(y, self._mom_ndim)
+
+        def func(
+            out: NDArrayAny,
+            *args: NDArrayAny,
+        ) -> NDArrayAny:
+            self._pusher(parallel).val(
+                out,
+                *args,
+                casting=casting,
+                signature=(out.dtype,) * (len(args) + 1),
+            )
+            return out
+
+        core_dims: list[Any] = [self.mom_dims, *([[]] * (2 + len(y)))]
+        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+            func,
+            self._obj,
+            x,
+            1.0 if weight is None else weight,
+            *y,
+            input_core_dims=core_dims,
+            output_core_dims=[self.mom_dims],
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=self._dtype or np.float64,
+            ),
         )
+
         return self
 
     @docfiller_inherit_abc()
     def push_vals(
         self,
-        x: ArrayLike | xr.DataArray | xr.Dataset,
-        *y: ArrayLike | xr.DataArray | xr.Dataset,
-        weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+        x: ArrayLike | GenXArrayT,
+        *y: ArrayLike | xr.DataArray | GenXArrayT,
+        weight: ArrayLike | xr.DataArray | GenXArrayT | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        casting: Casting = "same_kind",
         parallel: bool | None = None,
+        keep_attrs: KeepAttrs = True,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
-        self._obj = self._push_vals_dataarray(
+        """
+        Parameters
+        ----------
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
+        """
+        self._check_y(y, self._mom_ndim)
+        weight = 1.0 if weight is None else weight
+
+        xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
+        if is_xarray(x):
+            dim, input_core_dims, xargs = xprepare_values_for_reduction(
+                x,
+                weight,
+                *y,
+                axis=axis,
+                dim=dim,
+                dtype=self._dtype,
+                recast=False,
+                narrays=self._mom_ndim + 1,
+            )
+        else:
+            axis, xargs = prepare_values_for_reduction(
+                x,
+                weight,
+                *y,
+                axis=axis,
+                dtype=self._dtype,
+                recast=False,
+                narrays=self._mom_ndim + 1,
+                move_axis_to_end=True,
+            )
+            dim = "_dummy123"
+            input_core_dims = [[dim]] * len(xargs)
+
+        def func(
+            out: NDArrayAny,
+            *args: NDArrayAny,
+        ) -> NDArrayAny:
+            self._pusher(parallel).vals(
+                out,
+                *args,
+                casting=casting,
+                signature=(out.dtype,) * (len(out) + 1),
+            )
+            return out
+
+        self._obj = xr.apply_ufunc(  # type: ignore[no-any-return]
+            func,
             self._obj,
-            x,
-            *y,
-            weight=weight,
-            axis=axis,
-            dim=dim,
-            parallel=parallel,
+            *xargs,
+            input_core_dims=[self._mom_dims, *input_core_dims],  # type: ignore[has-type]
+            output_core_dims=[self._mom_dims],
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=self._dtype or np.float64,
+            ),
         )
+
         return self
 
     # ** Operators ------------------------------------------------------------

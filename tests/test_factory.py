@@ -119,10 +119,10 @@ def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
             ),
         ),
         # resample_vals
-        (factory_resample_vals, 1, False, resample.resample_vals_fromzero),
-        (factory_resample_vals, 1, True, resample_parallel.resample_vals_fromzero),
-        (factory_resample_vals, 2, False, resample_cov.resample_vals_fromzero),
-        (factory_resample_vals, 2, True, resample_cov_parallel.resample_vals_fromzero),
+        (factory_resample_vals, 1, False, resample.resample_vals),
+        (factory_resample_vals, 1, True, resample_parallel.resample_vals),
+        (factory_resample_vals, 2, False, resample_cov.resample_vals),
+        (factory_resample_vals, 2, True, resample_cov_parallel.resample_vals),
         # resample_data
         (factory_resample_data, 1, False, resample.resample_data_fromzero),
         (
@@ -179,34 +179,34 @@ def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
             resample_cov_parallel.jackknife_data_fromzero,
         ),
         # reduce_vals
-        (factory_reduce_vals, 1, False, push.reduce_vals_fromzero),
-        (factory_reduce_vals, 1, True, push_parallel.reduce_vals_fromzero),
-        (factory_reduce_vals, 2, False, push_cov.reduce_vals_fromzero),
-        (factory_reduce_vals, 2, True, push_cov_parallel.reduce_vals_fromzero),
+        (factory_reduce_vals, 1, False, push.reduce_vals),
+        (factory_reduce_vals, 1, True, push_parallel.reduce_vals),
+        (factory_reduce_vals, 2, False, push_cov.reduce_vals),
+        (factory_reduce_vals, 2, True, push_cov_parallel.reduce_vals),
         # reduce_data
         (factory_reduce_data, 1, False, push.reduce_data_fromzero),
         (factory_reduce_data, 1, True, push_parallel.reduce_data_fromzero),
         (factory_reduce_data, 2, False, push_cov.reduce_data_fromzero),
         (factory_reduce_data, 2, True, push_cov_parallel.reduce_data_fromzero),
-        # reduce_data_grouped_fromzero
-        (factory_reduce_data_grouped, 1, False, indexed.reduce_data_grouped_fromzero),
+        # reduce_data_grouped
+        (factory_reduce_data_grouped, 1, False, indexed.reduce_data_grouped),
         (
             factory_reduce_data_grouped,
             1,
             True,
-            indexed_parallel.reduce_data_grouped_fromzero,
+            indexed_parallel.reduce_data_grouped,
         ),
         (
             factory_reduce_data_grouped,
             2,
             False,
-            indexed_cov.reduce_data_grouped_fromzero,
+            indexed_cov.reduce_data_grouped,
         ),
         (
             factory_reduce_data_grouped,
             2,
             True,
-            indexed_cov_parallel.reduce_data_grouped_fromzero,
+            indexed_cov_parallel.reduce_data_grouped,
         ),
         # reduce_data_indexed
         (

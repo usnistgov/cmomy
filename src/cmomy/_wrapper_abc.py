@@ -13,13 +13,8 @@ import numpy as np
 import xarray as xr
 
 from ._lib.factory import factory_pusher, parallel_heuristic
-from .core.array_utils import axes_data_reduction
 from .core.docstrings import docfiller
 from .core.missing import MISSING
-from .core.prepare import (
-    prepare_data_for_reduction,
-    prepare_values_for_reduction,
-)
 from .core.typing import GenArrayT
 from .core.utils import mom_shape_to_mom
 from .core.validate import validate_floating_dtype, validate_mom_ndim
@@ -31,7 +26,7 @@ if TYPE_CHECKING:
         NoReturn,
     )
 
-    from numpy.typing import ArrayLike, DTypeLike, NDArray
+    from numpy.typing import ArrayLike, DTypeLike
 
     from ._lib.factory import Pusher
     from .core.typing import (
@@ -48,7 +43,6 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         NDArrayAny,
-        ScalarT,
         SelectMoment,
     )
     from .core.typing_compat import Self
@@ -300,94 +294,13 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             mom_ndim=self._mom_ndim, parallel=parallel_heuristic(parallel, size=size)
         )
 
-    # Low level pushers
-    def _push_data_numpy(
-        self,
-        out: NDArray[ScalarT],
-        data: ArrayLike,
-        *,
-        parallel: bool | None = None,
-    ) -> NDArray[ScalarT]:
-        data = np.asarray(data, dtype=out.dtype)
-        self._pusher(parallel).data(data, out)
-        return out
-
-    def _push_datas_numpy(
-        self,
-        out: NDArray[ScalarT],
-        datas: ArrayLike,
-        *,
-        axis: AxisReduce | MissingType,
-        parallel: bool | None = None,
-    ) -> NDArray[ScalarT]:
-        axis, datas = prepare_data_for_reduction(
-            data=datas,
-            axis=axis,
-            mom_ndim=self.mom_ndim,
-            dtype=out.dtype,
-            recast=True,
-        )
-        axes = axes_data_reduction(mom_ndim=self.mom_ndim, axis=axis)
-
-        self._pusher(parallel).datas(
-            datas,
-            out,
-            axes=axes,
-        )
-        return out
-
-    def _push_val_numpy(
-        self,
-        out: NDArray[ScalarT],
-        x: ArrayLike,
-        weight: ArrayLike | None,
-        *y: ArrayLike,
-        parallel: bool | None = None,
-    ) -> NDArray[ScalarT]:
-        self._check_y(y, self.mom_ndim)
-
-        weight = 1.0 if weight is None else weight
-        x = np.asarray(x, dtype=out.dtype)
-        self._pusher(parallel).val(
-            out,
-            x,
-            *(np.asarray(a, dtype=out.dtype) for a in (weight, *y)),
-        )
-        return out
-
-    def _push_vals_numpy(
-        self,
-        out: NDArray[ScalarT],
-        x: ArrayLike,
-        weight: ArrayLike | None,
-        *y: ArrayLike,
-        axis: AxisReduce | MissingType,
-        parallel: bool | None = None,
-    ) -> NDArray[ScalarT]:
-        self._check_y(y, self._mom_ndim)
-
-        weight = 1.0 if weight is None else weight
-        axis, args = prepare_values_for_reduction(
-            x,
-            weight,
-            *y,
-            axis=axis,
-            dtype=out.dtype,
-            narrays=self._mom_ndim + 1,
-        )
-
-        self._pusher(parallel).vals(
-            out,
-            *args,
-        )
-        return out
-
     @abstractmethod
     @docfiller.decorate
     def push_data(
         self,
         data: Any,
         *,
+        casting: Casting = "same_kind",
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -397,6 +310,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         ----------
         data :
             Accumulation array conformable to ``self.obj``.
+        {casting}
         {parallel}
 
         Returns
@@ -412,6 +326,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         datas: Any,
         *,
         axis: AxisReduce = -1,
+        casting: Casting = "same_kind",
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -422,6 +337,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         datas : array-like, {t_array}
             Collection of accumulation arrays to push onto ``self``.
         {axis_data_and_dim}
+        {casting}
         {parallel}
 
         Returns
@@ -437,6 +353,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
+        casting: Casting = "same_kind",
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -450,6 +367,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
             Additional values (needed if ``mom_ndim > 1``)
         weight : int, float, array-like, {t_array}
             Weight of each sample.  If scalar, broadcast `w.shape` to `x0.shape`.
+        {casting}
         {parallel}
 
         Returns
@@ -470,6 +388,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         *y: ArrayLike,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
+        casting: Casting = "same_kind",
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -484,6 +403,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         weight : int, float, array-like, optional
             Weight of each sample.  If scalar, broadcast to `x0.shape`
         {axis_and_dim}
+        {casting}
         {parallel}
 
         Returns

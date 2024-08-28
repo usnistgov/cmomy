@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING
 import numpy as np
 import xarray as xr
 
+from cmomy.core.utils import mom_to_mom_shape
+
 from .array_utils import (
     asarray_maybe_recast,
     normalize_axis_index,
@@ -32,10 +34,12 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
+        ArrayOrderCF,
         AxisReduce,
         DimsReduce,
         MissingType,
         Mom_NDim,
+        MomentsStrict,
         NDArrayAny,
         ScalarT,
     )
@@ -232,7 +236,7 @@ def xprepare_secondary_value_for_reduction(
     if isinstance(x, xr.Dataset):
         return x
     if isinstance(x, xr.DataArray):
-        return x.astype(dtype, copy=False) if recast and dtype is not None else x  # pyright: ignore[reportUnknownMemberType]
+        return x.astype(dtype, copy=False) if (recast and dtype is not None) else x  # pyright: ignore[reportUnknownMemberType]
     return prepare_secondary_value_for_reduction(
         x,
         axis=axis,
@@ -286,3 +290,32 @@ def xprepare_out_for_resample_data(
 
     shift = 0 if mom_ndim is None else mom_ndim
     return np.moveaxis(out, axis, -(shift + 1))
+
+
+def prepare_out_from_values(
+    out: NDArray[ScalarT] | None,
+    *args: NDArray[ScalarT],
+    mom: MomentsStrict,
+    axis_neg: int,
+    axis_new_size: int | None = None,
+    dtype: DTypeLike,
+    order: ArrayOrderCF = "C",
+) -> NDArray[ScalarT]:
+    """Pass in axis if this is a reduction and will be removing axis_neg"""
+    if out is not None:
+        out.fill(0.0)
+        return out
+
+    val_shape: tuple[int, ...] = np.broadcast_shapes(
+        args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
+    )
+
+    # need to normalize
+    axis = normalize_axis_index(axis_neg, len(val_shape))
+    if axis_new_size is None:
+        val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
+    else:
+        val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
+
+    out_shape = (*val_shape, *mom_to_mom_shape(mom))
+    return np.zeros(out_shape, dtype=dtype, order=order)

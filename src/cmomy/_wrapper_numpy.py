@@ -9,7 +9,14 @@ import xarray as xr
 
 from cmomy.core.validate import validate_floating_dtype
 
+from .core.array_utils import (
+    axes_data_reduction,
+)
 from .core.compat import copy_if_needed
+from .core.prepare import (
+    prepare_data_for_reduction,
+    prepare_values_for_reduction,
+)
 from .core.utils import mom_to_mom_shape
 from .core.validate import (
     validate_axis,
@@ -149,6 +156,11 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
             msg = "Can only use __getitem__ with extra dimensions."
             raise ValueError(msg)
         return self._new_like(obj=self.obj[key])
+
+    @property
+    def dtype(self) -> np.dtype[ScalarT]:
+        """Dtype of wrapped array."""
+        return self._obj.dtype
 
     def __iter__(self) -> Iterator[Self]:
         for k in range(self._obj.shape[0]):
@@ -313,6 +325,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         self,
         data: ArrayLike,
         *,
+        casting: Casting = "same_kind",
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -340,7 +353,12 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         array([20.    ,  0.5124,  0.1033])
 
         """
-        self._obj = self._push_data_numpy(self._obj, data, parallel=parallel)
+        self._pusher(parallel).data(
+            data,
+            self._obj,
+            casting=casting,
+            signature=(self.dtype, self.dtype),
+        )
         return self
 
     @docfiller_inherit_abc()
@@ -349,6 +367,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         datas: ArrayLike,
         *,
         axis: AxisReduce = -1,
+        casting: Casting = "same_kind",
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -370,9 +389,23 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         <CentralWrapperNumpy(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
-        self._obj = self._push_datas_numpy(
-            self._obj, datas, axis=axis, parallel=parallel
+        axis, datas = prepare_data_for_reduction(
+            data=datas,
+            axis=axis,
+            mom_ndim=self._mom_ndim,
+            dtype=self.dtype,
+            recast=False,
         )
+        axes = axes_data_reduction(mom_ndim=self._mom_ndim, axis=axis)
+
+        self._pusher(parallel).datas(
+            datas,
+            self._obj,
+            axes=axes,
+            casting=casting,
+            signature=(self.dtype, self.dtype),
+        )
+
         return self
 
     @docfiller_inherit_abc()
@@ -381,6 +414,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = None,
+        casting: Casting = "same_kind",
         parallel: bool | None = False,
     ) -> Self:
         """
@@ -420,7 +454,16 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        self._obj = self._push_val_numpy(self._obj, x, weight, *y, parallel=parallel)
+        self._check_y(y, self._mom_ndim)
+        weight = 1.0 if weight is None else weight
+        self._pusher(parallel).val(
+            self._obj,
+            x,
+            1.0 if weight is None else weight,
+            *y,
+            casting=casting,
+            signature=(self.dtype,) * (len(y) + 3),
+        )
         return self
 
     @docfiller_inherit_abc()
@@ -430,6 +473,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
         *y: ArrayLike,
         axis: AxisReduce = -1,
         weight: ArrayLike | None = None,
+        casting: Casting = "same_kind",
         parallel: bool | None = None,
     ) -> Self:
         """
@@ -466,8 +510,20 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[ScalarT]], Generic[ScalarT])
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        self._obj = self._push_vals_numpy(
-            self._obj, x, weight, *y, axis=axis, parallel=parallel
+        self._check_y(y, self._mom_ndim)
+
+        axis, args = prepare_values_for_reduction(
+            x,
+            1.0 if weight is None else weight,
+            *y,
+            axis=axis,
+            dtype=self.dtype,
+            recast=False,
+            narrays=self._mom_ndim + 1,
+        )
+
+        self._pusher(parallel).vals(
+            self._obj, *args, casting=casting, signature=(self.dtype,) * (len(args) + 1)
         )
         return self
 

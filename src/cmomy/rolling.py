@@ -39,6 +39,7 @@ from .core.utils import (
     mom_to_mom_shape,
 )
 from .core.validate import (
+    is_dataarray,
     validate_axis,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -535,7 +536,7 @@ def _rolling_data(
         data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=None,
+        dtype=dtype,
         move_axis_to_end=move_axis_to_end,
         recast=False,
     )
@@ -779,9 +780,9 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload] # noqa: PLR0913
     """
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
+    dtype = select_dtype(x, out=out, dtype=dtype)
 
     if isinstance(x, (xr.DataArray, xr.Dataset)):
-        dtype = select_dtype(x, out=out, dtype=dtype)
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -790,6 +791,7 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload] # noqa: PLR0913
             dim=dim,
             narrays=mom_ndim + 1,
             dtype=dtype,
+            recast=False,
         )
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
@@ -801,12 +803,11 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload] # noqa: PLR0913
             kwargs={
                 "mom": mom,
                 "mom_ndim": mom_ndim,
-                "axis": -1,
+                "axis_neg": -1,
                 "window": window,
                 "min_periods": min_periods,
                 "center": center,
                 "zero_missing_weights": zero_missing_weights,
-                "move_axis_to_end": False,
                 "out": xprepare_out_for_resample_vals(
                     target=x,
                     out=out,
@@ -818,6 +819,7 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload] # noqa: PLR0913
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
+                "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -832,46 +834,7 @@ def rolling_vals(  # pyright: ignore[reportOverlappingOverload] # noqa: PLR0913
             xout = xout.transpose(..., *x.dims, *mom_dims)
         return xout
 
-    return _rolling_vals(
-        x,
-        weight,
-        *y,
-        mom=mom,
-        mom_ndim=mom_ndim,
-        axis=axis,
-        window=window,
-        min_periods=min_periods,
-        center=center,
-        zero_missing_weights=zero_missing_weights,
-        move_axis_to_end=move_axis_to_end,
-        out=out,
-        dtype=dtype,
-        casting=casting,
-        order=order,
-        parallel=parallel,
-    )
-
-
-def _rolling_vals(
-    x: ArrayLike,
-    weight: ArrayLike | xr.DataArray | xr.Dataset,
-    *y: ArrayLike | xr.DataArray | xr.Dataset,
-    mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
-    window: int,
-    axis: AxisReduce | MissingType,
-    min_periods: int | None,
-    center: bool,
-    zero_missing_weights: bool,
-    move_axis_to_end: bool,
-    out: NDArrayAny | None,
-    dtype: DTypeLike,
-    casting: Casting,
-    order: ArrayOrder,
-    parallel: bool | None,
-) -> NDArrayAny:
     # Numpy
-    dtype = select_dtype(x, out=out, dtype=dtype)
     axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
@@ -879,9 +842,51 @@ def _rolling_vals(
         axis=axis,
         narrays=mom_ndim + 1,
         dtype=dtype,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
 
+    return _rolling_vals(
+        *args,
+        mom=mom,
+        mom_ndim=mom_ndim,
+        axis_neg=axis_neg,
+        window=window,
+        min_periods=min_periods,
+        center=center,
+        zero_missing_weights=zero_missing_weights,
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+        parallel=parallel,
+        fastpath=True,
+    )
+
+
+def _rolling_vals(
+    x: NDArrayAny,
+    weight: NDArrayAny,
+    *y: NDArrayAny,
+    mom: MomentsStrict,
+    mom_ndim: Mom_NDim,
+    window: int,
+    axis_neg: int,
+    min_periods: int | None,
+    center: bool,
+    zero_missing_weights: bool,
+    out: NDArrayAny | None,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
+    parallel: bool | None,
+    fastpath: bool = False,
+) -> NDArrayAny:
+    # Numpy
+    if not fastpath:
+        dtype = select_dtype(x, out=out, dtype=dtype)
+
+    args = [x, weight, *y]
     axes_args: AxesGUFunc = get_axes_from_values(*args, axis_neg=axis_neg)
 
     shift = (-window // 2) + 1 if center else None
@@ -913,9 +918,9 @@ def _rolling_vals(
         *args,
         out=out,
         axes=axes,
-        dtype=dtype,
         casting=casting,
         order=order,
+        signature=(dtype, np.int64, np.int64, *(dtype,) * (len(args) + 1)),
     )
 
     if shift is not None:
@@ -1189,9 +1194,9 @@ def _rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
         data,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=None,
-        move_axis_to_end=move_axis_to_end,
+        dtype=dtype,
         recast=False,
+        move_axis_to_end=move_axis_to_end,
     )
 
     alpha = asarray_maybe_recast(alpha, dtype, recast=False)
@@ -1450,6 +1455,7 @@ def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR
             dim=dim,
             narrays=mom_ndim + 2,
             dtype=dtype,
+            recast=False,
         )
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
@@ -1501,6 +1507,7 @@ def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR
         axis=axis,
         narrays=mom_ndim + 2,
         dtype=dtype,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
 
@@ -1572,9 +1579,9 @@ def _rolling_exp_vals(
         *args,
         out=out,
         axes=axes,
-        dtype=dtype,
         casting=casting,
         order=order,
+        signature=(dtype, dtype, np.bool_, np.int64, *(dtype,) * (len(args) + 1)),
     )
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)  # pyright: ignore[reportReturnType, reportArgumentType]

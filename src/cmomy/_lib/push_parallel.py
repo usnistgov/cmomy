@@ -35,10 +35,6 @@ def push_val(
     _push.push_val(x, w, out)
 
 
-# NOTE(wpk): I've played with changing to to
-# dummy_mom, x, w -> out
-# (like for reduce_vals_fromzero)
-# But it's about 10% slower than this.
 @_decorator(
     "(mom),(sample),(sample)",
     [
@@ -55,28 +51,6 @@ def reduce_vals(
         _push.push_val(x[i], w[i], out)
 
 
-@_decorator(
-    "(mom),(sample),(sample) -> (mom)",
-    [
-        (nb.float32[:], nb.float32[:], nb.float32[:], nb.float32[:]),
-        (nb.float64[:], nb.float64[:], nb.float64[:], nb.float64[:]),
-    ],
-    writable=None,
-)
-def reduce_vals_fromzero(
-    dummy_mom: NDArray[FloatT],  # noqa: ARG001
-    x: NDArray[FloatT],
-    w: NDArray[FloatT],
-    out: NDArray[FloatT],
-) -> None:
-    out[...] = 0.0
-    for i in range(x.shape[0]):
-        _push.push_val(x[i], w[i], out)
-
-
-# NOTE(wpk): Also played with converting this to
-# data -> out
-# but a bit slower than doing inplace update
 @_decorator(
     "(mom),(mom)",
     signature=[

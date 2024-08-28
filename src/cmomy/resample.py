@@ -24,7 +24,6 @@ from ._lib.factory import (
 from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
-    dummy_array,
     get_axes_from_values,
     select_dtype,
 )
@@ -32,6 +31,7 @@ from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
     prepare_data_for_reduction,
+    prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
     xprepare_out_for_resample_vals,
@@ -41,6 +41,7 @@ from .core.utils import (
     mom_to_mom_shape,
 )
 from .core.validate import (
+    is_dataarray,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
@@ -65,6 +66,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrder,
+        ArrayOrderCF,
         AxesGUFunc,
         AxisReduce,
         Casting,
@@ -757,8 +759,7 @@ def resample_data(  # noqa: PLR0913
             output_core_dims=[[rep_dim, *mom_dims]],  # type: ignore[misc]
             kwargs={
                 "mom_ndim": mom_ndim,
-                "axis": -1,
-                "move_axis_to_end": False,
+                "axis": -(mom_ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
                     mom_ndim=mom_ndim,
@@ -770,7 +771,7 @@ def resample_data(  # noqa: PLR0913
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
-                "fastpath": False,
+                "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -787,6 +788,17 @@ def resample_data(  # noqa: PLR0913
             xout = xout.transpose(*dims_order)
         return xout
 
+    # Numpy
+    axis, data = prepare_data_for_reduction(
+        data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        dtype=None,
+        recast=False,
+        move_axis_to_end=move_axis_to_end,
+    )
+    assert isinstance(freq, np.ndarray)  # noqa: S101
+
     return _resample_data(
         data,
         freq,
@@ -797,44 +809,31 @@ def resample_data(  # noqa: PLR0913
         casting=casting,
         order=order,
         parallel=parallel,
-        move_axis_to_end=move_axis_to_end,
         fastpath=True,
     )
 
 
 def _resample_data(
-    data: ArrayLike,
-    freq: ArrayLike | xr.DataArray | xr.Dataset | None = None,
+    data: NDArrayAny,
+    freq: NDArrayAny,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType,
+    axis: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
     order: ArrayOrder,
     parallel: bool | None,
-    move_axis_to_end: bool,
     fastpath: bool,
 ) -> NDArrayAny:
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
-
-    freq = asarray_maybe_recast(freq, dtype=dtype, recast=False)  # type: ignore[arg-type]
-    axis, data = prepare_data_for_reduction(
-        data,
-        axis=axis,
-        mom_ndim=mom_ndim,
-        dtype=None,
-        recast=False,
-        move_axis_to_end=move_axis_to_end,
-    )
 
     # include inner core dimensions for freq
     axes = [
         (-2, -1),
         *axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True),
     ]
-
     _check_freq(freq, data.shape[axis])
 
     return factory_resample_data(
@@ -868,7 +867,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -893,7 +892,7 @@ def resample_vals(
     out: None = ...,
     dtype: None = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -918,7 +917,7 @@ def resample_vals(
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -943,7 +942,7 @@ def resample_vals(
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -968,7 +967,7 @@ def resample_vals(
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -996,7 +995,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderCF = None,
     parallel: bool | None = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
@@ -1026,7 +1025,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
     {out}
     {dtype}
     {casting}
-    {order}
+    {order_cf}
     {parallel}
     {dim}
     {rep_dim}
@@ -1074,6 +1073,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
             axis=axis,
             dim=dim,
             dtype=dtype,
+            recast=False,
             narrays=mom_ndim + 1,
         )
 
@@ -1138,6 +1138,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
         *y,
         axis=axis,
         dtype=dtype,
+        recast=False,
         narrays=mom_ndim + 1,
         move_axis_to_end=move_axis_to_end,
     )
@@ -1158,52 +1159,54 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
 
 
 def _resample_vals(
-    x: NDArrayAny,
-    weight: NDArrayAny,
-    *y: NDArrayAny,
-    freq: ArrayLike | xr.DataArray | xr.Dataset | None,
+    # x, w, *y
+    *args: NDArrayAny,
+    freq: NDArrayAny,
     mom: MomentsStrict,
     mom_ndim: Mom_NDim,
     axis_neg: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderCF,
     parallel: bool | None,
     fastpath: bool,
 ) -> NDArrayAny:
-    args = [x, weight, *y]
     if not fastpath:
-        dtype = select_dtype(x, out=out, dtype=dtype)
-        args = [np.asarray(a, dtype=dtype) for a in args]
+        dtype = select_dtype(args[0], out=out, dtype=dtype)
 
-    freq = np.asarray(freq, dtype=dtype)
-    dummy_mom = dummy_array(mom_to_mom_shape(mom), dtype=dtype)
+    out = prepare_out_from_values(
+        out,
+        *args,
+        mom=mom,
+        axis_neg=axis_neg,
+        axis_new_size=freq.shape[0],
+        dtype=dtype,
+        order=order,
+    )
 
     axes: AxesGUFunc = [
-        # dummy
-        tuple(range(-mom_ndim, 0)),
+        # out
+        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
         # freq
         (-2, -1),
         # x, weight, *y
         *get_axes_from_values(*args, axis_neg=axis_neg),
-        # out
-        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
     ]
 
-    return factory_resample_vals(
+    factory_resample_vals(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * mom_ndim),
     )(
-        dummy_mom,
+        out,
         freq,
         *args,
-        out=out,
         axes=axes,
-        dtype=dtype,
         casting=casting,
         order=order,
+        signature=(dtype,) * (len(args) + 2),
     )
+    return out
 
 
 # * Jackknife resampling
@@ -1794,6 +1797,7 @@ def jackknife_vals(  # noqa: PLR0913
             axis=axis,
             dim=dim,
             dtype=dtype,
+            recast=False,
             narrays=mom_ndim + 1,
         )
         mom_dims = validate_mom_dims(
@@ -1856,6 +1860,7 @@ def jackknife_vals(  # noqa: PLR0913
         *y,
         axis=axis,
         dtype=dtype,
+        recast=False,
         narrays=mom_ndim + 1,
         move_axis_to_end=move_axis_to_end,
     )
@@ -1893,7 +1898,6 @@ def _jackknife_vals(
     args = [x, weight, *y]
     if not fastpath:
         dtype = select_dtype(x, out=out, dtype=dtype)
-        args = [np.asarray(a, dtype=dtype) for a in args]
 
     raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
 

@@ -181,6 +181,8 @@ def _dummy_docstrings() -> None:
         option is ignored.
     order : {"C", "F", "A", "K"}, optional
         Order argument to :func:`numpy.asarray`.
+    order_cf | order : {"C", "F"}, optional
+        Order argument to :func:`numpy.zeros`.
     weight : array-like, optional
         Optional weights. Can be scalar, 1d array of length
         ``args[0].shape[axis]`` or array of same form as ``args[0]``.

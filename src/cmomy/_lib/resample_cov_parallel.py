@@ -58,34 +58,31 @@ def resample_data_fromzero(
 
 
 @_vectorize(
-    "(mom0,mom1),(replicate,sample),(sample),(sample),(sample) -> (replicate,mom0,mom1)",
+    "(replicate,mom0,mom1),(replicate,sample),(sample),(sample),(sample)",
     [
         (
-            nb.float32[:, :],
-            nb.float32[:, :],
-            nb.float32[:],
-            nb.float32[:],
-            nb.float32[:],
             nb.float32[:, :, :],
+            nb.float32[:, :],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
         ),
         (
-            nb.float64[:, :],
-            nb.float64[:, :],
-            nb.float64[:],
-            nb.float64[:],
-            nb.float64[:],
             nb.float64[:, :, :],
+            nb.float64[:, :],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
         ),
     ],
     writable=None,
 )
-def resample_vals_fromzero(
-    dummy_mom: NDArray[FloatT],  # noqa: ARG001
+def resample_vals(
+    out: NDArray[FloatT],
     freq: NDArray[FloatT],
     x0: NDArray[FloatT],
     w: NDArray[FloatT],
     x1: NDArray[FloatT],
-    out: NDArray[FloatT],
 ) -> None:
     nrep, nsamp = freq.shape
 
@@ -93,8 +90,6 @@ def resample_vals_fromzero(
     assert len(x0) == nsamp
     assert len(x1) == nsamp
     assert out.shape[0] == nrep
-
-    out[...] = 0.0
 
     for irep in range(freq.shape[0]):
         for isamp in range(freq.shape[1]):

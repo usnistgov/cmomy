@@ -19,8 +19,8 @@ from ._lib.factory import (
     parallel_heuristic,
 )
 from .core.array_utils import (
+    asarray_maybe_recast,
     axes_data_reduction,
-    dummy_array,
     get_axes_from_values,
     normalize_axis_tuple,
     optional_keepdims,
@@ -30,12 +30,14 @@ from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
     prepare_data_for_reduction,
+    prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
     xprepare_values_for_reduction,
 )
 from .core.utils import mom_to_mom_shape
 from .core.validate import (
+    is_dataarray,
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -58,6 +60,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrder,
+        ArrayOrderCF,
         ArrayT,
         AxesGUFunc,
         AxisReduce,
@@ -98,7 +101,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
     # xarray specific
@@ -119,7 +122,7 @@ def reduce_vals(
     out: None = ...,
     dtype: None = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
     # xarray specific
@@ -140,7 +143,7 @@ def reduce_vals(
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
     # xarray specific
@@ -161,7 +164,7 @@ def reduce_vals(
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
     # xarray specific
@@ -182,7 +185,7 @@ def reduce_vals(
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
     # xarray specific
@@ -205,7 +208,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderCF = None,
     keepdims: bool = False,
     parallel: bool | None = None,
     # xarray specific
@@ -233,7 +236,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     {out}
     {dtype}
     {casting}
-    {order}
+    {order_cf}
     {keepdims}
     {parallel}
     {dim}
@@ -269,6 +272,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
             dim=dim,
             narrays=mom_ndim + 1,
             dtype=dtype,
+            recast=False,
         )
 
         xout: GenXArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -287,7 +291,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
-                "fastpath": False,
+                "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -312,6 +316,7 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
         *y,
         axis=axis,
         dtype=dtype,
+        recast=False,
         narrays=mom_ndim + 1,
         move_axis_to_end=False,
     )
@@ -332,48 +337,50 @@ def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
 
 
 def _reduce_vals(
-    x: NDArrayAny,
-    weight: NDArrayAny,
-    *y: NDArrayAny,
+    # x, w, *y
+    *args: NDArrayAny,
     mom: MomentsStrict,
     mom_ndim: Mom_NDim,
     axis_neg: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderCF,
     parallel: bool | None,
     keepdims: bool,
     fastpath: bool = False,
 ) -> NDArrayAny:
-    args = [x, weight, *y]
     if not fastpath:
-        dtype = select_dtype(x, out=out, dtype=dtype)
-        args = [np.asarray(a, dtype=dtype) for a in args]
+        dtype = select_dtype(args[0], out=out, dtype=dtype)
 
-    dummy_mom = dummy_array(mom_to_mom_shape(mom), dtype=dtype)
+    out = prepare_out_from_values(
+        out,
+        *args,
+        mom=mom,
+        axis_neg=axis_neg,
+        dtype=dtype,
+        order=order,
+    )
+
     mom_axes = tuple(range(-mom_ndim, 0))
 
     axes: AxesGUFunc = [
-        # dummy
+        # out
         mom_axes,
         # x, weight, *y
         *get_axes_from_values(*args, axis_neg=axis_neg),
-        # out
-        mom_axes,
     ]
 
-    out = factory_reduce_vals(
+    factory_reduce_vals(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * mom_ndim),
     )(
-        dummy_mom,
+        out,
         *args,
-        out=out,
         axes=axes,
-        dtype=dtype,
         casting=casting,
         order=order,
+        signature=(dtype,) * (len(args) + 1),
     )
 
     return optional_keepdims(
@@ -544,8 +551,9 @@ def reduce_data(
         Same type as input ``data``.
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
+    dtype = select_dtype(data, out=out, dtype=dtype)
+
     if isinstance(data, (xr.DataArray, xr.Dataset)):
-        dtype = select_dtype(data, out=out, dtype=dtype)
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         xout: GenXArrayT
         if use_reduce:
@@ -576,7 +584,7 @@ def reduce_data(
                     "dtype": dtype,
                     "parallel": parallel,
                     "keepdims": False,
-                    "fastpath": False,
+                    "fastpath": is_dataarray(data),
                     "casting": casting,
                     "order": order,
                 },
@@ -592,9 +600,7 @@ def reduce_data(
         return xout
 
     # Numpy
-    data = np.asarray(data)
-    dtype = select_dtype(data, out=out, dtype=dtype)
-
+    data = asarray_maybe_recast(data, dtype=dtype, recast=False)
     return _reduce_data(
         data,
         mom_ndim=mom_ndim,
@@ -760,7 +766,7 @@ def reduce_data_grouped(
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -783,7 +789,7 @@ def reduce_data_grouped(
     out: None = ...,
     dtype: None = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -806,7 +812,7 @@ def reduce_data_grouped(
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -829,7 +835,7 @@ def reduce_data_grouped(
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -852,7 +858,7 @@ def reduce_data_grouped(
     out: None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
-    order: ArrayOrder = ...,
+    order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
     # xarray specific
     dim: DimsReduce | MissingType = ...,
@@ -877,7 +883,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderCF = None,
     parallel: bool | None = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
@@ -903,6 +909,8 @@ def reduce_data_grouped(  # noqa: PLR0913
     {parallel}
     {out}
     {dtype}
+    {casting}
+    {order_cf}
     {dim}
     {group_dim}
     {groups}
@@ -984,8 +992,8 @@ def reduce_data_grouped(  # noqa: PLR0913
             exclude_dims={dim},
             kwargs={
                 "mom_ndim": mom_ndim,
-                "axis": -1,
-                "move_axis_to_end": False,
+                # Need total axis here...
+                "axis": -(mom_ndim + 1),
                 "dtype": dtype,
                 "out": xprepare_out_for_resample_data(
                     out,
@@ -997,7 +1005,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
-                "fastpath": False,
+                "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -1018,12 +1026,19 @@ def reduce_data_grouped(  # noqa: PLR0913
         return xout
 
     # Numpy
+    axis, data = prepare_data_for_reduction(
+        data=data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        dtype=dtype,
+        recast=False,
+        move_axis_to_end=move_axis_to_end,
+    )
     return _reduce_data_grouped(
         data,
         by=by,
         mom_ndim=mom_ndim,
         axis=axis,
-        move_axis_to_end=move_axis_to_end,
         dtype=dtype,
         out=out,
         casting=casting,
@@ -1034,15 +1049,14 @@ def reduce_data_grouped(  # noqa: PLR0913
 
 
 def _reduce_data_grouped(
-    data: ArrayLike,
+    data: NDArrayAny,
     by: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType,
-    move_axis_to_end: bool,
+    axis: int,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderCF,
     out: NDArrayAny | None,
     parallel: bool | None,
     fastpath: bool,
@@ -1050,43 +1064,32 @@ def _reduce_data_grouped(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    # NOTE: keep prepare here to get axis correct..
-    axis, data = prepare_data_for_reduction(
-        data=data,
-        axis=axis,
-        mom_ndim=mom_ndim,
-        dtype=None,
-        recast=False,
-        move_axis_to_end=move_axis_to_end,
-    )
-
     # include inner core dims for by
-    axes = [
-        # dummy_group
-        (-1,),
-        # data, by, out
-        *axes_data_reduction((-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True),
-    ]
+    axes = axes_data_reduction((-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
 
     if len(by) != data.shape[axis]:
         msg = f"{len(by)=} != {data.shape[axis]=}"
         raise ValueError(msg)
 
-    ngroup = by.max() + 1
-    dummy_group = dummy_array(ngroup, dtype=dtype)
-    return factory_reduce_data_grouped(
+    if out is None:
+        ngroup = by.max() + 1
+        out_shape = (*data.shape[:axis], ngroup, *data.shape[axis + 1 :])
+        out = np.zeros(out_shape, dtype=data.dtype, order=order)
+    else:
+        out.fill(0.0)
+
+    factory_reduce_data_grouped(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
-        dummy_group,
         data,
         by,
-        out=out,
+        out,
         axes=axes,
         casting=casting,
-        order=order,
-        signature=(dtype, dtype, np.int64, dtype),
+        signature=(dtype, np.int64, dtype),
     )
+    return out
 
 
 # * Indexed -------------------------------------------------------------------
@@ -1470,13 +1473,12 @@ def reduce_data_indexed(  # noqa: PLR0913
             output_core_dims=[core_dims],
             exclude_dims={dim},
             kwargs={
-                "axis": -1,
+                "axis": -(mom_ndim + 1),
                 "mom_ndim": mom_ndim,
                 "index": index,
                 "group_start": group_start,
                 "group_end": group_end,
                 "scale": scale,
-                "move_axis_to_end": False,
                 "out": xprepare_out_for_resample_data(
                     out,
                     mom_ndim=mom_ndim,
@@ -1488,7 +1490,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
-                "fastpath": False,
+                "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -1528,6 +1530,15 @@ def reduce_data_indexed(  # noqa: PLR0913
         return xout
 
     # Numpy
+    axis, data = prepare_data_for_reduction(
+        data=data,
+        axis=axis,
+        mom_ndim=mom_ndim,
+        dtype=dtype,
+        recast=False,
+        move_axis_to_end=move_axis_to_end,
+    )
+
     return _reduce_data_indexed(
         data,
         axis=axis,
@@ -1536,7 +1547,6 @@ def reduce_data_indexed(  # noqa: PLR0913
         group_start=group_start,
         group_end=group_end,
         scale=scale,
-        move_axis_to_end=move_axis_to_end,
         out=out,
         dtype=dtype,
         casting=casting,
@@ -1547,15 +1557,14 @@ def reduce_data_indexed(  # noqa: PLR0913
 
 
 def _reduce_data_indexed(
-    data: ArrayLike,
+    data: NDArrayAny,
     *,
-    axis: AxisReduce | MissingType,
+    axis: int,
     mom_ndim: Mom_NDim,
     index: NDArrayAny,
     group_start: NDArrayAny,
     group_end: NDArrayAny,
     scale: ArrayLike | None,
-    move_axis_to_end: bool,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
@@ -1566,19 +1575,10 @@ def _reduce_data_indexed(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    axis, data = prepare_data_for_reduction(
-        data=data,
-        axis=axis,
-        mom_ndim=mom_ndim,
-        dtype=None,
-        recast=False,
-        move_axis_to_end=move_axis_to_end,
-    )
-
     if scale is None:
-        scale = np.ones(len(index), dtype=dtype)
+        scale = np.broadcast_to(np.dtype(dtype).type(1), index.shape)
     else:
-        scale = np.asarray(scale, dtype=dtype)
+        scale = asarray_maybe_recast(scale, dtype=dtype, recast=False)
         if len(scale) != len(index):
             msg = f"{len(scale)=} != {len(index)=}"
             raise ValueError(msg)
