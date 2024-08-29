@@ -12,13 +12,14 @@ from typing import TYPE_CHECKING, Any, Generic
 import numpy as np
 import xarray as xr
 
-from ._lib.factory import factory_pusher, parallel_heuristic
-from .core.docstrings import docfiller
-from .core.missing import MISSING
-from .core.typing import GenArrayT
-from .core.utils import mom_shape_to_mom
-from .core.validate import validate_floating_dtype, validate_mom_ndim
-from .utils import assign_moment
+from cmomy.core.docstrings import docfiller
+from cmomy.core.missing import MISSING
+from cmomy.core.typing import GenArrayT
+from cmomy.core.utils import mom_shape_to_mom
+from cmomy.core.validate import validate_floating_dtype, validate_mom_ndim
+from cmomy.utils import assign_moment
+
+from .._lib.factory import factory_pusher, parallel_heuristic
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Hashable, Mapping, Sequence
@@ -28,8 +29,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._lib.factory import Pusher
-    from .core.typing import (
+    from cmomy._lib.factory import Pusher
+    from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayOrder,
         ArrayOrderCF,
@@ -46,11 +47,11 @@ if TYPE_CHECKING:
         NDArrayAny,
         SelectMoment,
     )
-    from .core.typing_compat import Self
+    from cmomy.core.typing_compat import Self
 
 
 @docfiller.decorate  # noqa: PLR0904
-class CentralWrapperABC(ABC, Generic[GenArrayT]):
+class CentralMomentsABC(ABC, Generic[GenArrayT]):
     r"""
     Wrapper to calculate central moments.
 
@@ -135,7 +136,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
 
     def _repr_html_(self) -> str:  # noqa: PLW3201
         # TODO(wpk): Check out if this is best way to go...
-        from .core.formatting import (
+        from cmomy.core.formatting import (
             repr_html_wrapper,  # pyright: ignore[reportUnknownVariableType]
         )
 
@@ -575,7 +576,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         .utils.moveaxis
         numpy.moveaxis
         """
-        from .utils import moveaxis
+        from cmomy.utils import moveaxis
 
         if isinstance(self._obj, xr.Dataset):
             self._raise_not_implemented()
@@ -631,7 +632,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         --------
         .utils.select_moment
         """
-        from .utils import select_moment
+        from cmomy.utils import select_moment
 
         return select_moment(
             self._obj,
@@ -826,7 +827,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         ~.resample.indices_to_freq : convert index sample to frequency sample
         ~.resample.resample_data : method to perform resampling
         """
-        from .resample import resample_data
+        from cmomy.resample import resample_data
 
         # pyright error due to `freq` above...
         return self._new_like(
@@ -869,7 +870,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         output : {klass}
             Instance of calling class with jackknife resampling along ``axis``.
         """
-        from .resample import jackknife_data
+        from cmomy.resample import jackknife_data
 
         if isinstance(data_reduced, type(self)):
             data_reduced = data_reduced.obj
@@ -995,7 +996,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         from_raw
         .convert.moments_type
         """
-        from .convert import moments_type
+        from cmomy.convert import moments_type
 
         out = moments_type(self._obj, mom_ndim=self._mom_ndim, to="raw")
         if weight is not None:
@@ -1195,7 +1196,7 @@ class CentralWrapperABC(ABC, Generic[GenArrayT]):
         Weights are taken from ``raw[...,0, 0]``.
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
         """
-        from . import convert
+        from cmomy import convert
 
         return cls(
             obj=convert.moments_type(raw, mom_ndim=mom_ndim, to="central", **kwargs),  # pyright: ignore[reportArgumentType]

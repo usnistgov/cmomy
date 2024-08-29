@@ -9,8 +9,6 @@ if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
     # submodules
     from . import convert, random, reduction, resample, rolling, utils  # noqa: TCH004
-    from ._wrapper_numpy import CentralMoments, CentralWrapperNumpy  # noqa: TCH004
-    from ._wrapper_xarray import CentralWrapperXArray, xCentralMoments  # noqa: TCH004
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TCH004
     from .convert import concat  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
@@ -23,6 +21,7 @@ if TYPE_CHECKING:
         resample_vals,  # noqa: TCH004
     )
     from .utils import assign_moment, moveaxis, select_moment  # noqa: TCH004
+    from .wrapper import CentralMoments, xCentralMoments  # noqa: TCH004
 
 
 else:
@@ -40,8 +39,7 @@ else:
         ],
         submod_attrs={
             "convert": ["concat"],
-            "_wrapper_numpy": ["CentralWrapperNumpy", "CentralMoments"],
-            "_wrapper_xarray": ["CentraWrapperXArray", "xCentralMoments"],
+            "wrapper": ["CentralMoments", "xCentralMoments"],
             "confidence_interval": ["bootstrap_confidence_interval"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
@@ -69,8 +67,6 @@ __email__ = "wpk@nist.gov"
 
 __all__ = [
     "CentralMoments",
-    "CentralWrapperNumpy",
-    "CentralWrapperXArray",
     "__version__",
     "assign_moment",
     "bootstrap_confidence_interval",

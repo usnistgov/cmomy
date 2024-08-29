@@ -2,27 +2,29 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
 from module_utilities import cached
 
-from cmomy.core.validate import validate_floating_dtype, validate_mom_and_mom_ndim
-
-from .core.missing import MISSING
-from .core.prepare import (
+from cmomy.core.missing import MISSING
+from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
     xprepare_values_for_reduction,
 )
-from .core.validate import (
+from cmomy.core.validate import (
     are_same_type,
     is_dataarray,
+    is_dataset,
     is_xarray,
+    validate_floating_dtype,
+    validate_mom_and_mom_ndim,
     validate_mom_dims,
 )
-from .core.xr_utils import (
+from cmomy.core.xr_utils import (
     contains_dims,
     get_apply_ufunc_kwargs,
     get_mom_shape,
@@ -31,16 +33,16 @@ from .core.xr_utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Hashable, Iterable, Mapping, Sequence
+    from collections.abc import Callable, Hashable, Iterable, Sequence
     from typing import Any, Literal, NoReturn
 
     from numpy.typing import ArrayLike, DTypeLike
     from xarray.core import types as xr_types
     from xarray.core.coordinates import DataArrayCoordinates, DatasetCoordinates
 
-    from ._wrapper_numpy import CentralWrapperNumpy
-    from .core.typing import (
+    from cmomy.core.typing import (
         ApplyUFuncKwargs,
+        ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
         Casting,
@@ -63,19 +65,21 @@ if TYPE_CHECKING:
         XArrayIndexesType,
         XArrayNameType,
     )
-    from .core.typing_compat import Self
+    from cmomy.core.typing_compat import Self
+    from cmomy.wrapper.nparray import CentralMoments
 
 
-from ._wrapper_abc import CentralWrapperABC
-from .core.docstrings import docfiller_wrapper_xarray as docfiller
-from .core.typing import XArrayT
+from cmomy.core.docstrings import docfiller_xcentral as docfiller
+from cmomy.core.typing import XArrayT
 
-docfiller_abc = docfiller.factory_from_parent(CentralWrapperABC)
-docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralWrapperABC)
+from .base import CentralMomentsABC
+
+docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
+docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
-@docfiller.inherit(CentralWrapperABC)  # noqa: PLR0904
-class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
+@docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
+class xCentralMoments(CentralMomentsABC[XArrayT]):  # noqa: N801
     """
     Parameters
     ----------
@@ -114,25 +118,43 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
     def mom_dims(self) -> MomDimsStrict:
         return self._mom_dims
 
+    @property
+    def dtype(self) -> np.dtype[Any]:
+        if is_dataset(self._obj):
+            self._raise_notimplemented_for_dataset()
+        return self._obj.dtype
+
+    @property
+    def shape(self) -> tuple[int, ...]:
+        if is_dataset(self._obj):
+            self._raise_notimplemented_for_dataset()
+        return self._obj.shape
+
+    @property
+    def val_shape(self) -> tuple[int, ...]:
+        if is_dataset(self._obj):
+            self._raise_notimplemented_for_dataset()
+        return self._obj.shape[: -self._mom_ndim]
+
     @overload
     def __getitem__(
-        self: CentralWrapperXArray[xr.DataArray],
+        self: xCentralMoments[xr.DataArray],
         key: Any,
-    ) -> CentralWrapperXArray[xr.DataArray]: ...
+    ) -> xCentralMoments[xr.DataArray]: ...
     @overload
     def __getitem__(  # pyright: ignore[reportOverlappingOverload]
-        self: CentralWrapperXArray[xr.Dataset],
+        self: xCentralMoments[xr.Dataset],
         key: Hashable,
-    ) -> CentralWrapperXArray[xr.DataArray]: ...
+    ) -> xCentralMoments[xr.DataArray]: ...
     @overload
     def __getitem__(
-        self: CentralWrapperXArray[xr.Dataset],
+        self: xCentralMoments[xr.Dataset],
         key: Any,
-    ) -> CentralWrapperXArray[xr.Dataset]: ...
+    ) -> xCentralMoments[xr.Dataset]: ...
 
     def __getitem__(
         self, key: Any
-    ) -> CentralWrapperXArray[xr.DataArray] | CentralWrapperXArray[xr.Dataset]:
+    ) -> xCentralMoments[xr.DataArray] | xCentralMoments[xr.Dataset]:
         obj: xr.DataArray | xr.Dataset = self._obj[key]  # pyright: ignore[reportUnknownVariableType]
         if not contains_dims(obj, self._mom_dims):  # pyright: ignore[reportUnknownArgumentType]
             msg = f"Cannot select object without {self._mom_dims}"
@@ -144,27 +166,6 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             mom_dims=self._mom_dims,
             fastpath=True,
         )
-
-    @property
-    def dtype(self) -> np.dtype[Any]:
-        if is_dataarray(self._obj):
-            return self._obj.dtype
-        self._raise_notimplemented_for_dataset()
-        return None
-
-    @property
-    def shape(self) -> tuple[int, ...]:
-        if is_dataarray(self._obj):
-            return self._obj.shape
-        self._raise_notimplemented_for_dataset()
-        return None
-
-    @property
-    def val_shape(self) -> tuple[int, ...]:
-        if is_dataarray(self._obj):
-            return self._obj.shape[: -self._mom_ndim]
-        self._raise_notimplemented_for_dataset()
-        return None
 
     # ** Create/copy/new ------------------------------------------------------
     def _new_like(self, obj: XArrayT) -> Self:
@@ -253,7 +254,34 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             fastpath=True,
         )
 
-    # TODO(wpk): Add in astype with mapping of dtype for dataset
+    @docfiller_inherit_abc()
+    def astype(
+        self,
+        dtype: DTypeLike | Mapping[Hashable, DTypeLike],
+        *,
+        order: ArrayOrder = None,
+        casting: Casting | None = None,
+        subok: bool | None = None,
+        copy: bool = False,
+    ) -> Self:
+        """
+        Parameters
+        ----------
+        dtype : dtype or mapping of hashable to dtype
+            If ``self.obj`` is a :class:`~xarray.Dataset`, passing a mapping will update only certain variables.
+        """
+        if isinstance(dtype, Mapping):
+            if is_dataarray(self._obj):
+                msg = "Passing a mapping for `dtype` only allowed for Dataset."
+                raise ValueError(msg)
+            dtype = dict(self._obj.dtypes, **dtype)
+
+        # Reimplement with a a full new_like to defer dtype check to __init__
+        return self.new_like(
+            obj=self._obj.astype(
+                dtype, order=order, casting=casting, subok=subok, copy=copy
+            )
+        )
 
     # ** Utils ----------------------------------------------------------------
     def _validate_dtype(self) -> None:
@@ -688,13 +716,13 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         --------
         >>> import cmomy
         >>> rng = cmomy.random.default_rng(0)
-        >>> da = cmomy.CentralWrapperNumpy.from_vals(
+        >>> da = cmomy.CentralMoments.from_vals(
         ...     rng.random((10, 3)),
         ...     mom=3,
         ...     axis=0,
         ... ).to_x(dims="rec")
         >>> da
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (rec: 3, mom_0: 4)> Size: 96B
         array([[ 1.0000e+01,  5.2485e-01,  1.1057e-01, -4.6282e-03],
                [ 1.0000e+01,  5.6877e-01,  6.8876e-02, -1.2745e-02],
@@ -710,7 +738,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         ...     freq=freq,
         ... )
         >>> da_resamp
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
         array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
                [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
@@ -723,7 +751,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         >>> indices = cmomy.resample.freq_to_indices(freq)
         >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
         array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
                [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
@@ -853,9 +881,9 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         >>> import cmomy
         >>> rng = cmomy.random.default_rng(0)
         >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
-        >>> da = CentralWrapperXArray.from_vals(vals, dim="rec", mom=2)
+        >>> da = xCentralMoments.from_vals(vals, dim="rec", mom=2)
         >>> da.reduce(dim="dim_0")
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_1: 3, mom_0: 3)> Size: 72B
         array([[20.    ,  0.5221,  0.0862],
                [20.    ,  0.5359,  0.0714],
@@ -863,7 +891,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         Dimensions without coordinates: dim_1, mom_0
         """
         if by is None:
-            from .reduction import reduce_data
+            from cmomy.reduction import reduce_data
 
             data = reduce_data(
                 self._obj,
@@ -881,11 +909,11 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             )
 
         elif coords_policy == "group":
-            from .reduction import reduce_data_grouped
+            from cmomy.reduction import reduce_data_grouped
 
             codes: ArrayLike
             if isinstance(by, str):
-                from .reduction import factor_by
+                from cmomy.reduction import factor_by
 
                 _groups, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
             else:
@@ -909,7 +937,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             )
 
         else:
-            from .reduction import factor_by_to_index, reduce_data_indexed
+            from cmomy.reduction import factor_by_to_index, reduce_data_indexed
 
             if isinstance(by, str):
                 _groups, index, group_start, group_end = factor_by_to_index(
@@ -962,10 +990,10 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         name: XArrayNameType = None,
         indexes: XArrayIndexesType = None,
         template: xr.DataArray | None = None,
-    ) -> CentralWrapperXArray[xr.DataArray]:
-        from ._wrapper_numpy import CentralWrapperNumpy
+    ) -> xCentralMoments[xr.DataArray]:
+        from .nparray import CentralMoments
 
-        return CentralWrapperNumpy.zeros(
+        return CentralMoments.zeros(
             mom=mom,
             val_shape=val_shape,
             dtype=dtype,
@@ -1027,10 +1055,10 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         See Also
         --------
         push_vals
-        CentralWrapperNumpy.from_vals
-        CentralWrapperNumpy.to_x
+        CentralMoments.from_vals
+        CentralMoments.to_x
         """
-        from .reduction import reduce_vals
+        from cmomy.reduction import reduce_vals
 
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim)
@@ -1138,13 +1166,13 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         See Also
         --------
-        CentralWrapperNumpy.from_resample_vals
+        CentralMoments.from_resample_vals
         .resample.resample_vals
         """
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim)
 
-        from .resample import resample_vals
+        from cmomy.resample import resample_vals
 
         return cls(
             obj=resample_vals(
@@ -1187,7 +1215,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
-        from . import convert
+        from cmomy import convert
 
         mom_dims = validate_mom_dims(mom_dims, mom_ndim)
         return cls(
@@ -1285,7 +1313,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         Returns
         -------
-        output : CentralWrapperXArray
+        output : xCentralMoments
             With dimensions stacked.
 
         See Also
@@ -1298,9 +1326,9 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         >>> import cmomy
         >>> rng = cmomy.random.default_rng(0)
         >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
-        >>> da = CentralWrapperXArray.from_vals(vals, mom=2, dim="rec")
+        >>> da = xCentralMoments.from_vals(vals, mom=2, dim="rec")
         >>> da
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
         array([[[10.    ,  0.5205,  0.0452],
                 [10.    ,  0.4438,  0.0734],
@@ -1312,7 +1340,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da_stack = da.stack(z=["dim_0", "dim_1"])
         >>> da_stack
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (z: 6, mom_0: 3)> Size: 144B
         array([[10.    ,  0.5205,  0.0452],
                [10.    ,  0.4438,  0.0734],
@@ -1329,7 +1357,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         And unstack
 
         >>> da_stack.unstack("z")
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
         array([[[10.    ,  0.5205,  0.0452],
                 [10.    ,  0.4438,  0.0734],
@@ -1369,7 +1397,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         Returns
         -------
-        output : CentralWrapperXArray
+        output : xCentralMoments
             With dimensions unstacked
 
         See Also
@@ -1405,7 +1433,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         Returns
         -------
-        output : CentralWrapperXArray
+        output : xCentralMoments
             With new index.
 
         See Also
@@ -1505,7 +1533,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         Returns
         -------
-        output : CentralWrapperXArray
+        output : xCentralMoments
             With dimensions unstacked
 
         See Also
@@ -1516,11 +1544,11 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         --------
         >>> import cmomy
         >>> rng = cmomy.random.default_rng(0)
-        >>> da = cmomy.CentralWrapperNumpy.from_vals(
+        >>> da = cmomy.CentralMoments.from_vals(
         ...     rng.random((10, 3)), axis=0, mom=2
         ... ).to_x(dims="x", coords=dict(x=list("abc")))
         >>> da
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (x: 3, mom_0: 3)> Size: 72B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5688,  0.0689],
@@ -1532,14 +1560,14 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         Select by value
 
         >>> da.sel(x="a")
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (mom_0: 3)> Size: 24B
         array([10.    ,  0.5248,  0.1106])
         Coordinates:
             x        <U1 4B 'a'
         Dimensions without coordinates: mom_0
         >>> da.sel(x=["a", "c"])
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (x: 2, mom_0: 3)> Size: 48B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5094,  0.1198]])
@@ -1551,14 +1579,14 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         Select by position
 
         >>> da.isel(x=0)
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (mom_0: 3)> Size: 24B
         array([10.    ,  0.5248,  0.1106])
         Coordinates:
             x        <U1 4B 'a'
         Dimensions without coordinates: mom_0
         >>> da.isel(x=[0, 1])
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (x: 2, mom_0: 3)> Size: 48B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5688,  0.0689]])
@@ -1597,7 +1625,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         Returns
         -------
-        output : CentralWrapperXArray
+        output : xCentralMoments
             With dimensions unstacked
 
         See Also
@@ -1653,13 +1681,13 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             _fastpath=_fastpath,
         )
 
-    # ** To/from CentralWrapperNumpy ------------------------------------------
-    def to_c(self, copy: bool = False) -> CentralWrapperNumpy[Any]:
-        from ._wrapper_numpy import CentralWrapperNumpy
+    # ** To/from CentralMoments ------------------------------------------
+    def to_c(self, copy: bool = False) -> CentralMoments[Any]:
+        from .nparray import CentralMoments
 
         if is_dataarray(self._obj):
             obj = self._obj.to_numpy()  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-            return CentralWrapperNumpy(
+            return CentralMoments(
                 obj.copy() if copy else obj,  # pyright: ignore[reportUnknownArgumentType]
                 mom_ndim=self._mom_ndim,
                 fastpath=True,
@@ -1698,12 +1726,12 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         Returns
         -------
-        output : CentralWrapperXArray
+        output : xCentralMoments
             Object with block averaging.
 
         See Also
         --------
-        CentralWrapperNumpy.block
+        CentralMoments.block
         reduce
 
 
@@ -1712,9 +1740,9 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         >>> import cmomy
         >>> rng = cmomy.random.default_rng(0)
         >>> x = rng.random((10, 10))
-        >>> da = cmomy.CentralWrapperNumpy.from_vals(x, mom=2, axis=0).to_x()
+        >>> da = cmomy.CentralMoments.from_vals(x, mom=2, axis=0).to_x()
         >>> da
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 10, mom_0: 3)> Size: 240B
         array([[10.    ,  0.6247,  0.0583],
                [10.    ,  0.3938,  0.0933],
@@ -1729,7 +1757,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
         Dimensions without coordinates: dim_0, mom_0
 
         >>> da.block(block_size=5, dim="dim_0")
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
@@ -1737,8 +1765,8 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         This is equivalent to
 
-        >>> cmomy.CentralWrapperNumpy.from_vals(x.reshape(2, 50), mom=2, axis=1).to_x()
-        <CentralWrapperXArray(mom_ndim=1)>
+        >>> cmomy.CentralMoments.from_vals(x.reshape(2, 50), mom=2, axis=1).to_x()
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5268,  0.0849],
                [50.    ,  0.5697,  0.0979]])
@@ -1749,7 +1777,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
 
         >>> da2 = da.assign_coords(dim_0=range(10))
         >>> da2.block(5, dim="dim_0", coords_policy="first")
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
@@ -1757,7 +1785,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
           * dim_0    (dim_0) int64 16B 0 5
         Dimensions without coordinates: mom_0
         >>> da2.block(5, dim="dim_0", coords_policy="last")
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
@@ -1765,7 +1793,7 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
           * dim_0    (dim_0) int64 16B 4 9
         Dimensions without coordinates: mom_0
         >>> da2.block(5, dim="dim_0", coords_policy=None)
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, mom_0: 3)> Size: 48B
         array([[50.    ,  0.5008,  0.0899],
                [50.    ,  0.5958,  0.0893]])
@@ -1791,6 +1819,3 @@ class CentralWrapperXArray(CentralWrapperABC[XArrayT]):
             groups=range(nblock),
             **kwargs,
         )
-
-
-xCentralMoments = CentralWrapperXArray  # noqa: N816

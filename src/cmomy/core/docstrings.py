@@ -346,38 +346,6 @@ docfiller_xcentral = (
     )
     .assign(
         klass="xCentralMoments",
-        t_array=":class:`xarray.DataArray`",
-    )
-    .assign_combined_key("axis_and_dim", ["axis", "dim"])
-    .assign_combined_key("axis_data_and_dim", ["axis_data", "dim"])
-)
-
-
-docfiller_wrapper_numpy = (
-    docfiller.update(
-        DocFiller.from_docstring(
-            _dummy_docstrings_central,
-            combine_keys="parameters",
-        ).data
-    )
-    .assign(
-        klass="CentralWrapperNumpy",
-        t_array=":class:`numpy.ndarray`",
-    )
-    .assign_combined_key("axis_and_dim", ["axis"])
-    .assign_combined_key("axis_data_and_dim", ["axis_data"])
-)
-
-
-docfiller_wrapper_xarray = (
-    docfiller.update(
-        DocFiller.from_docstring(
-            _dummy_docstrings_xcentral,
-            combine_keys="parameters",
-        ).data
-    )
-    .assign(
-        klass="CentralWrapperXArray",
         t_array=":class:`~xarray.DataArray` or :class:`~xarray.Dataset`",
     )
     .assign_combined_key("axis_and_dim", ["axis", "dim"])

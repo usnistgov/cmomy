@@ -7,22 +7,21 @@ from typing import TYPE_CHECKING, Generic, overload
 import numpy as np
 import xarray as xr
 
-from cmomy.core.validate import validate_floating_dtype
-
-from .core.array_utils import (
+from cmomy.core.array_utils import (
     axes_data_reduction,
 )
-from .core.compat import copy_if_needed
-from .core.prepare import (
+from cmomy.core.compat import copy_if_needed
+from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
 )
-from .core.utils import mom_to_mom_shape
-from .core.validate import (
+from cmomy.core.utils import mom_to_mom_shape
+from cmomy.core.validate import (
     validate_axis,
+    validate_floating_dtype,
     validate_mom_and_mom_ndim,
 )
-from .core.xr_utils import select_ndat
+from cmomy.core.xr_utils import select_ndat
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -30,8 +29,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike
 
-    from ._wrapper_xarray import CentralWrapperXArray
-    from .core.typing import (
+    from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrder,
         ArrayOrderCF,
@@ -52,21 +50,22 @@ if TYPE_CHECKING:
         XArrayIndexesType,
         XArrayNameType,
     )
-    from .core.typing_compat import Self
+    from cmomy.core.typing_compat import Self
+    from cmomy.wrapper.xrarray import xCentralMoments
 
 
 from numpy.typing import NDArray
 
-from ._wrapper_abc import CentralWrapperABC
-from .core.docstrings import docfiller_wrapper_numpy as docfiller
-from .core.typing import FloatingT
+from cmomy.core.docstrings import docfiller_central as docfiller
+from cmomy.core.typing import FloatingT
+from cmomy.wrapper.base import CentralMomentsABC
 
-docfiller_abc = docfiller.factory_from_parent(CentralWrapperABC)
-docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralWrapperABC)
+docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
+docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
-@docfiller.inherit(CentralWrapperABC)  # noqa: PLR0904
-class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[FloatingT]):  # type: ignore[type-var]
+@docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
+class CentralMoments(CentralMomentsABC[NDArray[FloatingT]], Generic[FloatingT]):  # type: ignore[type-var]
     r"""
     Wrapper to calculate central moments of :class:`~numpy.ndarray` backed arrays.
 
@@ -198,7 +197,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: DTypeLike = ...,
         order: ArrayOrder = ...,
         fastpath: bool = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     @overload
     def new_like(
         self,
@@ -209,7 +208,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: DTypeLikeArg[FloatingT2],
         order: ArrayOrder = ...,
         fastpath: bool = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     @overload
     def new_like(
         self,
@@ -231,7 +230,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: DTypeLike = ...,
         order: ArrayOrder = ...,
         fastpath: bool = ...,
-    ) -> CentralWrapperNumpy[Any]: ...
+    ) -> CentralMoments[Any]: ...
 
     @docfiller_inherit_abc()
     def new_like(
@@ -243,7 +242,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: DTypeLike = None,
         order: ArrayOrder = None,
         fastpath: bool = False,
-    ) -> CentralWrapperNumpy[Any]:
+    ) -> CentralMoments[Any]:
         """
         Parameters
         ----------
@@ -253,18 +252,18 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralWrapperNumpy.from_vals(rng.random(10), mom=3, axis=0)
+        >>> da = CentralMoments.from_vals(rng.random(10), mom=3, axis=0)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([10.    ,  0.5505,  0.1014, -0.0178])
 
         >>> da2 = da.new_like().zero()
         >>> da2
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([0., 0., 0., 0.])
 
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([10.    ,  0.5505,  0.1014, -0.0178])
         """
         if obj is None:
@@ -293,7 +292,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     @overload
     def astype(
         self,
@@ -303,7 +302,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralWrapperNumpy[np.float64]: ...
+    ) -> CentralMoments[np.float64]: ...
     @overload
     def astype(
         self,
@@ -313,7 +312,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralWrapperNumpy[Any]: ...
+    ) -> CentralMoments[Any]: ...
 
     @docfiller_abc()
     def astype(
@@ -324,7 +323,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
-    ) -> CentralWrapperNumpy[Any]:
+    ) -> CentralMoments[Any]:
         return super().astype(
             dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
@@ -349,21 +348,21 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> rng = cmomy.random.default_rng(0)
         >>> xs = rng.random((2, 10))
         >>> datas = [cmomy.reduce_vals(x, mom=2, axis=0) for x in xs]
-        >>> da = CentralWrapperNumpy(datas[0], mom_ndim=1)
+        >>> da = CentralMoments(datas[0], mom_ndim=1)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([10.    ,  0.5505,  0.1014])
 
 
         >>> da.push_data(datas[1])
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
 
         Which is equivalent to
 
-        >>> CentralWrapperNumpy.from_vals(xs.reshape(-1), mom=2, axis=0)
-        <CentralWrapperNumpy(mom_ndim=1)>
+        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2, axis=0)
+        <CentralMoments(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
         """
@@ -391,16 +390,16 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> rng = cmomy.random.default_rng(0)
         >>> xs = rng.random((2, 10))
         >>> datas = cmomy.reduce_vals(xs, axis=1, mom=2)
-        >>> da = CentralWrapperNumpy.zeros(mom=2)
+        >>> da = CentralMoments.zeros(mom=2)
         >>> da.push_datas(datas, axis=0)
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
 
         Which is equivalent to
 
-        >>> CentralWrapperNumpy.from_vals(xs.reshape(-1), mom=2, axis=0)
-        <CentralWrapperNumpy(mom_ndim=1)>
+        >>> CentralMoments.from_vals(xs.reshape(-1), mom=2, axis=0)
+        <CentralMoments(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
         axis, datas = prepare_data_for_reduction(
@@ -440,12 +439,12 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> y = rng.random(10)
         >>> w = rng.random(10)
 
-        >>> da = CentralWrapperNumpy.zeros(val_shape=(2,), mom=(2, 2))
+        >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
         >>> for xx, yy, ww in zip(x, y, w):
         ...     _ = da.push_val(xx, yy, weight=ww)
 
         >>> da
-        <CentralWrapperNumpy(mom_ndim=2)>
+        <CentralMoments(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -457,8 +456,8 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
 
         Which is the same as
 
-        >>> CentralWrapperNumpy.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
-        <CentralWrapperNumpy(mom_ndim=2)>
+        >>> CentralMoments.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        <CentralMoments(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -498,9 +497,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> y = rng.random(10)
         >>> w = rng.random(10)
 
-        >>> da = CentralWrapperNumpy.zeros(val_shape=(2,), mom=(2, 2))
+        >>> da = CentralMoments.zeros(val_shape=(2,), mom=(2, 2))
         >>> da.push_vals(x, y, weight=w, axis=0)
-        <CentralWrapperNumpy(mom_ndim=2)>
+        <CentralMoments(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -512,8 +511,8 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
 
         Which is the same as
 
-        >>> CentralWrapperNumpy.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
-        <CentralWrapperNumpy(mom_ndim=2)>
+        >>> CentralMoments.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        <CentralMoments(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
                 [ 5.0888e-02, -1.0060e-02,  7.0290e-03]],
@@ -559,7 +558,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         parallel: bool | None = None,
     ) -> Self:
         if by is None:
-            from .reduction import reduce_data
+            from cmomy.reduction import reduce_data
 
             obj = reduce_data(
                 self._obj,
@@ -569,7 +568,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
                 keepdims=keepdims,
             )
         else:
-            from .reduction import reduce_data_grouped
+            from cmomy.reduction import reduce_data_grouped
 
             obj = reduce_data_grouped(
                 self._obj,
@@ -595,7 +594,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         val_shape: tuple[int, ...] | int | None = ...,
         dtype: None = ...,
         order: ArrayOrderCF = ...,
-    ) -> CentralWrapperNumpy[np.float64]: ...
+    ) -> CentralMoments[np.float64]: ...
     @overload
     @classmethod
     def zeros(
@@ -605,7 +604,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         val_shape: tuple[int, ...] | int | None = ...,
         dtype: DTypeLikeArg[FloatingT2],
         order: ArrayOrderCF = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     @overload
     @classmethod
     def zeros(
@@ -626,7 +625,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         val_shape: tuple[int, ...] | int | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
-    ) -> CentralWrapperNumpy[Any] | Self:
+    ) -> CentralMoments[Any] | Self:
         """
         Parameters
         ----------
@@ -663,7 +662,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: None = ...,
         out: None = ...,
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     # out
     @overload
     @classmethod
@@ -678,7 +677,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: DTypeLike = ...,
         out: NDArray[FloatingT2],
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     # dtype
     @overload
     @classmethod
@@ -693,7 +692,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: DTypeLikeArg[FloatingT2],
         out: None = ...,
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     # fallback
     @overload
     @classmethod
@@ -723,23 +722,23 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         dtype: DTypeLike = None,
         out: NDArrayAny | None = None,
         parallel: bool | None = None,
-    ) -> CentralWrapperNumpy[Any] | Self:
+    ) -> CentralMoments[Any] | Self:
         """
         Examples
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
         >>> x = rng.random((100, 3))
-        >>> da = CentralWrapperNumpy.from_vals(x, axis=0, mom=2)
+        >>> da = CentralMoments.from_vals(x, axis=0, mom=2)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[1.0000e+02, 5.5313e-01, 8.8593e-02],
                [1.0000e+02, 5.5355e-01, 7.1942e-02],
                [1.0000e+02, 5.1413e-01, 1.0407e-01]])
         """
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
 
-        from .reduction import reduce_vals
+        from cmomy.reduction import reduce_vals
 
         data = reduce_vals(
             x,
@@ -772,7 +771,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting = ...,
         order: ArrayOrderCF = ...,
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -791,7 +790,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting = ...,
         order: ArrayOrderCF = ...,
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -810,7 +809,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting = ...,
         order: ArrayOrderCF = ...,
         parallel: bool | None = ...,
-    ) -> CentralWrapperNumpy[FloatingT2]: ...
+    ) -> CentralMoments[FloatingT2]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -849,7 +848,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         casting: Casting = "same_kind",
         order: ArrayOrderCF = None,
         parallel: bool | None = None,
-    ) -> CentralWrapperNumpy[Any]:
+    ) -> CentralMoments[Any]:
         """
         Examples
         --------
@@ -859,9 +858,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> ndat, nrep = 10, 3
         >>> x = rng.random(ndat)
         >>> freq = random_freq(nrep=nrep, ndat=ndat)
-        >>> da = CentralWrapperNumpy.from_resample_vals(x, freq=freq, axis=0, mom=2)
+        >>> da = CentralMoments.from_resample_vals(x, freq=freq, axis=0, mom=2)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[10.    ,  0.5397,  0.0757],
                [10.    ,  0.5848,  0.0618],
                [10.    ,  0.5768,  0.0564]])
@@ -871,15 +870,15 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> from cmomy.resample import freq_to_indices
         >>> indices = freq_to_indices(freq)
         >>> x_resamp = np.take(x, indices, axis=0)
-        >>> da = CentralWrapperNumpy.from_vals(x_resamp, axis=1, mom=2)
+        >>> da = CentralMoments.from_vals(x_resamp, axis=1, mom=2)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[10.    ,  0.5397,  0.0757],
                [10.    ,  0.5848,  0.0618],
                [10.    ,  0.5768,  0.0564]])
 
         """
-        from .resample import resample_vals
+        from cmomy.resample import resample_vals
 
         mom_strict, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
         data = resample_vals(
@@ -918,14 +917,14 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> x = rng.random(10)
         >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
 
-        >>> dx_raw = CentralWrapperNumpy.from_raw(raw_x, mom_ndim=1)
+        >>> dx_raw = CentralMoments.from_raw(raw_x, mom_ndim=1)
         >>> print(dx_raw.mean())
         0.5505105129032412
         >>> dx_raw.cmom()
         array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
 
         Which is equivalent to creating raw moments from values
-        >>> dx_cen = CentralWrapperNumpy.from_vals(x, axis=0, mom=4)
+        >>> dx_cen = CentralMoments.from_vals(x, axis=0, mom=4)
         >>> print(dx_cen.mean())
         0.5505105129032413
         >>> dx_cen.cmom()
@@ -936,7 +935,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
 
         >>> y = x + 10000
         >>> raw_y = (y[:, None] ** np.arange(5)).mean(axis=0)
-        >>> dy_raw = CentralWrapperNumpy.from_raw(raw_y, mom_ndim=1)
+        >>> dy_raw = CentralMoments.from_raw(raw_y, mom_ndim=1)
         >>> print(dy_raw.mean() - 10000)
         0.5505105129050207
 
@@ -945,7 +944,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         >>> np.isclose(dy_raw.cmom(), dx_raw.cmom())
         array([ True,  True,  True, False, False])
 
-        >>> dy_cen = CentralWrapperNumpy.from_vals(y, axis=0, mom=4)
+        >>> dy_cen = CentralMoments.from_vals(y, axis=0, mom=4)
         >>> print(dy_cen.mean() - 10000)
         0.5505105129032017
         >>> dy_cen.cmom()  # this matches above
@@ -981,7 +980,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
 
         Returns
         -------
-        output : CentralWrapperNumpy
+        output : CentralMoments
             Output object with reshaped data.  This will be a view if possilble;
             otherwise, it will be copy.
 
@@ -994,9 +993,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralWrapperNumpy.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
+        >>> da = CentralMoments.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[[10.    ,  0.5205,  0.0452],
                 [10.    ,  0.4438,  0.0734],
                 [10.    ,  0.5038,  0.1153]],
@@ -1006,7 +1005,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
                 [10.    ,  0.412 ,  0.0865]]])
 
         >>> da.reshape(shape=(-1,))
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[10.    ,  0.5205,  0.0452],
                [10.    ,  0.4438,  0.0734],
                [10.    ,  0.5038,  0.1153],
@@ -1183,9 +1182,9 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralWrapperNumpy(rng.random((1, 2, 4)), mom_ndim=1)
+        >>> da = CentralMoments(rng.random((1, 2, 4)), mom_ndim=1)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[[0.637 , 0.2698, 0.041 , 0.0165],
                 [0.8133, 0.9128, 0.6066, 0.7295]]])
 
@@ -1205,7 +1204,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
                 [0.8133, 0.9128, 0.6066, 0.7295]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[[0.637 , 0.2698, 0.041 , 0.0165],
                 [0.8133, 0.9128, 0.6066, 0.7295]]])
 
@@ -1265,7 +1264,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> CentralWrapperXArray[xr.DataArray]:
+    ) -> xCentralMoments[xr.DataArray]:
         """
         Create an :class:`xarray.DataArray` representation of underlying data.
 
@@ -1276,7 +1275,7 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
 
         Returns
         -------
-        output : CentralWrapperXArray
+        output : xCentralMoments
 
         See Also
         --------
@@ -1286,16 +1285,16 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralWrapperNumpy.from_vals(rng.random((10, 1, 2)), axis=0, mom=2)
+        >>> da = CentralMoments.from_vals(rng.random((10, 1, 2)), axis=0, mom=2)
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
 
         Default constructor
 
         >>> da.to_x()
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
@@ -1304,18 +1303,18 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
         Setting attributes
 
         >>> da.to_x()
-        <CentralWrapperXArray(mom_ndim=1)>
+        <xCentralMoments(mom_ndim=1)>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da
-        <CentralWrapperNumpy(mom_ndim=1)>
+        <CentralMoments(mom_ndim=1)>
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
 
         """
-        from ._wrapper_xarray import CentralWrapperXArray
+        from cmomy.wrapper.xrarray import xCentralMoments
 
         data = self.to_dataarray(
             dims=dims,
@@ -1327,9 +1326,4 @@ class CentralWrapperNumpy(CentralWrapperABC[NDArray[FloatingT]], Generic[Floatin
             template=template,
             copy=copy,
         )
-        return CentralWrapperXArray(
-            obj=data, mom_ndim=self._mom_ndim
-        )  # , fastpath=True)
-
-
-CentralMoments = CentralWrapperNumpy
+        return xCentralMoments(obj=data, mom_ndim=self._mom_ndim)

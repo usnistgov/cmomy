@@ -51,8 +51,6 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from ._central_dataarray import xCentralMoments
-    from ._central_numpy import CentralMoments
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
@@ -73,6 +71,7 @@ if TYPE_CHECKING:
         ScalarT,
         XArrayT,
     )
+    from .wrapper import CentralMoments, xCentralMoments
 
 
 # * Convert between raw and central moments
@@ -886,7 +885,7 @@ def concat(
     >>> cx = cmomy.CentralMoments(x)
     >>> cy = cmomy.CentralMoments(y)
     >>> concat((cx, cy), axis=1)
-    <CentralMoments(val_shape=(2, 2), mom=(1,))>
+    <CentralMoments(mom_ndim=1)>
     array([[[ 0.,  1.],
             [-0., -1.]],
     <BLANKLINE>
@@ -896,7 +895,7 @@ def concat(
     >>> dcx = cmomy.xCentralMoments(dx)
     >>> dcy = cmomy.xCentralMoments(dy)
     >>> concat((dcx, dcy), dim="new")
-    <xCentralMoments(val_shape=(2, 2, 1), mom=(1,))>
+    <xCentralMoments(mom_ndim=1)>
     <xarray.DataArray (new: 2, a: 2, b: 1, mom: 2)> Size: 64B
     array([[[[ 0.,  1.]],
     <BLANKLINE>
@@ -930,7 +929,7 @@ def concat(
 
     return type(first)(  # type: ignore[call-arg, return-value]
         concat(
-            (c.to_values() for c in arrays_iter),  # type: ignore[attr-defined]
+            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]
             axis=axis,
             dim=dim,
             **kwargs,

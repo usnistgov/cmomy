@@ -422,6 +422,7 @@ strict = [
     "noxfile.py",
     "tools/*.py",
     "src/cmomy/*.py",
+    "src/cmomy/wrapper/*.py",
     "src/cmomy/_lib/factory.py",
     "src/cmomy/_lib/_binomial.py",
     "src/cmomy/core/__init__.py",

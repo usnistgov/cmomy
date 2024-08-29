@@ -253,7 +253,7 @@ def _do_test_assign_moment_mom_ndim(
 
     check = data.copy()
     if isinstance(check, xr.DataArray):
-        check.values[index] = value  # noqa: PD011
+        check.data[index] = value
     else:
         check[index] = value
 

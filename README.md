@@ -96,7 +96,7 @@ array([ 1.    ,  0.    ,  0.0919, -0.0061])
 >>> c = cmomy.CentralMoments.from_vals(x.reshape(-1, 2), mom=3, axis=0)
 
 >>> c
-<CentralMoments(val_shape=(2,), mom=(3,))>
+<CentralMoments(mom_ndim=1)>
 array([[ 5.0000e+01,  5.3019e-01,  8.0115e-02, -4.3748e-03],
        [ 5.0000e+01,  5.6639e-01,  1.0297e-01, -8.9911e-03]])
 
