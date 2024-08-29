@@ -21,7 +21,12 @@ if TYPE_CHECKING:
         resample_vals,  # noqa: TCH004
     )
     from .utils import assign_moment, moveaxis, select_moment  # noqa: TCH004
-    from .wrapper import CentralMoments, xCentralMoments  # noqa: TCH004
+    from .wrapper import (  # noqa: TCH004
+        CentralMoments,
+        CentralMomentsArray,
+        CentralMomentsXArray,
+        xCentralMoments,
+    )
 
 
 else:
@@ -39,7 +44,12 @@ else:
         ],
         submod_attrs={
             "convert": ["concat"],
-            "wrapper": ["CentralMoments", "xCentralMoments"],
+            "wrapper": [
+                "CentralMomentsArray",
+                "CentralMomentsXArray",
+                "CentralMoments",
+                "xCentralMoments",
+            ],
             "confidence_interval": ["bootstrap_confidence_interval"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
@@ -67,6 +77,8 @@ __email__ = "wpk@nist.gov"
 
 __all__ = [
     "CentralMoments",
+    "CentralMomentsArray",
+    "CentralMomentsXArray",
     "__version__",
     "assign_moment",
     "bootstrap_confidence_interval",

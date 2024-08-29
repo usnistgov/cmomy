@@ -37,7 +37,9 @@ if TYPE_CHECKING:
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
 # * TypeVars
+#: General data set/array
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
+#: DataArray or Dataset
 XArrayT = TypeVar("XArrayT", xr.DataArray, xr.Dataset)
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
 
@@ -66,6 +68,7 @@ FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
 ScalarT = TypeVar("ScalarT", bound=np.generic)
 ScalarT2 = TypeVar("ScalarT2", bound=np.generic)
 
+#: TypeVar of floating point precision (all)
 FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
 FloatingT2 = TypeVar("FloatingT2", bound="np.floating[Any]")
 

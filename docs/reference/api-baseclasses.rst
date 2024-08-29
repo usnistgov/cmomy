@@ -1,7 +1,7 @@
 Base Classes
 ============
 
-.. autoclass:: cmomy._central_abc.CentralMomentsABC
+.. autoclass:: cmomy.wrapper.abc.CentralMomentsABC
    :autosummary:
    :show-inheritance:
    :inherited-members:

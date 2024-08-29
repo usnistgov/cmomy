@@ -1,6 +1,16 @@
 """Central moments wrappers."""
 
-from .nparray import CentralMoments
-from .xrarray import xCentralMoments
+from .np_array import CentralMomentsArray
+from .xr_array import CentralMomentsXArray
 
-__all__ = ["CentralMoments", "xCentralMoments"]
+#: Alias to :class:`cmomy.CentralMomentsArray`
+CentralMoments = CentralMomentsArray
+#: Alias to :class:`cmomy.CentralMomentsXArray`
+xCentralMoments = CentralMomentsXArray  # noqa: N816
+
+__all__ = [
+    "CentralMoments",
+    "CentralMomentsArray",
+    "CentralMomentsXArray",
+    "xCentralMoments",
+]

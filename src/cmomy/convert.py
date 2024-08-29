@@ -71,7 +71,7 @@ if TYPE_CHECKING:
         ScalarT,
         XArrayT,
     )
-    from .wrapper import CentralMoments, xCentralMoments
+    from .wrapper import CentralMomentsArray, CentralMomentsXArray
 
 
 # * Convert between raw and central moments
@@ -780,20 +780,20 @@ def concat(
 ) -> XArrayT: ...
 @overload
 def concat(
-    arrays: Iterable[CentralMoments[FloatT]],
+    arrays: Iterable[CentralMomentsArray[FloatT]],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> CentralMoments[FloatT]: ...
+) -> CentralMomentsArray[FloatT]: ...
 @overload
 def concat(
-    arrays: Iterable[xCentralMoments[FloatT]],
+    arrays: Iterable[CentralMomentsXArray[FloatT]],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> xCentralMoments[FloatT]: ...
+) -> CentralMomentsXArray[FloatT]: ...
 @overload
 def concat(
     arrays: Iterable[NDArray[ScalarT]],
@@ -807,35 +807,35 @@ def concat(
 @docfiller.decorate
 def concat(
     arrays: Iterable[XArrayT]
-    | Iterable[CentralMoments[Any]]
-    | Iterable[xCentralMoments[Any]]
+    | Iterable[CentralMomentsArray[Any]]
+    | Iterable[CentralMomentsXArray[Any]]
     | Iterable[NDArrayAny],
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     **kwargs: Any,
-) -> XArrayT | CentralMoments[Any] | xCentralMoments[Any] | NDArrayAny:
+) -> XArrayT | CentralMomentsArray[Any] | CentralMomentsXArray[Any] | NDArrayAny:
     """
     Concatenate moments objects.
 
     Parameters
     ----------
-    arrays : Iterable of ndarray or DataArray or CentralMoments or xCentralMoments
+    arrays : Iterable of ndarray or DataArray or CentralMomentsArray or CentralMomentsXArray
         Central moments objects to combine.
     axis : int, optional
         Axis to concatenate along. If specify axis for
-        :class:`~xarray.DataArray` or :class:`~.xCentralMoments` input objects
+        :class:`~xarray.DataArray` or :class:`~.CentralMomentsXArray` input objects
         with out ``dim``, then determine ``dim`` from ``dim =
         first.dims[axis]`` where ``first`` is the first item in ``arrays``.
     dim : str, optional
         Dimension to concatenate along (used for :class:`~xarray.DataArray` and
-        :class:`~.xCentralMoments` objects only)
+        :class:`~.CentralMomentsXArray` objects only)
     **kwargs
         Extra arguments to :func:`numpy.concatenate` or :func:`xarray.concat`.
 
     Returns
     -------
-    output : ndarray or DataArray or CentralMoments or xCentralMoments
+    output : ndarray or DataArray or CentralMomentsArray or CentralMomentsXArray
         Concatenated object.  Type is the same as the elements of ``arrays``.
 
     Examples
@@ -880,22 +880,22 @@ def concat(
     Dimensions without coordinates: new, a, b, mom
 
 
-    You can also concatenate :class:`~.CentralMoments` and :class:`~.xCentralMoments` objects
+    You can also concatenate :class:`~.CentralMomentsArray` and :class:`~.CentralMomentsXArray` objects
 
-    >>> cx = cmomy.CentralMoments(x)
-    >>> cy = cmomy.CentralMoments(y)
+    >>> cx = cmomy.CentralMomentsArray(x)
+    >>> cy = cmomy.CentralMomentsArray(y)
     >>> concat((cx, cy), axis=1)
-    <CentralMoments(mom_ndim=1)>
+    <CentralMomentsArray(mom_ndim=1)>
     array([[[ 0.,  1.],
             [-0., -1.]],
     <BLANKLINE>
            [[ 2.,  3.],
             [-2., -3.]]])
 
-    >>> dcx = cmomy.xCentralMoments(dx)
-    >>> dcy = cmomy.xCentralMoments(dy)
+    >>> dcx = cmomy.CentralMomentsXArray(dx)
+    >>> dcy = cmomy.CentralMomentsXArray(dy)
     >>> concat((dcx, dcy), dim="new")
-    <xCentralMoments(mom_ndim=1)>
+    <CentralMomentsXArray(mom_ndim=1)>
     <xarray.DataArray (new: 2, a: 2, b: 1, mom: 2)> Size: 64B
     array([[[[ 0.,  1.]],
     <BLANKLINE>

@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 
 import cmomy
-from cmomy.wrapper.nparray import CentralMoments
+from cmomy import CentralMoments
 
 if TYPE_CHECKING:
     from collections.abc import Callable

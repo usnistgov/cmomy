@@ -110,7 +110,7 @@ def bootstrap_confidence_interval(
     theta_jack : ndarray
         Jackknife resampled data.  Needed for ``method`` ``'bca'``.
         Note that this array should have the same shape as ``theta_boot`` except along ``axis``.
-    alphas : float or iterable of floats
+    alphas : float or iterable of float
         The quantiles to use for confidence interval. If ``alpha`` is a float,
         then Use (alpha/2, 1-alpha/2) for confidence intervals (e.g., pass
         `alpha=0.05` for the two-sided 95% confidence interval). If ``alpha``

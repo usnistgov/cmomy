@@ -276,7 +276,7 @@ def select_moment(
 
     Returns
     -------
-    output : ndarray or DataArray or Dataset.
+    output : ndarray or DataArray or Dataset
         Same type as ``data``. If ``name`` is ``ave`` or ``var``, the last
         dimensions of ``output`` has shape ``mom_ndim`` with each element
         corresponding to the `ith` variable. If ``squeeze=True`` and

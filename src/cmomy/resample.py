@@ -52,7 +52,6 @@ from .core.xr_utils import (
     raise_if_dataset,
     select_axis_dim,
 )
-from .core.xr_utils import select_ndat as select_ndat  # noqa: PLC0414
 from .random import validate_rng
 
 if TYPE_CHECKING:
@@ -276,6 +275,61 @@ def indices_to_freq(
     return freq
 
 
+# * select ndat
+@docfiller.decorate
+def select_ndat(
+    data: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    axis: AxisReduce | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: Mom_NDim | None = None,
+) -> int:
+    """
+    Determine ndat from array.
+
+    Parameters
+    ----------
+    data : ndarray, DataArray, Dataset
+    {axis}
+    {dim}
+    {mom_ndim_optional}
+
+    Returns
+    -------
+    int
+        size of ``data`` along specified ``axis`` or ``dim``
+
+    Examples
+    --------
+    >>> data = np.zeros((2, 3, 4))
+    >>> select_ndat(data, axis=1)
+    3
+    >>> select_ndat(data, axis=-1, mom_ndim=2)
+    2
+
+
+    >>> xdata = xr.DataArray(data, dims=["x", "y", "mom"])
+    >>> select_ndat(xdata, dim="y")
+    3
+    >>> select_ndat(xdata, dim="mom", mom_ndim=1)
+    Traceback (most recent call last):
+    ...
+    ValueError: Cannot select moment dimension. axis=2, dim='mom'.
+    """
+    from cmomy.core.array_utils import normalize_axis_index
+
+    if is_xarray(data):
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        return data.sizes[dim]
+
+    if isinstance(axis, int):
+        data = np.asarray(data)
+        axis = normalize_axis_index(axis, data.ndim, mom_ndim=mom_ndim)
+        return data.shape[axis]
+    msg = "Must specify integer axis for array input."
+    raise TypeError(msg)
+
+
 # * General frequency table generation.
 def _validate_resample_array(
     x: ArrayLike | XArrayT,
@@ -399,7 +453,7 @@ def randsamp_freq(
     {ndat}
     {nrep}
     {nsamp}
-    {freq}
+    {freq_xarray}
     {indices}
     check : bool, default=False
         if `check` is `True`, then check `freq` and `indices` against `ndat` and `nrep`
@@ -697,7 +751,7 @@ def resample_data(  # noqa: PLR0913
     ----------
     {data_numpy_or_dataarray_or_dataset}
     {mom_ndim}
-    {freq}
+    {freq_xarray}
     {nrep_optional}
     {rng}
     {paired}
@@ -1008,7 +1062,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
         Value to analyze
     *y:  array-like or DataArray, optional
         Second value needed if len(mom)==2.
-    {freq}
+    {freq_xarray}
     {nrep_optional}
     {rng}
     {paired}

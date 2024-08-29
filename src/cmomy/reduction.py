@@ -48,7 +48,6 @@ from .core.xr_utils import (
     replace_coords_from_isel,
     select_axis_dim,
     select_axis_dim_mult,
-    select_ndat,
 )
 
 if TYPE_CHECKING:
@@ -1454,16 +1453,18 @@ def reduce_data_indexed(  # noqa: PLR0913
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
-    index, group_start, group_end = _validate_index(
-        ndat=select_ndat(data, axis=axis, dim=dim, mom_ndim=mom_ndim),
-        index=index,
-        group_start=group_start,
-        group_end=group_end,
-    )
 
     if isinstance(data, (xr.DataArray, xr.Dataset)):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
+
+        # Yes, doing this here and in nmpy section.
+        index, group_start, group_end = _validate_index(
+            ndat=data.sizes[dim],
+            index=index,
+            group_start=group_start,
+            group_end=group_end,
+        )
 
         xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_indexed,
@@ -1536,6 +1537,12 @@ def reduce_data_indexed(  # noqa: PLR0913
         dtype=dtype,
         recast=False,
         move_axis_to_end=move_axis_to_end,
+    )
+    index, group_start, group_end = _validate_index(
+        ndat=data.shape[axis],
+        index=index,
+        group_start=group_start,
+        group_end=group_end,
     )
 
     return _reduce_data_indexed(
