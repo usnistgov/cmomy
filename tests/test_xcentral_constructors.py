@@ -14,11 +14,11 @@ from cmomy import CentralMoments, resample, xCentralMoments
 if TYPE_CHECKING:
     from typing import Callable
 
-    from cmomy.core.typing import F
+    from cmomy.core.typing import FuncT
 
 
-def my_fixture(**kws) -> Callable[[F], F]:
-    return cast("Callable[[F], F]", pytest.fixture(scope="module", **kws))
+def my_fixture(**kws) -> Callable[[FuncT], FuncT]:
+    return cast("Callable[[FuncT], FuncT]", pytest.fixture(scope="module", **kws))
 
 
 @my_fixture(params=[3, (3, 3)])

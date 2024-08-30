@@ -5,7 +5,7 @@ Typing aliases (:mod:`cmomy.core.typing`)
 
 from __future__ import annotations
 
-from collections.abc import Collection, Hashable, Mapping, Sequence
+from collections.abc import Collection, Hashable, Iterable, Mapping, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -27,7 +27,7 @@ from numpy.typing import NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
-    from cmomy import CentralMomentsXArray
+    from cmomy import CentralMomentsArray, CentralMomentsXArray
 
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
     from .typing_compat import TypeAlias
@@ -38,12 +38,20 @@ if TYPE_CHECKING:
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
+    CentralMomentsDataArray: TypeAlias = CentralMomentsXArray[xr.DataArray]
+    CentralMomentsDataset: TypeAlias = CentralMomentsXArray[xr.Dataset]
+    CentralMomentsDataAny: TypeAlias = CentralMomentsXArray[Any]
+
+    CentralMomentsArrayAny: TypeAlias = CentralMomentsArray[Any]
+
+
 # * TypeVars
 #: General data set/array
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
+GenArrayT_ = TypeVar("GenArrayT_", NDArray[Any], xr.DataArray, xr.Dataset)
 #: DataArray or Dataset
 XArrayT = TypeVar("XArrayT", xr.DataArray, xr.Dataset)
-XArrayT2 = TypeVar("XArrayT2", xr.DataArray, xr.Dataset)
+XArrayT_ = TypeVar("XArrayT_", xr.DataArray, xr.Dataset)
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
 
 #: TypeVar of array types with restriction
@@ -55,8 +63,7 @@ ArrayT = TypeVar(  # type: ignore[misc]
     default=NDArray[np.float64],
 )
 
-FuncType = Callable[..., Any]
-F = TypeVar("F", bound=FuncType)
+FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
 FloatT = TypeVar(  # type: ignore[misc]
@@ -65,34 +72,26 @@ FloatT = TypeVar(  # type: ignore[misc]
     np.float64,
     default=Any,  # pyright: ignore[reportGeneralTypeIssues]
 )
-FloatT2 = TypeVar("FloatT2", np.float32, np.float64)
+FloatT_ = TypeVar("FloatT_", np.float32, np.float64)
 
 #: TypeVar of for np.generic dtype.
 ScalarT = TypeVar("ScalarT", bound=np.generic)
-ScalarT2 = TypeVar("ScalarT2", bound=np.generic)
+ScalarT_ = TypeVar("ScalarT_", bound=np.generic)
 
 #: TypeVar of floating point precision (all)
 FloatingT = TypeVar("FloatingT", bound="np.floating[Any]")
-FloatingT2 = TypeVar("FloatingT2", bound="np.floating[Any]")
+FloatingT_ = TypeVar("FloatingT_", bound="np.floating[Any]")
 
 DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
-
-
-# * Aliases
-if TYPE_CHECKING:
-    CentralMomentsDataArray: TypeAlias = CentralMomentsXArray[xr.DataArray]
-    CentralMomentsDataset: TypeAlias = CentralMomentsXArray[xr.Dataset]
 
 
 # ** Numpy
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
 AxisReduce: TypeAlias = Union[int, None]
-DimsReduce: TypeAlias = Union[Hashable, None]
 AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
 AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
-DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
 
 # Rng
 RngTypes: TypeAlias = Union[
@@ -158,6 +157,11 @@ Mom_NDim = Literal[1, 2]
 
 # * Xarray specific stuff
 # fix if using autodoc typehints...
+DimsReduce: TypeAlias = Union[Hashable, None]
+DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
+# This is what xarray uses for reduction/sampling dimensions
+Dims = Union[str, Collection[Hashable], EllipsisType, None]
+
 
 MomDims = Union[Hashable, "tuple[Hashable]", "tuple[Hashable, Hashable]"]
 MomDimsStrict = Union["tuple[Hashable]", "tuple[Hashable, Hashable]"]
@@ -167,11 +171,9 @@ XArrayCoordsType: TypeAlias = Union[
     Mapping[Any, Any],
     None,
 ]
-XArrayAttrsType: TypeAlias = Optional[Mapping[Any, Any]]
-XArrayNameType: TypeAlias = Optional[Hashable]
-XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
-XArrayIndexesType: TypeAlias = Any
-Dims = Union[str, Collection[Hashable], EllipsisType, None]
+AttrsType: TypeAlias = Optional[Mapping[Any, Any]]
+NameType: TypeAlias = Optional[Hashable]
+DimsType: TypeAlias = Union[str, Iterable[Hashable], None]
 KeepAttrs: TypeAlias = Union[
     Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
     bool,
@@ -181,9 +183,9 @@ Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
 
 # * Literals
-ArrayOrder = Literal["C", "F", "A", "K", None]
-ArrayOrderCFA = Literal["C", "F", "A", None]
 ArrayOrderCF = Literal["C", "F", None]
+ArrayOrderCFA = Literal["C", "F", "A", None]
+ArrayOrder = Literal["C", "F", "A", "K", None]
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
 MissingCoreDimOptions = Literal["raise", "copy", "drop"]

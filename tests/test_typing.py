@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 import numpy as np
 import xarray as xr
@@ -24,11 +24,11 @@ else:
     from typing import assert_type
 
 if TYPE_CHECKING:
-    from typing import Any
-
     from numpy.typing import ArrayLike, NDArray
 
     from cmomy.core.typing import (  # noqa: TCH004  # keep this in typecheck block...
+        CentralMomentsArrayAny,
+        CentralMomentsDataAny,
         CentralMomentsDataArray,
         CentralMomentsDataset,
         Groups,
@@ -40,8 +40,6 @@ if TYPE_CHECKING:
     NDArrayFloat64 = NDArray[np.float64]
     CentralMomentsArrayFloat32 = CentralMomentsArray[np.float32]
     CentralMomentsArrayFloat64 = CentralMomentsArray[np.float64]
-    CentralMomentsArrayAny = CentralMomentsArray[Any]
-    CentralMomentsXArrayAny = CentralMomentsXArray[Any]
 
 
 def typecheck_centralmoments_init(x32: NDArrayFloat32, x64: NDArrayFloat64) -> None:
@@ -77,8 +75,8 @@ def typecheck_centralmoments_init(x32: NDArrayFloat32, x64: NDArrayFloat64) -> N
 def typecheck_xcentralmoments_init(data: xr.DataArray) -> None:
     dataAny: Any = data
     assert_type(CentralMomentsXArray(data, mom_ndim=1), CentralMomentsDataArray)
-    assert_type(CentralMomentsXArray(dataAny, mom_ndim=1), CentralMomentsXArrayAny)
-    assert_type(CentralMomentsXArray(dataAny, mom_ndim=1), CentralMomentsXArrayAny)
+    assert_type(CentralMomentsXArray(dataAny, mom_ndim=1), CentralMomentsDataAny)
+    assert_type(CentralMomentsXArray(dataAny, mom_ndim=1), CentralMomentsDataAny)
     assert_type(
         CentralMomentsXArray(data.to_dataset(), mom_ndim=1), CentralMomentsDataset
     )
@@ -115,11 +113,11 @@ def typecheck_cls_astype(x32: NDArrayFloat32, x64: NDArrayFloat64) -> None:
 
     cx = c32.to_x()
     cs = cx.to_dataset()
-    cany: CentralMomentsXArrayAny = cs
+    cany: CentralMomentsDataAny = cs
 
     assert_type(cx.astype(np.float64), CentralMomentsDataArray)
     assert_type(cs.astype(np.float64), CentralMomentsDataset)
-    assert_type(cany.astype("f4"), CentralMomentsXArrayAny)
+    assert_type(cany.astype("f4"), CentralMomentsDataAny)
 
     cc = cx.to_c()
     assert_type(cc, CentralMomentsArrayAny)
@@ -591,8 +589,8 @@ def typecheck_assign_moment_central(
         CentralMomentsDataset,
     )
 
-    cxany: CentralMomentsXArrayAny = c32.to_x()
-    assert_type(cxany.assign_moment(weight=1.0), CentralMomentsXArrayAny)
+    cxany: CentralMomentsDataAny = c32.to_x()
+    assert_type(cxany.assign_moment(weight=1.0), CentralMomentsDataAny)
 
 
 def typecheck_concat(
@@ -983,7 +981,7 @@ def typecheck_wrapped_resample_and_reduce(
     c64: CentralMomentsArrayFloat64,
     ca: CentralMomentsDataArray,
     cs: CentralMomentsDataset,
-    cx: CentralMomentsXArrayAny,
+    cx: CentralMomentsDataAny,
     freq: NDArrayInt,
     out32: NDArrayFloat32,
     out64: NDArrayFloat64,
@@ -1028,7 +1026,7 @@ def typecheck_wrapped_resample_and_reduce(
 
     assert_type(ca.resample_and_reduce(dim="a", nrep=10), CentralMomentsDataArray)
     assert_type(cs.resample_and_reduce(dim="a", nrep=10), CentralMomentsDataset)
-    assert_type(cx.resample_and_reduce(dim="a", nrep=10), CentralMomentsXArrayAny)
+    assert_type(cx.resample_and_reduce(dim="a", nrep=10), CentralMomentsDataAny)
     assert_type(
         ca.resample_and_reduce(dim="a", nrep=10, dtype=np.float32),
         CentralMomentsDataArray,
@@ -1043,7 +1041,7 @@ def typecheck_wrapped_jackknife_and_reduce(
     c64: CentralMomentsArrayFloat64,
     ca: CentralMomentsDataArray,
     cs: CentralMomentsDataset,
-    cx: CentralMomentsXArrayAny,
+    cx: CentralMomentsDataAny,
     out32: NDArrayFloat32,
     out64: NDArrayFloat64,
     outany: NDArrayAny,
@@ -1093,7 +1091,7 @@ def typecheck_wrapped_jackknife_and_reduce(
         CentralMomentsDataArray,
     )
     assert_type(cs.jackknife_and_reduce(dim="a"), CentralMomentsDataset)
-    assert_type(cx.jackknife_and_reduce(dim="a"), CentralMomentsXArrayAny)
+    assert_type(cx.jackknife_and_reduce(dim="a"), CentralMomentsDataAny)
     assert_type(
         ca.jackknife_and_reduce(dim="a", dtype=np.float32), CentralMomentsDataArray
     )
@@ -1105,7 +1103,7 @@ def typecheck_wrapped_reduce(
     c64: CentralMomentsArrayFloat64,
     ca: CentralMomentsDataArray,
     cs: CentralMomentsDataset,
-    cx: CentralMomentsXArrayAny,
+    cx: CentralMomentsDataAny,
     out32: NDArrayFloat32,
     out64: NDArrayFloat64,
     outany: NDArrayAny,
@@ -1138,9 +1136,45 @@ def typecheck_wrapped_reduce(
 
     assert_type(ca.reduce(dim="a"), CentralMomentsDataArray)
     assert_type(cs.reduce(dim="a"), CentralMomentsDataset)
-    assert_type(cx.reduce(dim="a"), CentralMomentsXArrayAny)
+    assert_type(cx.reduce(dim="a"), CentralMomentsDataAny)
     assert_type(ca.reduce(dim="a", dtype=np.float32), CentralMomentsDataArray)
     assert_type(ca.reduce(dim="a", out=outany), CentralMomentsDataArray)
+
+
+def typecheck_wrapped_cumulative(
+    c32: CentralMomentsArrayFloat32,
+    c64: CentralMomentsArrayFloat64,
+    ca: CentralMomentsDataArray,
+    cs: CentralMomentsDataset,
+    cx: CentralMomentsDataAny,
+    out32: NDArrayFloat32,
+    out64: NDArrayFloat64,
+    outany: NDArrayAny,
+) -> None:
+    assert_type(c32.cumulative(axis=0), NDArrayFloat32)
+    assert_type(c64.cumulative(axis=0), NDArrayFloat64)
+
+    assert_type(c32.cumulative(axis=0, dtype=np.float64), NDArrayFloat64)
+    assert_type(c64.cumulative(axis=0, dtype=np.float32), NDArrayFloat32)
+
+    assert_type(c32.cumulative(axis=0, out=out64), NDArrayFloat64)
+    assert_type(c64.cumulative(axis=0, out=out32), NDArrayFloat32)
+
+    assert_type(c32.cumulative(axis=0, dtype=np.float32, out=out64), NDArrayFloat64)
+    assert_type(c64.cumulative(axis=0, dtype=np.float64, out=out32), NDArrayFloat32)
+    assert_type(
+        c64.cumulative(axis=0, dtype=np.float64, out=out32),
+        NDArrayFloat32,
+    )
+
+    assert_type(c32.cumulative(axis=0, out=outany), NDArrayAny)
+    assert_type(c32.cumulative(axis=0, dtype="f4"), NDArrayAny)
+
+    assert_type(ca.cumulative(dim="a"), xr.DataArray)
+    assert_type(cs.cumulative(dim="a"), xr.Dataset)
+    assert_type(cx.cumulative(dim="a"), Any)
+    assert_type(ca.cumulative(dim="a", dtype=np.float32), xr.DataArray)
+    assert_type(ca.cumulative(dim="a", out=outany), xr.DataArray)
 
 
 def typecheck_jackknife_data(

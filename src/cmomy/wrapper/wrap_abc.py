@@ -7,7 +7,7 @@ Idea is to Wrap ndarray, xr.DataArray, and xr.Dataset objects...
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 import numpy as np
 import xarray as xr
@@ -18,7 +18,9 @@ from cmomy.core.typing import GenArrayT
 from cmomy.core.utils import mom_shape_to_mom
 from cmomy.core.validate import (
     is_dataset,
+    is_xarray,
     validate_floating_dtype,
+    validate_mom_dims,
     validate_mom_ndim,
 )
 from cmomy.utils import assign_moment
@@ -46,6 +48,7 @@ if TYPE_CHECKING:
         MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
+        MomDims,
         Moments,
         MomentsStrict,
         NDArrayAny,
@@ -599,7 +602,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         self,
         axis: int | tuple[int, ...] | MissingType = MISSING,
         dest: int | tuple[int, ...] | MissingType = MISSING,
-        **kwargs: Any,
+        *,
+        dim: str | Sequence[Hashable] | MissingType = MISSING,
+        dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
     ) -> Self:
         """
         Generalized moveaxis
@@ -625,14 +630,15 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """
         from cmomy.utils import moveaxis
 
-        if isinstance(self._obj, xr.Dataset):
-            self._raise_not_implemented()
+        if is_dataset(self._obj):
+            self._raise_notimplemented_for_dataset()
 
         obj = moveaxis(
             self._obj,
             axis=axis,
             dest=dest,
-            **kwargs,
+            dim=dim,
+            dest_dim=dest_dim,
             mom_ndim=self._mom_ndim,
         )
 
@@ -756,9 +762,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @docfiller.decorate
     def cumulative(
         self,
+        *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         move_axis_to_end: bool = False,
+        out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
@@ -769,8 +780,17 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        **kwargs
-            Extra arguments to :func:`.convert.cumulative`
+        {axis_data_and_dim}
+        {move_axis_to_end}
+        {out}
+        {dtype}
+        {casting}
+        {order}
+        {parallel}
+        {keep_attrs}
+        {mom_dims_data}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
 
         Returns
         -------
@@ -783,18 +803,20 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """
         from cmomy.convert import cumulative
 
-        return cumulative(
+        return cumulative(  # type: ignore[no-any-return]
             self._obj,
-            mom_ndim=self._mom_ndim,
-            inverse=False,
-            out=None,
-            dtype=None,
-            mom_dims=getattr(self, "mom_dims", None),
             axis=axis,
             dim=dim,
+            mom_ndim=self._mom_ndim,
+            inverse=False,
             move_axis_to_end=move_axis_to_end,
+            out=out,
+            dtype=dtype,
+            casting=casting,
+            order=order,
             parallel=parallel,
             keep_attrs=keep_attrs,
+            mom_dims=getattr(self, "mom_dims", None),
             on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
@@ -804,7 +826,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         self,
         *,
         mom: tuple[int, int],
-        **kwargs: Any,
+        mom_dims2: MomDims | None = None,
+        keep_attrs: KeepAttrs = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Convert moments (mom_ndim=1) to comoments (mom_ndim=2).
@@ -812,6 +837,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         Parameters
         ----------
         {mom_moments_to_comoments}
+        mom_dims2 : tuple of str
+            Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
 
         Return
         ------
@@ -825,36 +855,73 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         self._raise_if_not_mom_ndim_1()
         from cmomy import convert
 
+        kws: dict[str, Any]
+        if is_xarray(self._obj):
+            from cmomy.core.validate import validate_mom_dims
+
+            mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
+            kws = {"mom_dims": mom_dims2}
+        else:
+            mom_dims2 = None
+            kws = {}
+
         return type(self)(
-            convert.moments_to_comoments(  # pyright: ignore[reportArgumentType]
+            convert.moments_to_comoments(
                 self._obj,
                 mom=mom,
-                **kwargs,
+                mom_dims=getattr(self, "mom_dims", None),
+                mom_dims2=mom_dims2,
+                keep_attrs=keep_attrs,
+                on_missing_core_dim=on_missing_core_dim,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
             mom_ndim=2,
+            **kws,
         )
 
     # *** .resample -----------------------------------------------------------
-    @abstractmethod
     @docfiller.decorate
-    def resample_and_reduce(
+    def resample_and_reduce(  # noqa: PLR0913
         self,
+        *,
+        freq: ArrayLike | xr.DataArray | GenArrayT | None = None,
+        nrep: int | None = None,
+        rng: RngTypes | None = None,
+        paired: bool = True,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
+        rep_dim: str = "rep",
+        move_axis_to_end: bool = False,
+        out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = None,
+        parallel: bool | None = None,
+        keep_attrs: KeepAttrs = None,
+        # dask specific...
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Bootstrap resample and reduce.
 
         Parameters
         ----------
-        {axis_data_and_dim}
         {freq}
         {nrep_optional}
         {rng}
+        {paired}
+        {axis_data_and_dim}
+        {rep_dim}
         {move_axis_to_end}
         {out}
         {dtype}
         {casting}
         {order}
         {parallel}
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
 
         Returns
         -------
@@ -863,7 +930,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             ``(...,shape[axis-1], nrep, shape[axis+1], ...)``,
             where ``nrep = freq.shape[0]``.
 
-
         See Also
         --------
         reduce
@@ -871,12 +937,101 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         ~.resample.freq_to_indices : convert frequency sample to index sample
         ~.resample.indices_to_freq : convert index sample to frequency sample
         ~.resample.resample_data : method to perform resampling
-        """
 
-    @abstractmethod
+        Examples
+        --------
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
+        >>> da = cmomy.CentralMomentsArray.from_vals(
+        ...     rng.random((10, 3)),
+        ...     mom=3,
+        ...     axis=0,
+        ... ).to_x(dims="rec")
+        >>> da
+        <CentralMomentsXArray(mom_ndim=1)>
+        <xarray.DataArray (rec: 3, mom_0: 4)> Size: 96B
+        array([[ 1.0000e+01,  5.2485e-01,  1.1057e-01, -4.6282e-03],
+               [ 1.0000e+01,  5.6877e-01,  6.8876e-02, -1.2745e-02],
+               [ 1.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02]])
+        Dimensions without coordinates: rec, mom_0
+
+        Note that for reproducible results, must set numba random
+        seed as well
+
+        >>> freq = cmomy.randsamp_freq(data=da.obj, dim="rec", nrep=5)
+        >>> da_resamp = da.resample_and_reduce(
+        ...     dim="rec",
+        ...     freq=freq,
+        ... )
+        >>> da_resamp
+        <CentralMomentsXArray(mom_ndim=1)>
+        <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
+        array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
+               [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
+               [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
+               [ 3.0000e+01,  5.5413e-01,  8.3204e-02, -1.1267e-02],
+               [ 3.0000e+01,  5.4899e-01,  8.6627e-02, -1.5407e-02]])
+        Dimensions without coordinates: rep, mom_0
+
+        Alternatively, we can resample and reduce
+
+        >>> indices = cmomy.resample.freq_to_indices(freq)
+        >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
+        <CentralMomentsXArray(mom_ndim=1)>
+        <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
+        array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
+               [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
+               [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
+               [ 3.0000e+01,  5.5413e-01,  8.3204e-02, -1.1267e-02],
+               [ 3.0000e+01,  5.4899e-01,  8.6627e-02, -1.5407e-02]])
+        Dimensions without coordinates: rep, mom_0
+
+        """
+        from cmomy.resample import resample_data
+
+        # pyright error due to `freq` above...
+        return self._new_like(
+            obj=resample_data(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
+                self._obj,  # pyright: ignore[reportArgumentType]
+                mom_ndim=self._mom_ndim,
+                freq=freq,
+                nrep=nrep,
+                rng=rng,
+                paired=paired,
+                axis=axis,
+                dim=dim,
+                rep_dim=rep_dim,
+                move_axis_to_end=move_axis_to_end,
+                dtype=dtype,
+                out=out,
+                casting=casting,
+                order=order,
+                parallel=parallel,
+                keep_attrs=keep_attrs,
+                mom_dims=getattr(self, "mom_dims", None),
+                on_missing_core_dim=on_missing_core_dim,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
+            )
+        )
+
     @docfiller.decorate
     def jackknife_and_reduce(
         self,
+        *,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
+        data_reduced: Self | GenArrayT | None = None,
+        rep_dim: str | None = "rep",
+        move_axis_to_end: bool = False,
+        out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = None,
+        parallel: bool | None = None,
+        keep_attrs: KeepAttrs = None,
+        # dask specific...
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Jackknife resample and reduce
@@ -888,22 +1043,50 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         data_reduced : array or {klass}
             Data reduced along ``axis``. Array of same type as ``self.obj`` or
             same type as ``self``.
+        {rep_dim}
         {move_axis_to_end}
         {out}
         {dtype}
         {casting}
         {order}
         {parallel}
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
+
 
         Returns
         -------
-        output : {klass}
+        object
             Instance of calling class with jackknife resampling along ``axis``.
 
         See Also
         --------
         ~.resample.jackknife_data
         """
+        if isinstance(data_reduced, type(self)):
+            data_reduced = data_reduced.obj
+
+        from cmomy.resample import jackknife_data
+
+        obj: GenArrayT = jackknife_data(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
+            self._obj,  # pyright: ignore[reportArgumentType]
+            mom_ndim=self._mom_ndim,
+            axis=axis,
+            dim=dim,
+            data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
+            rep_dim=rep_dim,
+            move_axis_to_end=move_axis_to_end,
+            out=out,
+            dtype=dtype,
+            casting=casting,
+            order=order,
+            parallel=parallel,
+            keep_attrs=keep_attrs,
+            on_missing_core_dim=on_missing_core_dim,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
+        )
+        return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]
 
     # *** .reduction ----------------------------------------------------------
     def _block_by(
@@ -975,6 +1158,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     def var(self, squeeze: bool = True) -> GenArrayT:
         """Variance (second central moment)."""
         return self.select_moment("var", squeeze=squeeze)
+
+    def std(self, squeeze: bool = True) -> GenArrayT:
+        """Standard deviation (ddof=0)."""
+        if is_dataset(self._obj):
+            self._raise_notimplemented_for_dataset()
+        return cast("GenArrayT", np.sqrt(self.var(squeeze=squeeze)))
 
     def cov(self) -> GenArrayT:
         """Covariance (or variance if ``mom_ndim==1``)."""
@@ -1067,6 +1256,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
     # ** Constructors ---------------------------------------------------------
     @classmethod
+    @abstractmethod
     @docfiller.decorate
     def zeros(
         cls,
@@ -1090,7 +1280,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         --------
         numpy.zeros
         """
-        raise NotImplementedError  # pragma: no cover
 
     @classmethod
     @abstractmethod
@@ -1202,7 +1391,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         raw: GenArrayT,
         *,
         mom_ndim: Mom_NDim,
-        **kwargs: Any,
+        out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = None,
+        keep_attrs: KeepAttrs = None,
+        mom_dims: MomDims | None = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Create object from raw moment data.
@@ -1216,6 +1412,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         raw : {t_array}
             Raw moment array.
         {mom_ndim}
+        {out}
+        {dtype}
+        {casting}
+        {order}
+        {keep_attrs}
+        {mom_dims}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
 
         Returns
         -------
@@ -1225,7 +1429,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         --------
         to_raw
         rmom
-        cmomy.convert.moments_type
+        .convert.moments_type
 
         Notes
         -----
@@ -1234,7 +1438,27 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """
         from cmomy import convert
 
+        kws: dict[str, Any] = (
+            {"mom_dims": validate_mom_dims(mom_dims, mom_ndim, raw)}
+            if is_xarray(raw)
+            else {}
+        )
+
         return cls(
-            obj=convert.moments_type(raw, mom_ndim=mom_ndim, to="central", **kwargs),  # pyright: ignore[reportArgumentType]
+            obj=convert.moments_type(
+                raw,
+                mom_ndim=mom_ndim,
+                to="central",
+                out=out,
+                dtype=dtype,
+                casting=casting,
+                order=order,
+                keep_attrs=keep_attrs,
+                on_missing_core_dim=on_missing_core_dim,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
+                **kws,
+            ),
             mom_ndim=mom_ndim,
+            **kws,
+            fastpath=True,
         )

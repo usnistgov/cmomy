@@ -43,11 +43,16 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         ArrayOrder,
         ArrayOrderCF,
+        AttrsType,
         AxisReduce,
         Casting,
+        CentralMomentsDataAny,
+        CentralMomentsDataArray,
+        CentralMomentsDataset,
         CoordsPolicy,
         Dims,
         DimsReduce,
+        DimsType,
         Groups,
         KeepAttrs,
         MissingCoreDimOptions,
@@ -57,14 +62,11 @@ if TYPE_CHECKING:
         MomDimsStrict,
         Moments,
         MomentsStrict,
+        NameType,
         NDArrayAny,
         RngTypes,
-        XArrayAttrsType,
         XArrayCoordsType,
-        XArrayDimsType,
-        XArrayIndexesType,
-        XArrayNameType,
-        XArrayT2,
+        XArrayT_,
     )
     from cmomy.core.typing_compat import Self
     from cmomy.wrapper.wrap_np import CentralMomentsArray
@@ -125,23 +127,21 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
     @overload
     def __getitem__(
-        self: CentralMomentsXArray[xr.DataArray],
+        self: CentralMomentsDataArray,
         key: Any,
-    ) -> CentralMomentsXArray[xr.DataArray]: ...
+    ) -> CentralMomentsDataArray: ...
     @overload
     def __getitem__(  # pyright: ignore[reportOverlappingOverload]
-        self: CentralMomentsXArray[xr.Dataset],
+        self: CentralMomentsDataset,
         key: Hashable,
-    ) -> CentralMomentsXArray[xr.DataArray]: ...
+    ) -> CentralMomentsDataArray: ...
     @overload
     def __getitem__(
-        self: CentralMomentsXArray[xr.Dataset],
+        self: CentralMomentsDataset,
         key: Any,
-    ) -> CentralMomentsXArray[xr.Dataset]: ...
+    ) -> CentralMomentsDataset: ...
 
-    def __getitem__(
-        self, key: Any
-    ) -> CentralMomentsXArray[xr.DataArray] | CentralMomentsXArray[xr.Dataset]:
+    def __getitem__(self, key: Any) -> CentralMomentsDataArray | CentralMomentsDataset:
         """
         Access variables or coordinates of this wrapped dataset as a DataArray or a
         subset of variables or a indexed dataset.
@@ -607,232 +607,6 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             raise ValueError(msg)
 
     # ** Interface to modules -------------------------------------------------
-    # *** .utils --------------------------------------------------------------
-    @docfiller_inherit_abc()
-    def moveaxis(
-        self,
-        axis: int | tuple[int, ...] | MissingType = MISSING,
-        dest: int | tuple[int, ...] | MissingType = MISSING,
-        dim: str | Sequence[Hashable] | MissingType = MISSING,
-        dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
-        **kwargs: Any,
-    ) -> Self:
-        """
-        Parameters
-        ----------
-        dim : str or sequence of hashable
-            Original dimensions to move (for DataArray).
-        dest_dim : str or sequence of hashable
-            Destination of each original dimension.
-        """
-        return super().moveaxis(
-            axis=axis, dest=dest, dim=dim, dest_dim=dest_dim, **kwargs
-        )
-
-    # *** .convert ------------------------------------------------------------
-    @docfiller_inherit_abc()
-    def moments_to_comoments(  # type: ignore[override]
-        self,
-        *,
-        mom: tuple[int, int],
-        mom_dims2: MomDims | None = None,
-        keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> Self:
-        """
-        Parameters
-        ----------
-        mom_dims2 : tuple of str
-            Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
-        {keep_attrs}
-        {on_missing_core_dim}
-        {apply_ufunc_kwargs}
-        """
-        self._raise_if_not_mom_ndim_1()
-        from cmomy import convert
-
-        mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
-
-        return type(self)(
-            convert.moments_to_comoments(
-                self._obj,
-                mom=mom,
-                mom_dims=self._mom_dims,
-                mom_dims2=mom_dims2,
-                keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            ),
-            mom_ndim=2,
-            mom_dims=mom_dims2,
-        )
-
-    # *** .resample -----------------------------------------------------------
-    @docfiller_inherit_abc()
-    def resample_and_reduce(  # noqa: PLR0913
-        self,
-        *,
-        freq: ArrayLike | xr.DataArray | XArrayT | None = None,
-        nrep: int | None = None,
-        rng: RngTypes | None = None,
-        paired: bool = True,
-        axis: AxisReduce | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        rep_dim: str = "rep",
-        move_axis_to_end: bool = False,
-        out: NDArrayAny | None = None,
-        dtype: DTypeLike = None,
-        casting: Casting = "same_kind",
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-        keep_attrs: KeepAttrs = None,
-        # dask specific...
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> Self:
-        """
-        Parameters
-        ----------
-        {paired}
-        {rep_dim}
-        {keep_attrs}
-        {on_missing_core_dim}
-        {apply_ufunc_kwargs}
-
-        Examples
-        --------
-        >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
-        >>> da = cmomy.CentralMomentsArray.from_vals(
-        ...     rng.random((10, 3)),
-        ...     mom=3,
-        ...     axis=0,
-        ... ).to_x(dims="rec")
-        >>> da
-        <CentralMomentsXArray(mom_ndim=1)>
-        <xarray.DataArray (rec: 3, mom_0: 4)> Size: 96B
-        array([[ 1.0000e+01,  5.2485e-01,  1.1057e-01, -4.6282e-03],
-               [ 1.0000e+01,  5.6877e-01,  6.8876e-02, -1.2745e-02],
-               [ 1.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02]])
-        Dimensions without coordinates: rec, mom_0
-
-        Note that for reproducible results, must set numba random
-        seed as well
-
-        >>> freq = cmomy.randsamp_freq(data=da.obj, dim="rec", nrep=5)
-        >>> da_resamp = da.resample_and_reduce(
-        ...     dim="rec",
-        ...     freq=freq,
-        ... )
-        >>> da_resamp
-        <CentralMomentsXArray(mom_ndim=1)>
-        <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
-        array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
-               [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
-               [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
-               [ 3.0000e+01,  5.5413e-01,  8.3204e-02, -1.1267e-02],
-               [ 3.0000e+01,  5.4899e-01,  8.6627e-02, -1.5407e-02]])
-        Dimensions without coordinates: rep, mom_0
-
-        Alternatively, we can resample and reduce
-
-        >>> indices = cmomy.resample.freq_to_indices(freq)
-        >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
-        <CentralMomentsXArray(mom_ndim=1)>
-        <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
-        array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
-               [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
-               [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
-               [ 3.0000e+01,  5.5413e-01,  8.3204e-02, -1.1267e-02],
-               [ 3.0000e+01,  5.4899e-01,  8.6627e-02, -1.5407e-02]])
-        Dimensions without coordinates: rep, mom_0
-
-        """
-        from cmomy.resample import resample_data
-
-        # pyright error due to `freq` above...
-        return self._new_like(
-            obj=resample_data(
-                self._obj,
-                mom_ndim=self._mom_ndim,
-                freq=freq,
-                nrep=nrep,
-                rng=rng,
-                paired=paired,
-                axis=axis,
-                dim=dim,
-                rep_dim=rep_dim,
-                move_axis_to_end=move_axis_to_end,
-                dtype=dtype,
-                out=out,
-                casting=casting,
-                order=order,
-                parallel=parallel,
-                keep_attrs=keep_attrs,
-                mom_dims=self._mom_dims,
-                on_missing_core_dim=on_missing_core_dim,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            )
-        )
-
-    @docfiller_inherit_abc()
-    def jackknife_and_reduce(
-        self,
-        *,
-        axis: AxisReduce | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        data_reduced: Self | XArrayT | None = None,
-        rep_dim: str | None = "rep",
-        move_axis_to_end: bool = False,
-        out: NDArrayAny | None = None,
-        dtype: DTypeLike = None,
-        casting: Casting = "same_kind",
-        order: ArrayOrder = None,
-        parallel: bool | None = None,
-        keep_attrs: KeepAttrs = None,
-        # dask specific...
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> Self:
-        """
-        Parameters
-        ----------
-        {rep_dim}
-        {keep_attrs}
-        {on_missing_core_dim}
-        {apply_ufunc_kwargs}
-        """
-        if isinstance(data_reduced, type(self)):
-            data_reduced = data_reduced.obj
-
-        from cmomy.resample import jackknife_data
-
-        obj = jackknife_data(
-            self._obj,
-            mom_ndim=self._mom_ndim,
-            axis=axis,
-            dim=dim,
-            data_reduced=data_reduced,
-            rep_dim=rep_dim,
-            move_axis_to_end=move_axis_to_end,
-            out=out,
-            dtype=dtype,
-            casting=casting,
-            order=order,
-            parallel=parallel,
-            keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
-            apply_ufunc_kwargs=apply_ufunc_kwargs,
-        )
-
-        return type(self)(
-            obj,
-            mom_ndim=self._mom_ndim,
-            mom_dims=self._mom_dims,
-            fastpath=True,
-        )
-
     # *** .reduction ----------------------------------------------------------
     @docfiller_inherit_abc()
     def reduce(  # noqa: PLR0913
@@ -1073,14 +847,6 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         return self._new_like(data)
 
-    # ** Access to underlying statistics --------------------------------------
-    def std(self, squeeze: bool = True) -> xr.DataArray:
-        """Standard deviation (only for wrapped DataArray)"""
-        if is_dataarray(self._obj):
-            return np.sqrt(self.var(squeeze=squeeze))  # type: ignore[return-value]
-        self._raise_notimplemented_for_dataset()
-        return None
-
     # ** Constructors ----------------------------------------------------------
     @classmethod
     @docfiller.decorate
@@ -1091,14 +857,13 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         val_shape: tuple[int, ...] | int | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrderCF | None = None,
-        dims: XArrayDimsType = None,
+        dims: DimsType = None,
         mom_dims: MomDims | None = None,
-        attrs: XArrayAttrsType = None,
+        attrs: AttrsType = None,
         coords: XArrayCoordsType = None,
-        name: XArrayNameType = None,
-        indexes: XArrayIndexesType = None,
+        name: NameType = None,
         template: xr.DataArray | None = None,
-    ) -> CentralMomentsXArray[xr.DataArray]:
+    ) -> CentralMomentsDataArray:
         """
         Create a new object with specified sizes.
 
@@ -1136,7 +901,6 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             attrs=attrs,
             coords=coords,
             name=name,
-            indexes=indexes,
             template=template,
         )
 
@@ -1146,11 +910,11 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @classmethod
     @docfiller.decorate
     def from_vals(  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls: type[CentralMomentsXArray[Any]],
-        x: XArrayT2,
-        *y: ArrayLike | xr.DataArray | XArrayT2,
+        cls: type[CentralMomentsDataAny],
+        x: XArrayT_,
+        *y: ArrayLike | xr.DataArray | XArrayT_,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | XArrayT2 | None = None,
+        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         mom_dims: MomDims | None = None,
@@ -1161,7 +925,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         keep_attrs: KeepAttrs = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> CentralMomentsXArray[XArrayT2]:
+    ) -> CentralMomentsXArray[XArrayT_]:
         """
         Create from observations/values.
 
@@ -1197,7 +961,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim)
-        obj: XArrayT2 = reduce_vals(
+        obj: XArrayT_ = reduce_vals(
             x,
             *y,
             mom=mom,
@@ -1225,14 +989,14 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @classmethod
     @docfiller.decorate
     def from_resample_vals(  # noqa: PLR0913  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls: type[CentralMomentsXArray[Any]],
-        x: XArrayT2,
-        *y: ArrayLike | xr.DataArray | XArrayT2,
+        cls: type[CentralMomentsDataAny],
+        x: XArrayT_,
+        *y: ArrayLike | xr.DataArray | XArrayT_,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | XArrayT2 | None = None,
+        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        freq: ArrayLike | xr.DataArray | XArrayT2 | None = None,
+        freq: ArrayLike | xr.DataArray | XArrayT_ | None = None,
         nrep: int | None = None,
         rng: RngTypes | None = None,
         move_axis_to_end: bool = True,
@@ -1246,7 +1010,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         keep_attrs: bool = True,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> CentralMomentsXArray[XArrayT2]:
+    ) -> CentralMomentsXArray[XArrayT_]:
         """
         Create from resample observations/values.
 
@@ -1313,7 +1077,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         from cmomy.resample import resample_vals
 
-        obj: XArrayT2 = resample_vals(
+        obj: XArrayT_ = resample_vals(
             x,
             *y,
             freq=freq,
@@ -1341,11 +1105,12 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             mom_dims=mom_dims,
         )
 
+    # Need this for pyright...
     @classmethod
     @docfiller_inherit_abc()
     def from_raw(  # type: ignore[override]
-        cls: type[CentralMomentsXArray[Any]],
-        raw: XArrayT2,
+        cls: type[CentralMomentsDataAny],
+        raw: XArrayT_,
         *,
         mom_ndim: Mom_NDim = 1,
         out: NDArrayAny | None = None,
@@ -1354,24 +1119,10 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         mom_dims: MomDims | None = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> CentralMomentsXArray[XArrayT2]:
-        """
-        Parameters
-        ----------
-        {out}
-        {dtype}
-        {keep_attrs}
-        {mom_dims}
-        {on_missing_core_dim}
-        {apply_ufunc_kwargs}
-        """
-        from cmomy import convert
-
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim)
-        obj: XArrayT2 = convert.moments_type(
-            raw,
+    ) -> CentralMomentsXArray[XArrayT_]:
+        return super().from_raw(  # pyright: ignore[reportReturnType]
+            raw=raw,
             mom_ndim=mom_ndim,
-            to="central",
             out=out,
             dtype=dtype,
             keep_attrs=keep_attrs,
@@ -1379,20 +1130,15 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
-        return cls(
-            obj=obj,
-            mom_dims=mom_dims,
-            mom_ndim=mom_ndim,
-        )
 
     # ** Xarray specific stuff ------------------------------------------------
     def to_dataset(
-        self: CentralMomentsXArray[xr.DataArray],
+        self: CentralMomentsDataArray,
         dim: Hashable | None = None,
         *,
         name: Hashable | None = None,
         promote_attrs: bool = False,
-    ) -> CentralMomentsXArray[xr.Dataset]:
+    ) -> CentralMomentsDataset:
         """
         Convert wrapped DataArray to Dataset
 
@@ -1433,11 +1179,11 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         )
 
     def to_dataarray(
-        self: CentralMomentsXArray[xr.Dataset],
+        self: CentralMomentsDataset,
         dim: Hashable = "variable",
         *,
         name: Hashable | None = None,
-    ) -> CentralMomentsXArray[xr.DataArray]:
+    ) -> CentralMomentsDataArray:
         """
         Convert wrapped Dataset to DataArray
 
