@@ -82,6 +82,7 @@ if TYPE_CHECKING:
         Moments,
         NDArrayAny,
         NDArrayInt,
+        RngTypes,
         XArrayT,
     )
 
@@ -92,7 +93,7 @@ def random_indices(
     nrep: int,
     ndat: int,
     nsamp: int | None = None,
-    rng: np.random.Generator | None = None,
+    rng: RngTypes | None = None,
     replace: bool = True,
 ) -> NDArray[IntDTypeT]:
     """
@@ -121,7 +122,7 @@ def random_freq(
     nrep: int,
     ndat: int,
     nsamp: int | None = None,
-    rng: np.random.Generator | None = None,
+    rng: RngTypes | None = None,
     replace: bool = True,
 ) -> NDArray[IntDTypeT]:
     """
@@ -150,14 +151,14 @@ def freq_to_indices(
     freq: XArrayT,
     *,
     shuffle: bool = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
 ) -> XArrayT: ...
 @overload
 def freq_to_indices(
     freq: ArrayLike,
     *,
     shuffle: bool = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
 ) -> NDArray[IntDTypeT]: ...
 
 
@@ -166,7 +167,7 @@ def freq_to_indices(
     freq: ArrayLike | XArrayT,
     *,
     shuffle: bool = True,
-    rng: np.random.Generator | None = None,
+    rng: RngTypes | None = None,
 ) -> NDArray[IntDTypeT] | XArrayT:
     """
     Convert a frequency array to indices array.
@@ -390,7 +391,7 @@ def _randsamp_freq_dataarray_or_dataset(
     paired: bool = True,
     mom_ndim: Mom_NDim | None = None,
     mom_dims: MomDims | None = None,
-    rng: np.random.Generator | None = None,
+    rng: RngTypes | None = None,
 ) -> xr.DataArray | XArrayT:
     """Create a resampling DataArray or Dataset."""
     dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)[1]
@@ -438,7 +439,7 @@ def randsamp_freq(
     mom_dims: MomDims | None = None,
     rep_dim: str = "rep",
     paired: bool = True,
-    rng: np.random.Generator | None = None,
+    rng: RngTypes | None = None,
     dtype: DTypeLike = np.int64,
     check: bool = False,
 ) -> NDArrayAny | xr.DataArray | XArrayT:
@@ -602,7 +603,7 @@ def resample_data(
     mom_ndim: Mom_NDim,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     paired: bool = ...,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
@@ -626,7 +627,7 @@ def resample_data(
     mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     paired: bool = ...,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
@@ -650,7 +651,7 @@ def resample_data(
     mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     paired: bool = ...,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
@@ -674,7 +675,7 @@ def resample_data(
     mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     paired: bool = ...,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
@@ -698,7 +699,7 @@ def resample_data(
     mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     paired: bool = ...,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
@@ -727,7 +728,7 @@ def resample_data(  # noqa: PLR0913
     mom_ndim: Mom_NDim,
     freq: ArrayLike | xr.DataArray | XArrayT | None = None,
     nrep: int | None = None,
-    rng: np.random.Generator | None = None,
+    rng: RngTypes | None = None,
     paired: bool = True,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
@@ -907,7 +908,7 @@ def resample_vals(
     mom: Moments,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     paired: bool = ...,
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
     axis: AxisReduce | MissingType = ...,
@@ -933,7 +934,7 @@ def resample_vals(
     mom: Moments,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
@@ -958,7 +959,7 @@ def resample_vals(
     mom: Moments,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
@@ -983,7 +984,7 @@ def resample_vals(
     mom: Moments,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
@@ -1008,7 +1009,7 @@ def resample_vals(
     mom: Moments,
     freq: ArrayLike | None = ...,
     nrep: int | None = ...,
-    rng: np.random.Generator | None = ...,
+    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
@@ -1035,7 +1036,7 @@ def resample_vals(  # noqa: PLR0913
     mom: Moments,
     freq: ArrayLike | xr.DataArray | XArrayT | None = None,
     nrep: int | None = None,
-    rng: np.random.Generator | None = None,
+    rng: RngTypes | None = None,
     paired: bool = True,
     weight: ArrayLike | xr.DataArray | XArrayT | None = None,
     axis: AxisReduce | MissingType = MISSING,

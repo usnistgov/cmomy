@@ -17,18 +17,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    from collections.abc import Sequence
-    from typing import Union
-
-    from .core.typing_compat import TypeAlias
-
-    SEED_TYPES: TypeAlias = Union[
-        int,
-        Sequence[int],
-        np.random.SeedSequence,
-        np.random.BitGenerator,
-        np.random.Generator,
-    ]
+    from .core.typing import RngTypes
 
 
 _DATA: dict[str, np.random.Generator] = {}
@@ -57,9 +46,13 @@ def _missing_internal_rng() -> bool:
     return "rng" not in _DATA
 
 
-def default_rng(seed: SEED_TYPES | None = None) -> np.random.Generator:
+def default_rng(seed: RngTypes | None = None) -> np.random.Generator:
     """
     Get default internal random number generator.
+
+    This is a shared default random number generator.  Calling it with a new
+    seed will create a new shared random generator.  To create a one off
+    generator, use :func:`numpy.random.default_rng`
 
     Parameters
     ----------
@@ -73,12 +66,14 @@ def default_rng(seed: SEED_TYPES | None = None) -> np.random.Generator:
         If called with ``seed=None`` (default), return the previously created rng
         (if already created). This means you can call ``default_rng(seed=...)``
         and subsequent calls of form ``default_rng()`` or ``default_rng(None)``
-        will continue rng sequence from first call with ``seed=...``. If New call
-        with ``seed`` set will create a new rng sequence. Note that if you pass a
+        will continue rng sequence from first call with ``seed=...``. If called
+        with ``seed``, create a new rng sequence. Note that if you pass a
         :class:`~numpy.random.Generator` for seed, that object will be
         returned, but in this case, the internal generator will not be altered.
 
-
+    See Also
+    --------
+    numpy.random.Generator
     """
     if isinstance(seed, np.random.Generator):
         return seed
@@ -95,7 +90,7 @@ def default_rng(seed: SEED_TYPES | None = None) -> np.random.Generator:
 
 # TODO(wpk): Allow passing in seed as rng
 def validate_rng(
-    rng: np.random.Generator | None, seed: int | None = None
+    rng: RngTypes | None,
 ) -> np.random.Generator:
     """
     Decide whether to use passed :class:`~numpy.random.Generator` or that from :func:`default_rng`.
@@ -103,21 +98,13 @@ def validate_rng(
     Parameters
     ----------
     rng :
-        If pass a rng, then use it.  Otherwise, use ``default_rng(seed)``
-    seed :
-        Seed to use if call :func:`default_rng`
+        If ``None``, use ``default_rng()``.
+        Otherwise, try to return ``np.random.default_rng(rng)``.  If this fails, just return rng
 
     Returns
     -------
     Generator
     """
     if rng is None:
-        return default_rng(seed=seed)
-
-    if not isinstance(rng, np.random.Generator):  # pyright: ignore[reportUnnecessaryIsInstance]
-        import warnings
-
-        msg = f"{type(rng)=} should be NoneType or numpy.random.Generator"
-        warnings.warn(msg, stacklevel=1)
-
-    return rng
+        return default_rng()
+    return np.random.default_rng(rng)

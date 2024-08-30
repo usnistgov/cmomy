@@ -50,6 +50,7 @@ if TYPE_CHECKING:
         MomentsStrict,
         NDArrayAny,
         NDArrayInt,
+        RngTypes,
         SelectMoment,
     )
     from cmomy.core.typing_compat import Self
@@ -1145,7 +1146,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         mom: Moments,
         freq: Any = None,
         nrep: int | None = None,
-        rng: np.random.Generator | None = None,
+        rng: RngTypes | None = None,
         weight: Any = None,
         axis: AxisReduce = -1,
         move_axis_to_end: bool = True,

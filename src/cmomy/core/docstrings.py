@@ -130,8 +130,10 @@ def _dummy_docstrings() -> None:
         data along sampled axis.
     ndat : int
         Size of data along resampled axis.
-    rng : :class:`~numpy.random.Generator`
-        Random number generator object.  Defaults to output of :func:`~.random.default_rng`.
+    rng : :class:`~numpy.random.Generator` or seed value
+        Random number generator object. Defaults to output of
+        :func:`~.random.default_rng`. If pass in a seed value, create a new
+        :class:`~numpy.random.Generator` object with this seed
 
 
     dims : hashable or sequence of hashable

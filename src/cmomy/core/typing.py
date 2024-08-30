@@ -94,6 +94,16 @@ AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
 AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
 DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
 
+# Rng
+RngTypes: TypeAlias = Union[
+    int,
+    Sequence[int],
+    np.random.SeedSequence,
+    np.random.BitGenerator,
+    np.random.Generator,
+]
+
+
 # Types
 DTypeAny: TypeAlias = Any
 FloatDTypes = Union[np.float32, np.float64]
