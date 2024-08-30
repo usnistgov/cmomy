@@ -11,11 +11,6 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
-from ._lib.factory import (
-    factory_convert,
-    factory_cumulative,
-    parallel_heuristic,
-)
 from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
@@ -39,6 +34,11 @@ from .core.validate import (
 from .core.xr_utils import (
     get_apply_ufunc_kwargs,
     select_axis_dim,
+)
+from .factory import (
+    factory_convert,
+    factory_cumulative,
+    parallel_heuristic,
 )
 
 if TYPE_CHECKING:

@@ -10,13 +10,6 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 import xarray as xr
 
-from ._lib.factory import (
-    factory_rolling_data,
-    factory_rolling_exp_data,
-    factory_rolling_exp_vals,
-    factory_rolling_vals,
-    parallel_heuristic,
-)
 from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
@@ -50,6 +43,13 @@ from .core.xr_utils import (
     get_apply_ufunc_kwargs,
     select_axis_dim,
     select_axis_dim_mult,
+)
+from .factory import (
+    factory_rolling_data,
+    factory_rolling_exp_data,
+    factory_rolling_exp_vals,
+    factory_rolling_vals,
+    parallel_heuristic,
 )
 
 if TYPE_CHECKING:

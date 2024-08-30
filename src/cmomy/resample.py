@@ -14,13 +14,6 @@ import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
-from ._lib.factory import (
-    factory_jackknife_data,
-    factory_jackknife_vals,
-    factory_resample_data,
-    factory_resample_vals,
-    parallel_heuristic,
-)
 from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
@@ -51,6 +44,13 @@ from .core.xr_utils import (
     get_apply_ufunc_kwargs,
     raise_if_dataset,
     select_axis_dim,
+)
+from .factory import (
+    factory_jackknife_data,
+    factory_jackknife_vals,
+    factory_resample_data,
+    factory_resample_vals,
+    parallel_heuristic,
 )
 from .random import validate_rng
 

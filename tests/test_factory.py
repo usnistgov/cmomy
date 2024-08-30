@@ -7,7 +7,6 @@ import pytest
 from cmomy._lib import (
     convert,
     convert_cov,
-    factory,
     indexed,
     indexed_cov,
     indexed_cov_parallel,
@@ -25,7 +24,7 @@ from cmomy._lib import (
     rolling_cov_parallel,
     rolling_parallel,
 )
-from cmomy._lib.factory import (
+from cmomy.factory import (
     factory_convert,
     factory_cumulative,
     factory_jackknife_data,
@@ -47,6 +46,7 @@ from cmomy._lib.factory import (
 if TYPE_CHECKING:
     from typing import Any, Callable
 
+    from cmomy import factory
     from cmomy.core.typing import Mom_NDim
 
     Func = Callable[..., Any]

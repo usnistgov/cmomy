@@ -1298,7 +1298,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
     @classmethod
     @docfiller_inherit_abc()
-    def from_raw(  # type: ignore[override]
+    def from_raw(  # pyright: ignore[reportIncompatibleMethodOverride]
         cls,
         raw: ArrayLike,
         *,

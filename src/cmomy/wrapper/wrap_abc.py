@@ -23,9 +23,8 @@ from cmomy.core.validate import (
     validate_mom_dims,
     validate_mom_ndim,
 )
+from cmomy.factory import factory_pusher, parallel_heuristic
 from cmomy.utils import assign_moment
-
-from .._lib.factory import factory_pusher, parallel_heuristic
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Hashable, Mapping, Sequence
@@ -35,7 +34,6 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike
 
-    from cmomy._lib.factory import Pusher
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayOrder,
@@ -57,6 +55,7 @@ if TYPE_CHECKING:
         SelectMoment,
     )
     from cmomy.core.typing_compat import Self
+    from cmomy.factory import Pusher
 
 
 @docfiller.decorate  # noqa: PLR0904

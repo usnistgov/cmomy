@@ -267,6 +267,9 @@ lint.extend-per-file-ignores."src/**/core/formatting.py" = [
     "D",
     "SLF001",
 ]
+lint.extend-per-file-ignores."src/**/factory.py" = [
+    "D",
+]
 lint.extend-per-file-ignores."src/**/{typing,random}.py" = [
     "A005",
 ]

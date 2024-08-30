@@ -190,7 +190,7 @@ def supports_parallel() -> bool:
     bool :
         ``True`` if supports parallel.  ``False`` otherwise.
     """
-    from .decorators import is_in_unsafe_thread_pool
+    from ._lib.decorators import is_in_unsafe_thread_pool
 
     return not is_in_unsafe_thread_pool()
 
@@ -228,13 +228,13 @@ def factory_pusher(
 
     _push_mod: ModuleType
     if mom_ndim == 1 and parallel:
-        from . import push_parallel as _push_mod
+        from ._lib import push_parallel as _push_mod
     elif mom_ndim == 1:
-        from . import push as _push_mod
+        from ._lib import push as _push_mod
     elif mom_ndim == 2 and parallel:
-        from . import push_cov_parallel as _push_mod
+        from ._lib import push_cov_parallel as _push_mod
     else:
-        from . import push_cov as _push_mod
+        from ._lib import push_cov as _push_mod
 
     return Pusher(
         val=_push_mod.push_val,
@@ -250,19 +250,20 @@ def factory_resample_vals(
     mom_ndim: Mom_NDim = 1,
     parallel: bool = True,
 ) -> ResampleVals:
+    """Resample values."""
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1:
         if parallel:
-            from .resample_parallel import resample_vals as _resample
+            from ._lib.resample_parallel import resample_vals as _resample
         else:
-            from .resample import resample_vals as _resample
+            from ._lib.resample import resample_vals as _resample
         return cast("ResampleVals", _resample)
 
     if parallel:
-        from .resample_cov_parallel import resample_vals as _resample_cov
+        from ._lib.resample_cov_parallel import resample_vals as _resample_cov
     else:
-        from .resample_cov import resample_vals as _resample_cov
+        from ._lib.resample_cov import resample_vals as _resample_cov
     return cast("ResampleVals", _resample_cov)
 
 
@@ -271,15 +272,16 @@ def factory_resample_data(
     mom_ndim: Mom_NDim = 1,
     parallel: bool = True,
 ) -> ResampleData:
+    """Resample data."""
     parallel = parallel and supports_parallel()
     if mom_ndim == 1 and parallel:
-        from .resample_parallel import resample_data_fromzero
+        from ._lib.resample_parallel import resample_data_fromzero
     elif mom_ndim == 1:
-        from .resample import resample_data_fromzero
+        from ._lib.resample import resample_data_fromzero
     elif parallel:
-        from .resample_cov_parallel import resample_data_fromzero
+        from ._lib.resample_cov_parallel import resample_data_fromzero
     else:
-        from .resample_cov import resample_data_fromzero
+        from ._lib.resample_cov import resample_data_fromzero
     return cast("ResampleData", resample_data_fromzero)
 
 
@@ -293,15 +295,17 @@ def factory_jackknife_vals(
 
     if mom_ndim == 1:
         if parallel:
-            from .resample_parallel import jackknife_vals_fromzero as _jackknife
+            from ._lib.resample_parallel import jackknife_vals_fromzero as _jackknife
         else:
-            from .resample import jackknife_vals_fromzero as _jackknife
+            from ._lib.resample import jackknife_vals_fromzero as _jackknife
         return cast("JackknifeVals", _jackknife)
 
     if parallel:
-        from .resample_cov_parallel import jackknife_vals_fromzero as _jackknife_cov
+        from ._lib.resample_cov_parallel import (
+            jackknife_vals_fromzero as _jackknife_cov,
+        )
     else:
-        from .resample_cov import jackknife_vals_fromzero as _jackknife_cov
+        from ._lib.resample_cov import jackknife_vals_fromzero as _jackknife_cov
     return cast("JackknifeVals", _jackknife_cov)
 
 
@@ -312,13 +316,13 @@ def factory_jackknife_data(
 ) -> JackknifeData:
     parallel = parallel and supports_parallel()
     if mom_ndim == 1 and parallel:
-        from .resample_parallel import jackknife_data_fromzero
+        from ._lib.resample_parallel import jackknife_data_fromzero
     elif mom_ndim == 1:
-        from .resample import jackknife_data_fromzero
+        from ._lib.resample import jackknife_data_fromzero
     elif parallel:
-        from .resample_cov_parallel import jackknife_data_fromzero
+        from ._lib.resample_cov_parallel import jackknife_data_fromzero
     else:
-        from .resample_cov import jackknife_data_fromzero
+        from ._lib.resample_cov import jackknife_data_fromzero
     return cast("JackknifeData", jackknife_data_fromzero)
 
 
@@ -331,15 +335,15 @@ def factory_reduce_vals(
     parallel = parallel and supports_parallel()
     if mom_ndim == 1:
         if parallel:
-            from .push_parallel import reduce_vals as _reduce
+            from ._lib.push_parallel import reduce_vals as _reduce
         else:
-            from .push import reduce_vals as _reduce
+            from ._lib.push import reduce_vals as _reduce
         return cast("ReduceVals", _reduce)
 
     if parallel:
-        from .push_cov_parallel import reduce_vals as _reduce_cov
+        from ._lib.push_cov_parallel import reduce_vals as _reduce_cov
     else:
-        from .push_cov import reduce_vals as _reduce_cov
+        from ._lib.push_cov import reduce_vals as _reduce_cov
     return cast("ReduceVals", _reduce_cov)
 
 
@@ -351,13 +355,13 @@ def factory_reduce_data(
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
-        from .push_parallel import reduce_data_fromzero
+        from ._lib.push_parallel import reduce_data_fromzero
     elif mom_ndim == 1:
-        from .push import reduce_data_fromzero
+        from ._lib.push import reduce_data_fromzero
     elif parallel:
-        from .push_cov_parallel import reduce_data_fromzero
+        from ._lib.push_cov_parallel import reduce_data_fromzero
     else:
-        from .push_cov import reduce_data_fromzero
+        from ._lib.push_cov import reduce_data_fromzero
 
     return cast("ReduceData", reduce_data_fromzero)
 
@@ -369,13 +373,13 @@ def factory_reduce_data_grouped(
 ) -> ReduceDataGrouped:
     parallel = parallel and supports_parallel()
     if mom_ndim == 1 and parallel:
-        from .indexed_parallel import reduce_data_grouped
+        from ._lib.indexed_parallel import reduce_data_grouped
     elif mom_ndim == 1:
-        from .indexed import reduce_data_grouped
+        from ._lib.indexed import reduce_data_grouped
     elif parallel:
-        from .indexed_cov_parallel import reduce_data_grouped
+        from ._lib.indexed_cov_parallel import reduce_data_grouped
     else:
-        from .indexed_cov import reduce_data_grouped
+        from ._lib.indexed_cov import reduce_data_grouped
 
     return cast("ReduceDataGrouped", reduce_data_grouped)
 
@@ -388,13 +392,13 @@ def factory_reduce_data_indexed(
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
-        from .indexed_parallel import reduce_data_indexed_fromzero
+        from ._lib.indexed_parallel import reduce_data_indexed_fromzero
     elif mom_ndim == 1:
-        from .indexed import reduce_data_indexed_fromzero
+        from ._lib.indexed import reduce_data_indexed_fromzero
     elif parallel:
-        from .indexed_cov_parallel import reduce_data_indexed_fromzero
+        from ._lib.indexed_cov_parallel import reduce_data_indexed_fromzero
     else:
-        from .indexed_cov import reduce_data_indexed_fromzero
+        from ._lib.indexed_cov import reduce_data_indexed_fromzero
 
     # cast because guvectorized with optional out
     return cast("ReduceDataIndexed", reduce_data_indexed_fromzero)
@@ -406,16 +410,16 @@ def factory_convert(mom_ndim: Mom_NDim = 1, to: ConvertStyle = "central") -> Con
     if to == "central":
         # raw to central
         if mom_ndim == 1:
-            from .convert import raw_to_central
+            from ._lib.convert import raw_to_central
         else:
-            from .convert_cov import raw_to_central
+            from ._lib.convert_cov import raw_to_central
         return cast("Convert", raw_to_central)
 
     # central to raw
     if mom_ndim == 1:
-        from .convert import central_to_raw
+        from ._lib.convert import central_to_raw
     else:
-        from .convert_cov import central_to_raw
+        from ._lib.convert_cov import central_to_raw
     return cast("Convert", central_to_raw)
 
 
@@ -429,22 +433,22 @@ def factory_cumulative(
     parallel = parallel and supports_parallel()
     if inverse:
         if mom_ndim == 1 and parallel:
-            from .push_parallel import cumulative_inverse as func
+            from ._lib.push_parallel import cumulative_inverse as func
         elif mom_ndim == 1:
-            from .push import cumulative_inverse as func
+            from ._lib.push import cumulative_inverse as func
         elif parallel:
-            from .push_cov_parallel import cumulative_inverse as func
+            from ._lib.push_cov_parallel import cumulative_inverse as func
         else:
-            from .push_cov import cumulative_inverse as func
+            from ._lib.push_cov import cumulative_inverse as func
 
     elif mom_ndim == 1 and parallel:
-        from .push_parallel import cumulative as func
+        from ._lib.push_parallel import cumulative as func
     elif mom_ndim == 1:
-        from .push import cumulative as func
+        from ._lib.push import cumulative as func
     elif parallel:
-        from .push_cov_parallel import cumulative as func
+        from ._lib.push_cov_parallel import cumulative as func
     else:
-        from .push_cov import cumulative as func
+        from ._lib.push_cov import cumulative as func
 
     return cast("Convert", func)
 
@@ -459,15 +463,15 @@ def factory_rolling_vals(
 
     if mom_ndim == 1:
         if parallel:
-            from .rolling_parallel import rolling_vals
+            from ._lib.rolling_parallel import rolling_vals
         else:
-            from .rolling import rolling_vals
+            from ._lib.rolling import rolling_vals
         return cast("RollingVals", rolling_vals)
 
     if parallel:
-        from .rolling_cov_parallel import rolling_vals as _rolling_cov
+        from ._lib.rolling_cov_parallel import rolling_vals as _rolling_cov
     else:
-        from .rolling_cov import rolling_vals as _rolling_cov
+        from ._lib.rolling_cov import rolling_vals as _rolling_cov
     return cast("RollingVals", _rolling_cov)
 
 
@@ -479,13 +483,13 @@ def factory_rolling_data(
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
-        from .rolling_parallel import rolling_data
+        from ._lib.rolling_parallel import rolling_data
     elif mom_ndim == 1:
-        from .rolling import rolling_data
+        from ._lib.rolling import rolling_data
     elif parallel:
-        from .rolling_cov_parallel import rolling_data
+        from ._lib.rolling_cov_parallel import rolling_data
     else:
-        from .rolling_cov import rolling_data
+        from ._lib.rolling_cov import rolling_data
 
     return cast("RollingData", rolling_data)
 
@@ -499,15 +503,15 @@ def factory_rolling_exp_vals(
 
     if mom_ndim == 1:
         if parallel:
-            from .rolling_parallel import rolling_exp_vals
+            from ._lib.rolling_parallel import rolling_exp_vals
         else:
-            from .rolling import rolling_exp_vals
+            from ._lib.rolling import rolling_exp_vals
         return cast("RollingExpVals", rolling_exp_vals)
 
     if parallel:
-        from .rolling_cov_parallel import rolling_exp_vals as _rolling_cov
+        from ._lib.rolling_cov_parallel import rolling_exp_vals as _rolling_cov
     else:
-        from .rolling_cov import rolling_exp_vals as _rolling_cov
+        from ._lib.rolling_cov import rolling_exp_vals as _rolling_cov
     return cast("RollingExpVals", _rolling_cov)
 
 
@@ -519,12 +523,12 @@ def factory_rolling_exp_data(
     parallel = parallel and supports_parallel()
 
     if mom_ndim == 1 and parallel:
-        from .rolling_parallel import rolling_exp_data
+        from ._lib.rolling_parallel import rolling_exp_data
     elif mom_ndim == 1:
-        from .rolling import rolling_exp_data
+        from ._lib.rolling import rolling_exp_data
     elif parallel:
-        from .rolling_cov_parallel import rolling_exp_data
+        from ._lib.rolling_cov_parallel import rolling_exp_data
     else:
-        from .rolling_cov import rolling_exp_data
+        from ._lib.rolling_cov import rolling_exp_data
 
     return cast("RollingExpData", rolling_exp_data)

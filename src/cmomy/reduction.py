@@ -11,13 +11,6 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from ._lib.factory import (
-    factory_reduce_data,
-    factory_reduce_data_grouped,
-    factory_reduce_data_indexed,
-    factory_reduce_vals,
-    parallel_heuristic,
-)
 from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
@@ -48,6 +41,13 @@ from .core.xr_utils import (
     replace_coords_from_isel,
     select_axis_dim,
     select_axis_dim_mult,
+)
+from .factory import (
+    factory_reduce_data,
+    factory_reduce_data_grouped,
+    factory_reduce_data_indexed,
+    factory_reduce_vals,
+    parallel_heuristic,
 )
 
 if TYPE_CHECKING:
