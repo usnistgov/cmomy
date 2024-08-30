@@ -413,7 +413,7 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     mom_ndim: Mom_NDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
 
     kws: RollingExpDict = {"alpha": alpha, "adjust": adjust, "min_periods": min_periods}
 
@@ -581,7 +581,7 @@ def test_rolling_exp_weight(
     a = rolling.rolling_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
     )
-    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)  # pyright: ignore[reportCallIssue]
+    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)
     np.testing.assert_allclose(a, b)
 
     c = rolling.rolling_exp_data(

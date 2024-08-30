@@ -582,7 +582,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             values = func_or_method(self._obj, *args, **kwargs)
 
         if _reorder and hasattr(self, "mom_dims"):
-            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportGeneralTypeIssues, reportAttributeAccessIssue]
+            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
 
         return self.new_like(
             obj=values,
@@ -704,7 +704,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         keep_attrs: KeepAttrs = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-        **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,  # pyright: ignore[reportRedeclaration]
+        **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
     ) -> Self:
         """
         Create object with update weight, average, etc.

@@ -206,7 +206,7 @@ def freq_to_indices(
     indices_all: list[NDArrayAny] = []
 
     # validate freq -> indices
-    nsamps = freq.sum(-1)  # pyright: ignore[reportUnknownMemberType]
+    nsamps = freq.sum(-1)
     if any(nsamps[0] != nsamps):
         msg = "Inconsistent number of samples from freq array"
         raise ValueError(msg)
@@ -264,7 +264,7 @@ def indices_to_freq(
         return xout
 
     from ._lib.utils import (
-        randsamp_indices_to_freq,  # pyright: ignore[reportUnknownVariableType]
+        randsamp_indices_to_freq,
     )
 
     indices = np.asarray(indices, np.int64)
@@ -371,7 +371,7 @@ def _validate_resample_array(
 
         else:
             # only restriction is that values in [0, ndat)
-            min_, max_ = x.min(), x.max()  # pyright: ignore[reportUnknownMemberType]
+            min_, max_ = x.min(), x.max()
             if min_ < 0 or max_ >= ndat:
                 msg = f"Indices range [{min_}, {max_}) outside [0, {ndat - 1})"
                 raise ValueError(msg)
@@ -901,7 +901,7 @@ def _resample_data(
 # * Resample vals
 # ** overloads
 @overload
-def resample_vals(  # pyright: ignore[reportOverlappingOverload]
+def resample_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
@@ -1029,7 +1029,7 @@ def resample_vals(
 
 # ** public api
 @docfiller.decorate
-def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR0913
+def resample_vals(  # noqa: PLR0913
     x: ArrayLike | XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
@@ -1175,7 +1175,7 @@ def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR091
                 *(d if d != dim else rep_dim for d in x.dims),  # type: ignore[union-attr]
                 *mom_dims,
             ]
-            xout = xout.transpose(..., *dims_order)  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., *dims_order)
 
         return xout
 
@@ -1896,7 +1896,7 @@ def jackknife_vals(  # noqa: PLR0913
         )
 
         if not move_axis_to_end and isinstance(x, xr.DataArray):
-            xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., *x.dims, *mom_dims)
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
         return xout

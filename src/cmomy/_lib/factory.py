@@ -280,7 +280,7 @@ def factory_resample_data(
         from .resample_cov_parallel import resample_data_fromzero
     else:
         from .resample_cov import resample_data_fromzero
-    return cast("ResampleData", resample_data_fromzero)  # pyright: ignore[reportReturnType]
+    return cast("ResampleData", resample_data_fromzero)
 
 
 # * Jackknife

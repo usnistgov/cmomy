@@ -182,7 +182,7 @@ def test_from_vals(other) -> None:
 
     t = xCentralMoments.from_vals(
         *scramble_xr(*other.xy_tuple_xr),
-        weight=scramble_xr(other.w_xr)[0],  # pyright: ignore[reportArgumentType]
+        weight=scramble_xr(other.w_xr)[0],
         dim="rec",
         mom=other.mom,
     )
@@ -289,7 +289,7 @@ def test_init_reduce(other) -> None:
     cmomy.random.default_rng(0)
 
     datas = xr.concat([s.obj for s in other.S_xr], dim="rec")
-    datas = scramble_xr(datas)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
+    datas = scramble_xr(datas)[0].transpose(*(..., *other.s_xr.mom_dims))
 
     t = other.cls_xr(
         datas,
@@ -301,7 +301,7 @@ def test_init_reduce(other) -> None:
 def test_push_datas(other) -> None:
     datas_orig = xr.concat([s.obj for s in other.S_xr], dim="rec")
 
-    datas = scramble_xr(datas_orig)[0].transpose(*(..., *other.s_xr.mom_dims))  # pyright: ignore[reportAttributeAccessIssue]
+    datas = scramble_xr(datas_orig)[0].transpose(*(..., *other.s_xr.mom_dims))
 
     # push xarrays
     t = other.s_xr.zeros_like()

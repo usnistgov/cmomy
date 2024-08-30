@@ -161,7 +161,7 @@ XArrayAttrsType: TypeAlias = Optional[Mapping[Any, Any]]
 XArrayNameType: TypeAlias = Optional[Hashable]
 XArrayDimsType: TypeAlias = Union[Hashable, Sequence[Hashable], None]
 XArrayIndexesType: TypeAlias = Any
-Dims = Union[str, Collection[Hashable], EllipsisType, None]  # pyright: ignore[reportGeneralTypeIssues]
+Dims = Union[str, Collection[Hashable], EllipsisType, None]
 KeepAttrs: TypeAlias = Union[
     Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
     bool,

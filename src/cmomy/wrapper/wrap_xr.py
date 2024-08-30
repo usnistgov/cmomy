@@ -654,7 +654,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
 
         return type(self)(
-            convert.moments_to_comoments(  # pyright: ignore[reportArgumentType]
+            convert.moments_to_comoments(
                 self._obj,
                 mom=mom,
                 mom_dims=self._mom_dims,
@@ -1511,7 +1511,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
     def compute(self, **kwargs: Any) -> Self:
         """Interface to :meth:`xarray.DataArray.compute` and :meth:`xarray.Dataset.compute`"""
-        return self._new_like(self._obj.compute(**kwargs))  # pyright: ignore[reportUnknownMemberType,reportUnknownArgumentType]
+        return self._new_like(self._obj.compute(**kwargs))  # pyright: ignore[reportUnknownMemberType]
 
     def chunk(self, *args: Any, **kwargs: Any) -> Self:
         """Interface to :meth:`xarray.DataArray.chunk` and :meth:`xarray.Dataset.chunk`"""

@@ -15,7 +15,7 @@ else:
 
 def short_numpy_repr(*args, **kwargs):
     if hasattr(ff, "short_array_repr"):
-        f = ff.short_array_repr  # pyright: ignore[reportAttributeAccessIssue]
+        f = ff.short_array_repr
     elif hasattr(ff, "short_numpy_repr"):  # pragma: no cover
         f = ff.short_numpy_repr  # pyright: ignore[reportAttributeAccessIssue]
     else:  # pragma: no cover
@@ -110,6 +110,7 @@ def repr_html(x):
 
     else:
         sections += [numpy_section(x.data)]
+
         header_components += [
             f"<div class='xr-obj-type'>{type(values)}</div>",
         ]

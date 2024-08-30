@@ -426,7 +426,7 @@ def assign_moment(
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,  # pyright: ignore[reportRedeclaration]
+    **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
 ) -> NDArray[ScalarT] | XArrayT:
     r"""
     Update weights of moments array.
@@ -809,7 +809,7 @@ def _vals_to_data(
     _x, _w, *_y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))
     if out is None:
         val_shape: tuple[int, ...] = np.broadcast_shapes(
-            *(_.shape for _ in (_x, *_y, _w))  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownArgumentType]
+            *(_.shape for _ in (_x, *_y, _w))
         )
         out = np.zeros((*val_shape, *mom_to_mom_shape(mom)), dtype=dtype)
     else:

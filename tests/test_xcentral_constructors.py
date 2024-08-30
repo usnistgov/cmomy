@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def my_fixture(**kws) -> Callable[[F], F]:
-    return cast("Callable[[F], F]", pytest.fixture(scope="module", **kws))  # pyright: ignore[reportReturnType]
+    return cast("Callable[[F], F]", pytest.fixture(scope="module", **kws))
 
 
 @my_fixture(params=[3, (3, 3)])
@@ -124,7 +124,7 @@ def test_from_raw(dc, dcx) -> None:
 
     if mom_ndim == 2:
         with pytest.raises(ValueError):
-            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim + 1)  # type: ignore[assignment] # pyright: ignore[reportArgumentType]
+            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim + 1)  # type: ignore[assignment]
 
 
 def test_from_raws(dc, dcx) -> None:

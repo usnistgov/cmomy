@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
-    from numpy.typing import DTypeLike
+    from numpy.typing import DTypeLike, NDArray
 
     from .typing import (
         AxisReduce,
@@ -35,7 +35,12 @@ if TYPE_CHECKING:
 
 
 # * TypeGuards ----------------------------------------------------------------
-def is_dataarray(x: object) -> TypeIs[xr.DataArray]:
+def is_ndarray(x: Any) -> TypeIs[NDArray[Any]]:
+    """Typeguard ndarray."""
+    return isinstance(x, np.ndarray)
+
+
+def is_dataarray(x: Any) -> TypeIs[xr.DataArray]:
     """Typeguard dataarray."""
     return isinstance(x, xr.DataArray)
 
@@ -244,12 +249,12 @@ def validate_mom_dims(
     if isinstance(mom_dims, str):
         validated = (mom_dims,)
     elif isinstance(mom_dims, (tuple, list)):
-        validated = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+        validated = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType]
     else:
         msg = f"Unknown {type(mom_dims)=}.  Expected str or Sequence[str]"
         raise TypeError(msg)
 
-    if len(validated) != mom_ndim:  # pyright: ignore[reportUnknownArgumentType]
+    if len(validated) != mom_ndim:
         msg = f"mom_dims={validated} inconsistent with {mom_ndim=}"
         raise ValueError(msg)
     return cast("MomDimsStrict", validated)

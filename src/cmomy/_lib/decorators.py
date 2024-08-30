@@ -84,7 +84,7 @@ def myguvectorize(
             (writable,) if isinstance(writable, str) else tuple(writable)
         )
 
-    return cast(  # pyright: ignore[reportReturnType]
+    return cast(
         "Callable[[F], F]",
         guvectorize(
             *args,
@@ -120,7 +120,7 @@ def myjit(
     if inline is not None:
         kwargs["inline"] = "always" if inline else "never"
 
-    return cast(  # pyright: ignore[reportReturnType]
+    return cast(
         "Callable[[F], F]",
         njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),
     )

@@ -290,7 +290,7 @@ def _moments_type(
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(  # pyright: ignore[reportOverlappingOverload]
+def cumulative(
     values_in: XArrayT,
     *,
     axis: AxisReduce | MissingType = ...,
@@ -391,7 +391,7 @@ def cumulative(
 
 
 @docfiller.decorate
-def cumulative(  # pyright: ignore[reportOverlappingOverload]
+def cumulative(
     values_in: ArrayLike | XArrayT,
     *,
     axis: AxisReduce | MissingType = MISSING,
@@ -580,7 +580,7 @@ def _validate_mom_moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
+def moments_to_comoments(
     values: XArrayT,
     *,
     mom: tuple[int, int],
@@ -637,7 +637,7 @@ def moments_to_comoments(
 
 
 @docfiller.decorate
-def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
+def moments_to_comoments(
     values: ArrayLike | XArrayT,
     *,
     mom: tuple[int, int],

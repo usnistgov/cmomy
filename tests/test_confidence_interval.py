@@ -10,8 +10,8 @@ import pytest
 import xarray as xr
 
 try:
-    from scipy import stats as st  # pyright: ignore[reportMissingImports]
-    from scipy.special import ndtr, ndtri  # pyright: ignore[reportMissingImports]
+    from scipy import stats as st
+    from scipy.special import ndtr, ndtri
 
     HAS_SCIPY = True
 except ImportError:

@@ -17,6 +17,7 @@ from cmomy.core.prepare import (
 )
 from cmomy.core.utils import mom_to_mom_shape
 from cmomy.core.validate import (
+    is_ndarray,
     validate_axis,
     validate_floating_dtype,
     validate_mom_and_mom_ndim,
@@ -129,12 +130,12 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 copy=copy_if_needed(copy),
                 order=order,
             )
-        elif not isinstance(obj, np.ndarray):  # pyright: ignore[reportUnnecessaryIsInstance]
+        elif not is_ndarray(obj):
             msg = f"Must pass ndarray as data.  Not {type(obj)=}"
             raise TypeError(msg)
 
         super().__init__(
-            obj,  # pyright: ignore[reportUnknownArgumentType]
+            obj,
             mom_ndim=mom_ndim,
             fastpath=fastpath,
         )
@@ -652,7 +653,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         # pyright error due to `freq` above...
         return type(self)(
             obj=resample_data(
-                self._obj,  # pyright: ignore[reportArgumentType]
+                self._obj,
                 mom_ndim=self._mom_ndim,
                 freq=freq,
                 nrep=nrep,
@@ -1354,7 +1355,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             axis = last_dim
 
         indices = np.asarray(indices, dtype=np.int64)
-        obj = np.take(obj, indices, axis=axis)  # pyright: ignore[reportUnknownMemberType]
+        obj = np.take(obj, indices, axis=axis)
 
         return self.new_like(obj)  # type: ignore[return-value]
 

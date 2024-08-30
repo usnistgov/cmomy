@@ -55,7 +55,7 @@ class DataContainer:
             weight=self.w,
             mom=mom,
             axis=axis,
-            **kws,  # pyright: ignore[reportArgumentType]
+            **kws,
         )
 
     @classmethod

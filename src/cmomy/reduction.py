@@ -92,7 +92,7 @@ if TYPE_CHECKING:
 
 
 @overload
-def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
+def reduce_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
@@ -199,7 +199,7 @@ def reduce_vals(
 
 # TODO(wpk): add tests for keepdims...
 @docfiller.decorate
-def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
+def reduce_vals(
     x: ArrayLike | XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
@@ -555,7 +555,7 @@ def reduce_data(
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         xout: XArrayT
         if use_reduce:
-            xout = data.reduce(  # type: ignore[assignment] # pyright: ignore[reportUnknownMemberType]
+            xout = data.reduce(  # type: ignore[assignment]
                 _reduce_data,
                 dim=dim,
                 keep_attrs=bool(keep_attrs),
@@ -807,7 +807,7 @@ def factor_by(
             dtype=object,
         )
 
-    codes, groups = factorize(_by, sort=sort)  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
+    codes, groups = factorize(_by, sort=sort)  # pyright: ignore[reportUnknownVariableType]
 
     codes = codes.astype(np.int64)
     if isinstance(_by, (pd.Index, pd.MultiIndex)):
@@ -1706,7 +1706,7 @@ def resample_data_indexed(
 
     index, start, end, scales = freq_to_index_start_end_scales(freq)
 
-    return reduce_data_indexed(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
+    return reduce_data_indexed(
         data=data,
         mom_ndim=mom_ndim,
         index=index,
@@ -1716,7 +1716,7 @@ def resample_data_indexed(
         axis=axis,
         move_axis_to_end=move_axis_to_end,
         parallel=parallel,
-        out=out,  # pyright: ignore[reportArgumentType]
+        out=out,
         dtype=dtype,
         casting=casting,
         order=order,

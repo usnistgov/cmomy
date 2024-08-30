@@ -283,7 +283,7 @@ def _optional_zero_missing_weight(
 
 # ** Data
 @overload
-def rolling_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_data(
     data: XArrayT,
     *,
     window: int,
@@ -404,7 +404,7 @@ def rolling_data(
 
 
 @docfiller.decorate
-def rolling_data(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR0913
+def rolling_data(  # noqa: PLR0913
     data: ArrayLike | XArrayT,
     *,
     window: int,
@@ -588,7 +588,7 @@ def _rolling_data(
 
 # * Vals
 @overload
-def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
@@ -714,7 +714,7 @@ def rolling_vals(
 
 
 @docfiller.decorate
-def rolling_vals(  # pyright: ignore[reportOverlappingOverload] # noqa: PLR0913
+def rolling_vals(  # noqa: PLR0913
     x: ArrayLike | XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     mom: Moments,
@@ -931,13 +931,13 @@ def _rolling_vals(
         valid[axis_neg - mom_ndim] = slice(-shift, None)
         out = out[tuple(valid)]
 
-    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)  # pyright: ignore[reportReturnType, reportArgumentType]
+    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)
 
 
 # * Move Exponential
 # ** Data
 @overload
-def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_data(
     data: XArrayT,
     alpha: ArrayLike,
     *,
@@ -1053,7 +1053,7 @@ def rolling_exp_data(
 
 
 @docfiller.decorate
-def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR0913
+def rolling_exp_data(  # noqa: PLR0913
     data: ArrayLike | XArrayT,
     alpha: ArrayLike,
     *,
@@ -1242,7 +1242,7 @@ def _prepare_alpha_array(
     return alpha_axis, alpha
 
 
-def _rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
+def _rolling_exp_data(
     data: NDArrayAny,
     alpha: NDArrayAny,
     *,
@@ -1298,7 +1298,7 @@ def _rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
 
 # ** Vals
 @overload
-def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     alpha: ArrayLike | xr.DataArray | XArrayT,
@@ -1424,7 +1424,7 @@ def rolling_exp_vals(
 
 
 @docfiller.decorate
-def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]  # noqa: PLR0913
+def rolling_exp_vals(  # noqa: PLR0913
     x: ArrayLike | XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     alpha: ArrayLike | xr.DataArray | XArrayT,
@@ -1637,4 +1637,4 @@ def _rolling_exp_vals(
         signature=(dtype, dtype, np.bool_, np.int64, *(dtype,) * (len(args) + 1)),
     )
 
-    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)  # pyright: ignore[reportReturnType, reportArgumentType]
+    return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)

@@ -77,7 +77,7 @@ class Data:
 
     def _get_data(self, style: str | None = None) -> NDArrayAny:
         if style is None or style == "total":
-            return default_rng.random(self.shape)  # pyright: ignore[reportReturnType]
+            return default_rng.random(self.shape)
         if style == "broadcast":
             return default_rng.random(self.shape[self.axis])
         msg = "bad style"
@@ -131,7 +131,7 @@ class Data:
         else:
             X = [(x,) for x in X]  # type: ignore[misc]
 
-        return W, X  # type: ignore[return-value] # pyright: ignore[reportReturnType]
+        return W, X  # type: ignore[return-value]
 
     @property
     def W(self) -> list[NDArrayAny] | list[None]:

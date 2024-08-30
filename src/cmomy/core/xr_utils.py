@@ -107,7 +107,7 @@ def select_axis_dim(
 
     if dim is not MISSING:
         axis = data.get_axis_num(dim)
-        if axis >= data.ndim - (0 if mom_ndim is None else mom_ndim):  # pyright: ignore[reportOperatorIssue]
+        if axis >= data.ndim - (0 if mom_ndim is None else mom_ndim):
             msg = f"Cannot select moment dimension. {axis=}, {dim=}."
             raise ValueError(msg)
 
@@ -122,7 +122,7 @@ def select_axis_dim(
         msg = f"Unknown dim {dim} and axis {axis}"
         raise TypeError(msg)
 
-    return axis, dim  # pyright: ignore[reportReturnType]
+    return axis, dim
 
 
 def select_axis_dim_mult(  # noqa: C901
@@ -208,7 +208,7 @@ def move_mom_dims_to_end(
             msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
             raise ValueError(msg)
 
-        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        x = x.transpose(..., *mom_dims)
 
     return x
 
@@ -229,7 +229,7 @@ def replace_coords_from_isel(
     Useful for adding back coordinates to reduced object.
     """
     from xarray.core.indexes import (
-        isel_indexes,  # pyright: ignore[reportUnknownVariableType]
+        isel_indexes,
     )
     from xarray.core.indexing import is_fancy_indexer
 
@@ -241,7 +241,7 @@ def replace_coords_from_isel(
         msg = "no fancy indexers for this"
         raise ValueError(msg)
 
-    indexes, index_variables = isel_indexes(da_original.xindexes, indexers)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+    indexes, index_variables = isel_indexes(da_original.xindexes, indexers)
 
     coords = {}
     for coord_name, coord_value in da_original._coords.items():  # noqa: SLF001  # pyright: ignore[reportPrivateUsage]
