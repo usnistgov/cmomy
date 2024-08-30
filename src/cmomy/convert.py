@@ -788,12 +788,12 @@ def concat(
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def concat(
-    arrays: Iterable[CentralMomentsXArray[FloatT]],
+    arrays: Iterable[CentralMomentsXArray[XArrayT]],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> CentralMomentsXArray[FloatT]: ...
+) -> CentralMomentsXArray[XArrayT]: ...
 @overload
 def concat(
     arrays: Iterable[NDArray[ScalarT]],

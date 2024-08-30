@@ -27,6 +27,8 @@ from numpy.typing import NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
+    from cmomy import CentralMomentsXArray
+
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
@@ -41,6 +43,7 @@ if TYPE_CHECKING:
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
 #: DataArray or Dataset
 XArrayT = TypeVar("XArrayT", xr.DataArray, xr.Dataset)
+XArrayT2 = TypeVar("XArrayT2", xr.DataArray, xr.Dataset)
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
 
 #: TypeVar of array types with restriction
@@ -77,6 +80,11 @@ NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
 
 
 # * Aliases
+if TYPE_CHECKING:
+    CentralMomentsDataArray: TypeAlias = CentralMomentsXArray[xr.DataArray]
+    CentralMomentsDataset: TypeAlias = CentralMomentsXArray[xr.Dataset]
+
+
 # ** Numpy
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
@@ -185,3 +193,6 @@ ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
 CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
 BootStrapMethod: TypeAlias = Literal["percentile", "basic", "bca"]
+BlockByModes: TypeAlias = Literal[
+    "drop_first", "drop_last", "expand_first", "expand_last"
+]

@@ -272,11 +272,11 @@ def test_init() -> None:
     assert c.mom == (3,)
 
     with pytest.raises(TypeError):
-        xCentralMoments(data, mom_ndim=1)  # type: ignore[call-overload]
+        xCentralMoments(data, mom_ndim=1)  # type: ignore[type-var]
 
-    data = xr.DataArray(np.zeros((2, 3, 4)), dims=("a", "b", "mom"))  # type: ignore[assignment]
+    xdata = xr.DataArray(np.zeros((2, 3, 4)), dims=("a", "b", "mom"))
 
-    c = xCentralMoments(data, mom_ndim=1)  # type: ignore[call-overload]
+    c = xCentralMoments(xdata, mom_ndim=1)
 
     assert c.dims == ("a", "b", "mom")
     assert c.mom == (3,)
@@ -399,19 +399,19 @@ def test_resample_and_reduce(other, rng) -> None:
             # block:
             xtest(
                 t1.obj,
-                tx.block(dim=dim, block_size=None).obj.isel({dim: 0}),
+                tx.reduce(dim=dim, block=-1).obj.isel({dim: 0}),
             )
 
 
 @pytest.mark.parametrize("mom_ndim", [1, 2])
-@pytest.mark.parametrize("block_size", [6, 9])
-def test_block_simple(rng, mom_ndim, block_size) -> None:
+@pytest.mark.parametrize("block", [6, 9])
+def test_block_simple(rng, mom_ndim, block) -> None:
     data = rng.random((10, 4, 4))
     c = cmomy.CentralMoments(data, mom_ndim=mom_ndim)
 
-    c0 = cmomy.CentralMoments(data[:block_size, ...], mom_ndim=mom_ndim)
+    c0 = cmomy.CentralMoments(data[:block, ...], mom_ndim=mom_ndim)
 
-    cc = c.block(block_size, axis=0).pipe(np.squeeze, _reorder=False)
+    cc = c.reduce(block=block, axis=0).pipe(np.squeeze, _reorder=False)
     cc0 = c0.reduce(axis=0)
 
     np.testing.assert_allclose(cc, cc0)
@@ -419,7 +419,7 @@ def test_block_simple(rng, mom_ndim, block_size) -> None:
     cx = c.to_x()
     c0x = c0.to_x()
     xr.testing.assert_allclose(
-        cx.block(block_size, dim="dim_0").isel(dim_0=0).obj,
+        cx.reduce(block=block, dim="dim_0").isel(dim_0=0).obj,
         c0x.reduce(dim="dim_0").obj,
     )
 

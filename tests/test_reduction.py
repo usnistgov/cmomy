@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 from functools import partial
 
 import numpy as np
@@ -10,6 +11,27 @@ import pytest
 import xarray as xr
 
 import cmomy
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "expected"),
+    [
+        ({"ndat": 5, "block": -1}, nullcontext([0] * 5)),
+        ({"ndat": 5, "block": 5}, nullcontext([0] * 5)),
+        ({"ndat": 5, "block": 6}, pytest.raises(ValueError)),
+        ({"ndat": 4, "block": 1}, nullcontext([0, 1, 2, 3])),
+        ({"ndat": 4, "block": 2}, nullcontext([0, 0, 1, 1])),
+        ({"ndat": 4, "block": 3}, nullcontext([0, 0, 0, -1])),
+        ({"ndat": 5, "block": 2, "mode": "drop_last"}, nullcontext([0, 0, 1, 1, -1])),
+        ({"ndat": 5, "block": 2, "mode": "expand_last"}, nullcontext([0, 0, 1, 1, 1])),
+        ({"ndat": 5, "block": 2, "mode": "drop_first"}, nullcontext([-1, 0, 0, 1, 1])),
+        ({"ndat": 5, "block": 2, "mode": "expand_first"}, nullcontext([0, 0, 0, 1, 1])),
+    ],
+)
+def test_block_by(kwargs, expected) -> None:
+    with expected as e:
+        by = cmomy.reduction.block_by(**kwargs)
+        np.testing.assert_allclose(by, e)
 
 
 @pytest.mark.parametrize(

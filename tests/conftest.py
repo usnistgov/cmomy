@@ -11,7 +11,7 @@ from module_utilities import cached
 import cmomy.random
 import cmomy.reduction
 import cmomy.resample
-from cmomy import CentralMoments, xCentralMoments
+from cmomy import CentralMomentsArray, CentralMomentsXArray
 
 from ._simple_cmom import get_cmom, get_comom
 
@@ -66,8 +66,8 @@ class Data:
         return self.style == "broadcast"
 
     @property
-    def cls(self) -> type[CentralMoments]:
-        return CentralMoments
+    def cls(self) -> type[CentralMomentsArray[Any]]:
+        return CentralMomentsArray[Any]
 
     @cached.prop
     def val_shape(self) -> tuple[int, ...]:
@@ -166,13 +166,13 @@ class Data:
         )
 
     @cached.prop
-    def s(self) -> CentralMoments:
+    def s(self) -> CentralMomentsArray[Any]:
         s = self.cls.zeros(val_shape=self.val_shape, mom=self.mom)
         s.push_vals(*self.xy_tuple, weight=self.w, axis=self.axis)
         return s
 
     @cached.prop
-    def S(self) -> CentralMoments:
+    def S(self) -> CentralMomentsArray[Any]:
         return [  # type: ignore[return-value]
             self.cls.from_vals(
                 *xx,
@@ -295,10 +295,10 @@ class Data:
     # xcentral specific stuff
     @property
     def cls_xr(self):
-        return xCentralMoments
+        return CentralMomentsXArray
 
     @cached.prop
-    def s_xr(self) -> xCentralMoments:
+    def s_xr(self) -> CentralMomentsXArray[xr.DataArray]:
         return self.s.to_x()
 
     @cached.prop

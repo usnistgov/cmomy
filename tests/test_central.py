@@ -248,8 +248,8 @@ def test_raise_if_scalar() -> None:
     c = CentralMoments.zeros(mom=2)
 
     match = r"Not implemented for scalar"
-    with pytest.raises(ValueError, match=match):
-        c.block(None, axis=0)
+    with pytest.raises(ValueError, match="No dimension.*"):
+        c.reduce(block=-1, axis=0)
 
     indices = np.zeros((10, 10), dtype=np.int64)
     with pytest.raises(ValueError, match=match):
@@ -510,14 +510,14 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
 
     np.testing.assert_allclose(
         c3.obj,
-        c.block(2, axis=0).obj,
+        c.reduce(block=2, axis=0).obj,
     )
 
     # using grouped
     group_idx = np.arange(5).repeat(2)
     np.testing.assert_allclose(
         c.reduce(by=group_idx, axis=0).to_numpy(),
-        c.block(2, axis=0).to_numpy(),
+        c.reduce(block=2, axis=0).to_numpy(),
     )
 
     c1 = CentralMoments(c.obj[:, ::2, ...], mom_ndim=mom_ndim)
@@ -526,11 +526,11 @@ def test_block(rng, mom_ndim: Mom_NDim) -> None:
     # move to last dimension
     c3 = (c1 + c2).moveaxis(1, -1)
 
-    np.testing.assert_allclose(c3.obj, c.block(2, axis=1))
+    np.testing.assert_allclose(c3.obj, c.reduce(block=2, axis=1))
 
-    np.testing.assert_allclose(c.block(None, axis=0).obj[0, ...], c.reduce(axis=0))
+    np.testing.assert_allclose(c.reduce(block=-1, axis=0).obj[0, ...], c.reduce(axis=0))
     np.testing.assert_allclose(
-        c.reduce(by=group_idx, axis=1).to_numpy(), c.block(2, axis=1).to_numpy()
+        c.reduce(by=group_idx, axis=1).to_numpy(), c.reduce(block=2, axis=1).to_numpy()
     )
 
 
@@ -541,7 +541,7 @@ def test_block_odd_size(rng) -> None:
     data[:, 1] = x
     data[:, 2] = 0
 
-    c0 = CentralMoments(data, mom_ndim=1).block(3, axis=0)
+    c0 = CentralMoments(data, mom_ndim=1).reduce(axis=0, block=3)
 
     c1 = CentralMoments.from_vals(x[:9].reshape(3, -1), mom=2, axis=1)
     np.testing.assert_allclose(c0, c1)

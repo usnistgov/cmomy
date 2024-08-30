@@ -64,6 +64,7 @@ if TYPE_CHECKING:
         AxesGUFunc,
         AxisReduce,
         AxisReduceMult,
+        BlockByModes,
         Casting,
         CoordsPolicy,
         DimsReduce,
@@ -663,6 +664,75 @@ def _reduce_data(
 
 # * Grouped -------------------------------------------------------------------
 # ** utilities
+def block_by(
+    ndat: int,
+    block: int,
+    mode: BlockByModes = "drop_last",
+) -> NDArrayInt:
+    """
+    Get groupby array for block reduction.
+
+    Parameters
+    ----------
+    ndat : int
+        Size of ``by``.
+    block : int
+        Block size. Negative values is a single block.
+    mode : {drop_first, drop_last, expand_first, expand_last}
+        What to do if ndat does not divide equally by ``block``.
+
+        - "drop_first" : drop first samples
+        - "drop_last" : drop last samples
+        - "expand_first": expand first block size
+        - "expand_last": expand last block size
+
+    Returns
+    -------
+    by : ndarray
+        Group array for block reduction.
+
+    See Also
+    --------
+    reduce_data_grouped
+
+    Examples
+    --------
+    >>> block_by(5, 2)
+    array([ 0,  0,  1,  1, -1])
+
+    >>> block_by(5, 2, mode="drop_first")
+    array([-1,  0,  0,  1,  1])
+
+    >>> block_by(5, 2, mode="expand_first")
+    array([0, 0, 0, 1, 1])
+
+    >>> block_by(5, 2, mode="expand_last")
+    array([0, 0, 1, 1, 1])
+
+    """
+    if block <= 0 or block == ndat:
+        return np.broadcast_to(np.int64(0), ndat)
+
+    if block > ndat:
+        msg = f"{block=} > {ndat=}."
+        raise ValueError(msg)
+
+    if mode not in {"drop_first", "drop_last", "expand_first", "expand_last"}:
+        msg = f"Unknown {mode=}"
+        raise ValueError(msg)
+
+    nblock = ndat // block
+    by = np.arange(nblock).repeat(block).astype(np.int64, copy=False)
+    if len(by) == ndat:
+        return by
+
+    shift = ndat - len(by)
+    pad_width = (shift, 0) if mode.endswith("_first") else (0, shift)
+    if mode.startswith("drop"):
+        return np.pad(by, pad_width, mode="constant", constant_values=-1)
+    return np.pad(by, pad_width, mode="edge")
+
+
 def factor_by(
     by: Groups,
     sort: bool = True,

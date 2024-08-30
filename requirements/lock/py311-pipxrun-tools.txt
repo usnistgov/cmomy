@@ -54,7 +54,7 @@ pexpect==4.9.0            # via ipython
 pip==24.2                 # via grayskull
 pkginfo==1.10.0           # via conda-lock, grayskull, twine
 platformdirs==4.2.2       # via virtualenv
-progressbar2==4.4.2       # via grayskull
+progressbar2==4.5.0       # via grayskull
 prompt-toolkit==3.0.47    # via ipython
 ptyprocess==0.7.0         # via pexpect
 pure-eval==0.2.3          # via stack-data
@@ -63,7 +63,7 @@ pydantic==2.8.2           # via conda-lock
 pydantic-core==2.20.1     # via pydantic
 pygments==2.18.0          # via ipython, readme-renderer, rich
 pylev==1.4.0              # via clikit
-pyright==1.1.377          # via -r requirements/pipxrun-tools.txt
+pyright==1.1.378          # via -r requirements/pipxrun-tools.txt
 python-utils==3.8.2       # via progressbar2
 pyyaml==6.0.2             # via conda-lock
 rapidfuzz==3.9.6          # via grayskull
@@ -90,7 +90,7 @@ toolz==0.12.1             # via conda-lock
 traitlets==5.14.3         # via ipython, matplotlib-inline
 twine==5.1.1              # via -r requirements/pipxrun-tools.txt
 typing-extensions==4.12.2  # via conda-lock, ipython, mypy, pydantic, pydantic-core, python-utils
-urllib3==1.26.19          # via conda-lock, requests, twine
+urllib3==1.26.20          # via conda-lock, requests, twine
 virtualenv==20.26.3       # via conda-lock
 wcwidth==0.2.13           # via prompt-toolkit
 webencodings==0.5.1       # via html5lib

@@ -1,7 +1,7 @@
 """Central moments wrappers."""
 
-from .np_array import CentralMomentsArray
-from .xr_array import CentralMomentsXArray
+from .wrap_np import CentralMomentsArray
+from .wrap_xr import CentralMomentsXArray
 
 #: Alias to :class:`cmomy.CentralMomentsArray`
 CentralMoments = CentralMomentsArray

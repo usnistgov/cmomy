@@ -704,7 +704,7 @@ def resample_data(
     dim: DimsReduce | MissingType = ...,
     rep_dim: str = ...,
     move_axis_to_end: bool = ...,
-    out: None = ...,
+    out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
     order: ArrayOrder = ...,
@@ -1397,8 +1397,7 @@ def jackknife_data(
     dim: DimsReduce | MissingType = ...,
     rep_dim: str | None = ...,
     move_axis_to_end: bool = ...,
-    # thing should be out: NDArrayAny | None = ...
-    out: None = ...,
+    out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
     order: ArrayOrder = ...,
