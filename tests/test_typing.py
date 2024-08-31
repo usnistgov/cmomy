@@ -189,6 +189,8 @@ def typecheck_reduce_data(
     assert_type(reduce_data(x32, mom_ndim=1), NDArrayFloat32)
     assert_type(reduce_data(x64, mom_ndim=1), NDArrayFloat64)
 
+    assert_type(reduce_data(xany, mom_ndim=1), NDArrayAny)
+
     assert_type(reduce_data(x32, mom_ndim=1, dtype=np.float64), NDArrayFloat64)
     assert_type(reduce_data(x64, mom_ndim=1, dtype=np.float32), NDArrayFloat32)
 

@@ -12,6 +12,7 @@ import xarray as xr
 
 import cmomy
 from cmomy import rolling
+from cmomy.core.validate import is_dataarray
 
 if TYPE_CHECKING:
     from typing import TypedDict
@@ -522,7 +523,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         adjust=adjust,
     ).transpose(*dx.dims, ...)
 
-    assert isinstance(xout, xr.DataArray)
+    assert is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
     xout = rolling.rolling_exp_data(
@@ -533,7 +534,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         adjust=adjust,
     )
 
-    assert isinstance(xout, xr.DataArray)
+    assert is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
 

@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import xarray as xr
@@ -16,7 +15,6 @@ from cmomy.core.prepare import (
     xprepare_values_for_reduction,
 )
 from cmomy.core.validate import (
-    are_same_type,
     is_dataarray,
     is_dataset,
     is_xarray,
@@ -25,6 +23,7 @@ from cmomy.core.validate import (
     validate_mom_dims,
 )
 from cmomy.core.xr_utils import (
+    astype_dtype_dict,
     contains_dims,
     get_apply_ufunc_kwargs,
     get_mom_shape,
@@ -32,7 +31,7 @@ from cmomy.core.xr_utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Hashable, Iterable, Sequence
+    from collections.abc import Callable, Hashable, Iterable, Mapping, Sequence
     from typing import Any, Literal
 
     from numpy.typing import ArrayLike, DTypeLike
@@ -174,12 +173,12 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @docfiller_inherit_abc()
     def new_like(  # type: ignore[override]
         self,
-        obj: NDArrayAny | XArrayT | None = None,
+        obj: ArrayLike | XArrayT | None = None,
         *,
         copy: bool | None = None,
         deep: bool = True,
         verify: bool = False,
-        dtype: DTypeLike = None,
+        dtype: DTypeLike | Mapping[Hashable, DTypeLike] = None,
         fastpath: bool = False,
     ) -> Self:
         """
@@ -188,26 +187,25 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         deep : bool
             Parameter to :meth:`~xarray.Dataset.copy` or :meth:`~xarray.DataArray.copy`.
         """
-        # TODO(wpk): edge case of passing in new xarray data with different dimensions.
+        # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
         obj_: XArrayT
         if obj is None:
-            # TODO(wpk): different type for dtype in xarray.
-            obj_ = xr.zeros_like(self._obj, dtype=dtype)  # type: ignore[arg-type]
-            copy = False
-            dtype = None
-        elif isinstance(obj, np.ndarray):
-            if is_dataarray(self._obj):
-                obj_ = self._obj.copy(data=obj)
-            else:
-                msg = "Can only pass an array for wrapped DataArray."
-                raise TypeError(msg)
-        else:
-            obj_ = obj
+            # TODO(wpk): different type for dtype in xarray (can be a mapping...)
+            # Also can probably speed this up by validating dtype here...
+            return type(self)(
+                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]
+                mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
+                fastpath=fastpath,
+            )
 
-        assert is_xarray(obj_)  # noqa: S101
-        if are_same_type(self._obj, obj_):
-            msg = f"Can only pass in objects conformable to {type(self._obj)}"
+        if type(self._obj) is type(obj):
+            obj_ = cast("XArrayT", obj)
+        elif is_dataarray(self._obj):
+            obj_ = self._obj.copy(data=obj)
+        else:
+            msg = f"Can only pass in objects conformable to {type(self._obj)}.  Passed in {type(obj)=}"
             raise TypeError(msg)
 
         # minimal check on shape and that mom_dims are present....
@@ -223,7 +221,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         if not fastpath:
             copy = False if copy is None else copy
             if dtype:
-                obj_ = obj_.astype(dtype, copy=copy)  # pyright: ignore[reportUnknownMemberType]
+                obj_ = obj_.astype(astype_dtype_dict(self._obj, dtype), copy=copy)  # pyright: ignore[reportUnknownMemberType]
             elif copy:
                 obj_ = obj_.copy(deep=deep)
 
@@ -265,12 +263,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         dtype : dtype or mapping of hashable to dtype
             If ``self.obj`` is a :class:`~xarray.Dataset`, passing a mapping will update only certain variables.
         """
-        if isinstance(dtype, Mapping):
-            if is_dataarray(self._obj):
-                msg = "Passing a mapping for `dtype` only allowed for Dataset."
-                raise ValueError(msg)
-            dtype = dict(self._obj.dtypes, **dtype)  # pyright: ignore[reportCallIssue, reportUnknownMemberType]
-
+        dtype = astype_dtype_dict(self._obj, dtype)
         # Reimplement with a a full new_like to defer dtype check to __init__
         return self.new_like(
             obj=self._obj.astype(  # pyright: ignore[reportUnknownMemberType]

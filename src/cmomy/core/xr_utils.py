@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import (
+    Mapping,
+)
 from typing import TYPE_CHECKING, cast
-
-import numpy as np
 
 from cmomy.core.typing import MomentsStrict
 
@@ -12,6 +13,7 @@ from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .missing import MISSING
 from .validate import (
     is_dataset,
+    is_ndarray,
     validate_mom_dims,
     validate_not_none,
 )
@@ -20,11 +22,11 @@ if TYPE_CHECKING:
     from collections.abc import (
         Collection,
         Hashable,
-        Mapping,
     )
     from typing import Any
 
     import xarray as xr
+    from numpy.typing import DTypeLike
 
     from .typing import (
         ApplyUFuncKwargs,
@@ -271,7 +273,7 @@ def get_mom_shape(
     mom_dims: MomDimsStrict,
 ) -> MomentsStrict:
     """Extract moments shape from xarray object."""
-    if isinstance(data, np.ndarray):
+    if is_ndarray(data):
         mom_shape = data.shape[-len(mom_dims) :]
     else:
         mom_shape = tuple(data.sizes[m] for m in mom_dims)
@@ -283,3 +285,18 @@ def contains_dims(
 ) -> bool:
     """Wheater data contains `dims`."""
     return all(d in data.dims for d in dims)
+
+
+def astype_dtype_dict(
+    obj: xr.DataArray | xr.Dataset,
+    dtype: DTypeLike | Mapping[Hashable, DTypeLike],
+) -> DTypeLike | dict[Hashable, DTypeLike]:
+    """Get a dtype dict for obj."""
+    if isinstance(dtype, Mapping):
+        if is_dataset(obj):
+            return dict(obj.dtypes, **dtype)  # pyright: ignore[reportCallIssue, reportUnknownMemberType, reportUnknownVariableType]
+
+        msg = "Passing a mapping for `dtype` only allowed for Dataset."
+        raise ValueError(msg)
+
+    return dtype

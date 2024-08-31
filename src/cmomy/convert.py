@@ -28,6 +28,9 @@ from .core.utils import (
 )
 from .core.validate import (
     is_dataarray,
+    is_dataset,
+    is_ndarray,
+    is_xarray,
     validate_mom_dims,
     validate_mom_ndim,
 )
@@ -228,7 +231,7 @@ def moments_type(
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     mom_ndim = validate_mom_ndim(mom_ndim)
-    if isinstance(values_in, (xr.DataArray, xr.Dataset)):
+    if is_xarray(values_in):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
         xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
@@ -238,7 +241,7 @@ def moments_type(
             kwargs={
                 "mom_ndim": mom_ndim,
                 "to": to,
-                "out": None if isinstance(values_in, xr.Dataset) else out,
+                "out": None if is_dataset(values_in) else out,
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
@@ -464,7 +467,7 @@ def cumulative(
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if isinstance(values_in, (xr.DataArray, xr.Dataset)):
+    if is_xarray(values_in):
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, values_in)]]
 
@@ -499,7 +502,7 @@ def cumulative(
             ),
         )
 
-        if not move_axis_to_end and isinstance(xout, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(xout):
             xout = xout.transpose(*values_in.dims)
         return xout
 
@@ -720,7 +723,7 @@ def moments_to_comoments(
 
     """
     dtype = select_dtype(values, out=None, dtype=dtype)
-    if isinstance(values, (xr.DataArray, xr.Dataset)):
+    if is_xarray(values):
         mom_dim_in, *_ = validate_mom_dims(mom_dims, mom_ndim=1, out=values)
         mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
 
@@ -912,7 +915,7 @@ def concat(
     """
     first, arrays_iter = peek_at(arrays)
 
-    if isinstance(first, np.ndarray):
+    if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
         return np.concatenate(
             tuple(arrays_iter),  # type: ignore[arg-type]
@@ -921,7 +924,7 @@ def concat(
             **kwargs,
         )
 
-    if isinstance(first, (xr.DataArray, xr.Dataset)):
+    if is_xarray(first):
         if dim is MISSING or dim is None or dim in first.dims:
             axis, dim = select_axis_dim(first, axis=axis, dim=dim, default_axis=0)
         # otherwise, assume adding a new dimension...

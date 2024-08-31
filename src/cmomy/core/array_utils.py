@@ -6,9 +6,10 @@ from functools import lru_cache
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
-import xarray as xr
 
 from .validate import (
+    is_dataset,
+    is_ndarray,
     validate_mom_ndim,
 )
 
@@ -18,6 +19,7 @@ if TYPE_CHECKING:
         Sequence,
     )
 
+    import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
@@ -191,7 +193,7 @@ def select_dtype(
 
     If pass in a Dataset, return dtype
     """
-    if isinstance(x, xr.Dataset):
+    if is_dataset(x):
         if dtype is None:
             return dtype
         dtype = np.dtype(dtype)
@@ -213,7 +215,7 @@ def asarray_maybe_recast(
     data: ArrayLike, dtype: DTypeLike = None, recast: bool = False
 ) -> NDArrayAny:
     """Perform asarray with optional recast to `dtype` if not already an array."""
-    if isinstance(data, np.ndarray):
+    if is_ndarray(data):
         if recast and dtype is not None:
             return np.asarray(data, dtype=dtype)
         return data  # pyright: ignore[reportUnknownVariableType]

@@ -10,7 +10,6 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, Generic, cast
 
 import numpy as np
-import xarray as xr
 
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
@@ -32,6 +31,7 @@ if TYPE_CHECKING:
         NoReturn,
     )
 
+    import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike
 
     from cmomy.core.typing import (
@@ -497,7 +497,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return self.copy().push_data(other.obj)
 
     def _get_sub_other(self, other: Self) -> Self:
-        if isinstance(self.obj, xr.Dataset):
+        if is_dataset(self._obj):
             msg = "Not implemented for dataset"
             raise TypeError(msg)
         self._check_other(other)

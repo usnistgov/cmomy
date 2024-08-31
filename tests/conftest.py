@@ -12,6 +12,7 @@ import cmomy.random
 import cmomy.reduction
 import cmomy.resample
 from cmomy import CentralMomentsArray, CentralMomentsXArray
+from cmomy.core.validate import is_dataarray
 
 from ._simple_cmom import get_cmom, get_comom
 
@@ -330,7 +331,7 @@ class Data:
 
     @cached.prop
     def data_test_xr(self):
-        assert isinstance(self.xy_tuple_xr[0], xr.DataArray)
+        assert is_dataarray(self.xy_tuple_xr[0])
         return cmomy.reduction.reduce_vals(
             *self.xy_tuple_xr,
             mom=self.mom,
@@ -340,7 +341,7 @@ class Data:
 
     @cached.prop
     def W_xr(self) -> Any:
-        if isinstance(self.w_xr, xr.DataArray):
+        if is_dataarray(self.w_xr):
             dims = self.w_xr.dims
             return [xr.DataArray(_, dims=dims) for _ in self.W]
         return self.W

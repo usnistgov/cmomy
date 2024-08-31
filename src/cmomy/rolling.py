@@ -209,7 +209,7 @@ def construct_rolling_window_array(
     xarray.DataArray.rolling
     xarray.core.rolling.DataArrayRolling.construct
     """
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
+    if is_xarray(x):
         mom_ndim = validate_mom_ndim(mom_ndim) if mom_ndim is not None else mom_ndim
         axis, dim = select_axis_dim_mult(x, axis=axis, dim=dim, mom_ndim=mom_ndim)
 
@@ -458,7 +458,7 @@ def rolling_data(  # noqa: PLR0913
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, data)]]
 
@@ -496,7 +496,7 @@ def rolling_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(xout, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(xout):
             xout = xout.transpose(*data.dims)
         return xout
 
@@ -787,7 +787,7 @@ def rolling_vals(  # noqa: PLR0913
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
+    if is_xarray(x):
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -835,7 +835,7 @@ def rolling_vals(  # noqa: PLR0913
                 output_dtypes=dtype or np.float64,
             ),
         )
-        if not move_axis_to_end and isinstance(xout, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(xout):
             xout = xout.transpose(..., *x.dims, *mom_dims)
         return xout
 
@@ -1115,7 +1115,7 @@ def rolling_exp_data(  # noqa: PLR0913
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [dim, *validate_mom_dims(mom_dims, mom_ndim, data)]
 
@@ -1168,7 +1168,7 @@ def rolling_exp_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(xout, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(xout):
             xout = xout.transpose(*data.dims)
         return xout
 
@@ -1499,7 +1499,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
+    if is_xarray(x):
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -1548,7 +1548,7 @@ def rolling_exp_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(xout, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(xout):
             xout = xout.transpose(..., *x.dims, *mom_dims)
         return xout
 

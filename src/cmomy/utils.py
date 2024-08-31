@@ -17,6 +17,9 @@ from .core.missing import MISSING
 from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
 from .core.utils import mom_to_mom_shape as mom_to_mom_shape  # noqa: PLC0414
 from .core.validate import (
+    is_dataarray,
+    is_dataset,
+    is_xarray,
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -146,7 +149,7 @@ def moveaxis(
     """
     mom_ndim = None if mom_ndim is None else validate_mom_ndim(mom_ndim)
 
-    if isinstance(x, xr.DataArray):
+    if is_dataarray(x):
         axes0, dims0 = select_axis_dim_mult(x, axis=axis, dim=dim, mom_ndim=mom_ndim)
         axes1, dims1 = select_axis_dim_mult(
             x, axis=dest, dim=dest_dim, mom_ndim=mom_ndim
@@ -307,7 +310,7 @@ def select_moment(
     array(4)
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         if name == "all":
             return data
 
@@ -348,7 +351,7 @@ def select_moment(
                 dask="parallelized",
                 output_sizes=output_sizes,
                 output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
-                if isinstance(data, xr.DataArray)
+                if is_dataarray(data)
                 else np.float64,
             ),
         )
@@ -505,7 +508,7 @@ def assign_moment(
         "assign_moment",
     )
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
         # figure out values shape...
@@ -538,7 +541,7 @@ def assign_moment(
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
-                if isinstance(data, xr.DataArray)
+                if is_dataarray(data)
                 else np.float64,
             ),
         )
@@ -732,8 +735,8 @@ def vals_to_data(
         msg = "Supply single value for ``y`` if and only if ``mom_ndim==2``."
         raise ValueError(msg)
 
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
-        if isinstance(out, xr.DataArray) and mom_dims is None:
+    if is_xarray(x):
+        if is_dataarray(out) and mom_dims is None:
             mom_dims = out.dims[-mom_ndim:]
         else:
             mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
@@ -741,7 +744,7 @@ def vals_to_data(
         # Explicitly select type depending on out
         # This is needed to make apply_ufunc work with dask data
         # can't pass None value in that case...
-        out = None if isinstance(x, xr.Dataset) else out
+        out = None if is_dataset(x) else out
         input_core_dims: list[Sequence[Hashable]] = [[]] * (mom_ndim + 1)
         args: list[Any] = [weight, *y, x]
         if out is None:

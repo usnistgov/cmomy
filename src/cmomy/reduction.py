@@ -31,6 +31,8 @@ from .core.prepare import (
 from .core.utils import mom_to_mom_shape
 from .core.validate import (
     is_dataarray,
+    is_dataset,
+    is_xarray,
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -146,7 +148,6 @@ def reduce_vals(
     order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -167,7 +168,6 @@ def reduce_vals(
     order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -188,7 +188,6 @@ def reduce_vals(
     order: ArrayOrderCF = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
     mom_dims: MomDims | None = ...,
     keep_attrs: KeepAttrs = ...,
@@ -211,7 +210,6 @@ def reduce_vals(
     order: ArrayOrderCF = None,
     keepdims: bool = False,
     parallel: bool | None = None,
-    # xarray specific
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
@@ -262,7 +260,7 @@ def reduce_vals(
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
+    if is_xarray(x):
         mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
@@ -287,7 +285,7 @@ def reduce_vals(
                 "parallel": parallel,
                 "axis_neg": -1,
                 "keepdims": True,
-                "out": None if isinstance(x, xr.Dataset) else out,
+                "out": None if is_dataset(x) else out,
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
@@ -303,7 +301,7 @@ def reduce_vals(
             ),
         )
 
-        if isinstance(x, xr.DataArray):
+        if is_dataarray(x):
             xout = xout.transpose(..., *x.dims, *mom_dims)
         if not keepdims:
             xout = xout.squeeze(dim)
@@ -548,7 +546,7 @@ def reduce_data(
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         xout: XArrayT
         if use_reduce:
@@ -575,7 +573,7 @@ def reduce_data(
                 kwargs={
                     "mom_ndim": mom_ndim,
                     "axis": range(-len(dim), 0),
-                    "out": None if isinstance(data, xr.Dataset) else out,
+                    "out": None if is_dataset(data) else out,
                     "dtype": dtype,
                     "parallel": parallel,
                     "keepdims": False,
@@ -831,12 +829,11 @@ def reduce_data_grouped(
     casting: Casting = ...,
     order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> XArrayT: ...
@@ -854,12 +851,11 @@ def reduce_data_grouped(
     casting: Casting = ...,
     order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -877,12 +873,11 @@ def reduce_data_grouped(
     casting: Casting = ...,
     order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -900,12 +895,11 @@ def reduce_data_grouped(
     casting: Casting = ...,
     order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -918,17 +912,16 @@ def reduce_data_grouped(
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    out: None = ...,
+    out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
     order: ArrayOrderCF = ...,
     parallel: bool | None = ...,
-    # xarray specific
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
@@ -948,13 +941,11 @@ def reduce_data_grouped(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    # xarray specific
     dim: DimsReduce | MissingType = MISSING,
+    mom_dims: MomDims | None = None,
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
-    # dask specific
-    mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | XArrayT:
@@ -975,10 +966,10 @@ def reduce_data_grouped(  # noqa: PLR0913
     {casting}
     {order_cf}
     {dim}
+    {mom_dims_data}
     {group_dim}
     {groups}
     {keep_attrs}
-    {mom_dims_data}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
@@ -1042,7 +1033,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     dtype = select_dtype(data, out=out, dtype=dtype)
     by = np.asarray(by, dtype=np.int64)
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
 
@@ -1080,7 +1071,7 @@ def reduce_data_grouped(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(data, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(data):
             xout = xout.transpose(*data.dims)
         if groups is not None:
             xout = xout.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
@@ -1291,13 +1282,12 @@ def reduce_data_indexed(
     casting: Casting = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    # xarray specific...
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> XArrayT: ...
@@ -1318,13 +1308,12 @@ def reduce_data_indexed(
     casting: Casting = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    # xarray specific...
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -1345,13 +1334,12 @@ def reduce_data_indexed(
     casting: Casting = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    # xarray specific...
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -1372,13 +1360,12 @@ def reduce_data_indexed(
     casting: Casting = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    # xarray specific...
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -1394,18 +1381,17 @@ def reduce_data_indexed(
     scale: ArrayLike | None = ...,
     axis: AxisReduce | MissingType = ...,
     move_axis_to_end: bool = ...,
-    out: None = ...,
+    out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     casting: Casting = ...,
     order: ArrayOrder = ...,
     parallel: bool | None = ...,
-    # xarray specific...
     dim: DimsReduce | MissingType = ...,
+    mom_dims: MomDims | None = ...,
     coords_policy: CoordsPolicy = ...,
     group_dim: str | None = ...,
     groups: Groups | None = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
@@ -1428,13 +1414,12 @@ def reduce_data_indexed(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    # xarray specific...
     dim: DimsReduce | MissingType = MISSING,
+    mom_dims: MomDims | None = None,
     coords_policy: CoordsPolicy = "first",
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | XArrayT:
@@ -1461,11 +1446,11 @@ def reduce_data_indexed(  # noqa: PLR0913
     {order}
     {parallel}
     {dim}
+    {mom_dims_data}
     {coords_policy}
     {group_dim}
     {groups}
     {keep_attrs}
-    {mom_dims_data}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
@@ -1521,7 +1506,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
 
@@ -1569,10 +1554,10 @@ def reduce_data_indexed(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(xout, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(xout):
             xout = xout.transpose(*data.dims)
 
-        if coords_policy in {"first", "last"} and isinstance(data, xr.DataArray):
+        if coords_policy in {"first", "last"} and is_dataarray(data):
             # in case we passed in index, group_start, group_end as non-arrays
             # these will be processed correctly in the numpy call
             # but just make sure here....
@@ -1679,7 +1664,7 @@ def _reduce_data_indexed(
 
 
 # * For testing purposes
-def resample_data_indexed(
+def resample_data_indexed(  # noqa: PLR0913
     data: ArrayT,
     freq: NDArrayAny,
     *,
@@ -1693,6 +1678,7 @@ def resample_data_indexed(
     parallel: bool = True,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
+    mom_dims: MomDims | None = None,
     coords_policy: CoordsPolicy = "first",
     group_dim: str | None = None,
     groups: Groups | None = None,
@@ -1703,7 +1689,7 @@ def resample_data_indexed(
 
     index, start, end, scales = freq_to_index_start_end_scales(freq)
 
-    return reduce_data_indexed(
+    return reduce_data_indexed(  # pyright: ignore[reportReturnType]
         data=data,
         mom_ndim=mom_ndim,
         index=index,
@@ -1718,6 +1704,7 @@ def resample_data_indexed(
         casting=casting,
         order=order,
         dim=dim,
+        mom_dims=mom_dims,
         coords_policy=coords_policy,
         group_dim=group_dim,
         groups=groups,

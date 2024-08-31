@@ -11,6 +11,10 @@ import pytest
 import xarray as xr
 
 import cmomy
+from cmomy.core.validate import (
+    is_dataarray,
+    is_dataset,
+)
 
 
 # * fixtures
@@ -194,7 +198,7 @@ def _reduce_data_indexed(ds, dim, **kwargs):
         cmomy.reduction.factor_by_to_index(by)
     )
     coords_policy = kwargs.pop("coords_policy", "first")
-    if isinstance(ds, xr.DataArray) and coords_policy in {"first", "last"}:
+    if is_dataarray(ds) and coords_policy in {"first", "last"}:
         coords_policy = None
 
     return cmomy.reduction.reduce_data_indexed(
@@ -210,7 +214,7 @@ def _resample_data(ds, dim, nrep, paired, **kwargs):
         ds,
         dim=dim,
         nrep=nrep,
-        rng=np.random.default_rng(0),
+        rng=0,
         paired=paired,
         **kwargs,
     )
@@ -223,7 +227,7 @@ def _resample_vals(x, *y, weight, nrep, paired, **kwargs):
         weight=weight,
         nrep=nrep,
         paired=paired,
-        rng=np.random.default_rng(0),
+        rng=0,
         **kwargs,
     )
 
@@ -319,13 +323,13 @@ def test_func_vals_dataset(fixture_vals_dataset, func, kwargs_callback):
         da = x[name]
         if "dim" not in kwargs or kwargs["dim"] in da.dims:
             if y is not None:
-                dy = y if isinstance(y, xr.DataArray) else y[name]
+                dy = y if is_dataarray(y) else y[name]
                 xy = (da, dy)
             else:
                 xy = (da,)
 
             if weight is not None:
-                w = weight if isinstance(weight, xr.DataArray) else weight[name]
+                w = weight if is_dataarray(weight) else weight[name]
             else:
                 w = weight
 
@@ -439,7 +443,7 @@ def test_randsamp_freq_dataset(
         data=data,
         dim=dim,
         **kwargs,
-        rng=get_zero_rng(),
+        rng=0,
     )
 
     if names:
@@ -459,7 +463,9 @@ def test_randsamp_freq_dataset(
         # Single dataarray
         expected = xr.DataArray(
             cmomy.resample.random_freq(
-                ndat=data.sizes[dim], nrep=nrep, rng=get_zero_rng()
+                ndat=data.sizes[dim],
+                nrep=nrep,
+                rng=0,
             ),
             dims=[rep_dim, dim],
         )
@@ -473,14 +479,10 @@ def test_randsamp_freq_dataset(
 @mark_data_kwargs
 @pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [False])
-def test_resample_data_dataset(
-    get_zero_rng, rng, kwargs, shapes_and_dims, nrep, paired
-) -> None:
+def test_resample_data_dataset(rng, kwargs, shapes_and_dims, nrep, paired) -> None:
     ds = create_data_dataset(rng, shapes_and_dims, **kwargs)
 
-    dfreq = cmomy.randsamp_freq(
-        data=ds, **kwargs, nrep=nrep, rng=get_zero_rng(), paired=paired
-    )
+    dfreq = cmomy.randsamp_freq(data=ds, **kwargs, nrep=nrep, rng=0, paired=paired)
 
     out = cmomy.resample_data(ds, **kwargs, freq=dfreq)  # type: ignore[type-var]
     dim = kwargs["dim"]
@@ -492,7 +494,7 @@ def test_resample_data_dataset(
             da = cmomy.resample_data(
                 da,
                 **kwargs,
-                freq=dfreq if isinstance(dfreq, xr.DataArray) else dfreq[name],  # type: ignore[index]
+                freq=dfreq if is_dataarray(dfreq) else dfreq[name],  # type: ignore[index]
                 move_axis_to_end=True,
             )
 
@@ -505,7 +507,7 @@ def test_resample_data_dataset(
             ds,
             **kwargs,
             nrep=nrep,
-            rng=get_zero_rng(),
+            rng=0,
             paired=paired,
         ),
     )
@@ -513,17 +515,13 @@ def test_resample_data_dataset(
 
 @pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [False])
-def test_resample_vals_dataset(
-    fixture_vals_dataset, get_zero_rng, paired, nrep
-) -> None:
+def test_resample_vals_dataset(fixture_vals_dataset, paired, nrep) -> None:
     kwargs, x, y, weight = (
         fixture_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
     )
 
     dim = kwargs["dim"]
-    _rng = get_zero_rng()
-
-    dfreq = cmomy.randsamp_freq(data=x, dim=dim, nrep=nrep, rng=_rng, paired=paired)
+    dfreq = cmomy.randsamp_freq(data=x, dim=dim, nrep=nrep, rng=0, paired=paired)
 
     xy = (x,) if y is None else (x, y)
     out = cmomy.resample_vals(*xy, weight=weight, **kwargs, freq=dfreq)
@@ -532,13 +530,13 @@ def test_resample_vals_dataset(
         da = x[name]
         if kwargs["dim"] in da.dims:
             if y is not None:
-                dy = y if isinstance(y, xr.DataArray) else y[name]
+                dy = y if is_dataarray(y) else y[name]
                 _xy = (da, dy)
             else:
                 _xy = (da,)
 
             if weight is not None:
-                w = weight if isinstance(weight, xr.DataArray) else weight[name]
+                w = weight if is_dataarray(weight) else weight[name]
             else:
                 w = weight
 
@@ -546,7 +544,7 @@ def test_resample_vals_dataset(
                 *_xy,
                 weight=w,
                 **kwargs,
-                freq=dfreq if isinstance(dfreq, xr.DataArray) else dfreq[name],
+                freq=dfreq if is_dataarray(dfreq) else dfreq[name],
             )
 
         xr.testing.assert_allclose(out[name], da)
@@ -559,7 +557,7 @@ def test_resample_vals_dataset(
             weight=weight,
             **kwargs,
             nrep=nrep,
-            rng=get_zero_rng(),
+            rng=0,
             paired=paired,
         ),
     )
@@ -577,7 +575,7 @@ mark_dask_only = pytest.mark.skipif(not HAS_DASK, reason="dask not installed")
 
 
 def _is_chunked(ds):
-    if isinstance(ds, xr.Dataset):
+    if is_dataset(ds):
         return ds.chunks != {}
 
     return ds.chunks is not None
@@ -677,7 +675,7 @@ def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
     for k, da in x.items():
         if "dim" not in kws or kws["dim"] in da.dims:
             if y is not None:
-                dy = y if isinstance(y, xr.DataArray) else y[k]
+                dy = y if is_dataarray(y) else y[k]
                 xy = (da, dy)
                 xy_chunked = (x_chunked[k], dy)
             else:
@@ -685,7 +683,7 @@ def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
                 xy_chunked = (x_chunked[k],)
 
             if weight is not None:
-                w = weight if isinstance(weight, xr.DataArray) else weight[k]
+                w = weight if is_dataarray(weight) else weight[k]
             else:
                 w = weight
 

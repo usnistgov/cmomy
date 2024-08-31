@@ -10,6 +10,7 @@ import xarray as xr
 
 import cmomy
 from cmomy import CentralMoments, resample, xCentralMoments
+from cmomy.core.validate import is_dataarray
 from cmomy.random import default_rng
 
 if TYPE_CHECKING:
@@ -34,7 +35,7 @@ def scramble_xr(*args: xr.DataArray, rng=None) -> tuple[xr.DataArray, ...]:
 
     out = []
     for x in args:
-        if isinstance(x, xr.DataArray):
+        if is_dataarray(x):
             order = list(x.dims)
             rng.shuffle(order)  # pyright: ignore[reportArgumentType]
             out.append(x.transpose(*order))

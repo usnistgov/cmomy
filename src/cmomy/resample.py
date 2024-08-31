@@ -35,6 +35,7 @@ from .core.utils import (
 )
 from .core.validate import (
     is_dataarray,
+    is_ndarray,
     is_xarray,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -190,7 +191,7 @@ def freq_to_indices(
         Indices array of shape ``(nrep, nsamp)`` where ``nsamp = freq[k,
         :].sum()`` where `k` is any row.
     """
-    if isinstance(freq, (xr.DataArray, xr.Dataset)):
+    if is_xarray(freq):
         rep_dim, dim = freq.dims
         xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             freq_to_indices,
@@ -249,7 +250,7 @@ def indices_to_freq(
     It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp ==
     ndat``. For cases that ``nsamp != ndat``, pass in ``ndat`` explicitl.
     """
-    if isinstance(indices, (xr.DataArray, xr.Dataset)):
+    if is_xarray(indices):
         # assume dims are in order (rep, dim)
         rep_dim, dim = indices.dims
         ndat = ndat or indices.sizes[dim]
@@ -340,7 +341,7 @@ def _validate_resample_array(
     check: bool = True,
     dtype: DTypeLike = np.int64,
 ) -> NDArrayAny | XArrayT:
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
+    if is_xarray(x):
         xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _validate_resample_array,
             x,
@@ -395,6 +396,8 @@ def _randsamp_freq_dataarray_or_dataset(
 ) -> xr.DataArray | XArrayT:
     """Create a resampling DataArray or Dataset."""
     dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)[1]
+    # make sure to validate rng here in case call multiple have dataset...
+    rng = validate_rng(rng)
 
     def _get_unique_freq() -> xr.DataArray:
         return xr.DataArray(
@@ -402,7 +405,7 @@ def _randsamp_freq_dataarray_or_dataset(
             dims=[rep_dim, dim],
         )
 
-    if isinstance(data, xr.DataArray) or paired:
+    if is_dataarray(data) or paired:
         return _get_unique_freq()
 
     # generate non-paired dataset
@@ -522,7 +525,7 @@ def randsamp_freq(
     """
     # short circuit the most likely scenario...
     if freq is not None and not check:
-        if isinstance(freq, (xr.DataArray, xr.Dataset)):
+        if is_xarray(freq):
             return freq if dtype is None else freq.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
         return np.asarray(freq, dtype=dtype)
 
@@ -553,7 +556,7 @@ def randsamp_freq(
     elif nrep is None:
         msg = "must specify freq, indices, or nrep"
         raise ValueError(msg)
-    elif isinstance(data, (xr.DataArray, xr.Dataset)):
+    elif is_xarray(data):
         freq = _randsamp_freq_dataarray_or_dataset(  # type: ignore[type-var]
             data,
             nrep=nrep,
@@ -582,11 +585,7 @@ def _select_nrep(
     rep_dim: str,
 ) -> int:
     if freq is not None:
-        return (
-            freq.sizes[rep_dim]
-            if isinstance(freq, (xr.DataArray, xr.Dataset))
-            else np.shape(freq)[0]
-        )
+        return freq.sizes[rep_dim] if is_xarray(freq) else np.shape(freq)[0]
 
     if nrep is not None:
         return nrep
@@ -797,7 +796,7 @@ def resample_data(  # noqa: PLR0913
         dtype=dtype,
     )
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
@@ -833,7 +832,7 @@ def resample_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(data, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr, misc,index,operator]
             xout = xout.transpose(*dims_order)
         return xout
@@ -847,7 +846,7 @@ def resample_data(  # noqa: PLR0913
         recast=False,
         move_axis_to_end=move_axis_to_end,
     )
-    assert isinstance(freq, np.ndarray)  # noqa: S101
+    assert is_ndarray(freq)  # noqa: S101
 
     return _resample_data(
         data,
@@ -1114,7 +1113,7 @@ def resample_vals(  # noqa: PLR0913
         dtype=dtype,
     )
 
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
+    if is_xarray(x):
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -1171,7 +1170,7 @@ def resample_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(x, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(x):
             dims_order = [  # type: ignore[misc]
                 *(d if d != dim else rep_dim for d in x.dims),  # type: ignore[union-attr]
                 *mom_dims,
@@ -1532,7 +1531,7 @@ def jackknife_data(  # noqa: PLR0913
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if isinstance(data, (xr.DataArray, xr.Dataset)):
+    if is_xarray(data):
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [dim, *validate_mom_dims(mom_dims, mom_ndim, data)]
 
@@ -1567,7 +1566,7 @@ def jackknife_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(data, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(data):
             xout = xout.transpose(*data.dims)
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
@@ -1583,7 +1582,7 @@ def jackknife_data(  # noqa: PLR0913
         move_axis_to_end=move_axis_to_end,
     )
 
-    assert isinstance(data_reduced, np.ndarray)  # noqa: S101
+    assert is_ndarray(data_reduced)  # noqa: S101
 
     return _jackknife_data(
         data,
@@ -1838,7 +1837,7 @@ def jackknife_vals(  # noqa: PLR0913
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if isinstance(x, (xr.DataArray, xr.Dataset)):
+    if is_xarray(x):
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -1896,7 +1895,7 @@ def jackknife_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and isinstance(x, xr.DataArray):
+        if not move_axis_to_end and is_dataarray(x):
             xout = xout.transpose(..., *x.dims, *mom_dims)
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
@@ -1914,7 +1913,7 @@ def jackknife_vals(  # noqa: PLR0913
         move_axis_to_end=move_axis_to_end,
     )
 
-    assert isinstance(data_reduced, np.ndarray)  # noqa: S101
+    assert is_ndarray(data_reduced)  # noqa: S101
 
     return _jackknife_vals(
         *args,

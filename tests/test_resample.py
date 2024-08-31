@@ -10,6 +10,7 @@ import xarray as xr
 
 import cmomy
 from cmomy import CentralMoments, resample
+from cmomy.core.validate import is_dataset, is_xarray
 from cmomy.reduction import (
     resample_data_indexed,
 )
@@ -77,9 +78,7 @@ def test_freq_indices_2(rng, nrep, ndat, nsamp, style) -> None:
         )
 
     assert_allclose = (
-        xr.testing.assert_allclose
-        if isinstance(idx, (xr.DataArray, xr.Dataset))
-        else np.testing.assert_allclose
+        xr.testing.assert_allclose if is_xarray(idx) else np.testing.assert_allclose
     )
 
     freq0 = resample.indices_to_freq(idx, ndat=ndat)
@@ -95,7 +94,7 @@ def test_freq_indices_2(rng, nrep, ndat, nsamp, style) -> None:
         is type(idx1)
         is (np.ndarray if style == "array-like" else type(idx))
     )
-    if isinstance(idx, xr.Dataset):
+    if is_dataset(idx):
         assert_allclose(idx1, idx.map(np.sort, axis=-1))
     else:
         np.testing.assert_allclose(idx1, np.sort(idx, axis=-1))

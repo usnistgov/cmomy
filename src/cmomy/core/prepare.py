@@ -5,7 +5,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import numpy as np
-import xarray as xr
 
 from cmomy.core.utils import mom_to_mom_shape
 
@@ -16,6 +15,8 @@ from .array_utils import (
 )
 from .missing import MISSING
 from .validate import (
+    is_dataarray,
+    is_dataset,
     validate_axis,
 )
 from .xr_utils import (
@@ -31,6 +32,7 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
+    import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
@@ -204,9 +206,7 @@ def xprepare_values_for_reduction(
     axis_neg = positive_to_negative_index(
         axis,
         # if dataset, Use first variable as template...
-        ndim=(
-            target[next(iter(target))] if isinstance(target, xr.Dataset) else target
-        ).ndim,
+        ndim=(target[next(iter(target))] if is_dataset(target) else target).ndim,
     )
 
     arrays = [
@@ -233,9 +233,9 @@ def xprepare_secondary_value_for_reduction(
     recast: bool,
 ) -> xr.Dataset | xr.DataArray | NDArrayAny:
     """Prepare secondary values for reduction."""
-    if isinstance(x, xr.Dataset):
+    if is_dataset(x):
         return x
-    if isinstance(x, xr.DataArray):
+    if is_dataarray(x):
         return x.astype(dtype, copy=False) if (recast and dtype is not None) else x  # pyright: ignore[reportUnknownMemberType]
     return prepare_secondary_value_for_reduction(
         x,
@@ -257,7 +257,7 @@ def xprepare_out_for_resample_vals(
 ) -> NDArray[ScalarT] | None:
     """Prepare out for resampling"""
     # NOTE: silently ignore out of datasets.
-    if out is None or isinstance(target, xr.Dataset):
+    if out is None or is_dataset(target):
         return None
 
     if move_axis_to_end:
@@ -281,7 +281,7 @@ def xprepare_out_for_resample_data(
     data: Any = None,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
-    if out is None or isinstance(data, xr.Dataset):
+    if out is None or is_dataset(data):
         return None
 
     if move_axis_to_end:

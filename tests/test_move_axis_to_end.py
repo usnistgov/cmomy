@@ -9,6 +9,7 @@ import pytest
 import xarray as xr
 
 import cmomy
+from cmomy.core.validate import is_dataarray
 
 if TYPE_CHECKING:
     from cmomy.core.typing import Mom_NDim
@@ -52,11 +53,7 @@ def get_params(
 
 def factory_central_method(method):
     def inner(x, *args, **kwargs):
-        cls = (
-            cmomy.xCentralMoments
-            if isinstance(x, xr.DataArray)
-            else cmomy.CentralMoments
-        )
+        cls = cmomy.xCentralMoments if is_dataarray(x) else cmomy.CentralMoments
         return getattr(cls, method)(x, *args, **kwargs)
 
     return inner

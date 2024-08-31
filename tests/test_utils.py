@@ -11,6 +11,7 @@ import xarray as xr
 import cmomy
 from cmomy import utils
 from cmomy.core.utils import mom_to_mom_ndim
+from cmomy.core.validate import is_dataarray, is_ndarray
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -126,7 +127,7 @@ def _do_test_select_moment_mom_ndim(
     np.testing.assert_allclose(out, np.asarray(data)[index])
 
     if (
-        isinstance(out, xr.DataArray)
+        is_dataarray(out)
         and kwargs["name"] in {"ave", "var"}
         and (mom_ndim != 1 or not kwargs.get("squeeze", True))
     ):
@@ -234,7 +235,7 @@ def _do_test_assign_moment_mom_ndim(
     value: float | NDArrayAny | xr.DataArray
     if scalar:
         value = -10
-    elif isinstance(data, xr.DataArray):
+    elif is_dataarray(data):
         template = utils.select_moment(
             data, name, mom_ndim=mom_ndim, squeeze=kwargs.get("squeeze", True)
         )
@@ -252,7 +253,7 @@ def _do_test_assign_moment_mom_ndim(
         value = np.full(shape, fill_value=-10)
 
     check = data.copy()
-    if isinstance(check, xr.DataArray):
+    if is_dataarray(check):
         check.data[index] = value
     else:
         check[index] = value
@@ -271,11 +272,9 @@ def _do_test_assign_moment_mom_ndim(
     np.testing.assert_allclose(out, check)
 
     # CentralMoments
-    c0 = (
-        cmomy.xCentralMoments
-        if isinstance(data, xr.DataArray)
-        else cmomy.CentralMoments
-    )(data, mom_ndim=mom_ndim)
+    c0 = (cmomy.xCentralMoments if is_dataarray(data) else cmomy.CentralMoments)(
+        data, mom_ndim=mom_ndim
+    )
     c1 = c0.assign_moment({name: value}, **kwargs, copy=copy)
 
     np.testing.assert_allclose(out, c1)
@@ -402,7 +401,7 @@ def test_assign_moment_multiple(data, mom_ndim, wrapper, moment) -> None:
 
     out = cmomy.assign_moment(data, moment, **kwargs)
 
-    if isinstance(data, np.ndarray):
+    if is_ndarray(data):
         np.testing.assert_allclose(expected, out)
     else:
         xr.testing.assert_allclose(expected, out)
