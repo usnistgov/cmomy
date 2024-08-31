@@ -428,7 +428,6 @@ strict = [
     "tools/*.py",
     "src/cmomy/*.py",
     "src/cmomy/wrapper/*.py",
-    "src/cmomy/_lib/factory.py",
     "src/cmomy/_lib/_binomial.py",
     "src/cmomy/core/__init__.py",
     "src/cmomy/core/array_utils.py",
@@ -543,6 +542,7 @@ reqs = [
 style = "requirements"
 
 [tool.pyproject2conda.envs.test-notebook]
+reqs = [ "dask[diagnostics]" ]
 extras = [
     "test",
     "nbval",

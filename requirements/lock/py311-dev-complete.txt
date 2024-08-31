@@ -4,7 +4,7 @@ appnope==0.1.4            # via ipykernel
 argcomplete==3.5.0        # via nox, pipx
 asttokens==2.4.1          # via stack-data
 attrs==24.2.0             # via jsonschema, referencing, scriv
-certifi==2024.7.4         # via requests
+certifi==2024.8.30        # via requests
 cfgv==3.4.0               # via pre-commit
 charset-normalizer==3.3.2  # via requests
 click==8.1.7              # via click-log, dask, scriv, userpath
@@ -13,7 +13,7 @@ cloudpickle==3.0.0        # via dask
 colorlog==6.8.2           # via nox
 comm==0.2.2               # via ipykernel
 coverage==7.6.1           # via nbval, pytest-cov
-dask==2024.8.1            # via -r requirements/dev-complete.txt
+dask==2024.8.2            # via -r requirements/dev-complete.txt
 debugpy==1.8.5            # via ipykernel
 decorator==5.1.1          # via ipython
 distlib==0.3.8            # via virtualenv
@@ -28,7 +28,7 @@ idna==3.8                 # via requests
 importlib-metadata==8.4.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev-complete.txt
-ipython==8.26.0           # via ipykernel, -r requirements/dev-complete.txt
+ipython==8.27.0           # via ipykernel, -r requirements/dev-complete.txt
 jedi==0.19.1              # via ipython
 jinja2==3.1.4             # via scriv
 jsonschema==4.23.0        # via nbformat

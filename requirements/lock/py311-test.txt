@@ -3,7 +3,7 @@
 click==8.1.7              # via dask
 cloudpickle==3.0.0        # via dask
 coverage==7.6.1           # via pytest-cov
-dask==2024.8.1            # via -r requirements/test.txt
+dask==2024.8.2            # via -r requirements/test.txt
 docstring-inheritance==2.2.0  # via -r requirements/test.txt
 execnet==2.1.1            # via pytest-xdist
 fsspec==2024.6.1          # via dask

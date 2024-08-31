@@ -9,7 +9,7 @@ attrs==24.2.0             # via jsonschema, jupyter-cache, referencing
 autodocsumm==0.2.13       # via -r requirements/docs.txt
 babel==2.16.0             # via pydata-sphinx-theme, sphinx
 beautifulsoup4==4.12.3    # via pydata-sphinx-theme
-certifi==2024.7.4         # via requests
+certifi==2024.8.30        # via requests
 charset-normalizer==3.3.2  # via requests
 click==8.1.7              # via jupyter-cache, uvicorn
 colorama==0.4.6           # via sphinx-autobuild
@@ -26,7 +26,7 @@ idna==3.8                 # via anyio, requests
 imagesize==1.4.1          # via sphinx
 importlib-metadata==8.4.0  # via jupyter-cache, myst-nb
 ipykernel==6.29.5         # via myst-nb
-ipython==8.26.0           # via ipykernel, myst-nb
+ipython==8.27.0           # via ipykernel, myst-nb
 jedi==0.19.1              # via ipython
 jinja2==3.1.4             # via myst-parser, sphinx
 jsonschema==4.23.0        # via nbformat

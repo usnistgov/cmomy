@@ -8,7 +8,7 @@ backports-tarfile==1.2.0  # via jaraco-context
 beautifulsoup4==4.12.3    # via grayskull
 cachecontrol==0.14.0      # via conda-lock
 cachy==0.3.0              # via conda-lock
-certifi==2024.7.4         # via requests
+certifi==2024.8.30        # via requests
 charset-normalizer==3.3.2  # via requests
 click==8.1.7              # via click-default-group, conda-lock, ensureconda
 click-default-group==1.2.4  # via conda-lock
@@ -29,7 +29,7 @@ grayskull==2.7.1          # via -r requirements/pipxrun-tools.txt
 html5lib==1.1             # via conda-lock
 idna==3.8                 # via requests
 importlib-metadata==8.4.0  # via keyring, twine
-ipython==8.26.0           # via nbqa
+ipython==8.27.0           # via nbqa
 jaraco-classes==3.4.0     # via keyring
 jaraco-context==6.0.1     # via keyring
 jaraco-functools==4.0.2   # via keyring

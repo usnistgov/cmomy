@@ -23,3 +23,6 @@ dependencies:
   - pytest-xdist
   - typing-extensions
   - xarray>=2023.9.0
+  - pip
+  - pip:
+      - dask[diagnostics]

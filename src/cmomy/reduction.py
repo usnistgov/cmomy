@@ -402,14 +402,13 @@ def reduce_data(
     order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dim: DimsReduceMult | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
+    dim: DimsReduceMult | MissingType = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> XArrayT: ...
-# array no output
 @overload
 def reduce_data(
     data: ArrayLikeArg[FloatT],
@@ -422,10 +421,10 @@ def reduce_data(
     order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dim: DimsReduceMult | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
+    dim: DimsReduceMult | MissingType = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -442,10 +441,10 @@ def reduce_data(
     order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dim: DimsReduceMult | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
+    dim: DimsReduceMult | MissingType = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -462,10 +461,10 @@ def reduce_data(
     order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dim: DimsReduceMult | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
+    dim: DimsReduceMult | MissingType = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArray[FloatT]: ...
@@ -482,10 +481,10 @@ def reduce_data(
     order: ArrayOrder = ...,
     keepdims: bool = ...,
     parallel: bool | None = ...,
-    dim: DimsReduceMult | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
     use_reduce: bool = ...,
+    dim: DimsReduceMult | MissingType = ...,
     mom_dims: MomDims | None = ...,
+    keep_attrs: KeepAttrs = ...,
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
 ) -> NDArrayAny: ...
@@ -504,12 +503,10 @@ def reduce_data(
     order: ArrayOrder = None,
     keepdims: bool = False,
     parallel: bool | None = None,
-    # xarray specific
+    use_reduce: bool = True,
     dim: DimsReduceMult | MissingType = MISSING,
-    keep_attrs: KeepAttrs = None,
-    # dask specific
-    use_reduce: bool = True,  # NOTE: might want to change this default to false, but then need to update tests with keepdims...
     mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | XArrayT:
@@ -528,8 +525,6 @@ def reduce_data(
     {order}
     {keepdims}
     {parallel}
-    {dim_mult}
-    {keep_attrs}
     use_reduce : bool
         If ``True``, use ``data.reduce(reduce_data, ....)`` for
         :class:`~xarray.DataArray` or :class:`~xarray.Dataset` ``data``.
@@ -538,7 +533,9 @@ def reduce_data(
         dask data to :class:`~numpy.ndarray` arrays. Also, not using reduce Can
         be useful if reducing a dataset which contains arrays that do not
         contain ``mom_dims`` that should be dropped.
+    {dim_mult}
     {mom_dims_data}
+    {keep_attrs}
     {on_missing_core_dim}
     {apply_ufunc_kwargs}
 

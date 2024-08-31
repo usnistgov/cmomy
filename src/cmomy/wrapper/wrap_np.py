@@ -1457,7 +1457,6 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             (if ``last=True``),
             where ``shape=self.obj.shape`` and ``nrep, nsamp = indices.shape``.
 
-
         """
         self._raise_if_scalar()
         axis = validate_axis(axis)

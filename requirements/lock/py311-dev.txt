@@ -9,7 +9,7 @@ cloudpickle==3.0.0        # via dask
 colorlog==6.8.2           # via nox
 comm==0.2.2               # via ipykernel
 coverage==7.6.1           # via nbval, pytest-cov
-dask==2024.8.1            # via -r requirements/dev.txt
+dask==2024.8.2            # via -r requirements/dev.txt
 debugpy==1.8.5            # via ipykernel
 decorator==5.1.1          # via ipython
 distlib==0.3.8            # via virtualenv
@@ -22,7 +22,7 @@ fsspec==2024.6.1          # via dask
 importlib-metadata==8.4.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev.txt
-ipython==8.26.0           # via ipykernel, -r requirements/dev.txt
+ipython==8.27.0           # via ipykernel, -r requirements/dev.txt
 jedi==0.19.1              # via ipython
 jsonschema==4.23.0        # via nbformat
 jsonschema-specifications==2023.12.1  # via jsonschema
