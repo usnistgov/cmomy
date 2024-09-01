@@ -517,8 +517,6 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        self._check_y(y, self._mom_ndim)
-
         axis, args = prepare_values_for_reduction(
             x,
             1.0 if weight is None else weight,

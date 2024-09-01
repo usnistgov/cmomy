@@ -172,7 +172,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @docfiller_inherit_abc()
     def new_like(  # type: ignore[override]
         self,
-        obj: ArrayLike | XArrayT | None = None,
+        obj: ArrayLike | XArrayT | Mapping[Any, Any] | None = None,
         *,
         copy: bool | None = None,
         deep: bool = True,
@@ -183,8 +183,15 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         """
         Parameters
         ----------
+        obj : array-like, DataArray, Dataset, or mapping
+            Object for new object to wrap.  Passed to `self.obj.copy`.
         deep : bool
             Parameter to :meth:`~xarray.Dataset.copy` or :meth:`~xarray.DataArray.copy`.
+
+        See Also
+        --------
+        xarray.DataArray.copy
+        xarray.Dataset.copy
         """
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
@@ -201,11 +208,8 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         if type(self._obj) is type(obj):
             obj_ = cast("XArrayT", obj)
-        elif is_dataarray(self._obj):
-            obj_ = self._obj.copy(data=obj)
         else:
-            msg = f"Can only pass in objects conformable to {type(self._obj)}.  Passed in {type(obj)=}"
-            raise TypeError(msg)
+            obj_ = self._obj.copy(data=obj)  # pyright: ignore[reportArgumentType]
 
         # minimal check on shape and that mom_dims are present....
         if not contains_dims(obj_, self._mom_dims):
@@ -286,68 +290,6 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         if is_dataarray(self._obj):
             return self._obj.dtype  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
         return None
-
-    def _push_vals_dataarray(
-        self,
-        obj: XArrayT,
-        x: ArrayLike | xr.DataArray | xr.Dataset,
-        *y: ArrayLike | xr.DataArray | xr.Dataset,
-        weight: ArrayLike | xr.DataArray | xr.Dataset | None = None,
-        axis: AxisReduce | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        parallel: bool | None = None,
-        keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> XArrayT:
-        self._check_y(y, self._mom_ndim)
-        weight = 1.0 if weight is None else weight
-
-        xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
-        if is_xarray(x):
-            dim, input_core_dims, xargs = xprepare_values_for_reduction(
-                x,
-                weight,
-                *y,
-                axis=axis,
-                dim=dim,
-                dtype=self._dtype,
-                narrays=self._mom_ndim + 1,
-            )
-        else:
-            axis, xargs = prepare_values_for_reduction(
-                np.asarray(x, dtype=self._dtype),
-                weight,
-                *y,
-                axis=axis,
-                dtype=self._dtype,
-                narrays=self._mom_ndim + 1,
-                move_axis_to_end=True,
-            )
-            dim = "_dummy123"
-            input_core_dims = [[dim]] * len(xargs)
-
-        def func(
-            out: NDArrayAny,
-            *args: NDArrayAny,
-        ) -> NDArrayAny:
-            self._pusher(parallel).vals(out, *args)
-            return out
-
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
-            func,
-            obj,
-            *xargs,
-            input_core_dims=[self._mom_dims, *input_core_dims],  # type: ignore[has-type]
-            output_core_dims=[self._mom_dims],
-            keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
-                apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
-                dask="parallelized",
-                output_dtypes=self._dtype or np.float64,
-            ),
-        )
 
     @docfiller_inherit_abc()
     def push_data(
@@ -534,9 +476,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         {on_missing_core_dim}
         {apply_ufunc_kwargs}
         """
-        self._check_y(y, self._mom_ndim)
         weight = 1.0 if weight is None else weight
-
         xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
         if is_xarray(x):
             dim, input_core_dims, xargs = xprepare_values_for_reduction(
