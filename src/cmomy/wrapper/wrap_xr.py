@@ -99,19 +99,18 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         mom_dims: MomDims | None = None,
         fastpath: bool = False,
     ) -> None:
-        if fastpath:
-            if mom_dims is None:
-                msg = "Must specify mom_dims with fastpath"
-                raise ValueError(msg)
-            self._mom_dims = mom_dims  # type: ignore[assignment]
-        else:
-            self._mom_dims = validate_mom_dims(mom_dims, mom_ndim, obj)
-
         if not is_xarray(obj):
             msg = "obj must be a DataArray or Dataset, not {type(obj)}"
             raise TypeError(msg)
+
+        self._mom_dims = (
+            cast("MomDimsStrict", mom_dims)
+            if fastpath
+            else validate_mom_dims(mom_dims, mom_ndim, obj)
+        )
+
         # NOTE: Why this ignore?
-        super().__init__(obj=obj, mom_ndim=mom_ndim)  # type: ignore[arg-type]
+        super().__init__(obj=obj, mom_ndim=mom_ndim, fastpath=fastpath)  # type: ignore[arg-type]
 
     # ** Properties ------------------------------------------------------------
     @property
@@ -592,12 +591,6 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         )
 
         return self
-
-    # ** Operators ------------------------------------------------------------
-    def _check_other_conformable(self, other: Self) -> None:
-        if self.obj.sizes != other.obj.sizes:
-            msg = "shape input={self.obj.shape} != other shape = {other.obj.shape}"
-            raise ValueError(msg)
 
     # ** Interface to modules -------------------------------------------------
     # *** .reduction ----------------------------------------------------------
@@ -1230,6 +1223,12 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         if is_dataarray(obj):
             return obj.dims
         return tuple(obj.dims)
+
+    @property
+    def val_dims(self) -> tuple[Hashable, ...]:
+        if is_dataset(self._obj):
+            self._raise_notimplemented_for_dataset()
+        return tuple(d for d in self.dims if d not in self.mom_dims)
 
     @property
     def coords(self) -> DataArrayCoordinates[Any] | DatasetCoordinates:

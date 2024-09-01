@@ -11,12 +11,11 @@ import pytest
 
 import cmomy
 from cmomy import CentralMoments
+from cmomy.core.typing import SelectMoment
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
-
-    from cmomy.core.typing import SelectMoment
 
 
 @pytest.fixture(
@@ -57,6 +56,28 @@ def test_check_dtype(wrapped) -> None:
 
 def test_mom(wrapped) -> None:
     assert wrapped.mom_shape == wrapped.obj.shape[-wrapped.mom_ndim :]
+
+
+def test_properties(wrapped) -> None:
+    for attr in ["shape", "dtype", "ndim"]:
+        assert getattr(wrapped, attr) == getattr(wrapped.obj, attr)
+
+    assert wrapped.val_shape == wrapped.shape[: -wrapped.mom_ndim]
+    assert wrapped.val_ndim == wrapped.ndim - wrapped.mom_ndim
+
+
+def test_getitem(wrapped) -> None:
+    assert np.shares_memory(wrapped[...], wrapped)
+
+    if wrapped.ndim == 1:
+        with pytest.raises(ValueError):
+            wrapped[0, ...]
+
+    else:
+        _ = wrapped[0, ...]
+
+        with pytest.raises(ValueError):
+            wrapped[..., 0]
 
 
 def test_new_like(wrapped) -> None:
@@ -313,7 +334,7 @@ def test_select_moment(
     val = getattr(wrapped, attr)()
     data, mom_ndim = wrapped.obj, wrapped.mom_ndim
     if isinstance(name, str):
-        check = cmomy.select_moment(data, cast("SelectMoment", name), mom_ndim=mom_ndim)
+        check = cmomy.select_moment(data, cast(SelectMoment, name), mom_ndim=mom_ndim)
     elif callable(name):
         check = name(data, mom_ndim)
     np.testing.assert_allclose(val, check)

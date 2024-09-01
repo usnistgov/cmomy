@@ -526,9 +526,24 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
     assert is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
+    # using full alphas
+    xdata = xr.DataArray(data)
+    alphas = xr.full_like(dx, fill_value=alpha)
     xout = rolling.rolling_exp_data(
-        xr.DataArray(data),
-        alpha=alpha,
+        xdata,
+        alpha=alphas,
+        mom_ndim=1,
+        axis=axis,
+        adjust=adjust,
+    )
+
+    assert is_dataarray(xout)
+    np.testing.assert_allclose(out, xout)
+
+    # numpy alphas
+    xout = rolling.rolling_exp_data(
+        xdata,
+        alpha=alphas.to_numpy(),
         mom_ndim=1,
         axis=axis,
         adjust=adjust,

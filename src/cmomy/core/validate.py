@@ -55,12 +55,6 @@ def is_xarray(x: Any) -> TypeIs[xr.Dataset | xr.DataArray]:
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
-def are_same_type(*args: Any) -> bool:
-    """Check if all args are the same type."""
-    type0: Any = type(args[0])
-    return any(type0 is not type(a) for a in args[1:])
-
-
 # * Moment validation ---------------------------------------------------------
 def is_mom_ndim(mom_ndim: int | None) -> TypeIs[Mom_NDim]:
     """Validate mom_ndim."""

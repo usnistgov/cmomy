@@ -26,6 +26,10 @@ import cmomy
         ({"ndat": 5, "block": 2, "mode": "expand_last"}, nullcontext([0, 0, 1, 1, 1])),
         ({"ndat": 5, "block": 2, "mode": "drop_first"}, nullcontext([-1, 0, 0, 1, 1])),
         ({"ndat": 5, "block": 2, "mode": "expand_first"}, nullcontext([0, 0, 0, 1, 1])),
+        (
+            {"ndat": 5, "block": 2, "mode": "hello"},
+            pytest.raises(ValueError, match="Unknown .*"),
+        ),
     ],
 )
 def test_block_by(kwargs, expected) -> None:

@@ -302,6 +302,7 @@ def _do_test_assign_moment_mom_ndim(
         ({"name": "xave"}, (..., 1)),
         ({"name": "xvar"}, (..., 2)),
         ({"name": "cov"}, (..., 2)),
+        ({"name": "all"}, (...,)),
     ],
 )
 @pytest.mark.parametrize("scalar", [True, False])

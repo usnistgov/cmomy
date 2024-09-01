@@ -569,9 +569,16 @@ def test_jackknife_data(rng, mom_ndim, shape, axis) -> None:
     )
 
     # using central moments
+    c = cmomy.CentralMoments(data, mom_ndim=mom_ndim)
     np.testing.assert_allclose(
         out0,
-        cmomy.CentralMoments(data, mom_ndim=mom_ndim).jackknife_and_reduce(axis=axis),
+        c.jackknife_and_reduce(axis=axis),
+    )
+
+    # using own reduction
+    np.testing.assert_allclose(
+        out0,
+        c.jackknife_and_reduce(axis=axis, data_reduced=c.reduce(axis=axis)),
     )
 
     # using xcentralMoments

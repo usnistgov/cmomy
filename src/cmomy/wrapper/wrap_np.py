@@ -162,10 +162,6 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         If you want to extract data in general, use `self.to_values()[....]`.
         """
-        if self.mom_ndim >= self.obj.ndim:
-            msg = "Can only use __getitem__ with extra dimensions."
-            raise ValueError(msg)
-
         obj = self.obj[key]
         self._raise_if_wrong_mom_shape(obj.shape[-self._mom_ndim :])
         return self._new_like(obj)
@@ -537,12 +533,6 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             self._obj, *args, casting=casting, signature=(self.dtype,) * (len(args) + 1)
         )
         return self
-
-    # ** Operators ------------------------------------------------------------
-    def _check_other_conformable(self, other: Self) -> None:
-        if self.obj.shape != other.obj.shape:
-            msg = "shape input={self.obj.shape} != other shape = {other.obj.shape}"
-            raise ValueError(msg)
 
     # ** Interface to modules -------------------------------------------------
     # *** .convert ------------------------------------------------------------

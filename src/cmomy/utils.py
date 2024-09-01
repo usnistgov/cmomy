@@ -201,7 +201,7 @@ def moment_indexer(
         idx = (1,) if mom_ndim == 1 else (1, 0)
     elif name == "xvar":
         idx = (2,) if mom_ndim == 1 else (2, 0)
-    elif name == "all":
+    elif name == "all":  # pragma: no cover
         idx = ()
     else:
         if name == "yave":
@@ -513,14 +513,19 @@ def assign_moment(
 
         # figure out values shape...
         input_core_dims: list[Sequence[Hashable]] = [mom_dims]
-        for name in moment_kwargs:
-            if (
+        for name, value in moment_kwargs.items():
+            if np.isscalar(value):
+                input_core_dims.append([])
+            elif (
                 name in {"ave", "var"}
                 and (mom_ndim != 1 or not squeeze)
                 and dim_combined
             ):
                 input_core_dims.append([dim_combined])
+            elif name == "all":
+                input_core_dims.append(mom_dims)
             else:
+                # fallback
                 input_core_dims.append([])
 
         xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]

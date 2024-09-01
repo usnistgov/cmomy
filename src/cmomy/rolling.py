@@ -1237,7 +1237,7 @@ def _prepare_alpha_array(
             alpha_axis = -1
     else:
         # Fallback for dataset...
-        alpha_axis = -1
+        alpha_axis = -1  # pragma: no cover
 
     return alpha_axis, alpha
 

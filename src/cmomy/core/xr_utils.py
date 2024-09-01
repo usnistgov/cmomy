@@ -13,7 +13,6 @@ from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .missing import MISSING
 from .validate import (
     is_dataset,
-    is_ndarray,
     validate_mom_dims,
     validate_not_none,
 )
@@ -40,7 +39,6 @@ if TYPE_CHECKING:
         MomDims,
         MomDimsStrict,
         MomentsStrict,
-        NDArrayAny,
     )
 
 
@@ -269,14 +267,11 @@ def raise_if_dataset(*args: Any, msg: str = "Dataset not allowed.") -> None:
 
 
 def get_mom_shape(
-    data: NDArrayAny | xr.DataArray | xr.Dataset,
+    data: xr.DataArray | xr.Dataset,
     mom_dims: MomDimsStrict,
 ) -> MomentsStrict:
     """Extract moments shape from xarray object."""
-    if is_ndarray(data):
-        mom_shape = data.shape[-len(mom_dims) :]
-    else:
-        mom_shape = tuple(data.sizes[m] for m in mom_dims)
+    mom_shape = tuple(data.sizes[m] for m in mom_dims)
     return cast("MomentsStrict", mom_shape)
 
 

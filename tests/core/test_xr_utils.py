@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from cmomy.core import xr_utils
+from cmomy.core.validate import is_dataarray
 
 
 # * catch all args only test
@@ -242,3 +243,57 @@ def test_raise_if_dataset() -> None:
     msg = "hello there"
     with pytest.raises(TypeError, match=msg):
         xr_utils.raise_if_dataset(x, msg=msg)
+
+
+@pytest.mark.parametrize(
+    ("data", "mom_dims", "expected"),
+    [
+        (xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"]), ("c",), (3,)),
+        (xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "mom"]), ("b", "a"), (2, 1)),
+        (
+            xr.Dataset(
+                {"data0": xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"])}
+            ),
+            ("c", "b"),
+            (3, 2),
+        ),
+    ],
+)
+def test_get_mom_shape(data, mom_dims, expected) -> None:
+    assert xr_utils.get_mom_shape(data, mom_dims) == expected
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "a": xr.DataArray(np.zeros((1, 2, 3))),
+                "b": xr.DataArray(np.zeros((1, 2, 3))),
+                "c": xr.DataArray(np.zeros((1, 2, 3))),
+            }
+        ),
+        xr.DataArray(np.zeros((1, 2, 3))),
+    ],
+)
+@pytest.mark.parametrize(
+    ("dtype", "expected"),
+    [
+        (np.float32, np.float32),
+        (
+            {"a": np.float32},
+            {"a": np.float32, "b": np.dtype("f8"), "c": np.dtype("f8")},
+        ),
+        (
+            {"a": np.float32, "b": np.int64},
+            {"a": np.float32, "b": np.int64, "c": np.dtype("f8")},
+        ),
+    ],
+)
+def test_astype_dtype_dict(data, dtype, expected) -> None:
+    if is_dataarray(data) and isinstance(dtype, dict):
+        with pytest.raises(ValueError):
+            xr_utils.astype_dtype_dict(data, dtype)
+
+    else:
+        assert xr_utils.astype_dtype_dict(data, dtype) == expected
