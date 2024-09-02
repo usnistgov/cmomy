@@ -380,6 +380,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         *,
         casting: Casting = "same_kind",
         parallel: bool | None = False,
+        scale: ArrayLike | None = None,
     ) -> Self:
         """
         Push data object to moments.
@@ -390,6 +391,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             Accumulation array conformable to ``self.obj``.
         {casting}
         {parallel}
+        scale : array-like
+            Scaling to apply to weights of ``data``.  Optional.
 
         Returns
         -------
@@ -510,23 +513,15 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         self._check_other(other)
         return self.copy().push_data(other.obj)
 
-    def _get_sub_other(self, other: Self) -> Self:
-        if is_dataset(self._obj):
-            self._raise_notimplemented_for_dataset()
-        self._check_other(other)
-        if not np.all(self.weight() >= other.weight()):  # pyright: ignore[reportCallIssue, reportArgumentType]
-            msg = "weights of `self` must by >= weights of `other`"
-            raise ValueError(msg)
-        return other.assign_moment(weight=-other.weight(), copy=True)
-
     def __isub__(self, other: Self) -> Self:  # noqa: PYI034
         """Inplace subtraction."""
-        # NOTE: consider implementint push_data_scale routine to make this cleaner
-        return self.push_data(self._get_sub_other(other)._obj)
+        self._check_other(other)
+        return self.push_data(other.obj, scale=-1.0)
 
     def __sub__(self, other: Self) -> Self:
         """Subtract objects."""
-        return self._get_sub_other(other).push_data(self._obj)
+        self._check_other(other)
+        return self.copy().push_data(other.obj, scale=-1.0)
 
     def __mul__(self, scale: float) -> Self:
         """New object with weight scaled by scale."""  # D401

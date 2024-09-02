@@ -335,6 +335,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         casting: Casting = "same_kind",
         parallel: bool | None = False,
+        scale: ArrayLike | None = None,
     ) -> Self:
         """
         Examples
@@ -361,12 +362,21 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         array([20.    ,  0.5124,  0.1033])
 
         """
-        self._pusher(parallel).data(
-            data,
-            self._obj,
-            casting=casting,
-            signature=(self.dtype, self.dtype),
-        )
+        if scale is None:
+            self._pusher(parallel, size=self._obj.size).data(
+                data,
+                self._obj,
+                casting=casting,
+                signature=(self.dtype, self.dtype),
+            )
+        else:
+            self._pusher(parallel, size=self._obj.size).data_scale(
+                data,
+                scale,
+                self._obj,
+                casting=casting,
+                signature=(self.dtype, self.dtype, self.dtype),
+            )
         return self
 
     @docfiller_inherit_abc()
@@ -406,7 +416,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         )
         axes = axes_data_reduction(mom_ndim=self._mom_ndim, axis=axis)
 
-        self._pusher(parallel).datas(
+        self._pusher(parallel, size=datas.size).datas(
             datas,
             self._obj,
             axes=axes,
@@ -463,7 +473,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         """
         self._check_y(y, self._mom_ndim)
-        self._pusher(parallel).val(
+        self._pusher(parallel, size=self._obj.size).val(
             self._obj,
             x,
             1.0 if weight is None else weight,
@@ -527,7 +537,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             narrays=self._mom_ndim + 1,
         )
 
-        self._pusher(parallel).vals(
+        self._pusher(parallel, size=self._obj.size).vals(
             self._obj, *args, casting=casting, signature=(self.dtype,) * (len(args) + 1)
         )
         return self

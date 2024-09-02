@@ -393,16 +393,12 @@ def test_opertors(rng, shape, mom_ndim) -> None:
 def test_operator_raises() -> None:
     c0 = CentralMoments.zeros(mom=3)
     c1 = CentralMoments.zeros(mom=4)
-    c2 = CentralMoments.zeros(mom=3).assign_moment({"weight": 1})
 
     with pytest.raises(TypeError):
         _ = c0 + 1  # type: ignore[operator]
 
     with pytest.raises(ValueError):
         _ = c0 + c1
-
-    with pytest.raises(ValueError):
-        _ = c0 - c2
 
 
 @pytest.mark.parametrize(

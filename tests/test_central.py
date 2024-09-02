@@ -283,14 +283,6 @@ def test_raises_operations(rng) -> None:
     with pytest.raises(ValueError):
         _ = c0 + c1
 
-    c3 = c0.zeros_like()
-
-    with pytest.raises(ValueError):
-        _ = c3 - c0
-
-    with pytest.raises(ValueError):
-        c3 -= c0
-
 
 def test_other_data(other) -> None:
     np.testing.assert_allclose(other.data_fix, other.data_test)

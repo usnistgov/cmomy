@@ -292,6 +292,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         self,
         data: XArrayT | ArrayLike,
         *,
+        scale: ArrayLike | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = False,
         keep_attrs: KeepAttrs = True,
@@ -305,15 +306,27 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         {on_missing_core_dim}
         {apply_ufunc_kwargs}
         """
+        if scale is None:
 
-        def func(out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:
-            self._pusher(parallel).data(
-                data,
-                out,
-                casting=casting,
-                signature=(out.dtype, out.dtype),
-            )
-            return out
+            def func(out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:
+                self._pusher(parallel, size=out.size).data(
+                    data,
+                    out,
+                    casting=casting,
+                    signature=(out.dtype, out.dtype),
+                )
+                return out
+        else:
+
+            def func(out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:
+                self._pusher(parallel, size=out.size).data_scale(
+                    data,
+                    scale,
+                    out,
+                    casting=casting,
+                    signature=(out.dtype, out.dtype, out.dtype),
+                )
+                return out
 
         self._obj = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
@@ -354,7 +367,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         """
 
         def func(out: NDArrayAny, datas: NDArrayAny) -> NDArrayAny:
-            self._pusher(parallel).datas(
+            self._pusher(parallel, size=out.size).datas(
                 datas,
                 out,
                 casting=casting,
@@ -423,7 +436,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             out: NDArrayAny,
             *args: NDArrayAny,
         ) -> NDArrayAny:
-            self._pusher(parallel).val(
+            self._pusher(parallel, size=out.size).val(
                 out,
                 *args,
                 casting=casting,
@@ -503,7 +516,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             out: NDArrayAny,
             *args: NDArrayAny,
         ) -> NDArrayAny:
-            self._pusher(parallel).vals(
+            self._pusher(parallel, size=out.size).vals(
                 out,
                 *args,
                 casting=casting,

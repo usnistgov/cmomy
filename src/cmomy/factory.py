@@ -215,6 +215,7 @@ class Pusher(NamedTuple):
     val: Callable[..., None]
     vals: Callable[..., None]
     data: Callable[..., None]
+    data_scale: Callable[..., None]
     datas: Callable[..., None]
 
 
@@ -240,6 +241,7 @@ def factory_pusher(
         val=_push_mod.push_val,
         vals=_push_mod.reduce_vals,
         data=_push_mod.push_data,
+        data_scale=_push_mod.push_data_scale,
         datas=_push_mod.reduce_data,
     )
 
