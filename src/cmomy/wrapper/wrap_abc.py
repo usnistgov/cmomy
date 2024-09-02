@@ -91,6 +91,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         \end{{cases}}
     """
 
+    __slots__ = ("_cache", "_mom_ndim", "_obj")
+
     _cache: dict[str, Any]
     _obj: GenArrayT
     _mom_ndim: Mom_NDim

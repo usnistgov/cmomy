@@ -86,11 +86,14 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     {mom_dims_data}
     """
 
+    __slots__ = ("_mom_dims",)
+
     _mom_dims: MomDimsStrict
 
     def __init__(
         self,
         obj: XArrayT,
+        *,
         mom_ndim: Mom_NDim = 1,
         mom_dims: MomDims | None = None,
         fastpath: bool = False,
