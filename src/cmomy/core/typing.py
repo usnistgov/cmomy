@@ -27,7 +27,7 @@ from numpy.typing import NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
-    from cmomy import CentralMomentsArray, CentralMomentsXArray
+    from cmomy.wrapper import CentralMomentsArray, CentralMomentsXArray
 
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
     from .typing_compat import TypeAlias
@@ -41,8 +41,11 @@ if TYPE_CHECKING:
     CentralMomentsDataArray: TypeAlias = CentralMomentsXArray[xr.DataArray]
     CentralMomentsDataset: TypeAlias = CentralMomentsXArray[xr.Dataset]
     CentralMomentsDataAny: TypeAlias = CentralMomentsXArray[Any]
-
     CentralMomentsArrayAny: TypeAlias = CentralMomentsArray[Any]
+
+    from cmomy.wrapper.wrap_abc import CentralMomentsABC
+
+    CentralMomentsT = TypeVar("CentralMomentsT", bound=CentralMomentsABC[Any])
 
 
 # * TypeVars

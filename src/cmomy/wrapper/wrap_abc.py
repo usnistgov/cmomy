@@ -7,7 +7,7 @@ Idea is to Wrap ndarray, xr.DataArray, and xr.Dataset objects...
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, cast
+from typing import TYPE_CHECKING, Any, Generic, cast, overload
 
 import numpy as np
 
@@ -19,6 +19,7 @@ from cmomy.core.validate import (
     is_dataset,
     is_xarray,
     validate_floating_dtype,
+    validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
 )
@@ -32,16 +33,19 @@ if TYPE_CHECKING:
     )
 
     import xarray as xr
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
+        ArrayLikeArg,
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
         BlockByModes,
         Casting,
         DimsReduce,
+        DTypeLikeArg,
+        FloatT_,
         KeepAttrs,
         MissingCoreDimOptions,
         MissingType,
@@ -53,9 +57,11 @@ if TYPE_CHECKING:
         NDArrayInt,
         RngTypes,
         SelectMoment,
+        XArrayT_,
     )
     from cmomy.core.typing_compat import Self
     from cmomy.factory import Pusher
+    from cmomy.wrapper import CentralMomentsArray, CentralMomentsXArray
 
 
 @docfiller.decorate  # noqa: PLR0904
@@ -346,6 +352,19 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         if len(y) + 1 != mom_ndim:
             msg = f"Number of arrays {len(y) + 1} != {mom_ndim=}"
             raise ValueError(msg)
+
+    @classmethod
+    def _mom_dims_kws(
+        cls,
+        mom_dims: MomDims | None,
+        mom_ndim: Mom_NDim,
+        out: Any = None,
+    ) -> dict[str, Any]:
+        return (
+            {"mom_dims": validate_mom_dims(mom_dims, mom_ndim, out)}
+            if hasattr(cls, "mom_dims")
+            else {}
+        )
 
     # ** Pushing --------------------------------------------------------------
     def _pusher(self, parallel: bool | None = None, size: int | None = None) -> Pusher:
@@ -1272,70 +1291,364 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         numpy.zeros
         """
 
+    @overload
     @classmethod
-    @abstractmethod
-    @docfiller.decorate
+    def from_vals(
+        cls,
+        x: XArrayT_,
+        *y: ArrayLike | xr.DataArray | XArrayT_,
+        mom: Moments,
+        weight: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        mom_dims: MomDims | None = ...,
+        out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        keepdims: bool = False,
+        parallel: bool | None = ...,
+        keep_attrs: KeepAttrs = ...,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsXArray[XArrayT_]: ...
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLikeArg[FloatT_],
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        mom_dims: MomDims | None = ...,
+        out: None = ...,
+        dtype: None = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        keepdims: bool = False,
+        parallel: bool | None = ...,
+        keep_attrs: KeepAttrs = ...,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        mom_dims: MomDims | None = ...,
+        out: NDArray[FloatT_],
+        dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        keepdims: bool = False,
+        parallel: bool | None = ...,
+        keep_attrs: KeepAttrs = ...,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
+    def from_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        mom_dims: MomDims | None = ...,
+        out: None = ...,
+        dtype: DTypeLikeArg[FloatT_],
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        keepdims: bool = False,
+        parallel: bool | None = ...,
+        keep_attrs: KeepAttrs = ...,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
     def from_vals(
         cls,
         x: Any,
         *y: Any,
         mom: Moments,
-        axis: AxisReduce = -1,
-        weight: Any = None,
+        weight: Any = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        mom_dims: MomDims | None = ...,
+        out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
         keepdims: bool = False,
-        dtype: DTypeLike = None,
+        parallel: bool | None = ...,
+        keep_attrs: KeepAttrs = ...,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> Self: ...
+
+    @classmethod
+    @docfiller.decorate
+    def from_vals(
+        cls,
+        x: ArrayLike | XArrayT_,
+        *y: ArrayLike | xr.DataArray | XArrayT_,
+        mom: Moments,
+        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
+        mom_dims: MomDims | None = None,
         out: NDArrayAny | None = None,
+        dtype: DTypeLike = None,
+        casting: Casting = "same_kind",
+        order: ArrayOrderCF = None,
+        keepdims: bool = False,
         parallel: bool | None = None,
-        # **kwargs: Any,
-    ) -> Self:
+        keep_attrs: KeepAttrs = None,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+    ) -> Self | CentralMomentsABC[Any]:
         """
         Create from observations/values.
 
         Parameters
         ----------
-        x : ndarray
+        x : array-like
             Values to reduce.
         *y : array-like
             Additional values (needed if ``len(mom)==2``).
-        weight : scalar or array-like, optional
+        weight : scalar or array-like
             Optional weight.  If scalar or array, attempt to
             broadcast to `x0.shape`
-        {axis_and_dim}
         {mom}
+        {axis}
+        {dim}
+        {mom_dims}
         {keepdims}
-        {dtype}
         {out}
+        {dtype}
+        {casting}
+        {order}
+        {keepdims}
         {parallel}
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
 
         Returns
         -------
-        output: {klass}
+        object
+            Instance of calling class.
 
         See Also
         --------
         push_vals
-        """
+        ~.reduction.reduce_vals
 
+        Examples
+        --------
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
+        >>> x = rng.random((100, 3))
+        >>> da = cmomy.CentralMomentsArray.from_vals(x, axis=0, mom=2)
+        >>> da
+        <CentralMomentsArray(mom_ndim=1)>
+        array([[1.0000e+02, 5.5313e-01, 8.8593e-02],
+               [1.0000e+02, 5.5355e-01, 7.1942e-02],
+               [1.0000e+02, 5.1413e-01, 1.0407e-01]])
+
+        """
+        from cmomy.reduction import reduce_vals
+
+        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+        kws = cls._mom_dims_kws(mom_dims, mom_ndim)
+        obj = reduce_vals(  # type: ignore[type-var, misc]
+            x,  # pyright: ignore[reportArgumentType]
+            *y,
+            mom=mom,
+            weight=weight,
+            axis=axis,
+            dim=dim,
+            **kws,
+            keepdims=keepdims,
+            parallel=parallel,
+            out=out,
+            dtype=dtype,
+            casting=casting,
+            order=order,
+            keep_attrs=keep_attrs,
+            on_missing_core_dim=on_missing_core_dim,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
+        )
+
+        return cls(
+            obj=obj,  # type: ignore[arg-type]
+            mom_ndim=mom_ndim,
+            **kws,
+            fastpath=True,
+        )
+
+    @overload
     @classmethod
-    @abstractmethod
-    @docfiller.decorate
+    def from_resample_vals(
+        cls,
+        x: XArrayT_,
+        *y: xr.DataArray | XArrayT_,
+        mom: Moments,
+        weight: xr.DataArray | XArrayT_ | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
+        nrep: int | None = ...,
+        rng: RngTypes | None = ...,
+        move_axis_to_end: bool = ...,
+        out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
+        mom_dims: MomDims | None = ...,
+        rep_dim: str = "rep",
+        keep_attrs: bool = True,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsXArray[XArrayT_]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: ArrayLikeArg[FloatT_],
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: RngTypes | None = ...,
+        move_axis_to_end: bool = ...,
+        out: None = ...,
+        dtype: None = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
+        mom_dims: MomDims | None = ...,
+        rep_dim: str = "rep",
+        keep_attrs: bool = True,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: RngTypes | None = ...,
+        move_axis_to_end: bool = ...,
+        out: NDArray[FloatT_],
+        dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
+        mom_dims: MomDims | None = ...,
+        rep_dim: str = "rep",
+        keep_attrs: bool = True,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
+    def from_resample_vals(
+        cls,
+        x: ArrayLike,
+        *y: ArrayLike,
+        mom: Moments,
+        weight: ArrayLike | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: RngTypes | None = ...,
+        move_axis_to_end: bool = ...,
+        out: None = ...,
+        dtype: DTypeLikeArg[FloatT_],
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
+        mom_dims: MomDims | None = ...,
+        rep_dim: str = "rep",
+        keep_attrs: bool = True,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
     def from_resample_vals(
         cls,
         x: Any,
-        *y: Any,
+        *y: ArrayLike,
         mom: Moments,
-        freq: Any = None,
+        weight: ArrayLike | None = ...,
+        axis: AxisReduce | MissingType = ...,
+        dim: DimsReduce | MissingType = ...,
+        freq: ArrayLike | None = ...,
+        nrep: int | None = ...,
+        rng: RngTypes | None = ...,
+        move_axis_to_end: bool = ...,
+        out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        casting: Casting = ...,
+        order: ArrayOrderCF = ...,
+        parallel: bool | None = ...,
+        mom_dims: MomDims | None = ...,
+        rep_dim: str = "rep",
+        keep_attrs: bool = True,
+        on_missing_core_dim: MissingCoreDimOptions = ...,
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> Self: ...
+
+    @classmethod
+    @docfiller.decorate
+    def from_resample_vals(  # noqa: PLR0913
+        cls,
+        x: ArrayLike | XArrayT_,
+        *y: ArrayLike | xr.DataArray | XArrayT_,
+        mom: Moments,
+        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
+        axis: AxisReduce | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
+        freq: ArrayLike | xr.DataArray | XArrayT_ | None = None,
         nrep: int | None = None,
         rng: RngTypes | None = None,
-        weight: Any = None,
-        axis: AxisReduce = -1,
         move_axis_to_end: bool = True,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
         order: ArrayOrderCF = None,
         parallel: bool | None = None,
-    ) -> Self:
+        mom_dims: MomDims | None = None,
+        rep_dim: str = "rep",
+        keep_attrs: bool = True,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+    ) -> Self | CentralMomentsABC[Any]:
         """
         Create from resample observations/values.
 
@@ -1343,43 +1656,163 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        x : array
-            For moments, pass single array-like objects `x=x0`.
-            For comoments, pass tuple of array-like objects `x=(x0, x1)`.
-        *y : array-like
+        x : array-like
+            Observations.
+        *y : array-like,
             Additional values (needed if ``len(mom) > 1``).
         {mom}
+        {weight}
+        {axis}
+        {dim}
         {freq}
         {nrep}
         {rng}
-        {weight}
-        {axis_and_dim}
         {move_axis_to_end}
+        {order}
         {out}
         {dtype}
         {casting}
         {order_cf}
         {parallel}
+        {mom_dims}
+        {rep_dim}
+        {keep_attrs}
+        {on_missing_core_dim}
+        {apply_ufunc_kwargs}
 
         Returns
         -------
-        out : {klass}
+        object
             Instance of calling class
 
 
         See Also
         --------
-        cmomy.resample.resample_vals
-        cmomy.resample.randsamp_freq
-        cmomy.resample.freq_to_indices
-        cmomy.resample.indices_to_freq
+        ~.resample.resample_vals
+        ~.resample.randsamp_freq
+        ~.resample.freq_to_indices
+        ~.resample.indices_to_freq
         """
+        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+        kws = cls._mom_dims_kws(mom_dims, mom_ndim)
+
+        from cmomy.resample import resample_vals
+
+        obj = resample_vals(  # type: ignore[type-var, misc]
+            x,  # pyright: ignore[reportArgumentType]
+            *y,
+            freq=freq,
+            nrep=nrep,
+            rng=rng,
+            mom=mom,
+            weight=weight,
+            axis=axis,
+            dim=dim,
+            move_axis_to_end=move_axis_to_end,
+            parallel=parallel,
+            **kws,
+            rep_dim=rep_dim,
+            keep_attrs=keep_attrs,
+            on_missing_core_dim=on_missing_core_dim,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
+            dtype=dtype,
+            out=out,
+            casting=casting,
+            order=order,
+        )
+        return cls(
+            obj=obj,  # type: ignore[arg-type]
+            mom_ndim=mom_ndim,
+            **kws,
+            fastpath=True,
+        )
+
+    @overload
+    @classmethod
+    def from_raw(
+        cls,
+        raw: XArrayT_,
+        *,
+        mom_ndim: Mom_NDim,
+        out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = ...,
+        keep_attrs: KeepAttrs = ...,
+        mom_dims: MomDims | None = ...,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsXArray[XArrayT_]: ...
+    @overload
+    @classmethod
+    def from_raw(
+        cls,
+        raw: ArrayLikeArg[FloatT_],
+        *,
+        mom_ndim: Mom_NDim,
+        out: None = ...,
+        dtype: None = ...,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = ...,
+        keep_attrs: KeepAttrs = ...,
+        mom_dims: MomDims | None = ...,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
+    def from_raw(
+        cls,
+        raw: ArrayLike,
+        *,
+        mom_ndim: Mom_NDim,
+        out: NDArray[FloatT_],
+        dtype: DTypeLike = ...,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = ...,
+        keep_attrs: KeepAttrs = ...,
+        mom_dims: MomDims | None = ...,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
+    def from_raw(
+        cls,
+        raw: ArrayLike,
+        *,
+        mom_ndim: Mom_NDim,
+        out: None = ...,
+        dtype: DTypeLikeArg[FloatT_],
+        casting: Casting = "same_kind",
+        order: ArrayOrder = ...,
+        keep_attrs: KeepAttrs = ...,
+        mom_dims: MomDims | None = ...,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    @classmethod
+    def from_raw(
+        cls,
+        raw: Any,
+        *,
+        mom_ndim: Mom_NDim,
+        out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        casting: Casting = "same_kind",
+        order: ArrayOrder = ...,
+        keep_attrs: KeepAttrs = ...,
+        mom_dims: MomDims | None = ...,
+        on_missing_core_dim: MissingCoreDimOptions = "copy",
+        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    ) -> Any: ...
 
     @classmethod
     @docfiller.decorate
     def from_raw(
         cls,
-        raw: GenArrayT,
+        raw: ArrayLike | xr.DataArray | xr.Dataset,
         *,
         mom_ndim: Mom_NDim,
         out: NDArrayAny | None = None,
@@ -1390,7 +1823,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         mom_dims: MomDims | None = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> Self:
+    ) -> Self | CentralMomentsABC[Any]:
         """
         Create object from raw moment data.
 
@@ -1426,17 +1859,52 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         -----
         Weights are taken from ``raw[...,0, 0]``.
         Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
+
+        Examples
+        --------
+        >>> import cmomy
+        >>> rng = cmomy.random.default_rng(0)
+        >>> x = rng.random(10)
+        >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
+
+        >>> dx_raw = cmomy.CentralMomentsArray.from_raw(raw_x, mom_ndim=1)
+        >>> print(dx_raw.mean())
+        0.5505105129032412
+        >>> dx_raw.cmom()
+        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
+
+        Which is equivalent to creating raw moments from values
+        >>> dx_cen = cmomy.CentralMomentsArray.from_vals(x, axis=0, mom=4)
+        >>> print(dx_cen.mean())
+        0.5505105129032413
+        >>> dx_cen.cmom()
+        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
+
+        But note that calculating using from_raw can lead to
+        numerical issues.  For example
+
+        >>> y = x + 10000
+        >>> raw_y = (y[:, None] ** np.arange(5)).mean(axis=0)
+        >>> dy_raw = cmomy.CentralMomentsArray.from_raw(raw_y, mom_ndim=1)
+        >>> print(dy_raw.mean() - 10000)
+        0.5505105129050207
+
+        Note that the central moments don't match!
+
+        >>> np.isclose(dy_raw.cmom(), dx_raw.cmom())
+        array([ True,  True,  True, False, False])
+
+        >>> dy_cen = cmomy.CentralMomentsArray.from_vals(y, axis=0, mom=4)
+        >>> print(dy_cen.mean() - 10000)
+        0.5505105129032017
+        >>> dy_cen.cmom()  # this matches above
+        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
         """
         from cmomy import convert
 
-        kws: dict[str, Any] = (
-            {"mom_dims": validate_mom_dims(mom_dims, mom_ndim, raw)}
-            if is_xarray(raw)
-            else {}
-        )
-
+        kws = cls._mom_dims_kws(mom_dims, mom_ndim, raw)
         return cls(
-            obj=convert.moments_type(
+            obj=convert.moments_type(  # type: ignore[arg-type]
                 raw,
                 mom_ndim=mom_ndim,
                 to="central",

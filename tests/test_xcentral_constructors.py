@@ -124,7 +124,7 @@ def test_from_raw(dc, dcx) -> None:
 
     if mom_ndim == 2:
         with pytest.raises(ValueError):
-            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim + 1)  # type: ignore[assignment]
+            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=3)  # type: ignore[call-overload]
 
 
 def test_from_raws(dc, dcx) -> None:

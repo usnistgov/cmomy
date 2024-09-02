@@ -1489,29 +1489,36 @@ def typecheck_xcentralmoments_from_vals(
 
 
 def typecheck_from_raw(
+    xany: NDArrayAny,
     x32: NDArrayFloat32,
     x64: NDArrayFloat64,
     da: xr.DataArray,
     ds: xr.Dataset,
-    # out: NDArrayFloat64,
+    a: Any,
 ) -> None:
-    c32 = CentralMomentsArray.from_raw(x32, mom_ndim=1)
-    c64 = CentralMomentsArray.from_raw(x64, mom_ndim=1)
-
-    assert_type(c32, CentralMomentsArrayFloat32)
-    assert_type(c64, CentralMomentsArrayFloat64)
-
-    ca = CentralMomentsXArray.from_raw(da, mom_ndim=1)
-    cs = CentralMomentsXArray.from_raw(ds, mom_ndim=1)
+    assert_type(CentralMomentsArray.from_raw(xany, mom_ndim=1), CentralMomentsArrayAny)
+    assert_type(
+        CentralMomentsArray.from_raw(x32, mom_ndim=1), CentralMomentsArrayFloat32
+    )
+    assert_type(
+        CentralMomentsArray.from_raw(x64, mom_ndim=1), CentralMomentsArrayFloat64
+    )
 
     assert_type(
-        ca,
+        CentralMomentsArray.from_raw(a, mom_ndim=1),
+        Any,
+    )
+
+    assert_type(
+        CentralMomentsXArray.from_raw(da, mom_ndim=1),
         CentralMomentsDataArray,
     )
     assert_type(
-        cs,
+        CentralMomentsXArray.from_raw(ds, mom_ndim=1),
         CentralMomentsDataset,
     )
+
+    assert_type(CentralMomentsXArray.from_raw(a, mom_ndim=1), Any)
 
 
 def typecheck_centralmoments_newlike(

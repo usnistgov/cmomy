@@ -19,7 +19,6 @@ from cmomy.core.validate import (
     is_dataset,
     is_xarray,
     validate_floating_dtype,
-    validate_mom_and_mom_ndim,
     validate_mom_dims,
 )
 from cmomy.core.xr_utils import (
@@ -45,7 +44,6 @@ if TYPE_CHECKING:
         AttrsType,
         AxisReduce,
         Casting,
-        CentralMomentsDataAny,
         CentralMomentsDataArray,
         CentralMomentsDataset,
         CoordsPolicy,
@@ -63,9 +61,7 @@ if TYPE_CHECKING:
         MomentsStrict,
         NameType,
         NDArrayAny,
-        RngTypes,
         XArrayCoordsType,
-        XArrayT_,
     )
     from cmomy.core.typing_compat import Self
     from cmomy.wrapper.wrap_np import CentralMomentsArray
@@ -209,7 +205,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         if type(self._obj) is type(obj):
             obj_ = cast("XArrayT", obj)
         else:
-            obj_ = self._obj.copy(data=obj)  # pyright: ignore[reportArgumentType]
+            obj_ = self._obj.copy(data=obj)  # type: ignore[arg-type]
 
         # minimal check on shape and that mom_dims are present....
         if not contains_dims(obj_, self._mom_dims):
@@ -828,233 +824,6 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             coords=coords,
             name=name,
             template=template,
-        )
-
-    # Using this is a hack to make pyright happy.
-    # mypy is happy to use XArrayT typevar
-    # with return Self
-    @classmethod
-    @docfiller.decorate
-    def from_vals(  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls: type[CentralMomentsDataAny],
-        x: XArrayT_,
-        *y: ArrayLike | xr.DataArray | XArrayT_,
-        mom: Moments,
-        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
-        axis: AxisReduce | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        mom_dims: MomDims | None = None,
-        keepdims: bool = False,
-        dtype: DTypeLike = None,
-        out: NDArrayAny | None = None,
-        parallel: bool | None = None,
-        keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> CentralMomentsXArray[XArrayT_]:
-        """
-        Create from observations/values.
-
-        Parameters
-        ----------
-        x : DataArray or Dataset
-            Values to reduce.
-        *y : array-like or DataArray or Dataset
-            Additional values (needed if ``len(mom)==2``).
-        weight : scalar or array-like or DataArray or Dataset, optional
-            Optional weight.  If scalar or array, attempt to
-            broadcast to `x0.shape`
-        {mom}
-        {axis_and_dim}
-        {mom_dims}
-        {keepdims}
-        {order}
-        {dtype}
-        {parallel}
-        {keep_attrs}
-
-        Returns
-        -------
-        output: {klass}
-
-        See Also
-        --------
-        push_vals
-        CentralMomentsArray.from_vals
-        CentralMomentsArray.to_x
-        """
-        from cmomy.reduction import reduce_vals
-
-        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim)
-        obj: XArrayT_ = reduce_vals(
-            x,
-            *y,
-            mom=mom,
-            weight=weight,
-            axis=axis,
-            dim=dim,
-            mom_dims=mom_dims,
-            keepdims=keepdims,
-            parallel=parallel,
-            dtype=dtype,
-            out=out,
-            keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
-            apply_ufunc_kwargs=apply_ufunc_kwargs,
-        )
-
-        return cls(
-            obj=obj,
-            mom_ndim=mom_ndim,
-            mom_dims=mom_dims,
-            fastpath=True,
-        )
-
-    # Same as above.  Go back if pyright ever gets fixed..
-    @classmethod
-    @docfiller.decorate
-    def from_resample_vals(  # noqa: PLR0913  # pyright: ignore[reportIncompatibleMethodOverride]
-        cls: type[CentralMomentsDataAny],
-        x: XArrayT_,
-        *y: ArrayLike | xr.DataArray | XArrayT_,
-        mom: Moments,
-        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
-        axis: AxisReduce | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        freq: ArrayLike | xr.DataArray | XArrayT_ | None = None,
-        nrep: int | None = None,
-        rng: RngTypes | None = None,
-        move_axis_to_end: bool = True,
-        out: NDArrayAny | None = None,
-        dtype: DTypeLike = None,
-        casting: Casting = "same_kind",
-        order: ArrayOrderCF = None,
-        parallel: bool | None = None,
-        mom_dims: MomDims | None = None,
-        rep_dim: str = "rep",
-        keep_attrs: bool = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> CentralMomentsXArray[XArrayT_]:
-        """
-        Create from resample observations/values.
-
-        This effectively resamples `x`.
-
-        Parameters
-        ----------
-        x : DataArray or Dataset
-            For moments, pass single array-like objects `x=x0`.
-            For comoments, pass tuple of array-like objects `x=(x0, x1)`.
-        *y : array-like or DataArray or Dataset
-            Additional values (needed if ``len(mom) > 1``).
-        {mom}
-        {weight}
-        {axis_and_dim}
-        {freq}
-        {nrep}
-        {rng}
-        {move_axis_to_end}
-        {order}
-        {out}
-        {dtype}
-        {casting}
-        {order_cf}
-        {parallel}
-        {mom_dims}
-        {rep_dim}
-        {keep_attrs}
-        {on_missing_core_dim}
-        {apply_ufunc_kwargs}
-
-        Returns
-        -------
-        out : {klass}
-            Instance of calling class
-
-
-        See Also
-        --------
-        cmomy.resample.resample_vals
-        cmomy.resample.randsamp_freq
-        cmomy.resample.freq_to_indices
-        cmomy.resample.indices_to_freq
-        """
-        """
-        Parameters
-        ----------
-        x : array, tuple of array, DataArray, or tuple of DataArray
-            For moments, `x=x0`.  For comoments, `x=(x0, x1)`.
-            If pass DataArray, inherit attributes from `x0`.  If pass
-            ndarray, use `dims`, `attrs`, etc to wrap final result
-        {dim}
-        {rep_dim}
-        {mom_dims}
-        {keep_attrs}
-
-        See Also
-        --------
-        CentralMomentsArray.from_resample_vals
-        .resample.resample_vals
-        """
-        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim)
-
-        from cmomy.resample import resample_vals
-
-        obj: XArrayT_ = resample_vals(
-            x,
-            *y,
-            freq=freq,
-            nrep=nrep,
-            rng=rng,
-            mom=mom,
-            weight=weight,
-            axis=axis,
-            dim=dim,
-            move_axis_to_end=move_axis_to_end,
-            parallel=parallel,
-            mom_dims=mom_dims,
-            rep_dim=rep_dim,
-            keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
-            apply_ufunc_kwargs=apply_ufunc_kwargs,
-            dtype=dtype,
-            out=out,
-            casting=casting,
-            order=order,
-        )
-        return cls(
-            obj=obj,
-            mom_ndim=mom_ndim,
-            mom_dims=mom_dims,
-        )
-
-    # Need this for pyright...
-    @classmethod
-    @docfiller_inherit_abc()
-    def from_raw(  # type: ignore[override]
-        cls: type[CentralMomentsDataAny],
-        raw: XArrayT_,
-        *,
-        mom_ndim: Mom_NDim = 1,
-        out: NDArrayAny | None = None,
-        dtype: DTypeLike = None,
-        keep_attrs: KeepAttrs = None,
-        mom_dims: MomDims | None = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> CentralMomentsXArray[XArrayT_]:
-        return super().from_raw(  # pyright: ignore[reportReturnType]
-            raw=raw,
-            mom_ndim=mom_ndim,
-            out=out,
-            dtype=dtype,
-            keep_attrs=keep_attrs,
-            mom_dims=mom_dims,
-            on_missing_core_dim=on_missing_core_dim,
-            apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
     # ** Xarray specific stuff ------------------------------------------------
