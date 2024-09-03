@@ -416,6 +416,7 @@ def assign_moment(
 ) -> NDArray[ScalarT]: ...
 
 
+# TODO(wpk): dtype parameter?
 @docfiller.decorate
 def assign_moment(
     data: NDArray[ScalarT] | XArrayT,

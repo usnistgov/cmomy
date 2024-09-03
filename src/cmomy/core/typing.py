@@ -27,7 +27,8 @@ from numpy.typing import NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
-    from cmomy.wrapper import CentralMomentsArray, CentralMomentsXArray
+    from cmomy.wrapper import CentralMomentsArray, CentralMomentsXArray  # noqa: F401
+    from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
     from .typing_compat import TypeAlias
@@ -38,14 +39,17 @@ if TYPE_CHECKING:
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
-    CentralMomentsDataArray: TypeAlias = CentralMomentsXArray[xr.DataArray]
-    CentralMomentsDataset: TypeAlias = CentralMomentsXArray[xr.Dataset]
-    CentralMomentsDataAny: TypeAlias = CentralMomentsXArray[Any]
-    CentralMomentsArrayAny: TypeAlias = CentralMomentsArray[Any]
+CentralMomentsDataArray: TypeAlias = "CentralMomentsXArray[xr.DataArray]"
+CentralMomentsDataset: TypeAlias = "CentralMomentsXArray[xr.Dataset]"
+CentralMomentsDataAny: TypeAlias = "CentralMomentsXArray[Any]"
+CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
-    from cmomy.wrapper.wrap_abc import CentralMomentsABC
 
-    CentralMomentsT = TypeVar("CentralMomentsT", bound=CentralMomentsABC[Any])
+CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any]")
+CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
+CentralMomentsXArrayT = TypeVar(
+    "CentralMomentsXArrayT", bound="CentralMomentsXArray[Any]"
+)
 
 
 # * TypeVars

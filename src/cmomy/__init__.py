@@ -12,20 +12,25 @@ if TYPE_CHECKING:
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TCH004
     from .convert import concat  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
-    from .resample import (
-        indices_to_freq,  # noqa: TCH004
-        random_freq,  # noqa: TCH004
-        random_indices,  # noqa: TCH004
-        randsamp_freq,  # noqa: TCH004
-        resample_data,  # noqa: TCH004
-        resample_vals,  # noqa: TCH004
+    from .resample import (  # noqa: TCH004
+        indices_to_freq,
+        random_freq,
+        random_indices,
+        randsamp_freq,
+        resample_data,
+        resample_vals,
     )
     from .utils import assign_moment, moveaxis, select_moment  # noqa: TCH004
     from .wrapper import (  # noqa: TCH004
         CentralMoments,
         CentralMomentsArray,
         CentralMomentsXArray,
+        wrap,
+        wrap_raw,
+        wrap_reduce_vals,
+        wrap_resample_vals,
         xCentralMoments,
+        zeros_like,
     )
 
 
@@ -48,6 +53,11 @@ else:
                 "CentralMomentsArray",
                 "CentralMomentsXArray",
                 "CentralMoments",
+                "zeros_like",
+                "wrap_raw",
+                "wrap_resample_vals",
+                "wrap_reduce_vals",
+                "wrap",
                 "xCentralMoments",
             ],
             "confidence_interval": ["bootstrap_confidence_interval"],
@@ -100,5 +110,10 @@ __all__ = [
     "rolling",
     "select_moment",
     "utils",
+    "wrap",
+    "wrap_raw",
+    "wrap_reduce_vals",
+    "wrap_resample_vals",
     "xCentralMoments",
+    "zeros_like",
 ]

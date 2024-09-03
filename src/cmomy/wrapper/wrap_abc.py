@@ -830,6 +830,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
+    # TODO(wpk): add overloads for dtype to wrap_np
     @docfiller.decorate
     def moments_to_comoments(
         self,
