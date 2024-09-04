@@ -75,6 +75,8 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         IntDTypeT,
+        JackknifeDataParams,
+        JackknifeValsParams,
         KeepAttrs,
         MissingCoreDimOptions,
         MissingType,
@@ -83,9 +85,12 @@ if TYPE_CHECKING:
         Moments,
         NDArrayAny,
         NDArrayInt,
+        ResampleDataParams,
+        ResampleValsParams,
         RngTypes,
         XArrayT,
     )
+    from .core.typing_compat import Unpack
 
 
 # * Resampling utilities ------------------------------------------------------
@@ -599,124 +604,51 @@ def _select_nrep(
 def resample_data(
     data: XArrayT,
     *,
-    mom_ndim: Mom_NDim,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    paired: bool = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleDataParams],
 ) -> XArrayT: ...
 # array no out or dtype
 @overload
 def resample_data(
     data: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    paired: bool = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleDataParams],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def resample_data(
     data: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    paired: bool = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleDataParams],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def resample_data(
     data: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    paired: bool = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleDataParams],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def resample_data(
     data: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    paired: bool = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleDataParams],
 ) -> NDArrayAny: ...
-
-
-# TODO(wpk): Should out above be out: NDArrayAny | None = ... ?
 
 
 # ** Public api
@@ -724,7 +656,7 @@ def resample_data(
 def resample_data(  # noqa: PLR0913
     data: ArrayLike | XArrayT,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim = 1,
     freq: ArrayLike | xr.DataArray | XArrayT | None = None,
     nrep: int | None = None,
     rng: RngTypes | None = None,
@@ -904,126 +836,55 @@ def _resample_data(
 def resample_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
-    mom: Moments,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    paired: bool = ...,
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsParams],
 ) -> XArrayT: ...
 # array
 @overload
 def resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    mom: Moments,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsParams],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsParams],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsParams],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsParams],
 ) -> NDArrayAny: ...
 
 
@@ -1308,20 +1169,9 @@ def jackknife_data(
     data: XArrayT,
     data_reduced: ArrayLike | XArrayT | None = ...,
     *,
-    mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeDataParams],
 ) -> XArrayT: ...
 # array
 @overload
@@ -1329,20 +1179,9 @@ def jackknife_data(
     data: ArrayLikeArg[FloatT],
     data_reduced: ArrayLike | None = ...,
     *,
-    mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeDataParams],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -1350,20 +1189,9 @@ def jackknife_data(
     data: ArrayLike,
     data_reduced: ArrayLike | None = ...,
     *,
-    mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeDataParams],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -1371,20 +1199,9 @@ def jackknife_data(
     data: ArrayLike,
     data_reduced: ArrayLike | None = ...,
     *,
-    mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeDataParams],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -1392,20 +1209,9 @@ def jackknife_data(
     data: ArrayLike,
     data_reduced: ArrayLike | None = ...,
     *,
-    mom_ndim: Mom_NDim,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeDataParams],
 ) -> NDArrayAny: ...
 
 
@@ -1414,7 +1220,7 @@ def jackknife_data(  # noqa: PLR0913
     data: ArrayLike | XArrayT,
     data_reduced: ArrayLike | XArrayT | None = None,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim = 1,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str | None = "rep",
@@ -1641,115 +1447,55 @@ def _jackknife_data(
 def jackknife_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
-    mom: Moments,
     data_reduced: ArrayLike | XArrayT | None = ...,
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeValsParams],
 ) -> XArrayT: ...
 # array
 @overload
 def jackknife_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    mom: Moments,
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeValsParams],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def jackknife_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeValsParams],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def jackknife_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeValsParams],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def jackknife_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     data_reduced: ArrayLike | None = ...,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    rep_dim: str | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[JackknifeValsParams],
 ) -> NDArrayAny: ...
 
 

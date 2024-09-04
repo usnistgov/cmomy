@@ -13,6 +13,8 @@ from typing import (
     Literal,
     Optional,
     Protocol,
+    Required,
+    TypedDict,
     Union,
     runtime_checkable,
 )
@@ -22,7 +24,7 @@ import numpy as np
 # put outside to get autodoc typehints working...
 import pandas as pd
 import xarray as xr
-from numpy.typing import NDArray
+from numpy.typing import ArrayLike, NDArray
 
 from .typing_compat import EllipsisType, TypeVar
 
@@ -39,6 +41,8 @@ if TYPE_CHECKING:
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
+
+# * CentralMoments types ------------------------------------------------------
 CentralMomentsDataArray: TypeAlias = "CentralMomentsXArray[xr.DataArray]"
 CentralMomentsDataset: TypeAlias = "CentralMomentsXArray[xr.Dataset]"
 CentralMomentsDataAny: TypeAlias = "CentralMomentsXArray[Any]"
@@ -52,7 +56,7 @@ CentralMomentsXArrayT = TypeVar(
 )
 
 
-# * TypeVars
+# * TypeVars ------------------------------------------------------------------
 #: General data set/array
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
 GenArrayT_ = TypeVar("GenArrayT_", NDArray[Any], xr.DataArray, xr.Dataset)
@@ -93,7 +97,7 @@ DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
 
 
-# ** Numpy
+# * Numpy ---------------------------------------------------------------------
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
 AxisReduce: TypeAlias = Union[int, None]
@@ -148,12 +152,12 @@ ArrayLikeArg = Union[
 ]
 
 
-# * Numba types
+# * Numba types ---------------------------------------------------------------
 # NumbaType = Union[nb.typing.Integer, nb.typing.Array]  # noqa: ERA001
 # The above isn't working for pyright.  Just using any for now...
 NumbaType = Any
 
-# * Moments
+# * Moments -------------------------------------------------------------------
 # NOTE: using the strict form for Moments
 # Passing in integer or Sequence[int] will work in almost all cases,
 # but will be flagged by typechecker...
@@ -162,7 +166,7 @@ Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
-# * Xarray specific stuff
+# * Xarray specific stuff -----------------------------------------------------
 # fix if using autodoc typehints...
 DimsReduce: TypeAlias = Union[Hashable, None]
 DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
@@ -189,7 +193,7 @@ KeepAttrs: TypeAlias = Union[
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
 
-# * Literals
+# * Literals ------------------------------------------------------------------
 ArrayOrderCF = Literal["C", "F", None]
 ArrayOrderCFA = Literal["C", "F", "A", None]
 ArrayOrder = Literal["C", "F", "A", "K", None]
@@ -215,3 +219,148 @@ BootStrapMethod: TypeAlias = Literal["percentile", "basic", "bca"]
 BlockByModes: TypeAlias = Literal[
     "drop_first", "drop_last", "expand_first", "expand_last"
 ]
+
+
+# * Keyword args --------------------------------------------------------------
+class _ReductionParams(TypedDict, total=False):
+    casting: Casting
+    parallel: bool | None
+    mom_dims: MomDims | None
+    keep_attrs: KeepAttrs
+    on_missing_core_dim: MissingCoreDimOptions
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None
+
+
+class _MomNDimParams(TypedDict, total=False):
+    mom_ndim: Mom_NDim
+
+
+class _MomParams(TypedDict, total=False):
+    mom: Required[Moments]
+
+
+class _AxisParams(TypedDict, total=False):
+    axis: AxisReduce | MissingType
+    dim: DimsReduce | MissingType
+
+
+class _MoveAxisToEndParams(TypedDict, total=False):
+    move_axis_to_end: bool
+
+
+class _OrderParams(TypedDict, total=False):
+    order: ArrayOrder
+
+
+class _OrderCFParams(TypedDict, total=False):
+    order: ArrayOrderCF
+
+
+class _KeepDimsParams(TypedDict, total=False):
+    keepdims: bool
+
+
+class _ResampleParams(TypedDict, total=False):
+    nrep: int | None
+    rng: RngTypes | None
+    paired: bool
+    rep_dim: str
+
+
+class _DataParams(_ReductionParams, _MomNDimParams, _AxisParams, total=False):
+    pass
+
+
+class _ValsParams(_ReductionParams, _MomParams, _AxisParams, total=False):
+    pass
+
+
+class ReduceDataParams(
+    _MomNDimParams,
+    _ReductionParams,
+    _OrderParams,
+    _KeepDimsParams,
+    total=False,
+):
+    """Extra parameters to :func:`.reduction.reduce_data`"""
+
+    axis: AxisReduceMult | MissingType
+    dim: DimsReduceMult | MissingType
+    use_reduce: bool
+
+
+class ReduceValsParams(
+    _ValsParams,
+    _OrderCFParams,
+    _KeepDimsParams,
+    total=False,
+):
+    """Extra parameters to :func:`.reduction.reduce_vals`"""
+
+
+class ReduceDataGroupedParams(
+    _DataParams,
+    _MoveAxisToEndParams,
+    _OrderCFParams,
+    total=False,
+):
+    """Extra parameters to :func:`.reduction.reduce_data_grouped`"""
+
+    group_dim: str | None
+    groups: Groups | None
+
+
+class ReduceDataIndexedParams(
+    _DataParams,
+    _MoveAxisToEndParams,
+    _OrderParams,
+    total=False,
+):
+    """Extra parameters to :func:`.reduction.reduce_data_indexed`"""
+
+    index: Required[ArrayLike]
+    group_start: Required[ArrayLike]
+    group_end: Required[ArrayLike]
+    scale: ArrayLike | None
+
+    coords_policy: CoordsPolicy
+    group_dim: str | None
+    groups: Groups | None
+
+
+class ResampleDataParams(
+    _DataParams,
+    _ResampleParams,
+    _MoveAxisToEndParams,
+    _OrderParams,
+    total=False,
+):
+    """Extra parameters to :func:`.reduction.resample_data`"""
+
+
+class ResampleValsParams(
+    _ValsParams, _ResampleParams, _MoveAxisToEndParams, _OrderCFParams, total=False
+):
+    """Extra parameters for :func:`.reduction.resample_vals`"""
+
+
+class JackknifeDataParams(
+    _DataParams,
+    _MoveAxisToEndParams,
+    _OrderParams,
+    total=False,
+):
+    """Extra parameters for :func:`.reduction.jackknife_data`"""
+
+    rep_dim: str | None
+
+
+class JackknifeValsParams(
+    _ValsParams,
+    _MoveAxisToEndParams,
+    _OrderParams,
+    total=False,
+):
+    """Extra parameters for :func:`.reduction.jackknife_data`"""
+
+    rep_dim: str | None

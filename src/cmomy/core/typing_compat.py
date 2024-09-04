@@ -12,9 +12,9 @@ else:
 
 
 if sys.version_info < (3, 11):
-    from typing_extensions import Self
+    from typing_extensions import Self, Unpack
 else:
-    from typing import Self
+    from typing import Self, Unpack
 
 
 if sys.version_info < (3, 13):
@@ -30,4 +30,5 @@ __all__ = [
     "TypeGuard",
     "TypeIs",
     "TypeVar",
+    "Unpack",
 ]
