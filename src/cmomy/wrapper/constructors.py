@@ -166,6 +166,13 @@ def zeros_like(
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def zeros_like(
+    c: CentralMomentsArrayAny,
+    *,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ZerosLikeKwargs],
+) -> CentralMomentsArrayAny: ...
+@overload
+def zeros_like(
     c: CentralMomentsArrayAny | CentralMomentsDataAny,
     *,
     dtype: DTypeLike | Mapping[Any, DTypeLike] = ...,

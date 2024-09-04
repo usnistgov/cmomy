@@ -963,7 +963,7 @@ def _reduce_data_grouped(
     if out is None:
         ngroup = by.max() + 1
         out_shape = (*data.shape[:axis], ngroup, *data.shape[axis + 1 :])
-        out = np.zeros(out_shape, dtype=data.dtype, order=order)
+        out = np.zeros(out_shape, dtype=dtype, order=order)
     else:
         out.fill(0.0)
 
