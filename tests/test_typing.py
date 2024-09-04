@@ -9,10 +9,10 @@ import xarray as xr
 import cmomy
 from cmomy import CentralMomentsArray, CentralMomentsXArray, convert, rolling
 from cmomy.reduction import (
-    reduce_data,
+    # reduce_data,
     reduce_data_grouped,
     reduce_data_indexed,
-    reduce_vals,
+    # reduce_vals,
 )
 from cmomy.resample import resample_vals
 
@@ -116,319 +116,48 @@ cs_any = CentralMomentsXArray(sdata_any)
 # ca_or_cs = CentralMomentsXArray(xdata_or_sdata)  # noqa: ERA001
 
 
-# * tests
-def test_centralmoments_init() -> None:
-    check(
-        assert_type(CentralMomentsArray(x32, mom_ndim=1), CentralMomentsArrayFloat32),
-        CentralMomentsArray,
-        np.float32,
-    )
-    check(
-        assert_type(CentralMomentsArray(x64, mom_ndim=1), CentralMomentsArrayFloat64),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x64, mom_ndim=1, dtype=np.float32),
-            CentralMomentsArrayFloat32,
-        ),
-        CentralMomentsArray,
-        np.float32,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x32, mom_ndim=1, dtype=np.float64),
-            CentralMomentsArrayFloat64,
-        ),
-        CentralMomentsArray,
-        np.float64,
-    )
-
-    check(
-        assert_type(
-            CentralMomentsArray(x_arraylike, mom_ndim=1), CentralMomentsArrayAny
-        ),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x_arraylike, mom_ndim=1, dtype=np.float32),
-            CentralMomentsArrayFloat32,
-        ),
-        CentralMomentsArray,
-        np.float32,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x_arraylike, mom_ndim=1, dtype=np.dtype("f8")),
-            CentralMomentsArrayFloat64,
-        ),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x_arraylike, mom_ndim=1, dtype="f8"),
-            CentralMomentsArrayAny,
-        ),
-        CentralMomentsArray,
-        np.float64,
-    )
-
-    check(
-        assert_type(
-            CentralMomentsArray(x_arrayany, mom_ndim=1), CentralMomentsArrayAny
-        ),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x_arrayany, mom_ndim=1, dtype=np.float32),
-            CentralMomentsArrayFloat32,
-        ),
-        CentralMomentsArray,
-        np.float32,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x_arrayany, mom_ndim=1, dtype=np.dtype("f8")),
-            CentralMomentsArrayFloat64,
-        ),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            CentralMomentsArray(x_arrayany, mom_ndim=1, dtype="f8"),
-            CentralMomentsArrayAny,
-        ),
-        CentralMomentsArray,
-        np.float64,
-    )
-
-    check(
-        assert_type(CentralMomentsArray(x_any, mom_ndim=1), CentralMomentsArrayAny),
-        CentralMomentsArray,
-        np.float64,
-    )
-
-
-def test_xcentralmoments_init() -> None:
-    check(
-        assert_type(CentralMomentsXArray(xdata, mom_ndim=1), CentralMomentsDataArray),
-        CentralMomentsXArray,
-        np.float64,
-        xr.DataArray,
-    )
-    check(
-        assert_type(CentralMomentsXArray(sdata, mom_ndim=1), CentralMomentsDataset),
-        CentralMomentsXArray,
-        obj_class=xr.Dataset,
-    )
-    check(
-        assert_type(CentralMomentsXArray(xdata_any, mom_ndim=1), CentralMomentsDataAny),
-        CentralMomentsXArray,
-        np.float64,
-        xr.DataArray,
-    )
-
-    # TODO(wpk): think about what this should do...
-    # reveal_type(CentralMomentsXArray(xdata_or_sdata, mom_ndim=1))  # noqa: ERA001
-
-
-def test_centralmoments_types() -> None:
-    check(assert_type(c32, CentralMomentsArrayFloat32), CentralMomentsArray, np.float32)
-    check(assert_type(c64, CentralMomentsArrayFloat64), CentralMomentsArray, np.float64)
-    check(assert_type(c_any, CentralMomentsArrayAny), CentralMomentsArray, np.float64)
-    check(
-        assert_type(CentralMomentsArray(data_arraylike), CentralMomentsArrayAny),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(CentralMomentsArray(data_arrayany), CentralMomentsArrayAny),
-        CentralMomentsArray,
-        np.float64,
-    )
-
-    check(
-        assert_type(ca, CentralMomentsDataArray),
-        CentralMomentsXArray,
-        np.float64,
-        xr.DataArray,
-    )
-    check(
-        assert_type(cs, CentralMomentsDataset),
-        CentralMomentsXArray,
-        None,
-        xr.Dataset,
-    )
-    check(
-        assert_type(ca_any, CentralMomentsDataAny),
-        CentralMomentsXArray,
-        np.float64,
-        xr.DataArray,
-    )
-    check(
-        assert_type(cs_any, CentralMomentsDataAny),
-        CentralMomentsXArray,
-        None,
-        xr.Dataset,
-    )
-    # check(
-    #     assert_type(ca_or_cs, CentralMomentsDataAny),  # noqa: ERA001
-    #     CentralMomentsXArray, np.float64, xr.DataArray)
-
-
-def test_xcentral_to_dataarray_dataset() -> None:
-    check(
-        assert_type(ca.to_dataset(), CentralMomentsDataset),
-        CentralMomentsXArray,
-        None,
-        xr.Dataset,
-    )
-    check(
-        assert_type(ca_any.to_dataset(), CentralMomentsDataset),
-        CentralMomentsXArray,
-        None,
-        xr.Dataset,
-    )
-    check(
-        assert_type(cs.to_dataarray(), CentralMomentsDataArray),
-        CentralMomentsXArray,
-        np.float64,
-        xr.DataArray,
-    )
-    check(
-        assert_type(cs_any.to_dataarray(), CentralMomentsDataArray),
-        CentralMomentsXArray,
-        np.float64,
-        xr.DataArray,
-    )
-
-
-def test_cls_astype() -> None:
-    check(
-        assert_type(c32.astype(np.float64), CentralMomentsArrayFloat64),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(c64.astype(np.float32), CentralMomentsArrayFloat32),
-        CentralMomentsArray,
-        np.float32,
-    )
-    check(
-        assert_type(c32.astype(np.dtype("f8")), CentralMomentsArrayFloat64),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(c64.astype("f4"), CentralMomentsArrayAny),
-        CentralMomentsArray,
-        np.float32,
-    )
-    check(
-        assert_type(c64.astype("f4"), CentralMomentsArrayAny),
-        CentralMomentsArray,
-        np.float32,
-    )
-
-    check(
-        assert_type(c_any.astype(np.float32), CentralMomentsArrayFloat32),
-        CentralMomentsArray,
-        np.float32,
-    )
-
-    check(
-        assert_type(c32.astype(None), CentralMomentsArrayFloat64),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(c64.astype(None), CentralMomentsArrayFloat64),
-        CentralMomentsArray,
-        np.float64,
-    )
-    check(
-        assert_type(c_any.astype(None), CentralMomentsArrayFloat64),
-        CentralMomentsArray,
-        np.float64,
-    )
-
-    check(
-        assert_type(ca.astype(None), CentralMomentsDataArray),
-        CentralMomentsXArray,
-        np.float64,
-        xr.DataArray,
-    )
-    check(
-        assert_type(ca.astype(np.float32), CentralMomentsDataArray),
-        CentralMomentsXArray,
-        np.float32,
-        xr.DataArray,
-    )
-    check(
-        assert_type(ca_any.astype(np.float32), CentralMomentsDataAny),
-        CentralMomentsXArray,
-        np.float32,
-        xr.DataArray,
-    )
-
-    check(
-        assert_type(cs.astype(None), CentralMomentsDataset),
-        CentralMomentsXArray,
-        None,
-        xr.Dataset,
-    )
-    check(
-        assert_type(cs_any.astype(None), CentralMomentsDataAny),
-        CentralMomentsXArray,
-        None,
-        xr.Dataset,
-    )
-
-
+# * reduction -----------------------------------------------------------------
 def test_reduce_vals() -> None:
     check(
-        assert_type(reduce_vals(x32, mom=3, axis=0), NDArrayFloat32),
+        assert_type(cmomy.reduce_vals(x32, mom=3, axis=0), NDArrayFloat32),
         np.ndarray,
         np.float32,
     )
     check(
-        assert_type(reduce_vals(x64, mom=3, axis=0), NDArrayFloat64),
+        assert_type(cmomy.reduce_vals(x64, mom=3, axis=0), NDArrayFloat64),
         np.ndarray,
         np.float64,
     )
 
     # dtype override x
     check(
-        assert_type(reduce_vals(x32, mom=3, axis=0, dtype=np.float64), NDArrayFloat64),
+        assert_type(
+            cmomy.reduce_vals(x32, mom=3, axis=0, dtype=np.float64), NDArrayFloat64
+        ),
         np.ndarray,
         np.float64,
     )
     check(
-        assert_type(reduce_vals(x64, mom=3, axis=0, dtype=np.float32), NDArrayFloat32),
+        assert_type(
+            cmomy.reduce_vals(x64, mom=3, axis=0, dtype=np.float32), NDArrayFloat32
+        ),
         np.ndarray,
         np.float32,
     )
 
     # out override x
     check(
-        assert_type(reduce_vals(x32, mom=3, axis=0, out=out64), NDArrayFloat64),
+        assert_type(cmomy.reduce_vals(x32, mom=3, axis=0, out=out64), NDArrayFloat64),
         np.ndarray,
         np.float64,
     )
     check(
-        assert_type(reduce_vals(x64, mom=3, axis=0, out=out32), NDArrayFloat32),
+        assert_type(cmomy.reduce_vals(x64, mom=3, axis=0, out=out32), NDArrayFloat32),
         np.ndarray,
         np.float32,
     )
     check(
-        assert_type(reduce_vals(x32, mom=3, axis=0, out=out_any), NDArrayAny),
+        assert_type(cmomy.reduce_vals(x32, mom=3, axis=0, out=out_any), NDArrayAny),
         np.ndarray,
         np.float64,
     )
@@ -436,14 +165,16 @@ def test_reduce_vals() -> None:
     # out override x and dtype
     check(
         assert_type(
-            reduce_vals(x32, mom=3, axis=0, out=out64, dtype=np.float32), NDArrayFloat64
+            cmomy.reduce_vals(x32, mom=3, axis=0, out=out64, dtype=np.float32),
+            NDArrayFloat64,
         ),
         np.ndarray,
         np.float64,
     )
     check(
         assert_type(
-            reduce_vals(x64, mom=3, axis=0, out=out32, dtype=np.float64), NDArrayFloat32
+            cmomy.reduce_vals(x64, mom=3, axis=0, out=out32, dtype=np.float64),
+            NDArrayFloat32,
         ),
         np.ndarray,
         np.float32,
@@ -451,33 +182,35 @@ def test_reduce_vals() -> None:
 
     # Would like this to default to np.float64
     check(
-        assert_type(reduce_vals(x_arrayany, mom=3, axis=0), NDArrayAny),
+        assert_type(cmomy.reduce_vals(x_arrayany, mom=3, axis=0), NDArrayAny),
         np.ndarray,
         np.float64,
     )
 
     check(
         assert_type(
-            reduce_vals(x_arrayany, mom=3, axis=0, dtype=np.float32), NDArrayFloat32
+            cmomy.reduce_vals(x_arrayany, mom=3, axis=0, dtype=np.float32),
+            NDArrayFloat32,
         ),
         np.ndarray,
         np.float32,
     )
     check(
-        assert_type(reduce_vals(x_arraylike, mom=3, axis=0), NDArrayAny),
+        assert_type(cmomy.reduce_vals(x_arraylike, mom=3, axis=0), NDArrayAny),
         np.ndarray,
         np.float64,
     )
     check(
         assert_type(
-            reduce_vals(x_arraylike, mom=3, axis=0, dtype=np.float32), NDArrayFloat32
+            cmomy.reduce_vals(x_arraylike, mom=3, axis=0, dtype=np.float32),
+            NDArrayFloat32,
         ),
         np.ndarray,
         np.float32,
     )
     check(
         assert_type(
-            reduce_vals(x_arraylike, mom=3, axis=0, dtype=np.float64, out=out32),
+            cmomy.reduce_vals(x_arraylike, mom=3, axis=0, dtype=np.float64, out=out32),
             NDArrayFloat32,
         ),
         np.ndarray,
@@ -486,7 +219,7 @@ def test_reduce_vals() -> None:
 
     check(
         assert_type(
-            reduce_vals(x_arraylike, mom=3, axis=0, dtype=np.dtype("f8")),
+            cmomy.reduce_vals(x_arraylike, mom=3, axis=0, dtype=np.dtype("f8")),
             NDArrayFloat64,
         ),
         np.ndarray,
@@ -494,18 +227,18 @@ def test_reduce_vals() -> None:
     )
 
     check(
-        assert_type(reduce_vals(da, mom=3, dim="dim_0"), xr.DataArray),
+        assert_type(cmomy.reduce_vals(da, mom=3, dim="dim_0"), xr.DataArray),
         xr.DataArray,
         np.float64,
     )
     check(
-        assert_type(reduce_vals(da_any, mom=3, dim="dim_0"), Any),
+        assert_type(cmomy.reduce_vals(da_any, mom=3, dim="dim_0"), Any),
         xr.DataArray,
         np.float64,
     )
 
     check(
-        assert_type(reduce_vals(ds, mom=3, dim="dim_0"), xr.Dataset),
+        assert_type(cmomy.reduce_vals(ds, mom=3, dim="dim_0"), xr.Dataset),
         xr.Dataset,
     )
 
@@ -514,18 +247,18 @@ def test_reduce_vals() -> None:
         # as the fallback overload...
         g: ArrayLike | xr.DataArray | xr.Dataset = x_arrayany
         assert_type(
-            reduce_vals(g, mom=3, axis=0), xr.DataArray | xr.Dataset | NDArrayAny
+            cmomy.reduce_vals(g, mom=3, axis=0), xr.DataArray | xr.Dataset | NDArrayAny
         )
 
 
 def test_reduce_data() -> None:
     check(
-        assert_type(reduce_data(data32, mom_ndim=1, axis=0), NDArrayFloat32),
+        assert_type(cmomy.reduce_data(data32, mom_ndim=1, axis=0), NDArrayFloat32),
         np.ndarray,
         np.float32,
     )
     check(
-        assert_type(reduce_data(data64, mom_ndim=1, axis=0), NDArrayFloat64),
+        assert_type(cmomy.reduce_data(data64, mom_ndim=1, axis=0), NDArrayFloat64),
         np.ndarray,
         np.float64,
     )
@@ -533,40 +266,7 @@ def test_reduce_data() -> None:
     # dtype override x
     check(
         assert_type(
-            reduce_data(data32, mom_ndim=1, axis=0, dtype=np.float64), NDArrayFloat64
-        ),
-        np.ndarray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            reduce_data(data64, mom_ndim=1, axis=0, dtype=np.float32), NDArrayFloat32
-        ),
-        np.ndarray,
-        np.float32,
-    )
-
-    # out override x
-    check(
-        assert_type(reduce_data(data32, mom_ndim=1, axis=0, out=out64), NDArrayFloat64),
-        np.ndarray,
-        np.float64,
-    )
-    check(
-        assert_type(reduce_data(data64, mom_ndim=1, axis=0, out=out32), NDArrayFloat32),
-        np.ndarray,
-        np.float32,
-    )
-    check(
-        assert_type(reduce_data(data32, mom_ndim=1, axis=0, out=out_any), NDArrayAny),
-        np.ndarray,
-        np.float64,
-    )
-
-    # out override x and dtype
-    check(
-        assert_type(
-            reduce_data(data32, mom_ndim=1, axis=0, out=out64, dtype=np.float32),
+            cmomy.reduce_data(data32, mom_ndim=1, axis=0, dtype=np.float64),
             NDArrayFloat64,
         ),
         np.ndarray,
@@ -574,7 +274,48 @@ def test_reduce_data() -> None:
     )
     check(
         assert_type(
-            reduce_data(data64, mom_ndim=1, axis=0, out=out32, dtype=np.float64),
+            cmomy.reduce_data(data64, mom_ndim=1, axis=0, dtype=np.float32),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+
+    # out override x
+    check(
+        assert_type(
+            cmomy.reduce_data(data32, mom_ndim=1, axis=0, out=out64), NDArrayFloat64
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_data(data64, mom_ndim=1, axis=0, out=out32), NDArrayFloat32
+        ),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_data(data32, mom_ndim=1, axis=0, out=out_any), NDArrayAny
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    # out override x and dtype
+    check(
+        assert_type(
+            cmomy.reduce_data(data32, mom_ndim=1, axis=0, out=out64, dtype=np.float32),
+            NDArrayFloat64,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_data(data64, mom_ndim=1, axis=0, out=out32, dtype=np.float64),
             NDArrayFloat32,
         ),
         np.ndarray,
@@ -583,27 +324,27 @@ def test_reduce_data() -> None:
 
     # Would like this to default to np.float64
     check(
-        assert_type(reduce_data(data_arrayany, mom_ndim=1, axis=0), NDArrayAny),
+        assert_type(cmomy.reduce_data(data_arrayany, mom_ndim=1, axis=0), NDArrayAny),
         np.ndarray,
         np.float64,
     )
 
     check(
         assert_type(
-            reduce_data(data_arrayany, mom_ndim=1, axis=0, dtype=np.float32),
+            cmomy.reduce_data(data_arrayany, mom_ndim=1, axis=0, dtype=np.float32),
             NDArrayFloat32,
         ),
         np.ndarray,
         np.float32,
     )
     check(
-        assert_type(reduce_data(data_arraylike, mom_ndim=1, axis=0), NDArrayAny),
+        assert_type(cmomy.reduce_data(data_arraylike, mom_ndim=1, axis=0), NDArrayAny),
         np.ndarray,
         np.float64,
     )
     check(
         assert_type(
-            reduce_data(data_arraylike, mom_ndim=1, axis=0, dtype=np.float32),
+            cmomy.reduce_data(data_arraylike, mom_ndim=1, axis=0, dtype=np.float32),
             NDArrayFloat32,
         ),
         np.ndarray,
@@ -611,7 +352,7 @@ def test_reduce_data() -> None:
     )
     check(
         assert_type(
-            reduce_data(
+            cmomy.reduce_data(
                 data_arraylike, mom_ndim=1, axis=0, dtype=np.float64, out=out32
             ),
             NDArrayFloat32,
@@ -622,24 +363,26 @@ def test_reduce_data() -> None:
 
     # unknown dtype
     check(
-        assert_type(reduce_data(data32, mom_ndim=1, axis=0, dtype="f8"), NDArrayAny),
+        assert_type(
+            cmomy.reduce_data(data32, mom_ndim=1, axis=0, dtype="f8"), NDArrayAny
+        ),
         np.ndarray,
         np.float64,
     )
 
     check(
-        assert_type(reduce_data(xdata, mom_ndim=1, dim="dim_0"), xr.DataArray),
+        assert_type(cmomy.reduce_data(xdata, mom_ndim=1, dim="dim_0"), xr.DataArray),
         xr.DataArray,
         np.float64,
     )
     check(
-        assert_type(reduce_data(xdata_any, mom_ndim=1, dim="dim_0"), Any),
+        assert_type(cmomy.reduce_data(xdata_any, mom_ndim=1, dim="dim_0"), Any),
         xr.DataArray,
         np.float64,
     )
 
     check(
-        assert_type(reduce_data(sdata, mom_ndim=1, dim="dim_0"), xr.Dataset),
+        assert_type(cmomy.reduce_data(sdata, mom_ndim=1, dim="dim_0"), xr.Dataset),
         xr.Dataset,
     )
 
@@ -648,10 +391,188 @@ def test_reduce_data() -> None:
         # as the fallback overload...
         g: ArrayLike | xr.DataArray | xr.Dataset = data_arrayany
         assert_type(
-            reduce_data(g, mom_ndim=1, axis=0), xr.DataArray | xr.Dataset | NDArrayAny
+            cmomy.reduce_data(g, mom_ndim=1, axis=0),
+            xr.DataArray | xr.Dataset | NDArrayAny,
         )
 
 
+def test_reduce_data_grouped() -> None:
+    by = [0] * 5 + [1] * 5
+
+    check(
+        assert_type(
+            reduce_data_grouped(data32, mom_ndim=1, by=by, axis=0), NDArrayFloat32
+        ),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(data64, mom_ndim=1, by=by, axis=0), NDArrayFloat64
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    # dtype override x
+    check(
+        assert_type(
+            reduce_data_grouped(data32, mom_ndim=1, by=by, axis=0, dtype=np.float64),
+            NDArrayFloat64,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(data64, mom_ndim=1, by=by, axis=0, dtype=np.float32),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+
+    # out override x
+    check(
+        assert_type(
+            reduce_data_grouped(data32, mom_ndim=1, by=by, axis=0, out=out64),
+            NDArrayFloat64,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(data64, mom_ndim=1, by=by, axis=0, out=out32),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(data32, mom_ndim=1, by=by, axis=0, out=out_any),
+            NDArrayAny,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    # out override x and dtype
+    check(
+        assert_type(
+            reduce_data_grouped(
+                data32, mom_ndim=1, by=by, axis=0, out=out64, dtype=np.float32
+            ),
+            NDArrayFloat64,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(
+                data64, mom_ndim=1, by=by, axis=0, out=out32, dtype=np.float64
+            ),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+
+    # Would like this to default to np.float64
+    check(
+        assert_type(
+            reduce_data_grouped(data_arrayany, mom_ndim=1, by=by, axis=0), NDArrayAny
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            reduce_data_grouped(
+                data_arrayany, mom_ndim=1, by=by, axis=0, dtype=np.float32
+            ),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(data_arraylike, mom_ndim=1, by=by, axis=0), NDArrayAny
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(
+                data_arraylike, mom_ndim=1, by=by, axis=0, dtype=np.float32
+            ),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(
+                data_arraylike, mom_ndim=1, by=by, axis=0, dtype=np.float64, out=out32
+            ),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+
+    # unknown dtype
+    check(
+        assert_type(
+            reduce_data_grouped(data32, mom_ndim=1, by=by, axis=0, dtype="f8"),
+            NDArrayAny,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            reduce_data_grouped(xdata, mom_ndim=1, by=by, dim="dim_0"), xr.DataArray
+        ),
+        xr.DataArray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            reduce_data_grouped(xdata_any, mom_ndim=1, by=by, dim="dim_0"), Any
+        ),
+        xr.DataArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            reduce_data_grouped(sdata, mom_ndim=1, by=by, dim="dim_0"), xr.Dataset
+        ),
+        xr.Dataset,
+    )
+
+    if MYPY_ONLY:
+        # TODO(wpk): would love to figure out how to get pyright to give this
+        # as the fallback overload...
+        g: ArrayLike | xr.DataArray | xr.Dataset = data_arrayany
+        assert_type(
+            reduce_data_grouped(g, mom_ndim=1, by=by, axis=0),
+            xr.DataArray | xr.Dataset | NDArrayAny,
+        )
+
+
+# * resample ------------------------------------------------------------------
+
+
+# * convert -------------------------------------------------------------------
 def test_convert_moments_type() -> None:
     check(
         assert_type(cmomy.convert.moments_type(data32, mom_ndim=1), NDArrayFloat32),
@@ -969,6 +890,200 @@ def test_cumulative() -> None:
         )
 
 
+def test_convert_moments_to_comoments() -> None:
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(data32, mom=(1, -1)), NDArrayFloat32
+        ),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(data64, mom=(1, -1)), NDArrayFloat64
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    # dtype override x
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(data32, mom=(1, -1), dtype=np.float64),
+            NDArrayFloat64,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(data64, mom=(1, -1), dtype=np.float32),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+
+    # Would like this to default to np.float64
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(data_arrayany, mom=(1, -1)), NDArrayAny
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(
+                data_arrayany, mom=(1, -1), dtype=np.float32
+            ),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(data_arraylike, mom=(1, -1)), NDArrayAny
+        ),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(
+                data_arraylike, mom=(1, -1), dtype=np.float32
+            ),
+            NDArrayFloat32,
+        ),
+        np.ndarray,
+        np.float32,
+    )
+
+    # unknown dtype
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(data32, mom=(1, -1), dtype="f8"),
+            NDArrayAny,
+        ),
+        np.ndarray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            cmomy.convert.moments_to_comoments(xdata, mom=(1, -1)), xr.DataArray
+        ),
+        xr.DataArray,
+        np.float64,
+    )
+    check(
+        assert_type(cmomy.convert.moments_to_comoments(xdata_any, mom=(1, -1)), Any),
+        xr.DataArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(cmomy.convert.moments_to_comoments(sdata, mom=(1, -1)), xr.Dataset),
+        xr.Dataset,
+    )
+
+    if MYPY_ONLY:
+        # TODO(wpk): would love to figure out how to get pyright to give this
+        # as the fallback overload...
+        g: ArrayLike | xr.DataArray | xr.Dataset = data_arrayany
+        assert_type(
+            cmomy.convert.moments_to_comoments(g, mom=(1, -1)),
+            xr.DataArray | xr.Dataset | NDArrayAny,
+        )
+
+
+def typecheck_concat() -> None:
+    check(
+        assert_type(convert.concat((x32, x32), axis=0), NDArrayFloat32),
+        np.ndarray,
+        np.float32,
+    )
+    check(
+        assert_type(convert.concat((x64, x64), axis=0), NDArrayFloat64),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(convert.concat((x_arrayany, x_arrayany), axis=0), NDArrayAny),
+        np.ndarray,
+        np.float64,
+    )
+    check(
+        assert_type(convert.concat((x_any, x_any), axis=0), Any), np.ndarray, np.float64
+    )
+
+    check(
+        assert_type(convert.concat((da, da), dim="new"), xr.DataArray),
+        xr.DataArray,
+        np.float64,
+    )
+    check(
+        assert_type(convert.concat((ds, ds), dim="new"), xr.Dataset),
+        xr.Dataset,
+    )
+    check(
+        assert_type(convert.concat((da_any, da_any), dim="new"), Any),
+        xr.DataArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(convert.concat((c32, c32), axis=0), CentralMomentsArrayFloat32),
+        CentralMomentsArray,
+        np.float32,
+    )
+    check(
+        assert_type(convert.concat((c64, c64), axis=0), CentralMomentsArrayFloat64),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(convert.concat((c_any, c_any), axis=0), CentralMomentsArrayAny),
+        CentralMomentsArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            convert.concat((ca, ca), dim="new"),
+            CentralMomentsDataArray,
+        ),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+    check(
+        assert_type(
+            convert.concat((cs, cs), dim="new"),
+            CentralMomentsDataset,
+        ),
+        CentralMomentsXArray,
+        None,
+        xr.Dataset,
+    )
+    check(
+        assert_type(convert.concat((ca_any, ca_any), axis=0), CentralMomentsDataAny),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+
+    obj = cast("Any", c32)
+    check(
+        assert_type(convert.concat((obj, obj), axis=0), Any),
+        CentralMomentsArray,
+        np.float32,
+    )
+
+
+# * utils ---------------------------------------------------------------------
 def test_vals_to_data() -> None:
     check(
         assert_type(cmomy.utils.vals_to_data(x32, mom=2), NDArrayFloat32),
@@ -1112,115 +1227,6 @@ def test_vals_to_data() -> None:
         )
 
 
-def test_convert_moments_to_comoments() -> None:
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(data32, mom=(1, -1)), NDArrayFloat32
-        ),
-        np.ndarray,
-        np.float32,
-    )
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(data64, mom=(1, -1)), NDArrayFloat64
-        ),
-        np.ndarray,
-        np.float64,
-    )
-
-    # dtype override x
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(data32, mom=(1, -1), dtype=np.float64),
-            NDArrayFloat64,
-        ),
-        np.ndarray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(data64, mom=(1, -1), dtype=np.float32),
-            NDArrayFloat32,
-        ),
-        np.ndarray,
-        np.float32,
-    )
-
-    # Would like this to default to np.float64
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(data_arrayany, mom=(1, -1)), NDArrayAny
-        ),
-        np.ndarray,
-        np.float64,
-    )
-
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(
-                data_arrayany, mom=(1, -1), dtype=np.float32
-            ),
-            NDArrayFloat32,
-        ),
-        np.ndarray,
-        np.float32,
-    )
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(data_arraylike, mom=(1, -1)), NDArrayAny
-        ),
-        np.ndarray,
-        np.float64,
-    )
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(
-                data_arraylike, mom=(1, -1), dtype=np.float32
-            ),
-            NDArrayFloat32,
-        ),
-        np.ndarray,
-        np.float32,
-    )
-
-    # unknown dtype
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(data32, mom=(1, -1), dtype="f8"),
-            NDArrayAny,
-        ),
-        np.ndarray,
-        np.float64,
-    )
-
-    check(
-        assert_type(
-            cmomy.convert.moments_to_comoments(xdata, mom=(1, -1)), xr.DataArray
-        ),
-        xr.DataArray,
-        np.float64,
-    )
-    check(
-        assert_type(cmomy.convert.moments_to_comoments(xdata_any, mom=(1, -1)), Any),
-        xr.DataArray,
-        np.float64,
-    )
-
-    check(
-        assert_type(cmomy.convert.moments_to_comoments(sdata, mom=(1, -1)), xr.Dataset),
-        xr.Dataset,
-    )
-
-    if MYPY_ONLY:
-        # TODO(wpk): would love to figure out how to get pyright to give this
-        # as the fallback overload...
-        g: ArrayLike | xr.DataArray | xr.Dataset = data_arrayany
-        assert_type(
-            cmomy.convert.moments_to_comoments(g, mom=(1, -1)),
-            xr.DataArray | xr.Dataset | NDArrayAny,
-        )
-
-
 def test_moveaxis() -> None:
     check(
         assert_type(cmomy.moveaxis(data32, 0, 1), NDArrayFloat32),
@@ -1288,12 +1294,281 @@ def test_select_moment() -> None:
     )
 
 
+# * rolling -------------------------------------------------------------------
+# * wrap ----------------------------------------------------------------------
+def test_centralmoments_types() -> None:
+    # testing that object have correct type
+    check(assert_type(c32, CentralMomentsArrayFloat32), CentralMomentsArray, np.float32)
+    check(assert_type(c64, CentralMomentsArrayFloat64), CentralMomentsArray, np.float64)
+    check(assert_type(c_any, CentralMomentsArrayAny), CentralMomentsArray, np.float64)
+    check(
+        assert_type(CentralMomentsArray(data_arraylike), CentralMomentsArrayAny),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(CentralMomentsArray(data_arrayany), CentralMomentsArrayAny),
+        CentralMomentsArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(ca, CentralMomentsDataArray),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+    check(
+        assert_type(cs, CentralMomentsDataset),
+        CentralMomentsXArray,
+        None,
+        xr.Dataset,
+    )
+    check(
+        assert_type(ca_any, CentralMomentsDataAny),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+    check(
+        assert_type(cs_any, CentralMomentsDataAny),
+        CentralMomentsXArray,
+        None,
+        xr.Dataset,
+    )
+    # check(
+    #     assert_type(ca_or_cs, CentralMomentsDataAny),  # noqa: ERA001
+    #     CentralMomentsXArray, np.float64, xr.DataArray)
+
+
+def test_wrapped_init() -> None:
+    check(
+        assert_type(
+            CentralMomentsArray(data32, mom_ndim=1), CentralMomentsArrayFloat32
+        ),
+        CentralMomentsArray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(data64, mom_ndim=1), CentralMomentsArrayFloat64
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(data64, mom_ndim=1, dtype=np.float32),
+            CentralMomentsArrayFloat32,
+        ),
+        CentralMomentsArray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(data32, mom_ndim=1, dtype=np.float64),
+            CentralMomentsArrayFloat64,
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            CentralMomentsArray(data_arraylike, mom_ndim=1), CentralMomentsArrayAny
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(data_arraylike, mom_ndim=1, dtype=np.float32),
+            CentralMomentsArrayFloat32,
+        ),
+        CentralMomentsArray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(data_arraylike, mom_ndim=1, dtype=np.dtype("f8")),
+            CentralMomentsArrayFloat64,
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(data_arraylike, mom_ndim=1, dtype="f8"),
+            CentralMomentsArrayAny,
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(
+            CentralMomentsArray(x_arrayany, mom_ndim=1), CentralMomentsArrayAny
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(x_arrayany, mom_ndim=1, dtype=np.float32),
+            CentralMomentsArrayFloat32,
+        ),
+        CentralMomentsArray,
+        np.float32,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(x_arrayany, mom_ndim=1, dtype=np.dtype("f8")),
+            CentralMomentsArrayFloat64,
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            CentralMomentsArray(x_arrayany, mom_ndim=1, dtype="f8"),
+            CentralMomentsArrayAny,
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(CentralMomentsArray(x_any, mom_ndim=1), CentralMomentsArrayAny),
+        CentralMomentsArray,
+        np.float64,
+    )
+
+    # xarray
+    check(
+        assert_type(CentralMomentsXArray(xdata, mom_ndim=1), CentralMomentsDataArray),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+    check(
+        assert_type(CentralMomentsXArray(sdata, mom_ndim=1), CentralMomentsDataset),
+        CentralMomentsXArray,
+        obj_class=xr.Dataset,
+    )
+    check(
+        assert_type(CentralMomentsXArray(xdata_any, mom_ndim=1), CentralMomentsDataAny),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+    # TODO(wpk): think about what this should do...
+    # reveal_type(CentralMomentsXArray(xdata_or_sdata, mom_ndim=1))  # noqa: ERA001
+
+
+def test_wrapped_astype() -> None:
+    check(
+        assert_type(c32.astype(np.float64), CentralMomentsArrayFloat64),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(c64.astype(np.float32), CentralMomentsArrayFloat32),
+        CentralMomentsArray,
+        np.float32,
+    )
+    check(
+        assert_type(c32.astype(np.dtype("f8")), CentralMomentsArrayFloat64),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(c64.astype("f4"), CentralMomentsArrayAny),
+        CentralMomentsArray,
+        np.float32,
+    )
+    check(
+        assert_type(c64.astype("f4"), CentralMomentsArrayAny),
+        CentralMomentsArray,
+        np.float32,
+    )
+
+    check(
+        assert_type(c_any.astype(np.float32), CentralMomentsArrayFloat32),
+        CentralMomentsArray,
+        np.float32,
+    )
+
+    check(
+        assert_type(c32.astype(None), CentralMomentsArrayFloat64),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(c64.astype(None), CentralMomentsArrayFloat64),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(c_any.astype(None), CentralMomentsArrayFloat64),
+        CentralMomentsArray,
+        np.float64,
+    )
+
+    check(
+        assert_type(ca.astype(None), CentralMomentsDataArray),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+    check(
+        assert_type(ca.astype(np.float32), CentralMomentsDataArray),
+        CentralMomentsXArray,
+        np.float32,
+        xr.DataArray,
+    )
+    check(
+        assert_type(ca_any.astype(np.float32), CentralMomentsDataAny),
+        CentralMomentsXArray,
+        np.float32,
+        xr.DataArray,
+    )
+
+    check(
+        assert_type(cs.astype(None), CentralMomentsDataset),
+        CentralMomentsXArray,
+        None,
+        xr.Dataset,
+    )
+    check(
+        assert_type(cs_any.astype(None), CentralMomentsDataAny),
+        CentralMomentsXArray,
+        None,
+        xr.Dataset,
+    )
+
+
 def test_wrapped_moments_to_comoments() -> None:
     check(
         assert_type(c32.moments_to_comoments(mom=(1, -1)), CentralMomentsArrayFloat32),
         CentralMomentsArray,
         np.float32,
     )
+    check(
+        assert_type(
+            c32.moments_to_comoments(mom=(1, -1), dtype=np.float64),
+            CentralMomentsArrayFloat64,
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+    check(
+        assert_type(
+            c32.moments_to_comoments(mom=(1, -1), dtype="f8"), CentralMomentsArrayAny
+        ),
+        CentralMomentsArray,
+        np.float64,
+    )
+
     check(
         assert_type(c64.moments_to_comoments(mom=(1, -1)), CentralMomentsArrayFloat64),
         CentralMomentsArray,
@@ -1304,14 +1579,22 @@ def test_wrapped_moments_to_comoments() -> None:
         CentralMomentsArray,
         np.float64,
     )
+    check(
+        assert_type(
+            c_any.moments_to_comoments(mom=(1, -1), dtype=np.float32),
+            CentralMomentsArrayFloat32,
+        ),
+        CentralMomentsArray,
+        np.float32,
+    )
 
     check(
         assert_type(
-            ca.moments_to_comoments(mom=(1, -1)),
+            ca.moments_to_comoments(mom=(1, -1), dtype=np.float32),
             CentralMomentsDataArray,
         ),
         CentralMomentsXArray,
-        np.float64,
+        np.float32,
         xr.DataArray,
     )
     check(
@@ -1378,114 +1661,37 @@ def test_wrapped_assign_moment_central() -> None:
     )
 
 
+def test_wrapped_to_dataarray_to_dataset() -> None:
+    check(
+        assert_type(ca.to_dataset(), CentralMomentsDataset),
+        CentralMomentsXArray,
+        None,
+        xr.Dataset,
+    )
+    check(
+        assert_type(ca_any.to_dataset(), CentralMomentsDataset),
+        CentralMomentsXArray,
+        None,
+        xr.Dataset,
+    )
+    check(
+        assert_type(cs.to_dataarray(), CentralMomentsDataArray),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+    check(
+        assert_type(cs_any.to_dataarray(), CentralMomentsDataArray),
+        CentralMomentsXArray,
+        np.float64,
+        xr.DataArray,
+    )
+
+
+# * tests
 # TODO(wpk): start back here.
-def typecheck_concat(
-    x32: NDArrayFloat32,
-    x64: NDArrayFloat64,
-    xany: NDArrayAny,
-) -> None:
-    c32 = CentralMomentsArray(x32)
-    c64 = CentralMomentsArray(x64)
-
-    dx = xr.DataArray(x64, dims=["a", "b", "mom"])
-    dc = CentralMomentsXArray(dx)
-    dcs = dc.to_dataset()
-
-    assert_type(convert.concat((x32, x32), axis=0), NDArrayFloat32)
-    assert_type(convert.concat((x64, x64), axis=0), NDArrayFloat64)
-
-    assert_type(convert.concat((dx, dx), axis=0), xr.DataArray)
-
-    assert_type(convert.concat((c32, c32), axis=0), CentralMomentsArrayFloat32)
-
-    assert_type(convert.concat((c64, c64), axis=0), CentralMomentsArrayFloat64)
-    assert_type(
-        convert.concat((dc, dc), axis=0),
-        CentralMomentsDataArray,
-    )
-    assert_type(
-        convert.concat((dcs, dcs), axis=0),
-        CentralMomentsDataset,
-    )
-
-    dxany = xr.DataArray(xany)
-    assert_type(convert.concat((xany, xany), axis=0), NDArrayAny)
-    assert_type(convert.concat((dxany, dxany), axis=0), xr.DataArray)
-
-    cany = CentralMomentsArray(xany)
-    assert_type(convert.concat((cany, cany), axis=0), CentralMomentsArrayAny)
-
-    dcany = CentralMomentsXArray(dxany)
-    assert_type(convert.concat((dcany, dcany), axis=0), CentralMomentsDataArray)
-
-
 # if mypy properly supports partial will add this...
 # def typecheck_convert_central_to_raw() -> None:
-
-
-def typecheck_reduce_data_grouped(
-    x32: NDArrayFloat32,
-    x64: NDArrayFloat64,
-    out32: NDArrayFloat32,
-    out64: NDArrayFloat64,
-    by: NDArrayInt,
-    xany: NDArrayAny,
-) -> None:
-    assert_type(reduce_data_grouped(x32, mom_ndim=1, by=by), NDArrayFloat32)
-    assert_type(reduce_data_grouped(x64, mom_ndim=1, by=by), NDArrayFloat64)
-
-    assert_type(
-        reduce_data_grouped(x32, mom_ndim=1, by=by, dtype=np.float64),
-        NDArrayFloat64,
-    )
-    assert_type(
-        reduce_data_grouped(x64, mom_ndim=1, by=by, dtype=np.float32),
-        NDArrayFloat32,
-    )
-
-    assert_type(reduce_data_grouped(x32, mom_ndim=1, by=by, out=out64), NDArrayFloat64)
-    assert_type(reduce_data_grouped(x64, mom_ndim=1, by=by, out=out32), NDArrayFloat32)
-
-    assert_type(
-        reduce_data_grouped(x32, mom_ndim=1, by=by, out=out64, dtype=np.float32),
-        NDArrayFloat64,
-    )
-    assert_type(
-        reduce_data_grouped(x64, mom_ndim=1, by=by, out=out32, dtype=np.float64),
-        NDArrayFloat32,
-    )
-
-    assert_type(xany, NDArrayAny)
-
-    # Would like this to default to np.float64
-    assert_type(reduce_data_grouped(xany, mom_ndim=1, by=by), NDArrayAny)
-    assert_type(
-        reduce_data_grouped(xany, mom_ndim=1, by=by, dtype=np.float32),
-        NDArrayFloat32,
-    )
-    assert_type(
-        reduce_data_grouped([1, 2, 3], mom_ndim=1, by=by, dtype=np.float32),
-        NDArrayFloat32,
-    )
-    assert_type(
-        reduce_data_grouped([1, 2, 3], mom_ndim=1, by=by, dtype=np.float64),
-        NDArrayFloat64,
-    )
-
-    assert_type(reduce_data_grouped(x64, mom_ndim=1, by=by, dtype="f8"), NDArrayAny)
-    assert_type(reduce_data_grouped([1.0, 2.0, 3.0], mom_ndim=1, by=by), NDArrayAny)
-
-    xx = xr.DataArray(x32)
-    assert_type(reduce_data_grouped(xx, mom_ndim=1, by=by), xr.DataArray)
-
-    assert_type(reduce_data_grouped(xx.to_dataset(), mom_ndim=1, by=by), xr.Dataset)
-
-    if MYPY_ONLY:
-        g: ArrayLike | xr.DataArray | xr.Dataset = xany
-        assert_type(
-            reduce_data_grouped(g, mom_ndim=1, by=by),
-            Union[xr.DataArray, xr.Dataset, NDArrayAny],
-        )
 
 
 def typecheck_reduce_data_indexed(
@@ -2098,71 +2304,6 @@ def typecheck_wrapped_cumulative(
     assert_type(cx.cumulative(dim="a"), Any)
     assert_type(ca.cumulative(dim="a", dtype=np.float32), xr.DataArray)
     assert_type(ca.cumulative(dim="a", out=outany), xr.DataArray)
-
-
-def typecheck_jackknife_data(
-    x32: NDArrayFloat32,
-    x64: NDArrayFloat64,
-    out32: NDArrayFloat32,
-    out64: NDArrayFloat64,
-    xany: NDArrayAny,
-) -> None:
-    from cmomy.resample import jackknife_data
-
-    assert_type(jackknife_data(x32, mom_ndim=1), NDArrayFloat32)
-    assert_type(jackknife_data(x64, mom_ndim=1), NDArrayFloat64)
-
-    assert_type(
-        jackknife_data(x32, mom_ndim=1, dtype=np.float64),
-        NDArrayFloat64,
-    )
-    assert_type(
-        jackknife_data(x64, mom_ndim=1, dtype=np.float32),
-        NDArrayFloat32,
-    )
-
-    assert_type(jackknife_data(x32, mom_ndim=1, out=out64), NDArrayFloat64)
-    assert_type(jackknife_data(x64, mom_ndim=1, out=out32), NDArrayFloat32)
-
-    assert_type(
-        jackknife_data(x32, mom_ndim=1, out=out64, dtype=np.float32),
-        NDArrayFloat64,
-    )
-    assert_type(
-        jackknife_data(x64, mom_ndim=1, out=out32, dtype=np.float64),
-        NDArrayFloat32,
-    )
-
-    assert_type(xany, NDArrayAny)
-
-    # Would like this to default to np.float64
-    assert_type(jackknife_data(xany, mom_ndim=1), NDArrayAny)
-    assert_type(
-        jackknife_data(xany, mom_ndim=1, dtype=np.float32),
-        NDArrayFloat32,
-    )
-    assert_type(
-        jackknife_data([1, 2, 3], mom_ndim=1, dtype=np.float32),
-        NDArrayFloat32,
-    )
-    assert_type(
-        jackknife_data([1, 2, 3], mom_ndim=1, dtype=np.float64),
-        NDArrayFloat64,
-    )
-
-    assert_type(jackknife_data([1.0, 2.0, 3.0], mom_ndim=1), NDArrayAny)
-    assert_type(jackknife_data(x32, mom_ndim=1, dtype="f8"), NDArrayAny)
-
-    xx = xr.DataArray(x32)
-    assert_type(jackknife_data(xx, mom_ndim=1), xr.DataArray)
-    assert_type(jackknife_data(xx.to_dataset(), mom_ndim=1), xr.Dataset)
-
-    if MYPY_ONLY:
-        g: ArrayLike | xr.DataArray | xr.Dataset = xany
-        assert_type(
-            jackknife_data(g, mom_ndim=1),
-            Union[xr.DataArray, xr.Dataset, NDArrayAny],
-        )
 
 
 def typecheck_bootstrap_confidence_interval(

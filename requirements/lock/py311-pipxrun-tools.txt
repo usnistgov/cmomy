@@ -63,7 +63,7 @@ pydantic==2.8.2           # via conda-lock
 pydantic-core==2.20.1     # via pydantic
 pygments==2.18.0          # via ipython, readme-renderer, rich
 pylev==1.4.0              # via clikit
-pyright==1.1.378          # via -r requirements/pipxrun-tools.txt
+pyright==1.1.379          # via -r requirements/pipxrun-tools.txt
 python-utils==3.8.2       # via progressbar2
 pyyaml==6.0.2             # via conda-lock
 rapidfuzz==3.9.6          # via grayskull

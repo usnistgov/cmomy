@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 
 from cmomy.core.array_utils import (
+    arrayorder_to_arrayorder_cf,
     axes_data_reduction,
 )
 from cmomy.core.compat import copy_if_needed
@@ -51,9 +52,12 @@ if TYPE_CHECKING:
         NameType,
         NDArrayAny,
         RngTypes,
+        WrapNPReduce,
+        WrapNPResampleAndReduceKwargs,
+        WrapNPTransform,
         XArrayCoordsType,
     )
-    from cmomy.core.typing_compat import Self
+    from cmomy.core.typing_compat import Self, Unpack
     from cmomy.wrapper.wrap_xr import CentralMomentsXArray
 
 
@@ -548,49 +552,33 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     def cumulative(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: None = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> NDArray[FloatT]: ...
     @overload
     def cumulative(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = ...,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> NDArray[FloatT_]: ...
     @overload
     def cumulative(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> NDArray[FloatT_]: ...
     @overload
     def cumulative(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> NDArrayAny: ...
 
     @docfiller_inherit_abc()
@@ -615,66 +603,81 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             parallel=parallel,
         )
 
+    @overload  # type: ignore[override]
+    def moments_to_comoments(
+        self,
+        *,
+        mom: tuple[int, int],
+        dtype: None = ...,
+        order: ArrayOrderCF = ...,
+    ) -> Self: ...
+    @overload
+    def moments_to_comoments(
+        self,
+        *,
+        mom: tuple[int, int],
+        dtype: DTypeLikeArg[FloatT_],
+        order: ArrayOrderCF = ...,
+    ) -> CentralMomentsArray[FloatT_]: ...
+    @overload
+    def moments_to_comoments(
+        self,
+        *,
+        mom: tuple[int, int],
+        dtype: DTypeLike,
+        order: ArrayOrderCF = ...,
+    ) -> CentralMomentsArrayAny: ...
+
+    @docfiller_inherit_abc()
+    def moments_to_comoments(  # pyright: ignore[reportIncompatibleMethodOverride]
+        self,
+        *,
+        mom: tuple[int, int],
+        dtype: DTypeLike = None,
+        order: ArrayOrderCF = None,
+    ) -> Self | CentralMomentsArrayAny:
+        return super().moments_to_comoments(
+            mom=mom,
+            dtype=dtype,
+            order=order,
+        )
+
     # *** .resample -----------------------------------------------------------
     @overload  # type: ignore[override]
     def resample_and_reduce(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: None = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
     ) -> Self: ...
     @overload
     def resample_and_reduce(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def resample_and_reduce(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def resample_and_reduce(
         self,
         *,
-        axis: AxisReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
     ) -> CentralMomentsArrayAny: ...
 
     @docfiller_inherit_abc()
@@ -734,52 +737,36 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         *,
         data_reduced: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = False,
         out: None = ...,
         dtype: None = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> Self: ...
     @overload
     def jackknife_and_reduce(
         self,
         *,
         data_reduced: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = False,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def jackknife_and_reduce(
         self,
         *,
         data_reduced: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = False,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def jackknife_and_reduce(
         self,
         *,
         data_reduced: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        move_axis_to_end: bool = False,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrder = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPTransform],
     ) -> CentralMomentsArrayAny: ...
 
     @docfiller_inherit_abc()
@@ -811,61 +798,33 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     def reduce(
         self,
         *,
-        by: Groups | None = ...,
-        block: int | None = ...,
-        axis: AxisReduce = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: None = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPReduce],
     ) -> Self: ...
     @overload
     def reduce(
         self,
         *,
-        by: Groups | None = ...,
-        block: int | None = ...,
-        axis: AxisReduce = ...,
-        move_axis_to_end: bool = ...,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPReduce],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def reduce(
         self,
         *,
-        by: Groups | None = ...,
-        block: int | None = ...,
-        axis: AxisReduce = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPReduce],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def reduce(
         self,
         *,
-        by: Groups | None = ...,
-        block: int | None = ...,
-        axis: AxisReduce = ...,
-        move_axis_to_end: bool = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = ...,
-        parallel: bool | None = ...,
+        **kwargs: Unpack[WrapNPReduce],
     ) -> CentralMomentsArrayAny: ...
 
     @docfiller_inherit_abc()
@@ -874,12 +833,12 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         by: Groups | None = None,
         block: int | None = None,
-        axis: AxisReduce = -1,
+        axis: AxisReduce | MissingType = MISSING,
         move_axis_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrderCF = None,
+        order: ArrayOrder = None,
         keepdims: bool = False,
         parallel: bool | None = None,
     ) -> Self | CentralMomentsArrayAny:
@@ -912,7 +871,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 out=out,
                 dtype=dtype,
                 casting=casting,
-                order=order,
+                order=arrayorder_to_arrayorder_cf(order),
                 parallel=parallel,
             )
         return self._new_like(obj)

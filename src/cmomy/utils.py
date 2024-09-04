@@ -56,9 +56,11 @@ if TYPE_CHECKING:
         NDArrayAny,
         ScalarT,
         SelectMoment,
+        SelectMomentKwargs,
+        ValsToDataKwargs,
         XArrayT,
     )
-    from .core.typing_compat import EllipsisType
+    from .core.typing_compat import EllipsisType, Unpack
 
 
 @overload
@@ -221,29 +223,13 @@ def moment_indexer(
 def select_moment(
     data: XArrayT,
     name: SelectMoment,
-    *,
-    mom_ndim: Mom_NDim,
-    squeeze: bool = ...,
-    dim_combined: str = ...,
-    coords_combined: str | Sequence[Hashable] | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[SelectMomentKwargs],
 ) -> XArrayT: ...
 @overload
 def select_moment(
     data: NDArray[ScalarT],
     name: SelectMoment,
-    *,
-    mom_ndim: Mom_NDim,
-    squeeze: bool = ...,
-    dim_combined: str = ...,
-    coords_combined: str | Sequence[Hashable] | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[SelectMomentKwargs],
 ) -> NDArray[ScalarT]: ...
 
 
@@ -252,7 +238,7 @@ def select_moment(
     data: NDArray[ScalarT] | XArrayT,
     name: SelectMoment,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim = 1,
     squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
@@ -384,6 +370,8 @@ def _select_moment(
 
 
 # * Assign value(s)
+# NOTE: Can't do kwargs trick used elsewhere, because want to be
+# able to use **moments_kwargs....
 @overload
 def assign_moment(
     data: XArrayT,
@@ -583,84 +571,60 @@ def _assign_moment(
 def vals_to_data(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
-    mom: Moments,
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    dtype: DTypeLike = ...,
     out: NDArrayAny | xr.DataArray | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
 ) -> XArrayT: ...
 # Array
 @overload
 def vals_to_data(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    dtype: None = ...,
     out: None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    dtype: None = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def vals_to_data(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    dtype: DTypeLike = ...,
     out: NDArray[FloatT],
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def vals_to_data(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
     dtype: DTypeLike = ...,
     out: xr.DataArray,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
 ) -> xr.DataArray: ...
 # dtype
 @overload
 def vals_to_data(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
     dtype: DTypeLikeArg[FloatT],
     out: None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def vals_to_data(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
     dtype: DTypeLike = ...,
     out: NDArrayAny | None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArrayAny: ...
 
 

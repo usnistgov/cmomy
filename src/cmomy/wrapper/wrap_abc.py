@@ -55,11 +55,14 @@ if TYPE_CHECKING:
         MomentsStrict,
         NDArrayAny,
         NDArrayInt,
+        ReduceValsKwargs,
+        ResampleValsKwargs,
         RngTypes,
         SelectMoment,
+        WrapRawKwargs,
         XArrayT_,
     )
-    from cmomy.core.typing_compat import Self
+    from cmomy.core.typing_compat import Self, Unpack
     from cmomy.factory import Pusher
     from cmomy.wrapper import CentralMomentsArray, CentralMomentsXArray
 
@@ -830,13 +833,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
-    # TODO(wpk): add overloads for dtype to wrap_np
     @docfiller.decorate
     def moments_to_comoments(
         self,
         *,
         mom: tuple[int, int],
         mom_dims2: MomDims | None = None,
+        dtype: DTypeLike = None,
+        order: ArrayOrderCF = None,
         keep_attrs: KeepAttrs = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -879,6 +883,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 mom=mom,
                 mom_dims=getattr(self, "mom_dims", None),
                 mom_dims2=mom_dims2,
+                dtype=dtype,
+                order=order,
                 keep_attrs=keep_attrs,
                 on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
@@ -1295,20 +1301,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: XArrayT_,
         *y: ArrayLike | xr.DataArray | XArrayT_,
-        mom: Moments,
         weight: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
-        mom_dims: MomDims | None = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = False,
-        parallel: bool | None = ...,
-        keep_attrs: KeepAttrs = ...,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ReduceValsKwargs],
     ) -> CentralMomentsXArray[XArrayT_]: ...
     @overload
     @classmethod
@@ -1316,20 +1312,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: ArrayLikeArg[FloatT_],
         *y: ArrayLike,
-        mom: Moments,
         weight: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
-        mom_dims: MomDims | None = ...,
         out: None = ...,
         dtype: None = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = False,
-        parallel: bool | None = ...,
-        keep_attrs: KeepAttrs = ...,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ReduceValsKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1337,20 +1323,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: ArrayLike,
         *y: ArrayLike,
-        mom: Moments,
         weight: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
-        mom_dims: MomDims | None = ...,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = False,
-        parallel: bool | None = ...,
-        keep_attrs: KeepAttrs = ...,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ReduceValsKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1358,20 +1334,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: ArrayLike,
         *y: ArrayLike,
-        mom: Moments,
         weight: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
-        mom_dims: MomDims | None = ...,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = False,
-        parallel: bool | None = ...,
-        keep_attrs: KeepAttrs = ...,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ReduceValsKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1379,20 +1345,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: Any,
         *y: Any,
-        mom: Moments,
         weight: Any = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
-        mom_dims: MomDims | None = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        keepdims: bool = False,
-        parallel: bool | None = ...,
-        keep_attrs: KeepAttrs = ...,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ReduceValsKwargs],
     ) -> Self: ...
 
     @classmethod
@@ -1502,24 +1458,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: XArrayT_,
         *y: xr.DataArray | XArrayT_,
-        mom: Moments,
         weight: xr.DataArray | XArrayT_ | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
         freq: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        parallel: bool | None = ...,
-        mom_dims: MomDims | None = ...,
-        rep_dim: str = "rep",
-        keep_attrs: bool = True,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ResampleValsKwargs],
     ) -> CentralMomentsXArray[XArrayT_]: ...
     @overload
     @classmethod
@@ -1527,24 +1470,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: ArrayLikeArg[FloatT_],
         *y: ArrayLike,
-        mom: Moments,
         weight: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: None = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        parallel: bool | None = ...,
-        mom_dims: MomDims | None = ...,
-        rep_dim: str = "rep",
-        keep_attrs: bool = True,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ResampleValsKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1552,24 +1482,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: ArrayLike,
         *y: ArrayLike,
-        mom: Moments,
         weight: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        parallel: bool | None = ...,
-        mom_dims: MomDims | None = ...,
-        rep_dim: str = "rep",
-        keep_attrs: bool = True,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ResampleValsKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1577,24 +1494,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: ArrayLike,
         *y: ArrayLike,
-        mom: Moments,
         weight: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        parallel: bool | None = ...,
-        mom_dims: MomDims | None = ...,
-        rep_dim: str = "rep",
-        keep_attrs: bool = True,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ResampleValsKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1602,24 +1506,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         x: Any,
         *y: ArrayLike,
-        mom: Moments,
         weight: ArrayLike | None = ...,
-        axis: AxisReduce | MissingType = ...,
-        dim: DimsReduce | MissingType = ...,
         freq: ArrayLike | None = ...,
-        nrep: int | None = ...,
-        rng: RngTypes | None = ...,
-        move_axis_to_end: bool = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = ...,
-        order: ArrayOrderCF = ...,
-        parallel: bool | None = ...,
-        mom_dims: MomDims | None = ...,
-        rep_dim: str = "rep",
-        keep_attrs: bool = True,
-        on_missing_core_dim: MissingCoreDimOptions = ...,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[ResampleValsKwargs],
     ) -> Self: ...
 
     @classmethod
@@ -1635,6 +1526,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         freq: ArrayLike | xr.DataArray | XArrayT_ | None = None,
         nrep: int | None = None,
         rng: RngTypes | None = None,
+        paired: bool = True,
         move_axis_to_end: bool = True,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
@@ -1643,7 +1535,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         parallel: bool | None = None,
         mom_dims: MomDims | None = None,
         rep_dim: str = "rep",
-        keep_attrs: bool = True,
+        keep_attrs: KeepAttrs = None,
         on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self | CentralMomentsABC[Any]:
@@ -1665,6 +1557,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {freq}
         {nrep}
         {rng}
+        {paired}
         {move_axis_to_end}
         {order}
         {out}
@@ -1702,6 +1595,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             freq=freq,
             nrep=nrep,
             rng=rng,
+            paired=paired,
             mom=mom,
             weight=weight,
             axis=axis,
@@ -1731,15 +1625,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: XArrayT_,
         *,
-        mom_ndim: Mom_NDim,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = "same_kind",
-        order: ArrayOrder = ...,
-        keep_attrs: KeepAttrs = ...,
-        mom_dims: MomDims | None = ...,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[WrapRawKwargs],
     ) -> CentralMomentsXArray[XArrayT_]: ...
     @overload
     @classmethod
@@ -1747,15 +1635,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: ArrayLikeArg[FloatT_],
         *,
-        mom_ndim: Mom_NDim,
         out: None = ...,
         dtype: None = ...,
-        casting: Casting = "same_kind",
-        order: ArrayOrder = ...,
-        keep_attrs: KeepAttrs = ...,
-        mom_dims: MomDims | None = ...,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[WrapRawKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1763,15 +1645,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: ArrayLike,
         *,
-        mom_ndim: Mom_NDim,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        casting: Casting = "same_kind",
-        order: ArrayOrder = ...,
-        keep_attrs: KeepAttrs = ...,
-        mom_dims: MomDims | None = ...,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[WrapRawKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1779,15 +1655,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: ArrayLike,
         *,
-        mom_ndim: Mom_NDim,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        casting: Casting = "same_kind",
-        order: ArrayOrder = ...,
-        keep_attrs: KeepAttrs = ...,
-        mom_dims: MomDims | None = ...,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[WrapRawKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     @classmethod
@@ -1795,15 +1665,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: Any,
         *,
-        mom_ndim: Mom_NDim,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        casting: Casting = "same_kind",
-        order: ArrayOrder = ...,
-        keep_attrs: KeepAttrs = ...,
-        mom_dims: MomDims | None = ...,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+        **kwargs: Unpack[WrapRawKwargs],
     ) -> Any: ...
 
     @classmethod
@@ -1812,7 +1676,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: ArrayLike | xr.DataArray | xr.Dataset,
         *,
-        mom_ndim: Mom_NDim,
+        mom_ndim: Mom_NDim = 1,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",

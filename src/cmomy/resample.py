@@ -75,8 +75,8 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         IntDTypeT,
-        JackknifeDataParams,
-        JackknifeValsParams,
+        JackknifeDataKwargs,
+        JackknifeValsKwargs,
         KeepAttrs,
         MissingCoreDimOptions,
         MissingType,
@@ -85,8 +85,8 @@ if TYPE_CHECKING:
         Moments,
         NDArrayAny,
         NDArrayInt,
-        ResampleDataParams,
-        ResampleValsParams,
+        ResampleDataKwargs,
+        ResampleValsKwargs,
         RngTypes,
         XArrayT,
     )
@@ -607,7 +607,7 @@ def resample_data(
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleDataParams],
+    **kwargs: Unpack[ResampleDataKwargs],
 ) -> XArrayT: ...
 # array no out or dtype
 @overload
@@ -617,7 +617,7 @@ def resample_data(
     freq: ArrayLike | None = ...,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[ResampleDataParams],
+    **kwargs: Unpack[ResampleDataKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -627,7 +627,7 @@ def resample_data(
     freq: ArrayLike | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleDataParams],
+    **kwargs: Unpack[ResampleDataKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -637,7 +637,7 @@ def resample_data(
     freq: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[ResampleDataParams],
+    **kwargs: Unpack[ResampleDataKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -647,7 +647,7 @@ def resample_data(
     freq: ArrayLike | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleDataParams],
+    **kwargs: Unpack[ResampleDataKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -840,7 +840,7 @@ def resample_vals(
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleValsParams],
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> XArrayT: ...
 # array
 @overload
@@ -851,7 +851,7 @@ def resample_vals(
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[ResampleValsParams],
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -862,7 +862,7 @@ def resample_vals(
     weight: ArrayLike | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleValsParams],
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -873,7 +873,7 @@ def resample_vals(
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[ResampleValsParams],
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -884,7 +884,7 @@ def resample_vals(
     weight: ArrayLike | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleValsParams],
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -1171,7 +1171,7 @@ def jackknife_data(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[JackknifeDataParams],
+    **kwargs: Unpack[JackknifeDataKwargs],
 ) -> XArrayT: ...
 # array
 @overload
@@ -1181,7 +1181,7 @@ def jackknife_data(
     *,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[JackknifeDataParams],
+    **kwargs: Unpack[JackknifeDataKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -1191,7 +1191,7 @@ def jackknife_data(
     *,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[JackknifeDataParams],
+    **kwargs: Unpack[JackknifeDataKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -1201,7 +1201,7 @@ def jackknife_data(
     *,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[JackknifeDataParams],
+    **kwargs: Unpack[JackknifeDataKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -1211,7 +1211,7 @@ def jackknife_data(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[JackknifeDataParams],
+    **kwargs: Unpack[JackknifeDataKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -1451,7 +1451,7 @@ def jackknife_vals(
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[JackknifeValsParams],
+    **kwargs: Unpack[JackknifeValsKwargs],
 ) -> XArrayT: ...
 # array
 @overload
@@ -1462,7 +1462,7 @@ def jackknife_vals(
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[JackknifeValsParams],
+    **kwargs: Unpack[JackknifeValsKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -1473,7 +1473,7 @@ def jackknife_vals(
     weight: ArrayLike | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[JackknifeValsParams],
+    **kwargs: Unpack[JackknifeValsKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -1484,7 +1484,7 @@ def jackknife_vals(
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[JackknifeValsParams],
+    **kwargs: Unpack[JackknifeValsKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -1495,7 +1495,7 @@ def jackknife_vals(
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[JackknifeValsParams],
+    **kwargs: Unpack[JackknifeValsKwargs],
 ) -> NDArrayAny: ...
 
 

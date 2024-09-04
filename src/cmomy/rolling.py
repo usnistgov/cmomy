@@ -78,9 +78,14 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         NDArrayAny,
+        RollingDataKwargs,
+        RollingExpDataKwargs,
+        RollingExpValsKwargs,
+        RollingValsKwargs,
         ScalarT,
         XArrayT,
     )
+    from .core.typing_compat import Unpack
 
 
 # * Moving average
@@ -88,6 +93,7 @@ if TYPE_CHECKING:
 def construct_rolling_window_array(
     x: XArrayT,
     window: int | Sequence[int],
+    *,
     axis: AxisReduceMult | MissingType = ...,
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
@@ -103,6 +109,7 @@ def construct_rolling_window_array(
 def construct_rolling_window_array(
     x: NDArray[FloatT],
     window: int | Sequence[int],
+    *,
     axis: AxisReduceMult | MissingType = ...,
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
@@ -118,6 +125,7 @@ def construct_rolling_window_array(
 def construct_rolling_window_array(
     x: NDArrayAny,
     window: int | Sequence[int],
+    *,
     axis: AxisReduceMult | MissingType = ...,
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
@@ -135,6 +143,7 @@ def construct_rolling_window_array(
 def construct_rolling_window_array(
     x: NDArrayAny | XArrayT,
     window: int | Sequence[int],
+    *,
     axis: AxisReduceMult | MissingType = MISSING,
     center: bool | Sequence[bool] = False,
     stride: int | Sequence[int] = 1,
@@ -286,120 +295,45 @@ def _optional_zero_missing_weight(
 def rolling_data(
     data: XArrayT,
     *,
-    window: int,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingDataKwargs],
 ) -> XArrayT: ...
 # Array
 @overload
 def rolling_data(
     data: ArrayLikeArg[FloatT],
     *,
-    window: int,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def rolling_data(
     data: ArrayLike,
     *,
-    window: int,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def rolling_data(
     data: ArrayLike,
     *,
-    window: int,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def rolling_data(
     data: ArrayLike,
     *,
-    window: int,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -591,125 +525,50 @@ def _rolling_data(
 def rolling_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
-    mom: Moments,
-    window: int,
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingValsKwargs],
 ) -> XArrayT: ...
 # array
 @overload
 def rolling_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    mom: Moments,
-    window: int,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def rolling_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
-    window: int,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def rolling_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
-    window: int,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def rolling_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
-    window: int,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    center: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -941,22 +800,9 @@ def rolling_exp_data(
     data: XArrayT,
     alpha: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpDataKwargs],
 ) -> XArrayT: ...
 # array
 @overload
@@ -964,22 +810,9 @@ def rolling_exp_data(
     data: ArrayLikeArg[FloatT],
     alpha: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -987,22 +820,9 @@ def rolling_exp_data(
     data: ArrayLike,
     alpha: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -1010,22 +830,9 @@ def rolling_exp_data(
     data: ArrayLike,
     alpha: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -1033,22 +840,9 @@ def rolling_exp_data(
     data: ArrayLike,
     alpha: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    dim: DimsReduce | MissingType = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArray[FloatT]: ...
 
 
@@ -1302,24 +1096,10 @@ def rolling_exp_vals(
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
     alpha: ArrayLike | xr.DataArray | XArrayT,
-    mom: Moments,
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpValsKwargs],
 ) -> XArrayT: ...
 # Array
 @overload
@@ -1327,24 +1107,10 @@ def rolling_exp_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
     alpha: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -1352,24 +1118,10 @@ def rolling_exp_vals(
     x: ArrayLike,
     *y: ArrayLike,
     alpha: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -1377,24 +1129,10 @@ def rolling_exp_vals(
     x: ArrayLike,
     *y: ArrayLike,
     alpha: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArray[FloatT]: ...
 # Fallback
 @overload
@@ -1402,24 +1140,10 @@ def rolling_exp_vals(
     x: ArrayLike,
     *y: ArrayLike,
     alpha: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    min_periods: int | None = ...,
-    adjust: bool = ...,
-    zero_missing_weights: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    # xarray specific
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArray[FloatT]: ...
 
 

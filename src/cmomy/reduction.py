@@ -84,10 +84,10 @@ if TYPE_CHECKING:
         MomentsStrict,
         NDArrayAny,
         NDArrayInt,
-        ReduceDataGroupedParams,
-        ReduceDataIndexedParams,
-        ReduceDataParams,
-        ReduceValsParams,
+        ReduceDataGroupedKwargs,
+        ReduceDataIndexedKwargs,
+        ReduceDataKwargs,
+        ReduceValsKwargs,
         XArrayT,
     )
     from .core.typing_compat import Unpack
@@ -102,7 +102,7 @@ def reduce_vals(
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceValsParams],
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> XArrayT: ...
 # array
 @overload
@@ -112,7 +112,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[ReduceValsParams],
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -122,7 +122,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceValsParams],
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -132,7 +132,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[ReduceValsParams],
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback Array
 @overload
@@ -142,7 +142,7 @@ def reduce_vals(
     weight: ArrayLike | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceValsParams],
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -344,7 +344,7 @@ def reduce_data(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataParams],
+    **kwargs: Unpack[ReduceDataKwargs],
 ) -> XArrayT: ...
 @overload
 def reduce_data(
@@ -352,7 +352,7 @@ def reduce_data(
     *,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[ReduceDataParams],
+    **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -361,7 +361,7 @@ def reduce_data(
     *,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataParams],
+    **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -370,7 +370,7 @@ def reduce_data(
     *,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[ReduceDataParams],
+    **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -379,7 +379,7 @@ def reduce_data(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataParams],
+    **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -718,7 +718,7 @@ def reduce_data_grouped(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataGroupedParams],
+    **kwargs: Unpack[ReduceDataGroupedKwargs],
 ) -> XArrayT: ...
 # Array no output or dtype
 @overload
@@ -728,7 +728,7 @@ def reduce_data_grouped(
     *,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[ReduceDataGroupedParams],
+    **kwargs: Unpack[ReduceDataGroupedKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -738,7 +738,7 @@ def reduce_data_grouped(
     *,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataGroupedParams],
+    **kwargs: Unpack[ReduceDataGroupedKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -748,7 +748,7 @@ def reduce_data_grouped(
     *,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[ReduceDataGroupedParams],
+    **kwargs: Unpack[ReduceDataGroupedKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -758,7 +758,7 @@ def reduce_data_grouped(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataGroupedParams],
+    **kwargs: Unpack[ReduceDataGroupedKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -1107,7 +1107,7 @@ def reduce_data_indexed(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataIndexedParams],
+    **kwargs: Unpack[ReduceDataIndexedKwargs],
 ) -> XArrayT: ...
 # Array no out or dtype
 @overload
@@ -1116,7 +1116,7 @@ def reduce_data_indexed(
     *,
     out: None = ...,
     dtype: None = ...,
-    **kwargs: Unpack[ReduceDataIndexedParams],
+    **kwargs: Unpack[ReduceDataIndexedKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
@@ -1125,7 +1125,7 @@ def reduce_data_indexed(
     *,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataIndexedParams],
+    **kwargs: Unpack[ReduceDataIndexedKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
@@ -1134,7 +1134,7 @@ def reduce_data_indexed(
     *,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    **kwargs: Unpack[ReduceDataIndexedParams],
+    **kwargs: Unpack[ReduceDataIndexedKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
@@ -1143,7 +1143,7 @@ def reduce_data_indexed(
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataIndexedParams],
+    **kwargs: Unpack[ReduceDataIndexedKwargs],
 ) -> NDArrayAny: ...
 
 

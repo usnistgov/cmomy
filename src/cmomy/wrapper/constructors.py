@@ -52,9 +52,15 @@ if TYPE_CHECKING:
         MomDims,
         Moments,
         NDArrayAny,
+        ReduceValsKwargs,
+        ResampleValsKwargs,
         RngTypes,
+        WrapKwargs,
+        WrapRawKwargs,
         XArrayT,
+        ZerosLikeKwargs,
     )
+    from cmomy.core.typing_compat import Unpack
 
 
 # * General wrapper -----------------------------------------------------------
@@ -62,61 +68,43 @@ if TYPE_CHECKING:
 def wrap(  # pyright: ignore[reportOverlappingOverload]
     obj: XArrayT,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: DTypeLike | Mapping[str, DTypeLike] = ...,
-    copy: bool | None = ...,
-    fastpath: bool = ...,
+    **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsXArray[XArrayT]: ...
 @overload
 def wrap(  # type: ignore[misc]
     obj: xr.DataArray | xr.Dataset,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: DTypeLike | Mapping[str, DTypeLike] = ...,
-    copy: bool | None = ...,
-    fastpath: bool = ...,
+    **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsDataArray | CentralMomentsDataset: ...
 @overload
 def wrap(
     obj: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: None = ...,
-    copy: bool | None = ...,
-    fastpath: bool = ...,
+    **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap(
     obj: ArrayLike,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: DTypeLikeArg[FloatT],
-    copy: bool | None = ...,
-    fastpath: bool = ...,
+    **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap(
     obj: ArrayLike,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: DTypeLike = ...,
-    copy: bool | None = ...,
-    fastpath: bool = ...,
+    **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
 def wrap(
     obj: Any,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: Any = ...,
-    copy: bool | None = ...,
-    fastpath: bool = ...,
+    **kwargs: Unpack[WrapKwargs],
 ) -> Any: ...
 
 
@@ -159,45 +147,29 @@ def wrap(  # type: ignore[misc]
 def zeros_like(
     c: CentralMomentsXArrayT,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: DTypeLike | Mapping[Any, DTypeLike] = ...,
-    order: ArrayOrder = ...,
-    subok: bool = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsXArrayT: ...
 @overload
 def zeros_like(
     c: CentralMomentsArrayT,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: None = ...,
-    order: ArrayOrder = ...,
-    subok: bool = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsArrayT: ...
 @overload
 def zeros_like(
     c: CentralMomentsArrayAny,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: DTypeLikeArg[FloatT],
-    order: ArrayOrder = ...,
-    subok: bool = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def zeros_like(
     c: CentralMomentsArrayAny | CentralMomentsDataAny,
     *,
-    mom_ndim: Mom_NDim = ...,
-    mom_dims: MomDims | None = ...,
     dtype: DTypeLike | Mapping[Any, DTypeLike] = ...,
-    order: ArrayOrder = ...,
-    subok: bool = ...,
-    **kwargs: Any,
+    **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsArrayAny | CentralMomentsDataAny: ...
 
 
@@ -209,7 +181,9 @@ def zeros_like(
     dtype: DTypeLike | Mapping[Any, DTypeLike] = None,
     order: ArrayOrder = None,
     subok: bool = True,
-    **kwargs: Any,
+    chunks: Any = None,
+    chunked_array_type: str | None = None,
+    from_array_kwargs: dict[str, Any] | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsDataAny:
     """
     Create new wrapped object like given object.
@@ -223,15 +197,31 @@ def zeros_like(
     {dtype}
     {order}
     {subok}
-    **kwargs
-        Extra arguments to :func:`xarray.zeros_like`
+    chunks : int, "auto", tuple of int or mapping of Hashable to int, optional
+        Chunk sizes along each dimension, e.g., ``5``, ``"auto"``, ``(5, 5)``
+        or ``{"x": 5, "y": 5}``.
+    chunked_array_type: str, optional
+        Which chunked array type to coerce the underlying data array to.
+        Defaults to 'dask' if installed, else whatever is registered via the
+        `ChunkManagerEnetryPoint` system. Experimental API that should not be
+        relied upon.
+    from_array_kwargs: dict, optional
+        Additional keyword arguments passed on to the
+        `ChunkManagerEntrypoint.from_array` method used to create chunked
+        arrays, via whichever chunk manager is specified through the
+        `chunked_array_type` kwarg. For example, with dask as the default
+        chunked array type, this method would pass additional kwargs to
+        :py:func:`dask.array.from_array`. Experimental API that should not be
+        relied upon.
     """
     if isinstance(c, CentralMomentsXArray):
         return wrap(
-            xr.zeros_like(
+            xr.zeros_like(  # type: ignore[misc]
                 c.obj,
                 dtype=dtype,  # type: ignore[arg-type]
-                **kwargs,
+                chunks=chunks,
+                chunked_array_type=chunked_array_type,
+                from_array_kwargs=from_array_kwargs,
             ),
             mom_ndim=mom_ndim,
             mom_dims=mom_dims,
@@ -242,7 +232,6 @@ def zeros_like(
             dtype=dtype,  # type: ignore[arg-type]
             order=order,
             subok=subok,
-            **kwargs,
         ),
         mom_ndim=mom_ndim,
     )
@@ -253,134 +242,64 @@ def zeros_like(
 def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     x: XArrayT,
     *y: ArrayLike | xr.DataArray | XArrayT,
-    mom: Moments,
     weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    keepdims: bool = False,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsXArray[XArrayT]: ...
 @overload
 def wrap_reduce_vals(  # type: ignore[misc]
     x: xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
-    mom: Moments,
     weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    keepdims: bool = False,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsDataArray | CentralMomentsDataset: ...
 @overload
 def wrap_reduce_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    keepdims: bool = False,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_reduce_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    keepdims: bool = False,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_reduce_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    keepdims: bool = False,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_reduce_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    keepdims: bool = False,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
 def wrap_reduce_vals(
     x: Any,
     *y: Any,
-    mom: Moments,
     weight: Any = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_dims: MomDims | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    keepdims: bool = False,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
 ) -> Any: ...
 
 
@@ -489,162 +408,71 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
 def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: XArrayT,
     *y: xr.DataArray | XArrayT,
-    mom: Moments,
     weight: xr.DataArray | XArrayT | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    rep_dim: str = "rep",
-    keep_attrs: bool = True,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsXArray[XArrayT]: ...
 @overload
 def wrap_resample_vals(  # type: ignore[misc]
     x: xr.DataArray | xr.Dataset,
     *y: xr.DataArray | XArrayT,
-    mom: Moments,
     weight: xr.DataArray | XArrayT | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    rep_dim: str = "rep",
-    keep_attrs: bool = True,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsDataArray | CentralMomentsDataset: ...
 @overload
 def wrap_resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    rep_dim: str = "rep",
-    keep_attrs: bool = True,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    rep_dim: str = "rep",
-    keep_attrs: bool = True,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    rep_dim: str = "rep",
-    keep_attrs: bool = True,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    mom: Moments,
     weight: ArrayLike | None = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
     freq: ArrayLike | None = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    rep_dim: str = "rep",
-    keep_attrs: bool = True,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
 def wrap_resample_vals(
     x: Any,
     *y: Any,
-    mom: Moments,
     weight: Any = ...,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
     freq: Any = ...,
-    nrep: int | None = ...,
-    rng: RngTypes | None = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrderCF = ...,
-    parallel: bool | None = ...,
-    mom_dims: MomDims | None = ...,
-    rep_dim: str = "rep",
-    keep_attrs: bool = True,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
 ) -> Any: ...
 
 
@@ -659,6 +487,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     freq: ArrayLike | xr.DataArray | XArrayT | None = None,
     nrep: int | None = None,
     rng: RngTypes | None = None,
+    paired: bool = True,
     move_axis_to_end: bool = True,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -667,7 +496,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     parallel: bool | None = None,
     mom_dims: MomDims | None = None,
     rep_dim: str = "rep",
-    keep_attrs: bool = True,
+    keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsXArray[XArrayT]:
@@ -689,6 +518,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     {freq}
     {nrep}
     {rng}
+    {paired}
     {move_axis_to_end}
     {order}
     {out}
@@ -726,6 +556,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         freq=freq,
         nrep=nrep,
         rng=rng,
+        paired=paired,
         mom=mom,
         weight=weight,
         axis=axis,
@@ -755,99 +586,57 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
 def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
     raw: XArrayT,
     *,
-    mom_ndim: Mom_NDim,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsXArray[XArrayT]: ...
 @overload
 def wrap_raw(  # type: ignore[misc]
     raw: xr.DataArray | xr.Dataset,
     *,
-    mom_ndim: Mom_NDim,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsDataArray | CentralMomentsDataset: ...
 @overload
 def wrap_raw(
     raw: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: Mom_NDim,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_raw(
     raw: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_raw(
     raw: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArray[FloatT]: ...
 @overload
 def wrap_raw(
     raw: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
 def wrap_raw(
     raw: Any,
     *,
-    mom_ndim: Mom_NDim,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[WrapRawKwargs],
 ) -> Any: ...
 
 
@@ -855,7 +644,7 @@ def wrap_raw(
 def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     raw: ArrayLike | XArrayT,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim = 1,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",

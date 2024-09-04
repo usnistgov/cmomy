@@ -61,7 +61,9 @@ if TYPE_CHECKING:
         ArrayOrderCF,
         AxisReduce,
         Casting,
+        CentralMomentsT,
         ConvertStyle,
+        CumulativeKwargs,
         DimsReduce,
         DTypeLikeArg,
         FloatT,
@@ -70,11 +72,13 @@ if TYPE_CHECKING:
         MissingType,
         Mom_NDim,
         MomDims,
+        MomentsToComomentsKwargs,
+        MomentsTypeKwargs,
         NDArrayAny,
-        ScalarT,
+        NDArrayT,
         XArrayT,
     )
-    from .wrapper import CentralMomentsArray, CentralMomentsXArray
+    from .core.typing_compat import Unpack
 
 
 # * Convert between raw and central moments
@@ -82,80 +86,45 @@ if TYPE_CHECKING:
 def moments_type(
     values_in: XArrayT,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> XArrayT: ...
 # array
 @overload
 def moments_type(
     values_in: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def moments_type(
     values_in: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def moments_type(
     values_in: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def moments_type(
     values_in: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -163,7 +132,7 @@ def moments_type(
 def moments_type(
     values_in: ArrayLike | XArrayT,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim = 1,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -296,100 +265,45 @@ def _moments_type(
 def cumulative(
     values_in: XArrayT,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> XArrayT: ...
 # array
 @overload
 def cumulative(
     values_in: ArrayLikeArg[FloatT],
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: None = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def cumulative(
     values_in: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def cumulative(
     values_in: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def cumulative(
     values_in: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
     out: NDArrayAny | None = ...,
     dtype: Any = ...,
-    casting: Casting = ...,
-    order: ArrayOrder = ...,
-    parallel: bool | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -586,56 +500,32 @@ def _validate_mom_moments_to_comoments(
 def moments_to_comoments(
     values: XArrayT,
     *,
-    mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    order: ArrayOrderCF = ...,
-    mom_dims: MomDims | None = ...,
-    mom_dims2: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> XArrayT: ...
 # array
 @overload
 def moments_to_comoments(
     values: ArrayLikeArg[FloatT],
     *,
-    mom: tuple[int, int],
     dtype: None = ...,
-    order: ArrayOrderCF = ...,
-    mom_dims: MomDims | None = ...,
-    mom_dims2: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def moments_to_comoments(
     values: ArrayLike,
     *,
-    mom: tuple[int, int],
     dtype: DTypeLikeArg[FloatT],
-    order: ArrayOrderCF = ...,
-    mom_dims: MomDims | None = ...,
-    mom_dims2: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def moments_to_comoments(
     values: ArrayLike,
     *,
-    mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    order: ArrayOrderCF = ...,
-    mom_dims: MomDims | None = ...,
-    mom_dims2: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArrayAny: ...
 
 
@@ -775,6 +665,14 @@ def moments_to_comoments(
 # * concat
 @overload
 def concat(
+    arrays: Iterable[CentralMomentsT],
+    *,
+    axis: AxisReduce | MissingType = ...,
+    dim: DimsReduce | MissingType = ...,
+    **kwargs: Any,
+) -> CentralMomentsT: ...
+@overload
+def concat(
     arrays: Iterable[XArrayT],
     *,
     axis: AxisReduce | MissingType = ...,
@@ -783,41 +681,22 @@ def concat(
 ) -> XArrayT: ...
 @overload
 def concat(
-    arrays: Iterable[CentralMomentsArray[FloatT]],
+    arrays: Iterable[NDArrayT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> CentralMomentsArray[FloatT]: ...
-@overload
-def concat(
-    arrays: Iterable[CentralMomentsXArray[XArrayT]],
-    *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    **kwargs: Any,
-) -> CentralMomentsXArray[XArrayT]: ...
-@overload
-def concat(
-    arrays: Iterable[NDArray[ScalarT]],
-    *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    **kwargs: Any,
-) -> NDArray[ScalarT]: ...
+) -> NDArrayT: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type]
 def concat(
-    arrays: Iterable[XArrayT]
-    | Iterable[CentralMomentsArray[Any]]
-    | Iterable[CentralMomentsXArray[Any]]
-    | Iterable[NDArrayAny],
+    arrays: Iterable[NDArrayT] | Iterable[XArrayT] | Iterable[CentralMomentsT],
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     **kwargs: Any,
-) -> XArrayT | CentralMomentsArray[Any] | CentralMomentsXArray[Any] | NDArrayAny:
+) -> NDArrayT | XArrayT | CentralMomentsT:
     """
     Concatenate moments objects.
 
@@ -917,7 +796,7 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(
+        return np.concatenate(  # type: ignore[return-value]
             tuple(arrays_iter),  # type: ignore[arg-type]
             axis=axis,
             dtype=first.dtype,

@@ -222,86 +222,106 @@ BlockByModes: TypeAlias = Literal[
 
 
 # * Keyword args --------------------------------------------------------------
-class _ReductionParams(TypedDict, total=False):
-    casting: Casting
-    parallel: bool | None
+# ** Common
+class _ApplyUFuncKwargs(TypedDict, total=False):
     mom_dims: MomDims | None
     keep_attrs: KeepAttrs
     on_missing_core_dim: MissingCoreDimOptions
     apply_ufunc_kwargs: ApplyUFuncKwargs | None
 
 
-class _MomNDimParams(TypedDict, total=False):
+class _ReductionKwargs(_ApplyUFuncKwargs, total=False):
+    casting: Casting
+
+
+class _ParallelKwargs(TypedDict, total=False):
+    parallel: bool | None
+
+
+class _MomNDimKwargs(TypedDict, total=False):
     mom_ndim: Mom_NDim
 
 
-class _MomParams(TypedDict, total=False):
+class _MomKwargs(TypedDict, total=False):
     mom: Required[Moments]
 
 
-class _AxisParams(TypedDict, total=False):
+class _AxisKwargs(TypedDict, total=False):
     axis: AxisReduce | MissingType
     dim: DimsReduce | MissingType
 
 
-class _MoveAxisToEndParams(TypedDict, total=False):
+class _AxisMultKwargs(TypedDict, total=False):
+    axis: AxisReduceMult | MissingType
+    dim: DimsReduceMult | MissingType
+
+
+class _MoveAxisToEndKwargs(TypedDict, total=False):
     move_axis_to_end: bool
 
 
-class _OrderParams(TypedDict, total=False):
+class _OrderKwargs(TypedDict, total=False):
     order: ArrayOrder
 
 
-class _OrderCFParams(TypedDict, total=False):
+class _OrderCFKwargs(TypedDict, total=False):
     order: ArrayOrderCF
 
 
-class _KeepDimsParams(TypedDict, total=False):
+class _KeepDimsKwargs(TypedDict, total=False):
     keepdims: bool
 
 
-class _ResampleParams(TypedDict, total=False):
+class _ResampleKwargs(TypedDict, total=False):
     nrep: int | None
     rng: RngTypes | None
+
+
+class _ResamplePairedKwargs(_ResampleKwargs, total=False):
     paired: bool
     rep_dim: str
 
 
-class _DataParams(_ReductionParams, _MomNDimParams, _AxisParams, total=False):
+class _DataKwargs(
+    _MomNDimKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
+):
     pass
 
 
-class _ValsParams(_ReductionParams, _MomParams, _AxisParams, total=False):
+class _ValsKwargs(
+    _MomKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
+):
     pass
 
 
-class ReduceDataParams(
-    _MomNDimParams,
-    _ReductionParams,
-    _OrderParams,
-    _KeepDimsParams,
+# ** Reduction
+class ReduceDataKwargs(
+    _MomNDimKwargs,
+    _AxisMultKwargs,
+    _ReductionKwargs,
+    _OrderKwargs,
+    _ParallelKwargs,
+    _KeepDimsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data`"""
 
-    axis: AxisReduceMult | MissingType
-    dim: DimsReduceMult | MissingType
     use_reduce: bool
 
 
-class ReduceValsParams(
-    _ValsParams,
-    _OrderCFParams,
-    _KeepDimsParams,
+class ReduceValsKwargs(
+    _ValsKwargs,
+    _OrderCFKwargs,
+    _KeepDimsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""
 
 
-class ReduceDataGroupedParams(
-    _DataParams,
-    _MoveAxisToEndParams,
-    _OrderCFParams,
+class ReduceDataGroupedKwargs(
+    _DataKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderCFKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data_grouped`"""
@@ -310,10 +330,10 @@ class ReduceDataGroupedParams(
     groups: Groups | None
 
 
-class ReduceDataIndexedParams(
-    _DataParams,
-    _MoveAxisToEndParams,
-    _OrderParams,
+class ReduceDataIndexedKwargs(
+    _DataKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data_indexed`"""
@@ -328,26 +348,31 @@ class ReduceDataIndexedParams(
     groups: Groups | None
 
 
-class ResampleDataParams(
-    _DataParams,
-    _ResampleParams,
-    _MoveAxisToEndParams,
-    _OrderParams,
+# ** Resample
+class ResampleDataKwargs(
+    _DataKwargs,
+    _ResamplePairedKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.resample_data`"""
 
 
-class ResampleValsParams(
-    _ValsParams, _ResampleParams, _MoveAxisToEndParams, _OrderCFParams, total=False
+class ResampleValsKwargs(
+    _ValsKwargs,
+    _ResamplePairedKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderCFKwargs,
+    total=False,
 ):
     """Extra parameters for :func:`.reduction.resample_vals`"""
 
 
-class JackknifeDataParams(
-    _DataParams,
-    _MoveAxisToEndParams,
-    _OrderParams,
+class JackknifeDataKwargs(
+    _DataKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.reduction.jackknife_data`"""
@@ -355,12 +380,185 @@ class JackknifeDataParams(
     rep_dim: str | None
 
 
-class JackknifeValsParams(
-    _ValsParams,
-    _MoveAxisToEndParams,
-    _OrderParams,
+class JackknifeValsKwargs(
+    _ValsKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.reduction.jackknife_data`"""
 
     rep_dim: str | None
+
+
+# ** Convert
+class WrapRawKwargs(
+    _MomNDimKwargs,
+    _ReductionKwargs,
+    _OrderKwargs,
+    total=False,
+):
+    """Extra parameters for :func:`.wrap_raw`"""
+
+
+class MomentsTypeKwargs(
+    WrapRawKwargs,
+    total=False,
+):
+    """Extra parameters for :func:`.convert.moments_type`"""
+
+    to: ConvertStyle
+
+
+class CumulativeKwargs(
+    _DataKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
+    total=False,
+):
+    """Extra parameters for :func:`.convert.cumulative`"""
+
+    inverse: bool
+
+
+class MomentsToComomentsKwargs(
+    _OrderCFKwargs,
+    total=False,
+):
+    """Extra parameters for :func:`.convert.moments_to_comoments`"""
+
+    mom: Required[tuple[int, int]]
+    mom_dims: MomDims | None
+    mom_dims2: MomDims | None
+    keep_attrs: KeepAttrs
+    on_missing_core_dim: MissingCoreDimOptions
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None
+
+
+# ** Utils
+class SelectMomentKwargs(
+    _MomNDimKwargs,
+    _ApplyUFuncKwargs,
+    total=False,
+):
+    """Extra parameters to :func:`.utils.select_moment`"""
+
+    squeeze: bool
+    dim_combined: str
+    coords_combined: str | Sequence[Hashable] | None
+
+
+class ValsToDataKwargs(
+    _MomKwargs,
+    _ApplyUFuncKwargs,
+    total=False,
+):
+    """Extra parameters to :func:`.utils.vals_to_data`"""
+
+
+# ** Rolling
+class _RollingCommonKwargs(TypedDict, total=False):
+    min_periods: int | None
+    zero_missing_weights: bool
+
+
+class _RollingKwargs(_RollingCommonKwargs, total=False):
+    window: Required[int]
+    center: bool
+
+
+class _RollingExpKwargs(_RollingCommonKwargs, total=False):
+    adjust: bool
+
+
+class RollingDataKwargs(
+    _DataKwargs, _RollingKwargs, _MoveAxisToEndKwargs, _OrderKwargs, total=False
+):
+    """Extra parameters to :func:`.rolling.rolling_data`"""
+
+
+class RollingValsKwargs(
+    _ValsKwargs,
+    _RollingKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
+):
+    """Extra parameters to :func:`.rolling.rolling_vals`"""
+
+
+class RollingExpDataKwargs(
+    _DataKwargs,
+    _RollingExpKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
+    total=False,
+):
+    """Extra parameters to :func:`.rolling.rolling_exp_data`"""
+
+
+class RollingExpValsKwargs(
+    _ValsKwargs,
+    _RollingExpKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
+    total=False,
+):
+    """Extra parameters to :func:`.rolling.rolling_vals_exp`"""
+
+
+# ** Wrap
+class WrapKwargs(
+    _MomNDimKwargs,
+    total=False,
+):
+    """Extra parameters to :func:`cmomy.wrap`"""
+
+    mom_dims: MomDims | None
+    copy: bool | None
+    fastpath: bool | None
+
+
+class ZerosLikeKwargs(
+    _MomNDimKwargs,
+    _OrderKwargs,
+    total=False,
+):
+    """Extra parameters to :func:`cmomy.zeros_like`"""
+
+    mom_dims: MomDims | None
+    subok: bool
+    chunks: Any
+    chunked_array_type: str | None
+    from_array_kwargs: dict[str, Any] | None
+
+
+# *** Wrap_np
+class WrapNPTransform(
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
+    _ParallelKwargs,
+    total=False,
+):
+    """Extra parameters to :meth:`.CentralMomentsArray.cumulative`"""
+
+    axis: AxisReduce | MissingType
+    casting: Casting
+
+
+class WrapNPResampleAndReduceKwargs(
+    _ResampleKwargs,
+    WrapNPTransform,
+    total=False,
+):
+    """Extra parameters to :meth:`.CentralMomentsArray.resample_and_reduce`"""
+
+
+class WrapNPReduce(
+    WrapNPTransform,
+    _KeepDimsKwargs,
+    total=False,
+):
+    """Extra parameters to :meth:`.CentralMomentsArray.reduce`"""
+
+    by: Groups
+    block: int
