@@ -58,8 +58,6 @@ def bootstrap_confidence_interval(
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> XArrayT: ...
-
-
 @overload
 def bootstrap_confidence_interval(
     theta_boot: NDArray[FloatingT],
@@ -292,7 +290,7 @@ def _bootstrap_confidence_interval(
 
         # expand theta hat?
         if theta_hat_.ndim < theta_boot.ndim:
-            theta_hat_ = np.expand_dims(theta_hat, axis=axis)
+            theta_hat_ = np.expand_dims(theta_hat_, axis=axis)
 
     ci: NDArray[FloatingT]
     if method_ == "bca":

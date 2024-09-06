@@ -576,6 +576,17 @@ def vals_to_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ValsToDataKwargs],
 ) -> XArrayT: ...
+# TODO(wpk): remove out as xr.DataArray.  Makes typing too weird...
+# out
+@overload
+def vals_to_data(
+    x: ArrayLike,
+    *y: ArrayLike,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLike = ...,
+    out: xr.DataArray,
+    **kwargs: Unpack[ValsToDataKwargs],
+) -> xr.DataArray: ...
 # Array
 @overload
 def vals_to_data(
@@ -596,16 +607,6 @@ def vals_to_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArray[FloatT]: ...
-# out
-@overload
-def vals_to_data(
-    x: ArrayLike,
-    *y: ArrayLike,
-    weight: ArrayLike | None = ...,
-    dtype: DTypeLike = ...,
-    out: xr.DataArray,
-    **kwargs: Unpack[ValsToDataKwargs],
-) -> xr.DataArray: ...
 # dtype
 @overload
 def vals_to_data(

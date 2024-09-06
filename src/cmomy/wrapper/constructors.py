@@ -99,13 +99,6 @@ def wrap(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArrayAny: ...
-@overload
-def wrap(
-    obj: Any,
-    *,
-    dtype: Any = ...,
-    **kwargs: Unpack[WrapKwargs],
-) -> Any: ...
 
 
 def wrap(  # type: ignore[misc]
@@ -299,15 +292,6 @@ def wrap_reduce_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArrayAny: ...
-@overload
-def wrap_reduce_vals(
-    x: Any,
-    *y: Any,
-    weight: Any = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceValsKwargs],
-) -> Any: ...
 
 
 @docfiller.decorate  # type: ignore[misc]
@@ -414,8 +398,8 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
 @overload
 def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: XArrayT,
-    *y: xr.DataArray | XArrayT,
-    weight: xr.DataArray | XArrayT | None = ...,
+    *y: ArrayLike | xr.DataArray | XArrayT,
+    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
@@ -424,8 +408,8 @@ def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
 @overload
 def wrap_resample_vals(  # type: ignore[misc]
     x: xr.DataArray | xr.Dataset,
-    *y: xr.DataArray | XArrayT,
-    weight: xr.DataArray | XArrayT | None = ...,
+    *y: ArrayLike | xr.DataArray | XArrayT,
+    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
     freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
@@ -467,20 +451,10 @@ def wrap_resample_vals(
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
     freq: ArrayLike | None = ...,
-    out: NDArrayAny | None = ...,
+    out: Any = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArrayAny: ...
-@overload
-def wrap_resample_vals(
-    x: Any,
-    *y: Any,
-    weight: Any = ...,
-    freq: Any = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleValsKwargs],
-) -> Any: ...
 
 
 @docfiller.decorate  # type: ignore[misc]
@@ -637,14 +611,6 @@ def wrap_raw(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArrayAny: ...
-@overload
-def wrap_raw(
-    raw: Any,
-    *,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[WrapRawKwargs],
-) -> Any: ...
 
 
 @docfiller.decorate  # type: ignore[misc]

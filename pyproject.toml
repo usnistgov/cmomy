@@ -144,6 +144,8 @@ extend-exclude = [
     ".venv",
     "dist-conda",
     "examples/archived",
+    "tests/test_typing_auto.py",
+    "tools/create_test_typing_auto.py",
     # "tests/",
     # "src/cmomy/tests",
 ]
@@ -286,6 +288,7 @@ lint.extend-per-file-ignores."tests/**/*.py" = [
     "SLF001",
     "TD003",
 ]
+lint.extend-per-file-ignores."tests/test_typing.py" = [ "ERA" ]
 # fixable = ["ALL"]
 lint.unfixable = [
     "PLR6104",

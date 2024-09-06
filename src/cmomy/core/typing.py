@@ -95,6 +95,7 @@ FloatingT_ = TypeVar("FloatingT_", bound="np.floating[Any]")
 
 DTypeT_co = TypeVar("DTypeT_co", covariant=True, bound="np.dtype[Any]")
 NDArrayT = TypeVar("NDArrayT", bound="NDArray[Any]")
+NDArrayFloatingT = TypeVar("NDArrayFloatingT", bound="NDArray[np.floating[Any]]")
 
 
 # * Numpy ---------------------------------------------------------------------

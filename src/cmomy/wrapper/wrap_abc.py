@@ -1457,8 +1457,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     def from_resample_vals(
         cls,
         x: XArrayT_,
-        *y: xr.DataArray | XArrayT_,
-        weight: xr.DataArray | XArrayT_ | None = ...,
+        *y: ArrayLike | xr.DataArray | XArrayT_,
+        weight: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
         freq: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
