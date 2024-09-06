@@ -13,12 +13,12 @@ dask==2024.8.2            # via -r requirements/dev.txt
 debugpy==1.8.5            # via ipykernel
 decorator==5.1.1          # via ipython
 distlib==0.3.8            # via virtualenv
-docstring-inheritance==2.2.0  # via -r requirements/dev.txt
+docstring-inheritance==2.2.1  # via -r requirements/dev.txt
 execnet==2.1.1            # via pytest-xdist
-executing==2.0.1          # via stack-data
+executing==2.1.0          # via stack-data
 fastjsonschema==2.20.0    # via nbformat
 filelock==3.15.4          # via virtualenv
-fsspec==2024.6.1          # via dask
+fsspec==2024.9.0          # via dask
 importlib-metadata==8.4.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev.txt

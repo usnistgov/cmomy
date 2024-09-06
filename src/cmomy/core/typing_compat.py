@@ -12,9 +12,9 @@ else:
 
 
 if sys.version_info < (3, 11):
-    from typing_extensions import Self, Unpack
+    from typing_extensions import Required, Self, Unpack
 else:
-    from typing import Self, Unpack
+    from typing import Required, Self, Unpack
 
 
 if sys.version_info < (3, 13):
@@ -25,6 +25,7 @@ else:  # pragma: no cover
 
 __all__ = [
     "EllipsisType",
+    "Required",
     "Self",
     "TypeAlias",
     "TypeGuard",

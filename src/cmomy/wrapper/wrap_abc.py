@@ -1663,6 +1663,17 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @classmethod
     def from_raw(
         cls,
+        raw: ArrayLike,
+        *,
+        out: NDArrayAny | None = ...,
+        dtype: DTypeLike = ...,
+        **kwargs: Unpack[WrapRawKwargs],
+    ) -> CentralMomentsArray[Any]: ...
+
+    @overload
+    @classmethod
+    def from_raw(
+        cls,
         raw: Any,
         *,
         out: NDArrayAny | None = ...,

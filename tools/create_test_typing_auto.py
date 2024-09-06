@@ -12,10 +12,10 @@ import sys
 from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
-
 from numpy import float32, float64
 
 import xarray as xr
+import pytest
 
 import cmomy
 from cmomy import CentralMomentsArray, CentralMomentsXArray
@@ -35,8 +35,10 @@ if TYPE_CHECKING:
 
     T = TypeVar("T")
 
-
 from numpy.typing import NDArray
+
+# So can exclude from coverage
+pytestmark = pytest.mark.typing
 
 
 def check(
@@ -60,13 +62,13 @@ def check(
 # * Parameters
 vals_float32: NDArray[np.float32] = np.zeros(10, dtype=np.float32)
 vals_float64: NDArray[np.float64] = np.zeros(10, dtype=np.float64)
-vals_arrayany: NDArray[Any] = cast("NDArray[Any]", vals_float64)
+vals_arrayany: NDArrayAny = cast("NDArrayAny", vals_float64)
 vals_arraylike: ArrayLike = cast("ArrayLike", vals_float64)
 vals_any: Any = cast("Any", vals_float64)
 
 data_float32: NDArray[np.float32] = np.zeros((10, 3), dtype=np.float32)
 data_float64: NDArray[np.float64] = np.zeros((10, 3), dtype=np.float64)
-data_arrayany: NDArray[Any] = cast("NDArray[Any]", data_float64)
+data_arrayany: NDArrayAny = cast("NDArrayAny", data_float64)
 data_arraylike: ArrayLike = cast("ArrayLike", data_float64)
 data_any: Any = cast("Any", data_float64)
 
@@ -131,6 +133,20 @@ TEMPLATE_GENERAL_TEST = """\
 """
 
 
+TEMPLATE_METHOD_TEST = """\
+    check(
+        assert_type(
+            {data}.{func_name}({args}),
+            {type_},
+        ),
+        {klass},
+        {dtype},
+        {second_klass},
+    )\
+"""
+
+
+
 @dataclass
 class GeneralTest:
     """General test creation"""
@@ -160,16 +176,38 @@ class GeneralTest:
             dtype: str,
             klass: str = "np.ndarray",
             second_klass: str = "None",
+            method: bool = False,
+            astype: bool = False,
+            newlike: bool = False,
+            template: str | None = None,
     ):
+
+        if template is None:
+            template = TEMPLATE_METHOD_TEST if method else TEMPLATE_GENERAL_TEST
 
         args = base_args
         if args is not None:
             args = args.format_map({"axis_dim": "axis=0" if klass in {"np.ndarray", "CentralMomentsArray"} else 'dim="dim_0"'})
 
-        if dtype_arg is not None:
-            args = f"{args}, dtype={dtype_arg}"
+        if astype:
+            if dtype_arg is None:
+                dtype = "None"
+            args = ", ".join([dtype, args]) if args else dtype
+        elif dtype_arg is not None:
+            n = f"dtype={dtype_arg}"
+            args = ", ".join([args, n]) if args else n
+
         if out_dtype is not None:
-            args = f"{args}, out={out_prefix}{out_dtype}"
+            if newlike:
+                n = f"{out_prefix}{out_dtype}"
+                args = ", ".join([n, args]) if args else n
+            else:
+                n = f"out={out_prefix}{out_dtype}"
+                args = ", ".join([args, n]) if args else n
+
+        if (not method) and args:
+            args = f", {args}"
+
 
         return cls(
             func_name=func_name,
@@ -179,315 +217,427 @@ class GeneralTest:
             klass=klass,
             second_klass=second_klass,
             dtype=dtype,
+            template=template,
         )
+
+
+def get_list(funcs_list: list[tuple[Any, ...]], params_list: list[tuple[Any, ...]], **kwargs: Any) -> list[str]:
+    s = len(set(params_list))
+    if s != len(params_list):
+        print("odd params list",s, len(params_list))
+
+    s = len(set(funcs_list))
+    if s != len(funcs_list):
+        print("odd funcs list", s, len(funcs_list))
+
+
+    out = []
+    for func_name, data_prefix, out_prefix, base_args in funcs_list:
+
+        # add in a test function
+        name_norm = func_name.replace(".", "_")
+        out.append(f"\n\ndef test_{name_norm}() -> None:")
+
+
+        for data_suffix, *args in params_list:
+            out.append(str(
+                GeneralTest.from_params(func_name, data_prefix + data_suffix, out_prefix, base_args, *args, **kwargs)
+            ))
+    return out
+
+
 
 out = []
 
 
 # func_name, data_prefix, out_prefix, "base_args"
-funcs_genarraylike_to_genarraylike_dtype_out = [
-    ("cmomy.reduce_data", "data_", "reduce_out_", ", {axis_dim}, mom_ndim=1"),
-    ("cmomy.reduce_vals", "vals_", "reduce_out_", ", {axis_dim}, mom=2"),
-    ("cmomy.reduce_data_grouped", "data_", "group_out_", ", {axis_dim}, mom_ndim=1, by=by"),
-    ("cmomy.reduction.reduce_data_indexed", "data_", "group_out_", ", {axis_dim}, mom_ndim=1, index=index, group_start=group_start, group_end=group_end"),
-    ("cmomy.resample_data", "data_", "group_out_", ", {axis_dim}, mom_ndim=1, freq=freq"),
-    ("cmomy.resample_vals", "vals_", "group_out_", ", {axis_dim}, mom=2, freq=freq"),
-    ("cmomy.resample.jackknife_data", "data_", "transform_out_", ", {axis_dim}, mom_ndim=1"),
-    ("cmomy.resample.jackknife_vals", "vals_", "transform_out_", ", {axis_dim}, mom=2"),
-    ("cmomy.convert.moments_type", "data_", "transform_out_", ", mom_ndim=1"),
-    ("cmomy.convert.cumulative", "data_", "transform_out_", ", {axis_dim}, mom_ndim=1"),
-    ("cmomy.utils.vals_to_data", "vals_", "transform_out_", ", mom=2"),
-    ("cmomy.rolling.rolling_vals", "vals_", "transform_out_", ", {axis_dim}, mom=2, window=3"),
-    ("cmomy.rolling.rolling_data", "data_", "transform_out_", ", {axis_dim}, mom_ndim=1, window=3"),
-    ("cmomy.rolling.rolling_exp_vals", "vals_", "transform_out_", ", {axis_dim}, mom=2, alpha=0.2"),
-]
-funcs_genarraylike_to_genarraylike_dtype = [
-    ("cmomy.convert.moments_to_comoments", "data_", None, ", mom=(1, -1)"),
-]
-funcs_genarray_to_genarray = [
-    ("cmomy.utils.select_moment", "data_", None, ', "weight", mom_ndim=1'),
-    ("cmomy.utils.assign_moment", "data_", None, ", weight=1, mom_ndim=1"),
-    ("cmomy.bootstrap_confidence_interval", "data_", None, ', {axis_dim}, method="percentile"'),
-]
-funcs_genarraylike_to_wrapped_dtype_out = [
-    ("cmomy.wrap_reduce_vals", "vals_", "reduce_out_", ", {axis_dim}, mom=2"),
-    ("cmomy.wrap_raw", "data_", "transform_out_", ""),
-]
-funcs_genarraylike_to_wrapped_dtype = [
-    ("cmomy.wrap", "data_", None, ""),
-]
-funcs_arraylike_to_class = [
-    ("cmomy.CentralMomentsArray", "data_", None, ""),
-]
-
-funcs_xarray_to_class = [
-    ("cmomy.CentralMomentsXArray", "data_", None, ""),
-]
-funcs_class_to_class = [
-    ("cmomy.zeros_like", "central_", None, ""),
-]
-
-
 # * GenArray to GenArray
 # ** Just arrays
-
-
-
-
-
+funcs_genarraylike_to_genarray_dtype_out = [
+    ("cmomy.reduce_data", "data_", "reduce_out_", "{axis_dim}, mom_ndim=1"),
+    ("cmomy.reduce_vals", "vals_", "reduce_out_", "{axis_dim}, mom=2"),
+    ("cmomy.reduce_data_grouped", "data_", "group_out_", "{axis_dim}, mom_ndim=1, by=by"),
+    ("cmomy.reduction.reduce_data_indexed", "data_", "group_out_", "{axis_dim}, mom_ndim=1, index=index, group_start=group_start, group_end=group_end"),
+    ("cmomy.resample_data", "data_", "group_out_", "{axis_dim}, mom_ndim=1, freq=freq"),
+    ("cmomy.resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, freq=freq"),
+    ("cmomy.resample.jackknife_data", "data_", "transform_out_", "{axis_dim}, mom_ndim=1"),
+    ("cmomy.resample.jackknife_vals", "vals_", "transform_out_", "{axis_dim}, mom=2"),
+    ("cmomy.convert.moments_type", "data_", "transform_out_", "mom_ndim=1"),
+    ("cmomy.convert.cumulative", "data_", "transform_out_", "{axis_dim}, mom_ndim=1"),
+    ("cmomy.utils.vals_to_data", "vals_", "transform_out_", "mom=2"),
+    ("cmomy.rolling.rolling_vals", "vals_", "transform_out_", "{axis_dim}, mom=2, window=3"),
+    ("cmomy.rolling.rolling_data", "data_", "transform_out_", "{axis_dim}, mom_ndim=1, window=3"),
+    ("cmomy.rolling.rolling_exp_vals", "vals_", "transform_out_", "{axis_dim}, mom=2, alpha=0.2"),
+    ("cmomy.rolling.rolling_exp_data", "data_", "transform_out_", "{axis_dim}, mom_ndim=1, alpha=0.2"),
+]
+funcs_genarraylike_to_genarray_dtype = [
+    ("cmomy.convert.moments_to_comoments", "data_", None, "mom=(1, -1)"),
+]
+funcs_genarray_to_genarray = [
+    ("cmomy.utils.select_moment", "data_", None, '"weight", mom_ndim=1'),
+    ("cmomy.utils.assign_moment", "data_", None, "weight=1, mom_ndim=1"),
+    ("cmomy.bootstrap_confidence_interval", "data_", None, '{axis_dim}, method="percentile"'),
+]
 
 # data_suffix, dtype_arg, out_dtype, type, dtype, klass, second_class
-params_array = [
+params_genarray_to_genarray = [
     ("float32", None, None, "NDArray[float32]", "float32"),
     ("float64", None, None, "NDArray[float64]", "float64"),
     ("arrayany", None, None, "NDArray[Any]", "float64"),
     ("any", None, None, "Any", "float64"),
-]
-
-params_arraylike = [
-    *params_array,
-    ("arraylike", None, None, "NDArray[Any]", "float64"),
-]
-
-params_xarray = [
     ("dataarray", None, None, "xr.DataArray", "float64", "xr.DataArray"),
     ("dataset", None, None, "xr.Dataset", None, "xr.Dataset"),
     ("dataarray_any", None, None, "Any", "float64", "xr.DataArray"),
     ("dataset_any", None, None, "Any", None, "xr.Dataset"),
 ]
 
-params = [
-    # no dtype specified
-    *params_arraylike,
-    *params_xarray,
-]
-params_dtype = [
-    # with dtype
+params_genarraylike_to_genarray_dtype = [
+    *params_genarray_to_genarray,
+    # array only
+    ("arraylike", None, None, "NDArray[Any]", "float64"),
+    # dtype
     ("float32", "float64", None, "NDArray[float64]", "float64"),
     ("float64", "float32", None, "NDArray[float32]", "float32"),
     ("arrayany", "float32", None, "NDArray[float32]", "float32"),
-    ("arraylike", "float64", None, "NDArray[float64]", "float64"),
+    ("arraylike", "float32", None, "NDArray[float32]", "float32"),
     ("any", "float32", None, "Any", "float32"),
     ("float32", '"f8"', None, "NDArray[Any]", "float64"),
     ("dataarray", "float32", None, "xr.DataArray", "float32", "xr.DataArray"),
     ("dataset", "float32", None, "xr.Dataset", None, "xr.Dataset"),
     ("dataarray_any", "float32", None, "Any", "float32", "xr.DataArray"),
-
 ]
-params_out = [
-    # with out
+
+params_genarraylike_to_genarray_dtype_out = [
+    *params_genarraylike_to_genarray_dtype,
+    # out
     ("float32", None, "float64", "NDArray[float64]", "float64"),
-    ("float64", None, "float32", "NDArray[float32]", "float32"),
-    ("arrayany", None, "float32", "NDArray[float32]", "float32"),
     ("arraylike", None, "float64", "NDArray[float64]", "float64"),
     ("any", None, "float32", "Any", "float32"),
     ("float32", None, "arrayany", "NDArray[Any]", "float64"),
     # ("float32", None, "any", "NDArray[Any]", "float64"),  # noqa: ERA001
     ("dataarray", None, "float32", "xr.DataArray", "float32", "xr.DataArray"),
-    ("dataarray", None, "arrayany", "xr.DataArray", "float64", "xr.DataArray"),
     ("dataarray_any", None, "float32", "Any", "float32", "xr.DataArray"),
-]
-params_dtype_out = [
     # with out and dtype
     ("float32", "float32", "float64", "NDArray[float64]", "float64"),
-    ("float64", "float64", "float32", "NDArray[float32]", "float32"),
-    ("arrayany", "float64", "float32", "NDArray[float32]", "float32"),
     ("arraylike", "float32", "float64", "NDArray[float64]", "float64"),
     ("any", "float64", "float32", "Any", "float32"),
     ("float32", "float64", "arrayany", "NDArray[Any]", "float64"),
-    # ("float32", "float64", "any", "NDArray[Any]", "float64"),  # noqa: ERA001
+    ("dataarray", '"f8"', "float32", "xr.DataArray", "float32", "xr.DataArray"),
+
 ]
-params_all = [*params, *params_dtype, *params_out, *params_dtype_out]
-params_dtype_only = [*params, *params_dtype]
+
+out = []
+for funcs, params in [
+        (funcs_genarray_to_genarray, params_genarray_to_genarray),
+        (funcs_genarraylike_to_genarray_dtype, params_genarraylike_to_genarray_dtype),
+        (funcs_genarraylike_to_genarray_dtype_out, params_genarraylike_to_genarray_dtype_out),
+]:
+    out.extend(get_list(funcs, params))
 
 
-params_wrap_array = [
+# * Move axis
+params_moveaxis = list(filter(lambda x: "dataset" not in x[0] and "arraylike" not in x[0] and x[1] is None, params_genarraylike_to_genarray_dtype))
+funcs_moveaxis = [
+    ("cmomy.moveaxis", "data_", None, "0, 1"),
+]
+
+out.extend(get_list(funcs_moveaxis, params_moveaxis))
+
+
+# * GenArray to wrapped
+params_genarraylike_to_wrapped_dtype = [
     ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
     ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
     ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
     ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-]
-
-params_wrap_xarray = [
+    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
     ("dataarray", None, None, "CentralMomentsXArray[xr.DataArray]", "float64", "CentralMomentsXArray", "xr.DataArray"),
     ("dataset", None, None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
-]
-params_any_wrap_array = [
-    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
-]
-params_any_wrap_xarray = [
     ("dataarray_any", None, None, "Any", "float64", "CentralMomentsXArray", "xr.DataArray"),
     ("dataset_any", None, None, "Any", None, "CentralMomentsXArray", "xr.Dataset"),
-]
-params_wrap = [
-    *params_wrap_array,
-    *params_wrap_xarray,
-]
-params_any_wrap = [
-    *params_any_wrap_array,
-    *params_any_wrap_xarray,
-]
-params_wrap_total = [*params_any_wrap, *params_wrap]
-
-
-params_wrap_dtype_array = [
     ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
     ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-]
-params_wrap_dtype_xarray = [
+    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
     ("dataarray", "float32", None, "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
     ("dataset", "float32", None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
-]
-params_any_wrap_dtype_array = [
-    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
-]
-params_any_wrap_dtype_xarray = [
     ("dataarray_any", "float32", None, "Any", "float32", "CentralMomentsXArray", "xr.DataArray"),
 ]
-params_wrap_dtype = [
-    *params_wrap_dtype_array, *params_wrap_dtype_xarray,
+funcs_genarraylike_to_wrapped_dtype = [
+    ("cmomy.wrap", "data_", None, ""),
 ]
-params_any_wrap_dtype = [
-    *params_any_wrap_dtype_array,
-    *params_any_wrap_dtype_xarray,
-]
-params_wrap_dtype_total = [*params_wrap_dtype, *params_any_wrap_dtype]
+
+out.extend(get_list(funcs_genarraylike_to_wrapped_dtype, params_genarraylike_to_wrapped_dtype))
 
 
-params_wrap_out_array = [
+params_genarraylike_to_wrapped_dtype_out = [
+    *params_genarraylike_to_wrapped_dtype,
     ("float32", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
     ("float64", None, "float32", "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
     ("arraylike", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
     ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    # with out
-    # ("float32", None, "any", "NDArray[Any]", "float64"),  # noqa: ERA001
-]
-params_wrap_out_xarray = [
+    ("any", None, "float32", "Any", "float32", "CentralMomentsArray"),
     ("dataarray", None, "float32", "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
     ("dataarray", None, "arrayany", "CentralMomentsXArray[xr.DataArray]", "float64", "CentralMomentsXArray", "xr.DataArray"),
-]
-params_wrap_out = [
-    *params_wrap_out_array,
-    *params_wrap_out_xarray,
-]
-params_any_wrap_out_array = [
-    ("any", None, "float32", "Any", "float32", "CentralMomentsArray"),
-]
-params_any_wrap_out_xarray = [
     ("dataarray_any", None, "float32", "Any", "float32", "CentralMomentsXArray", "xr.DataArray"),
 ]
-params_any_wrap_out = [
-    *params_any_wrap_out_array,
-    *params_any_wrap_out_xarray,
-]
-params_wrap_out_total = [
-    *params_wrap_out, *params_any_wrap_out,
+
+funcs_genarraylike_to_wrapped_dtype_out = [
+    ("cmomy.wrap_reduce_vals", "vals_", "reduce_out_", "{axis_dim}, mom=2"),
+    ("cmomy.wrap_resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, freq=freq"),
+    ("cmomy.wrap_raw", "data_", "transform_out_", ""),
 ]
 
-
-params_zeroslike_array = [
-    *params_wrap_array,
-    *params_any_wrap_array,
-]
-params_zeroslike_xarray = [
-    *params_wrap_xarray,
-    ("dataarray_any", None, None, '"CentralMomentsDataAny"', "float64", "CentralMomentsXArray", "xr.DataArray"),
-    ("dataset_any", None, None, '"CentralMomentsDataAny"', None, "CentralMomentsXArray", "xr.Dataset"),
-]
-params_zeroslike = [
-    *params_zeroslike_array,
-    *params_zeroslike_xarray,
-]
-
-params_zeroslike_dtype_array = [
-    *params_wrap_dtype_array,
-    *params_any_wrap_dtype_array,
-]
-
-params_zeroslike_dtype_xarray = [
-    *params_wrap_dtype_xarray,
-    ("dataarray_any", "float32", None, '"CentralMomentsDataAny"', "float32", "CentralMomentsXArray", "xr.DataArray"),
-]
-
-params_zeroslike_dtype = [
-    # with dtype
-    *params_zeroslike_dtype_array,
-    *params_zeroslike_dtype_xarray,
-]
+out.extend(get_list(funcs_genarraylike_to_wrapped_dtype_out, params_genarraylike_to_wrapped_dtype_out))
 
 
-params_central_array = [
-    *params_wrap_array,
-    ("any", None, None, '"CentralMomentsArrayAny"', "float64", "CentralMomentsArray"),
+
+# * Arraylike to CentralMomentsArray
+params_arraylike_to_class = [
+    ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("any", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("any", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
 ]
-params_central_dtype_array = [
-    *params_wrap_dtype_array,
-    ("any", "float32", None, "CentralMomentsArray[np.float32]", "float32", "CentralMomentsArray"),
+funcs_arraylike_to_class = [
+    ("cmomy.CentralMomentsArray", "data_", None, ""),
 ]
-params_central_xarray = [
-    *params_wrap_xarray,
-    ("dataarray_any", None, None, '"CentralMomentsDataAny"', "float64", "CentralMomentsXArray", "xr.DataArray"),
-    ("dataset_any", None, None, '"CentralMomentsDataAny"', None, "CentralMomentsXArray", "xr.Dataset"),
+out.extend(get_list(funcs_arraylike_to_class, params_arraylike_to_class))
+
+# Because of the way these classmethods are coded, Input Any -> Any
+params_arraylike_to_class_out = [
+    ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
+    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
+    ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("arrayany", "float64", "float32", "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("any", None, "float64", "Any", "float64", "CentralMomentsArray"),
 ]
+funcs_arraylike_to_class_out = [
+    ("cmomy.CentralMomentsArray.from_vals", "vals_", "group_out_", "{axis_dim}, mom=2"),
+    ("cmomy.CentralMomentsArray.from_resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, freq=freq"),
+    ("cmomy.CentralMomentsArray.from_raw", "data_", "transform_out_", "mom_ndim=1"),
+]
+out.extend(get_list(funcs_arraylike_to_class_out, params_arraylike_to_class_out))
 
 
-params_moveaxis = [
+
+# * XArray to CentralMomentsXArray
+params_xarray_to_class = [
+    ("dataarray", None, None, "CentralMomentsXArray[xr.DataArray]", "float64", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset", None, None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
+    ("dataarray_any", None, None, "CentralMomentsXArray[Any]", "float64", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset_any", None, None, "CentralMomentsXArray[Any]", None, "CentralMomentsXArray", "xr.Dataset"),
+]
+funcs_xarray_to_class = [
+    ("cmomy.CentralMomentsXArray", "data_", None, ""),
+]
+out.extend(get_list(funcs_xarray_to_class, params_xarray_to_class))
+
+
+# * Class zeros
+params_class_zeros = [
+    ("CentralMomentsArray", None, None, "CentralMomentsArray[np.float64]", "float64", "CentralMomentsArray"),
+    ("CentralMomentsArray", "float32", None, "CentralMomentsArray[np.float32]", "float32", "CentralMomentsArray"),
+    ("CentralMomentsArray", '"f4"', None, "CentralMomentsArray[Any]", "float32", "CentralMomentsArray"),
+    ("CentralMomentsXArray", None, None, "CentralMomentsXArray[xr.DataArray]", "float64", "CentralMomentsXArray", "xr.DataArray"),
+    ("CentralMomentsXArray", '"f4"', None, "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+]
+funcs_class_zeros = [
+    ("zeros", "", None, "mom=2")
+]
+out.extend(get_list(funcs_class_zeros, params_class_zeros, method=True))
+
+
+# * class to class
+params_class_to_class = [
+    ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
+    ("dataarray", None, None, "CentralMomentsXArray[xr.DataArray]", "float64", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset", None, None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
+    ("dataarray_any", None, None, "CentralMomentsXArray[Any]", "float64", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset_any", None, None, "CentralMomentsXArray[Any]", None, "CentralMomentsXArray", "xr.Dataset"),
+    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
+    ("dataarray", "float32", None, "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset", "float32", None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
+    ("dataarray_any", "float32", None, "CentralMomentsXArray[Any]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+]
+funcs_class_to_class = [
+    ("cmomy.zeros_like", "central_", None, ""),
+]
+out.extend(get_list(funcs_class_to_class, params_class_to_class))
+
+
+# * Class methods
+# ** to class
+# *** astype
+params_class_astype = [
+    ("float32", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("float64", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("arraylike", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
+    ("dataarray", "float32", None, "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset", "float32", None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
+    ("dataarray_any", "float32", None, "CentralMomentsXArray[Any]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+]
+funcs_class_astype = [
+    ("astype", "central_", None, "")
+]
+out.extend(get_list(funcs_class_astype, params_class_astype, method=True, astype=True))
+
+# *** methods
+params_class_method = [
+    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
+    ("dataarray", None, None, "CentralMomentsXArray[xr.DataArray]", "float64", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset", None, None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
+    ("dataarray_any", None, None, "CentralMomentsXArray[Any]", "float64", "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset_any", None, None, "CentralMomentsXArray[Any]", None, "CentralMomentsXArray", "xr.Dataset"),
+]
+params_class_method_dtype = [
+    *params_class_method,
+    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("float64", '"f4"', None, "CentralMomentsArray[Any]", "float32", "CentralMomentsArray"),
+    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("dataarray", "float32", None, "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+]
+params_class_method_dtype_out = [
+    *params_class_method_dtype,
+    ("float32", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("arraylike", "float64", "float32", "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    ("dataarray", None, "float32", "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+
+]
+funcs_class_method = [
+    ("assign_moment", "central_", None, "weight=1"),
+]
+funcs_class_method_dtype = [
+    ("moments_to_comoments", "central_", None, "mom=(1, -1)"),
+]
+funcs_class_method_dtype_out = [
+    ("resample_and_reduce", "central_", "group_out_", "{axis_dim}, freq=freq"),
+    ("jackknife_and_reduce", "central_", "transform_out_", "{axis_dim}"),
+    ("reduce", "central_", "reduce_out_", "{axis_dim}"),
+]
+out.extend(get_list(funcs_class_method, params_class_method, method=True))
+out.extend(get_list(funcs_class_method_dtype, params_class_method_dtype, method=True))
+out.extend(get_list(funcs_class_method_dtype_out, params_class_method_dtype_out, method=True))
+
+# *** moveaxis
+params_class_method_moveaxis = list(filter(lambda x: "dataset" not in x[0], params_class_method))
+funcs_class_method_moveaxis = [
+    ("moveaxis", "central_", None, "0, 0"),
+]
+out.extend(get_list(funcs_class_method_moveaxis, params_class_method_moveaxis, method=True))
+
+# *** reshape
+params_class_method_reshape = list(filter(lambda x: "data" not in x[0], params_class_method))
+funcs_class_method_reshape = [
+    ("reshape", "central_", None, "(2, 5)")
+]
+out.extend(get_list(funcs_class_method_reshape, params_class_method_reshape, method=True))
+
+
+
+
+# *** new_like
+params_class_newlike =[
+    *params_class_method_dtype,
+    ("float32", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    # This is different because out here is data input
+    ("arraylike", "float64", "float32", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
+    ("dataarray", None, "float32", "CentralMomentsXArray[xr.DataArray]", "float32", "CentralMomentsXArray", "xr.DataArray"),
+]
+funcs_class_newlike = [
+    ("new_like", "central_", "transform_out_", ""),
+]
+out.extend(get_list(funcs_class_newlike, params_class_newlike, method=True, newlike=True))
+
+
+# ** To Array
+params_class_methodtoarray = [
+    ("float64", None, None, "NDArray[float64]", "float64"),
+    ("arraylike", None, None, "NDArray[Any]", "float64"),
+    ("any", None, None, "Any", "float64"),
+    ("dataarray", None, None, "xr.DataArray", "float64", "xr.DataArray"),
+    ("dataset", None, None, "xr.Dataset", None, "xr.Dataset"),
+    ("dataarray_any", None, None, "Any", "float64", "xr.DataArray"),
+    ("dataset_any", None, None, "Any", None, "xr.Dataset"),
+]
+params_class_methodtoarray_dtype = [
+    *params_class_methodtoarray,
+    ("float32", "float64", None, "NDArray[float64]", "float64"),
+    ("float64", '"f4"', None, "NDArray[Any]", "float32"),
+    ("arraylike", "float32", None, "NDArray[float32]", "float32"),
+    ("dataarray", "float32", None, "xr.DataArray", "float32", "xr.DataArray"),
+]
+params_class_methodtoarray_dtype_out = [
+    *params_class_methodtoarray_dtype,
+    ("float32", None, "float64", "NDArray[float64]", "float64"),
+    ("float32", None, "arrayany", "NDArray[Any]", "float64"),
+    ("arraylike", "float64", "float32", "NDArray[float32]", "float32"),
+    ("dataarray", None, "float32", "xr.DataArray", "float32", "xr.DataArray"),
+]
+funcs_class_methodtoarray = [
+]
+funcs_class_methodtoarray_dtype = [
+]
+funcs_class_methodtoarray_dtype_out = [
+    ("cumulative", "central_", "transform_out_", "{axis_dim}")
+]
+out.extend(get_list(funcs_class_methodtoarray, params_class_methodtoarray, method=True))
+out.extend(get_list(funcs_class_methodtoarray_dtype, params_class_methodtoarray_dtype, method=True))
+out.extend(get_list(funcs_class_methodtoarray_dtype_out, params_class_methodtoarray_dtype_out, method=True))
+
+
+params_class_method_to_dataarray = [
+    ("dataset", None, None, "CentralMomentsXArray[xr.DataArray]", None, "CentralMomentsXArray", "xr.DataArray"),
+    ("dataset_any", None, None, "CentralMomentsXArray[xr.DataArray]", None, "CentralMomentsXArray", "xr.DataArray"),
+]
+func_class_method_to_dataarray = [
+    ("to_dataarray", "central_", None, ""),
+]
+
+out.extend(get_list(func_class_method_to_dataarray, params_class_method_to_dataarray, method=True))
+
+params_class_method_to_dataset = [
+    ("dataarray", None, None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
+    ("dataarray_any", None, None, "CentralMomentsXArray[xr.Dataset]", None, "CentralMomentsXArray", "xr.Dataset"),
+]
+func_class_method_to_dataset = [
+    ("to_dataset", "central_", None, ""),
+]
+
+out.extend(get_list(func_class_method_to_dataset, params_class_method_to_dataset, method=True))
+
+
+# * convert.concat
+params_array = [
     ("float32", None, None, "NDArray[float32]", "float32"),
     ("float64", None, None, "NDArray[float64]", "float64"),
     ("arrayany", None, None, "NDArray[Any]", "float64"),
     ("any", None, None, "Any", "float64"),
-    ("dataarray", None, None, "xr.DataArray", "float64", "xr.DataArray"),
-    ("dataarray_any", None, None, "Any", "float64", "xr.DataArray"),
 ]
-
-
-
 for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in [
-        (params_all, "cmomy.reduce_data", "data_", "reduce_out_", ", {axis_dim}, mom_ndim=1"),
-        (params_all, "cmomy.reduce_vals", "vals_", "reduce_out_", ", {axis_dim}, mom=2"),
-        (params_all, "cmomy.reduce_data_grouped", "data_", "group_out_", ", {axis_dim}, mom_ndim=1, by=by"),
-        (params_all, "cmomy.reduction.reduce_data_indexed", "data_", "group_out_", ", {axis_dim}, mom_ndim=1, index=index, group_start=group_start, group_end=group_end"),
-        (params_all, "cmomy.resample_data", "data_", "group_out_", ", {axis_dim}, mom_ndim=1, freq=freq"),
-        (params_all, "cmomy.resample_vals", "vals_", "group_out_", ", {axis_dim}, mom=2, freq=freq"),
-        (params_all, "cmomy.resample.jackknife_data", "data_", "transform_out_", ", {axis_dim}, mom_ndim=1"),
-        (params_all, "cmomy.resample.jackknife_vals", "vals_", "transform_out_", ", {axis_dim}, mom=2"),
-        (params_all, "cmomy.convert.moments_type", "data_", "transform_out_", ", mom_ndim=1"),
-        (params_all, "cmomy.convert.cumulative", "data_", "transform_out_", ", {axis_dim}, mom_ndim=1"),
-        ([*params, *params_dtype], "cmomy.convert.moments_to_comoments", "data_", None, ", mom=(1, -1)"),
-        (params_all, "cmomy.utils.vals_to_data", "vals_", "transform_out_", ", mom=2"),
-        ([*params_array, *params_xarray], "cmomy.utils.select_moment", "data_", None, ', "weight", mom_ndim=1'),
-        ([*params_array, *params_xarray], "cmomy.utils.assign_moment", "data_", None, ", weight=1, mom_ndim=1"),
-        (params_all, "cmomy.rolling.rolling_vals", "vals_", "transform_out_", ", {axis_dim}, mom=2, window=3"),
-        (params_all, "cmomy.rolling.rolling_data", "data_", "transform_out_", ", {axis_dim}, mom_ndim=1, window=3"),
-        (params_all, "cmomy.rolling.rolling_exp_vals", "vals_", "transform_out_", ", {axis_dim}, mom=2, alpha=0.2"),
-        (params_all, "cmomy.rolling.rolling_exp_data", "data_", "transform_out_", ", {axis_dim}, mom_ndim=1, alpha=0.2"),
-        (params_moveaxis, "cmomy.moveaxis", "data_", None, ", 0, 1"),
-        ([*params_array, *params_xarray], "cmomy.bootstrap_confidence_interval", "data_", None, ', {axis_dim}, method="percentile"'),
-        ([*params_wrap_total, *params_wrap_dtype_total], "cmomy.wrap", "data_", None, ""),
-        ([*params_wrap_total, *params_wrap_dtype_total, *params_wrap_out_total], "cmomy.wrap_reduce_vals", "vals_", "reduce_out_", ", {axis_dim}, mom=2"),
-        ([*params_wrap_total, *params_wrap_dtype_total, *params_wrap_out_total], "cmomy.wrap_raw", "data_", "transform_out_", ""),
-        ([*params_zeroslike, *params_zeroslike_dtype], "cmomy.zeros_like", "central_", None, ""),
-        ([*params_central_array, *params_central_dtype_array], "cmomy.CentralMomentsArray", "data_", None, ""),
-        (params_central_xarray, "cmomy.CentralMomentsXArray", "data_", None, ""),
-]:
-
-    if len(set(dtype_seq)) != len(dtype_seq):
-        print(func_name, len(dtype_seq), len(set(dtype_seq)))
-
-    for (data_suffix, *args) in dtype_seq:
-        out.append(str(
-            GeneralTest.from_params(func_name, data_prefix + data_suffix, out_prefix, base_args, *args)
-        ))
-
-
-
-
-# Special for zeros....
-
-
-# Special for concat
-for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in [
-        (params_array, "cmomy.convert.concat", "data_", "reduce_out_", ", {axis_dim}"),
+        (params_array, "cmomy.convert.concat", "data_", "reduce_out_", "{axis_dim}"),
 ]:
     for (data_suffix, *args) in dtype_seq:
         d = data_prefix + data_suffix
@@ -501,21 +651,12 @@ for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in [
             )
         ))
 
+# * Create test fie
+# xx = itertools.chain([HEADER, "\ndef test_numpy_funcs() -> None:"], out)
+out.insert(0, HEADER)
+s = len(set(out))
+if s != len(out):
+    print("duplicate in out", s, len(out))
 
-# data_suffix =
-# GeneralTest(
-#     func_name="convert.concat",
-#     data="({data_prefix}{data_suffix}, {data_prefix}{data_suffix})",
-#     args=", {axis_dim}",
-#     type_=
-
-# )
-
-
-
-
-
-
-xx = itertools.chain([HEADER, "\ndef test_numpy_funcs() -> None:"], out)
 with open("./tests/test_typing_auto.py", "w", encoding="utf-8") as f:  # noqa: FURB103, PTH123
-    f.write("\n".join(xx))
+    f.write("\n".join(out))

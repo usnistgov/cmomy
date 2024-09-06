@@ -13,7 +13,6 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    Required,
     TypedDict,
     Union,
     runtime_checkable,
@@ -33,7 +32,7 @@ if TYPE_CHECKING:
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
-    from .typing_compat import TypeAlias
+    from .typing_compat import Required, TypeAlias
     from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
     )

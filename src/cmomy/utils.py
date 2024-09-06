@@ -671,6 +671,14 @@ def vals_to_data(
     Note that if input data is a chunked dask array, then ``out`` is ignored, and a new
     array is always created.
 
+    Also, broadcasting is different here then :func:`~.reduction.reduce_vals`,
+    :func:`~.resample.resample_vals`, etc. For these reduction functions, you
+    can, for example, pass a `1-D`` array for ``y`` with `N-D` ``x`` regardless
+    if the axis is not the last axis. This is because those reduction functions
+    have a ``axis`` parameter that can be used to infer the intended shape of
+    ``y`` (and ``weight``). In this function, you have to specify ``y`` and
+    ``weight`` such that they broadcast to ``x``.
+
     Examples
     --------
     >>> w = np.full((2), 0.1)

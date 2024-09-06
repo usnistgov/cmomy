@@ -355,12 +355,12 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     >>> import cmomy
     >>> rng = cmomy.random.default_rng(0)
     >>> x = rng.random((100, 3))
-    >>> da = cmomy.wrapped.wrap_reduce_vals(x, axis=0, mom=2)
+    >>> da = cmomy.wrap_reduce_vals(x, axis=0, mom=2)
     >>> da
     <CentralMomentsArray(mom_ndim=1)>
     array([[1.0000e+02, 5.5313e-01, 8.8593e-02],
-            [1.0000e+02, 5.5355e-01, 7.1942e-02],
-            [1.0000e+02, 5.1413e-01, 1.0407e-01]])
+           [1.0000e+02, 5.5355e-01, 7.1942e-02],
+           [1.0000e+02, 5.1413e-01, 1.0407e-01]])
 
     """
     from cmomy.reduction import reduce_vals
@@ -386,7 +386,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         apply_ufunc_kwargs=apply_ufunc_kwargs,
     )
 
-    return wrap(  # type: ignore[no-any-return]
+    return wrap(
         obj=obj,  # pyright: ignore[reportUnknownArgumentType]
         mom_ndim=mom_ndim,
         **kws,
@@ -525,6 +525,20 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     ~.resample.randsamp_freq
     ~.resample.freq_to_indices
     ~.resample.indices_to_freq
+
+
+    Examples
+    --------
+    >>> import cmomy
+    >>> rng = cmomy.random.default_rng(0)
+    >>> x = rng.random(10)
+    >>> cmomy.wrap_resample_vals(x, mom=2, axis=0, nrep=5)
+    <CentralMomentsArray(mom_ndim=1)>
+    array([[10.    ,  0.5397,  0.0757],
+           [10.    ,  0.5848,  0.0618],
+           [10.    ,  0.5768,  0.0564],
+           [10.    ,  0.6138,  0.1081],
+           [10.    ,  0.5808,  0.0685]])
     """
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     kws = _get_mom_dims_kws(x, mom_dims, mom_ndim)
@@ -554,7 +568,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         casting=casting,
         order=order,
     )
-    return wrap(  # type: ignore[no-any-return]
+    return wrap(
         obj=obj,  # pyright: ignore[reportUnknownArgumentType]
         mom_ndim=mom_ndim,
         **kws,
@@ -670,14 +684,14 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     >>> x = rng.random(10)
     >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
 
-    >>> dx_raw = cmomy.CentralMomentsArray.wrap_raw(raw_x, mom_ndim=1)
+    >>> dx_raw = cmomy.wrap_raw(raw_x, mom_ndim=1)
     >>> print(dx_raw.mean())
     0.5505105129032412
     >>> dx_raw.cmom()
     array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
 
     Which is equivalent to creating raw moments from values
-    >>> dx_cen = cmomy.CentralMomentsArray.wrap_reduce_vals(x, axis=0, mom=4)
+    >>> dx_cen = cmomy.wrap_reduce_vals(x, axis=0, mom=4)
     >>> print(dx_cen.mean())
     0.5505105129032413
     >>> dx_cen.cmom()
@@ -688,7 +702,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
 
     >>> y = x + 10000
     >>> raw_y = (y[:, None] ** np.arange(5)).mean(axis=0)
-    >>> dy_raw = cmomy.CentralMomentsArray.wrap_raw(raw_y, mom_ndim=1)
+    >>> dy_raw = cmomy.wrap_raw(raw_y, mom_ndim=1)
     >>> print(dy_raw.mean() - 10000)
     0.5505105129050207
 
@@ -697,7 +711,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     >>> np.isclose(dy_raw.cmom(), dx_raw.cmom())
     array([ True,  True,  True, False, False])
 
-    >>> dy_cen = cmomy.CentralMomentsArray.wrap_reduce_vals(y, axis=0, mom=4)
+    >>> dy_cen = cmomy.wrap_reduce_vals(y, axis=0, mom=4)
     >>> print(dy_cen.mean() - 10000)
     0.5505105129032017
     >>> dy_cen.cmom()  # this matches above
@@ -706,7 +720,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     from cmomy import convert
 
     kws = _get_mom_dims_kws(raw, mom_dims, mom_ndim, raw)
-    return wrap(  # type: ignore[no-any-return]
+    return wrap(
         obj=convert.moments_type(
             raw,
             mom_ndim=mom_ndim,

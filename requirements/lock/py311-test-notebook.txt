@@ -12,11 +12,11 @@ coverage==7.6.1           # via nbval, pytest-cov
 dask==2024.8.2            # via -r requirements/test-notebook.txt
 debugpy==1.8.5            # via ipykernel
 decorator==5.1.1          # via ipython
-docstring-inheritance==2.2.0  # via -r requirements/test-notebook.txt
+docstring-inheritance==2.2.1  # via -r requirements/test-notebook.txt
 execnet==2.1.1            # via pytest-xdist
-executing==2.0.1          # via stack-data
+executing==2.1.0          # via stack-data
 fastjsonschema==2.20.0    # via nbformat
-fsspec==2024.6.1          # via dask
+fsspec==2024.9.0          # via dask
 importlib-metadata==8.4.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval
@@ -72,5 +72,5 @@ typing-extensions==4.12.2  # via ipython, module-utilities, -r requirements/test
 tzdata==2024.1            # via pandas
 wcwidth==0.2.13           # via prompt-toolkit
 xarray==2024.7.0          # via -r requirements/test-notebook.txt
-xyzservices==2024.6.0     # via bokeh
+xyzservices==2024.9.0     # via bokeh
 zipp==3.20.1              # via importlib-metadata
