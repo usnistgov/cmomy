@@ -714,31 +714,29 @@ def vals_to_data(
         msg = "Supply single value for ``y`` if and only if ``mom_ndim==2``."
         raise ValueError(msg)
 
+    args: list[Any] = [x, weight, *y]
     if is_xarray(x):
         if is_dataarray(out) and mom_dims is None:
             mom_dims = out.dims[-mom_ndim:]
         else:
             mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
 
-        # Explicitly select type depending on out
+        # Explicitly select type depending o out
         # This is needed to make apply_ufunc work with dask data
         # can't pass None value in that case...
         out = None if is_dataset(x) else out
         input_core_dims: list[Sequence[Hashable]] = [[]] * (mom_ndim + 1)
-        args: list[Any] = [weight, *y, x]
         if out is None:
 
             def _func(*args: Any, **kwargs: Any) -> Any:
-                weight, *y, x = args
-                return _vals_to_data(x, *y, weight=weight, out=None, **kwargs)  # type: ignore[has-type]
+                return _vals_to_data(*args, out=None, **kwargs)
         else:
-            # TODO(wpk): Is this really needed?  changes order of result, but so what?
             args = [out, *args]
             input_core_dims = [mom_dims, *input_core_dims]
 
             def _func(*args: Any, **kwargs: Any) -> Any:
-                _out, weight, *y, x = args
-                return _vals_to_data(x, *y, weight=weight, out=_out, **kwargs)  # type: ignore[has-type]
+                _out, *_args = args
+                return _vals_to_data(*_args, out=_out, **kwargs)  # type: ignore[has-type]
 
         return xr.apply_ufunc(  # type: ignore[no-any-return]
             _func,
@@ -764,9 +762,7 @@ def vals_to_data(
         )
 
     return _vals_to_data(  # type: ignore[return-value]
-        x,
-        *y,
-        weight=weight,
+        *args,
         mom=mom,
         mom_ndim=mom_ndim,
         out=out,
@@ -777,8 +773,8 @@ def vals_to_data(
 
 def _vals_to_data(
     x: ArrayLike,
-    *y: ArrayLike | xr.DataArray | xr.Dataset,
     weight: ArrayLike | xr.DataArray | xr.Dataset,
+    *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: MomentsStrict,
     mom_ndim: Mom_NDim,
     out: NDArrayAny | xr.DataArray | None,

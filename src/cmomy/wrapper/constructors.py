@@ -386,7 +386,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         apply_ufunc_kwargs=apply_ufunc_kwargs,
     )
 
-    return wrap(
+    return wrap(  # pyright: ignore[reportUnknownVariableType]
         obj=obj,  # pyright: ignore[reportUnknownArgumentType]
         mom_ndim=mom_ndim,
         **kws,
@@ -568,7 +568,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         casting=casting,
         order=order,
     )
-    return wrap(
+    return wrap(  # pyright: ignore[reportUnknownVariableType]
         obj=obj,  # pyright: ignore[reportUnknownArgumentType]
         mom_ndim=mom_ndim,
         **kws,
@@ -720,7 +720,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     from cmomy import convert
 
     kws = _get_mom_dims_kws(raw, mom_dims, mom_ndim, raw)
-    return wrap(
+    return wrap(  # pyright: ignore[reportUnknownVariableType]
         obj=convert.moments_type(
             raw,
             mom_ndim=mom_ndim,

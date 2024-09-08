@@ -225,6 +225,7 @@ lint.per-file-ignores."noxfile.py" = [
     "RUF009",
 ]
 lint.per-file-ignores."tests/*.py" = [
+    "ANN",
     "D",
     "DOC",
     "S101",

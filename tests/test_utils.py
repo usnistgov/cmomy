@@ -469,8 +469,8 @@ def test_vals_to_data_xarray() -> None:
     y = xr.DataArray(np.full((3, 4), 0.3), dims=["c", "d"])
 
     out0 = utils.vals_to_data(x, y, weight=0.1, mom=(2, 2), mom_dims=("x", "y"))
-    assert out0.dims == ("c", "d", "a", "b", "x", "y")
-    assert out0.shape == (3, 4, 1, 2, 3, 3)
+    assert out0.dims == ("a", "b", "c", "d", "x", "y")
+    assert out0.shape == (1, 2, 3, 4, 3, 3)
 
     out = xr.DataArray(
         np.zeros((1, 2, 3, 4, 3, 3), dtype=np.float32),

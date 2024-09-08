@@ -1,24 +1,40 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment, arg-type"
 # pyright: reportCallIssue=false, reportArgumentType=false
+"""
+Test that basic operations on DataArrays give same results and on np.ndarrays
+and that operations on datasets give same results as on dataarrays.
+
+Also test that chunking works.
+"""
 
 from __future__ import annotations
 
+import inspect
 from functools import partial
-from typing import Any
 
 import numpy as np
 import pytest
 import xarray as xr
 
 import cmomy
-from cmomy.core.validate import (
-    is_dataarray,
-    is_dataset,
+from cmomy.core.validate import is_dataarray, is_dataset
+
+from ._dataarray_set_utils import (
+    do_bootstrap_data,
+    do_moveaxis,
+    do_reduce_data_grouped,
+    do_reduce_data_indexed,
+    do_wrap_method,
+    do_wrap_raw,
+    do_wrap_reduce_vals,
+    do_wrap_resample_vals,
+    moments_to_comoments_kwargs,
+    remove_dim_from_kwargs,
 )
 
 
-# * fixtures
-def create_data_dataset(
+# * Utils
+def create_data(
     rng,
     shapes_and_dims,
     dim,
@@ -43,6 +59,26 @@ def create_data_dataset(
     return ds
 
 
+def fix_kws_for_array(kwargs, data):
+    kwargs = kwargs.copy()
+
+    # transform dim -> axis
+    dim = kwargs.pop("dim", None)
+    if dim is not None:
+        kwargs["axis"] = data.dims.index(dim)
+    return kwargs
+
+
+def get_reshaped_val(val, reshape):
+    if val is None:
+        return val
+    val = val.to_numpy()
+    if reshape:
+        val = val.reshape(reshape)
+    return val
+
+
+# * data tests
 mark_data_kwargs = pytest.mark.parametrize(
     ("kwargs", "shapes_and_dims"),
     [
@@ -77,220 +113,99 @@ mark_data_kwargs = pytest.mark.parametrize(
 )
 
 
-def _get_values_params():
-    return [
-        {
-            "kwargs": {"mom": (3,), "dim": "a"},
-            "x": [((10, 2), ("a", "b")), (2, "b")],
-            "y": None,
-            "weight": None,
-        },
-        {
-            "kwargs": {"mom": (3,), "dim": "a"},
-            "x": [((10, 2), ("a", "b")), (2, "b")],
-            "y": None,
-            "weight": (10, "a"),
-        },
-        {
-            "kwargs": {"mom": (3,), "dim": "a"},
-            "x": [((10, 2), ("a", "b")), (2, "b")],
-            "y": None,
-            "weight": [(10, "a"), (10, "a")],
-        },
-        {
-            "kwargs": {"mom": (3,), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": None,
-            "weight": None,
-        },
-        {
-            "kwargs": {"mom": (3,), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": None,
-            "weight": (10, "b"),
-        },
-        {
-            "kwargs": {"mom": (3,), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": None,
-            "weight": [(10, "b"), (10, "b")],
-        },
-        # mom_ndim -> 2
-        {
-            "kwargs": {"mom": (3, 3), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": (10, "b"),
-            "weight": None,
-        },
-        {
-            "kwargs": {"mom": (3, 3), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": (10, "b"),
-            "weight": (10, "b"),
-        },
-        {
-            "kwargs": {"mom": (3, 3), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": (10, "b"),
-            "weight": [(10, "b"), (10, "b")],
-        },
-        {
-            "kwargs": {"mom": (3, 3), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": [(10, "b"), ((2, 10), ("a", "b"))],
-            "weight": None,
-        },
-        {
-            "kwargs": {"mom": (3, 3), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": [(10, "b"), ((2, 10), ("a", "b"))],
-            "weight": (10, "b"),
-        },
-        {
-            "kwargs": {"mom": (3, 3), "dim": "b"},
-            "x": [((2, 10), ("a", "b")), (10, "b")],
-            "y": [(10, "b"), ((2, 10), ("a", "b"))],
-            "weight": [(10, "b"), (10, "b")],
-        },
-    ]
+func_params_data_common = [
+    (partial(cmomy.reduce_data, use_reduce=True), None),
+    (partial(cmomy.reduce_data, use_reduce=False), None),
+    (do_reduce_data_grouped, None),
+    (do_reduce_data_indexed, None),  # default coords_policy="first"
+    (partial(cmomy.resample_data, nrep=20, rng=0, paired=True), None),
+    (cmomy.resample.jackknife_data, None),
+    (partial(do_bootstrap_data, nrep=20, method="percentile"), None),
+    (partial(do_bootstrap_data, nrep=20, method="bca"), None),
+    (cmomy.convert.moments_type, remove_dim_from_kwargs),
+    (cmomy.convert.cumulative, None),
+    (cmomy.convert.moments_to_comoments, moments_to_comoments_kwargs),
+    (partial(cmomy.utils.select_moment, name="weight"), remove_dim_from_kwargs),
+    (partial(cmomy.utils.select_moment, name="ave"), remove_dim_from_kwargs),
+    (
+        partial(cmomy.utils.assign_moment, weight=1),
+        remove_dim_from_kwargs,
+    ),
+    (
+        partial(cmomy.utils.assign_moment, ave=1),
+        remove_dim_from_kwargs,
+    ),
+    (partial(cmomy.rolling.rolling_data, window=2), None),
+    (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
+    (do_wrap_raw, remove_dim_from_kwargs),
+    (do_wrap_method("reduce"), None),
+    (partial(do_wrap_method("resample_and_reduce"), nrep=20, rng=0), None),
+    (do_wrap_method("jackknife_and_reduce"), None),
+    (do_wrap_method("cumulative"), None),
+    (do_wrap_method("to_raw"), remove_dim_from_kwargs),
+    (do_wrap_method("moments_to_comoments"), moments_to_comoments_kwargs),
+]
 
+func_params_data_dataarray = [
+    (do_moveaxis, None),
+    # TODO(wpk): Seems that coords_policy="group" would be best default ...
+    (partial(do_wrap_method("reduce"), by=[0] * 5 + [1] * 5), None),
+]
 
-@pytest.fixture(params=_get_values_params())
-def fixture_vals_dataset(request, rng) -> Any:
-    """Ugly way to do things, but works."""
-    kwargs, x, y, weight = (request.param[k] for k in ("kwargs", "x", "y", "weight"))
-    return {
-        "kwargs": kwargs,
-        "x": create_data_dataset(rng, x, **kwargs),
-        "y": y if y is None else create_data_dataset(rng, y, **kwargs),
-        "weight": weight
-        if weight is None
-        else create_data_dataset(rng, weight, **kwargs),
-    }
-
-
-# * General
-def _remove_dim_from_kwargs(kwargs):
-    kwargs.pop("dim")
-    return kwargs
-
-
-def _moments_to_comoments_kwargs(kwargs):
-    for k in ("dim", "mom_ndim"):
-        kwargs.pop(k)
-    kwargs["mom"] = (1, -1)
-    return kwargs
-
-
-def _get_by(n):
-    n0 = n // 2
-    return [0] * n0 + [1] * (n - n0)
-
-
-def _reduce_data_grouped(ds, dim, **kwargs):
-    by = _get_by(ds.sizes[dim])
-    return cmomy.reduction.reduce_data_grouped(ds, dim=dim, **kwargs, by=by)
-
-
-def _reduce_data_indexed(ds, dim, **kwargs):
-    by = _get_by(ds.sizes[dim])
-    kwargs["groups"], kwargs["index"], kwargs["group_start"], kwargs["group_end"] = (
-        cmomy.reduction.factor_by_to_index(by)
-    )
-    coords_policy = kwargs.pop("coords_policy", "first")
-    if is_dataarray(ds) and coords_policy in {"first", "last"}:
-        coords_policy = None
-
-    return cmomy.reduction.reduce_data_indexed(
-        ds,
-        dim=dim,
-        **kwargs,
-        coords_policy=coords_policy,
-    )
-
-
-def _resample_data(ds, dim, nrep, paired, **kwargs):
-    return cmomy.resample_data(
-        ds,
-        dim=dim,
-        nrep=nrep,
-        rng=0,
-        paired=paired,
-        **kwargs,
-    )
-
-
-def _resample_vals(x, *y, weight, nrep, paired, **kwargs):
-    return cmomy.resample_vals(
-        x,
-        *y,
-        weight=weight,
-        nrep=nrep,
-        paired=paired,
-        rng=0,
-        **kwargs,
-    )
-
-
-def _bootstrap_data(ds, dim, nrep, method, paired=True, **kwargs):
-    kwargs = kwargs.copy()
-    kwargs.pop("move_axis_to_end", None)
-
-    args = [_resample_data(ds, dim, nrep, paired=paired, **kwargs)]
-    if method in {"basic", "bca"}:
-        args.append(cmomy.reduce_data(ds, dim=dim, **kwargs))
-    if method == "bca":
-        args.append(cmomy.resample.jackknife_data(ds, dim=dim, **kwargs))
-
-    return cmomy.bootstrap_confidence_interval(
-        *args,
-        dim="rep",
-        method=method,
-    )
+func_params_data_dataset = [
+    (partial(do_reduce_data_indexed, coords_policy="groups"), None),
+    (partial(do_reduce_data_indexed, coords_policy=None), None),
+    (
+        partial(do_wrap_method("reduce"), by=[0] * 5 + [1] * 5, coords_policy="group"),
+        None,
+    ),
+]
 
 
 @mark_data_kwargs
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     [
-        (_reduce_data_grouped, None),
-        (partial(_reduce_data_indexed, coords_policy="first"), None),
-        (partial(_reduce_data_indexed, coords_policy="groups"), None),
-        (partial(_reduce_data_indexed, coords_policy=None), None),
-        (partial(_resample_data, nrep=20, paired=True), None),
-        (cmomy.resample.jackknife_data, None),
-        (partial(_bootstrap_data, nrep=20, method="percentile"), None),
-        (partial(_bootstrap_data, nrep=20, method="bca"), None),
-        (cmomy.convert.moments_type, _remove_dim_from_kwargs),
-        (cmomy.convert.cumulative, None),
-        (cmomy.convert.moments_to_comoments, _moments_to_comoments_kwargs),
-        (partial(cmomy.utils.select_moment, name="weight"), _remove_dim_from_kwargs),
-        (partial(cmomy.utils.select_moment, name="ave"), _remove_dim_from_kwargs),
-        (
-            partial(cmomy.utils.assign_moment, weight=1),
-            _remove_dim_from_kwargs,
-        ),
-        (
-            partial(cmomy.utils.assign_moment, ave=1),
-            _remove_dim_from_kwargs,
-        ),
-        (partial(cmomy.rolling.rolling_data, window=2), None),
-        (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
+        *func_params_data_common,
+        *func_params_data_dataarray,
+    ],
+)
+def test_func_data_dataarray(
+    rng,
+    kwargs,
+    shapes_and_dims,
+    func,
+    kwargs_callback,
+) -> None:
+    data = create_data(rng, shapes_and_dims[0], **kwargs)
+    if kwargs_callback:
+        kwargs = kwargs_callback(kwargs)
+
+    check = func(data, **kwargs)
+    kws_array = fix_kws_for_array(kwargs, data)
+    np.testing.assert_allclose(check, func(data.values, **kws_array))
+
+
+@mark_data_kwargs
+@pytest.mark.parametrize(
+    ("func", "kwargs_callback"),
+    [
+        *func_params_data_common,
+        *func_params_data_dataset,
     ],
 )
 def test_func_data_dataset(rng, kwargs, shapes_and_dims, func, kwargs_callback) -> None:
-    ds = create_data_dataset(rng, shapes_and_dims, **kwargs)
+    data = create_data(rng, shapes_and_dims, **kwargs)
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
 
     # coordinates along sampled dimension
-    out = func(ds, **kws)
+    out = func(data, **kws)
 
-    if "dim" in kws:
+    if "dim" in kws and "move_axis_to_end" in inspect.signature(func).parameters:
         kws = {"move_axis_to_end": True, **kws}
 
-    for k in ds:
-        da = ds[k]
-
+    for k in data:
+        da = data[k]
         if ("dim" not in kws or kws["dim"] in da.dims) and (
             "mom_dims" not in kws or kws["mom_dims"] in da.dims
         ):
@@ -298,16 +213,169 @@ def test_func_data_dataset(rng, kwargs, shapes_and_dims, func, kwargs_callback) 
     xr.testing.assert_allclose(out[k], da)
 
 
+# * Vals to array
+vals_params = [
+    {
+        "kwargs": {"mom": (3,), "dim": "a"},
+        "x": [((10, 2), ("a", "b")), (2, "b")],
+        "y": None,
+        "weight": None,
+        "do_array": True,
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "a"},
+        "x": [((10, 2), ("a", "b")), (2, "b")],
+        "y": None,
+        "weight": (10, "a"),
+        "do_array": True,
+        "weight_reshape": (10, 1),
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "a"},
+        "x": [((10, 2), ("a", "b")), (2, "b")],
+        "y": None,
+        "weight": [(10, "a"), (10, "a")],
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": None,
+        "weight": None,
+        "do_array": True,
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": None,
+        "weight": (10, "b"),
+        "do_array": True,
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": None,
+        "weight": [(10, "b"), (10, "b")],
+    },
+    # mom_ndim -> 2
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": (10, "b"),
+        "weight": None,
+        "do_array": True,
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": (10, "b"),
+        "weight": (10, "b"),
+        "do_array": True,
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": (10, "b"),
+        "weight": [(10, "b"), (10, "b")],
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": [(10, "b"), ((2, 10), ("a", "b"))],
+        "weight": None,
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": [(10, "b"), ((2, 10), ("a", "b"))],
+        "weight": (10, "b"),
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": [(10, "b"), ((2, 10), ("a", "b"))],
+        "weight": [(10, "b"), (10, "b")],
+    },
+]
+
+
+@pytest.fixture(params=vals_params)
+def fixture_vals_dataset(request, rng):
+    """Ugly way to do things, but works."""
+    kwargs, x, y, weight = (request.param[k] for k in ("kwargs", "x", "y", "weight"))
+    out = {
+        "kwargs": kwargs,
+        "x": create_data(rng, x, **kwargs),
+        "y": y if y is None else create_data(rng, y, **kwargs),
+        "weight": weight if weight is None else create_data(rng, weight, **kwargs),
+    }
+
+    for k, v in request.param.items():
+        if "_reshape" in k:
+            out[k] = v  # noqa: PERF403
+    return out
+
+
+@pytest.fixture(params=filter(lambda x: x.get("do_array", False), vals_params))  # type: ignore[attr-defined]
+def fixture_vals_dataarray(request, rng):
+    """Ugly way to do things, but works."""
+    kwargs, x, y, weight = (request.param[k] for k in ("kwargs", "x", "y", "weight"))
+    x, y, weight = (a[0] if isinstance(a, list) else a for a in (x, y, weight))
+
+    out = {
+        "kwargs": kwargs,
+        "x": create_data(rng, x, **kwargs),
+        "y": y if y is None else create_data(rng, y, **kwargs),
+        "weight": weight if weight is None else create_data(rng, weight, **kwargs),
+    }
+
+    for k, v in request.param.items():
+        if "_reshape" in k:
+            out[k] = v  # noqa: PERF403
+    return out
+
+
+func_params_vals_common = [
+    (cmomy.reduce_vals, None),
+    (partial(cmomy.resample_vals, nrep=20, rng=0), None),
+    (cmomy.resample.jackknife_vals, None),
+    (cmomy.utils.vals_to_data, remove_dim_from_kwargs),
+    (partial(cmomy.rolling.rolling_vals, window=2), None),
+    (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
+    # wrap
+    (do_wrap_reduce_vals, None),
+    (do_wrap_resample_vals, None),
+]
+
+
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
-    [
-        (cmomy.reduce_vals, None),
-        (partial(_resample_vals, nrep=20, paired=True), None),
-        (partial(cmomy.rolling.rolling_vals, window=2), None),
-        (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
-        (cmomy.resample.jackknife_vals, None),
-        (cmomy.utils.vals_to_data, _remove_dim_from_kwargs),
-    ],
+    func_params_vals_common,
+)
+def test_func_vals_dataarray(fixture_vals_dataarray, func, kwargs_callback):
+    kwargs, x, y, weight = (
+        fixture_vals_dataarray[k] for k in ("kwargs", "x", "y", "weight")
+    )
+
+    if kwargs_callback:
+        kwargs = kwargs_callback(kwargs.copy())
+
+    args = (x,) if y is None else (x, y)
+
+    check = func(*args, weight=weight, **kwargs)
+    kws_array = fix_kws_for_array(kwargs, x)
+
+    xx = get_reshaped_val(x, None)
+    yy = get_reshaped_val(y, fixture_vals_dataarray.get("y_reshape"))
+    ww = get_reshaped_val(weight, fixture_vals_dataarray.get("weight_reshape"))
+
+    args = (xx,) if yy is None else (xx, yy)
+    np.testing.assert_allclose(check, func(*args, weight=ww, **kws_array))
+
+
+# * Vals dataset
+@pytest.mark.parametrize(
+    ("func", "kwargs_callback"),
+    func_params_vals_common,
 )
 def test_func_vals_dataset(fixture_vals_dataset, func, kwargs_callback):
     kwargs, x, y, weight = (
@@ -338,59 +406,7 @@ def test_func_vals_dataset(fixture_vals_dataset, func, kwargs_callback):
         xr.testing.assert_allclose(out[name], da)
 
 
-# * Special cases...
-# ** reduce data
-def _do_reduce_data_dataset(ds, dim, **kwargs) -> None:
-    out = cmomy.reduce_data(ds, dim=dim, **kwargs)
-
-    for name in ds:
-        da = ds[name]
-        if (dim is None or dim in da.dims) and (
-            kwargs.get("use_reduce", True)
-            or ("mom_dims" not in kwargs or kwargs["mom_dims"] in da.dims)
-        ):
-            da = cmomy.reduce_data(da, dim=dim, **kwargs)
-
-        xr.testing.assert_allclose(out[name], da)
-
-
-@mark_data_kwargs
-@pytest.mark.parametrize("use_reduce", [True, False])
-def test_reduce_data_dataset(rng, kwargs, shapes_and_dims, use_reduce) -> None:
-    return _do_reduce_data_dataset(
-        create_data_dataset(rng, shapes_and_dims, **kwargs),
-        **kwargs,
-        use_reduce=use_reduce,
-    )
-
-
-@pytest.mark.parametrize(
-    ("kwargs", "shapes_and_dims"),
-    [
-        # NOTE: make data0, data1 same dimensions, otherwise use_reduce leads to different answers....
-        (
-            {"mom_ndim": 1, "dim": None},
-            [((10, 2, 3), ("a", "b", "mom")), ((10, 2, 3), ("a", "b", "mom"))],
-        ),
-        (
-            {"mom_ndim": 2, "dim": None},
-            [
-                ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
-                ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
-            ],
-        ),
-    ],
-)
-@pytest.mark.parametrize("use_reduce", [True, False])
-def test_reduce_data_dataset_none(rng, kwargs, shapes_and_dims, use_reduce) -> None:
-    return _do_reduce_data_dataset(
-        create_data_dataset(rng, shapes_and_dims, **kwargs),
-        **kwargs,
-        use_reduce=use_reduce,
-    )
-
-
-# * Resample
+# * Resample [need spectial treatment]
 @pytest.mark.parametrize(
     "data",
     [
@@ -480,7 +496,7 @@ def test_randsamp_freq_dataset(
 @pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [False])
 def test_resample_data_dataset(rng, kwargs, shapes_and_dims, nrep, paired) -> None:
-    ds = create_data_dataset(rng, shapes_and_dims, **kwargs)
+    ds = create_data(rng, shapes_and_dims, **kwargs)
 
     dfreq = cmomy.randsamp_freq(data=ds, **kwargs, nrep=nrep, rng=0, paired=paired)
 
@@ -586,36 +602,12 @@ def _is_chunked(ds):
 @mark_data_kwargs
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
-    [
-        (partial(cmomy.reduce_data, use_reduce=False), None),
-        (_reduce_data_grouped, None),
-        (partial(_reduce_data_indexed, coords_policy=None), None),
-        (partial(_resample_data, nrep=20, paired=True), None),
-        (partial(_resample_data, nrep=20, paired=False), None),
-        (cmomy.resample.jackknife_data, None),
-        (partial(_bootstrap_data, nrep=20, method="percentile"), None),
-        (partial(_bootstrap_data, nrep=20, method="bca"), None),
-        (cmomy.convert.moments_type, _remove_dim_from_kwargs),
-        (cmomy.convert.cumulative, None),
-        (cmomy.convert.moments_to_comoments, _moments_to_comoments_kwargs),
-        (partial(cmomy.utils.select_moment, name="weight"), _remove_dim_from_kwargs),
-        (partial(cmomy.utils.select_moment, name="ave"), _remove_dim_from_kwargs),
-        (
-            partial(cmomy.utils.assign_moment, weight=1),
-            _remove_dim_from_kwargs,
-        ),
-        (
-            partial(cmomy.utils.assign_moment, ave=1),
-            _remove_dim_from_kwargs,
-        ),
-        (partial(cmomy.rolling.rolling_data, window=2), None),
-        (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
-    ],
+    func_params_data_common,
 )
 def test_func_data_chunking(
     rng, kwargs, shapes_and_dims, func, kwargs_callback
 ) -> None:
-    ds = create_data_dataset(rng, shapes_and_dims, **kwargs)
+    ds = create_data(rng, shapes_and_dims, **kwargs)
     ds_chunked = ds.chunk({kwargs["dim"]: -1})
 
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
@@ -646,15 +638,7 @@ def test_func_data_chunking(
 @mark_dask_only
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
-    [
-        (cmomy.reduce_vals, None),
-        (partial(_resample_vals, nrep=20, paired=True), None),
-        (partial(_resample_vals, nrep=20, paired=False), None),
-        (cmomy.resample.jackknife_vals, None),
-        (cmomy.utils.vals_to_data, _remove_dim_from_kwargs),
-        (partial(cmomy.rolling.rolling_vals, window=2), None),
-        (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
-    ],
+    func_params_vals_common,
 )
 def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
     kwargs, x, y, weight = (
@@ -701,12 +685,12 @@ def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
     ("func", "kwargs_callback"),
     [
         (partial(cmomy.reduce_data, use_reduce=False), None),
-        (_reduce_data_grouped, None),
-        (partial(_reduce_data_indexed, coords_policy=None), None),
-        (partial(_resample_data, nrep=20, paired=True), None),
-        (partial(_resample_data, nrep=20, paired=False), None),
+        (do_reduce_data_grouped, None),
+        (partial(do_reduce_data_indexed, coords_policy=None), None),
+        (partial(cmomy.resample_data, rng=0, nrep=20, paired=True), None),
+        (partial(cmomy.resample_data, rng=0, nrep=20, paired=False), None),
         (cmomy.resample.jackknife_data, None),
-        (cmomy.convert.moments_type, _remove_dim_from_kwargs),
+        (cmomy.convert.moments_type, remove_dim_from_kwargs),
         (cmomy.convert.cumulative, None),
         (partial(cmomy.rolling.rolling_data, window=2), None),
         (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
@@ -744,10 +728,10 @@ def test_func_data_chunking_out_parameter(
     ("func", "kwargs_callback"),
     [
         (cmomy.reduce_vals, None),
-        (partial(_resample_vals, nrep=20, paired=True), None),
-        (partial(_resample_vals, nrep=20, paired=False), None),
+        (partial(cmomy.resample_vals, rng=0, nrep=20, paired=True), None),
+        (partial(cmomy.resample_vals, rng=0, nrep=20, paired=False), None),
         (cmomy.resample.jackknife_vals, None),
-        # (cmomy.utils.vals_to_data, _remove_dim_from_kwargs),  # noqa: ERA001
+        # (cmomy.utils.vals_to_data, remove_dim_from_kwargs),  # noqa: ERA001
         (partial(cmomy.rolling.rolling_vals, window=2), None),
         (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
     ],
