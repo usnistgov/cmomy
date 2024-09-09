@@ -21,7 +21,7 @@ from cmomy.core.validate import (
 )
 
 from .wrap_np import CentralMomentsArray
-from .wrap_xr import CentralMomentsXArray
+from .wrap_xr import CentralMomentsData
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -41,7 +41,8 @@ if TYPE_CHECKING:
         CentralMomentsDataAny,
         CentralMomentsDataArray,
         CentralMomentsDataset,
-        CentralMomentsXArrayT,
+        CentralMomentsDataT,
+        DataT,
         DimsReduce,
         DTypeLikeArg,
         FloatT,
@@ -57,7 +58,6 @@ if TYPE_CHECKING:
         RngTypes,
         WrapKwargs,
         WrapRawKwargs,
-        XArrayT,
         ZerosLikeKwargs,
     )
     from cmomy.core.typing_compat import Unpack
@@ -66,11 +66,11 @@ if TYPE_CHECKING:
 # * General wrapper -----------------------------------------------------------
 @overload
 def wrap(  # pyright: ignore[reportOverlappingOverload]
-    obj: XArrayT,
+    obj: DataT,
     *,
     dtype: DTypeLike | Mapping[str, DTypeLike] = ...,
     **kwargs: Unpack[WrapKwargs],
-) -> CentralMomentsXArray[XArrayT]: ...
+) -> CentralMomentsData[DataT]: ...
 @overload
 def wrap(  # type: ignore[misc]
     obj: xr.DataArray | xr.Dataset,
@@ -102,14 +102,14 @@ def wrap(
 
 
 def wrap(  # type: ignore[misc]
-    obj: ArrayLike | XArrayT,
+    obj: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim = 1,
     mom_dims: MomDims | None = None,
     dtype: DTypeLike | Mapping[str, DTypeLike] = None,
     copy: bool | None = False,
     fastpath: bool = False,
-) -> CentralMomentsArray[Any] | CentralMomentsXArray[XArrayT]:
+) -> CentralMomentsArray[Any] | CentralMomentsData[DataT]:
     """Wrap object with central moments class."""
     if is_xarray(obj):
         if not fastpath:
@@ -119,7 +119,7 @@ def wrap(  # type: ignore[misc]
             elif copy:
                 obj = obj.copy(deep=True)
 
-        return CentralMomentsXArray(
+        return CentralMomentsData(
             obj=obj,  # type: ignore[arg-type]
             mom_ndim=mom_ndim,
             mom_dims=mom_dims,
@@ -138,11 +138,11 @@ def wrap(  # type: ignore[misc]
 # * Zeros like ----------------------------------------------------------------
 @overload
 def zeros_like(
-    c: CentralMomentsXArrayT,
+    c: CentralMomentsDataT,
     *,
     dtype: DTypeLike | Mapping[Any, DTypeLike] = ...,
     **kwargs: Unpack[ZerosLikeKwargs],
-) -> CentralMomentsXArrayT: ...
+) -> CentralMomentsDataT: ...
 @overload
 def zeros_like(
     c: CentralMomentsArrayT,
@@ -214,7 +214,7 @@ def zeros_like(
         :py:func:`dask.array.from_array`. Experimental API that should not be
         relied upon.
     """
-    if isinstance(c, CentralMomentsXArray):
+    if isinstance(c, CentralMomentsData):
         return wrap(
             xr.zeros_like(  # type: ignore[misc]
                 c.obj,
@@ -240,13 +240,13 @@ def zeros_like(
 # * From vals -----------------------------------------------------------------
 @overload
 def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
-    x: XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
-) -> CentralMomentsXArray[XArrayT]: ...
+) -> CentralMomentsData[DataT]: ...
 @overload
 def wrap_reduce_vals(  # type: ignore[misc]
     x: xr.DataArray | xr.Dataset,
@@ -296,10 +296,10 @@ def wrap_reduce_vals(
 
 @docfiller.decorate  # type: ignore[misc]
 def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
-    x: ArrayLike | XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = None,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
@@ -312,7 +312,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> CentralMomentsArrayAny | CentralMomentsXArray[XArrayT]:
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
     Create from observations/values.
 
@@ -397,20 +397,20 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
 # * resample vals -------------------------------------------------------------
 @overload
 def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
-    x: XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    freq: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
-) -> CentralMomentsXArray[XArrayT]: ...
+) -> CentralMomentsData[DataT]: ...
 @overload
 def wrap_resample_vals(  # type: ignore[misc]
     x: xr.DataArray | xr.Dataset,
-    *y: ArrayLike | xr.DataArray | XArrayT,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    freq: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -459,13 +459,13 @@ def wrap_resample_vals(
 
 @docfiller.decorate  # type: ignore[misc]
 def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: PLR0913
-    x: ArrayLike | XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = None,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = None,
+    freq: ArrayLike | xr.DataArray | DataT | None = None,
     nrep: int | None = None,
     rng: RngTypes | None = None,
     paired: bool = True,
@@ -480,7 +480,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> CentralMomentsArrayAny | CentralMomentsXArray[XArrayT]:
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
     Create from resample observations/values.
 
@@ -579,12 +579,12 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
 # * From raw ------------------------------------------------------------------
 @overload
 def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
-    raw: XArrayT,
+    raw: DataT,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[WrapRawKwargs],
-) -> CentralMomentsXArray[XArrayT]: ...
+) -> CentralMomentsData[DataT]: ...
 @overload
 def wrap_raw(  # type: ignore[misc]
     raw: xr.DataArray | xr.Dataset,
@@ -629,7 +629,7 @@ def wrap_raw(
 
 @docfiller.decorate  # type: ignore[misc]
 def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
-    raw: ArrayLike | XArrayT,
+    raw: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim = 1,
     out: NDArrayAny | None = None,
@@ -640,7 +640,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> CentralMomentsArrayAny | CentralMomentsXArray[XArrayT]:
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
     Create object from raw moment data.
 

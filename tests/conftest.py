@@ -11,7 +11,7 @@ from module_utilities import cached
 import cmomy.random
 import cmomy.reduction
 import cmomy.resample
-from cmomy import CentralMomentsArray, CentralMomentsXArray
+from cmomy import CentralMomentsArray, CentralMomentsData
 from cmomy.core.validate import is_dataarray
 
 from ._simple_cmom import get_cmom, get_comom
@@ -296,10 +296,10 @@ class Data:
     # xcentral specific stuff
     @property
     def cls_xr(self):
-        return CentralMomentsXArray
+        return CentralMomentsData
 
     @cached.prop
-    def s_xr(self) -> CentralMomentsXArray[xr.DataArray]:
+    def s_xr(self) -> CentralMomentsData[xr.DataArray]:
         return self.s.to_x()
 
     @cached.prop

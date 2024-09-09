@@ -18,7 +18,7 @@ Central Moments wrapper classes
    CentralMoments
    xCentralMoments
    CentralMomentsArray
-   CentralMomentsXArray
+   CentralMomentsData
 
 
 Concatenation

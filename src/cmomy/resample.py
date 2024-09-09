@@ -71,6 +71,7 @@ if TYPE_CHECKING:
         AxesGUFunc,
         AxisReduce,
         Casting,
+        DataT,
         DimsReduce,
         DTypeLikeArg,
         FloatT,
@@ -88,7 +89,6 @@ if TYPE_CHECKING:
         ResampleDataKwargs,
         ResampleValsKwargs,
         RngTypes,
-        XArrayT,
     )
     from .core.typing_compat import Unpack
 
@@ -154,11 +154,11 @@ def random_freq(
 
 @overload
 def freq_to_indices(
-    freq: XArrayT,
+    freq: DataT,
     *,
     shuffle: bool = ...,
     rng: RngTypes | None = ...,
-) -> XArrayT: ...
+) -> DataT: ...
 @overload
 def freq_to_indices(
     freq: ArrayLike,
@@ -170,11 +170,11 @@ def freq_to_indices(
 
 @docfiller.decorate
 def freq_to_indices(
-    freq: ArrayLike | XArrayT,
+    freq: ArrayLike | DataT,
     *,
     shuffle: bool = True,
     rng: RngTypes | None = None,
-) -> NDArray[IntDTypeT] | XArrayT:
+) -> NDArray[IntDTypeT] | DataT:
     """
     Convert a frequency array to indices array.
 
@@ -198,7 +198,7 @@ def freq_to_indices(
     """
     if is_xarray(freq):
         rep_dim, dim = freq.dims
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             freq_to_indices,
             freq,
             input_core_dims=[[rep_dim, dim]],
@@ -232,10 +232,10 @@ def freq_to_indices(
 
 @overload
 def indices_to_freq(
-    indices: XArrayT,
+    indices: DataT,
     *,
     ndat: int | None = ...,
-) -> XArrayT: ...
+) -> DataT: ...
 @overload
 def indices_to_freq(
     indices: ArrayLike,
@@ -245,10 +245,10 @@ def indices_to_freq(
 
 
 def indices_to_freq(
-    indices: ArrayLike | XArrayT,
+    indices: ArrayLike | DataT,
     *,
     ndat: int | None = None,
-) -> NDArray[IntDTypeT] | XArrayT:
+) -> NDArray[IntDTypeT] | DataT:
     """
     Convert indices to frequency array.
 
@@ -259,7 +259,7 @@ def indices_to_freq(
         # assume dims are in order (rep, dim)
         rep_dim, dim = indices.dims
         ndat = ndat or indices.sizes[dim]
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             indices_to_freq,
             indices,
             input_core_dims=[[rep_dim, dim]],
@@ -339,15 +339,15 @@ def select_ndat(
 
 # * General frequency table generation.
 def _validate_resample_array(
-    x: ArrayLike | XArrayT,
+    x: ArrayLike | DataT,
     ndat: int,
     nrep: int | None,
     is_freq: bool,
     check: bool = True,
     dtype: DTypeLike = np.int64,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     if is_xarray(x):
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _validate_resample_array,
             x,
             kwargs={
@@ -386,7 +386,7 @@ def _validate_resample_array(
 
 
 def _randsamp_freq_dataarray_or_dataset(
-    data: XArrayT,
+    data: DataT,
     *,
     nrep: int,
     ndat: int,
@@ -398,7 +398,7 @@ def _randsamp_freq_dataarray_or_dataset(
     mom_ndim: Mom_NDim | None = None,
     mom_dims: MomDims | None = None,
     rng: RngTypes | None = None,
-) -> xr.DataArray | XArrayT:
+) -> xr.DataArray | DataT:
     """Create a resampling DataArray or Dataset."""
     dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)[1]
     # make sure to validate rng here in case call multiple have dataset...
@@ -435,12 +435,12 @@ def _randsamp_freq_dataarray_or_dataset(
 @docfiller.decorate
 def randsamp_freq(
     *,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = None,
-    indices: ArrayLike | xr.DataArray | XArrayT | None = None,
+    freq: ArrayLike | xr.DataArray | DataT | None = None,
+    indices: ArrayLike | xr.DataArray | DataT | None = None,
     ndat: int | None = None,
     nrep: int | None = None,
     nsamp: int | None = None,
-    data: ArrayLike | XArrayT | None = None,
+    data: ArrayLike | DataT | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
@@ -450,7 +450,7 @@ def randsamp_freq(
     rng: RngTypes | None = None,
     dtype: DTypeLike = np.int64,
     check: bool = False,
-) -> NDArrayAny | xr.DataArray | XArrayT:
+) -> NDArrayAny | xr.DataArray | DataT:
     """
     Convenience function to create frequency table for resampling.
 
@@ -602,13 +602,13 @@ def _select_nrep(
 # ** overloads
 @overload
 def resample_data(
-    data: XArrayT,
+    data: DataT,
     *,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    freq: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleDataKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array no out or dtype
 @overload
 def resample_data(
@@ -654,10 +654,10 @@ def resample_data(
 # ** Public api
 @docfiller.decorate
 def resample_data(  # noqa: PLR0913
-    data: ArrayLike | XArrayT,
+    data: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim = 1,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = None,
+    freq: ArrayLike | xr.DataArray | DataT | None = None,
     nrep: int | None = None,
     rng: RngTypes | None = None,
     paired: bool = True,
@@ -675,7 +675,7 @@ def resample_data(  # noqa: PLR0913
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Resample data according to frequency table.
 
@@ -732,7 +732,7 @@ def resample_data(  # noqa: PLR0913
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_data,
             data,
             freq,
@@ -834,14 +834,14 @@ def _resample_data(
 # ** overloads
 @overload
 def resample_vals(
-    x: XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    freq: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array
 @overload
 def resample_vals(
@@ -891,11 +891,11 @@ def resample_vals(
 # ** public api
 @docfiller.decorate
 def resample_vals(  # noqa: PLR0913
-    x: ArrayLike | XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = None,
-    freq: ArrayLike | xr.DataArray | XArrayT | None = None,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    freq: ArrayLike | xr.DataArray | DataT | None = None,
     nrep: int | None = None,
     rng: RngTypes | None = None,
     paired: bool = True,
@@ -913,7 +913,7 @@ def resample_vals(  # noqa: PLR0913
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Resample data according to frequency table.
 
@@ -995,7 +995,7 @@ def resample_vals(  # noqa: PLR0913
             x, w, *y, _freq = args
             return _resample_vals(x, w, *y, freq=_freq, **kwargs)  # type: ignore[has-type]
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
             *xargs,
             freq_validated,
@@ -1166,13 +1166,13 @@ def jackknife_freq(
 # ** overloads
 @overload
 def jackknife_data(
-    data: XArrayT,
-    data_reduced: ArrayLike | XArrayT | None = ...,
+    data: DataT,
+    data_reduced: ArrayLike | DataT | None = ...,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[JackknifeDataKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array
 @overload
 def jackknife_data(
@@ -1217,8 +1217,8 @@ def jackknife_data(
 
 @docfiller.decorate
 def jackknife_data(  # noqa: PLR0913
-    data: ArrayLike | XArrayT,
-    data_reduced: ArrayLike | XArrayT | None = None,
+    data: ArrayLike | DataT,
+    data_reduced: ArrayLike | DataT | None = None,
     *,
     mom_ndim: Mom_NDim = 1,
     axis: AxisReduce | MissingType = MISSING,
@@ -1235,7 +1235,7 @@ def jackknife_data(  # noqa: PLR0913
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Perform jackknife resample and moments data.
 
@@ -1341,7 +1341,7 @@ def jackknife_data(  # noqa: PLR0913
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [dim, *validate_mom_dims(mom_dims, mom_ndim, data)]
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_data,
             data,
             data_reduced,
@@ -1445,14 +1445,14 @@ def _jackknife_data(
 # xarray
 @overload
 def jackknife_vals(
-    x: XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
-    data_reduced: ArrayLike | XArrayT | None = ...,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    data_reduced: ArrayLike | DataT | None = ...,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[JackknifeValsKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array
 @overload
 def jackknife_vals(
@@ -1501,11 +1501,11 @@ def jackknife_vals(
 
 @docfiller.decorate
 def jackknife_vals(  # noqa: PLR0913
-    x: ArrayLike | XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    data_reduced: ArrayLike | XArrayT | None = None,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = None,
+    data_reduced: ArrayLike | DataT | None = None,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = True,
     out: NDArrayAny | None = None,
@@ -1608,7 +1608,7 @@ def jackknife_vals(  # noqa: PLR0913
             x, weight, *y, data_reduced = args
             return _jackknife_vals(x, weight, *y, data_reduced=data_reduced, **kwargs)  # type: ignore[has-type]
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
             *xargs,
             data_reduced,

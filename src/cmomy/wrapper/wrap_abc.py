@@ -43,6 +43,7 @@ if TYPE_CHECKING:
         AxisReduce,
         BlockByModes,
         Casting,
+        DataT_,
         DimsReduce,
         DTypeLikeArg,
         FloatT_,
@@ -60,11 +61,10 @@ if TYPE_CHECKING:
         RngTypes,
         SelectMoment,
         WrapRawKwargs,
-        XArrayT_,
     )
     from cmomy.core.typing_compat import Self, Unpack
     from cmomy.factory import Pusher
-    from cmomy.wrapper import CentralMomentsArray, CentralMomentsXArray
+    from cmomy.wrapper import CentralMomentsArray, CentralMomentsData
 
 
 @docfiller.decorate  # noqa: PLR0904
@@ -962,7 +962,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         ...     axis=0,
         ... ).to_x(dims="rec")
         >>> da
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rec: 3, mom_0: 4)> Size: 96B
         array([[ 1.0000e+01,  5.2485e-01,  1.1057e-01, -4.6282e-03],
                [ 1.0000e+01,  5.6877e-01,  6.8876e-02, -1.2745e-02],
@@ -978,7 +978,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         ...     freq=freq,
         ... )
         >>> da_resamp
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
         array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
                [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
@@ -991,7 +991,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         >>> indices = cmomy.resample.freq_to_indices(freq)
         >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
         array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
                [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
@@ -1299,13 +1299,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @classmethod
     def from_vals(
         cls,
-        x: XArrayT_,
-        *y: ArrayLike | xr.DataArray | XArrayT_,
-        weight: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
+        x: DataT_,
+        *y: ArrayLike | xr.DataArray | DataT_,
+        weight: ArrayLike | xr.DataArray | DataT_ | None = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
         **kwargs: Unpack[ReduceValsKwargs],
-    ) -> CentralMomentsXArray[XArrayT_]: ...
+    ) -> CentralMomentsData[DataT_]: ...
     @overload
     @classmethod
     def from_vals(
@@ -1355,10 +1355,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @docfiller.decorate
     def from_vals(
         cls,
-        x: ArrayLike | XArrayT_,
-        *y: ArrayLike | xr.DataArray | XArrayT_,
+        x: ArrayLike | DataT_,
+        *y: ArrayLike | xr.DataArray | DataT_,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
+        weight: ArrayLike | xr.DataArray | DataT_ | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         mom_dims: MomDims | None = None,
@@ -1456,14 +1456,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @classmethod
     def from_resample_vals(
         cls,
-        x: XArrayT_,
-        *y: ArrayLike | xr.DataArray | XArrayT_,
-        weight: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
-        freq: ArrayLike | xr.DataArray | XArrayT_ | None = ...,
+        x: DataT_,
+        *y: ArrayLike | xr.DataArray | DataT_,
+        weight: ArrayLike | xr.DataArray | DataT_ | None = ...,
+        freq: ArrayLike | xr.DataArray | DataT_ | None = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
         **kwargs: Unpack[ResampleValsKwargs],
-    ) -> CentralMomentsXArray[XArrayT_]: ...
+    ) -> CentralMomentsData[DataT_]: ...
     @overload
     @classmethod
     def from_resample_vals(
@@ -1517,13 +1517,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @docfiller.decorate
     def from_resample_vals(  # noqa: PLR0913
         cls,
-        x: ArrayLike | XArrayT_,
-        *y: ArrayLike | xr.DataArray | XArrayT_,
+        x: ArrayLike | DataT_,
+        *y: ArrayLike | xr.DataArray | DataT_,
         mom: Moments,
-        weight: ArrayLike | xr.DataArray | XArrayT_ | None = None,
+        weight: ArrayLike | xr.DataArray | DataT_ | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        freq: ArrayLike | xr.DataArray | XArrayT_ | None = None,
+        freq: ArrayLike | xr.DataArray | DataT_ | None = None,
         nrep: int | None = None,
         rng: RngTypes | None = None,
         paired: bool = True,
@@ -1623,12 +1623,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @classmethod
     def from_raw(
         cls,
-        raw: XArrayT_,
+        raw: DataT_,
         *,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapRawKwargs],
-    ) -> CentralMomentsXArray[XArrayT_]: ...
+    ) -> CentralMomentsData[DataT_]: ...
     @overload
     @classmethod
     def from_raw(

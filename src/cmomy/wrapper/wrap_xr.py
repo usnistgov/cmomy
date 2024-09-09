@@ -47,6 +47,7 @@ if TYPE_CHECKING:
         CentralMomentsDataArray,
         CentralMomentsDataset,
         CoordsPolicy,
+        CoordsType,
         Dims,
         DimsReduce,
         DimsType,
@@ -61,14 +62,13 @@ if TYPE_CHECKING:
         MomentsStrict,
         NameType,
         NDArrayAny,
-        XArrayCoordsType,
     )
     from cmomy.core.typing_compat import Self
     from cmomy.wrapper.wrap_np import CentralMomentsArray
 
 
 from cmomy.core.docstrings import docfiller_xcentral as docfiller
-from cmomy.core.typing import XArrayT
+from cmomy.core.typing import DataT
 
 from .wrap_abc import CentralMomentsABC
 
@@ -77,7 +77,7 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
-class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
+class CentralMomentsData(CentralMomentsABC[DataT]):
     """
     Central moments wrapper of {DataArray} or {Dataset} objects.
 
@@ -92,7 +92,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
     def __init__(
         self,
-        obj: XArrayT,
+        obj: DataT,
         *,
         mom_ndim: Mom_NDim = 1,
         mom_dims: MomDims | None = None,
@@ -145,7 +145,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         For wrapped ``Dataset``, return a subset of variables.
 
-        The selection is wrapped with ``CentralMomentsXArray``.
+        The selection is wrapped with ``CentralMomentsData``.
         """
         obj: xr.DataArray | xr.Dataset = self._obj[key]  # pyright: ignore[reportUnknownVariableType]
         if not contains_dims(obj, self._mom_dims):  # pyright: ignore[reportUnknownArgumentType]
@@ -160,7 +160,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         )
 
     # ** Create/copy/new ------------------------------------------------------
-    def _new_like(self, obj: XArrayT) -> Self:
+    def _new_like(self, obj: DataT) -> Self:
         return type(self)(
             obj=obj,
             mom_ndim=self._mom_ndim,
@@ -171,7 +171,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @docfiller_inherit_abc()
     def new_like(  # type: ignore[override]
         self,
-        obj: ArrayLike | XArrayT | Mapping[Any, Any] | None = None,
+        obj: ArrayLike | DataT | Mapping[Any, Any] | None = None,
         *,
         copy: bool | None = None,
         deep: bool = True,
@@ -194,7 +194,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         """
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
-        obj_: XArrayT
+        obj_: DataT
         if obj is None:
             # TODO(wpk): different type for dtype in xarray (can be a mapping...)
             # Also can probably speed this up by validating dtype here...
@@ -206,7 +206,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             )
 
         if type(self._obj) is type(obj):
-            obj_ = cast("XArrayT", obj)
+            obj_ = cast("DataT", obj)
         else:
             obj_ = self._obj.copy(data=obj)  # type: ignore[arg-type]
 
@@ -293,7 +293,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @docfiller_inherit_abc()
     def push_data(
         self,
-        data: XArrayT | ArrayLike,
+        data: DataT | ArrayLike,
         *,
         scale: ArrayLike | None = None,
         casting: Casting = "same_kind",
@@ -351,7 +351,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @docfiller_inherit_abc()
     def push_datas(
         self,
-        datas: XArrayT | ArrayLike,
+        datas: DataT | ArrayLike,
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
@@ -417,9 +417,9 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @docfiller_inherit_abc()
     def push_val(
         self,
-        x: ArrayLike | XArrayT,
-        *y: ArrayLike | xr.DataArray | XArrayT,
-        weight: ArrayLike | xr.DataArray | XArrayT | None = None,
+        x: ArrayLike | DataT,
+        *y: ArrayLike | xr.DataArray | DataT,
+        weight: ArrayLike | xr.DataArray | DataT | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = False,
         keep_attrs: KeepAttrs = True,
@@ -470,9 +470,9 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
     @docfiller_inherit_abc()
     def push_vals(
         self,
-        x: ArrayLike | XArrayT,
-        *y: ArrayLike | xr.DataArray | XArrayT,
-        weight: ArrayLike | xr.DataArray | XArrayT | None = None,
+        x: ArrayLike | DataT,
+        *y: ArrayLike | xr.DataArray | DataT,
+        weight: ArrayLike | xr.DataArray | DataT | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         casting: Casting = "same_kind",
@@ -609,9 +609,9 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         >>> data = xr.DataArray(rng.random((6, 3)), dims=["rec", "mom"]).assign_coords(
         ...     rec=range(6)
         ... )
-        >>> da = CentralMomentsXArray(data)
+        >>> da = CentralMomentsData(data)
         >>> da
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rec: 6, mom: 3)> Size: 144B
         array([[0.637 , 0.2698, 0.041 ],
                [0.0165, 0.8133, 0.9128],
@@ -626,7 +626,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         Reduce along a single dimension
 
         >>> da.reduce(dim="rec")
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (mom: 3)> Size: 24B
         array([3.2283, 0.4867, 0.4535])
         Dimensions without coordinates: mom
@@ -636,7 +636,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         >>> by = [0, 0, 0, 1, 1, 1]
         >>> da.reduce(dim="rec", by=by, coords_policy="first")
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rec: 2, mom: 3)> Size: 48B
         array([[1.2601, 0.4982, 0.3478],
                [1.9681, 0.4793, 0.521 ]])
@@ -648,7 +648,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         uses the first coordinate a group is observed.
 
         >>> da.reduce(dim="rec", by=by, coords_policy="group", groups=["a", "b"])
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rec: 2, mom: 3)> Size: 48B
         array([[1.2601, 0.4982, 0.3478],
                [1.9681, 0.4793, 0.521 ]])
@@ -660,7 +660,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         >>> dag = da.assign_coords(group_coord=("rec", by))
         >>> dag
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rec: 6, mom: 3)> Size: 144B
         array([[0.637 , 0.2698, 0.041 ],
                [0.0165, 0.8133, 0.9128],
@@ -674,7 +674,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         Dimensions without coordinates: mom
 
         >>> dag.reduce(dim="rec", by="group_coord")
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rec: 2, mom: 3)> Size: 48B
         array([[1.2601, 0.4982, 0.3478],
                [1.9681, 0.4793, 0.521 ]])
@@ -687,7 +687,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         Block averaging:
 
         >>> da.reduce(block=3, dim="rec")
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rec: 2, mom: 3)> Size: 48B
         array([[1.2601, 0.4982, 0.3478],
                [1.9681, 0.4793, 0.521 ]])
@@ -798,7 +798,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         dims: DimsType = None,
         mom_dims: MomDims | None = None,
         attrs: AttrsType = None,
-        coords: XArrayCoordsType = None,
+        coords: CoordsType = None,
         name: NameType = None,
         template: xr.DataArray | None = None,
     ) -> CentralMomentsDataArray:
@@ -867,7 +867,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         Returns
         -------
-        CentralMomentsXArray
+        CentralMomentsData
             New object wrapping Dataset.
 
         See Also
@@ -881,7 +881,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
             dim=dim, name=name, promote_attrs=promote_attrs
         ).transpose(..., *self._mom_dims)
 
-        # NOTE(wpk): could fix this using CentralMomentsXArray(....)
+        # NOTE(wpk): could fix this using CentralMomentsData(....)
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
             mom_ndim=self._mom_ndim,
@@ -911,7 +911,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         Returns
         -------
-        CentralMomentsXArray
+        CentralMomentsData
             New object wrapping DataArray
 
 
@@ -981,9 +981,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         """Interface to :meth:`xarray.DataArray.chunk` and :meth:`xarray.Dataset.chunk`"""
         return self._new_like(self._obj.chunk(*args, **kwargs))  # pyright: ignore[reportUnknownMemberType]
 
-    def assign_coords(
-        self, coords: XArrayCoordsType = None, **coords_kwargs: Any
-    ) -> Self:
+    def assign_coords(self, coords: CoordsType = None, **coords_kwargs: Any) -> Self:
         """Assign coordinates to data and return new object."""
         return self._new_like(
             self._obj.assign_coords(coords, **coords_kwargs),  # pyright: ignore[reportUnknownMemberType]
@@ -1020,7 +1018,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         Returns
         -------
-        output : CentralMomentsXArray
+        output : CentralMomentsData
             With dimensions stacked.
 
         See Also
@@ -1033,9 +1031,9 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         >>> import cmomy
         >>> rng = cmomy.random.default_rng(0)
         >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
-        >>> da = CentralMomentsXArray.from_vals(vals, mom=2, dim="rec")
+        >>> da = CentralMomentsData.from_vals(vals, mom=2, dim="rec")
         >>> da
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
         array([[[10.    ,  0.5205,  0.0452],
                 [10.    ,  0.4438,  0.0734],
@@ -1047,7 +1045,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         Dimensions without coordinates: dim_0, dim_1, mom_0
         >>> da_stack = da.stack(z=["dim_0", "dim_1"])
         >>> da_stack
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (z: 6, mom_0: 3)> Size: 144B
         array([[10.    ,  0.5205,  0.0452],
                [10.    ,  0.4438,  0.0734],
@@ -1064,7 +1062,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         And unstack
 
         >>> da_stack.unstack("z")
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
         array([[[10.    ,  0.5205,  0.0452],
                 [10.    ,  0.4438,  0.0734],
@@ -1104,7 +1102,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         Returns
         -------
-        output : CentralMomentsXArray
+        output : CentralMomentsData
             With dimensions unstacked
 
         See Also
@@ -1140,7 +1138,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         Returns
         -------
-        output : CentralMomentsXArray
+        output : CentralMomentsData
             With new index.
 
         See Also
@@ -1240,7 +1238,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         Returns
         -------
-        output : CentralMomentsXArray
+        output : CentralMomentsData
             With dimensions unstacked
 
         See Also
@@ -1255,7 +1253,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         ...     rng.random((10, 3)), axis=0, mom=2
         ... ).to_x(dims="x", coords=dict(x=list("abc")))
         >>> da
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (x: 3, mom_0: 3)> Size: 72B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5688,  0.0689],
@@ -1267,14 +1265,14 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         Select by value
 
         >>> da.sel(x="a")
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (mom_0: 3)> Size: 24B
         array([10.    ,  0.5248,  0.1106])
         Coordinates:
             x        <U1 4B 'a'
         Dimensions without coordinates: mom_0
         >>> da.sel(x=["a", "c"])
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (x: 2, mom_0: 3)> Size: 48B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5094,  0.1198]])
@@ -1286,14 +1284,14 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
         Select by position
 
         >>> da.isel(x=0)
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (mom_0: 3)> Size: 24B
         array([10.    ,  0.5248,  0.1106])
         Coordinates:
             x        <U1 4B 'a'
         Dimensions without coordinates: mom_0
         >>> da.isel(x=[0, 1])
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (x: 2, mom_0: 3)> Size: 48B
         array([[10.    ,  0.5248,  0.1106],
                [10.    ,  0.5688,  0.0689]])
@@ -1332,7 +1330,7 @@ class CentralMomentsXArray(CentralMomentsABC[XArrayT]):
 
         Returns
         -------
-        output : CentralMomentsXArray
+        output : CentralMomentsData
             With dimensions unstacked
 
         See Also

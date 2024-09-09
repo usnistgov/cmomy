@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from .wrapper import (  # noqa: TCH004
         CentralMoments,
         CentralMomentsArray,
-        CentralMomentsXArray,
+        CentralMomentsData,
         wrap,
         wrap_raw,
         wrap_reduce_vals,
@@ -51,7 +51,7 @@ else:
             "convert": ["concat"],
             "wrapper": [
                 "CentralMomentsArray",
-                "CentralMomentsXArray",
+                "CentralMomentsData",
                 "CentralMoments",
                 "zeros_like",
                 "wrap_raw",
@@ -88,7 +88,7 @@ __email__ = "wpk@nist.gov"
 __all__ = [
     "CentralMoments",
     "CentralMomentsArray",
-    "CentralMomentsXArray",
+    "CentralMomentsData",
     "__version__",
     "assign_moment",
     "bootstrap_confidence_interval",

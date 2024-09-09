@@ -64,6 +64,7 @@ if TYPE_CHECKING:
         CentralMomentsT,
         ConvertStyle,
         CumulativeKwargs,
+        DataT,
         DimsReduce,
         DTypeLikeArg,
         FloatT,
@@ -76,7 +77,6 @@ if TYPE_CHECKING:
         MomentsTypeKwargs,
         NDArrayAny,
         NDArrayT,
-        XArrayT,
     )
     from .core.typing_compat import Unpack
 
@@ -84,12 +84,12 @@ if TYPE_CHECKING:
 # * Convert between raw and central moments
 @overload
 def moments_type(
-    values_in: XArrayT,
+    values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsTypeKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array
 @overload
 def moments_type(
@@ -130,7 +130,7 @@ def moments_type(
 
 @docfiller.decorate
 def moments_type(
-    values_in: ArrayLike | XArrayT,
+    values_in: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim = 1,
     to: ConvertStyle = "central",
@@ -142,7 +142,7 @@ def moments_type(
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     r"""
     Convert between central and raw moments type.
 
@@ -202,7 +202,7 @@ def moments_type(
     mom_ndim = validate_mom_ndim(mom_ndim)
     if is_xarray(values_in):
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
             values_in,
             input_core_dims=[mom_dims],
@@ -263,12 +263,12 @@ def _moments_type(
 # * Moments to Cumulative moments
 @overload
 def cumulative(
-    values_in: XArrayT,
+    values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[CumulativeKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array
 @overload
 def cumulative(
@@ -309,7 +309,7 @@ def cumulative(
 
 @docfiller.decorate
 def cumulative(
-    values_in: ArrayLike | XArrayT,
+    values_in: ArrayLike | DataT,
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
@@ -325,7 +325,7 @@ def cumulative(
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Convert between moments array and cumulative moments array.
 
@@ -385,7 +385,7 @@ def cumulative(
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, values_in)]]
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _cumulative,
             values_in,
             input_core_dims=core_dims,
@@ -498,11 +498,11 @@ def _validate_mom_moments_to_comoments(
 
 @overload
 def moments_to_comoments(
-    values: XArrayT,
+    values: DataT,
     *,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array
 @overload
 def moments_to_comoments(
@@ -531,7 +531,7 @@ def moments_to_comoments(
 
 @docfiller.decorate
 def moments_to_comoments(
-    values: ArrayLike | XArrayT,
+    values: ArrayLike | DataT,
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = None,
@@ -541,7 +541,7 @@ def moments_to_comoments(
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Convert from moments to comoments data.
 
@@ -622,7 +622,7 @@ def moments_to_comoments(
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             values = values.rename({old_name: mom_dim_in})
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_to_comoments,
             values,
             input_core_dims=[[mom_dim_in]],
@@ -673,12 +673,12 @@ def concat(
 ) -> CentralMomentsT: ...
 @overload
 def concat(
-    arrays: Iterable[XArrayT],
+    arrays: Iterable[DataT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> XArrayT: ...
+) -> DataT: ...
 @overload
 def concat(
     arrays: Iterable[NDArrayT],
@@ -691,33 +691,33 @@ def concat(
 
 @docfiller.decorate  # type: ignore[arg-type]
 def concat(
-    arrays: Iterable[NDArrayT] | Iterable[XArrayT] | Iterable[CentralMomentsT],
+    arrays: Iterable[NDArrayT] | Iterable[DataT] | Iterable[CentralMomentsT],
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     **kwargs: Any,
-) -> NDArrayT | XArrayT | CentralMomentsT:
+) -> NDArrayT | DataT | CentralMomentsT:
     """
     Concatenate moments objects.
 
     Parameters
     ----------
-    arrays : Iterable of ndarray or DataArray or CentralMomentsArray or CentralMomentsXArray
+    arrays : Iterable of ndarray or DataArray or CentralMomentsArray or CentralMomentsData
         Central moments objects to combine.
     axis : int, optional
         Axis to concatenate along. If specify axis for
-        :class:`~xarray.DataArray` or :class:`~.CentralMomentsXArray` input objects
+        :class:`~xarray.DataArray` or :class:`~.CentralMomentsData` input objects
         with out ``dim``, then determine ``dim`` from ``dim =
         first.dims[axis]`` where ``first`` is the first item in ``arrays``.
     dim : str, optional
         Dimension to concatenate along (used for :class:`~xarray.DataArray` and
-        :class:`~.CentralMomentsXArray` objects only)
+        :class:`~.CentralMomentsData` objects only)
     **kwargs
         Extra arguments to :func:`numpy.concatenate` or :func:`xarray.concat`.
 
     Returns
     -------
-    output : ndarray or DataArray or CentralMomentsArray or CentralMomentsXArray
+    output : ndarray or DataArray or CentralMomentsArray or CentralMomentsData
         Concatenated object.  Type is the same as the elements of ``arrays``.
 
     Examples
@@ -762,7 +762,7 @@ def concat(
     Dimensions without coordinates: new, a, b, mom
 
 
-    You can also concatenate :class:`~.CentralMomentsArray` and :class:`~.CentralMomentsXArray` objects
+    You can also concatenate :class:`~.CentralMomentsArray` and :class:`~.CentralMomentsData` objects
 
     >>> cx = cmomy.CentralMomentsArray(x)
     >>> cy = cmomy.CentralMomentsArray(y)
@@ -774,10 +774,10 @@ def concat(
            [[ 2.,  3.],
             [-2., -3.]]])
 
-    >>> dcx = cmomy.CentralMomentsXArray(dx)
-    >>> dcy = cmomy.CentralMomentsXArray(dy)
+    >>> dcx = cmomy.CentralMomentsData(dx)
+    >>> dcy = cmomy.CentralMomentsData(dy)
     >>> concat((dcx, dcy), dim="new")
-    <CentralMomentsXArray(mom_ndim=1)>
+    <CentralMomentsData(mom_ndim=1)>
     <xarray.DataArray (new: 2, a: 2, b: 1, mom: 2)> Size: 64B
     array([[[[ 0.,  1.]],
     <BLANKLINE>
@@ -807,7 +807,7 @@ def concat(
         if dim is MISSING or dim is None or dim in first.dims:
             axis, dim = select_axis_dim(first, axis=axis, dim=dim, default_axis=0)
         # otherwise, assume adding a new dimension...
-        return cast("XArrayT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
+        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
 
     return type(first)(  # type: ignore[call-arg, return-value]
         concat(

@@ -28,7 +28,7 @@ from numpy.typing import ArrayLike, NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
-    from cmomy.wrapper import CentralMomentsArray, CentralMomentsXArray  # noqa: F401
+    from cmomy.wrapper import CentralMomentsArray, CentralMomentsData  # noqa: F401
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
@@ -42,17 +42,16 @@ if TYPE_CHECKING:
 
 
 # * CentralMoments types ------------------------------------------------------
-CentralMomentsDataArray: TypeAlias = "CentralMomentsXArray[xr.DataArray]"
-CentralMomentsDataset: TypeAlias = "CentralMomentsXArray[xr.Dataset]"
-CentralMomentsDataAny: TypeAlias = "CentralMomentsXArray[Any]"
+
+CentralMomentsDataArray: TypeAlias = "CentralMomentsData[xr.DataArray]"
+CentralMomentsDataset: TypeAlias = "CentralMomentsData[xr.Dataset]"
+CentralMomentsDataAny: TypeAlias = "CentralMomentsData[Any]"
 CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
 
 CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any]")
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
-CentralMomentsXArrayT = TypeVar(
-    "CentralMomentsXArrayT", bound="CentralMomentsXArray[Any]"
-)
+CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
 
 
 # * TypeVars ------------------------------------------------------------------
@@ -60,8 +59,8 @@ CentralMomentsXArrayT = TypeVar(
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
 GenArrayT_ = TypeVar("GenArrayT_", NDArray[Any], xr.DataArray, xr.Dataset)
 #: DataArray or Dataset
-XArrayT = TypeVar("XArrayT", xr.DataArray, xr.Dataset)
-XArrayT_ = TypeVar("XArrayT_", xr.DataArray, xr.Dataset)
+DataT = TypeVar("DataT", xr.DataArray, xr.Dataset)
+DataT_ = TypeVar("DataT_", xr.DataArray, xr.Dataset)
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
 
 #: TypeVar of array types with restriction
@@ -178,7 +177,7 @@ MomDims = Union[Hashable, "tuple[Hashable]", "tuple[Hashable, Hashable]"]
 MomDimsStrict = Union["tuple[Hashable]", "tuple[Hashable, Hashable]"]
 
 IndexAny: TypeAlias = "pd.Index[Any]"
-XArrayCoordsType: TypeAlias = Union[
+CoordsType: TypeAlias = Union[
     Mapping[Any, Any],
     None,
 ]

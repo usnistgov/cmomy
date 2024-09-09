@@ -345,7 +345,7 @@ docfiller_xcentral = (
         ).data
     )
     .assign(
-        klass="CentralMomentsXArray",
+        klass="CentralMomentsData",
         t_array=":class:`~xarray.DataArray` or :class:`~xarray.Dataset`",
     )
     .assign_combined_key("axis_and_dim", ["axis", "dim"])

@@ -10,7 +10,7 @@ import cmomy
 mark_simple_dataset = pytest.mark.parametrize(
     "c",
     [
-        cmomy.CentralMomentsXArray(
+        cmomy.CentralMomentsData(
             xr.Dataset(
                 {
                     "a": xr.DataArray(cmomy.random.default_rng().random((2, 3, 4))),

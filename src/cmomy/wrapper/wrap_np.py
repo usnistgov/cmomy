@@ -40,6 +40,7 @@ if TYPE_CHECKING:
         AxisReduce,
         Casting,
         CentralMomentsArrayAny,
+        CoordsType,
         DimsType,
         DTypeLikeArg,
         FloatT_,
@@ -55,10 +56,9 @@ if TYPE_CHECKING:
         WrapNPReduce,
         WrapNPResampleAndReduceKwargs,
         WrapNPTransform,
-        XArrayCoordsType,
     )
     from cmomy.core.typing_compat import Self, Unpack
-    from cmomy.wrapper.wrap_xr import CentralMomentsXArray
+    from cmomy.wrapper.wrap_xr import CentralMomentsData
 
 
 from numpy.typing import NDArray
@@ -698,7 +698,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         """
         See Also
         --------
-        CentralMomentsXArray.resample_and_reduce
+        CentralMomentsData.resample_and_reduce
 
         Examples
         --------
@@ -1096,7 +1096,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         dims: DimsType = None,
         attrs: AttrsType = None,
-        coords: XArrayCoordsType = None,
+        coords: CoordsType = None,
         name: NameType = None,
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
@@ -1195,12 +1195,12 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         dims: DimsType = None,
         attrs: AttrsType = None,
-        coords: XArrayCoordsType = None,
+        coords: CoordsType = None,
         name: NameType = None,
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> CentralMomentsXArray[xr.DataArray]:
+    ) -> CentralMomentsData[xr.DataArray]:
         """
         Create an :class:`xarray.DataArray` representation of underlying data.
 
@@ -1211,7 +1211,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Returns
         -------
-        output : CentralMomentsXArray
+        output : CentralMomentsData
 
         See Also
         --------
@@ -1230,7 +1230,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         Default constructor
 
         >>> da.to_x()
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
@@ -1239,7 +1239,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         Setting attributes
 
         >>> da.to_x()
-        <CentralMomentsXArray(mom_ndim=1)>
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
         array([[[10.    ,  0.6207,  0.0647],
                 [10.    ,  0.404 ,  0.1185]]])
@@ -1250,7 +1250,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 [10.    ,  0.404 ,  0.1185]]])
 
         """
-        from cmomy.wrapper.wrap_xr import CentralMomentsXArray
+        from cmomy.wrapper.wrap_xr import CentralMomentsData
 
         data = self.to_dataarray(
             dims=dims,
@@ -1261,4 +1261,4 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             template=template,
             copy=copy,
         )
-        return CentralMomentsXArray(obj=data, mom_ndim=self._mom_ndim)
+        return CentralMomentsData(obj=data, mom_ndim=self._mom_ndim)

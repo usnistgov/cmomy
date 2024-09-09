@@ -69,6 +69,7 @@ if TYPE_CHECKING:
         BlockByModes,
         Casting,
         CoordsPolicy,
+        DataT,
         DimsReduce,
         DimsReduceMult,
         DTypeLikeArg,
@@ -88,7 +89,6 @@ if TYPE_CHECKING:
         ReduceDataIndexedKwargs,
         ReduceDataKwargs,
         ReduceValsKwargs,
-        XArrayT,
     )
     from .core.typing_compat import Unpack
 
@@ -97,13 +97,13 @@ if TYPE_CHECKING:
 # ** overloads
 @overload
 def reduce_vals(
-    x: XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # array
 @overload
 def reduce_vals(
@@ -149,10 +149,10 @@ def reduce_vals(
 # TODO(wpk): add tests for keepdims...
 @docfiller.decorate
 def reduce_vals(
-    x: ArrayLike | XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = None,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduce | MissingType = MISSING,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -165,7 +165,7 @@ def reduce_vals(
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Reduce values to central (co)moments.
 
@@ -223,7 +223,7 @@ def reduce_vals(
             recast=False,
         )
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
@@ -340,12 +340,12 @@ def _reduce_vals(
 # ** overload
 @overload
 def reduce_data(
-    data: XArrayT,
+    data: DataT,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 @overload
 def reduce_data(
     data: ArrayLikeArg[FloatT],
@@ -386,7 +386,7 @@ def reduce_data(
 # ** public
 @docfiller.decorate
 def reduce_data(
-    data: ArrayLike | XArrayT,
+    data: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim = 1,
     axis: AxisReduceMult | MissingType = MISSING,
@@ -402,7 +402,7 @@ def reduce_data(
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Reduce central moments array along axis.
 
@@ -443,7 +443,7 @@ def reduce_data(
 
     if is_xarray(data):
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        xout: XArrayT
+        xout: DataT
         if use_reduce:
             xout = data.reduce(  # type: ignore[assignment]
                 _reduce_data,
@@ -713,13 +713,13 @@ def factor_by(
 # ** overload
 @overload
 def reduce_data_grouped(
-    data: XArrayT,
+    data: DataT,
     by: ArrayLike,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataGroupedKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # Array no output or dtype
 @overload
 def reduce_data_grouped(
@@ -765,7 +765,7 @@ def reduce_data_grouped(
 # ** public
 @docfiller.decorate
 def reduce_data_grouped(  # noqa: PLR0913
-    data: ArrayLike | XArrayT,
+    data: ArrayLike | DataT,
     by: ArrayLike,
     *,
     mom_ndim: Mom_NDim = 1,
@@ -783,7 +783,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Reduce data by group.
 
@@ -872,7 +872,7 @@ def reduce_data_grouped(  # noqa: PLR0913
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_grouped,
             data,
             by,
@@ -1103,12 +1103,12 @@ def _validate_index(
 # ** overload
 @overload
 def reduce_data_indexed(
-    data: XArrayT,
+    data: DataT,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataIndexedKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # Array no out or dtype
 @overload
 def reduce_data_indexed(
@@ -1150,7 +1150,7 @@ def reduce_data_indexed(
 # ** public
 @docfiller.decorate
 def reduce_data_indexed(  # noqa: PLR0913
-    data: ArrayLike | XArrayT,
+    data: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim = 1,
     index: ArrayLike,
@@ -1172,7 +1172,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Reduce data by index
 
@@ -1268,7 +1268,7 @@ def reduce_data_indexed(  # noqa: PLR0913
             group_end=group_end,
         )
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_indexed,
             data,
             input_core_dims=[core_dims],

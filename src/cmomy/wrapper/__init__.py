@@ -8,17 +8,17 @@ from .constructors import (
     zeros_like,
 )
 from .wrap_np import CentralMomentsArray
-from .wrap_xr import CentralMomentsXArray
+from .wrap_xr import CentralMomentsData
 
 #: Alias to :class:`cmomy.CentralMomentsArray`
 CentralMoments = CentralMomentsArray
-#: Alias to :class:`cmomy.CentralMomentsXArray`
-xCentralMoments = CentralMomentsXArray  # noqa: N816
+#: Alias to :class:`cmomy.CentralMomentsData`
+xCentralMoments = CentralMomentsData  # noqa: N816
 
 __all__ = [
     "CentralMoments",
     "CentralMomentsArray",
-    "CentralMomentsXArray",
+    "CentralMomentsData",
     "wrap",
     "wrap_raw",
     "wrap_reduce_vals",

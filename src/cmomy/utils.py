@@ -44,6 +44,7 @@ if TYPE_CHECKING:
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
+        DataT,
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
@@ -58,7 +59,6 @@ if TYPE_CHECKING:
         SelectMoment,
         SelectMomentKwargs,
         ValsToDataKwargs,
-        XArrayT,
     )
     from .core.typing_compat import EllipsisType, Unpack
 
@@ -221,10 +221,10 @@ def moment_indexer(
 
 @overload
 def select_moment(
-    data: XArrayT,
+    data: DataT,
     name: SelectMoment,
     **kwargs: Unpack[SelectMomentKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 @overload
 def select_moment(
     data: NDArray[ScalarT],
@@ -235,7 +235,7 @@ def select_moment(
 
 @docfiller.decorate
 def select_moment(
-    data: NDArray[ScalarT] | XArrayT,
+    data: NDArray[ScalarT] | DataT,
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim = 1,
@@ -246,7 +246,7 @@ def select_moment(
     mom_dims: MomDims | None = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArray[ScalarT] | XArrayT:
+) -> NDArray[ScalarT] | DataT:
     """
     Select specific moments for a central moments array.
 
@@ -320,7 +320,7 @@ def select_moment(
             output_sizes = None
             coords_combined = None
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _select_moment,
             data,
             input_core_dims=input_core_dims,
@@ -374,8 +374,8 @@ def _select_moment(
 # able to use **moments_kwargs....
 @overload
 def assign_moment(
-    data: XArrayT,
-    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | XArrayT] | None = None,
+    data: DataT,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = ...,
@@ -386,7 +386,7 @@ def assign_moment(
     on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
-) -> XArrayT: ...
+) -> DataT: ...
 @overload
 def assign_moment(
     data: NDArray[ScalarT],
@@ -407,8 +407,8 @@ def assign_moment(
 # TODO(wpk): dtype parameter?
 @docfiller.decorate
 def assign_moment(
-    data: NDArray[ScalarT] | XArrayT,
-    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | XArrayT] | None = None,
+    data: NDArray[ScalarT] | DataT,
+    moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
     mom_ndim: Mom_NDim,
     squeeze: bool = True,
@@ -419,7 +419,7 @@ def assign_moment(
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
-) -> NDArray[ScalarT] | XArrayT:
+) -> NDArray[ScalarT] | DataT:
     r"""
     Update weights of moments array.
 
@@ -517,7 +517,7 @@ def assign_moment(
                 # fallback
                 input_core_dims.append([])
 
-        xout: XArrayT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _assign_moment,
             data,
             *moment_kwargs.values(),
@@ -569,13 +569,13 @@ def _assign_moment(
 # * Vals -> Data
 @overload
 def vals_to_data(
-    x: XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = ...,
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
     out: NDArrayAny | xr.DataArray | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ValsToDataKwargs],
-) -> XArrayT: ...
+) -> DataT: ...
 # TODO(wpk): remove out as xr.DataArray.  Makes typing too weird...
 # out
 @overload
@@ -631,17 +631,17 @@ def vals_to_data(
 
 @docfiller.decorate
 def vals_to_data(
-    x: ArrayLike | XArrayT,
-    *y: ArrayLike | xr.DataArray | XArrayT,
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | XArrayT | None = None,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArrayAny | XArrayT:
+) -> NDArrayAny | DataT:
     """
     Convert `values` to `central moments array`.
 
