@@ -30,6 +30,7 @@ if TYPE_CHECKING:
 
 from numpy.typing import NDArray
 
+# So can exclude from coverage
 pytestmark = pytest.mark.typing
 
 
@@ -5669,7 +5670,7 @@ def test_cmomy_CentralMomentsArray_from_raw() -> None:
     )
 
 
-def test_cmomy_CentralMomentsXArray() -> None:
+def test_cmomy_CentralMomentsData() -> None:
     check(
         assert_type(
             cmomy.CentralMomentsData(data_dataarray),

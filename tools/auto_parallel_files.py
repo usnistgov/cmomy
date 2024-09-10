@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO, format=FORMAT)
 logger = logging.getLogger("make_parallel_files")
 
 
-def write_file(path_in: Path, path_out: Path) -> None:
+def _write_file(path_in: Path, path_out: Path) -> None:
     _parallel_line = re.compile(r"^_PARALLEL.*?=.*?False(.*)")
     with path_in.open() as f_in, path_out.open("w") as f_out:
         for line in f_in:
@@ -33,7 +33,7 @@ def write_file(path_in: Path, path_out: Path) -> None:
 
 
 if __name__ == "__main__":
-    src = Path(__file__).parent.resolve()
+    src = Path(__file__).parent.parent.resolve() / "src" / "cmomy" / "_lib"
 
     names = [
         "push",
@@ -50,5 +50,9 @@ if __name__ == "__main__":
         path_in = (src / name).with_suffix(".py")
         path_out = src / f"{name}_parallel.py"
 
+        if not path_in.exists():
+            msg = f"Missing {path_in}"
+            raise ValueError(msg)
+
         logger.info("%s to %s", path_in.name, path_out.name)
-        write_file(path_in, path_out)
+        _write_file(path_in, path_out)

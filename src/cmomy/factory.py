@@ -125,21 +125,19 @@ if TYPE_CHECKING:
     class RollingVals(Protocol):
         def __call__(
             self,
-            data_tmp: NDArray[FloatT],
+            out: NDArray[FloatT],
             window: int,
             min_count: int,
             x: NDArray[FloatT],
             w: NDArray[FloatT],
             /,
             *y: NDArray[FloatT],
-            out: NDArray[FloatT] | None = None,
             **kwargs: Any,
-        ) -> NDArray[FloatT]: ...
+        ) -> tuple[()]: ...
 
     class RollingData(Protocol):
         def __call__(
             self,
-            data_tmp: NDArray[FloatT],
             window: int,
             min_count: int,
             data: NDArray[FloatT],
@@ -151,7 +149,7 @@ if TYPE_CHECKING:
     class RollingExpVals(Protocol):
         def __call__(
             self,
-            data_tmp: NDArray[FloatT],
+            out: NDArray[FloatT],
             alpha: NDArray[FloatT],
             adjust: bool,
             min_count: int,
@@ -159,14 +157,12 @@ if TYPE_CHECKING:
             w: NDArray[FloatT],
             /,
             *y: NDArray[FloatT],
-            out: NDArray[FloatT] | None = None,
             **kwargs: Any,
-        ) -> NDArray[FloatT]: ...
+        ) -> tuple[()]: ...
 
     class RollingExpData(Protocol):
         def __call__(
             self,
-            data_tmp: NDArray[FloatT],
             alpha: NDArray[FloatT],
             adjust: bool,
             min_count: int,

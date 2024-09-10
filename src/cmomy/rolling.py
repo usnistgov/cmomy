@@ -13,7 +13,6 @@ import xarray as xr
 from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
-    dummy_array,
     get_axes_from_values,
     normalize_axis_index,
     positive_to_negative_index,
@@ -23,6 +22,7 @@ from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
     prepare_data_for_reduction,
+    prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
     xprepare_out_for_resample_vals,
@@ -62,6 +62,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrder,
+        ArrayOrderCF,
         AxesGUFunc,
         AxisReduce,
         AxisReduceMult,
@@ -485,8 +486,7 @@ def _rolling_data(
         data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
 
     axes = [
-        # add in data_tmp, window, count
-        tuple(range(-mom_ndim, 0)),
+        # add in window, count
         (),
         (),
         *axes_data_reduction(
@@ -497,11 +497,11 @@ def _rolling_data(
     ]
 
     min_periods = window if min_periods is None else min_periods
+
     out = factory_rolling_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
-        dummy_array(data.shape[-mom_ndim:], dtype=dtype, broadcast=False),
         window,
         min_periods,
         data,
@@ -509,7 +509,7 @@ def _rolling_data(
         axes=axes,
         casting=casting,
         order=order,
-        signature=(dtype, np.int64, np.int64, dtype, dtype),
+        signature=(np.int64, np.int64, dtype, dtype),
     )
 
     if shift is not None:
@@ -587,7 +587,7 @@ def rolling_vals(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderCF = None,
     parallel: bool | None = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
@@ -619,7 +619,7 @@ def rolling_vals(  # noqa: PLR0913
     {out}
     {dtype}
     {casting}
-    {order}
+    {order_cf}
     {parallel}
     {dim}
     {mom_dims}
@@ -741,7 +741,7 @@ def _rolling_vals(
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderCF,
     parallel: bool | None,
     fastpath: bool = False,
 ) -> NDArrayAny:
@@ -758,31 +758,38 @@ def _rolling_vals(
             for arg, axes in zip(args, axes_args)
         )
 
+    out = prepare_out_from_values(
+        out,
+        *args,
+        mom=mom,
+        axis_neg=axis_neg,
+        axis_new_size=args[0].shape[axis_neg],
+        dtype=dtype,
+        order=order,
+    )
+
     axes: AxesGUFunc = [
-        # data_tmp
-        tuple(range(-mom_ndim, 0)),
+        # out
+        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
         # window, min_periods
         (),
         (),
         # args
         *axes_args,
-        # out
-        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
     ]
 
-    out = factory_rolling_vals(
+    factory_rolling_vals(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, args[0].size * mom_ndim),
     )(
-        dummy_array(mom_to_mom_shape(mom), dtype=dtype, broadcast=False),
+        out,
         window,
         window if min_periods is None else min_periods,
         *args,
-        out=out,
         axes=axes,
         casting=casting,
         order=order,
-        signature=(dtype, np.int64, np.int64, *(dtype,) * (len(args) + 1)),
+        signature=(dtype, np.int64, np.int64, *(dtype,) * len(args)),
     )
 
     if shift is not None:
@@ -1058,8 +1065,7 @@ def _rolling_exp_data(
 
     # axes for reduction
     axes = [
-        # add in data_tmp, alpha, adjust, min_periods
-        tuple(range(-mom_ndim, 0)),
+        # add alpha, adjust, min_periods
         (alpha_axis,),
         (),
         (),
@@ -1075,7 +1081,6 @@ def _rolling_exp_data(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, data.size),
     )(
-        dummy_array(data.shape[-mom_ndim:], dtype=dtype, broadcast=False),
         alpha,
         adjust,
         min_periods,
@@ -1084,7 +1089,7 @@ def _rolling_exp_data(
         axes=axes,
         casting=casting,
         order=order,
-        signature=(dtype, dtype, np.bool_, np.int64, dtype, dtype),
+        signature=(dtype, np.bool_, np.int64, dtype, dtype),
     )
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)
@@ -1162,7 +1167,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderCF = None,
     parallel: bool | None = None,
     # xarray specific
     dim: DimsReduce | MissingType = MISSING,
@@ -1196,7 +1201,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     {out}
     {dtype}
     {casting}
-    {order}
+    {order_cf}
     {parallel}
     {dim}
     {mom_dims}
@@ -1319,7 +1324,7 @@ def _rolling_exp_vals(
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderCF,
     parallel: bool | None,
     fastpath: bool = False,
 ) -> NDArrayAny:
@@ -1327,12 +1332,21 @@ def _rolling_exp_vals(
     if not fastpath:
         # reapply dtype in case calling with `apply_ufunc` with a dataset...
         dtype = select_dtype(x, out=out, dtype=dtype)
-        alpha, *args = (np.asarray(a, dtype=dtype) for a in (alpha, *args))
+
+    out = prepare_out_from_values(
+        out,
+        *args,
+        mom=mom,
+        axis_neg=axis_neg,
+        axis_new_size=args[0].shape[axis_neg],
+        dtype=dtype,
+        order=order,
+    )
 
     axes_alpha, *axes_args = get_axes_from_values(alpha, *args, axis_neg=axis_neg)
     axes = [
-        # data_tmp
-        tuple(range(-mom_ndim, 0)),
+        # out
+        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
         # alpha
         axes_alpha,
         # adjust, min_periods
@@ -1340,25 +1354,22 @@ def _rolling_exp_vals(
         (),
         # x, w, *y
         *axes_args,
-        # out
-        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
     ]
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
-    out = factory_rolling_exp_vals(
+    factory_rolling_exp_vals(
         mom_ndim=mom_ndim,
         parallel=parallel_heuristic(parallel, x.size * mom_ndim),
     )(
-        dummy_array(mom_to_mom_shape(mom), dtype=x.dtype, broadcast=False),
+        out,
         alpha,
         adjust,
         min_periods,
         *args,
-        out=out,
         axes=axes,
         casting=casting,
         order=order,
-        signature=(dtype, dtype, np.bool_, np.int64, *(dtype,) * (len(args) + 1)),
+        signature=(dtype, dtype, np.bool_, np.int64, *(dtype,) * len(args)),
     )
 
     return _optional_zero_missing_weight(out, mom_ndim, zero_missing_weights)

@@ -47,7 +47,7 @@ dependencies = [
     "xarray>=2023.9.0",
 ]
 optional-dependencies.dev = [
-    "cmomy[dev-extras,test,typing,pipxrun,nbval,test-scipy,mypy]",
+    "cmomy[dev-extras,test,typing,uvxrun,nbval,test-scipy,mypy]",
 ]
 optional-dependencies.dev-complete = [
     "cmomy[dev,tools]",
@@ -76,19 +76,6 @@ optional-dependencies.mypy = [
 optional-dependencies.nbval = [
     "nbval",
 ]
-optional-dependencies.pipxrun = [
-    # Anything needed to run tools/pipxrun.py
-    "packaging",
-]
-optional-dependencies.pipxrun-tools = [
-    # these used solely for specking tools to be used with tools/pipxrun.py
-    "cmomy[mypy]",
-    "conda-lock>=2.5.5",
-    "grayskull>=2.5.3",
-    "nbqa>=1.8.4",
-    "pyright>=1.1.379",
-    "twine>=5.0.0",
-]
 optional-dependencies.test = [
     "pytest",
     "pytest-cov",
@@ -100,20 +87,33 @@ optional-dependencies.test-scipy = [
     "scipy; python_version=='3.11'",
 ]
 optional-dependencies.tools = [
-    "pipx",
     "pre-commit",
     "scriv",
+    "uv",
 ]
 optional-dependencies.typing = [
-    "cmomy[pipxrun]",
+    "cmomy[uvxrun]",
     "pandas-stubs",
     "pytest",
+]
+optional-dependencies.uvxrun = [
+    # Anything needed to run tools/uvxrun.py
+    "packaging",
+]
+optional-dependencies.uvxrun-tools = [
+    # these used solely for specking tools to be used with tools/uvxrun.py
+    "cmomy[mypy]",
+    "conda-lock>=2.5.5",
+    "grayskull>=2.5.3",
+    "nbqa>=1.8.4",
+    "pyright>=1.1.379",
+    "twine>=5.0.0",
 ]
 urls.Documentation = "https://pages.nist.gov/cmomy/"
 urls.Homepage = "https://github.com/usnistgov/cmomy"
 
 optional-depedencies.dev = [
-    "cmomy[dev-extras,test,typing,pipxrun,nbval]",
+    "cmomy[dev-extras,test,typing,uvxrun,nbval]",
 ]
 
 [tool.hatch.version]
@@ -145,8 +145,7 @@ extend-exclude = [
     "dist-conda",
     "examples/archived",
     "tests/test_typing_auto.py",
-    "tools/create_test_typing_auto.py",
-    # "tests/",
+    # "tests/"
     # "src/cmomy/tests",
 ]
 fix = true
@@ -361,15 +360,7 @@ omit = [
     "*/vendored/*",
     "*/options.py",
     # No great way to test coverage of guvectorized functions...
-    "*/_lib/_push*.py",
-    "*/_lib/push*.py",
-    "*/_lib/convert*.py",
-    "*/_lib/decorators.py",
-    "*/_lib/indexed*.py",
-    "*/_lib/rolling*.py",
-    "*/_lib/make_parallel_files.py",
-    "*/_lib/resample*.py",
-    "*/_lib/utils.py",
+    "*/_lib/*.py",
     "*/core/typing_nested_sequence.py",
 ]
 include = [
@@ -455,6 +446,7 @@ exclude = [
     ".venv/**",
     "**/.mypy_cache",
     "**/.numba_cache",
+    # "tools/auto_test_typing.py",
 ]
 # strict = ["src", "tests", "noxfile.py", "tools/*.py"]
 pythonVersion = "3.11"
@@ -521,8 +513,8 @@ reqs = [
 base = false
 style = "requirements"
 
-[tool.pyproject2conda.envs.pipxrun-tools]
-extras = "pipxrun-tools"
+[tool.pyproject2conda.envs.uvxrun-tools]
+extras = "uvxrun-tools"
 base = false
 style = "requirements"
 

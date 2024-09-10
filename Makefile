@@ -128,30 +128,30 @@ requirements/%.txt: pyproject.toml
 ################################################################################
 # * Typing
 ################################################################################
-PIPXRUN = python tools/pipxrun.py
-PIPXRUN_OPTS = -r requirements/lock/py311-pipxrun-tools.txt -v
+UVXRUN = python tools/uvxrun.py
+UVXRUN_OPTS = -r requirements/lock/py311-uvxrun-tools.txt -v
 .PHONY: mypy pyright
 mypy: ## Run mypy
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy
+	$(UVXRUN) $(UVXRUN_OPTS) -c mypy
 pyright: ## Run pyright
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c pyright
+	$(UVXRUN) $(UVXRUN_OPTS) -c pyright
 pyright-watch: ## Run pyright in watch mode
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c "pyright -w"
+	$(UVXRUN) $(UVXRUN_OPTS) -c "pyright -w"
 typecheck: ## Run mypy and pyright
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy -c pyright
+	$(UVXRUN) $(UVXRUN_OPTS) -c mypy -c pyright
 
 .PHONY: typecheck-tools
 typecheck-tools:
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c "mypy --strict" -c pyright -- noxfile.py tools/*.py
+	$(UVXRUN) $(UVXRUN_OPTS) -c "mypy --strict" -c pyright -- noxfile.py tools/*.py
 
 
 
 mypy-typing-tests: ## Run mypy
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy tmp/typing-tests/*.py
+	$(UVXRUN) $(UVXRUN_OPTS) -c mypy tmp/typing-tests/*.py
 pyright-typing-tests: ## Run pyright
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c pyright tmp/typing-tests/*.py
+	$(UVXRUN) $(UVXRUN_OPTS) -c pyright tmp/typing-tests/*.py
 typecheck-typing-tests: ## Run mypy and pyright
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c mypy -c pyright tmp/typing-tests/*.py
+	$(UVXRUN) $(UVXRUN_OPTS) -c mypy -c pyright tmp/typing-tests/*.py
 
 
 
@@ -169,7 +169,7 @@ docs-clean: ## clean docs
 	rm -rf docs/reference/generated/*
 docs-clean-build: docs-clean docs-build ## clean and build
 docs-release: ## release docs.
-	$(PIPXRUN) $(PIPXRUN_OPTS) -c "ghp-import -o -n -m \"update docs\" -b nist-pages" docs/_build/html
+	$(UVXRUN) $(UVXRUN_OPTS) -c "ghp-import -o -n -m \"update docs\" -b nist-pages" docs/_build/html
 
 .PHONY: docs-open docs-spelling docs-livehtml docs-linkcheck
 docs-open: ## open the build
@@ -218,7 +218,7 @@ nox-list:
 check-release: ## run twine check on dist
 	$(NOX) -s publish -- +p check
 check-wheel: ## Run check-wheel-contents (requires check-wheel-contents to be installed)
-	$(PIPXRUN) -c check-wheel-contents dist/*.whl
+	$(UVXRUN) -c check-wheel-contents dist/*.whl
 check-dist: check-release check-wheel ## Run check-release and check-wheel
 .PHONY:  list-wheel list-sdist list-dist
 list-wheel: ## Cat out contents of wheel
@@ -231,7 +231,7 @@ list-dist: list-wheel list-sdist ## Cat out sdist and wheel contents
 # * NOTEBOOK typing/testing
 ################################################################################
 NOTEBOOKS ?= examples/usage
-NBQA = $(PIPXRUN) $(PIPXRUN_OPTS) -c "nbqa --nbqa-shell \"$(PIPXRUN)\" $(NOTEBOOKS) $(PIPXRUN_OPTS) $(_NBQA)"
+NBQA = $(UVXRUN) $(UVXRUN_OPTS) -c "nbqa --nbqa-shell \"$(UVXRUN)\" $(NOTEBOOKS) $(UVXRUN_OPTS) $(_NBQA)"
 .PHONY: mypy-notebook pyright-notebook typecheck-notebook test-notebook
 mypy-notebook: _NBQA = -c mypy
 mypy-notebook: ## run nbqa mypy
@@ -265,10 +265,15 @@ commitizen-changelog:
 .PHONY: tuna-analyze
 tuna-import: ## Analyze load time for module
 	python -X importtime -c 'import cmomy' 2> tuna-loadtime.log
-	$(PIPXRUN) -c tuna tuna-loadtime.log
+	$(UVXRUN) -c tuna tuna-loadtime.log
 	rm tuna-loadtime.log
 
 .PHONY: test-all-cover
 test-all-cover:
 	nox -s test test-notebook -- ++test-opts --run-slow
 	nox -s test-3.11 coverage -- ++test-no-numba ++test-opts --run-slow ++test-no-numba
+
+.PHONY: auto-files
+auto-files:
+	python ./tools/auto_parallel_files.py
+	python ./tools/auto_test_typing.py

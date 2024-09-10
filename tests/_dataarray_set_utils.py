@@ -72,6 +72,10 @@ def do_bootstrap_data(data, nrep, method, **kwargs):
     return cmomy.bootstrap_confidence_interval(*args, method=method, **kwargs)
 
 
+def do_wrap(*args, **kwargs):
+    return cmomy.wrap(*args, **kwargs).obj
+
+
 def do_wrap_reduce_vals(*args, **kwargs):
     return cmomy.wrap_reduce_vals(*args, **kwargs).obj
 

@@ -21,7 +21,6 @@ numba>=0.58
 numpy>1.24
 packaging
 pandas-stubs
-pipx
 pre-commit
 pytest
 pytest-accept
@@ -31,4 +30,5 @@ pytest-xdist
 scipy;python_version=="3.11"
 scriv
 typing-extensions
+uv
 xarray>=2023.9.0

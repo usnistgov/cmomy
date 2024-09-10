@@ -1,15 +1,20 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-"""Some simple tests for factory methods of xCentral"""
+"""
+Some simple tests for factory methods of xCentral
+
+Think most of this is covered by tests_xarray_support.....
+"""
 
 from __future__ import annotations
 
+from functools import partial
 from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
 import xarray as xr
 
-from cmomy import CentralMoments, resample, xCentralMoments
+from cmomy import CentralMomentsArray, CentralMomentsData, resample
 
 if TYPE_CHECKING:
     from typing import Callable
@@ -55,7 +60,7 @@ def xy(shape, mom_tuple, rng):
 
 @my_fixture()
 def dc(xy, mom, axis):
-    return CentralMoments.from_vals(*xy, mom=mom, weight=None, axis=axis)
+    return CentralMomentsArray.from_vals(*xy, mom=mom, weight=None, axis=axis)
 
 
 @my_fixture()
@@ -70,83 +75,42 @@ def test_CS(dc, dcx) -> None:
 def test_init(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    t = CentralMoments(dc.to_numpy(), mom_ndim=mom_ndim)
+    t = CentralMomentsArray(dc.to_numpy(), mom_ndim=mom_ndim)
 
     dims = [f"hello_{i}" for i in range(len(dc.obj.shape))]
-    o1 = CentralMoments(dc.obj, mom_ndim=mom_ndim).to_x(dims=dims)
+    o1 = CentralMomentsArray(dc.obj, mom_ndim=mom_ndim).to_x(dims=dims)
 
     np.testing.assert_allclose(t, o1)
 
     # create from xarray?
-    o2 = xCentralMoments(dcx.obj.rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim)
+    o2 = CentralMomentsData(
+        dcx.obj.rename(dict(zip(dcx.dims, dims))), mom_ndim=mom_ndim
+    )
     xr.testing.assert_allclose(o1.obj, o2.obj)
 
 
 def test_init_reduce(dc, dcx) -> None:
-    mom_ndim = dc.mom_ndim
-
-    for axis in range(dc.obj.ndim - dc.mom_ndim):
-        t = CentralMoments(dc.obj, mom_ndim=mom_ndim).reduce(axis=axis)
-
+    for axis in range(dc.val_ndim):
+        t = dc.reduce(axis=axis)
         dims = dcx.dims[:axis] + dcx.dims[axis + 1 :]
 
-        o1 = (
-            CentralMoments(
-                dc.obj,
-                mom_ndim=mom_ndim,
-            )
-            .reduce(axis=axis)
-            .to_x(dims=dims)
-        )
-
+        o1 = t.to_x(dims=dims)
         np.testing.assert_allclose(t, o1)
 
         dim = dcx.dims[axis]
-        o2 = xCentralMoments(dcx.obj, mom_ndim=mom_ndim).reduce(dim=dim)
-
+        o2 = dcx.reduce(dim=dim)
         xr.testing.assert_allclose(o1.obj, o2.obj)
 
 
 def test_from_raw(dc, dcx) -> None:
     mom_ndim = dc.mom_ndim
 
-    t = CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim)
-
-    o1 = CentralMoments.from_raw(dc.to_raw(), mom_ndim=mom_ndim).to_x()
-
-    np.testing.assert_allclose(t, o1)
-
-    o2 = xCentralMoments.from_raw(
+    o1 = CentralMomentsArray.from_raw(dc.to_raw(), mom_ndim=mom_ndim).to_x()
+    o2 = CentralMomentsData.from_raw(
         dcx.to_raw(),
         mom_ndim=mom_ndim,
     )
     xr.testing.assert_allclose(o1.obj, o2.obj)
-
-    if mom_ndim == 2:
-        with pytest.raises(ValueError):
-            o2 = CentralMoments.from_raw(dcx.to_raw(), mom_ndim=3)  # type: ignore[call-overload]
-
-
-def test_from_raws(dc, dcx) -> None:
-    mom_ndim = dc.mom_ndim
-
-    for axis in range(dc.obj.ndim - dc.mom_ndim):
-        # first test from raws
-        raws = dc.to_raw()
-        t = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis)
-        r = dc.reduce(axis=axis)
-
-        np.testing.assert_allclose(t.to_numpy(), r.to_numpy(), atol=1e-14)
-
-        # test xCentral
-        o1 = CentralMoments.from_raw(raws, mom_ndim=mom_ndim).reduce(axis=axis).to_x()
-
-        np.testing.assert_allclose(t, o1)
-
-        dim = dcx.dims[axis]
-        o2 = xCentralMoments.from_raw(dcx.to_raw(), mom_ndim=mom_ndim).reduce(dim=dim)
-
-        np.testing.assert_allclose(t, o2)
 
 
 def test_from_vals(xy, shape, mom) -> None:
@@ -154,22 +118,21 @@ def test_from_vals(xy, shape, mom) -> None:
     xy_xr = tuple(xr.DataArray(xx, dims=dims) for xx in xy)
 
     for axis in range(len(shape)):
-        t = CentralMoments.from_vals(*xy, axis=axis, mom=mom).to_x()
+        t = CentralMomentsArray.from_vals(*xy, axis=axis, mom=mom).to_x()
 
         # dims of output
-        o1 = CentralMoments.from_vals(
+        o1 = CentralMomentsArray.from_vals(
             *xy,
             axis=axis,
             mom=mom,
         ).to_x(dims=dims[:axis] + dims[axis + 1 :])
         np.testing.assert_allclose(t, o1)
 
-        o2 = xCentralMoments.from_vals(
+        o2 = CentralMomentsData.from_vals(
             *xy_xr,
             dim=dims[axis],
             mom=mom,
         )
-
         xr.testing.assert_allclose(o1.obj, o2.obj)
 
 
@@ -180,12 +143,12 @@ def test_from_resample_vals(xy, shape, mom) -> None:
     for axis in range(len(shape)):
         freq = resample.random_freq(nrep=10, ndat=xy[0].shape[axis])
 
-        t = CentralMoments.from_resample_vals(
+        t = CentralMomentsArray.from_resample_vals(
             *xy, freq=freq, axis=axis, mom=mom
         ).to_x()  # type : ignore
 
         # dims of output
-        o1 = CentralMoments.from_resample_vals(
+        o1 = CentralMomentsArray.from_resample_vals(
             *xy,
             axis=axis,
             mom=mom,
@@ -194,7 +157,7 @@ def test_from_resample_vals(xy, shape, mom) -> None:
 
         np.testing.assert_allclose(t, o1)
 
-        o2 = xCentralMoments.from_resample_vals(
+        o2 = CentralMomentsData.from_resample_vals(
             *xy_xr,
             dim=dims[axis],
             mom=mom,
@@ -207,75 +170,32 @@ def test_from_resample_vals(xy, shape, mom) -> None:
 keep_attrs_mark = pytest.mark.parametrize("keep_attrs", [False, True])
 
 
+@pytest.mark.parametrize(
+    "func",
+    [
+        partial(
+            CentralMomentsData.from_resample_vals, dim="rec", mom=2, nrep=10, rng=12
+        ),
+        partial(CentralMomentsData.from_vals, dim="rec", mom=2),
+    ],
+)
 @keep_attrs_mark
-def test_from_resample_vals2(keep_attrs) -> None:
+def test_from_vals_resample_vals2(keep_attrs, func) -> None:
     coords = {"a": [1], "b": [2, 3]}
     attrs = {"hello": "there"}
     x = xr.DataArray(np.zeros((10, 1, 2)), dims=("rec", "a", "b"))
     xc = x.assign_coords(coords).rename("hello").assign_attrs(attrs)
 
-    freq = resample.random_freq(nrep=10, ndat=xc.sizes["rec"])
-
-    t = xCentralMoments.from_resample_vals(
-        xc, dim="rec", mom=2, freq=freq, keep_attrs=keep_attrs
-    )
+    t = func(xc, keep_attrs=keep_attrs)
     xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
-    assert t.name == "hello"
+    if keep_attrs:
+        # edge case with from_resample_vals where `freq` is a datarray.  Name will be dropped if not keep_attrs.
+        assert t.name == "hello"
     assert t.attrs == (attrs if keep_attrs else {})
 
-    t = (
-        xCentralMoments.from_resample_vals(
-            x,
-            dim="rec",
-            mom=2,
-            freq=freq,
-        )
-        .assign_coords(coords)
-        .assign_attrs(attrs)
-        .rename("hello")
-    )
+    t = func(x).assign_coords(coords).assign_attrs(attrs).rename("hello")
     xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
-    assert t.name == "hello"
+    if keep_attrs:
+        # see above
+        assert t.name == "hello"
     assert t.attrs == attrs
-
-
-@keep_attrs_mark
-def test_from_vals2(keep_attrs) -> None:
-    coords = {"a": [1], "b": [2, 3]}
-    attrs = {"hello": "there"}
-    x = xr.DataArray(np.zeros((10, 1, 2)), dims=("rec", "a", "b"))
-    xc = x.assign_coords(coords).rename("hello").assign_attrs(attrs)
-
-    t = xCentralMoments.from_vals(xc, dim="rec", mom=2, keep_attrs=keep_attrs)
-
-    xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
-    assert t.name == "hello"
-    assert t.attrs == (attrs if keep_attrs else {})
-
-    t = (
-        xCentralMoments.from_vals(
-            x,
-            dim="rec",
-            mom=2,
-        )
-        .assign_coords(coords)
-        .assign_attrs(attrs)
-        .rename("hello")
-    )
-    xr.testing.assert_equal(t.coords.to_dataset(), xc.isel(rec=0).coords.to_dataset())
-    assert t.name == "hello"
-    assert t.attrs == attrs
-
-
-@pytest.mark.parametrize("parallel", [None])
-def test_resample_and_reduce(dc, dcx, parallel) -> None:
-    val_ndim = dc.obj.ndim - dc.mom_ndim
-    for axis in range(val_ndim):
-        freq = resample.random_freq(nrep=10, ndat=dc.val_shape[axis])
-        t = dc.resample_and_reduce(freq=freq, axis=axis, parallel=parallel)
-        o = dcx.resample_and_reduce(freq=freq, dim=dcx.dims[axis], parallel=parallel)
-
-        np.testing.assert_allclose(t, o)
-
-        dims = dcx.dims[:val_ndim]
-        assert o.dims[:val_ndim] == (*dims[:axis], "rep", *dims[axis + 1 :])

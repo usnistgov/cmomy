@@ -480,7 +480,7 @@ class RollingValsKwargs(
     _ValsKwargs,
     _RollingKwargs,
     _MoveAxisToEndKwargs,
-    _OrderKwargs,
+    _OrderCFKwargs,
 ):
     """Extra parameters to :func:`.rolling.rolling_vals`"""
 
@@ -499,7 +499,7 @@ class RollingExpValsKwargs(
     _ValsKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
-    _OrderKwargs,
+    _OrderCFKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.rolling.rolling_vals_exp`"""
