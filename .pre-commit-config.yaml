@@ -28,7 +28,7 @@ repos:
 
   # * Pyproject-fmt
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: 2.2.1
+    rev: 2.2.3
     hooks:
       - id: pyproject-fmt
         args: [--indent=4, --keep-full-version]
@@ -46,7 +46,7 @@ repos:
 
   # * Markdown
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.13.0
+    rev: v0.14.0
     hooks:
       - id: markdownlint-cli2
         alias: markdownlint
@@ -61,7 +61,7 @@ repos:
         additional_dependencies:
           - black==24.3.0
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.3
+    rev: v0.6.4
     hooks:
       - id: ruff
         alias: ruff-all
