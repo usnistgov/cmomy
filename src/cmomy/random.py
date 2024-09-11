@@ -56,7 +56,7 @@ def default_rng(seed: RngTypes | None = None) -> np.random.Generator:
 
     Parameters
     ----------
-    seed:
+    seed :
         If specified, set the internal seed to this value. If pass in a
         :class:`numpy.random.Generator`, return that object.
 

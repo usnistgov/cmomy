@@ -171,15 +171,10 @@ def reduce_vals(
 
     Parameters
     ----------
-    x : ndarray or DataArray or Dataset
-        Values to analyze.
-    *y : array-like or DataArray or Dataset
-        Seconda value. Must specify if ``len(mom) == 2.`` Should either be able
-        to broadcast to ``x`` or be 1d array with length ``x.shape[axis]``.
+    {x_genarray}
+    {y_genarray}
     {mom}
-    weight : scalar or array-like or DataArray
-        Weights for each point. Should either be able to broadcast to ``x`` or
-        be `d array of length ``x.shape[axis]``.
+    {weight_genarray}
     {axis}
     {out}
     {dtype}

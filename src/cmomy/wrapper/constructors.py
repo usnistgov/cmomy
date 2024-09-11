@@ -101,6 +101,7 @@ def wrap(
 ) -> CentralMomentsArrayAny: ...
 
 
+@docfiller.decorate
 def wrap(  # type: ignore[misc]
     obj: ArrayLike | DataT,
     *,
@@ -110,7 +111,48 @@ def wrap(  # type: ignore[misc]
     copy: bool | None = False,
     fastpath: bool = False,
 ) -> CentralMomentsArray[Any] | CentralMomentsData[DataT]:
-    """Wrap object with central moments class."""
+    """
+    Wrap object with central moments class.
+
+    This will choose the correct wrapper class given the
+    type of array (:class:`~numpy.ndarray` or :mod:`xarray` object).
+
+    Parameters
+    ----------
+    obj : array-like or DataArray or Dataset
+        Central Moments array.
+    {mom_ndim}
+    {mom_dims}
+    {dtype}
+    {copy}
+    {fastpath}
+
+    Returns
+    -------
+    {wrapped_out}
+
+    See Also
+    --------
+    CentralMomentsArray
+    CentralMomentsData
+
+
+    Examples
+    --------
+    >>> data = [10.0, 2.0, 3.0]
+    >>> wrap(data)
+    <CentralMomentsArray(mom_ndim=1)>
+    array([10.,  2.,  3.])
+
+
+    >>> xdata = xr.DataArray(data, dims="mom")
+    >>> wrap(xdata)
+    <CentralMomentsData(mom_ndim=1)>
+    <xarray.DataArray (mom: 3)> Size: 24B
+    array([10.,  2.,  3.])
+    Dimensions without coordinates: mom
+
+    """
     if is_xarray(obj):
         if not fastpath:
             copy = copy_if_needed(copy)
@@ -173,6 +215,7 @@ def zeros_like(
 ) -> CentralMomentsArrayAny | CentralMomentsDataAny: ...
 
 
+@docfiller.decorate
 def zeros_like(
     c: CentralMomentsArrayAny | CentralMomentsDataAny,
     *,
@@ -185,21 +228,25 @@ def zeros_like(
     chunked_array_type: str | None = None,
     from_array_kwargs: dict[str, Any] | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsDataAny:
-    """
-    Create new wrapped object like given object.
+    r"""
+    Create new wrapped object with zeros like given wrapped object.
 
     Parameters
     ----------
+    c : CentralMomentsArray or CentralMomentsData
+        Wrapped instance to create new object like.
     fill_value : scalar or dict-like
         Value to fill new object with.
     {mom_ndim}
     {mom_dims}
     {dtype}
     {order}
-    {subok}
+    subok : bool, optional
+        If True, then sub-classes will be passed-through, otherwise the
+        returned array will be forced to be a base-class array.
     chunks : int, "auto", tuple of int or mapping of Hashable to int, optional
         Chunk sizes along each dimension, e.g., ``5``, ``"auto"``, ``(5, 5)``
-        or ``{"x": 5, "y": 5}``.
+        or ``{{"x": 5, "y": 5}}``.
     chunked_array_type: str, optional
         Which chunked array type to coerce the underlying data array to.
         Defaults to 'dask' if installed, else whatever is registered via the
@@ -213,6 +260,15 @@ def zeros_like(
         chunked array type, this method would pass additional kwargs to
         :py:func:`dask.array.from_array`. Experimental API that should not be
         relied upon.
+
+    Returns
+    -------
+    {wrapped_out}
+
+    See Also
+    --------
+    numpy.zeros_like
+    xarray.zeros_like
     """
     if isinstance(c, CentralMomentsData):
         return wrap(
@@ -314,18 +370,14 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
-    Create from observations/values.
+    Create wrapped object from values.
 
     Parameters
     ----------
-    x : array-like
-        Values to reduce.
-    *y : array-like
-        Additional values (needed if ``len(mom)==2``).
-    weight : scalar or array-like
-        Optional weight.  If scalar or array, attempt to
-        broadcast to `x0.shape`
+    {x_genarray}
+    {y_genarray}
     {mom}
+    {weight_genarray}
     {axis}
     {dim}
     {mom_dims}
@@ -342,13 +394,12 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
 
     Returns
     -------
-    object
-        Instance of calling class.
+    {wrapped_out}
 
     See Also
     --------
-    push_vals
     ~.reduction.reduce_vals
+    wrap
 
     Examples
     --------
@@ -482,18 +533,15 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
-    Create from resample observations/values.
+    Create wrapped object from resampled values.
 
-    This effectively resamples `x`.
 
     Parameters
     ----------
-    x : array-like
-        Observations.
-    *y : array-like,
-        Additional values (needed if ``len(mom) > 1``).
+    {x_genarray}
+    {y_genarray}
     {mom}
-    {weight}
+    {weight_genarray}
     {axis}
     {dim}
     {freq}
@@ -515,12 +563,11 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
 
     Returns
     -------
-    object
-        Instance of calling class
-
+    {wrapped_out}
 
     See Also
     --------
+    wrap
     ~.resample.resample_vals
     ~.resample.randsamp_freq
     ~.resample.freq_to_indices
@@ -650,7 +697,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
 
     Parameters
     ----------
-    raw : {t_array}
+    raw : array-like or DataArray or Dataset
         Raw moment array.
     {mom_ndim}
     {out}
@@ -664,12 +711,11 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
 
     Returns
     -------
-    output : {klass}
+    {wrapped_out}
 
     See Also
     --------
-    to_raw
-    rmom
+    wrap
     .convert.moments_type
 
     Notes

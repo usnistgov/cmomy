@@ -21,17 +21,22 @@ Central Moments wrapper classes
    CentralMomentsData
 
 
-Concatenation
--------------
+
+Factory methods to create wrapper objects
+-----------------------------------------
 
 .. autosummary::
+   :toctree: generated/
 
-   ~convert.concat
-
+    wrap
+    wrap_reduce_vals
+    wrap_resample_vals
+    wrap_raw
+    zeros_like
 
 
 Reduction routines available at top level (from :mod:`.reduction`)
------------------------------------------------------------------------
+------------------------------------------------------------------
 
 .. autosummary::
 
@@ -40,7 +45,7 @@ Reduction routines available at top level (from :mod:`.reduction`)
    ~reduction.reduce_data_indexed
 
 Resampling routines available at top level (from :mod:`.resample`)
------------------------------------------------------------------------
+------------------------------------------------------------------
 
 .. autosummary::
 
@@ -50,6 +55,31 @@ Resampling routines available at top level (from :mod:`.resample`)
    ~resample.random_indices
    ~resample.randsamp_freq
    ~resample.indices_to_freq
+
+
+Default random number generator (from :mod:`cmomy.random`)
+----------------------------------------------------------
+
+.. autosummary::
+
+   ~random.default_rng
+
+
+Concatenation
+-------------
+
+.. autosummary::
+
+   ~convert.concat
+
+Convert
+-------
+
+.. autosummary::
+
+   convert.moments_type
+   convert.cumulative
+
 
 
 Confidence intervals (from :mod:`.confidence_interval`)

@@ -392,7 +392,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        data :
+        data : array-like or {t_array}
             Accumulation array conformable to ``self.obj``.
         {casting}
         {parallel}
@@ -420,7 +420,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        datas : array-like, {t_array}
+        datas : array-like or {t_array}
             Collection of accumulation arrays to push onto ``self``.
         {axis_data_and_dim}
         {casting}
@@ -447,11 +447,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        x : array-like, {t_array}
+        x : array-like or {t_array}
             Values to push onto ``self``.
-        *y : array-like, {t_array}
+        *y : array-like or {t_array}
             Additional values (needed if ``mom_ndim > 1``)
-        weight : int, float, array-like, {t_array}
+        weight : int, float, array-like or {t_array}
             Weight of each sample.  If scalar, broadcast `w.shape` to `x0.shape`.
         {casting}
         {parallel}
@@ -1377,9 +1377,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        x : array-like
+        x : array-like or {t_array}
             Values to reduce.
-        *y : array-like
+        *y : array-like or {t_array}
             Additional values (needed if ``len(mom)==2``).
         weight : scalar or array-like
             Optional weight.  If scalar or array, attempt to
@@ -1546,9 +1546,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        x : array-like
+        x : array-like or {t_array}
             Observations.
-        *y : array-like,
+        *y : array-like or {t_array}
             Additional values (needed if ``len(mom) > 1``).
         {mom}
         {weight}

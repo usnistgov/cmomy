@@ -48,6 +48,31 @@ def _dummy_docstrings() -> None:
     weight : array-like, optional
         Optional weights. Can be scalar, 1d array of length
         ``args[0].shape[axis]`` or array of same form as ``args[0]``.
+    wrapped_out | wrapped : CentralMomentsArray or CentralMomentsData
+        Wrapped object. If input data is an :mod:`xarray` object, then return
+        :class:`.CentralMomentsData` instance. Otherwise, return
+        :class:`.CentralMomentsArray` instance.
+
+    x_genarray | x : array-like or DataArray or Dataset
+        Values to reduce.
+    y_genarray | *y : array-like or DataArray or Dataset
+        Additional values (needed if ``len(mom)==2``).
+        ``y`` has same type restrictions and broadcasting rules as ``weight``.
+    weight_genarray | weight : array-like or DataArray or Dataset
+        Optional weight.  The type of ``weight`` must be "less than" the type of ``x``.
+
+        - ``x`` is :class:`~xarray.Dataset`:  ``weight`` can be a :class:`~xarray.Dataset`, :class:`~xarray.DataArray`, or array-like
+        - ``x`` is :class:`~xarray.DataArray`: ``weight`` can be :class:`~xarray.DataArray` or array-like
+        - ``x`` is array-like: ``weight`` can be array-like
+
+        In the case that ``weight`` is array-like, it must broadcast to ``x``
+        using usual broadcasting rules (see :func:`numpy.broadcast_to`), with the
+        following exceptions: If ``weight`` is a 1d array of length
+        ``x.shape[axis]]``, it will be formatted to broadcast along the other
+        dimensions of ``x``. For example, if ``x`` has shape ``(10, 2, 3)`` and
+        ``weight`` has shape ``(10,)``, then ``weight`` will be converted to
+        the broadcastable shape ``(10, 1, 1)``. If ``weight`` is a scalar, it
+        will be broadcast to ``x.shape``.
 
 
     out : ndarray
@@ -130,7 +155,7 @@ def _dummy_docstrings() -> None:
         data along sampled axis.
     ndat : int
         Size of data along resampled axis.
-    rng : :class:`~numpy.random.Generator` or seed value
+    rng :
         Random number generator object. Defaults to output of
         :func:`~.random.default_rng`. If pass in a seed value, create a new
         :class:`~numpy.random.Generator` object with this seed
@@ -296,7 +321,8 @@ docfiller = (
         ["dims", "attrs", "coords", "name", "indexes", "template", "mom_dims"],
     )
     .assign(
-        klass="object", t_array=":class:`numpy.ndarray` or :class:`xarray.DataArray`"
+        klass="object",
+        t_array=":class:`numpy.ndarray` or :class:`xarray.DataArray` or :class:`xarray.Dataset`",
     )
     .assign_combined_key("axis_and_dim", ["axis"])
     .assign_combined_key("axis_data_and_dim", ["axis_data"])

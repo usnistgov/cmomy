@@ -355,7 +355,7 @@ class ResampleDataKwargs(
     _OrderKwargs,
     total=False,
 ):
-    """Extra parameters to :func:`.reduction.resample_data`"""
+    """Extra parameters to :func:`.resample.resample_data`"""
 
 
 class ResampleValsKwargs(
@@ -365,7 +365,7 @@ class ResampleValsKwargs(
     _OrderCFKwargs,
     total=False,
 ):
-    """Extra parameters for :func:`.reduction.resample_vals`"""
+    """Extra parameters for :func:`.resample.resample_vals`"""
 
 
 class JackknifeDataKwargs(
@@ -374,7 +374,7 @@ class JackknifeDataKwargs(
     _OrderKwargs,
     total=False,
 ):
-    """Extra parameters for :func:`.reduction.jackknife_data`"""
+    """Extra parameters for :func:`.resample.jackknife_data`"""
 
     rep_dim: str | None
 
@@ -385,7 +385,7 @@ class JackknifeValsKwargs(
     _OrderKwargs,
     total=False,
 ):
-    """Extra parameters for :func:`.reduction.jackknife_data`"""
+    """Extra parameters for :func:`.resample.jackknife_data`"""
 
     rep_dim: str | None
 
@@ -502,7 +502,7 @@ class RollingExpValsKwargs(
     _OrderCFKwargs,
     total=False,
 ):
-    """Extra parameters to :func:`.rolling.rolling_vals_exp`"""
+    """Extra parameters to :func:`.rolling.rolling_exp_vals`"""
 
 
 # ** Wrap

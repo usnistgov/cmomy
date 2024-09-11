@@ -11,6 +11,7 @@ if TYPE_CHECKING:
     from . import convert, random, reduction, resample, rolling, utils  # noqa: TCH004
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TCH004
     from .convert import concat  # noqa: TCH004
+    from .random import default_rng  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (  # noqa: TCH004
         indices_to_freq,
@@ -49,6 +50,18 @@ else:
         ],
         submod_attrs={
             "convert": ["concat"],
+            "confidence_interval": ["bootstrap_confidence_interval"],
+            "random": ["default_rng"],
+            "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
+            "resample": [
+                "indices_to_freq",
+                "random_freq",
+                "random_indices",
+                "randsamp_freq",
+                "resample_data",
+                "resample_vals",
+            ],
+            "utils": ["moveaxis", "select_moment", "assign_moment"],
             "wrapper": [
                 "CentralMomentsArray",
                 "CentralMomentsData",
@@ -60,17 +73,6 @@ else:
                 "wrap",
                 "xCentralMoments",
             ],
-            "confidence_interval": ["bootstrap_confidence_interval"],
-            "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
-            "resample": [
-                "indices_to_freq",
-                "random_freq",
-                "random_indices",
-                "randsamp_freq",
-                "resample_data",
-                "resample_vals",
-            ],
-            "utils": ["moveaxis", "select_moment", "assign_moment"],
         },
     )
 
@@ -94,6 +96,7 @@ __all__ = [
     "bootstrap_confidence_interval",
     "concat",
     "convert",
+    "default_rng",
     "indices_to_freq",
     "moveaxis",
     "random",

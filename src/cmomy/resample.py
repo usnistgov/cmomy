@@ -919,16 +919,14 @@ def resample_vals(  # noqa: PLR0913
 
     Parameters
     ----------
-    x : ndarray or DataArray
-        Value to analyze
-    *y:  array-like or DataArray, optional
-        Second value needed if len(mom)==2.
+    {x_genarray}
+    {y_genarray}
     {freq_xarray}
     {nrep_optional}
     {rng}
     {paired}
     {mom}
-    {weight}
+    {weight_genarray}
     {axis}
     {move_axis_to_end}
     {out}
@@ -1526,15 +1524,13 @@ def jackknife_vals(  # noqa: PLR0913
 
     Parameters
     ----------
-    x : ndarray or DataArray
-        Value to analyze
-    *y:  array-like or DataArray, optional
-        Second value needed if len(mom)==2.
+    {x_genarray}
+    {y_genarray}
     {mom}
     data_reduced : array-like or DataArray, optional
         ``data`` reduced along ``axis`` or ``dim``.  This will be calculated using
-        :func:`.reduce_vals` if not passed.
-    {weight}
+        :func:`.reduce_vals` if not passed.  Same type restrictions as ``weight``.
+    {weight_genarray}
     {axis}
     {move_axis_to_end}
     {order}

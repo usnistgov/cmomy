@@ -951,6 +951,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
     @property
     def val_dims(self) -> tuple[Hashable, ...]:
+        """Names of value (i.e., not moment) dimensions."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
         return tuple(d for d in self.dims if d not in self.mom_dims)
