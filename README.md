@@ -83,7 +83,7 @@ conda install -c conda-forge cmomy
 ```pycon
 >>> import numpy as np
 >>> import cmomy
->>> rng = cmomy.random.default_rng(seed=0)
+>>> rng = cmomy.default_rng(seed=0)
 >>> x = rng.random(100)
 >>> m = x.mean()
 >>> mom = np.array([((x - m) ** i).mean() for i in range(4)])

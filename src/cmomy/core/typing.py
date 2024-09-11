@@ -514,7 +514,7 @@ class WrapKwargs(
 
     mom_dims: MomDims | None
     copy: bool | None
-    fastpath: bool | None
+    fastpath: bool
 
 
 class ZerosLikeKwargs(

@@ -287,7 +287,7 @@ def test_init_reduce(other) -> None:
     # set the rng for reproduciblility right now:
     import cmomy.random
 
-    cmomy.random.default_rng(0)
+    cmomy.default_rng(0)
 
     datas = xr.concat([s.obj for s in other.S_xr], dim="rec")
     datas = scramble_xr(datas)[0].transpose(*(..., *other.s_xr.mom_dims))

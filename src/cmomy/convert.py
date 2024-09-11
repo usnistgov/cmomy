@@ -357,7 +357,7 @@ def cumulative(
     Examples
     --------
     >>> import cmomy
-    >>> x = cmomy.random.default_rng(0).random((10, 3))
+    >>> x = cmomy.default_rng(0).random((10, 3))
     >>> data = cmomy.reduce_vals(x, mom=2, axis=0)
     >>> data
     array([[10.    ,  0.5248,  0.1106],
@@ -573,7 +573,7 @@ def moments_to_comoments(
     Examples
     --------
     >>> import cmomy
-    >>> x = cmomy.random.default_rng(0).random(10)
+    >>> x = cmomy.default_rng(0).random(10)
     >>> data1 = cmomy.reduce_vals(x, mom=4, axis=0)
     >>> data1
     array([10.    ,  0.5505,  0.1014, -0.0178,  0.02  ])

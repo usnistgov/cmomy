@@ -345,7 +345,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> xs = rng.random((2, 10))
         >>> datas = [cmomy.reduce_vals(x, mom=2, axis=0) for x in xs]
         >>> da = CentralMomentsArray(datas[0], mom_ndim=1)
@@ -396,7 +396,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> xs = rng.random((2, 10))
         >>> datas = cmomy.reduce_vals(xs, axis=1, mom=2)
         >>> da = CentralMomentsArray.zeros(mom=2)
@@ -443,7 +443,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> x = rng.random((10, 2))
         >>> y = rng.random(10)
         >>> w = rng.random(10)
@@ -501,7 +501,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> x = rng.random((10, 2))
         >>> y = rng.random(10)
         >>> w = rng.random(10)
@@ -703,7 +703,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> c = cmomy.CentralMomentsArray(rng.random((3, 3)), mom_ndim=1)
         >>> c
         <CentralMomentsArray(mom_ndim=1)>

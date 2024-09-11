@@ -101,8 +101,8 @@ def wrap(
 ) -> CentralMomentsArrayAny: ...
 
 
-@docfiller.decorate
-def wrap(  # type: ignore[misc]
+@docfiller.decorate  # type: ignore[misc]
+def wrap(  # pyright: ignore[reportInconsistentOverload]
     obj: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim = 1,
@@ -404,7 +404,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     Examples
     --------
     >>> import cmomy
-    >>> rng = cmomy.random.default_rng(0)
+    >>> rng = cmomy.default_rng(0)
     >>> x = rng.random((100, 3))
     >>> da = cmomy.wrap_reduce_vals(x, axis=0, mom=2)
     >>> da
@@ -577,7 +577,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     Examples
     --------
     >>> import cmomy
-    >>> rng = cmomy.random.default_rng(0)
+    >>> rng = cmomy.default_rng(0)
     >>> x = rng.random(10)
     >>> cmomy.wrap_resample_vals(x, mom=2, axis=0, nrep=5)
     <CentralMomentsArray(mom_ndim=1)>
@@ -726,7 +726,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     Examples
     --------
     >>> import cmomy
-    >>> rng = cmomy.random.default_rng(0)
+    >>> rng = cmomy.default_rng(0)
     >>> x = rng.random(10)
     >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
 

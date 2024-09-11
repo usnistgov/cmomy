@@ -954,7 +954,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> da = cmomy.CentralMomentsArray.from_vals(
         ...     rng.random((10, 3)),
         ...     mom=3,
@@ -1411,7 +1411,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> x = rng.random((100, 3))
         >>> da = cmomy.CentralMomentsArray.from_vals(x, axis=0, mom=2)
         >>> da
@@ -1735,7 +1735,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> x = rng.random(10)
         >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
 

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from cmomy.core.typing import Moments, NDArrayAny
 
 
-default_rng = cmomy.random.default_rng(0)
+default_rng = cmomy.default_rng(0)
 
 
 @pytest.fixture(scope="session")

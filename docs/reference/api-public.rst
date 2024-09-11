@@ -15,10 +15,19 @@ Central Moments wrapper classes
 .. autosummary::
    :toctree: generated/
 
-   CentralMoments
-   xCentralMoments
    CentralMomentsArray
    CentralMomentsData
+
+
+
+Legacy wrapper classes
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   CentralMoments
+   xCentralMoments
 
 
 
@@ -35,8 +44,8 @@ Factory methods to create wrapper objects
     zeros_like
 
 
-Reduction routines available at top level (from :mod:`.reduction`)
-------------------------------------------------------------------
+Reduction routines available at top level (:mod:`.reduction`)
+-------------------------------------------------------------
 
 .. autosummary::
 
@@ -44,8 +53,8 @@ Reduction routines available at top level (from :mod:`.reduction`)
    ~reduction.reduce_data_grouped
    ~reduction.reduce_data_indexed
 
-Resampling routines available at top level (from :mod:`.resample`)
-------------------------------------------------------------------
+Resampling routines available at top level (:mod:`.resample`)
+-------------------------------------------------------------
 
 .. autosummary::
 
@@ -57,8 +66,8 @@ Resampling routines available at top level (from :mod:`.resample`)
    ~resample.indices_to_freq
 
 
-Default random number generator (from :mod:`cmomy.random`)
-----------------------------------------------------------
+Default random number generator (:mod:`cmomy.random`)
+-----------------------------------------------------
 
 .. autosummary::
 
@@ -82,22 +91,23 @@ Convert
 
 
 
-Confidence intervals (from :mod:`.confidence_interval`)
-------------------------------------------------------------
+Confidence intervals (:mod:`.confidence_interval`)
+--------------------------------------------------
 
 .. autosummary::
 
    ~confidence_interval.bootstrap_confidence_interval
 
 
-Central moment array utilities (from :mod:`.utils`)
---------------------------------------------------------
+Central moment array utilities (:mod:`.utils`)
+----------------------------------------------
 
 .. autosummary::
 
    ~utils.moveaxis
    ~utils.select_moment
    ~utils.assign_moment
+   ~utils.vals_to_data
 
 
 

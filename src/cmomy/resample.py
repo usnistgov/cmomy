@@ -498,7 +498,7 @@ def randsamp_freq(
     Examples
     --------
     >>> import cmomy
-    >>> rng = cmomy.random.default_rng(0)
+    >>> rng = cmomy.default_rng(0)
     >>> randsamp_freq(ndat=3, nrep=5, rng=rng)
     array([[0, 2, 1],
            [3, 0, 0],
@@ -1271,7 +1271,7 @@ def jackknife_data(  # noqa: PLR0913
     Examples
     --------
     >>> import cmomy
-    >>> data = cmomy.random.default_rng(0).random((4, 3))
+    >>> data = cmomy.default_rng(0).random((4, 3))
     >>> out_jackknife = jackknife_data(data, mom_ndim=1, axis=0)
     >>> out_jackknife
     array([[1.5582, 0.7822, 0.2247],

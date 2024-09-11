@@ -605,7 +605,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> data = xr.DataArray(rng.random((6, 3)), dims=["rec", "mom"]).assign_coords(
         ...     rec=range(6)
         ... )
@@ -1030,7 +1030,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
         >>> da = CentralMomentsData.from_vals(vals, mom=2, dim="rec")
         >>> da
@@ -1249,7 +1249,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         Examples
         --------
         >>> import cmomy
-        >>> rng = cmomy.random.default_rng(0)
+        >>> rng = cmomy.default_rng(0)
         >>> da = cmomy.CentralMomentsArray.from_vals(
         ...     rng.random((10, 3)), axis=0, mom=2
         ... ).to_x(dims="x", coords=dict(x=list("abc")))

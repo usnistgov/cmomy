@@ -150,7 +150,7 @@ def bootstrap_confidence_interval(
     Calculate the bootstrap statistics of the log of the mean.
 
     >>> import cmomy
-    >>> x = cmomy.random.default_rng(0).random((20))
+    >>> x = cmomy.default_rng(0).random((20))
     >>> freq = cmomy.randsamp_freq(nrep=50, ndat=20, rng=np.random.default_rng(0))
     >>> theta_boot = np.log(cmomy.resample_vals(x, mom=1, axis=0, freq=freq)[..., 1])
     >>> bootstrap_confidence_interval(

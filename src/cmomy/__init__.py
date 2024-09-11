@@ -21,7 +21,12 @@ if TYPE_CHECKING:
         resample_data,
         resample_vals,
     )
-    from .utils import assign_moment, moveaxis, select_moment  # noqa: TCH004
+    from .utils import (  # noqa: TCH004
+        assign_moment,
+        moveaxis,
+        select_moment,
+        vals_to_data,
+    )
     from .wrapper import (  # noqa: TCH004
         CentralMoments,
         CentralMomentsArray,
@@ -61,7 +66,12 @@ else:
                 "resample_data",
                 "resample_vals",
             ],
-            "utils": ["moveaxis", "select_moment", "assign_moment"],
+            "utils": [
+                "moveaxis",
+                "select_moment",
+                "assign_moment",
+                "vals_to_data",
+            ],
             "wrapper": [
                 "CentralMomentsArray",
                 "CentralMomentsData",
@@ -113,6 +123,7 @@ __all__ = [
     "rolling",
     "select_moment",
     "utils",
+    "vals_to_data",
     "wrap",
     "wrap_raw",
     "wrap_reduce_vals",
