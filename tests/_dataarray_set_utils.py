@@ -94,9 +94,13 @@ def do_wrap_raw(data, **kwargs):
 
 def _get_wrapped(data, **kwargs):
     kws = kwargs.copy()
-    mom_ndim = kws.pop("mom_ndim", 1)
-    mom_dims = kws.pop("mom_dims", None)
-    return cmomy.wrap(data, mom_ndim=mom_ndim, mom_dims=mom_dims), kws
+    params = {
+        "mom_ndim": kws.pop("mom_ndim", 1),
+        "mom_dims": kws.pop("mom_dims", None),
+        "dtype": kws.get("dtype", None),
+    }
+    params = {k: v for k, v in params.items() if v is not None}
+    return cmomy.wrap(data, **params), kws
 
 
 def do_wrap_method(method, as_array=True):
