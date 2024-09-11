@@ -189,7 +189,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return s + repr(self._obj)
 
     def _repr_html_(self) -> str:  # noqa: PLW3201
-        # TODO(wpk): Check out if this is best way to go...
         from cmomy.core.formatting import (
             repr_html_wrapper,  # pyright: ignore[reportUnknownVariableType]
         )

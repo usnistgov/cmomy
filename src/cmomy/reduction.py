@@ -146,7 +146,6 @@ def reduce_vals(
 ) -> NDArrayAny: ...
 
 
-# TODO(wpk): add tests for keepdims...
 @docfiller.decorate
 def reduce_vals(
     x: ArrayLike | DataT,

@@ -567,6 +567,7 @@ def _assign_moment(
 
 
 # * Vals -> Data
+# TODO(wpk): move this to convert?
 @overload
 def vals_to_data(
     x: DataT,

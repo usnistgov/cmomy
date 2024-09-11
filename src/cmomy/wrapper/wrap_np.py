@@ -1006,7 +1006,6 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         shape = (shape,) if isinstance(shape, int) else shape
         new_shape = (*shape, *self.mom_shape)
         obj = self._obj.reshape(new_shape, order=order)
-        # TODO(wpk):  figure out how to better implement new_like to make this work correctly...
         return self.new_like(obj)  # type: ignore[return-value]
 
     @docfiller.decorate
