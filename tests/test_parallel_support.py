@@ -16,33 +16,33 @@ from ._dataarray_set_utils import (
     do_reduce_data_indexed,
 )
 
-data_func_params_rolling = [
+func_params_data_rolling = [
     (partial(cmomy.rolling.rolling_data, window=2), None),
     (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
 ]
 
-data_func_params = [
+func_params_data = [
     (cmomy.reduce_data, None),
     (do_reduce_data_grouped, None),
     (do_reduce_data_indexed, None),
     (partial(cmomy.resample_data, nrep=10, rng=0), None),
     (cmomy.resample.jackknife_data, None),
     (cmomy.convert.cumulative, None),
-    *data_func_params_rolling,
+    *func_params_data_rolling,
 ]
 
 
-vals_func_params_rolling = [
+func_params_vals_rolling = [
     (partial(cmomy.rolling.rolling_vals, window=2), None),
     (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
 ]
 
 
-vals_func_params = [
+func_params_vals = [
     (cmomy.reduce_vals, None),
     (partial(cmomy.resample_vals, nrep=20, rng=0), None),
     (cmomy.resample.jackknife_vals, None),
-    *vals_func_params_rolling,
+    *func_params_vals_rolling,
 ]
 
 
@@ -60,7 +60,7 @@ def data_and_kwargs(rng, request):
 # * Data
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
-    data_func_params,
+    func_params_data,
 )
 @pytest.mark.parametrize(
     "data_and_kwargs",
@@ -81,7 +81,7 @@ def test_parallel_data(func, kwargs_callback, data_and_kwargs):
 
 # had some weird stuff with rolling in parallel.  hammer it...
 @pytest.mark.slow
-@pytest.mark.parametrize(("func", "kwargs_callback"), data_func_params_rolling)
+@pytest.mark.parametrize(("func", "kwargs_callback"), func_params_data_rolling)
 @pytest.mark.parametrize(
     "data_and_kwargs",
     [
@@ -100,7 +100,7 @@ def test_parallel_data_rolling(func, kwargs_callback, data_and_kwargs, repeat): 
 # * vals
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
-    vals_func_params,
+    func_params_vals,
 )
 @pytest.mark.parametrize(
     "data_and_kwargs",
@@ -122,7 +122,7 @@ def test_parallel_vals(func, kwargs_callback, data_and_kwargs):
 @pytest.mark.slow
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
-    vals_func_params,
+    func_params_vals,
 )
 @pytest.mark.parametrize(
     "data_and_kwargs",

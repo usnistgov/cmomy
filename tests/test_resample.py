@@ -1,5 +1,9 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, assignment, arg-type"
 # pyright: reportCallIssue=false, reportArgumentType=false
+"""
+Test basics of resampling
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
@@ -22,29 +26,26 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.parametrize("ndat", [50])
-def test_freq_indices(ndat, rng) -> None:
-    indices = rng.choice(ndat, (20, ndat), replace=True)
+@pytest.mark.parametrize("nrep", [20])
+@pytest.mark.parametrize("nsamp", [None, 20])
+def test_freq_indices_roundtrip(ndat, nrep, nsamp) -> None:
+    indices = cmomy.random_indices(nrep, ndat, nsamp, rng=123)
+    freq = cmomy.resample.indices_to_freq(indices, ndat=ndat)
 
-    freq0 = resample.indices_to_freq(indices)
-    freq1 = resample.randsamp_freq(indices=indices, ndat=ndat)
+    # test that just creating gives same answer
+    np.testing.assert_equal(
+        cmomy.random_freq(nrep, ndat, nsamp, rng=123),
+        freq,
+    )
 
-    np.testing.assert_allclose(freq0, freq1)
+    # test round trip
+    np.testing.assert_allclose(
+        cmomy.resample.freq_to_indices(freq, shuffle=False),
+        np.sort(indices, axis=-1),
+    )
 
-    # round trip should be identical as well
-    indices1 = resample.freq_to_indices(freq0)
-    resample.indices_to_freq(indices1)
 
-    np.testing.assert_allclose(freq0, freq1)
-
-    freq0 = resample.randsamp_freq(nrep=10, ndat=ndat, rng=np.random.default_rng(123))
-
-    freq1 = resample.randsamp_freq(nrep=10, ndat=ndat, rng=np.random.default_rng(456))
-    assert not np.all(freq0 == freq1)
-
-    freq1 = resample.randsamp_freq(nrep=10, ndat=ndat, rng=np.random.default_rng(123))
-    np.testing.assert_allclose(freq0, freq1)
-
-    # test bad freq
+def test_freq_to_indices_error() -> None:
     freq = np.array([[5, 0], [0, 4]])
     with pytest.raises(ValueError, match="Inconsistent number of samples .*"):
         resample.freq_to_indices(freq)
@@ -58,7 +59,7 @@ def test_freq_indices(ndat, rng) -> None:
         (20, 10, 5),
     ],
 )
-def test_freq_indices_2(rng, nrep, ndat, nsamp, style) -> None:
+def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
     indices = resample.random_indices(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng)
 
     if style == "array-like":

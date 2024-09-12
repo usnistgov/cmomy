@@ -79,41 +79,14 @@ def get_reshaped_val(val, reshape):
     return val
 
 
-# * data tests
-mark_data_kwargs = pytest.mark.parametrize(
-    ("kwargs", "shapes_and_dims"),
-    [
-        (
-            {"mom_ndim": 1, "dim": "a"},
-            [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom"))],
-        ),
-        (
-            {"mom_ndim": 1, "dim": "b"},
-            [((2, 10, 3), ("a", "b", "mom")), ((10, 3), ("b", "mom"))],
-        ),
-        (
-            {"mom_ndim": 2, "dim": "a"},
-            [
-                ((10, 2, 3, 3), ("a", "b", "mom0", "mom1")),
-                ((2, 3, 3), ("b", "mom0", "mom1")),
-            ],
-        ),
-        (
-            {"mom_ndim": 2, "dim": "b"},
-            [
-                ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
-                ((10, 3, 3), ("b", "mom0", "mom1")),
-            ],
-        ),
-        # different moment names
-        (
-            {"mom_ndim": 1, "dim": "a", "mom_dims": "mom"},
-            [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom_other"))],
-        ),
-    ],
-)
+@pytest.fixture
+def as_dataarray(request):
+    # Use this to flag data_and_kwargs and fixture_vals fixture.
+    return request.param
 
 
+# * functions
+# ** Data
 func_params_data_common = [
     (partial(cmomy.reduce_data, use_reduce=True), None),
     (partial(cmomy.reduce_data, use_reduce=False), None),
@@ -163,8 +136,180 @@ func_params_data_dataset = [
     ),
 ]
 
+# ** Vals
+func_params_vals_common = [
+    (cmomy.reduce_vals, None),
+    (partial(cmomy.resample_vals, nrep=20, rng=0), None),
+    (cmomy.resample.jackknife_vals, None),
+    (cmomy.utils.vals_to_data, remove_dim_from_kwargs),
+    (partial(cmomy.rolling.rolling_vals, window=2), None),
+    (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
+    # wrap
+    (do_wrap_reduce_vals, None),
+    (do_wrap_resample_vals, None),
+]
 
-@mark_data_kwargs
+
+# * data parameters
+# ** data
+data_params_simple = [
+    # make sure these have reduction variable and mom in all variables
+    (
+        [((10, 2, 3), ("a", "b", "mom")), ((10, 3), ("a", "mom"))],
+        {"mom_ndim": 1, "dim": "a"},
+    ),
+    (
+        [((2, 10, 3), ("a", "b", "mom")), ((10, 3), ("b", "mom"))],
+        {"mom_ndim": 1, "dim": "b"},
+    ),
+    (
+        [
+            ((2, 10, 3, 3), ("a", "b", "mom0", "mom1")),
+            ((10, 3, 3), ("b", "mom0", "mom1")),
+        ],
+        {"mom_ndim": 2, "dim": "b"},
+    ),
+]
+
+
+data_params = [
+    *data_params_simple,
+    (
+        [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom"))],
+        {"mom_ndim": 1, "dim": "a"},
+    ),
+    (
+        [
+            ((10, 2, 3, 3), ("a", "b", "mom0", "mom1")),
+            ((2, 3, 3), ("b", "mom0", "mom1")),
+        ],
+        {"mom_ndim": 2, "dim": "a"},
+    ),
+    # different moment names
+    (
+        [((10, 2, 3), ("a", "b", "mom")), ((2, 3), ("b", "mom_other"))],
+        {"mom_ndim": 1, "dim": "a", "mom_dims": "mom"},
+    ),
+]
+
+
+@pytest.fixture
+def data_and_kwargs(rng, as_dataarray, request):
+    shapes_and_dims, kwargs = request.param
+    if as_dataarray:
+        shapes_and_dims = shapes_and_dims[0]
+    return create_data(rng, shapes_and_dims, **kwargs), kwargs
+
+
+# ** vals
+vals_params_push = [
+    {
+        "kwargs": {"mom": (3,), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": None,
+        "weight": None,
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": None,
+        "weight": (10, "b"),
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": (10, "b"),
+        "weight": None,
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": (10, "b"),
+        "weight": (10, "b"),
+    },
+]
+
+vals_params_dataarray = [
+    *vals_params_push,
+    {
+        "kwargs": {"mom": (3,), "dim": "a"},
+        "x": [((10, 2), ("a", "b")), (2, "b")],
+        "y": None,
+        "weight": None,
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "a"},
+        "x": [((10, 2), ("a", "b")), (2, "b")],
+        "y": None,
+        "weight": (10, "a"),
+        "weight_reshape": (10, 1),
+    },
+]
+
+
+vals_params = [
+    *vals_params_dataarray,
+    {
+        "kwargs": {"mom": (3,), "dim": "a"},
+        "x": [((10, 2), ("a", "b")), (2, "b")],
+        "y": None,
+        "weight": [(10, "a"), (10, "a")],
+    },
+    {
+        "kwargs": {"mom": (3,), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": None,
+        "weight": [(10, "b"), (10, "b")],
+    },
+    # mom_ndim -> 2
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": (10, "b"),
+        "weight": [(10, "b"), (10, "b")],
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": [(10, "b"), ((2, 10), ("a", "b"))],
+        "weight": None,
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": [(10, "b"), ((2, 10), ("a", "b"))],
+        "weight": (10, "b"),
+    },
+    {
+        "kwargs": {"mom": (3, 3), "dim": "b"},
+        "x": [((2, 10), ("a", "b")), (10, "b")],
+        "y": [(10, "b"), ((2, 10), ("a", "b"))],
+        "weight": [(10, "b"), (10, "b")],
+    },
+]
+
+
+@pytest.fixture
+def fixture_vals(rng, as_dataarray, request):
+    """Ugly way to do things, but works."""
+    kwargs, x, y, weight = (request.param[k] for k in ("kwargs", "x", "y", "weight"))
+    if as_dataarray:
+        x, y, weight = (a[0] if isinstance(a, list) else a for a in (x, y, weight))
+
+    out = {
+        "kwargs": kwargs,
+        "x": create_data(rng, x, **kwargs),
+        "y": y if y is None else create_data(rng, y, **kwargs),
+        "weight": weight if weight is None else create_data(rng, weight, **kwargs),
+    }
+
+    for k, v in request.param.items():
+        if "_reshape" in k:
+            out[k] = v  # noqa: PERF403
+    return out
+
+
+# * Data tests
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     [
@@ -172,23 +317,28 @@ func_params_data_dataset = [
         *func_params_data_dataarray,
     ],
 )
+@pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
+@pytest.mark.parametrize(
+    "as_dataarray",
+    [True],
+    indirect=True,
+)
 def test_func_data_dataarray(
-    rng,
-    kwargs,
-    shapes_and_dims,
+    data_and_kwargs,
     func,
     kwargs_callback,
 ) -> None:
-    data = create_data(rng, shapes_and_dims[0], **kwargs)
+    data, kwargs = data_and_kwargs
     if kwargs_callback:
         kwargs = kwargs_callback(kwargs)
+
+    assert is_dataarray(data)
 
     check = func(data, **kwargs)
     kws_array = fix_kws_for_array(kwargs, data)
     np.testing.assert_allclose(check, func(data.values, **kws_array))
 
 
-@mark_data_kwargs
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     [
@@ -196,8 +346,10 @@ def test_func_data_dataarray(
         *func_params_data_dataset,
     ],
 )
-def test_func_data_dataset(rng, kwargs, shapes_and_dims, func, kwargs_callback) -> None:
-    data = create_data(rng, shapes_and_dims, **kwargs)
+@pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
+@pytest.mark.parametrize("as_dataarray", [False], indirect=True)
+def test_func_data_dataset(data_and_kwargs, func, kwargs_callback) -> None:
+    data, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
 
     # coordinates along sampled dimension
@@ -215,148 +367,41 @@ def test_func_data_dataset(rng, kwargs, shapes_and_dims, func, kwargs_callback) 
     xr.testing.assert_allclose(out[k], da)
 
 
+@pytest.mark.parametrize(
+    "data_and_kwargs",
+    [
+        *data_params_simple,
+    ],
+    indirect=True,
+)
+@pytest.mark.parametrize("as_dataarray", [True, False])
+def test_func_dataarray_and_dataset_push_data(data_and_kwargs, as_dataarray) -> None:
+    data, kwargs = data_and_kwargs
+    assert is_dataarray(data) is as_dataarray
+
+    mom_ndim = kwargs["mom_ndim"]
+    dim = kwargs["dim"]
+    expected = cmomy.wrap(data, mom_ndim=mom_ndim).reduce(dim=dim)
+    a, b = (cmomy.zeros_like(expected) for _ in range(2))
+
+    for _, d in data.groupby(dim):
+        a.push_data(d.squeeze(dim))
+    b.push_datas(data, dim=dim)
+
+    xr.testing.assert_allclose(a.obj, expected.obj)
+    xr.testing.assert_allclose(b.obj, expected.obj)
+
+
 # * Vals to array
-vals_params = [
-    {
-        "kwargs": {"mom": (3,), "dim": "a"},
-        "x": [((10, 2), ("a", "b")), (2, "b")],
-        "y": None,
-        "weight": None,
-        "do_array": True,
-    },
-    {
-        "kwargs": {"mom": (3,), "dim": "a"},
-        "x": [((10, 2), ("a", "b")), (2, "b")],
-        "y": None,
-        "weight": (10, "a"),
-        "do_array": True,
-        "weight_reshape": (10, 1),
-    },
-    {
-        "kwargs": {"mom": (3,), "dim": "a"},
-        "x": [((10, 2), ("a", "b")), (2, "b")],
-        "y": None,
-        "weight": [(10, "a"), (10, "a")],
-    },
-    {
-        "kwargs": {"mom": (3,), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": None,
-        "weight": None,
-        "do_array": True,
-    },
-    {
-        "kwargs": {"mom": (3,), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": None,
-        "weight": (10, "b"),
-        "do_array": True,
-    },
-    {
-        "kwargs": {"mom": (3,), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": None,
-        "weight": [(10, "b"), (10, "b")],
-    },
-    # mom_ndim -> 2
-    {
-        "kwargs": {"mom": (3, 3), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": (10, "b"),
-        "weight": None,
-        "do_array": True,
-    },
-    {
-        "kwargs": {"mom": (3, 3), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": (10, "b"),
-        "weight": (10, "b"),
-        "do_array": True,
-    },
-    {
-        "kwargs": {"mom": (3, 3), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": (10, "b"),
-        "weight": [(10, "b"), (10, "b")],
-    },
-    {
-        "kwargs": {"mom": (3, 3), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": [(10, "b"), ((2, 10), ("a", "b"))],
-        "weight": None,
-    },
-    {
-        "kwargs": {"mom": (3, 3), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": [(10, "b"), ((2, 10), ("a", "b"))],
-        "weight": (10, "b"),
-    },
-    {
-        "kwargs": {"mom": (3, 3), "dim": "b"},
-        "x": [((2, 10), ("a", "b")), (10, "b")],
-        "y": [(10, "b"), ((2, 10), ("a", "b"))],
-        "weight": [(10, "b"), (10, "b")],
-    },
-]
-
-
-@pytest.fixture(params=vals_params)
-def fixture_vals_dataset(request, rng):
-    """Ugly way to do things, but works."""
-    kwargs, x, y, weight = (request.param[k] for k in ("kwargs", "x", "y", "weight"))
-    out = {
-        "kwargs": kwargs,
-        "x": create_data(rng, x, **kwargs),
-        "y": y if y is None else create_data(rng, y, **kwargs),
-        "weight": weight if weight is None else create_data(rng, weight, **kwargs),
-    }
-
-    for k, v in request.param.items():
-        if "_reshape" in k:
-            out[k] = v  # noqa: PERF403
-    return out
-
-
-@pytest.fixture(params=filter(lambda x: x.get("do_array", False), vals_params))  # type: ignore[attr-defined]
-def fixture_vals_dataarray(request, rng):
-    """Ugly way to do things, but works."""
-    kwargs, x, y, weight = (request.param[k] for k in ("kwargs", "x", "y", "weight"))
-    x, y, weight = (a[0] if isinstance(a, list) else a for a in (x, y, weight))
-
-    out = {
-        "kwargs": kwargs,
-        "x": create_data(rng, x, **kwargs),
-        "y": y if y is None else create_data(rng, y, **kwargs),
-        "weight": weight if weight is None else create_data(rng, weight, **kwargs),
-    }
-
-    for k, v in request.param.items():
-        if "_reshape" in k:
-            out[k] = v  # noqa: PERF403
-    return out
-
-
-func_params_vals_common = [
-    (cmomy.reduce_vals, None),
-    (partial(cmomy.resample_vals, nrep=20, rng=0), None),
-    (cmomy.resample.jackknife_vals, None),
-    (cmomy.utils.vals_to_data, remove_dim_from_kwargs),
-    (partial(cmomy.rolling.rolling_vals, window=2), None),
-    (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
-    # wrap
-    (do_wrap_reduce_vals, None),
-    (do_wrap_resample_vals, None),
-]
-
-
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     func_params_vals_common,
 )
-def test_func_vals_dataarray(fixture_vals_dataarray, func, kwargs_callback):
-    kwargs, x, y, weight = (
-        fixture_vals_dataarray[k] for k in ("kwargs", "x", "y", "weight")
-    )
+@pytest.mark.parametrize("as_dataarray", [True], indirect=True)
+@pytest.mark.parametrize("fixture_vals", vals_params_dataarray, indirect=True)
+def test_func_vals_dataarray(fixture_vals, func, kwargs_callback):
+    kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
+    assert is_dataarray(x)
 
     if kwargs_callback:
         kwargs = kwargs_callback(kwargs.copy())
@@ -367,8 +412,8 @@ def test_func_vals_dataarray(fixture_vals_dataarray, func, kwargs_callback):
     kws_array = fix_kws_for_array(kwargs, x)
 
     xx = get_reshaped_val(x, None)
-    yy = get_reshaped_val(y, fixture_vals_dataarray.get("y_reshape"))
-    ww = get_reshaped_val(weight, fixture_vals_dataarray.get("weight_reshape"))
+    yy = get_reshaped_val(y, fixture_vals.get("y_reshape"))
+    ww = get_reshaped_val(weight, fixture_vals.get("weight_reshape"))
 
     args = (xx,) if yy is None else (xx, yy)
     np.testing.assert_allclose(check, func(*args, weight=ww, **kws_array))
@@ -379,10 +424,10 @@ def test_func_vals_dataarray(fixture_vals_dataarray, func, kwargs_callback):
     ("func", "kwargs_callback"),
     func_params_vals_common,
 )
-def test_func_vals_dataset(fixture_vals_dataset, func, kwargs_callback):
-    kwargs, x, y, weight = (
-        fixture_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
-    )
+@pytest.mark.parametrize("as_dataarray", [False], indirect=True)
+@pytest.mark.parametrize("fixture_vals", vals_params, indirect=True)
+def test_func_vals_dataset(fixture_vals, func, kwargs_callback):
+    kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
 
     if kwargs_callback:
         kwargs = kwargs_callback(kwargs.copy())
@@ -406,6 +451,30 @@ def test_func_vals_dataset(fixture_vals_dataset, func, kwargs_callback):
             da = func(*xy, **kwargs, weight=w)
 
         xr.testing.assert_allclose(out[name], da)
+
+
+@pytest.mark.parametrize("as_dataarray", [True, False], indirect=True)
+@pytest.mark.parametrize("fixture_vals", vals_params_push, indirect=True)
+def test_func_dataarray_and_dataset_push_vals(fixture_vals, as_dataarray) -> None:
+    kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
+    assert is_dataarray(x) is as_dataarray
+
+    xy = (x,) if y is None else (x, y)
+    expected = cmomy.wrap_reduce_vals(*xy, weight=weight, **kwargs)
+
+    kws = kwargs.copy()
+
+    mom = kws.pop("mom")
+    dim = kws["dim"]
+    if len(mom) == 1 and weight is None:
+        a = cmomy.zeros_like(expected)
+        for _, d in x.groupby(dim):
+            a.push_val(d.squeeze(dim))
+        xr.testing.assert_allclose(a.obj, expected.obj)
+
+    b = cmomy.zeros_like(expected)
+    b.push_vals(*xy, weight=weight, **kws)
+    xr.testing.assert_allclose(b.obj, expected.obj)
 
 
 # * Resample [need spectial treatment]
@@ -494,11 +563,13 @@ def test_randsamp_freq_dataset(
     assert cmomy.resample.randsamp_freq(freq=out, check=False, dtype=None) is out
 
 
-@mark_data_kwargs
+@pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
+@pytest.mark.parametrize("as_dataarray", [False], indirect=True)
 @pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [False])
-def test_resample_data_dataset(rng, kwargs, shapes_and_dims, nrep, paired) -> None:
-    ds = create_data(rng, shapes_and_dims, **kwargs)
+def test_resample_data_dataset(data_and_kwargs, nrep, paired) -> None:
+    ds, kwargs = data_and_kwargs
+    assert not is_dataarray(ds)
 
     dfreq = cmomy.randsamp_freq(data=ds, **kwargs, nrep=nrep, rng=0, paired=paired)
 
@@ -533,10 +604,10 @@ def test_resample_data_dataset(rng, kwargs, shapes_and_dims, nrep, paired) -> No
 
 @pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [False])
-def test_resample_vals_dataset(fixture_vals_dataset, paired, nrep) -> None:
-    kwargs, x, y, weight = (
-        fixture_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
-    )
+@pytest.mark.parametrize("as_dataarray", [False], indirect=True)
+@pytest.mark.parametrize("fixture_vals", vals_params, indirect=True)
+def test_resample_vals_dataset(fixture_vals, paired, nrep) -> None:
+    kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
 
     dim = kwargs["dim"]
     dfreq = cmomy.randsamp_freq(data=x, dim=dim, nrep=nrep, rng=0, paired=paired)
@@ -601,15 +672,14 @@ def _is_chunked(ds):
 
 @pytest.mark.slow
 @mark_dask_only
-@mark_data_kwargs
+@pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
+@pytest.mark.parametrize("as_dataarray", [False], indirect=True)
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     func_params_data_common,
 )
-def test_func_data_chunking(
-    rng, kwargs, shapes_and_dims, func, kwargs_callback
-) -> None:
-    ds = create_data(rng, shapes_and_dims, **kwargs)
+def test_func_data_chunking(data_and_kwargs, func, kwargs_callback) -> None:
+    ds, kwargs = data_and_kwargs
     ds_chunked = ds.chunk({kwargs["dim"]: -1})
 
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
@@ -642,10 +712,10 @@ def test_func_data_chunking(
     ("func", "kwargs_callback"),
     func_params_vals_common,
 )
-def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
-    kwargs, x, y, weight = (
-        fixture_vals_dataset[k] for k in ("kwargs", "x", "y", "weight")
-    )
+@pytest.mark.parametrize("as_dataarray", [False], indirect=True)
+@pytest.mark.parametrize("fixture_vals", vals_params, indirect=True)
+def test_func_vals_chunking(fixture_vals, func, kwargs_callback):
+    kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
     x_chunked = x.chunk({kwargs["dim"]: -1})
 
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
@@ -698,22 +768,24 @@ def test_func_vals_chunking(fixture_vals_dataset, func, kwargs_callback):
         (partial(cmomy.rolling.rolling_exp_data, alpha=0.2), None),
     ],
 )
+@pytest.mark.parametrize("as_dataarray", [False], indirect=True)
 @pytest.mark.parametrize(
-    ("dim", "mom_ndim", "shape"),
+    "data_and_kwargs",
     [
-        ("dim_0", 1, (10, 3)),
-        ("dim_0", 2, (10, 3, 3)),
+        (((10, 3), None), {"mom_ndim": 1, "dim": "dim_0"}),
+        (((10, 3, 3), None), {"mom_ndim": 2, "dim": "dim_0"}),
     ],
+    indirect=True,
 )
 def test_func_data_chunking_out_parameter(
-    rng, func, kwargs_callback, dim, mom_ndim, shape
+    data_and_kwargs,
+    func,
+    kwargs_callback,
 ) -> None:
-    data = xr.DataArray(rng.random(shape))
-    data_chunked = data.chunk({dim: -1})
+    data, kwargs = data_and_kwargs
+    data_chunked = data.chunk({kwargs["dim"]: -1})
 
-    kws = {"dim": dim, "mom_ndim": mom_ndim}
-    kws = kws if kwargs_callback is None else kwargs_callback(kws)
-
+    kws = kwargs if kwargs_callback is None else kwargs_callback(kwargs.copy())
     res = func(data, **kws)
 
     out = np.zeros_like(res)

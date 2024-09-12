@@ -219,8 +219,6 @@ def zeros_like(
 def zeros_like(
     c: CentralMomentsArrayAny | CentralMomentsDataAny,
     *,
-    mom_ndim: Mom_NDim = 1,
-    mom_dims: MomDims | None = None,
     dtype: DTypeLike | Mapping[Any, DTypeLike] = None,
     order: ArrayOrder = None,
     subok: bool = True,
@@ -237,8 +235,6 @@ def zeros_like(
         Wrapped instance to create new object like.
     fill_value : scalar or dict-like
         Value to fill new object with.
-    {mom_ndim}
-    {mom_dims}
     {dtype}
     {order}
     subok : bool, optional
@@ -279,8 +275,8 @@ def zeros_like(
                 chunked_array_type=chunked_array_type,
                 from_array_kwargs=from_array_kwargs,
             ),
-            mom_ndim=mom_ndim,
-            mom_dims=mom_dims,
+            mom_ndim=c.mom_ndim,
+            mom_dims=c.mom_dims,
         )
     return wrap(  # type: ignore[no-any-return]
         np.zeros_like(
@@ -289,7 +285,7 @@ def zeros_like(
             order=order,
             subok=subok,
         ),
-        mom_ndim=mom_ndim,
+        mom_ndim=c.mom_ndim,
     )
 
 

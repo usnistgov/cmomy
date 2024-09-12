@@ -518,13 +518,11 @@ class WrapKwargs(
 
 
 class ZerosLikeKwargs(
-    _MomNDimKwargs,
     _OrderKwargs,
     total=False,
 ):
     """Extra parameters to :func:`cmomy.zeros_like`"""
 
-    mom_dims: MomDims | None
     subok: bool
     chunks: Any
     chunked_array_type: str | None
