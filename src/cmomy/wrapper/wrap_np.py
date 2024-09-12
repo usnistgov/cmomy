@@ -151,7 +151,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     @property
     @docfiller_abc()
     def mom_shape(self) -> MomentsStrict:
-        return self.obj.shape[-self._mom_ndim :]  # type: ignore[return-value]
+        return self._obj.shape[-self._mom_ndim :]  # type: ignore[return-value]
 
     # Reimplement to get dtype correct
     @property

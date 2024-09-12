@@ -41,6 +41,7 @@ def wrapped(rng, request) -> CentralMoments[np.float64]:
             ValueError,
             "Moments must be positive",
         ),
+        ({"obj": [1, 2, 3], "mom_ndim": 2}, ValueError, ".*Possibly more mom_ndim.*"),
         ({"obj": [1, 2, 3], "mom_ndim": 1, "fastpath": True}, TypeError, "Must pass.*"),
         ({"obj": np.zeros(3, dtype=np.float16), "mom_ndim": 1}, ValueError, None),
     ],

@@ -573,7 +573,7 @@ def test_resample_data_dataset(data_and_kwargs, nrep, paired) -> None:
 
     dfreq = cmomy.randsamp_freq(data=ds, **kwargs, nrep=nrep, rng=0, paired=paired)
 
-    out = cmomy.resample_data(ds, **kwargs, freq=dfreq)  # type: ignore[type-var]
+    out = cmomy.resample_data(ds, **kwargs, freq=dfreq)
     dim = kwargs["dim"]
     for name in ds:
         da = ds[name]
@@ -583,7 +583,7 @@ def test_resample_data_dataset(data_and_kwargs, nrep, paired) -> None:
             da = cmomy.resample_data(
                 da,
                 **kwargs,
-                freq=dfreq if is_dataarray(dfreq) else dfreq[name],  # type: ignore[index]
+                freq=dfreq if is_dataarray(dfreq) else dfreq[name],
                 move_axis_to_end=True,
             )
 
