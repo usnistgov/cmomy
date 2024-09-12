@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 from xarray.namedarray.utils import either_dict_or_kwargs
 
-from .core.array_utils import normalize_axis_tuple, select_dtype
+from .core.array_utils import normalize_axis_tuple, raise_if_wrong_value, select_dtype
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
@@ -157,9 +157,9 @@ def moveaxis(
             x, axis=dest, dim=dest_dim, mom_ndim=mom_ndim
         )
 
-        if len(dims0) != len(dims1):
-            msg = "`dim` and `dest_dim` must have same length"
-            raise ValueError(msg)
+        raise_if_wrong_value(
+            len(dims0), len(dims1), "`dim` and `dest_dim` must have same length."
+        )
 
         order = [n for n in range(x.ndim) if n not in axes0]
         for dst, src in sorted(zip(axes1, axes0)):
@@ -312,9 +312,13 @@ def select_moment(
                 coords_combined = mom_dims
             elif isinstance(coords_combined, str):
                 coords_combined = [coords_combined]
-            if len(coords_combined) != mom_ndim:
-                msg = f"{len(coords_combined)=} must equal {mom_ndim=}"
-                raise ValueError(msg)
+
+            raise_if_wrong_value(
+                len(coords_combined),
+                mom_ndim,
+                "`len(coords_combined)` must equal `mom_ndim`.",
+            )
+
         else:
             output_core_dims = [[]]
             output_sizes = None
@@ -711,9 +715,8 @@ def vals_to_data(
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     dtype = select_dtype(x, out=out, dtype=dtype)
     weight = 1.0 if weight is None else weight
-    if len(y) != mom_ndim - 1:
-        msg = "Supply single value for ``y`` if and only if ``mom_ndim==2``."
-        raise ValueError(msg)
+
+    raise_if_wrong_value(len(y), mom_ndim - 1, "`len(y)` should equal `mom_ndim -1`.")
 
     args: list[Any] = [x, weight, *y]
     if is_xarray(x):

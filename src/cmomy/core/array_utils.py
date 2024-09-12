@@ -30,6 +30,9 @@ if TYPE_CHECKING:
         NDArrayAny,
         ScalarT,
     )
+    from .typing_compat import TypeVar
+
+    _T = TypeVar("_T")
 
 
 # * Array order ---------------------------------------------------------------
@@ -146,13 +149,11 @@ def axes_data_reduction(
     ]
 
 
-def raise_if_wrong_shape(
-    array: NDArrayAny, shape: tuple[int, ...], name: str | None = None
-) -> None:
-    """Raise error if array.shape != shape"""
-    if array.shape != shape:
-        name = "out" if name is None else name
-        msg = f"{name}.shape={array.shape=} != required shape {shape}"
+def raise_if_wrong_value(value: _T, expected: _T, message: str | None = None) -> None:
+    """Raise error if value != expected_value"""
+    if value != expected:
+        message = message or "Wrong value."
+        msg = f"{message} Passed {value}. Expected {expected}."
         raise ValueError(msg)
 
 

@@ -471,3 +471,14 @@ def test_from_raw(wrapped) -> None:
     np.testing.assert_allclose(
         new, cmomy.convert.moments_type(raw, mom_ndim=mom_ndim, to="central")
     )
+
+
+def test_jackknife_and_reduce(rng) -> None:
+    data = rng.random((10, 2, 3))
+
+    c = cmomy.CentralMomentsArray(data)
+
+    a = c.jackknife_and_reduce(axis=0)
+    b = c.jackknife_and_reduce(axis=0, data_reduced=c.reduce(axis=0))
+
+    np.testing.assert_allclose(a, b)

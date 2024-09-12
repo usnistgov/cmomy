@@ -18,6 +18,7 @@ from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
     get_axes_from_values,
+    raise_if_wrong_value,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -363,18 +364,13 @@ def _validate_resample_array(
     x = np.asarray(x, dtype=dtype)
     if check:
         name = "freq" if is_freq else "indices"
-        if x.ndim != 2:
-            msg = f"{name}.ndim={x.ndim} != 2"
-            raise ValueError(msg)
+        raise_if_wrong_value(x.ndim, 2, f"`{name}` has wrong number of dimensions.")
 
-        if nrep is not None and x.shape[0] != nrep:
-            msg = f"{name}.shape[0]={x.shape[0]} != {nrep}"
-            raise ValueError(msg)
+        if nrep is not None:
+            raise_if_wrong_value(x.shape[0], nrep, "Wrong nrep.")
 
         if is_freq:
-            if x.shape[1] != ndat:
-                msg = f"{name} has wrong ndat"
-                raise ValueError(msg)
+            raise_if_wrong_value(x.shape[1], ndat, "Wrong ndat.")
 
         else:
             # only restriction is that values in [0, ndat)
@@ -1692,10 +1688,11 @@ def _jackknife_vals(
         dtype = select_dtype(x, out=out, dtype=dtype)
 
     raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
-
-    if data_reduced.shape[-mom_ndim:] != mom_to_mom_shape(mom):
-        msg = f"{data_reduced.shape[-mom_ndim:]=} inconsistent with {mom=}"
-        raise ValueError(msg)
+    raise_if_wrong_value(
+        data_reduced.shape[-mom_ndim:],
+        mom_to_mom_shape(mom),
+        "Wrong moment shape of data_reduced.",
+    )
 
     axes: AxesGUFunc = [
         # data_reduced

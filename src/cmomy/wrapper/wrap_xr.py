@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 from module_utilities import cached
 
+from cmomy.core.array_utils import raise_if_wrong_value
 from cmomy.core.missing import MISSING
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
@@ -216,9 +217,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             raise ValueError(msg)
         self._raise_if_wrong_mom_shape(get_mom_shape(obj_, self._mom_dims))
 
-        if verify and self._obj.sizes != obj_.sizes:
-            msg = f"{self.obj.sizes=} != obj.sizes={obj_.sizes}"
-            raise ValueError(msg)
+        if verify:
+            raise_if_wrong_value(obj_.sizes, self._obj.sizes, "Wrong `obj.sizes`.")
 
         if not fastpath:
             copy = False if copy is None else copy

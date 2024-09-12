@@ -10,6 +10,7 @@ import xarray as xr
 from cmomy.core.array_utils import (
     arrayorder_to_arrayorder_cf,
     axes_data_reduction,
+    raise_if_wrong_value,
 )
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.missing import MISSING
@@ -269,9 +270,12 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         else:
             obj = np.asarray(obj, dtype=dtype)
             self._raise_if_wrong_mom_shape(obj.shape[-self.mom_ndim :])
-            if verify and obj.shape != self.obj.shape:
-                msg = f"{obj.shape=} != {self.obj.shape=}"
-                raise ValueError(msg)
+            if verify:
+                raise_if_wrong_value(
+                    obj.shape,
+                    self.obj.shape,
+                    "With `verify`, `obj` shape must equal `self.shape`.",
+                )
 
         return type(self)(
             obj=obj,
@@ -1173,9 +1177,11 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                     # try to convert to tuple
                     mom_dims = tuple(mom_dims)  # type: ignore[arg-type]
 
-                if len(mom_dims) != self.mom_ndim:
-                    msg = f"{mom_dims=} != {self.mom_ndim=}"
-                    raise ValueError(msg)
+                raise_if_wrong_value(
+                    len(mom_dims),
+                    self.mom_ndim,
+                    "`len(mom_dims)` must equal `mom_dims`.",
+                )
 
                 dims_output = dims + mom_dims
 

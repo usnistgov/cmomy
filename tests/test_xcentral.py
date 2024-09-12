@@ -80,7 +80,7 @@ def test_new_like2() -> None:
     assert x2.shape == (2, 3, 4)
     assert x2.dims == ("a", "b", "mom")
 
-    with pytest.raises(ValueError, match=r".*Moments shape.*"):
+    with pytest.raises(ValueError, match=r".*moments shape.*"):
         c.new_like(xr.DataArray(np.zeros((2, 3, 4)), dims=c.dims))
 
     with pytest.raises(ValueError, match=r".*sizes.*"):

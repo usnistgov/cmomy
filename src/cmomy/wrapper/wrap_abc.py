@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING, Any, Generic, cast, overload
 
 import numpy as np
 
+from cmomy.core.array_utils import raise_if_wrong_value
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.typing import GenArrayT
@@ -338,9 +339,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         raise ValueError(msg)
 
     def _raise_if_wrong_mom_shape(self, mom_shape: tuple[int, ...]) -> None:
-        if mom_shape != self.mom_shape:
-            msg = f"Moments shape={mom_shape} != {self.mom_shape=}"
-            raise ValueError(msg)
+        raise_if_wrong_value(mom_shape, self.mom_shape, "Wrong moments shape.")
 
     @staticmethod
     def _raise_notimplemented_for_dataset() -> NoReturn:
@@ -353,9 +352,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
     @staticmethod
     def _check_y(y: tuple[Any, ...], mom_ndim: int) -> None:
-        if len(y) + 1 != mom_ndim:
-            msg = f"Number of arrays {len(y) + 1} != {mom_ndim=}"
-            raise ValueError(msg)
+        raise_if_wrong_value(
+            len(y), mom_ndim - 1, "`len(y)` must equal `mom_ndim - 1`."
+        )
 
     @classmethod
     def _mom_dims_kws(
@@ -503,9 +502,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         if type(self) is not type(other):
             msg = f"{type(self)=} != {type(other)=}"
             raise TypeError(msg)
-        if self.mom_shape != other.mom_shape:
-            msg = f"{self.mom_shape=} != {other.mom_shape=}"
-            raise ValueError(msg)
+        self._raise_if_wrong_mom_shape(other.mom_shape)
 
     def __iadd__(self, other: Self) -> Self:  # noqa: PYI034
         """Self adder."""

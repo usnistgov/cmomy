@@ -194,7 +194,7 @@ def test_indexed_bad_scale(rng: np.random.Generator) -> None:
     by = [0] * 5 + [1] * 5
     _group, index, start, end = cmomy.reduction.factor_by_to_index(by)
     # bad scale
-    with pytest.raises(ValueError, match=".*len.*scale.*"):
+    with pytest.raises(ValueError, match=".*`scale` and `index`.*"):
         _ = cmomy.reduction.reduce_data_indexed(
             data,
             mom_ndim=1,
@@ -215,7 +215,7 @@ def test_indexed_bad_scale(rng: np.random.Generator) -> None:
 )
 def test_grouped_bad_by(by: list[int]) -> None:
     data = np.zeros((10, 2, 4))
-    with pytest.raises(ValueError, match=".*data.shape.*"):
+    with pytest.raises(ValueError, match=".*Wrong length of `by`.*"):
         cmomy.reduce_data_grouped(data, mom_ndim=1, by=by, axis=0)
 
 
@@ -242,7 +242,7 @@ def test__validate_index() -> None:
         _ = cmomy.reduction._validate_index(4, [0, 1, 2, 3, 4], group_start, group_end)
 
     # mismatch group start/end
-    with pytest.raises(ValueError, match=r".*len.*start.*len.*end.*"):
+    with pytest.raises(ValueError, match=r".*`group_start` and `group_end`.*"):
         _ = cmomy.reduction._validate_index(4, index, [0, 1], [1, 2, 3])
 
     # end < start

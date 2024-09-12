@@ -46,7 +46,7 @@ def test_getitem() -> None:
     assert c[0, ...].obj.shape == (3, 4, 4)
     assert c[:, 1:, 2:, :].obj.shape == (2, 2, 2, 4)
 
-    with pytest.raises(ValueError, match=".*Moments shape.*"):
+    with pytest.raises(ValueError, match=".*Wrong moments shape.*"):
         _ = c[..., 1:]
 
 

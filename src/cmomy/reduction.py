@@ -17,6 +17,7 @@ from .core.array_utils import (
     get_axes_from_values,
     normalize_axis_tuple,
     optional_keepdims,
+    raise_if_wrong_value,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -949,10 +950,7 @@ def _reduce_data_grouped(
 
     # include inner core dims for by
     axes = axes_data_reduction((-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
-
-    if len(by) != data.shape[axis]:
-        msg = f"{len(by)=} != {data.shape[axis]=}"
-        raise ValueError(msg)
+    raise_if_wrong_value(len(by), data.shape[axis], "Wrong length of `by`.")
 
     if out is None:
         ngroup = by.max() + 1
@@ -1083,9 +1081,11 @@ def _validate_index(
         _validate("group_start", group_start, nindex)
         _validate("group_end", group_end, nindex + 1)
 
-    if len(group_start) != len(group_end):
-        msg = "len(start) != len(end)"
-        raise ValueError(msg)
+    raise_if_wrong_value(
+        len(group_start),
+        len(group_end),
+        "`group_start` and `group_end` must have same length",
+    )
 
     if (group_end < group_start).any():
         msg = "Found end < start"
@@ -1381,9 +1381,9 @@ def _reduce_data_indexed(
         scale = np.broadcast_to(np.dtype(dtype).type(1), index.shape)
     else:
         scale = asarray_maybe_recast(scale, dtype=dtype, recast=False)
-        if len(scale) != len(index):
-            msg = f"{len(scale)=} != {len(index)=}"
-            raise ValueError(msg)
+        raise_if_wrong_value(
+            len(scale), len(index), "`scale` and `index` must have same length."
+        )
 
     # include inner dims for index, start, end, scale
     axes = axes_data_reduction(
