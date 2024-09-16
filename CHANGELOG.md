@@ -18,6 +18,31 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.17.0 — 2024-09-16
+
+### Added
+
+- Now fully support wrapping `xarray.Dataset` objects
+- Complete rewrite of wrapper classes
+- Added `wrapper` factory methods `cmomy.wrap`, `cmomy.wrap_reduce_vals`, etc.
+  These automatically select from `CentralMomentsArray` and
+  `CentralMomentsData`.
+- Renamed `CentralMoments` to `CentralMomentsArray` and `xCentralMoments` to
+  `CentralMomentsData`. The former is parametrized across numpy arrays. The
+  later is parametrized to work with either `xarray.DataArray` or
+  `xarray.Dataset` objects.
+- Full support `dask` backed `xarray` objects. This will be lazily evaluated.
+- Removed `CentralMomentsArray/Data.block` method. Instead, there is a `block`
+  keyword in `reduce` method.
+- `to_dataarray`, `to_dataset`, etc, method of `CentralMomentsArray/Data` now
+  return a wrapped object instead of an `xarray` object. To access the
+  underlying `xarray` object, use the `obj` attribute.
+- Removed `values` and `data` attributes from `CentralMomentsArray/Data` wrapper
+  classes. Now wrap either an array or `xarray` object directly (instead of only
+  really wrapping `numpy` arrays in the old code). To access the wrapped object,
+  now use `obj` attribute.
+- Now include testing of typing (`mypy` and `pyright`) support.
+
 ## v0.16.0 — 2024-08-06
 
 ### Added
