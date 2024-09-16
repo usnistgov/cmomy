@@ -28,6 +28,9 @@ def pytest_addoption(parser) -> None:
         "--run-slow", action="store_true", default=False, help="run slow tests"
     )
     parser.addoption(
+        "--typing", action="store_true", default=False, help="run tests on typing"
+    )
+    parser.addoption(
         "--compile",
         action="store_true",
         help="""
@@ -40,20 +43,18 @@ def pytest_addoption(parser) -> None:
 
 def pytest_configure(config) -> None:
     config.addinivalue_line("markers", "slow: mark test as slow to run")
+    config.addinivalue_line("markers", "typing: mark that test if for typing")
     if config.getoption("--compile"):
         from cmomy.compile import load_numba_modules
 
         load_numba_modules()
 
 
-def pytest_collection_modifyitems(config, items) -> None:
-    if config.getoption("--run-slow"):
-        # --runslow given in cli: do not skip slow tests
-        return
-    skip_slow = pytest.mark.skip(reason="need --run-slow option to run")
-    for item in items:
-        if "slow" in item.keywords:
-            item.add_marker(skip_slow)
+def pytest_runtest_setup(item):
+    if "slow" in item.keywords and not item.config.getoption("--run-slow"):
+        pytest.skip("need --run-slow option to run")
+    if "typing" in item.keywords and not item.config.getoption("--typing"):
+        pytest.skip("need --typing option to run")
 
 
 def pytest_ignore_collect(collection_path) -> None:

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
-    from numpy.typing import DTypeLike
+    from numpy.typing import DTypeLike, NDArray
 
     from .typing import (
         AxisReduce,
@@ -29,23 +29,53 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
     )
-    from .typing_compat import TypeGuard, TypeVar
+    from .typing_compat import TypeIs, TypeVar
 
     T = TypeVar("T")
 
 
+# * TypeGuards ----------------------------------------------------------------
+def is_ndarray(x: Any) -> TypeIs[NDArray[Any]]:
+    """Typeguard ndarray."""
+    return isinstance(x, np.ndarray)
+
+
+def is_dataarray(x: Any) -> TypeIs[xr.DataArray]:
+    """Typeguard dataarray."""
+    return isinstance(x, xr.DataArray)
+
+
+def is_dataset(x: Any) -> TypeIs[xr.Dataset]:
+    """Typeguard dataset"""
+    return isinstance(x, xr.Dataset)
+
+
+def is_xarray(x: Any) -> TypeIs[xr.Dataset | xr.DataArray]:
+    """Typeguard xarray object"""
+    return isinstance(x, (xr.DataArray, xr.Dataset))
+
+
+# * Raises --------------------------------------------------------------------
+def raise_if_wrong_value(value: T, expected: T, message: str | None = None) -> None:
+    """Raise error if value != expected_value"""
+    if value != expected:
+        message = message or "Wrong value."
+        msg = f"{message} Passed {value}. Expected {expected}."
+        raise ValueError(msg)
+
+
 # * Moment validation ---------------------------------------------------------
-def is_mom_ndim(mom_ndim: int) -> TypeGuard[Mom_NDim]:
+def is_mom_ndim(mom_ndim: int | None) -> TypeIs[Mom_NDim]:
     """Validate mom_ndim."""
     return mom_ndim in {1, 2}
 
 
-def is_mom_tuple(mom: tuple[int, ...]) -> TypeGuard[MomentsStrict]:
+def is_mom_tuple(mom: tuple[int, ...]) -> TypeIs[MomentsStrict]:
     """Validate moment tuple"""
     return len(mom) in {1, 2} and all(m > 0 for m in mom)
 
 
-def validate_mom_ndim(mom_ndim: int) -> Mom_NDim:
+def validate_mom_ndim(mom_ndim: int | None) -> Mom_NDim:
     """Raise error if mom_ndim invalid."""
     if is_mom_ndim(mom_ndim):
         return mom_ndim
@@ -135,6 +165,7 @@ def validate_mom_and_mom_ndim(
 @docfiller.decorate
 def validate_floating_dtype(
     dtype: DTypeLike,
+    name: Hashable = "array",
 ) -> None | np.dtype[np.float32] | np.dtype[np.float64]:
     """
     Validate that dtype is conformable float32 or float64.
@@ -160,7 +191,7 @@ def validate_floating_dtype(
     if dtype.type in {np.float32, np.float64}:
         return dtype  # type: ignore[return-value]
 
-    msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
+    msg = f"{dtype=} not supported for {name}.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
 
 
@@ -206,7 +237,11 @@ def validate_mom_dims(
 ) -> MomDimsStrict:
     """Validate mom_dims to correct form."""
     if mom_dims is None:
-        if isinstance(out, xr.DataArray):
+        if is_dataset(out):
+            # select first array in dataset
+            out = out[next(iter(out))]
+
+        if is_dataarray(out):
             return cast("MomDimsStrict", out.dims[-mom_ndim:])
 
         if mom_ndim == 1:
@@ -217,12 +252,12 @@ def validate_mom_dims(
     if isinstance(mom_dims, str):
         validated = (mom_dims,)
     elif isinstance(mom_dims, (tuple, list)):
-        validated = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+        validated = tuple(mom_dims)  # pyright: ignore[reportUnknownArgumentType]
     else:
         msg = f"Unknown {type(mom_dims)=}.  Expected str or Sequence[str]"
         raise TypeError(msg)
 
-    if len(validated) != mom_ndim:  # pyright: ignore[reportUnknownArgumentType]
+    if len(validated) != mom_ndim:
         msg = f"mom_dims={validated} inconsistent with {mom_ndim=}"
         raise ValueError(msg)
     return cast("MomDimsStrict", validated)

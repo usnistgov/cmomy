@@ -11,11 +11,13 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
+  - dask
   - docstring-inheritance
   - ipykernel
   - ipython
   - lazy_loader
   - module-utilities>=0.6
+  - mypy>=1.11.2
   - nbclient>=0.10.0
   - nbval
   - nox>=2024.4.15
@@ -23,7 +25,6 @@ dependencies:
   - numpy>1.24
   - packaging
   - pandas-stubs
-  - pipx
   - pre-commit
   - pytest
   - pytest-cov
@@ -31,7 +32,8 @@ dependencies:
   - pytest-xdist
   - scipy
   - typing-extensions
-  - xarray>=0.16
+  - uv
+  - xarray>=2023.9.0
   - pip
   - pip:
       - pytest-accept

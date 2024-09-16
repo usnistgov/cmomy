@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
 from __future__ import annotations
 
 from functools import partial
@@ -7,65 +7,72 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import convert
+from cmomy.core.utils import mom_to_mom_shape
 
 
-def test_to_raw_moments(other) -> None:
-    raw = other.raw
-    if raw is not None:
-        # straight convert
-
-        r = convert.moments_type(other.to_values(), mom_ndim=other.mom_ndim, to="raw")
-        np.testing.assert_allclose(r, raw)
-
-        out = np.zeros_like(raw)
-        _ = convert.moments_type(
-            other.to_values(), mom_ndim=other.mom_ndim, to="raw", out=out
+# * Convert
+def get_raw_moments(*xy, weight, mom, axis):
+    if len(xy) == 1:
+        x = xy[0]
+        if isinstance(mom, tuple):
+            mom = mom[0]
+        return np.stack(
+            [np.average(x**i, weights=weight, axis=axis) for i in range(mom + 1)],
+            axis=-1,
         )
-        np.testing.assert_allclose(out, raw)
 
-        np.testing.assert_allclose(raw, other.s.to_raw())
-
-        # test with weights
-        for w in [10.0, 1.0]:
-            expected = raw.copy()
-            if other.mom_ndim == 1:
-                expected[..., 0] = w
-            else:
-                expected[..., 0, 0] = w
-
-            np.testing.assert_allclose(expected, other.s.to_raw(weight=w))
-
-            if w == 1.0:
-                np.testing.assert_allclose(expected, other.s.rmom())
+    assert len(xy) == len(mom) == 2
+    x, y = xy
+    shape = (*x.shape[:axis], *x.shape[axis + 1 :], *mom_to_mom_shape(mom))
+    out = np.zeros(shape)
+    for i in range(mom[0] + 1):
+        for j in range(mom[1] + 1):
+            out[..., i, j] = np.average(x**i * y**j, weights=weight, axis=axis)
+    return out
 
 
-def test_raises_convert_moments() -> None:
-    x = np.zeros(3)
-
-    for to in ["raw", "central"]:
-        with pytest.raises(ValueError):
-            convert.moments_type(x, mom_ndim=2, to=to)  # type: ignore[call-overload]
-
-
-def test_to_central_moments(other) -> None:
-    raw = other.s.to_raw()
-
-    cen = convert.moments_type(raw, to="central", mom_ndim=other.mom_ndim)
-    np.testing.assert_allclose(cen, other.to_values())
-
-    # also test from raw method
-    t = other.cls.from_raw(raw, mom_ndim=other.mom_ndim)
-    np.testing.assert_allclose(t.to_values(), other.to_values(), rtol=1e-6, atol=1e-14)
+@pytest.fixture
+def data_and_kwargs(rng, request):
+    shapes, kwargs = request.param
+    if isinstance(shapes, list):
+        data = [rng.random(s) for s in shapes]
+    else:
+        data = rng.random(shapes)
+    return data, kwargs
 
 
-def test_from_raw(other) -> None:
-    raws = np.array([s.to_raw() for s in other.S])
-    t = other.cls.from_raw(
-        raws,
-        mom_ndim=other.mom_ndim,
-    ).reduce(axis=0)
-    np.testing.assert_allclose(t.to_values(), other.to_values())
+def unpack_data_to_xy_weight(data, mom):
+    if len(data) == len(mom):
+        return data, None
+    if len(data) == len(mom) + 1:
+        return data[:-1], data[-1]
+    msg = f"bad unpack: {len(data)=}, {len(mom)=}"
+    raise ValueError(msg)
+
+
+@pytest.mark.parametrize(
+    "data_and_kwargs",
+    [
+        ([20], {"mom": (4,), "axis": 0}),
+        ([20, 20], {"mom": (4,), "axis": 0}),
+        ([(20, 3), (20, 3)], {"mom": (4,), "axis": 0}),
+        ([(20, 3), (20, 3), (20, 3)], {"mom": (4, 4), "axis": 0}),
+    ],
+    indirect=True,
+)
+def test_raw(data_and_kwargs) -> None:
+    data, kwargs = data_and_kwargs
+    xy, weight = unpack_data_to_xy_weight(data, kwargs["mom"])
+
+    raw = get_raw_moments(*xy, weight=weight, **kwargs)
+    c = cmomy.wrap_reduce_vals(*xy, weight=weight, **kwargs)
+    np.testing.assert_allclose(c.to_raw(weight=1), raw)
+
+    # from raw
+    cr = cmomy.wrap_raw(raw, mom_ndim=len(kwargs["mom"]))  # pyright: ignore[reportArgumentType, reportCallIssue]
+    np.testing.assert_allclose(cr, c.assign_moment(weight=1.0))
 
 
 # * Moments to comoments
@@ -126,7 +133,13 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     c2x = c2.to_x(mom_dims=("a", "b"))
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims=("a", "b")).values, c2x.values
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).obj, c2x.obj
+    )
+
+    # same mom name as original
+    xr.testing.assert_allclose(
+        cx.moments_to_comoments(mom=(1, -1)).obj,
+        c2x.obj.rename({"a": "mom_0", "b": "mom_1"}),
     )
 
     # raise error for mom_ndim=2
@@ -138,18 +151,17 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     cx = c.to_x(attrs={"hello": "there"})
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims=("a", "b")).values, c2x.values
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).obj, c2x.obj
     )
 
     c2x = c2.to_x(mom_dims=("a", "b"), attrs={"hello": "there"})
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(
-            mom=(1, -1), mom_dims=("a", "b"), keep_attrs=True
-        ).values,
-        c2x.values,
+        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b"), keep_attrs=True).obj,
+        c2x.obj,
     )
 
 
+# * Cumulative
 @pytest.mark.parametrize(
     ("shape", "axis", "mom_ndim"),
     [

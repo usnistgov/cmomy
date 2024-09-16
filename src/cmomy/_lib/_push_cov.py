@@ -6,13 +6,15 @@ from typing import TYPE_CHECKING
 
 import numba as nb
 
+from ._binomial import BINOMIAL_FACTOR
 from .decorators import myjit
-from .utils import BINOMIAL_FACTOR
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from cmomy.core.typing import FloatT, NDGeneric
+
+_INLINE: bool | None = None
 
 
 @myjit(
@@ -20,7 +22,7 @@ if TYPE_CHECKING:
         (nb.float32, nb.float32, nb.float32, nb.float32[:, :]),
         (nb.float64, nb.float64, nb.float64, nb.float64[:, :]),
     ],
-    inline=True,
+    inline=_INLINE,
 )
 def push_val(
     x0: NDGeneric[FloatT],
@@ -99,7 +101,7 @@ def push_val(
         (nb.float32[:, :], nb.float32[:, :]),
         (nb.float64[:, :], nb.float64[:, :]),
     ],
-    inline=True,
+    inline=_INLINE,
 )
 def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
     w = data[0, 0]
@@ -178,7 +180,7 @@ def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
         (nb.float32[:, :], nb.float32, nb.float32[:, :]),
         (nb.float64[:, :], nb.float64, nb.float64[:, :]),
     ],
-    inline=True,
+    inline=_INLINE,
 )
 def push_data_scale(
     data: NDArray[FloatT], scale: float | FloatT, out: NDArray[FloatT]

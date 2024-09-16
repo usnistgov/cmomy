@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
 # pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
@@ -8,8 +8,10 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
 from cmomy import utils
 from cmomy.core.utils import mom_to_mom_ndim
+from cmomy.core.validate import is_dataarray, is_ndarray
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
@@ -125,7 +127,7 @@ def _do_test_select_moment_mom_ndim(
     np.testing.assert_allclose(out, np.asarray(data)[index])
 
     if (
-        isinstance(out, xr.DataArray)
+        is_dataarray(out)
         and kwargs["name"] in {"ave", "var"}
         and (mom_ndim != 1 or not kwargs.get("squeeze", True))
     ):
@@ -226,13 +228,24 @@ def _do_test_assign_moment_mom_ndim(
     index,
     copy,
     scalar,
+    name,
+    use_xr_value=True,
     **kwargs,
 ):
     value: float | NDArrayAny | xr.DataArray
     if scalar:
         value = -10
-    elif isinstance(data, xr.DataArray):
-        value = xr.full_like(data[index], -10)
+    elif is_dataarray(data):
+        template = utils.select_moment(
+            data, name, mom_ndim=mom_ndim, squeeze=kwargs.get("squeeze", True)
+        )
+        value = xr.full_like(template, -10)
+        if "variable" in value.dims:
+            kwargs["dim_combined"] = "variable"
+
+        if not use_xr_value:
+            value = np.asarray(value)
+
     else:
         shape = data[index].shape
         if len(shape) > 2:
@@ -240,11 +253,14 @@ def _do_test_assign_moment_mom_ndim(
         value = np.full(shape, fill_value=-10)
 
     check = data.copy()
-    check[index] = value
+    if is_dataarray(check):
+        check.data[index] = value
+    else:
+        check[index] = value
 
     out = utils.assign_moment(
         data,
-        value=value,
+        {name: value},
         **kwargs,
         copy=copy,
         mom_ndim=mom_ndim,
@@ -254,6 +270,17 @@ def _do_test_assign_moment_mom_ndim(
         assert np.shares_memory(out, data)
 
     np.testing.assert_allclose(out, check)
+
+    # CentralMoments
+    c0 = (cmomy.xCentralMoments if is_dataarray(data) else cmomy.CentralMoments)(
+        data, mom_ndim=mom_ndim
+    )
+    c1 = c0.assign_moment({name: value}, **kwargs, copy=copy)
+
+    np.testing.assert_allclose(out, c1)
+
+    if not copy:
+        assert np.shares_memory(c0, c1)
 
 
 @pytest.mark.parametrize(
@@ -275,6 +302,7 @@ def _do_test_assign_moment_mom_ndim(
         ({"name": "xave"}, (..., 1)),
         ({"name": "xvar"}, (..., 2)),
         ({"name": "cov"}, (..., 2)),
+        ({"name": "all"}, (...,)),
     ],
 )
 @pytest.mark.parametrize("scalar", [True, False])
@@ -293,6 +321,11 @@ def test_assign_moment_mom_ndim_1(
         data = xr.DataArray(data)
 
     _do_test_assign_moment_mom_ndim(data, 1, index, scalar=scalar, copy=copy, **kwargs)
+
+    if as_dataarray:
+        _do_test_assign_moment_mom_ndim(
+            data, 1, index, scalar=scalar, copy=copy, use_xr_value=False, **kwargs
+        )
 
 
 @pytest.mark.parametrize(
@@ -332,6 +365,47 @@ def test_assign_moment_mom_ndim_2(
         data = xr.DataArray(data)
 
     _do_test_assign_moment_mom_ndim(data, 2, index, scalar=scalar, copy=copy, **kwargs)
+
+
+_rng = np.random.default_rng(0)
+
+
+@pytest.mark.parametrize(
+    ("data", "mom_ndim"),
+    [
+        (_rng.random(3), 1),
+        (_rng.random((3, 3)), 1),
+        (_rng.random((3, 3, 3)), 1),
+        (_rng.random((3, 3)), 2),
+        (_rng.random((3, 3, 3)), 2),
+        (_rng.random((3, 3, 3, 3)), 2),
+    ],
+)
+@pytest.mark.parametrize(
+    "wrapper",
+    [lambda x: x, xr.DataArray, lambda x: xr.Dataset({"x": xr.DataArray(x)})],
+)
+@pytest.mark.parametrize(
+    "moment",
+    [
+        {"weight": 0, "ave": 1},
+        {"weight": 0, "var": 1},
+    ],
+)
+def test_assign_moment_multiple(data, mom_ndim, wrapper, moment) -> None:
+    kwargs = {"mom_ndim": mom_ndim}
+    data = wrapper(data)
+
+    expected = data
+    for k, v in moment.items():
+        expected = cmomy.assign_moment(expected, {k: v}, **kwargs)
+
+    out = cmomy.assign_moment(data, moment, **kwargs)
+
+    if is_ndarray(data):
+        np.testing.assert_allclose(expected, out)
+    else:
+        xr.testing.assert_allclose(expected, out)
 
 
 # * Vals -> Data
@@ -395,8 +469,8 @@ def test_vals_to_data_xarray() -> None:
     y = xr.DataArray(np.full((3, 4), 0.3), dims=["c", "d"])
 
     out0 = utils.vals_to_data(x, y, weight=0.1, mom=(2, 2), mom_dims=("x", "y"))
-    assert out0.dims == ("c", "d", "a", "b", "x", "y")
-    assert out0.shape == (3, 4, 1, 2, 3, 3)
+    assert out0.dims == ("a", "b", "c", "d", "x", "y")
+    assert out0.shape == (1, 2, 3, 4, 3, 3)
 
     out = xr.DataArray(
         np.zeros((1, 2, 3, 4, 3, 3), dtype=np.float32),

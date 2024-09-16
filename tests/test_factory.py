@@ -7,7 +7,6 @@ import pytest
 from cmomy._lib import (
     convert,
     convert_cov,
-    factory,
     indexed,
     indexed_cov,
     indexed_cov_parallel,
@@ -25,7 +24,7 @@ from cmomy._lib import (
     rolling_cov_parallel,
     rolling_parallel,
 )
-from cmomy._lib.factory import (
+from cmomy.factory import (
     factory_convert,
     factory_cumulative,
     factory_jackknife_data,
@@ -47,6 +46,7 @@ from cmomy._lib.factory import (
 if TYPE_CHECKING:
     from typing import Any, Callable
 
+    from cmomy import factory
     from cmomy.core.typing import Mom_NDim
 
     Func = Callable[..., Any]
@@ -64,14 +64,11 @@ if TYPE_CHECKING:
         ((False, 100, 100), False),
         ((False, 101, 100), False),
         # no size
-        ((None, None, None), False),
+        ((None, None), False),
         ((None, None, 100), False),
-        # mom_ndim
-        ((None, 51, 100, 2), True),
-        ((None, 50, 100, 2), False),
         # no cutoff
-        ((None, 1000, None), False),
-        ((None, 10001, None), True),
+        ((None, 1000), False),
+        ((None, 10001), True),
     ],
 )
 def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
@@ -86,7 +83,13 @@ def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
             factory_pusher,
             1,
             False,
-            (push.push_val, push.reduce_vals, push.push_data, push.reduce_data),
+            (
+                push.push_val,
+                push.reduce_vals,
+                push.push_data,
+                push.push_data_scale,
+                push.reduce_data,
+            ),
         ),
         (
             factory_pusher,
@@ -96,6 +99,7 @@ def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
                 push_parallel.push_val,
                 push_parallel.reduce_vals,
                 push_parallel.push_data,
+                push_parallel.push_data_scale,
                 push_parallel.reduce_data,
             ),
         ),
@@ -107,6 +111,7 @@ def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
                 push_cov.push_val,
                 push_cov.reduce_vals,
                 push_cov.push_data,
+                push_cov.push_data_scale,
                 push_cov.reduce_data,
             ),
         ),
@@ -118,6 +123,7 @@ def test_parallel_heuristic(args: tuple[Any, ...], expected: bool) -> None:
                 push_cov_parallel.push_val,
                 push_cov_parallel.reduce_vals,
                 push_cov_parallel.push_data,
+                push_cov_parallel.push_data_scale,
                 push_cov_parallel.reduce_data,
             ),
         ),

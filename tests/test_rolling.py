@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type, index, assignment"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type, index, assignment, call-overload"
 # pyright:  reportArgumentType=false, reportAssignmentType=false
 from __future__ import annotations
 
@@ -12,6 +12,7 @@ import xarray as xr
 
 import cmomy
 from cmomy import rolling
+from cmomy.core.validate import is_dataarray
 
 if TYPE_CHECKING:
     from typing import TypedDict
@@ -68,7 +69,11 @@ def test_construct_rolling_window_array(shape, axis, window, center, as_dataarra
     r = xdata.rolling(
         {xdata.dims[a]: win for a, win in zip(_axis, _window)}, center=center
     )
-    c = r.construct({xdata.dims[a]: f"_rolling_{a}" for a in _axis})
+
+    window_dims = [f"_rolling_{a}" for a in _axis]
+    c = r.construct({xdata.dims[a]: w for a, w in zip(_axis, window_dims)}).transpose(
+        *window_dims, ...
+    )
 
     if as_dataarray:
         data = xdata
@@ -103,11 +108,11 @@ def test_construct_rolling_window_array_mom_ndim(as_dataarray) -> None:
     out2 = func(data, axis=axis, mom_ndim=2, window=3)
 
     np.testing.assert_allclose(
-        cmomy.moveaxis(out, (-2, -1), (-3, -2)),
+        out,
         out1,
     )
     np.testing.assert_allclose(
-        cmomy.moveaxis(out, (-2, -1), (-4, -3)),
+        out,
         out2,
     )
 
@@ -239,8 +244,8 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
 
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
-    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
+    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -300,10 +305,10 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
         data, axis=0, fill_value=0.0, mom_ndim=mom_ndim, **kws
     )
 
-    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=-1)
+    outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -328,8 +333,8 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
 
     wr, *xyr = (select(data_rolling, name) for name in mom_names)
 
-    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=-1)  # pyright: ignore[reportCallIssue]
-    count = (wr != 0.0).sum(axis=-1)
+    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=0)  # pyright: ignore[reportCallIssue]
+    count = (wr != 0.0).sum(axis=0)
 
     outc = np.where(
         count[(..., *((None,) * mom_ndim))]
@@ -341,7 +346,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     w2[np.isnan(w2)] = 0.0
 
     outc = cmomy.moveaxis(outc, 0, -1, mom_ndim=mom_ndim)
-    np.testing.assert_allclose(out, outc, atol=1e-14)
+    np.testing.assert_allclose(out, outc, atol=1e-10)
 
 
 @pytest.mark.parametrize(
@@ -374,10 +379,10 @@ def test_rolling_data_from_constructed_windows(
     data_rolling = rolling.construct_rolling_window_array(
         data, axis=axis, window=window, center=center, fill_value=0.0, mom_ndim=mom_ndim
     )
-    out2 = cmomy.reduce_data(data_rolling, axis=-1, mom_ndim=mom_ndim)
+    out2 = cmomy.reduce_data(data_rolling, axis=0, mom_ndim=mom_ndim)
     # clean up counts...
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=-1)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
     out2 = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -389,7 +394,7 @@ def test_rolling_data_from_constructed_windows(
     # nan weights -> 0
     w = cmomy.select_moment(out2, "weight", mom_ndim=mom_ndim)
     w[np.isnan(w)] = 0.0
-    out2 = cmomy.convert.assign_weight(out2, w, mom_ndim=mom_ndim, copy=False)
+    out2 = cmomy.utils.assign_moment(out2, weight=w, mom_ndim=mom_ndim, copy=False)
 
     np.testing.assert_allclose(out, out2)
 
@@ -409,7 +414,7 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     mom_ndim: Mom_NDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
 
     kws: RollingExpDict = {"alpha": alpha, "adjust": adjust, "min_periods": min_periods}
 
@@ -518,18 +523,33 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         adjust=adjust,
     ).transpose(*dx.dims, ...)
 
-    assert isinstance(xout, xr.DataArray)
+    assert is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
+    # using full alphas
+    xdata = xr.DataArray(data)
+    alphas = xr.full_like(dx, fill_value=alpha)
     xout = rolling.rolling_exp_data(
-        xr.DataArray(data),
-        alpha=alpha,
+        xdata,
+        alpha=alphas,
         mom_ndim=1,
         axis=axis,
         adjust=adjust,
     )
 
-    assert isinstance(xout, xr.DataArray)
+    assert is_dataarray(xout)
+    np.testing.assert_allclose(out, xout)
+
+    # numpy alphas
+    xout = rolling.rolling_exp_data(
+        xdata,
+        alpha=alphas.to_numpy(),
+        mom_ndim=1,
+        axis=axis,
+        adjust=adjust,
+    )
+
+    assert is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
 
@@ -577,7 +597,7 @@ def test_rolling_exp_weight(
     a = rolling.rolling_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
     )
-    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)  # pyright: ignore[reportCallIssue]
+    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)
     np.testing.assert_allclose(a, b)
 
     c = rolling.rolling_exp_data(

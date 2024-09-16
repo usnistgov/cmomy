@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from cmomy.core import xr_utils
+from cmomy.core.validate import is_dataarray
 
 
 # * catch all args only test
@@ -16,6 +17,57 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
             func(*args, **kwargs)
     else:
         assert func(*args, **kwargs) == expected
+
+
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        (
+            {"apply_ufunc_kwargs": None},
+            {"dask": "forbidden", "dask_gufunc_kwargs": {}},
+        ),
+        (
+            {"apply_ufunc_kwargs": {"on_missing_core_dim": "copy"}},
+            {
+                "on_missing_core_dim": "copy",
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {},
+            },
+        ),
+        (
+            {
+                "apply_ufunc_kwargs": {"on_missing_core_dim": "copy"},
+                "on_missing_core_dim": "raise",
+            },
+            {
+                "on_missing_core_dim": "raise",
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {},
+            },
+        ),
+        (
+            {"output_sizes": {"rec": 2}},
+            {"dask": "forbidden", "dask_gufunc_kwargs": {"output_sizes": {"rec": 2}}},
+        ),
+        (
+            {"output_sizes": {"rec": 2}, "dask_gufunc_kwargs": {"hello": "there"}},
+            {
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {"hello": "there", "output_sizes": {"rec": 2}},
+            },
+        ),
+        (
+            {"output_dtypes": float},
+            {
+                "dask": "forbidden",
+                "dask_gufunc_kwargs": {},
+                "output_dtypes": float,
+            },
+        ),
+    ],
+)
+def test_get_apply_ufunc_kwargs(kws, expected) -> None:
+    _do_test(xr_utils.get_apply_ufunc_kwargs, expected=expected, **kws)
 
 
 @pytest.mark.parametrize(
@@ -41,6 +93,30 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
     ],
 )
 def test_select_axis_dim(data, kws, expected) -> None:
+    _do_test(xr_utils.select_axis_dim, data, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+            }
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"axis": 0}, ValueError),
+        ({"dim": "a"}, (0, "a")),
+    ],
+)
+def test_select_axis_dim_dataset(data, kws, expected) -> None:
     _do_test(xr_utils.select_axis_dim, data, expected=expected, **kws)
 
 
@@ -80,6 +156,37 @@ def test_select_axis_dim(data, kws, expected) -> None:
     ],
 )
 def test_select_axis_dim_mult(data, kws, expected) -> None:
+    _do_test(xr_utils.select_axis_dim_mult, data, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+            }
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"axis": 0}, ValueError),
+        ({"dim": None}, ((), ("a", "b", "mom"))),
+        ({"dim": None, "mom_ndim": 1}, ((), ("a", "b"))),
+        # This is exactly what select does.  It calculates mom_dims from dimensions of "first"
+        # array.
+        ({"dim": None, "mom_ndim": 2}, ((), ("a",))),
+        ({"dim": "a"}, ((), ("a",))),
+        ({"dim": "b"}, ((), ("b",))),
+        ({"dim": ("a", "b")}, ((), ("a", "b"))),
+    ],
+)
+def test_select_axis_dim_mult_dataset(data, kws, expected) -> None:
     _do_test(xr_utils.select_axis_dim_mult, data, expected=expected, **kws)
 
 
@@ -125,3 +232,68 @@ def test_move_mom_dims_to_end(x, kws, expected) -> None:
             xr_utils.move_mom_dims_to_end(x, **kws)
     else:
         assert xr_utils.move_mom_dims_to_end(x, **kws).dims == expected
+
+
+def test_raise_if_dataset() -> None:
+    x = xr.Dataset()
+
+    with pytest.raises(TypeError, match="Dataset not allowed."):
+        xr_utils.raise_if_dataset(x)
+
+    msg = "hello there"
+    with pytest.raises(TypeError, match=msg):
+        xr_utils.raise_if_dataset(x, msg=msg)
+
+
+@pytest.mark.parametrize(
+    ("data", "mom_dims", "expected"),
+    [
+        (xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"]), ("c",), (3,)),
+        (xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "mom"]), ("b", "a"), (2, 1)),
+        (
+            xr.Dataset(
+                {"data0": xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"])}
+            ),
+            ("c", "b"),
+            (3, 2),
+        ),
+    ],
+)
+def test_get_mom_shape(data, mom_dims, expected) -> None:
+    assert xr_utils.get_mom_shape(data, mom_dims) == expected
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "a": xr.DataArray(np.zeros((1, 2, 3))),
+                "b": xr.DataArray(np.zeros((1, 2, 3))),
+                "c": xr.DataArray(np.zeros((1, 2, 3))),
+            }
+        ),
+        xr.DataArray(np.zeros((1, 2, 3))),
+    ],
+)
+@pytest.mark.parametrize(
+    ("dtype", "expected"),
+    [
+        (np.float32, np.float32),
+        (
+            {"a": np.float32},
+            {"a": np.float32, "b": np.dtype("f8"), "c": np.dtype("f8")},
+        ),
+        (
+            {"a": np.float32, "b": np.int64},
+            {"a": np.float32, "b": np.int64, "c": np.dtype("f8")},
+        ),
+    ],
+)
+def test_astype_dtype_dict(data, dtype, expected) -> None:
+    if is_dataarray(data) and isinstance(dtype, dict):
+        with pytest.raises(ValueError):
+            xr_utils.astype_dtype_dict(data, dtype)
+
+    else:
+        assert xr_utils.astype_dtype_dict(data, dtype) == expected

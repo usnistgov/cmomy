@@ -8,18 +8,16 @@ from typing import TYPE_CHECKING
 import numba as nb
 
 from . import _push_cov as _push
-from .decorators import myguvectorize, myjit
+from .decorators import myguvectorize
 
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-if TYPE_CHECKING:
     from cmomy.core.typing import FloatT, NDArrayInt
 
 
 _PARALLEL = True  # Auto generated from indexed_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
-_jit = partial(myjit, parallel=_PARALLEL)
 
 
 @_vectorize(
@@ -36,12 +34,16 @@ _jit = partial(myjit, parallel=_PARALLEL)
             nb.float64[:, :, :],
         ),
     ],
+    writable=None,
 )
 def reduce_data_grouped(
-    data: NDArray[FloatT], group_idx: NDArrayInt, out: NDArray[FloatT]
+    data: NDArray[FloatT],
+    group_idx: NDArrayInt,
+    out: NDArray[FloatT],
 ) -> None:
     assert data.shape[1:] == out.shape[1:]
     assert group_idx.max() < out.shape[0]
+
     for s in range(data.shape[0]):
         group = group_idx[s]
         if group >= 0:

@@ -7,11 +7,13 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
+dask;python_version=="3.11"
 docstring-inheritance
 ipykernel
 ipython
 lazy-loader
 module-utilities>=0.6
+mypy>=1.11.2
 nbclient>=0.10.0
 nbval
 nox>=2024.4.15
@@ -26,4 +28,4 @@ pytest-sugar
 pytest-xdist
 scipy;python_version=="3.11"
 typing-extensions
-xarray>=0.16
+xarray>=2023.9.0
