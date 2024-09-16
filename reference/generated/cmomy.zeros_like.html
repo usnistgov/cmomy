@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Pre-compile numba based core routines (cmomy.compile) &#8212; cmomy v0.17.0 documentation</title>
+    <title>cmomy.zeros_like &#8212; cmomy v0.17.0 documentation</title>
   
   
   
@@ -46,7 +46,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.compile';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.zeros_like';</script>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
     <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
@@ -54,8 +54,8 @@
     <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Routines to calculate confidence intervals from resampled data (cmomy.confidence_interval)" href="cmomy.confidence_interval.html" />
-    <link rel="prev" title="Conversion routines (convert)" href="cmomy.convert.html" />
+    <link rel="next" title="&lt;no title&gt;" href="../api-modules.html" />
+    <link rel="prev" title="cmomy.wrap_raw" href="cmomy.wrap_raw.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
     <meta name="docbuild:last-update" content="2024-09-16"/>
@@ -176,7 +176,7 @@
 </ul>
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="../api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
@@ -185,7 +185,7 @@
 <li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
-<li class="toctree-l3"><a class="reference internal" href="cmomy.zeros_like.html">cmomy.zeros_like</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">cmomy.zeros_like</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
@@ -219,7 +219,7 @@
 
 
 
-<li class="toctree-l2 current active"><a class="current reference internal" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
 <li class="toctree-l2"><a class="reference internal" href="cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
 
@@ -352,7 +352,7 @@
       
       
       
-      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.compile.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.zeros_like.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -382,7 +382,7 @@
       
       
       
-      <li><a href="../../_sources/reference/generated/cmomy.compile.rst" target="_blank"
+      <li><a href="../../_sources/reference/generated/cmomy.zeros_like.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -466,7 +466,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Pre-compile numba based core routines (cmomy.compile)</h1>
+    <h1>cmomy.zeros_like</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -476,10 +476,8 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.compile.load_numba_modules"><code class="docutils literal notranslate"><span class="pre">load_numba_modules()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.zeros_like"><code class="docutils literal notranslate"><span class="pre">zeros_like()</span></code></a></li>
 </ul>
-
             </nav>
         </div>
     </div>
@@ -490,34 +488,49 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="pre-compile-numba-based-core-routines-cmomy-compile">
-<span id="module-cmomy.compile"></span><h1>Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<a class="reference internal" href="#module-cmomy.compile" title="cmomy.compile"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code></a>)<a class="headerlink" href="#pre-compile-numba-based-core-routines-cmomy-compile" title="Link to this heading">#</a></h1>
-<p>This can be called from python using :func:<code class="docutils literal notranslate"><span class="pre">load_numba_modules</span></code> or from
-the command line with</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m cmomy.compile [--help]</span>
-</pre></div>
-</div>
-</section>
-<p><strong>Functions:</strong></p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.compile.load_numba_modules" title="cmomy.compile.load_numba_modules"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_numba_modules</span></code></a>([include_all, ...])</p></td>
-<td><p>Compile numba modules by loading them.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
+  <section id="cmomy-zeros-like">
+<h1>cmomy.zeros_like<a class="headerlink" href="#cmomy-zeros-like" title="Link to this heading">#</a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="cmomy.compile.load_numba_modules">
-<span class="sig-prename descclassname"><span class="pre">cmomy.compile.</span></span><span class="sig-name descname"><span class="pre">load_numba_modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_indexed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_convert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_rolling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/compile.py#L63-L128"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.compile.load_numba_modules" title="Link to this definition">#</a></dt>
-<dd><p>Compile numba modules by loading them.</p>
-<p>Default is to include all submodules. To override, set
-<code class="docutils literal notranslate"><span class="pre">include_all=False</span></code>, and select other packages manually. For example, to
-only load resampling with with co-moments, use
-<code class="docutils literal notranslate"><span class="pre">load_numba_modules(include_all=False,</span> <span class="pre">include_cov=True,</span>
-<span class="pre">include_resample=True)</span></code>.</p>
+<dt class="sig sig-object py" id="cmomy.zeros_like">
+<span class="sig-prename descclassname"><span class="pre">cmomy.</span></span><span class="sig-name descname"><span class="pre">zeros_like</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subok</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunked_array_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_array_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/wrapper/constructors.py#L218-L289"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.zeros_like" title="Link to this definition">#</a></dt>
+<dd><p>Create new wrapped object with zeros like given wrapped object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>c</strong> (<a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> or <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>) – Wrapped instance to create new object like.</p></li>
+<li><p><strong>fill_value</strong> (<a class="reference external" href="https://docs.xarray.dev/en/stable/user-guide/terminology.html#term-scalar" title="(in xarray v2024.9.1.dev0)"><span class="xref std std-term">scalar</span></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.12)"><span class="xref std std-term">dict-like</span></a>) – Value to fill new object with.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> for output data.</p></li>
+<li><p><strong>order</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;C&quot;,</span> <span class="pre">&quot;F&quot;,</span> <span class="pre">&quot;A&quot;,</span> <span class="pre">&quot;K&quot;}</span></code>, <em>optional</em>) – Order argument.  See <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.asarray.html#numpy.asarray" title="(in NumPy v2.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.asarray()</span></code></a>.</p></li>
+<li><p><strong>subok</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – If True, then sub-classes will be passed-through, otherwise the
+returned array will be forced to be a base-class array.</p></li>
+<li><p><strong>chunks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.12)"><span class="xref std std-term">mapping</span></a> of <code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code> to <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Chunk sizes along each dimension, e.g., <code class="docutils literal notranslate"><span class="pre">5</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">(5,</span> <span class="pre">5)</span></code>
+or <code class="docutils literal notranslate"><span class="pre">{&quot;x&quot;:</span> <span class="pre">5,</span> <span class="pre">&quot;y&quot;:</span> <span class="pre">5}</span></code>.</p></li>
+<li><p><strong>chunked_array_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Which chunked array type to coerce the underlying data array to.
+Defaults to ‘dask’ if installed, else whatever is registered via the
+<cite>ChunkManagerEnetryPoint</cite> system. Experimental API that should not be
+relied upon.</p></li>
+<li><p><strong>from_array_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <em>optional</em>) – Additional keyword arguments passed on to the
+<cite>ChunkManagerEntrypoint.from_array</cite> method used to create chunked
+arrays, via whichever chunk manager is specified through the
+<cite>chunked_array_type</cite> kwarg. For example, with dask as the default
+chunked array type, this method would pass additional kwargs to
+<a class="reference external" href="https://docs.dask.org/en/latest/generated/dask.array.from_array.html#dask.array.from_array" title="(in Dask)"><code class="xref py py-func docutils literal notranslate"><span class="pre">dask.array.from_array()</span></code></a>. Experimental API that should not be
+relied upon.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>wrapped</strong> (<a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> or <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>) – Wrapped object. If input data is an <a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object, then return
+<a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a> instance. Otherwise, return
+<a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> instance.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.zeros_like.html#numpy.zeros_like" title="(in NumPy v2.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.zeros_like</span></code></a>, <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.zeros_like.html#xarray.zeros_like" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray.zeros_like</span></code></a></p>
+</div>
 </dd></dl>
 
+</section>
 
 
                 </article>
@@ -531,20 +544,20 @@ only load resampling with with co-moments, use
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cmomy.convert.html"
+       href="cmomy.wrap_raw.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</p>
+        <p class="prev-next-title">cmomy.wrap_raw</p>
       </div>
     </a>
     <a class="right-next"
-       href="cmomy.confidence_interval.html"
+       href="../api-modules.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</p>
+        <p class="prev-next-title">&lt;no title&gt;</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -564,10 +577,8 @@ only load resampling with with co-moments, use
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.compile.load_numba_modules"><code class="docutils literal notranslate"><span class="pre">load_numba_modules()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.zeros_like"><code class="docutils literal notranslate"><span class="pre">zeros_like()</span></code></a></li>
 </ul>
-
   </nav></div>
 
 </div></div>

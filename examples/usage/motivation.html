@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Why cmomy? &#8212; cmomy v0.16.0 documentation</title>
+    <title>Why cmomy? &#8212; cmomy v0.17.0 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=047b2eda"></script>
+    <script src="../../_static/documentation_options.js?v=f8a11b36"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="prev" title="User guide" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-08-06"/>
+    <meta name="docbuild:last-update" content="2024-09-16"/>
   </head>
   
   
@@ -146,7 +146,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.16.0 documentation</p>
+    <p class="title logo__title">cmomy v0.17.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -179,11 +179,19 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../../reference/index.html">API reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../../reference/api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.xCentralMoments.html">cmomy.xCentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.wrap.html">cmomy.wrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/generated/cmomy.zeros_like.html">cmomy.zeros_like</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+
 
 
 
@@ -213,7 +221,6 @@
 
 
 
-
 <li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
 <li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
@@ -232,6 +239,33 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -608,13 +642,13 @@ rel error using raw moments    : [ 0.0000e+00  7.2759e-16 -8.9221e-05 -4.6925e+0
 <li><p>resample data</p></li>
 <li><p>extract central and raw moments</p></li>
 </ul>
-<p>The primary object for doing all this is <a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments" title="cmomy.CentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMoments</span></code></a>.</p>
+<p>The primary object for doing all this is <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">cmomy</span>
 
-<span class="n">cx</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMoments</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">cy</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMoments</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">cx</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsArray</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">cy</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsArray</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 
 
 <span class="n">cx</span>
@@ -653,6 +687,7 @@ rel error using raw moments    : [ 0.0000e+00  7.2759e-16 -8.9221e-05 -4.6925e+0
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -985,12 +1020,12 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([ 1.0000e+03,  5.1691e-01,  8.0989e-02, -2.0856e-03])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-918345ed-bf21-4740-8d72-af9b95502662' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-918345ed-bf21-4740-8d72-af9b95502662' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-e0288911-2ad1-487f-b8ac-b70c19b08c09' class='xr-array-in' type='checkbox' checked><label for='section-e0288911-2ad1-487f-b8ac-b70c19b08c09' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>1e+03 0.5169 0.08099 -0.002086</span></div><div class='xr-array-data'><pre>array([ 1.000000e+03,  5.169063e-01,  8.098908e-02, -2.085567e-03])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([ 1.0000e+03,  5.1691e-01,  8.0989e-02, -2.0856e-03])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-3e6acde6-5f9e-4e4e-8c21-a4e58fe7368c' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-3e6acde6-5f9e-4e4e-8c21-a4e58fe7368c' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-d119416b-10a1-455c-ab43-03807d74b947' class='xr-array-in' type='checkbox' checked><label for='section-d119416b-10a1-455c-ab43-03807d74b947' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>1e+03 0.5169 0.08099 -0.002086</span></div><div class='xr-array-data'><pre>array([ 1.000000e+03,  5.169063e-01,  8.098908e-02, -2.085567e-03])</pre></div></div></li></ul></div></div></div></div>
 </div>
-<p>You can access the underlying data using the <a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments.values" title="cmomy.CentralMoments.values"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cmomy.CentralMoments.values</span></code></a> or <a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments.data" title="cmomy.CentralMoments.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cmomy.CentralMoments.data</span></code></a> attributes.</p>
+<p>You can access the underlying data using the <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.obj" title="cmomy.CentralMomentsArray.obj"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cmomy.CentralMomentsArray.obj</span></code></a> attribute.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">cx</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">cx</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1000,11 +1035,11 @@ dl.xr-attrs {
 </div>
 </div>
 </div>
-<p>Basically, the <a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments" title="cmomy.CentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMoments</span></code></a> object is just a collection of routines around <a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments.data" title="cmomy.CentralMoments.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">data</span></code></a>, which is an array of central moments (with the convention that <code class="docutils literal notranslate"><span class="pre">data[...,</span> <span class="pre">0]</span></code> is the total <code class="docutils literal notranslate"><span class="pre">weight</span></code>, <code class="docutils literal notranslate"><span class="pre">data[...,</span> <span class="pre">1]</span></code> is the average, and <code class="docutils literal notranslate"><span class="pre">data[...,</span> <span class="pre">k</span> <span class="pre">&gt;</span> <span class="pre">1]</span></code> is the <code class="docutils literal notranslate"><span class="pre">kth</span></code> central moment).  It gives the same results as calculating central moments directly:</p>
+<p>Basically, the <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> object is just a collection of routines around <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.obj" title="cmomy.CentralMomentsArray.obj"><code class="xref py py-attr docutils literal notranslate"><span class="pre">obj</span></code></a>, which is an array of central moments (with the convention that <code class="docutils literal notranslate"><span class="pre">obj[...,</span> <span class="pre">0]</span></code> is the total <code class="docutils literal notranslate"><span class="pre">weight</span></code>, <code class="docutils literal notranslate"><span class="pre">data[...,</span> <span class="pre">1]</span></code> is the average, and <code class="docutils literal notranslate"><span class="pre">data[...,</span> <span class="pre">k</span> <span class="pre">&gt;</span> <span class="pre">1]</span></code> is the <code class="docutils literal notranslate"><span class="pre">kth</span></code> central moment).  It gives the same results as calculating central moments directly:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">cx</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">m1</span><span class="p">)</span>
-<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">cy</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">m1_shift</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">cx</span><span class="p">,</span> <span class="n">m1</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">cy</span><span class="p">,</span> <span class="n">m1_shift</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -1032,11 +1067,11 @@ Suppose that we have separate samples of the data <span class="math notranslate 
 <p>Wrapping the data in a central moments object gives</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMoments</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsArray</span><span class="p">(</span><span class="n">m1</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># reduce the data along a dimension to get</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span>
 
 <span class="c1"># verify that this is the same as just accumulating all the data</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">cmom_1</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">mom</span><span class="o">=</span><span class="mi">4</span><span class="p">))</span>
@@ -1050,10 +1085,10 @@ Suppose that we have separate samples of the data <span class="math notranslate 
 </div>
 </div>
 </div>
-<p>Excellent! We can use <a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments" title="cmomy.CentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMoments</span></code></a> to accumulate data on the go</p>
+<p>Excellent! We can use <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> to accumulate data on the go</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMoments</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mom</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsArray</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">mom</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
     <span class="c1"># note: pushing multiple values</span>
     <span class="n">c</span><span class="o">.</span><span class="n">push_vals</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span> <span class="n">i</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
@@ -1093,6 +1128,7 @@ Suppose that we have separate samples of the data <span class="math notranslate 
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -1425,7 +1461,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-57390fcc-d6a5-40d5-b45b-ddeec387cd24' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-57390fcc-d6a5-40d5-b45b-ddeec387cd24' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-c3ba1f71-f102-489d-955a-3053ff0a6b2e' class='xr-array-in' type='checkbox' checked><label for='section-c3ba1f71-f102-489d-955a-3053ff0a6b2e' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-09acc60d-d5c4-470c-aec4-89648a38cf3d' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-09acc60d-d5c4-470c-aec4-89648a38cf3d' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-0fcb7dc0-dc2c-4f59-8ed5-778851789f08' class='xr-array-in' type='checkbox' checked><label for='section-0fcb7dc0-dc2c-4f59-8ed5-778851789f08' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>Or, you can push all the values one at a time!</p>
 <div class="cell docutils container">
@@ -1471,6 +1507,7 @@ dl.xr-attrs {
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -1803,7 +1840,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-243b10ab-b4d3-4499-a32b-dca461e14236' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-243b10ab-b4d3-4499-a32b-dca461e14236' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-c0c53036-600b-46e9-9725-b00a7635096d' class='xr-array-in' type='checkbox' checked><label for='section-c0c53036-600b-46e9-9725-b00a7635096d' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-12ce7189-3046-4719-bbbf-d0817bbe234c' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-12ce7189-3046-4719-bbbf-d0817bbe234c' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-cd71c66c-a326-4bc1-852f-c8d0a0407afb' class='xr-array-in' type='checkbox' checked><label for='section-cd71c66c-a326-4bc1-852f-c8d0a0407afb' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>The values can even be differently weighted.</p>
 <div class="cell docutils container">
@@ -1849,6 +1886,7 @@ dl.xr-attrs {
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -2181,27 +2219,18 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-2bce0c64-e510-41cb-ae6b-0b2034093489' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-2bce0c64-e510-41cb-ae6b-0b2034093489' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-3ef03bca-c843-4ffa-b802-e87584c4d1ed' class='xr-array-in' type='checkbox' checked><label for='section-3ef03bca-c843-4ffa-b802-e87584c4d1ed' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-b97a3f96-0e99-49df-933e-d07ab04f31d4' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b97a3f96-0e99-49df-933e-d07ab04f31d4' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-7ea16599-63bc-4be7-aa75-d809fae9f1a6' class='xr-array-in' type='checkbox' checked><label for='section-7ea16599-63bc-4be7-aa75-d809fae9f1a6' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>Alternatively, you can add objects together.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cs</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMoments</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
-
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cs</span> <span class="o">=</span> <span class="p">[</span><span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsArray</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">xs</span><span class="p">]</span>
 <span class="n">c_tot</span> <span class="o">=</span> <span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">cs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">cs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">cs</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
 <span class="n">c_tot</span>
 </pre></div>
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[&lt;CentralMoments(val_shape=(), mom=(4,))&gt;
-array([5.0000e+01, 4.1743e-01, 7.3610e-02, 4.5490e-03, 1.0645e-02]), &lt;CentralMoments(val_shape=(), mom=(4,))&gt;
-array([ 1.0000e+02,  5.1217e-01,  9.0418e-02, -3.0034e-03,  1.3257e-02]), &lt;CentralMoments(val_shape=(), mom=(4,))&gt;
-array([ 1.5000e+02,  4.8912e-01,  8.3731e-02, -6.4426e-04,  1.2724e-02]), &lt;CentralMoments(val_shape=(), mom=(4,))&gt;
-array([2.0000e+02, 5.0252e-01, 9.4279e-02, 1.8869e-04, 1.5262e-02])]
-</pre></div>
-</div>
 <div class="output text_html"><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
 <defs>
 <symbol id="icon-database" viewBox="0 0 32 32">
@@ -2233,6 +2262,7 @@ array([2.0000e+02, 5.0252e-01, 9.4279e-02, 1.8869e-04, 1.5262e-02])]
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -2565,12 +2595,12 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-b505e9bc-b5d1-4cc9-9cda-355c1efda4d3' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b505e9bc-b5d1-4cc9-9cda-355c1efda4d3' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-fac5844f-52b6-407e-a8ba-8a3aeb99cba1' class='xr-array-in' type='checkbox' checked><label for='section-fac5844f-52b6-407e-a8ba-8a3aeb99cba1' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-7dd364fc-a98e-4dff-9ed9-e8174b241c7b' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-7dd364fc-a98e-4dff-9ed9-e8174b241c7b' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-e4a48e38-d6fa-4225-aadb-b66ffcbf0d1c' class='xr-array-in' type='checkbox' checked><label for='section-e4a48e38-d6fa-4225-aadb-b66ffcbf0d1c' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>Or more simply:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">())</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">cs</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">cs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">())</span><span class="o">.</span><span class="n">obj</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2619,7 +2649,7 @@ dl.xr-attrs {
 <span class="n">moments</span> <span class="o">=</span> <span class="n">get_cmom_with_weights</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
 <span class="n">moments</span>
 
-<span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMoments</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsArray</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -2655,6 +2685,7 @@ dl.xr-attrs {
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -2987,7 +3018,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([4.8363e+01, 5.0295e-01, 9.2209e-02, 6.3664e-04])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-ea05808e-a0f6-4e20-b825-bd5bb08a30e6' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-ea05808e-a0f6-4e20-b825-bd5bb08a30e6' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-ad204121-eb2c-44ce-80b6-7484ca2bd9f6' class='xr-array-in' type='checkbox' checked><label for='section-ad204121-eb2c-44ce-80b6-7484ca2bd9f6' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.503 0.09221 0.0006366</span></div><div class='xr-array-data'><pre>array([4.836319e+01, 5.029529e-01, 9.220858e-02, 6.366441e-04])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([4.8363e+01, 5.0295e-01, 9.2209e-02, 6.3664e-04])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-59fa79a1-1e01-44c7-8dcf-b8258e6ed61d' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-59fa79a1-1e01-44c7-8dcf-b8258e6ed61d' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-979eb547-c826-4608-8734-874c2a42ec63' class='xr-array-in' type='checkbox' checked><label for='section-979eb547-c826-4608-8734-874c2a42ec63' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.503 0.09221 0.0006366</span></div><div class='xr-array-data'><pre>array([4.836319e+01, 5.029529e-01, 9.220858e-02, 6.366441e-04])</pre></div></div></li></ul></div></div></div></div>
 </div>
 </section>
 <section id="comoments">
@@ -2998,7 +3029,7 @@ For example</p>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">random</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
 
-<span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMoments</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsArray</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -3034,6 +3065,7 @@ For example</p>
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -3368,7 +3400,7 @@ dl.xr-attrs {
 }
 </style><pre class='xr-text-repr-fallback'>array([[ 4.8363e+01,  4.8516e-01,  7.5856e-02],
        [ 5.0295e-01, -1.2237e-02,  3.2919e-04],
-       [ 9.2209e-02, -4.2304e-03,  6.5653e-03]])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: (2, 2)</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-51e10e0f-5354-48c2-b404-df3c4a8baf06' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-51e10e0f-5354-48c2-b404-df3c4a8baf06' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-c750cb3a-c189-4405-869c-e86fddde94fa' class='xr-array-in' type='checkbox' checked><label for='section-c750cb3a-c189-4405-869c-e86fddde94fa' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.4852 0.07586 0.503 ... 0.0003292 0.09221 -0.00423 0.006565</span></div><div class='xr-array-data'><pre>array([[ 4.836319e+01,  4.851622e-01,  7.585550e-02],
+       [ 9.2209e-02, -4.2304e-03,  6.5653e-03]])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: (2, 2)</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-6ba5f663-bb10-4ff2-932c-401fd114e67b' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-6ba5f663-bb10-4ff2-932c-401fd114e67b' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-b3204ff2-9076-4721-8a37-9dc5aaec2af8' class='xr-array-in' type='checkbox' checked><label for='section-b3204ff2-9076-4721-8a37-9dc5aaec2af8' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.4852 0.07586 0.503 ... 0.0003292 0.09221 -0.00423 0.006565</span></div><div class='xr-array-data'><pre>array([[ 4.836319e+01,  4.851622e-01,  7.585550e-02],
        [ 5.029529e-01, -1.223740e-02,  3.291919e-04],
        [ 9.220858e-02, -4.230387e-03,  6.565301e-03]])</pre></div></div></li></ul></div></div></div></div>
 </div>
@@ -3376,7 +3408,7 @@ dl.xr-attrs {
 </section>
 <section id="xarray-dataarray-support">
 <h2>xarray DataArray support<a class="headerlink" href="#xarray-dataarray-support" title="Link to this heading">#</a></h2>
-<p>cmomy also works with <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.7.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> objects.  For example</p>
+<p>cmomy also works with <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> and <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.Dataset</span></code></a> objects.  For example:</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">xarray</span> <span class="k">as</span> <span class="nn">xr</span>
@@ -3418,6 +3450,7 @@ dl.xr-attrs {
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -3759,19 +3792,19 @@ array([[[0.0625, 0.5585, 0.0184],
 
        [[0.951 , 0.0224, 0.627 ],
         [0.0179, 0.382 , 0.3126]]])
-Dimensions without coordinates: rec, a, b</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>rec</span>: 3</li><li><span>a</span>: 2</li><li><span>b</span>: 3</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-1e929372-5eeb-4dbd-bea8-a99d8ecaf89b' class='xr-array-in' type='checkbox' checked><label for='section-1e929372-5eeb-4dbd-bea8-a99d8ecaf89b' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>0.06247 0.5585 0.01837 0.4284 0.4153 ... 0.627 0.01787 0.382 0.3126</span></div><div class='xr-array-data'><pre>array([[[0.0625, 0.5585, 0.0184],
+Dimensions without coordinates: rec, a, b</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>rec</span>: 3</li><li><span>a</span>: 2</li><li><span>b</span>: 3</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-5fcd9520-613c-457e-a392-7ae564f2df8a' class='xr-array-in' type='checkbox' checked><label for='section-5fcd9520-613c-457e-a392-7ae564f2df8a' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>0.06247 0.5585 0.01837 0.4284 0.4153 ... 0.627 0.01787 0.382 0.3126</span></div><div class='xr-array-data'><pre>array([[[0.0625, 0.5585, 0.0184],
         [0.4284, 0.4153, 0.0854]],
 
        [[0.0821, 0.587 , 0.0041],
         [0.7317, 0.3686, 0.2628]],
 
        [[0.951 , 0.0224, 0.627 ],
-        [0.0179, 0.382 , 0.3126]]])</pre></div></div></li><li class='xr-section-item'><input id='section-b6c0deda-9719-4c8e-91f1-ba109f82ddc8' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b6c0deda-9719-4c8e-91f1-ba109f82ddc8' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-b36d0108-7b62-4150-a608-9ef44409dc01' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b36d0108-7b62-4150-a608-9ef44409dc01' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-3aa5034f-afb1-4a59-a9b4-5453a566ef10' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-3aa5034f-afb1-4a59-a9b4-5453a566ef10' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
+        [0.0179, 0.382 , 0.3126]]])</pre></div></div></li><li class='xr-section-item'><input id='section-fe555dfd-64ea-40e5-8bbd-e045b0ecd390' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-fe555dfd-64ea-40e5-8bbd-e045b0ecd390' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-15af0fa5-62e8-4ab3-85ca-0e15ca945b01' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-15af0fa5-62e8-4ab3-85ca-0e15ca945b01' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-32dea5c3-50e7-480a-9cb5-409af8458477' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-32dea5c3-50e7-480a-9cb5-409af8458477' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
 </div>
-<p>To create a cmomy object wrapping a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.7.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a>, use <a class="reference internal" href="../../reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments" title="cmomy.xCentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">xCentralMoments</span></code></a></p>
+<p>To create a cmomy object wrapping a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a>, use <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a></p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">xCentralMoments</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;rec&quot;</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">c</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">CentralMomentsData</span><span class="o">.</span><span class="n">from_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;rec&quot;</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
 <span class="n">c</span>
 </pre></div>
 </div>
@@ -3808,6 +3841,7 @@ Dimensions without coordinates: rec, a, b</pre><div class='xr-wrap' style='displ
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -4148,7 +4182,7 @@ array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
        [[1.0000e+02, 4.8831e-01, 8.2432e-02, 1.6465e-04],
         [1.0000e+02, 4.6920e-01, 9.2950e-02, 5.5999e-03],
         [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])
-Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xCentralMoments</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li><li><span>val_shape</span>: (2, 3)</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-b871e082-3a85-4520-b43a-4970c3d6160a' class='xr-section-summary-in' type='checkbox'  checked><label for='section-b871e082-3a85-4520-b43a-4970c3d6160a' class='xr-section-summary' >Info: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>mom_dims :</span></dt><dd>mom_0</dd><dt><span>val_dims :</span></dt><dd>(a, b)</dd></dl></div></li></ul></div></div><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsData</div><ul class='xr-dim-list'><li><span>val_shape</span>: (2, 3)</li><li><span>mom</span>: 3</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-39016c45-da99-40c4-8aac-140413ce4ae3' class='xr-section-summary-in' type='checkbox'  checked><label for='section-39016c45-da99-40c4-8aac-140413ce4ae3' class='xr-section-summary' >Info: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>val_dims :</span></dt><dd>(a, b)</dd><dt><span>mom_dims :</span></dt><dd>mom_0</dd></dl></div></li></ul></div></div><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
 <defs>
 <symbol id="icon-database" viewBox="0 0 32 32">
 <path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
@@ -4179,6 +4213,7 @@ Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='dis
 }
 
 html[theme=dark],
+html[data-theme=dark],
 body[data-theme=dark],
 body.vscode-dark {
   --xr-font-color0: rgba(255, 255, 255, 1);
@@ -4519,15 +4554,15 @@ array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
        [[1.0000e+02, 4.8831e-01, 8.2432e-02, 1.6465e-04],
         [1.0000e+02, 4.6920e-01, 9.2950e-02, 5.5999e-03],
         [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])
-Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>a</span>: 2</li><li><span>b</span>: 3</li><li><span>mom_0</span>: 4</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-d4b3ba55-e436-469c-b23b-2ebb7747d87e' class='xr-array-in' type='checkbox' checked><label for='section-d4b3ba55-e436-469c-b23b-2ebb7747d87e' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>100.0 0.4066 0.09047 0.01381 100.0 ... 100.0 0.4889 0.07696 0.002323</span></div><div class='xr-array-data'><pre>array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
+Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>a</span>: 2</li><li><span>b</span>: 3</li><li><span>mom_0</span>: 4</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-87ea4fb3-b668-436c-a05d-5a600e86919b' class='xr-array-in' type='checkbox' checked><label for='section-87ea4fb3-b668-436c-a05d-5a600e86919b' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>100.0 0.4066 0.09047 0.01381 100.0 ... 100.0 0.4889 0.07696 0.002323</span></div><div class='xr-array-data'><pre>array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
         [1.0000e+02, 4.9516e-01, 7.3811e-02, 1.1677e-03],
         [1.0000e+02, 4.6592e-01, 8.1210e-02, 3.3827e-03]],
 
        [[1.0000e+02, 4.8831e-01, 8.2432e-02, 1.6465e-04],
         [1.0000e+02, 4.6920e-01, 9.2950e-02, 5.5999e-03],
-        [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])</pre></div></div></li><li class='xr-section-item'><input id='section-210add62-06e1-4b64-b53c-f9751552cd45' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-210add62-06e1-4b64-b53c-f9751552cd45' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-e0b2e791-d52f-4116-85f2-2b9c29671c40' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-e0b2e791-d52f-4116-85f2-2b9c29671c40' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-75699aed-bc5d-4cd2-a46e-3e461bb99c17' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-75699aed-bc5d-4cd2-a46e-3e461bb99c17' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
+        [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])</pre></div></div></li><li class='xr-section-item'><input id='section-290f5024-4fe8-43ca-9b80-84a2329ff983' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-290f5024-4fe8-43ca-9b80-84a2329ff983' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-1d43492d-0912-4dec-9ec6-5d97244c62dc' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-1d43492d-0912-4dec-9ec6-5d97244c62dc' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-7f4712ba-a6aa-40e0-aa17-680d716695c6' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-7f4712ba-a6aa-40e0-aa17-680d716695c6' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
 </div>
-<p>Everything that <a class="reference internal" href="../../reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments" title="cmomy.CentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMoments</span></code></a> can do, <a class="reference internal" href="../../reference/generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments" title="cmomy.xCentralMoments"><code class="xref py py-class docutils literal notranslate"><span class="pre">xCentralMoments</span></code></a> can do.</p>
+<p>Most everything that <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> can do, <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a> can also do.</p>
 </section>
 </section>
 
@@ -4614,7 +4649,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-08-06.
+  Last updated on 2024-09-16.
   <br/>
 </p>
   </div>

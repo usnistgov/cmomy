@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Routines to calculate confidence intervals from resampled data (cmomy.confidence_interval) &#8212; cmomy v0.16.0 documentation</title>
+    <title>Routines to calculate confidence intervals from resampled data (cmomy.confidence_interval) &#8212; cmomy v0.17.0 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=047b2eda"></script>
+    <script src="../../_static/documentation_options.js?v=f8a11b36"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="prev" title="Pre-compile numba based core routines (cmomy.compile)" href="cmomy.compile.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-08-06"/>
+    <meta name="docbuild:last-update" content="2024-09-16"/>
   </head>
   
   
@@ -146,7 +146,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.16.0 documentation</p>
+    <p class="title logo__title">cmomy v0.17.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -179,11 +179,19 @@
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 has-children"><a class="reference internal" href="../api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.xCentralMoments.html">cmomy.xCentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap.html">cmomy.wrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.zeros_like.html">cmomy.zeros_like</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+
 
 
 
@@ -213,7 +221,6 @@
 
 
 
-
 <li class="toctree-l2"><a class="reference internal" href="cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
@@ -232,6 +239,33 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -445,12 +479,12 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.bootstrap_confidence_interval"><code class="docutils literal notranslate"><span class="pre">bootstrap_confidence_interval()</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.InstabilityWarning"><code class="docutils literal notranslate"><span class="pre">InstabilityWarning</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.InstabilityWarning.add_note"><code class="docutils literal notranslate"><span class="pre">InstabilityWarning.add_note()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.InstabilityWarning.with_traceback"><code class="docutils literal notranslate"><span class="pre">InstabilityWarning.with_traceback()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.bootstrap_confidence_interval"><code class="docutils literal notranslate"><span class="pre">bootstrap_confidence_interval()</span></code></a></li>
 </ul>
 
             </nav>
@@ -466,15 +500,6 @@ document.write(`
   <section id="routines-to-calculate-confidence-intervals-from-resampled-data-cmomy-confidence-interval">
 <span id="module-cmomy.confidence_interval"></span><h1>Routines to calculate confidence intervals from resampled data (<a class="reference internal" href="#module-cmomy.confidence_interval" title="cmomy.confidence_interval"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code></a>)<a class="headerlink" href="#routines-to-calculate-confidence-intervals-from-resampled-data-cmomy-confidence-interval" title="Link to this heading">#</a></h1>
 </section>
-<p><strong>Exceptions:</strong></p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.confidence_interval.InstabilityWarning" title="cmomy.confidence_interval.InstabilityWarning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InstabilityWarning</span></code></a>([msg])</p></td>
-<td><p>Issued when results may be unstable.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
 <p><strong>Functions:</strong></p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
@@ -484,42 +509,30 @@ document.write(`
 </tbody>
 </table>
 </div>
-<dl class="py exception">
-<dt class="sig sig-object py" id="cmomy.confidence_interval.InstabilityWarning">
-<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">InstabilityWarning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/confidence_interval.py#L40-L46"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.confidence_interval.InstabilityWarning" title="Link to this definition">#</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#UserWarning" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></a></p>
-<p>Issued when results may be unstable.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="cmomy.confidence_interval.InstabilityWarning.add_note">
-<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.confidence_interval.InstabilityWarning.add_note" title="Link to this definition">#</a></dt>
-<dd><p>Exception.add_note(note) –
-add a note to the exception</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="cmomy.confidence_interval.InstabilityWarning.with_traceback">
-<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.confidence_interval.InstabilityWarning.with_traceback" title="Link to this definition">#</a></dt>
-<dd><p>Exception.with_traceback(tb) –
-set self.__traceback__ to tb and return self.</p>
-</dd></dl>
-
-</dd></dl>
-
+<p><strong>Exceptions:</strong></p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.confidence_interval.InstabilityWarning" title="cmomy.confidence_interval.InstabilityWarning"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InstabilityWarning</span></code></a>([msg])</p></td>
+<td><p>Issued when results may be unstable.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.confidence_interval.bootstrap_confidence_interval">
-<span class="sig-prename descclassname"><span class="pre">cmomy.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">bootstrap_confidence_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_boot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_hat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_jack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bca'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'alpha'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/confidence_interval.py#L141-L328"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.confidence_interval.bootstrap_confidence_interval" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">bootstrap_confidence_interval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">theta_boot</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_hat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta_jack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bca'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'alpha'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/confidence_interval.py#L79-L269"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.confidence_interval.bootstrap_confidence_interval" title="Link to this definition">#</a></dt>
 <dd><p>Create the bootstrap confidence interval.</p>
 <p>The general idea is to analyze some function <span class="math notranslate nohighlight">\(\theta\)</span> which is a function of the central moments.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>theta_boot</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Bootstrapped resampled values of <span class="math notranslate nohighlight">\(\theta\)</span></p></li>
-<li><p><strong>theta_hat</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Results of <span class="math notranslate nohighlight">\(\theta\)</span> from original data set. Needed for <code class="docutils literal notranslate"><span class="pre">method</span></code>
+<li><p><strong>theta_boot</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Bootstrapped resampled values of <span class="math notranslate nohighlight">\(\theta\)</span></p></li>
+<li><p><strong>theta_hat</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Results of <span class="math notranslate nohighlight">\(\theta\)</span> from original data set. Needed for <code class="docutils literal notranslate"><span class="pre">method</span></code>
 values <cite>‘basic’`</cite> and <code class="docutils literal notranslate"><span class="pre">'bca'</span></code>. Note that this array should have shape
 as <code class="docutils literal notranslate"><span class="pre">theta_boot</span></code> with <code class="docutils literal notranslate"><span class="pre">axis</span></code> either removed, or of size <code class="docutils literal notranslate"><span class="pre">1</span></code>.</p></li>
-<li><p><strong>theta_jack</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Jackknife resampled data.  Needed for <code class="docutils literal notranslate"><span class="pre">method</span></code> <code class="docutils literal notranslate"><span class="pre">'basic'</span></code>.
+<li><p><strong>theta_jack</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Jackknife resampled data.  Needed for <code class="docutils literal notranslate"><span class="pre">method</span></code> <code class="docutils literal notranslate"><span class="pre">'bca'</span></code>.
 Note that this array should have the same shape as <code class="docutils literal notranslate"><span class="pre">theta_boot</span></code> except along <code class="docutils literal notranslate"><span class="pre">axis</span></code>.</p></li>
-<li><p><strong>alphas</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-iterable" title="(in Python v3.12)"><span class="xref std std-term">iterable</span></a> of <code class="xref py py-class docutils literal notranslate"><span class="pre">floats</span></code>) – The quantiles to use for confidence interval. If <code class="docutils literal notranslate"><span class="pre">alpha</span></code> is a float,
+<li><p><strong>alphas</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-iterable" title="(in Python v3.12)"><span class="xref std std-term">iterable</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">float</span></code></a>) – The quantiles to use for confidence interval. If <code class="docutils literal notranslate"><span class="pre">alpha</span></code> is a float,
 then Use (alpha/2, 1-alpha/2) for confidence intervals (e.g., pass
 <cite>alpha=0.05</cite> for the two-sided 95% confidence interval). If <code class="docutils literal notranslate"><span class="pre">alpha</span></code>
 is an iterable, use these values.</p></li>
@@ -529,7 +542,7 @@ is an iterable, use these values.</p></li>
 interval (<code class="docutils literal notranslate"><span class="pre">'basic'</span></code>), or the bias-corrected and accelerated bootstrap
 confidence interval (<code class="docutils literal notranslate"><span class="pre">'BCa'</span></code>).</p></li>
 <li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.12)"><span class="xref std std-term">hashable</span></a>) – Dimension to reduce/sample along.</p></li>
-<li><p><strong>ci_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">&quot;alpha&quot;</span></code>) – Name of confidence level dimension of <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.7.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> output.</p></li>
+<li><p><strong>ci_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>default</em> <code class="docutils literal notranslate"><span class="pre">&quot;alpha&quot;</span></code>) – Name of confidence level dimension of <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> output.</p></li>
 <li><p><strong>keep_attrs</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;drop&quot;,</span> <span class="pre">&quot;identical&quot;,</span> <span class="pre">&quot;no_conflicts&quot;,</span> <span class="pre">&quot;drop_conflicts&quot;,</span> <span class="pre">&quot;override&quot;}</span></code> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – <ul>
 <li><p>‘drop’ or False: empty attrs on returned xarray object.</p></li>
 <li><p>’identical’: all attrs must be the same on every object.</p></li>
@@ -541,7 +554,7 @@ confidence interval (<code class="docutils literal notranslate"><span class="pre
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>confindence_interval</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Array of confidence intervals. <code class="docutils literal notranslate"><span class="pre">confidence_interval[i,</span> <span class="pre">...]</span></code>
+<dd class="field-even"><p><strong>confindence_interval</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Array of confidence intervals. <code class="docutils literal notranslate"><span class="pre">confidence_interval[i,</span> <span class="pre">...]</span></code>
 corresponds <code class="docutils literal notranslate"><span class="pre">alphas[i]</span></code>. That is, <code class="docutils literal notranslate"><span class="pre">confidence_interval.shape</span> <span class="pre">=</span>
 <span class="pre">(nalpha,</span> <span class="pre">shape[0],</span> <span class="pre">...,</span> <span class="pre">shape[axis-1],</span> <span class="pre">shape[axis+1],</span> <span class="pre">...)</span></code> Where <code class="docutils literal notranslate"><span class="pre">shape</span> <span class="pre">=</span>
 <span class="pre">theta_boot.shape</span></code>.</p>
@@ -562,14 +575,14 @@ corresponds <code class="docutils literal notranslate"><span class="pre">alphas[
 </dd>
 <dt><a class="reference internal" href="cmomy.resample.html#cmomy.resample.jackknife_vals" title="cmomy.resample.jackknife_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">jackknife_vals</span></code></a></dt><dd><p>Create <code class="docutils literal notranslate"><span class="pre">theta_jack</span></code> from values</p>
 </dd>
-<dt><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html#scipy.stats.bootstrap" title="(in SciPy v1.14.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.stats.bootstrap</span></code></a></dt><dd><p>Scipy analog function</p>
+<dt><a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html#scipy.stats.bootstrap" title="(in SciPy v1.14.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scipy.stats.bootstrap</span></code></a></dt><dd><p>Scipy analog function</p>
 </dd>
 </dl>
 </div>
 <p class="rubric">Examples</p>
 <p>Calculate the bootstrap statistics of the log of the mean.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">cmomy</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">20</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">random</span><span class="p">((</span><span class="mi">20</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">freq</span> <span class="o">=</span> <span class="n">cmomy</span><span class="o">.</span><span class="n">randsamp_freq</span><span class="p">(</span><span class="n">nrep</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">ndat</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">theta_boot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">cmomy</span><span class="o">.</span><span class="n">resample_vals</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">freq</span><span class="o">=</span><span class="n">freq</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">bootstrap_confidence_interval</span><span class="p">(</span>
@@ -598,7 +611,7 @@ corresponds <code class="docutils literal notranslate"><span class="pre">alphas[
 <span class="go">array([-0.986 , -0.4517])</span>
 </pre></div>
 </div>
-<p>These results are the same as using <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html#scipy.stats.bootstrap" title="(in SciPy v1.14.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.bootstrap()</span></code></a>, but should be faster.</p>
+<p>These results are the same as using <a class="reference external" href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.bootstrap.html#scipy.stats.bootstrap" title="(in SciPy v1.14.1)"><code class="xref py py-func docutils literal notranslate"><span class="pre">scipy.stats.bootstrap()</span></code></a>, but should be faster.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">bootstrap</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">bootstrap</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="p">[</span><span class="n">x</span><span class="p">],</span>
@@ -613,6 +626,27 @@ corresponds <code class="docutils literal notranslate"><span class="pre">alphas[
 </pre></div>
 </div>
 <p>Moreover, you can use pre-averaged data.</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="cmomy.confidence_interval.InstabilityWarning">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.confidence_interval.</span></span><span class="sig-name descname"><span class="pre">InstabilityWarning</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/confidence_interval.py#L317-L323"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.confidence_interval.InstabilityWarning" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#UserWarning" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></a></p>
+<p>Issued when results may be unstable.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cmomy.confidence_interval.InstabilityWarning.add_note">
+<span class="sig-name descname"><span class="pre">add_note</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.confidence_interval.InstabilityWarning.add_note" title="Link to this definition">#</a></dt>
+<dd><p>Exception.add_note(note) –
+add a note to the exception</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cmomy.confidence_interval.InstabilityWarning.with_traceback">
+<span class="sig-name descname"><span class="pre">with_traceback</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.confidence_interval.InstabilityWarning.with_traceback" title="Link to this definition">#</a></dt>
+<dd><p>Exception.with_traceback(tb) –
+set self.__traceback__ to tb and return self.</p>
+</dd></dl>
+
 </dd></dl>
 
 
@@ -662,12 +696,12 @@ corresponds <code class="docutils literal notranslate"><span class="pre">alphas[
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.bootstrap_confidence_interval"><code class="docutils literal notranslate"><span class="pre">bootstrap_confidence_interval()</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.InstabilityWarning"><code class="docutils literal notranslate"><span class="pre">InstabilityWarning</span></code></a><ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.InstabilityWarning.add_note"><code class="docutils literal notranslate"><span class="pre">InstabilityWarning.add_note()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.InstabilityWarning.with_traceback"><code class="docutils literal notranslate"><span class="pre">InstabilityWarning.with_traceback()</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.confidence_interval.bootstrap_confidence_interval"><code class="docutils literal notranslate"><span class="pre">bootstrap_confidence_interval()</span></code></a></li>
 </ul>
 
   </nav></div>
@@ -702,7 +736,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-08-06.
+  Last updated on 2024-09-16.
   <br/>
 </p>
   </div>

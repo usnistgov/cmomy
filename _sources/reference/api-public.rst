@@ -15,56 +15,99 @@ Central Moments wrapper classes
 .. autosummary::
    :toctree: generated/
 
+   CentralMomentsArray
+   CentralMomentsData
+
+
+
+Legacy wrapper classes
+----------------------
+
+.. autosummary::
+   :toctree: generated/
+
    CentralMoments
    xCentralMoments
+
+
+
+Factory methods to create wrapper objects
+-----------------------------------------
+
+.. autosummary::
+   :toctree: generated/
+
+    wrap
+    wrap_reduce_vals
+    wrap_resample_vals
+    wrap_raw
+    zeros_like
+
+
+Reduction routines available at top level (:mod:`.reduction`)
+-------------------------------------------------------------
+
+.. autosummary::
+
+   ~reduction.reduce_data
+   ~reduction.reduce_data_grouped
+   ~reduction.reduce_data_indexed
+
+Resampling routines available at top level (:mod:`.resample`)
+-------------------------------------------------------------
+
+.. autosummary::
+
+   ~resample.resample_data
+   ~resample.resample_vals
+   ~resample.random_freq
+   ~resample.random_indices
+   ~resample.randsamp_freq
+   ~resample.indices_to_freq
+
+
+Default random number generator (:mod:`cmomy.random`)
+-----------------------------------------------------
+
+.. autosummary::
+
+   ~random.default_rng
+
 
 Concatenation
 -------------
 
 .. autosummary::
 
-   ~cmomy.convert.concat
+   ~convert.concat
 
-
-
-Reduction routines available at top level (from :mod:`cmomy.reduction`)
------------------------------------------------------------------------
+Convert
+-------
 
 .. autosummary::
 
-   ~cmomy.reduction.reduce_data
-   ~cmomy.reduction.reduce_data_grouped
-   ~cmomy.reduction.reduce_data_indexed
-
-Resampling routines available at top level (from :mod:`cmomy.resample`)
------------------------------------------------------------------------
-
-.. autosummary::
-
-   ~cmomy.resample.resample_data
-   ~cmomy.resample.resample_vals
-   ~cmomy.resample.random_freq
-   ~cmomy.resample.random_indices
-   ~cmomy.resample.randsamp_freq
-   ~cmomy.resample.indices_to_freq
+   convert.moments_type
+   convert.cumulative
 
 
-Confidence intervals (from :mod:`cmomy.confidence_interval`)
-------------------------------------------------------------
+
+Confidence intervals (:mod:`.confidence_interval`)
+--------------------------------------------------
 
 .. autosummary::
 
-   ~cmomy.confidence_interval.bootstrap_confidence_interval
+   ~confidence_interval.bootstrap_confidence_interval
 
 
-Central moment array utilities (from :mod:`cmomy.utils`)
---------------------------------------------------------
+Central moment array utilities (:mod:`.utils`)
+----------------------------------------------
 
 .. autosummary::
 
-   ~cmomy.utils.moveaxis
-   ~cmomy.utils.select_moment
-   ~cmomy.utils.assign_moment
+   ~utils.moveaxis
+   ~utils.select_moment
+   ~utils.assign_moment
+   ~utils.vals_to_data
 
 
 
@@ -73,9 +116,9 @@ Pre-loaded modules
 
 .. autosummary::
 
-   ~cmomy.random
-   ~cmomy.reduction
-   ~cmomy.resample
-   ~cmomy.convert
-   ~cmomy.utils
-   ~cmomy.rolling
+   ~random
+   ~reduction
+   ~resample
+   ~convert
+   ~utils
+   ~rolling

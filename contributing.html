@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Contributing &#8212; cmomy v0.16.0 documentation</title>
+    <title>Contributing &#8212; cmomy v0.17.0 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=047b2eda"></script>
+    <script src="_static/documentation_options.js?v=f8a11b36"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="License" href="license.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-08-06"/>
+    <meta name="docbuild:last-update" content="2024-09-16"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.16.0 documentation</p>
+    <p class="title logo__title">cmomy v0.17.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -177,11 +177,19 @@
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="reference/index.html">API reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l2 has-children"><a class="reference internal" href="reference/api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.xCentralMoments.html">cmomy.xCentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap.html">cmomy.wrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.zeros_like.html">cmomy.zeros_like</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/generated/cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+
 
 
 
@@ -211,7 +219,6 @@
 
 
 
-
 <li class="toctree-l2"><a class="reference internal" href="reference/generated/cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
 <li class="toctree-l2"><a class="reference internal" href="reference/generated/cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
@@ -230,6 +237,33 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="reference/generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -725,11 +759,11 @@ requirement files are under something like
 <code class="docutils literal notranslate"><span class="pre">requirements/py{version}-{env-name}.yaml</span></code> (conda environment) or
 <code class="docutils literal notranslate"><span class="pre">requirements/{env-name}.txt</span></code> (virtual environment).</p>
 <p>Additionally, requirement files for virtualenvs (e.g., <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> like
-files) will be “locked” using <code class="docutils literal notranslate"><span class="pre">pip-compile</span></code> from <a class="reference external" href="https://github.com/jazzband/pip-tools">pip-tools</a>. These files are
-placed under <code class="docutils literal notranslate"><span class="pre">requirements/lock</span></code>. Note the the session <code class="docutils literal notranslate"><span class="pre">requirements</span></code>
-automatically calls the session <code class="docutils literal notranslate"><span class="pre">pip-compile</span></code>.</p>
+files) will be “locked” using <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">compile</span></code> from <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>. These files are placed
+under <code class="docutils literal notranslate"><span class="pre">requirements/lock</span></code>. Note the the session <code class="docutils literal notranslate"><span class="pre">requirements</span></code> automatically
+calls the session <code class="docutils literal notranslate"><span class="pre">uv-compile</span></code>.</p>
 <p>To upgrade the dependencies in the lock, you’ll need to pass the option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span>requirements/pip-compile<span class="w"> </span>--<span class="w"> </span>+L/++pip-compile-upgrade
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span>uv-compile<span class="w"> </span>--<span class="w"> </span>+L/++pip-compile-upgrade
 </pre></div>
 </div>
 </section>
@@ -844,17 +878,16 @@ create the final recipe.</p>
 </div>
 <p>Use <code class="docutils literal notranslate"><span class="pre">typing-conda</span></code> to test typing in a conda environment.</p>
 <p>Note that the repo is setup to use a single install of <a class="reference external" href="https://github.com/python/mypy">mypy</a> and <a class="reference external" href="https://github.com/microsoft/pyright">pyright</a>. The
-script <code class="docutils literal notranslate"><span class="pre">tools/pipxrun.py</span></code> will run check if an appropriate version of the
-typecheckers is installed. If not, they will be run (and cached) using
-<code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span></code>.</p>
+script <code class="docutils literal notranslate"><span class="pre">tools/uvxrun.py</span></code> will run check if an appropriate version of the
+typecheckers is installed. If not, they will be run (and cached) using <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a>.</p>
 </section>
 <section id="setup-development-environment">
 <h2>Setup development environment<a class="headerlink" href="#setup-development-environment" title="Link to this heading">#</a></h2>
 <p>This project uses a host of tools to (hopefully) make development easier. We
 recommend installing some of these tools system wide. For this, we recommend
-using either <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> or <a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a>. We mostly use conda/condax, but the choice is
-yours. For conda, we recommend actually using <a class="reference external" href="https://github.com/mamba-org/mamba">mamba</a>. Alternatively, you can
-setup <code class="docutils literal notranslate"><span class="pre">conda</span></code> to use the faster <code class="docutils literal notranslate"><span class="pre">mamba</span></code> solver. See <a class="reference external" href="https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community">here</a> for
+using <a class="reference external" href="https://github.com/astral-sh/uv">uv</a> (or <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> or <a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a>). We mostly use <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>, but the choice is yours.
+For conda, we recommend actually using <a class="reference external" href="https://github.com/mamba-org/mamba">mamba</a>. Alternatively, you can setup
+<code class="docutils literal notranslate"><span class="pre">conda</span></code> to use the faster <code class="docutils literal notranslate"><span class="pre">mamba</span></code> solver. See <a class="reference external" href="https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community">here</a> for
 details.</p>
 <section id="create-development-environment-with-conda">
 <h3>Create development environment with conda<a class="headerlink" href="#create-development-environment-with-conda" title="Link to this heading">#</a></h3>
@@ -865,7 +898,8 @@ pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </s
 </pre></div>
 </div>
 <p>If you want to include some extra tools in the environment (instead of using
-<a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a> or <a class="reference external" href="https://github.com/pypa/pipx">pipx</a>), use <code class="docutils literal notranslate"><span class="pre">requirements/py{version}-dev-complete.yaml</span></code> instead.</p>
+<a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a>, <a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a>, or <a class="reference external" href="https://github.com/pypa/pipx">pipx</a>), use <code class="docutils literal notranslate"><span class="pre">requirements/py{version}-dev-complete.yaml</span></code>
+instead.</p>
 </section>
 <section id="create-development-environment-with-pip">
 <h3>Create development environment with pip<a class="headerlink" href="#create-development-environment-with-pip" title="Link to this heading">#</a></h3>
@@ -897,21 +931,16 @@ environment, use <code class="docutils literal notranslate"><span class="pre">no
 <a class="reference external" href="https://github.com/Tarrasch/zsh-autoenv">zsh-autoenv</a> (if using zsh shell) or
 <a class="reference external" href="https://github.com/hyperupcall/autoenv">autoenv</a> (if using bash) to auto
 activate the development environment when in the parent directory.</p>
-<p>Note that you can bootstrap the whole process with <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pipx<span class="w"> </span>run<span class="w"> </span>--spec<span class="w"> </span>nox<span class="w"> </span><span class="se">\</span>
-<span class="w">     </span>nox<span class="w"> </span>-s<span class="w"> </span>dev/dev-venv<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
+<p>Note that you can bootstrap the whole process with <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uvx<span class="w"> </span>nox<span class="w"> </span>-s<span class="w"> </span>dev/dev-venv<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
 <span class="w">     </span>++dev-envname<span class="w"> </span>dev/dev-complete
 </pre></div>
 </div>
 </section>
 <section id="development-tools">
 <h3>Development tools<a class="headerlink" href="#development-tools" title="Link to this heading">#</a></h3>
-<p>We recommend installing the following tools with <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> or <a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a>. If you’d
-like to install them in the development environment instead, use the
-<code class="docutils literal notranslate"><span class="pre">dev-complete</span></code> version of the commands above.</p>
 <p>Additional tools are:</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/pypa/pipx">pipx</a></p></li>
 <li><p><a class="reference external" href="https://pre-commit.com/">pre-commit</a></p></li>
 <li><p><a class="reference external" href="https://github.com/astral-sh/uv">uv</a> (optional, highly recommended)</p></li>
 <li><p><a class="reference external" href="https://github.com/nedbat/scriv">scriv</a> (optional)</p></li>
@@ -921,29 +950,27 @@ like to install them in the development environment instead, use the
 <li><p><a class="reference external" href="https://github.com/nedbat/cog">cog</a> (optional)</p></li>
 <li><p><a class="reference external" href="https://github.com/nbQA-dev/nbQA">nbqa</a> (optional)</p></li>
 </ul>
-<p>These are setup using the following:</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>install<span class="w"> </span>pipx<span class="w"> </span>using<span class="w"> </span>something<span class="w"> </span>like<span class="w"> </span>...
-<span class="go">pip install --user pipx</span>
-
-<span class="go">condax/pipx install pre-commit</span>
-
+<p>We recommend installing these tools with <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>, but feel free to use <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> or
+<a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a>. If you’d like to install them in the development environment instead,
+use the <code class="docutils literal notranslate"><span class="pre">dev-complete</span></code> version of the commands above.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">uv tool/condax/pipx install pre-commit</span>
 <span class="gp"># </span>optional<span class="w"> </span>packages
-<span class="go">pipx install scriv</span>
-<span class="go">condax/pipx install uv</span>
-<span class="go">condax/pipx install pyright</span>
-<span class="go">condax/pipx install cruft</span>
-<span class="go">condax/pipx install commitizen</span>
-<span class="go">condax/pipx install cogapp</span>
-<span class="go">condax/pipx install nbqa</span>
+<span class="go">uv tool/pipx install scriv</span>
+<span class="go">uv tool/condax/pipx install uv</span>
+<span class="go">uv tool/condax/pipx install pyright</span>
+<span class="go">uv tool/condax/pipx install cruft</span>
+<span class="go">uv tool/condax/pipx install commitizen</span>
+<span class="go">uv tool/condax/pipx install cogapp</span>
+<span class="go">uv tool/condax/pipx install nbqa</span>
 </pre></div>
 </div>
-<p>Note that the repo is setup to automatically use pipx for many of these tools.
-Behind the scenes, the makefile and <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> will invoke <code class="docutils literal notranslate"><span class="pre">tools/pipxrun.py</span></code>.
-This will either run the tool with <code class="docutils literal notranslate"><span class="pre">pipx</span> <span class="pre">run</span> <span class="pre">tool..</span></code>, or, if it is already
-installed (with proper version), run the tool from the install. This prevents
-having to install a bunch of tooling in the “dev” environment, and also avoid
-creating a bunch of through away <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments. This is experimental, and I
-might change back to using small <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments again in the future.</p>
+<p>Note that the repo is setup to automatically use <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> for many of these tools.
+Behind the scenes, the makefile and <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> will invoke <code class="docutils literal notranslate"><span class="pre">tools/uvxrun.py</span></code>.
+This will run the tool with <code class="docutils literal notranslate"><span class="pre">uvx</span> <span class="pre">tool..</span></code> with proper tool version. Note that if
+the tool is already installed with the proper version, <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> will use it. This
+prevents having to install a bunch of tooling in the “dev” environment, and also
+avoid creating a bunch of through away <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments. This is experimental,
+and I might change back to using small <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments again in the future.</p>
 </section>
 </section>
 <section id="package-version">
@@ -1079,7 +1106,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-08-06.
+  Last updated on 2024-09-16.
   <br/>
 </p>
   </div>

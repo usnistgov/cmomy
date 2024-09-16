@@ -21,10 +21,10 @@
    
       ~CentralMoments.assign_moment
       ~CentralMoments.astype
-      ~CentralMoments.block
       ~CentralMoments.cmom
       ~CentralMoments.copy
       ~CentralMoments.cov
+      ~CentralMoments.cumulative
       ~CentralMoments.fill
       ~CentralMoments.from_raw
       ~CentralMoments.from_resample_vals
@@ -39,21 +39,17 @@
       ~CentralMoments.push_datas
       ~CentralMoments.push_val
       ~CentralMoments.push_vals
-      ~CentralMoments.randsamp_freq
       ~CentralMoments.reduce
       ~CentralMoments.resample
       ~CentralMoments.resample_and_reduce
       ~CentralMoments.reshape
       ~CentralMoments.rmom
       ~CentralMoments.select_moment
-      ~CentralMoments.set_values
       ~CentralMoments.std
       ~CentralMoments.to_dataarray
       ~CentralMoments.to_numpy
       ~CentralMoments.to_raw
-      ~CentralMoments.to_values
       ~CentralMoments.to_x
-      ~CentralMoments.to_xcentralmoments
       ~CentralMoments.var
       ~CentralMoments.weight
       ~CentralMoments.zero
@@ -70,16 +66,15 @@
 
    .. autosummary::
    
-      ~CentralMoments.data
       ~CentralMoments.dtype
       ~CentralMoments.mom
       ~CentralMoments.mom_ndim
       ~CentralMoments.mom_shape
       ~CentralMoments.ndim
+      ~CentralMoments.obj
       ~CentralMoments.shape
       ~CentralMoments.val_ndim
       ~CentralMoments.val_shape
-      ~CentralMoments.values
    
    
 

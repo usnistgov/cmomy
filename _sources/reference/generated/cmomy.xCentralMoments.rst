@@ -19,22 +19,28 @@
    .. rubric:: Methods
    .. autosummary::
    
+      ~xCentralMoments.as_dict
+      ~xCentralMoments.as_numpy
+      ~xCentralMoments.assign
       ~xCentralMoments.assign_attrs
       ~xCentralMoments.assign_coords
       ~xCentralMoments.assign_moment
       ~xCentralMoments.astype
-      ~xCentralMoments.block
+      ~xCentralMoments.chunk
       ~xCentralMoments.cmom
+      ~xCentralMoments.compute
       ~xCentralMoments.copy
       ~xCentralMoments.cov
+      ~xCentralMoments.cumulative
       ~xCentralMoments.drop_vars
-      ~xCentralMoments.fill
-      ~xCentralMoments.from_centralmoments
       ~xCentralMoments.from_raw
       ~xCentralMoments.from_resample_vals
       ~xCentralMoments.from_vals
       ~xCentralMoments.isel
+      ~xCentralMoments.items
+      ~xCentralMoments.iter
       ~xCentralMoments.jackknife_and_reduce
+      ~xCentralMoments.keys
       ~xCentralMoments.mean
       ~xCentralMoments.moments_to_comoments
       ~xCentralMoments.moveaxis
@@ -44,7 +50,6 @@
       ~xCentralMoments.push_datas
       ~xCentralMoments.push_val
       ~xCentralMoments.push_vals
-      ~xCentralMoments.randsamp_freq
       ~xCentralMoments.reduce
       ~xCentralMoments.rename
       ~xCentralMoments.resample_and_reduce
@@ -53,21 +58,20 @@
       ~xCentralMoments.sel
       ~xCentralMoments.select_moment
       ~xCentralMoments.set_index
-      ~xCentralMoments.set_values
       ~xCentralMoments.stack
       ~xCentralMoments.std
       ~xCentralMoments.swap_dims
+      ~xCentralMoments.to_array
       ~xCentralMoments.to_c
-      ~xCentralMoments.to_centralmoments
       ~xCentralMoments.to_dataarray
+      ~xCentralMoments.to_dataset
       ~xCentralMoments.to_numpy
       ~xCentralMoments.to_raw
-      ~xCentralMoments.to_values
       ~xCentralMoments.transpose
       ~xCentralMoments.unstack
+      ~xCentralMoments.values
       ~xCentralMoments.var
       ~xCentralMoments.weight
-      ~xCentralMoments.zero
       ~xCentralMoments.zeros
       ~xCentralMoments.zeros_like
    
@@ -83,22 +87,20 @@
    
       ~xCentralMoments.attrs
       ~xCentralMoments.coords
-      ~xCentralMoments.data
       ~xCentralMoments.dims
       ~xCentralMoments.dtype
-      ~xCentralMoments.indexes
       ~xCentralMoments.mom
       ~xCentralMoments.mom_dims
       ~xCentralMoments.mom_ndim
       ~xCentralMoments.mom_shape
       ~xCentralMoments.name
       ~xCentralMoments.ndim
+      ~xCentralMoments.obj
       ~xCentralMoments.shape
       ~xCentralMoments.sizes
       ~xCentralMoments.val_dims
       ~xCentralMoments.val_ndim
       ~xCentralMoments.val_shape
-      ~xCentralMoments.values
    
    
 

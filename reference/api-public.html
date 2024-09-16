@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Top level API (cmomy) &#8212; cmomy v0.16.0 documentation</title>
+    <title>Top level API (cmomy) &#8212; cmomy v0.17.0 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=047b2eda"></script>
+    <script src="../_static/documentation_options.js?v=f8a11b36"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,11 +56,11 @@
     <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="cmomy.CentralMoments" href="generated/cmomy.CentralMoments.html" />
+    <link rel="next" title="cmomy.CentralMomentsArray" href="generated/cmomy.CentralMomentsArray.html" />
     <link rel="prev" title="API reference" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-08-06"/>
+    <meta name="docbuild:last-update" content="2024-09-16"/>
   </head>
   
   
@@ -146,7 +146,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.16.0 documentation</p>
+    <p class="title logo__title">cmomy v0.17.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -179,11 +179,19 @@
 </details></li>
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/cmomy.xCentralMoments.html">cmomy.xCentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.wrap.html">cmomy.wrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.zeros_like.html">cmomy.zeros_like</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+
 
 
 
@@ -213,7 +221,6 @@
 
 
 
-
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
@@ -232,6 +239,33 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -445,11 +479,15 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moments-wrapper-classes">Central Moments wrapper classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legacy-wrapper-classes">Legacy wrapper classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#factory-methods-to-create-wrapper-objects">Factory methods to create wrapper objects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-routines-available-at-top-level-reduction">Reduction routines available at top level (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-resample">Resampling routines available at top level (<code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#default-random-number-generator-cmomy-random">Default random number generator (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#concatenation">Concatenation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-routines-available-at-top-level-from-cmomy-reduction">Reduction routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.reduction</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-from-cmomy-resample">Resampling routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#confidence-intervals-from-cmomy-confidence-interval">Confidence intervals (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moment-array-utilities-from-cmomy-utils">Central moment array utilities (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convert">Convert</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#confidence-intervals-confidence-interval">Confidence intervals (<code class="xref py py-mod docutils literal notranslate"><span class="pre">confidence_interval</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moment-array-utilities-utils">Central moment array utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">utils</span></code>)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-loaded-modules">Pre-loaded modules</a></li>
 </ul>
             </nav>
@@ -469,11 +507,102 @@ document.write(`
 <h2>Central Moments wrapper classes<a class="headerlink" href="#central-moments-wrapper-classes" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.CentralMoments.html#cmomy.CentralMoments" title="cmomy.CentralMoments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CentralMoments</span></code></a>(data, *[, mom_ndim, copy, ...])</p></td>
-<td><p>Wrapper of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.ndarray</span></code></a> based central moments data.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a>(obj, *[, mom_ndim, ...])</p></td>
+<td><p>Central moments wrapper of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> arrays.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments" title="cmomy.xCentralMoments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xCentralMoments</span></code></a>(data, *[, mom_ndim, copy, ...])</p></td>
-<td><p>Wrapper of <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.7.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> based central moments data.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>(obj, *[, mom_ndim, ...])</p></td>
+<td><p>Central moments wrapper of <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> objects.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="legacy-wrapper-classes">
+<h2>Legacy wrapper classes<a class="headerlink" href="#legacy-wrapper-classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.CentralMoments.html#cmomy.CentralMoments" title="cmomy.CentralMoments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CentralMoments</span></code></a></p></td>
+<td><p>alias of <a class="reference internal" href="generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.wrapper.wrap_np.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.xCentralMoments.html#cmomy.xCentralMoments" title="cmomy.xCentralMoments"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xCentralMoments</span></code></a></p></td>
+<td><p>alias of <a class="reference internal" href="generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.wrapper.wrap_xr.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="factory-methods-to-create-wrapper-objects">
+<h2>Factory methods to create wrapper objects<a class="headerlink" href="#factory-methods-to-create-wrapper-objects" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.wrap.html#cmomy.wrap" title="cmomy.wrap"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap</span></code></a>(obj, *[, mom_ndim, mom_dims, dtype, ...])</p></td>
+<td><p>Wrap object with central moments class.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.wrap_reduce_vals.html#cmomy.wrap_reduce_vals" title="cmomy.wrap_reduce_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_reduce_vals</span></code></a>(x, *y, mom[, weight, axis, ...])</p></td>
+<td><p>Create wrapped object from values.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.wrap_resample_vals.html#cmomy.wrap_resample_vals" title="cmomy.wrap_resample_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_resample_vals</span></code></a>(x, *y, mom[, weight, ...])</p></td>
+<td><p>Create wrapped object from resampled values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.wrap_raw.html#cmomy.wrap_raw" title="cmomy.wrap_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_raw</span></code></a>(raw, *[, mom_ndim, out, dtype, ...])</p></td>
+<td><p>Create object from raw moment data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.zeros_like.html#cmomy.zeros_like" title="cmomy.zeros_like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">zeros_like</span></code></a>(c, *[, dtype, order, subok, ...])</p></td>
+<td><p>Create new wrapped object with zeros like given wrapped object.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="reduction-routines-available-at-top-level-reduction">
+<h2>Reduction routines available at top level (<a class="reference internal" href="generated/cmomy.reduction.html#module-cmomy.reduction" title="cmomy.reduction"><code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code></a>)<a class="headerlink" href="#reduction-routines-available-at-top-level-reduction" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.reduction.html#cmomy.reduction.reduce_data" title="cmomy.reduction.reduce_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_data</span></code></a>(data, *[, mom_ndim, axis, out, ...])</p></td>
+<td><p>Reduce central moments array along axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.reduction.html#cmomy.reduction.reduce_data_grouped" title="cmomy.reduction.reduce_data_grouped"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_data_grouped</span></code></a>(data, by, *[, mom_ndim, ...])</p></td>
+<td><p>Reduce data by group.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.reduction.html#cmomy.reduction.reduce_data_indexed" title="cmomy.reduction.reduce_data_indexed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_data_indexed</span></code></a>(data, *[, mom_ndim, ...])</p></td>
+<td><p>Reduce data by index</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="resampling-routines-available-at-top-level-resample">
+<h2>Resampling routines available at top level (<a class="reference internal" href="generated/cmomy.resample.html#module-cmomy.resample" title="cmomy.resample"><code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code></a>)<a class="headerlink" href="#resampling-routines-available-at-top-level-resample" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_data" title="cmomy.resample.resample_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_data</span></code></a>(data, *[, mom_ndim, freq, ...])</p></td>
+<td><p>Resample data according to frequency table.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_vals" title="cmomy.resample.resample_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_vals</span></code></a>(x, *y, mom[, weight, freq, ...])</p></td>
+<td><p>Resample data according to frequency table.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_freq" title="cmomy.resample.random_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_freq</span></code></a>(nrep, ndat[, nsamp, rng, replace])</p></td>
+<td><p>Create frequencies for random resampling (bootstrapping).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_indices" title="cmomy.resample.random_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_indices</span></code></a>(nrep, ndat[, nsamp, rng, replace])</p></td>
+<td><p>Create indices for random resampling (bootstrapping).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.randsamp_freq" title="cmomy.resample.randsamp_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randsamp_freq</span></code></a>(*[, freq, indices, ndat, ...])</p></td>
+<td><p>Convenience function to create frequency table for resampling.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.indices_to_freq" title="cmomy.resample.indices_to_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices_to_freq</span></code></a>(indices, *[, ndat])</p></td>
+<td><p>Convert indices to frequency array.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="default-random-number-generator-cmomy-random">
+<h2>Default random number generator (<a class="reference internal" href="generated/cmomy.random.html#module-cmomy.random" title="cmomy.random"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code></a>)<a class="headerlink" href="#default-random-number-generator-cmomy-random" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.random.html#cmomy.random.default_rng" title="cmomy.random.default_rng"><code class="xref py py-obj docutils literal notranslate"><span class="pre">default_rng</span></code></a>([seed])</p></td>
+<td><p>Get default internal random number generator.</p></td>
 </tr>
 </tbody>
 </table>
@@ -490,51 +619,22 @@ document.write(`
 </table>
 </div>
 </section>
-<section id="reduction-routines-available-at-top-level-from-cmomy-reduction">
-<h2>Reduction routines available at top level (from <a class="reference internal" href="generated/cmomy.reduction.html#module-cmomy.reduction" title="cmomy.reduction"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.reduction</span></code></a>)<a class="headerlink" href="#reduction-routines-available-at-top-level-from-cmomy-reduction" title="Link to this heading">#</a></h2>
+<section id="convert">
+<h2>Convert<a class="headerlink" href="#convert" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.reduction.html#cmomy.reduction.reduce_data" title="cmomy.reduction.reduce_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_data</span></code></a>(data, *, mom_ndim[, axis, ...])</p></td>
-<td><p>Reduce central moments array along axis.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.convert.html#cmomy.convert.moments_type" title="cmomy.convert.moments_type"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert.moments_type</span></code></a>(values_in, *[, ...])</p></td>
+<td><p>Convert between central and raw moments type.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.reduction.html#cmomy.reduction.reduce_data_grouped" title="cmomy.reduction.reduce_data_grouped"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_data_grouped</span></code></a>(data, by, *, mom_ndim[, ...])</p></td>
-<td><p>Reduce data by group.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.reduction.html#cmomy.reduction.reduce_data_indexed" title="cmomy.reduction.reduce_data_indexed"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reduce_data_indexed</span></code></a>(data, *, mom_ndim, ...)</p></td>
-<td><p>Reduce data by index</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.convert.html#cmomy.convert.cumulative" title="cmomy.convert.cumulative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert.cumulative</span></code></a>(values_in, *[, axis, ...])</p></td>
+<td><p>Convert between moments array and cumulative moments array.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 </section>
-<section id="resampling-routines-available-at-top-level-from-cmomy-resample">
-<h2>Resampling routines available at top level (from <a class="reference internal" href="generated/cmomy.resample.html#module-cmomy.resample" title="cmomy.resample"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code></a>)<a class="headerlink" href="#resampling-routines-available-at-top-level-from-cmomy-resample" title="Link to this heading">#</a></h2>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_data" title="cmomy.resample.resample_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_data</span></code></a>(data, freq, *, mom_ndim[, ...])</p></td>
-<td><p>Resample data according to frequency table.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_vals" title="cmomy.resample.resample_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_vals</span></code></a>(x, *y, mom, freq[, weight, ...])</p></td>
-<td><p>Resample data according to frequency table.</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_freq" title="cmomy.resample.random_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_freq</span></code></a>(nrep, ndat[, nsamp, rng, replace])</p></td>
-<td><p>Create frequencies for random resampling (bootstrapping).</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_indices" title="cmomy.resample.random_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_indices</span></code></a>(nrep, ndat[, nsamp, rng, replace])</p></td>
-<td><p>Create indices for random resampling (bootstrapping).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.randsamp_freq" title="cmomy.resample.randsamp_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randsamp_freq</span></code></a>(*[, ndat, nrep, nsamp, ...])</p></td>
-<td><p>Convenience function to create frequency table for resampling.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.indices_to_freq" title="cmomy.resample.indices_to_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices_to_freq</span></code></a>(indices[, ndat])</p></td>
-<td><p>Convert indices to frequency array.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-</section>
-<section id="confidence-intervals-from-cmomy-confidence-interval">
-<h2>Confidence intervals (from <a class="reference internal" href="generated/cmomy.confidence_interval.html#module-cmomy.confidence_interval" title="cmomy.confidence_interval"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code></a>)<a class="headerlink" href="#confidence-intervals-from-cmomy-confidence-interval" title="Link to this heading">#</a></h2>
+<section id="confidence-intervals-confidence-interval">
+<h2>Confidence intervals (<a class="reference internal" href="generated/cmomy.confidence_interval.html#module-cmomy.confidence_interval" title="cmomy.confidence_interval"><code class="xref py py-mod docutils literal notranslate"><span class="pre">confidence_interval</span></code></a>)<a class="headerlink" href="#confidence-intervals-confidence-interval" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.confidence_interval.html#cmomy.confidence_interval.bootstrap_confidence_interval" title="cmomy.confidence_interval.bootstrap_confidence_interval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bootstrap_confidence_interval</span></code></a>(theta_boot[, ...])</p></td>
@@ -544,18 +644,21 @@ document.write(`
 </table>
 </div>
 </section>
-<section id="central-moment-array-utilities-from-cmomy-utils">
-<h2>Central moment array utilities (from <a class="reference internal" href="generated/cmomy.utils.html#module-cmomy.utils" title="cmomy.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code></a>)<a class="headerlink" href="#central-moment-array-utilities-from-cmomy-utils" title="Link to this heading">#</a></h2>
+<section id="central-moment-array-utilities-utils">
+<h2>Central moment array utilities (<a class="reference internal" href="generated/cmomy.utils.html#module-cmomy.utils" title="cmomy.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">utils</span></code></a>)<a class="headerlink" href="#central-moment-array-utilities-utils" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.utils.html#cmomy.utils.moveaxis" title="cmomy.utils.moveaxis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moveaxis</span></code></a>(x[, axis, dest, dim, dest_dim, ...])</p></td>
 <td><p>Generalized moveaxis for moments arrays.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.utils.html#cmomy.utils.select_moment" title="cmomy.utils.select_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_moment</span></code></a>(data, name, *, mom_ndim[, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.utils.html#cmomy.utils.select_moment" title="cmomy.utils.select_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_moment</span></code></a>(data, name, *[, mom_ndim, ...])</p></td>
 <td><p>Select specific moments for a central moments array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.utils.html#cmomy.utils.assign_moment" title="cmomy.utils.assign_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_moment</span></code></a>(data, name, value, *, mom_ndim)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.utils.html#cmomy.utils.assign_moment" title="cmomy.utils.assign_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_moment</span></code></a>(data[, moment, squeeze, copy, ...])</p></td>
 <td><p>Update weights of moments array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.utils.html#cmomy.utils.vals_to_data" title="cmomy.utils.vals_to_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vals_to_data</span></code></a>(x, *y, mom[, weight, dtype, ...])</p></td>
+<td><p>Convert <cite>values</cite> to <cite>central moments array</cite>.</p></td>
 </tr>
 </tbody>
 </table>
@@ -610,11 +713,11 @@ document.write(`
       </div>
     </a>
     <a class="right-next"
-       href="generated/cmomy.CentralMoments.html"
+       href="generated/cmomy.CentralMomentsArray.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">cmomy.CentralMoments</p>
+        <p class="prev-next-title">cmomy.CentralMomentsArray</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -635,11 +738,15 @@ document.write(`
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moments-wrapper-classes">Central Moments wrapper classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legacy-wrapper-classes">Legacy wrapper classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#factory-methods-to-create-wrapper-objects">Factory methods to create wrapper objects</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-routines-available-at-top-level-reduction">Reduction routines available at top level (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-resample">Resampling routines available at top level (<code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#default-random-number-generator-cmomy-random">Default random number generator (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#concatenation">Concatenation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reduction-routines-available-at-top-level-from-cmomy-reduction">Reduction routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.reduction</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#resampling-routines-available-at-top-level-from-cmomy-resample">Resampling routines available at top level (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#confidence-intervals-from-cmomy-confidence-interval">Confidence intervals (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moment-array-utilities-from-cmomy-utils">Central moment array utilities (from <code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#convert">Convert</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#confidence-intervals-confidence-interval">Confidence intervals (<code class="xref py py-mod docutils literal notranslate"><span class="pre">confidence_interval</span></code>)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#central-moment-array-utilities-utils">Central moment array utilities (<code class="xref py py-mod docutils literal notranslate"><span class="pre">utils</span></code>)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pre-loaded-modules">Pre-loaded modules</a></li>
 </ul>
   </nav></div>
@@ -674,7 +781,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-08-06.
+  Last updated on 2024-09-16.
   <br/>
 </p>
   </div>
