@@ -9,7 +9,6 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy.core.validate import is_dataarray
 
 if TYPE_CHECKING:
     from cmomy.core.typing import Mom_NDim
@@ -51,20 +50,12 @@ def get_params(
     return xy, w
 
 
-def factory_central_method(method):
-    def inner(x, *args, **kwargs):
-        cls = cmomy.xCentralMoments if is_dataarray(x) else cmomy.CentralMoments
-        return getattr(cls, method)(x, *args, **kwargs)
-
-    return inner
-
-
 @shapes_mark
 @pytest.mark.parametrize(
     ("func", "kwargs", "style"),
     [
         (cmomy.resample.resample_vals, {}, "resample"),
-        (factory_central_method("from_resample_vals"), {}, "resample"),
+        (cmomy.wrap_resample_vals, {}, "resample"),
         (cmomy.resample.jackknife_vals, {}, None),
         (
             cmomy.rolling.rolling_vals,

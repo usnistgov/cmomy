@@ -272,9 +272,7 @@ def _do_test_assign_moment_mom_ndim(
     np.testing.assert_allclose(out, check)
 
     # CentralMoments
-    c0 = (cmomy.xCentralMoments if is_dataarray(data) else cmomy.CentralMoments)(
-        data, mom_ndim=mom_ndim
-    )
+    c0 = cmomy.wrap(data, mom_ndim=mom_ndim)
     c1 = c0.assign_moment({name: value}, **kwargs, copy=copy)
 
     np.testing.assert_allclose(out, c1)

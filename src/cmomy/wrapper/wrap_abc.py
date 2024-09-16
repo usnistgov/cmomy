@@ -545,7 +545,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     ) -> Self:
         """
         Apply `func_or_method` to underlying data and wrap results in
-        class:`.xCentralMoments` object.
+        new wrapped object.
 
         This is useful for calling any not implemented methods on :class:`numpy.ndarray` or
         :class:`xarray.DataArray` data.

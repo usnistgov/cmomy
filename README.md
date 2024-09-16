@@ -40,8 +40,8 @@ features of `cmomy` are as follows:
 
 - [Numba][Numba] accelerated computation of central moments and co-moments
 - Routines to combine, and resample central moments.
-- Both [numpy][numpy] array-like and [xarray][xarray] DataArray interfaces to
-  Data.
+- Supports [numpy][numpy] array and [xarray][xarray] DataArray or Dataset based
+  data.
 - Routines to convert between central and raw moments.
 
 ## Overview

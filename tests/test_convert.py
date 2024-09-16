@@ -128,7 +128,6 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     c2 = cmomy.CentralMoments(data2, mom_ndim=2)
     np.testing.assert_allclose(c2, c.moments_to_comoments(mom=(1, -1)))
 
-    # xCentralMoments
     cx = c.to_x()
     c2x = c2.to_x(mom_dims=("a", "b"))
 

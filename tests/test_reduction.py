@@ -82,7 +82,7 @@ def test_reduce_vals_keepdims(
 
     np.testing.assert_allclose(np.squeeze(out, axis), check)
 
-    cls = cmomy.xCentralMoments if as_dataarray else cmomy.CentralMoments
+    cls = cmomy.CentralMomentsData if as_dataarray else cmomy.CentralMomentsArray
     c = cls.from_vals(x, **kws, keepdims=True)  # type: ignore[attr-defined]
     assert c.shape == new_shape
 
@@ -117,7 +117,7 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
 
     np.testing.assert_allclose(np.squeeze(out, axis), check)
 
-    cls = cmomy.xCentralMoments if as_dataarray else cmomy.CentralMoments
+    cls = cmomy.CentralMomentsData if as_dataarray else cmomy.CentralMomentsArray
     c = cls(x, mom_ndim=mom_ndim).reduce(
         axis=axis, keepdims=True, **({"use_reduce": True} if as_dataarray else {})
     )
