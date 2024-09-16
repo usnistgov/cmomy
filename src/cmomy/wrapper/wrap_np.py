@@ -10,7 +10,6 @@ import xarray as xr
 from cmomy.core.array_utils import (
     arrayorder_to_arrayorder_cf,
     axes_data_reduction,
-    raise_if_wrong_value,
 )
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.missing import MISSING
@@ -21,6 +20,7 @@ from cmomy.core.prepare import (
 from cmomy.core.utils import mom_to_mom_shape
 from cmomy.core.validate import (
     is_ndarray,
+    raise_if_wrong_value,
     validate_axis,
     validate_floating_dtype,
     validate_mom_and_mom_ndim,
@@ -41,6 +41,7 @@ if TYPE_CHECKING:
         AxisReduce,
         Casting,
         CentralMomentsArrayAny,
+        CentralMomentsDataArray,
         CoordsType,
         DimsType,
         DTypeLikeArg,
@@ -59,7 +60,6 @@ if TYPE_CHECKING:
         WrapNPTransform,
     )
     from cmomy.core.typing_compat import Self, Unpack
-    from cmomy.wrapper.wrap_xr import CentralMomentsData
 
 
 from numpy.typing import NDArray
@@ -1104,9 +1104,10 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> xr.DataArray:
-        """
-        Create a :class:`xarray.DataArray` representation of underlying data.
+    ) -> CentralMomentsDataArray:
+        r"""
+        Create a  :class:`.CentralMomentsData` object from ``self``.
+
 
         Parameters
         ----------
@@ -1122,37 +1123,45 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         --------
         >>> from cmomy.random import default_rng
         >>> rng = default_rng(0)
-        >>> da = CentralMomentsArray(rng.random((1, 2, 4)), mom_ndim=1)
-        >>> da
+        >>> c = CentralMomentsArray(rng.random((1, 2, 4)), mom_ndim=1)
+        >>> c
         <CentralMomentsArray(mom_ndim=1)>
         array([[[0.637 , 0.2698, 0.041 , 0.0165],
                 [0.8133, 0.9128, 0.6066, 0.7295]]])
 
-        Default constructor
+        Default is to create a :class:`.CentralMomentsData` object
 
-        >>> da.to_dataarray()
+        >>> c.to_dataarray()
+        <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
         array([[[0.637 , 0.2698, 0.041 , 0.0165],
                 [0.8133, 0.9128, 0.6066, 0.7295]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
 
-        Setting attributes
 
-        >>> da.to_dataarray()
+        To just create a :class:`xarray.DataArray` object, access :attr:`obj`
+
+        >>> c.to_dataarray().obj
         <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 4)> Size: 64B
         array([[[0.637 , 0.2698, 0.041 , 0.0165],
                 [0.8133, 0.9128, 0.6066, 0.7295]]])
         Dimensions without coordinates: dim_0, dim_1, mom_0
-        >>> da
-        <CentralMomentsArray(mom_ndim=1)>
+
+
+        You can set attributes during construction:
+
+        >>> c.to_dataarray(dims=["a", "b", "mom"])
+        <CentralMomentsData(mom_ndim=1)>
+        <xarray.DataArray (a: 1, b: 2, mom: 4)> Size: 64B
         array([[[0.637 , 0.2698, 0.041 , 0.0165],
                 [0.8133, 0.9128, 0.6066, 0.7295]]])
-
+        Dimensions without coordinates: a, b, mom
         """
         data = self.obj
         if copy:
             data = data.copy()
 
+        out: xr.DataArray
         if template is not None:
             out = template.copy(data=data)
         else:
@@ -1192,9 +1201,15 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 data, dims=dims_output, coords=coords, attrs=attrs, name=name
             )
 
-        return out
+        from cmomy.wrapper.wrap_xr import CentralMomentsData
 
-    @docfiller.decorate
+        return CentralMomentsData(
+            obj=out,
+            mom_ndim=self._mom_ndim,
+            mom_dims=out.dims[-self._mom_ndim :],
+            fastpath=True,
+        )
+
     def to_x(
         self,
         *,
@@ -1205,59 +1220,9 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> CentralMomentsData[xr.DataArray]:
-        """
-        Create an :class:`xarray.DataArray` representation of underlying data.
-
-        Parameters
-        ----------
-        {xr_params}
-        {copy_tf}
-
-        Returns
-        -------
-        output : CentralMomentsData
-
-        See Also
-        --------
-        to_dataarray
-
-        Examples
-        --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMomentsArray.from_vals(rng.random((10, 1, 2)), axis=0, mom=2)
-        >>> da
-        <CentralMomentsArray(mom_ndim=1)>
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-
-        Default constructor
-
-        >>> da.to_x()
-        <CentralMomentsData(mom_ndim=1)>
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-        Dimensions without coordinates: dim_0, dim_1, mom_0
-
-        Setting attributes
-
-        >>> da.to_x()
-        <CentralMomentsData(mom_ndim=1)>
-        <xarray.DataArray (dim_0: 1, dim_1: 2, mom_0: 3)> Size: 48B
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-        Dimensions without coordinates: dim_0, dim_1, mom_0
-        >>> da
-        <CentralMomentsArray(mom_ndim=1)>
-        array([[[10.    ,  0.6207,  0.0647],
-                [10.    ,  0.404 ,  0.1185]]])
-
-        """
-        from cmomy.wrapper.wrap_xr import CentralMomentsData
-
-        data = self.to_dataarray(
+    ) -> CentralMomentsDataArray:
+        """Alias to :meth:`to_dataarray`"""
+        return self.to_dataarray(
             dims=dims,
             attrs=attrs,
             coords=coords,
@@ -1266,4 +1231,3 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             template=template,
             copy=copy,
         )
-        return CentralMomentsData(obj=data, mom_ndim=self._mom_ndim)

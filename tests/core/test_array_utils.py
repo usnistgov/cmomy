@@ -125,13 +125,6 @@ def test_axes_data_reduction(args, kwargs, expected) -> None:
     _do_test(array_utils.axes_data_reduction, *args, expected=expected, **kwargs)
 
 
-def test_raise_if_wrong_shape() -> None:
-    x = np.ones((2, 3, 4))
-    array_utils.raise_if_wrong_value(x.shape, (2, 3, 4))
-    with pytest.raises(ValueError):
-        array_utils.raise_if_wrong_value(x.shape, (1, 2, 3, 4))
-
-
 def _e(dtype):
     return np.empty(2, dtype=dtype)
 

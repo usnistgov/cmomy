@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 from xarray.namedarray.utils import either_dict_or_kwargs
 
-from .core.array_utils import normalize_axis_tuple, raise_if_wrong_value, select_dtype
+from .core.array_utils import normalize_axis_tuple, select_dtype
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
@@ -20,6 +20,7 @@ from .core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    raise_if_wrong_value,
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,

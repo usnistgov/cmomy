@@ -391,6 +391,12 @@ def test_func_dataarray_and_dataset_push_data(data_and_kwargs, as_dataarray) -> 
     xr.testing.assert_allclose(a.obj, expected.obj)
     xr.testing.assert_allclose(b.obj, expected.obj)
 
+    # test push_data with scale....
+    c = cmomy.wrap(data)
+    a = c.isel({dim: slice(None, -1)}).reduce(dim=dim)
+    b = c.reduce(dim=dim) - c.isel({dim: -1}, drop=True)
+    xr.testing.assert_allclose(a.obj, b.obj)
+
 
 # * Vals to array
 @pytest.mark.parametrize(

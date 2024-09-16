@@ -18,7 +18,6 @@ from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
     get_axes_from_values,
-    raise_if_wrong_value,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -38,6 +37,7 @@ from .core.validate import (
     is_dataarray,
     is_ndarray,
     is_xarray,
+    raise_if_wrong_value,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,

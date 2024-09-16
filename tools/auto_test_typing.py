@@ -160,7 +160,7 @@ HEADER = """\
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, cast, Iterator, Hashable
 
 import numpy as np
 from numpy import float32, float64
@@ -630,6 +630,10 @@ out.extend(get_list(funcs_class_methodtoarray_dtype_out, params_class_methodtoar
 
 
 params_class_method_to_dataarray = [
+    ("float64", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
+    ("arraylike", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
+    ("dataarray", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
+    ("dataarray_any", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
     ("dataset", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
     ("dataset_any", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
 ]
@@ -642,12 +646,34 @@ out.extend(get_list(func_class_method_to_dataarray, params_class_method_to_dataa
 params_class_method_to_dataset = [
     ("dataarray", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
     ("dataarray_any", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
+    ("dataset", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
+    ("dataset_any", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
 ]
 func_class_method_to_dataset = [
     ("to_dataset", "central_", None, ""),
 ]
 
 out.extend(get_list(func_class_method_to_dataset, params_class_method_to_dataset, method=True))
+
+
+# iterators
+out.append("""
+
+def test_iterators() -> None:
+    from collections.abc import ItemsView, KeysView, ValuesView
+
+    assert_type(iter(central_float64), Iterator[CentralMomentsArray[np.float64]])
+    assert_type(iter(central_dataarray), Iterator[CentralMomentsData[xr.DataArray]])
+    # TODO(wpk): problem with mypy and __iter__ overload....
+    # assert_type(iter(central_dataset), Iterator[Hashable])  # noqa: ERA001
+    assert_type(central_dataarray.__iter__(), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataset.__iter__(), Iterator[Hashable])
+    assert_type(central_dataarray.iter(), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataset.iter(), Iterator[Hashable])
+    assert_type(central_dataset.keys(), KeysView[Hashable])
+    assert_type(central_dataset.values(), ValuesView[CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataset.items(), ItemsView[Hashable, CentralMomentsData[xr.DataArray]])
+""")
 
 
 # * convert.concat

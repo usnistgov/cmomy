@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Generic, cast, overload
 
 import numpy as np
 
-from cmomy.core.array_utils import raise_if_wrong_value
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.typing import GenArrayT
@@ -19,6 +18,7 @@ from cmomy.core.utils import mom_shape_to_mom
 from cmomy.core.validate import (
     is_dataset,
     is_xarray,
+    raise_if_wrong_value,
     validate_floating_dtype,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
@@ -95,9 +95,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         \end{{cases}}
     """
 
-    __slots__ = ("_cache", "_mom_ndim", "_obj")
+    __slots__ = ("_mom_ndim", "_obj")
 
-    _cache: dict[str, Any]
     _obj: GenArrayT
     _mom_ndim: Mom_NDim
 
@@ -108,7 +107,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         mom_ndim: Mom_NDim = 1,
         fastpath: bool = False,
     ) -> None:
-        self._cache = {}
         self._mom_ndim = mom_ndim if fastpath else validate_mom_ndim(mom_ndim)
         self._obj = obj
 
@@ -335,15 +333,15 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             raise ValueError(msg)
 
     def _raise_not_implemented(self, method: str = "method") -> NoReturn:
-        msg = f"{method} not implemented for {type(self._obj)}."
-        raise ValueError(msg)
+        msg = f"{method} not implemented for wrapped {type(self._obj)}."
+        raise NotImplementedError(msg)
 
     def _raise_if_wrong_mom_shape(self, mom_shape: tuple[int, ...]) -> None:
         raise_if_wrong_value(mom_shape, self.mom_shape, "Wrong moments shape.")
 
     @staticmethod
     def _raise_notimplemented_for_dataset() -> NoReturn:
-        msg = "Not implemented for Dataset"
+        msg = "Not implemented for wrapped Dataset"
         raise NotImplementedError(msg)
 
     @abstractmethod

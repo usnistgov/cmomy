@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pytest
+import xarray as xr
 
 import cmomy
 from cmomy import CentralMoments
@@ -22,7 +23,7 @@ if TYPE_CHECKING:
     params=[
         # shape, mom_ndim
         (3, 1),
-        ((10, 3), 1),
+        ((10, 2, 3), 1),
         ((10, 3, 3), 2),
     ]
 )
@@ -151,7 +152,7 @@ def test__raises() -> None:
     with pytest.raises(ValueError):
         new._raise_if_not_mom_ndim_1()
 
-    with pytest.raises(ValueError):
+    with pytest.raises(NotImplementedError):
         new._raise_not_implemented()
 
     with pytest.raises(ValueError):
@@ -160,6 +161,8 @@ def test__raises() -> None:
 
 def test_to_dataarray() -> None:
     c = CentralMoments.zeros(mom=4, val_shape=(2, 3))
+
+    assert isinstance(c.to_dataarray(), cmomy.CentralMomentsData)
 
     assert c.to_dataarray(dims=("a", "b")).dims == ("a", "b", "mom_0")
     assert c.to_dataarray(dims=("a", "b"), mom_dims="mom").dims == ("a", "b", "mom")
@@ -180,6 +183,40 @@ def test_to_dataarray() -> None:
 
     out = c.to_dataarray(copy=False)
     assert np.shares_memory(out, c.obj)
+
+    template = xr.DataArray(
+        np.zeros((2, 3, 5)),
+        dims=["x", "y", "z"],
+        attrs={"hello": "there"},
+        coords={"x": ["a", "b"]},
+    )
+    out = c.to_dataarray(template=template)
+    xr.testing.assert_equal(out.obj, template)
+
+
+def test__raise_if_scalar() -> None:
+    c = cmomy.wrap(np.zeros(3))
+    with pytest.raises(ValueError):
+        c._raise_if_scalar()
+
+
+def test_resample(wrapped) -> None:
+    indices = cmomy.random_indices(10, wrapped.shape[0])
+    if wrapped.ndim <= wrapped.mom_ndim:
+        with pytest.raises(ValueError):
+            wrapped.resample(indices, axis=0)
+
+    else:
+        freq = cmomy.resample.indices_to_freq(indices)
+        expected = wrapped.resample_and_reduce(axis=0, freq=freq)
+        np.testing.assert_allclose(
+            wrapped.resample(indices, axis=0).reduce(axis=1),
+            expected,
+        )
+        np.testing.assert_allclose(
+            wrapped.resample(indices, axis=0, last=True).reduce(axis=-1),
+            expected.moveaxis(0, -1),
+        )
 
 
 @pytest.mark.parametrize(
@@ -435,6 +472,11 @@ def test_assign_moment(rng, wrapped, name) -> None:
     np.testing.assert_allclose(check, c)
 
 
+def _reduce_block(data, axis, block, **kwargs):
+    groups = cmomy.reduction.block_by(data.shape[axis], block)
+    return cmomy.reduce_data_grouped(data, by=groups, axis=axis, **kwargs)
+
+
 @pytest.mark.parametrize(
     ("attr", "func", "fkws"),
     [
@@ -445,6 +487,7 @@ def test_assign_moment(rng, wrapped, name) -> None:
         ),
         ("jackknife_and_reduce", cmomy.resample.jackknife_data, lambda: {}),  # noqa: PIE807
         ("reduce", cmomy.reduce_data, lambda: {}),  # noqa: PIE807
+        ("reduce", _reduce_block, lambda: {"block": 2}),
     ],
 )
 def test_reduce(wrapped, attr, func, fkws) -> None:

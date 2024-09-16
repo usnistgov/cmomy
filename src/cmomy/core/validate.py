@@ -55,6 +55,15 @@ def is_xarray(x: Any) -> TypeIs[xr.Dataset | xr.DataArray]:
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
+# * Raises --------------------------------------------------------------------
+def raise_if_wrong_value(value: T, expected: T, message: str | None = None) -> None:
+    """Raise error if value != expected_value"""
+    if value != expected:
+        message = message or "Wrong value."
+        msg = f"{message} Passed {value}. Expected {expected}."
+        raise ValueError(msg)
+
+
 # * Moment validation ---------------------------------------------------------
 def is_mom_ndim(mom_ndim: int | None) -> TypeIs[Mom_NDim]:
     """Validate mom_ndim."""

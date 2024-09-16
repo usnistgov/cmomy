@@ -6,9 +6,7 @@ from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import xarray as xr
-from module_utilities import cached
 
-from cmomy.core.array_utils import raise_if_wrong_value
 from cmomy.core.missing import MISSING
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
@@ -19,6 +17,7 @@ from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    raise_if_wrong_value,
     validate_floating_dtype,
     validate_mom_dims,
 )
@@ -31,7 +30,17 @@ from cmomy.core.xr_utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable, Hashable, Iterable, Mapping, Sequence
+    from collections.abc import (
+        Callable,
+        Hashable,
+        ItemsView,
+        Iterable,
+        Iterator,
+        KeysView,
+        Mapping,
+        Sequence,
+        ValuesView,
+    )
     from typing import Any, Literal
 
     from numpy.typing import ArrayLike, DTypeLike
@@ -123,6 +132,80 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         """Moments dimension names."""
         return self._mom_dims
 
+    # Dataset specific dict-view-like
+    def as_dict(self: CentralMomentsDataset) -> dict[Hashable, CentralMomentsDataArray]:
+        """
+        Create a wrapped dictionary view of dataset
+
+        Note that this dict will only contain variables (DataArrays) which
+        contain ``mom_dims``.  That is, non central moment arrays will
+        be dropped.
+        """
+        if is_dataarray(self._obj):
+            self._raise_not_implemented("dict view")
+        return {
+            k: type(self)(  # type: ignore[misc]
+                obj,  # type: ignore[arg-type]
+                mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
+                fastpath=True,
+            )
+            for k, obj in self._obj.items()
+            if contains_dims(obj, self._mom_dims)
+        }
+
+    def items(
+        self: CentralMomentsDataset,
+    ) -> ItemsView[Hashable, CentralMomentsDataArray]:
+        """
+        Dict like items method.
+
+        Note that only DataArrays that contain ``mom_dims`` are returned.
+        To iterate over all items, use ``self.obj.items()``
+        """
+        return self.as_dict().items()
+
+    def keys(
+        self: CentralMomentsDataset,
+    ) -> KeysView[Hashable]:  # -> Iterator[Hashable]:
+        """Dict like key iterator"""
+        return self.as_dict().keys()  # type: ignore[misc]
+
+    def values(
+        self: CentralMomentsDataset,
+    ) -> ValuesView[CentralMomentsDataArray]:  # -> Iterator[CentralMomentsDataArray]:
+        return self.as_dict().values()  # type: ignore[misc]
+
+    @overload
+    def iter(self: CentralMomentsDataArray) -> Iterator[CentralMomentsDataArray]: ...
+    @overload
+    def iter(self: CentralMomentsDataset) -> Iterator[Hashable]: ...
+    @overload
+    def iter(self) -> Any: ...
+
+    def iter(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
+        """Need this for proper typing with mypy..."""
+        if is_dataarray(self._obj):
+            if self.ndim <= self._mom_ndim:
+                msg = "Can only iterate over wrapped DataArray with extra dimension."
+                raise ValueError(msg)
+            for obj in self._obj:
+                yield self.new_like(obj)  # noqa: DOC402
+        else:
+            yield from self.keys()  # type: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+
+    @overload
+    def __iter__(
+        self: CentralMomentsDataArray,
+    ) -> Iterator[CentralMomentsDataArray]: ...
+    @overload
+    def __iter__(self: CentralMomentsDataset) -> Iterator[Hashable]: ...
+    @overload
+    def __iter__(self) -> Any: ...
+
+    def __iter__(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
+        return self.iter()
+
     @overload
     def __getitem__(
         self: CentralMomentsDataArray,
@@ -193,9 +276,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         xarray.DataArray.copy
         xarray.Dataset.copy
         """
-        # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
-        # For now, this will raise an error.
-        obj_: DataT
         if obj is None:
             # TODO(wpk): different type for dtype in xarray (can be a mapping...)
             # Also can probably speed this up by validating dtype here...
@@ -206,6 +286,9 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 fastpath=fastpath,
             )
 
+        # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
+        # For now, this will raise an error.
+        obj_: DataT
         if type(self._obj) is type(obj):
             obj_ = cast("DataT", obj)
         else:
@@ -284,7 +367,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 _ = validate_floating_dtype(val, name=name)
 
     # ** Pushing --------------------------------------------------------------
-    @cached.prop
+    @property
     def _dtype(self) -> np.dtype[Any] | None:
         if is_dataarray(self._obj):
             return self._obj.dtype  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
@@ -383,7 +466,9 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 datas, axis=axis, dim=dim, mom_ndim=self._mom_ndim
             )
 
-        elif is_dataarray(self._obj):
+        else:
+            # Removed restriction that you could only pass array with wrapped DataArray.
+            # Trust the user to do what they want....
             axis, datas = prepare_data_for_reduction(
                 datas,
                 axis=axis,
@@ -393,9 +478,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 recast=False,
             )
             dim = "_dummy123"
-        else:
-            msg = "Must pass xarray object of same type as `self.obj` or arraylike if `self.obj` is a dataarray."
-            raise ValueError(msg)
 
         self._obj = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             func,
@@ -723,37 +805,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 
-        elif coords_policy == "group":
-            from cmomy.reduction import reduce_data_grouped
-
-            codes: ArrayLike
-            if isinstance(by, str):
-                from cmomy.reduction import factor_by
-
-                _groups, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-            else:
-                codes = by
-
-            data = reduce_data_grouped(
-                self._obj,
-                mom_ndim=self._mom_ndim,
-                by=codes,
-                axis=axis,
-                dim=dim,
-                move_axis_to_end=move_axis_to_end,
-                parallel=parallel,
-                dtype=dtype,
-                out=out,
-                casting=casting,
-                order=order,
-                group_dim=group_dim,
-                groups=groups,
-                keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            )
-
-        else:
+        elif coords_policy in {"first", "last"}:
             from cmomy.reduction import factor_by_to_index, reduce_data_indexed
 
             if isinstance(by, str):
@@ -781,6 +833,35 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 group_dim=group_dim,
                 groups=groups,
                 keep_attrs=keep_attrs,
+            )
+        else:
+            from cmomy.reduction import reduce_data_grouped
+
+            codes: ArrayLike
+            if isinstance(by, str):
+                from cmomy.reduction import factor_by
+
+                _groups, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+            else:
+                codes = by
+
+            data = reduce_data_grouped(
+                self._obj,
+                mom_ndim=self._mom_ndim,
+                by=codes,
+                axis=axis,
+                dim=dim,
+                move_axis_to_end=move_axis_to_end,
+                parallel=parallel,
+                dtype=dtype,
+                out=out,
+                casting=casting,
+                order=order,
+                group_dim=group_dim,
+                groups=groups,
+                keep_attrs=keep_attrs,
+                on_missing_core_dim=on_missing_core_dim,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 
         return self._new_like(data)
@@ -844,14 +925,15 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
     # ** Xarray specific stuff ------------------------------------------------
     def to_dataset(
-        self: CentralMomentsDataArray,
+        self,
         dim: Hashable | None = None,
         *,
         name: Hashable | None = None,
         promote_attrs: bool = False,
     ) -> CentralMomentsDataset:
         """
-        Convert wrapped DataArray to Dataset
+        Convert to Dataset or wrapped Dataset.
+
 
         Parameters
         ----------
@@ -868,20 +950,19 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         Returns
         -------
         CentralMomentsData
-            New object wrapping Dataset.
+            Object wrapping Dataset.
 
         See Also
         --------
         xarray.DataArray.to_dataset
         """
         if is_dataset(self._obj):
-            self._raise_notimplemented_for_dataset()
+            return self  # pyright: ignore[reportReturnType]
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
         ).transpose(..., *self._mom_dims)
 
-        # NOTE(wpk): could fix this using CentralMomentsData(....)
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
             mom_ndim=self._mom_ndim,
@@ -890,7 +971,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         )
 
     def to_dataarray(
-        self: CentralMomentsDataset,
+        self,
         dim: Hashable = "variable",
         *,
         name: Hashable | None = None,
@@ -920,8 +1001,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         xarray.Dataset.to_dataarray
         """
         if is_dataarray(self._obj):
-            msg = "Not implemented for DataArray"
-            raise NotImplementedError(msg)
+            return self  # pyright: ignore[reportReturnType]
 
         obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self._mom_dims)
         return type(self)(  # type: ignore[return-value]
@@ -964,10 +1044,9 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     @property
     def name(self) -> Hashable:
         """Name of values."""
-        if is_dataarray(self._obj):
-            return self._obj.name
-        self._raise_notimplemented_for_dataset()
-        return None
+        if is_dataset(self._obj):
+            self._raise_notimplemented_for_dataset()
+        return self._obj.name
 
     @property
     def sizes(self) -> Mapping[Hashable, int]:
@@ -981,6 +1060,18 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     def chunk(self, *args: Any, **kwargs: Any) -> Self:
         """Interface to :meth:`xarray.DataArray.chunk` and :meth:`xarray.Dataset.chunk`"""
         return self._new_like(self._obj.chunk(*args, **kwargs))  # pyright: ignore[reportUnknownMemberType]
+
+    def as_numpy(self) -> Self:
+        """Coerces wrapped data and coordinates into numpy arrays."""
+        return self._new_like(self._obj.as_numpy())
+
+    def assign(
+        self, variables: Mapping[Any, Any] | None = None, **variables_kwargs: Any
+    ) -> Self:
+        """Assign new variable to and return new object."""
+        if is_dataarray(self._obj):
+            self._raise_not_implemented("`assign`")
+        return self.new_like(obj=self._obj.assign(variables, **variables_kwargs))
 
     def assign_coords(self, coords: CoordsType = None, **coords_kwargs: Any) -> Self:
         """Assign coordinates to data and return new object."""
@@ -1371,15 +1462,19 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         --------
         pipe
         xarray.DataArray.transpose
+        xarray.Dataset.transpose
         """
         # make sure dims are last
 
         dims = tuple(d for d in dims if d not in self.mom_dims) + self.mom_dims
+        kws: dict[str, bool] = (
+            {"transpose_coords": transpose_coords} if is_dataarray(self._obj) else {}
+        )
 
         return self.pipe(
             "transpose",
             *dims,
-            transpose_coords=transpose_coords,
+            **kws,
             missing_dims=missing_dims,
             _reorder=False,
             _copy=_copy,
@@ -1388,16 +1483,20 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         )
 
     # ** To/from CentralMomentsArray ------------------------------------------
-    def to_c(self, copy: bool = False) -> CentralMomentsArray[Any]:
+    def to_array(self, copy: bool = False) -> CentralMomentsArray[Any]:
         """Convert to :class:`cmomy.CentralMomentsArray` object if possible."""
         from .wrap_np import CentralMomentsArray
 
-        if is_dataarray(self._obj):
-            obj = self._obj.to_numpy()  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-            return CentralMomentsArray(
-                obj.copy() if copy else obj,  # pyright: ignore[reportUnknownArgumentType]
-                mom_ndim=self._mom_ndim,
-                fastpath=True,
-            )
-        self._raise_notimplemented_for_dataset()
-        return None
+        if is_dataset(self.obj):
+            self._raise_notimplemented_for_dataset()
+
+        obj = self._obj.to_numpy()  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        return CentralMomentsArray(
+            obj.copy() if copy else obj,  # pyright: ignore[reportUnknownArgumentType]
+            mom_ndim=self._mom_ndim,
+            fastpath=True,
+        )
+
+    def to_c(self, copy: bool = False) -> CentralMomentsArray[Any]:
+        """Alias to :meth:`to_array`."""
+        return self.to_array(copy=copy)

@@ -30,9 +30,6 @@ if TYPE_CHECKING:
         NDArrayAny,
         ScalarT,
     )
-    from .typing_compat import TypeVar
-
-    _T = TypeVar("_T")
 
 
 # * Array order ---------------------------------------------------------------
@@ -147,14 +144,6 @@ def axes_data_reduction(
         *((x,) if isinstance(x, int) else x for x in inner),
         out_axes,
     ]
-
-
-def raise_if_wrong_value(value: _T, expected: _T, message: str | None = None) -> None:
-    """Raise error if value != expected_value"""
-    if value != expected:
-        message = message or "Wrong value."
-        msg = f"{message} Passed {value}. Expected {expected}."
-        raise ValueError(msg)
 
 
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}

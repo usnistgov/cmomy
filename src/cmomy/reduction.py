@@ -17,7 +17,6 @@ from .core.array_utils import (
     get_axes_from_values,
     normalize_axis_tuple,
     optional_keepdims,
-    raise_if_wrong_value,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -34,6 +33,7 @@ from .core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    raise_if_wrong_value,
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
