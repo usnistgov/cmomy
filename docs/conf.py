@@ -122,7 +122,8 @@ myst_substitutions = {
 
 myst_url_schemes = ("http", "https", "mailto")
 
-nb_execution_mode = "cache"
+nb_execution_mode = "off"
+# nb_execution_mode = "cache"
 # nb_execution_mode = "auto"
 
 # set the kernel name
@@ -225,8 +226,10 @@ napoleon_type_aliases = {
     "Variable": "~xarray.Variable",
     "DatasetGroupBy": "~xarray.core.groupby.DatasetGroupBy",
     "DataArrayGroupBy": "~xarray.core.groupby.DataArrayGroupBy",
-    "CentralMoments": "~cmomy.CentralMoments",
-    "xCentralMoments": "~cmomy.xCentralMoments",
+    "CentralMoments": "~cmomy.CentralMomentsArray",
+    "xCentralMoments": "~cmomy.xCentralMomentsXArray",
+    "CentralMomentsArray": "~cmomy.CentralMomentsArray",
+    "CentralMomentsData": "~cmomy.CentralMomentsData",
     # objects without namespace: numpy
     "ndarray": "~numpy.ndarray",
     "MaskedArray": "~numpy.ma.MaskedArray",

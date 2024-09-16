@@ -2,7 +2,9 @@
 # pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
+import numpy as np
 import pytest
+import xarray as xr
 
 from cmomy.core import validate
 from cmomy.core.missing import MISSING
@@ -15,6 +17,29 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
             func(*args, **kwargs)
     else:
         assert func(*args, **kwargs) == expected
+
+
+def test_raise_if_wrong_value() -> None:
+    x = np.ones((2, 3, 4))
+    validate.raise_if_wrong_value(x.shape, (2, 3, 4))
+    with pytest.raises(ValueError):
+        validate.raise_if_wrong_value(x.shape, (1, 2, 3, 4))
+
+
+@pytest.mark.parametrize(
+    "x",
+    [
+        [1, 2],
+        np.zeros(3),
+        xr.DataArray([0]),
+        xr.DataArray([0]).to_dataset(name="data"),
+    ],
+)
+def test_typeguards(x) -> None:
+    assert validate.is_ndarray(x) is isinstance(x, np.ndarray)
+    assert validate.is_dataarray(x) is isinstance(x, xr.DataArray)
+    assert validate.is_dataset(x) is isinstance(x, xr.Dataset)
+    assert validate.is_xarray(x) is isinstance(x, (xr.Dataset, xr.DataArray))
 
 
 # * validate not none

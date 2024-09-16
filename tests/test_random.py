@@ -32,7 +32,6 @@ def test_default_rng() -> None:
 
 def test_validate_rng() -> None:
     rs = np.random.RandomState()
-    with pytest.warns(UserWarning):
-        out = random.validate_rng(rs)  # type: ignore[arg-type]
 
-    assert out is rs  # type: ignore[comparison-overlap]
+    with pytest.raises(TypeError):
+        random.validate_rng(rs)  # type: ignore[arg-type]

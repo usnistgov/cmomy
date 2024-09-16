@@ -77,6 +77,17 @@ def reduce_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
 
 
 @_decorator(
+    "(mom0, mom1), (), (mom0, mom1)",
+    [
+        (nb.float32[:, :], nb.float32, nb.float32[:, :]),
+        (nb.float64[:, :], nb.float64, nb.float64[:, :]),
+    ],
+)
+def push_data_scale(data: NDArray[FloatT], scale: float, out: NDArray[FloatT]) -> None:
+    _push.push_data_scale(data, scale, out)
+
+
+@_decorator(
     "(sample, mom0, mom1) -> (mom0, mom1)",
     [
         (nb.float32[:, :, :], nb.float32[:, :]),

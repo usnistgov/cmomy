@@ -133,7 +133,7 @@ def test_xprepare_values_for_reduction_1(
     target = xr.DataArray(np.ones(xshape, dtype=dtype))
     other = np.ones(yshape, dtype=np.float32)
 
-    core_dims, (x, y) = prepare.xprepare_values_for_reduction(
+    dim_out, core_dims, (x, y) = prepare.xprepare_values_for_reduction(
         target,
         other,
         narrays=2,
@@ -142,17 +142,18 @@ def test_xprepare_values_for_reduction_1(
         dtype=dtype,
     )
 
+    assert dim_out == dim
     assert core_dims == [[dim]] * 2
 
     assert x.shape == xshape2
     assert y.shape == yshape2
-    assert x.dtype == np.dtype(dtype or np.float64)
-    assert y.dtype == np.dtype(dtype or np.float64)
+    assert x.dtype == np.dtype(dtype or target.dtype)
+    assert y.dtype == np.dtype(dtype or other.dtype)
 
     if xshape == yshape:
         # also do xr test
         other = xr.DataArray(other)  # type: ignore[assignment]
-        core_dims, (x, y) = prepare.xprepare_values_for_reduction(
+        dim_out, core_dims, (x, y) = prepare.xprepare_values_for_reduction(
             target,
             other,
             narrays=2,
@@ -161,9 +162,74 @@ def test_xprepare_values_for_reduction_1(
             dtype=dtype,
         )
 
+        assert dim_out == dim
         assert core_dims == [[dim]] * 2
 
         assert x.shape == xshape2
         assert y.shape == other.shape
-        assert x.dtype == np.dtype(dtype or np.float64)
-        assert y.dtype == np.dtype(dtype or np.float64)
+        assert x.dtype == np.dtype(dtype or target.dtype)
+        assert y.dtype == np.dtype(dtype or other.dtype)
+
+
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        (
+            {
+                "out": None,
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+            },
+            None,
+        ),
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+            },
+            np.zeros((3, 2, 4)),
+        ),
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": True,
+            },
+            np.zeros((2, 3, 4)),
+        ),
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+                "data": np.zeros((2, 3, 4)),
+            },
+            np.zeros((3, 2, 4)),
+        ),
+        # Silently ignore passing out value for dataset output...
+        (
+            {
+                "out": np.zeros((2, 3, 4)),
+                "mom_ndim": 1,
+                "axis": 0,
+                "move_axis_to_end": False,
+                "data": xr.Dataset({"data0": xr.DataArray(np.zeros((2, 3, 4)))}),
+            },
+            None,
+        ),
+    ],
+)
+def test_xprepare_out_for_resample_data(kws, expected) -> None:
+    func = prepare.xprepare_out_for_resample_data
+    if expected is None:
+        assert func(**kws) is None
+    elif isinstance(expected, type):
+        with pytest.raises(expected):
+            func(**kws)
+    else:
+        np.testing.assert_allclose(func(**kws), expected)  # type: ignore[arg-type]

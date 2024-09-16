@@ -15,7 +15,7 @@ else:
 
 def short_numpy_repr(*args, **kwargs):
     if hasattr(ff, "short_array_repr"):
-        f = ff.short_array_repr  # pyright: ignore[reportAttributeAccessIssue]
+        f = ff.short_array_repr
     elif hasattr(ff, "short_numpy_repr"):  # pragma: no cover
         f = ff.short_numpy_repr  # pyright: ignore[reportAttributeAccessIssue]
     else:  # pragma: no cover
@@ -63,18 +63,19 @@ def numpy_section(x) -> str:
     )
 
 
-def repr_html(x):
+def repr_html_wrapper(x):
     """Create html output."""
     # build the cmomy header
     obj_type = type(x).__name__
 
-    keys = [k for k in ["val_shape", "val_dims", "mom", "mom_dims"] if hasattr(x, k)]
-
     attrs = {}
-    for k in keys:
-        v = getattr(x, k)
-        if len(v) > 0:
-            attrs[k] = tuple_to_str(v)
+    for k in ["val_shape", "mom", "val_dims", "mom_dims"]:
+        try:
+            v = getattr(x, k)
+            if len(v) > 0:  # pragma: no cover
+                attrs[k] = tuple_to_str(v)
+        except Exception:  # noqa: BLE001, S110, PERF203
+            pass
 
     dims = {}
     for k in ["val_shape", "mom"]:
@@ -96,7 +97,7 @@ def repr_html(x):
         )
     ]
 
-    values = x.to_values()
+    values = x.obj
     if hasattr(values, "_repr_html_"):
         sections += []
 
@@ -109,7 +110,7 @@ def repr_html(x):
         out += values._repr_html_()
 
     else:
-        sections += [numpy_section(x.data)]
+        sections += [numpy_section(x.obj)]
         header_components += [
             f"<div class='xr-obj-type'>{type(values)}</div>",
         ]

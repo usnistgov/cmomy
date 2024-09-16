@@ -12,6 +12,7 @@ import numpy as np
 import xarray as xr
 
 from .core.array_utils import (
+    asarray_maybe_recast,
     axes_data_reduction,
     select_dtype,
 )
@@ -19,110 +20,135 @@ from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
     prepare_data_for_reduction,
+    xprepare_out_for_resample_data,
 )
 from .core.utils import (
     mom_to_mom_shape,
     peek_at,
 )
 from .core.validate import (
+    is_dataarray,
+    is_dataset,
+    is_ndarray,
+    is_xarray,
     validate_mom_dims,
     validate_mom_ndim,
 )
 from .core.xr_utils import (
+    get_apply_ufunc_kwargs,
     select_axis_dim,
+)
+from .factory import (
+    factory_convert,
+    factory_cumulative,
+    parallel_heuristic,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-    from typing import Any
+    from collections.abc import (
+        Iterable,
+    )
+    from typing import (
+        Any,
+    )
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from ._central_dataarray import xCentralMoments
-    from ._central_numpy import CentralMoments
     from .core.typing import (
+        ApplyUFuncKwargs,
         ArrayLikeArg,
+        ArrayOrder,
+        ArrayOrderCF,
         AxisReduce,
+        Casting,
+        CentralMomentsT,
         ConvertStyle,
+        CumulativeKwargs,
+        DataT,
         DimsReduce,
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
+        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
+        MomentsToComomentsKwargs,
+        MomentsTypeKwargs,
         NDArrayAny,
-        ScalarT,
+        NDArrayT,
     )
+    from .core.typing_compat import Unpack
 
 
 # * Convert between raw and central moments
 @overload
 def moments_type(
-    values_in: xr.DataArray,
+    values_in: DataT,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-) -> xr.DataArray: ...
+    **kwargs: Unpack[MomentsTypeKwargs],
+) -> DataT: ...
 # array
 @overload
 def moments_type(
     values_in: ArrayLikeArg[FloatT],
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: None = ...,
     dtype: None = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def moments_type(
-    values_in: Any,
+    values_in: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def moments_type(
-    values_in: Any,
+    values_in: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def moments_type(
-    values_in: Any,
+    values_in: ArrayLike,
     *,
-    mom_ndim: Mom_NDim,
-    to: ConvertStyle = ...,
-    out: None = ...,
+    out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
 def moments_type(
-    values_in: ArrayLike | xr.DataArray,
+    values_in: ArrayLike | DataT,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim = 1,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
-) -> NDArrayAny | xr.DataArray:
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
+    keep_attrs: KeepAttrs = None,
+    mom_dims: MomDims | None = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | DataT:
     r"""
     Convert between central and raw moments type.
 
     Parameters
     ----------
-    values_in : array-like or DataArray
+    values_in : array-like, DataArray, or Dataset
         The moments array to convert from.
     {mom_ndim}
     to : {{"raw", "central"}}
@@ -130,10 +156,17 @@ def moments_type(
         If ``"central"`` convert from raw to central moments.
     {out}
     {dtype}
+    {casting}
+    {order}
+    {move_axis_to_end}
+    {keep_attrs}
+    {mom_dims_data}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------
-    ndarray
+    output : ndarray or DataArray or Dataset
         Moments array converted from ``input_style`` to opposite format.
 
     Notes
@@ -165,117 +198,140 @@ def moments_type(
     * ``values_in[..., i, j]`` : :math:`\langle a^i b^j \rangle`,
 
     """
-    if isinstance(values_in, xr.DataArray):
-        return values_in.copy(
-            data=moments_type(
-                values_in.to_numpy(),  # pyright: ignore[reportUnknownMemberType]
-                mom_ndim=mom_ndim,
-                to=to,
-                out=out,
-                dtype=dtype,
-            )
-        )
-
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    values_in = np.asarray(values_in, dtype=dtype)
+    mom_ndim = validate_mom_ndim(mom_ndim)
+    if is_xarray(values_in):
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _moments_type,
+            values_in,
+            input_core_dims=[mom_dims],
+            output_core_dims=[mom_dims],
+            kwargs={
+                "mom_ndim": mom_ndim,
+                "to": to,
+                "out": None if is_dataset(values_in) else out,
+                "dtype": dtype,
+                "casting": casting,
+                "order": order,
+                "fastpath": is_dataarray(values_in),
+            },
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=dtype or np.float64,
+            ),
+        )
+        return xout
 
-    from ._lib.factory import factory_convert
+    return _moments_type(
+        values_in,
+        out=out,
+        mom_ndim=mom_ndim,
+        to=to,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+        fastpath=True,
+    )
 
-    return factory_convert(mom_ndim=mom_ndim, to=to)(values_in, out=out)
+
+def _moments_type(
+    values_in: ArrayLike,
+    out: NDArrayAny | None,
+    mom_ndim: Mom_NDim,
+    to: ConvertStyle,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
+    fastpath: bool,
+) -> NDArrayAny:
+    if not fastpath:
+        dtype = select_dtype(values_in, out=out, dtype=dtype)
+
+    return factory_convert(mom_ndim=mom_ndim, to=to)(
+        values_in,  # type: ignore[arg-type]
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(  # pyright: ignore[reportOverlappingOverload]
-    values_in: xr.DataArray,
+def cumulative(
+    values_in: DataT,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
-) -> xr.DataArray: ...
+    **kwargs: Unpack[CumulativeKwargs],
+) -> DataT: ...
 # array
 @overload
 def cumulative(
     values_in: ArrayLikeArg[FloatT],
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: None = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArray[FloatT]: ...
 # out
 @overload
 def cumulative(
-    values_in: Any,
+    values_in: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def cumulative(
-    values_in: Any,
+    values_in: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def cumulative(
-    values_in: Any,
+    values_in: ArrayLike,
     *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    mom_ndim: Mom_NDim = ...,
-    inverse: bool = ...,
-    move_axis_to_end: bool = ...,
-    parallel: bool | None = ...,
-    out: Any = ...,
+    out: NDArrayAny | None = ...,
     dtype: Any = ...,
+    **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
-def cumulative(  # pyright: ignore[reportOverlappingOverload]
-    values_in: ArrayLike | xr.DataArray,
+def cumulative(
+    values_in: ArrayLike | DataT,
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim = 1,
     inverse: bool = False,
     move_axis_to_end: bool = False,
-    parallel: bool | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
-) -> NDArrayAny | xr.DataArray:
+    casting: Casting = "same_kind",
+    order: ArrayOrder = None,
+    parallel: bool | None = None,
+    keep_attrs: KeepAttrs = None,
+    mom_dims: MomDims | None = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | DataT:
     """
     Convert between moments array and cumulative moments array.
 
     Parameters
     ----------
-    values_in : array-like or DataArray
+    values_in : array-like, DataArray, or Dataset
     {axis}
     {dim}
     {mom_ndim}
@@ -283,14 +339,25 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
         Default is to create a cumulative moments array.  Pass ``inverse=True`` to convert from
         cumulative moments array back to normal moments.
     {move_axis_to_end}
-    {parallel}
     {out}
     {dtype}
+    {casting}
+    {order}
+    {parallel}
+    {keep_attrs}
+    {mom_dims_data}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
+
+    Returns
+    -------
+    out : ndarray or DataArray or Dataset
+        Same type as ``values_in``, with moments accumulated over ``axis``.
 
     Examples
     --------
     >>> import cmomy
-    >>> x = cmomy.random.default_rng(0).random((10, 3))
+    >>> x = cmomy.default_rng(0).random((10, 3))
     >>> data = cmomy.reduce_vals(x, mom=2, axis=0)
     >>> data
     array([[10.    ,  0.5248,  0.1106],
@@ -312,46 +379,98 @@ def cumulative(  # pyright: ignore[reportOverlappingOverload]
 
 
     """
-    if isinstance(values_in, xr.DataArray):
-        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
-
-        if move_axis_to_end:
-            axis = -1
-            values_in = values_in.transpose(..., dim, *values_in.dims[-mom_ndim:])
-
-        return values_in.copy(
-            data=cumulative(
-                values_in.to_numpy(),  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
-                mom_ndim=mom_ndim,
-                inverse=inverse,
-                axis=axis,
-                out=out,
-                dtype=dtype,
-                move_axis_to_end=False,
-            )
-        )
-
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(values_in, out=out, dtype=dtype)
+    if is_xarray(values_in):
+        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, values_in)]]
 
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _cumulative,
+            values_in,
+            input_core_dims=core_dims,
+            output_core_dims=core_dims,
+            kwargs={
+                "mom_ndim": mom_ndim,
+                "inverse": inverse,
+                "axis": -(mom_ndim + 1),
+                "out": xprepare_out_for_resample_data(
+                    out,
+                    mom_ndim=mom_ndim,
+                    axis=axis,
+                    move_axis_to_end=move_axis_to_end,
+                    data=values_in,
+                ),
+                "parallel": parallel,
+                "dtype": dtype,
+                "casting": casting,
+                "order": order,
+                "fastpath": is_dataarray(values_in),
+            },
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_dtypes=dtype or np.float64,
+            ),
+        )
+
+        if not move_axis_to_end and is_dataarray(xout):
+            xout = xout.transpose(*values_in.dims)
+        return xout
+
+    # Numpy
     axis, values_in = prepare_data_for_reduction(
         values_in,
         axis=axis,
         mom_ndim=mom_ndim,
-        dtype=dtype,
+        dtype=None,
+        recast=False,
         move_axis_to_end=move_axis_to_end,
     )
-
-    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
-
-    from ._lib.factory import factory_cumulative
-
-    return factory_cumulative(
+    return _cumulative(
+        values_in,
+        out=out,
+        axis=axis,
         mom_ndim=mom_ndim,
         inverse=inverse,
         parallel=parallel,
-        size=values_in.size,
-    )(values_in, out=out, axes=axes)
+        dtype=dtype,
+        casting=casting,
+        order=order,
+        fastpath=True,
+    )
+
+
+def _cumulative(
+    values_in: NDArrayAny,
+    out: NDArrayAny | None,
+    axis: int,
+    mom_ndim: Mom_NDim,
+    inverse: bool,
+    parallel: bool | None,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrder,
+    fastpath: bool,
+) -> NDArrayAny:
+    if not fastpath:
+        dtype = select_dtype(values_in, out=out, dtype=dtype)
+
+    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
+    return factory_cumulative(
+        mom_ndim=mom_ndim,
+        inverse=inverse,
+        parallel=parallel_heuristic(parallel, values_in.size),
+    )(
+        values_in,
+        out=out,
+        axes=axes,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+    )
 
 
 # * Moments to  Comoments
@@ -378,55 +497,51 @@ def _validate_mom_moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
-    values: xr.DataArray,
+def moments_to_comoments(
+    values: DataT,
     *,
-    mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
-) -> xr.DataArray: ...
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> DataT: ...
 # array
 @overload
 def moments_to_comoments(
     values: ArrayLikeArg[FloatT],
     *,
-    mom: tuple[int, int],
     dtype: None = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def moments_to_comoments(
-    values: Any,
+    values: ArrayLike,
     *,
-    mom: tuple[int, int],
     dtype: DTypeLikeArg[FloatT],
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def moments_to_comoments(
-    values: Any,
+    values: ArrayLike,
     *,
-    mom: tuple[int, int],
     dtype: DTypeLike = ...,
-    mom_dims: MomDims | None = ...,
-    keep_attrs: KeepAttrs = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArrayAny: ...
 
 
 @docfiller.decorate
-def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
-    values: ArrayLike | xr.DataArray,
+def moments_to_comoments(
+    values: ArrayLike | DataT,
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = None,
+    order: ArrayOrderCF = None,
     mom_dims: MomDims | None = None,
+    mom_dims2: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-) -> NDArrayAny | xr.DataArray:
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | DataT:
     """
     Convert from moments to comoments data.
 
@@ -437,8 +552,17 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
         dimension is the moments dimension.
     {mom_moments_to_comoments}
     {dtype}
-    {mom_dims}
+    {order_cf}
+    mom_dims : str or tuple of str
+        Optional name of moment dimension of input (``mom_ndim=1``) data.  Defaults to
+        ``first.dims[-mom_ndim]`` where ``first`` is either ``values`` if a DataArray
+        or the first variable of ``values`` if a Dataset.  You may need to pass this value
+        if ``values`` is a Dataset.
+    mom_dims2 : tuple of str
+        Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
     {keep_attrs}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
 
     Returns
     -------
@@ -446,15 +570,10 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
         Co-moments array.  Same type as ``values``.
 
 
-    Notes
-    -----
-    ``mom_dims`` and ``keep_attrs`` are used only if ``values`` is a
-    :class:`~xarray.DataArray`.
-
     Examples
     --------
     >>> import cmomy
-    >>> x = cmomy.random.default_rng(0).random(10)
+    >>> x = cmomy.default_rng(0).random(10)
     >>> data1 = cmomy.reduce_vals(x, mom=4, axis=0)
     >>> data1
     array([10.    ,  0.5505,  0.1014, -0.0178,  0.02  ])
@@ -493,143 +612,112 @@ def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     Note that this also works for raw moments.
 
     """
-    if isinstance(values, xr.DataArray):
-        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=2)
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
+    dtype = select_dtype(values, out=None, dtype=dtype)
+    if is_xarray(values):
+        mom_dim_in, *_ = validate_mom_dims(mom_dims, mom_ndim=1, out=values)
+        mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
+
+        if mom_dim_in in mom_dims2:
+            # give this a temporary name for simplicity:
+            old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
+            values = values.rename({old_name: mom_dim_in})
+
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_to_comoments,
             values,
-            input_core_dims=[values.dims],
-            output_core_dims=[[*values.dims[:-1], *mom_dims]],
-            exclude_dims={values.dims[-1]},
+            input_core_dims=[[mom_dim_in]],
+            output_core_dims=[mom_dims2],
             kwargs={"mom": mom, "dtype": dtype},
             keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes=dict(
+                    zip(
+                        mom_dims2,
+                        mom_to_mom_shape(
+                            _validate_mom_moments_to_comoments(
+                                mom, values.sizes[mom_dim_in] - 1
+                            )
+                        ),
+                    )
+                ),
+                output_dtypes=dtype or np.float64,
+            ),
         )
 
-    dtype = select_dtype(values, out=None, dtype=dtype)
-    values = np.asarray(values, dtype=dtype)
+        return xout
 
+    # numpy
+    values = asarray_maybe_recast(values, dtype=dtype, recast=False)
     mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
-    out = np.empty((*values.shape[:-1], *mom_to_mom_shape(mom)), dtype=dtype)
+    out = np.empty(
+        (*values.shape[:-1], *mom_to_mom_shape(mom)),  # type: ignore[union-attr]
+        dtype=dtype,
+        order=order,
+    )
     for i, j in np.ndindex(*out.shape[-2:]):
         out[..., i, j] = values[..., i + j]
-    return out
-
-
-# * Update weights
-@overload
-def assign_weight(
-    data: xr.DataArray,
-    weight: ArrayLike | xr.DataArray,
-    *,
-    mom_ndim: Mom_NDim,
-    copy: bool = ...,
-) -> xr.DataArray: ...
-@overload
-def assign_weight(
-    data: NDArray[FloatT],
-    weight: ArrayLike,
-    *,
-    mom_ndim: Mom_NDim,
-    copy: bool = ...,
-) -> NDArray[FloatT]: ...
-
-
-@docfiller.decorate
-def assign_weight(
-    data: NDArray[FloatT] | xr.DataArray,
-    weight: ArrayLike | xr.DataArray,
-    *,
-    mom_ndim: Mom_NDim,
-    copy: bool = True,
-) -> NDArray[FloatT] | xr.DataArray:
-    """
-    Update weights of moments array.
-
-    Parameters
-    ----------
-    data : ndarray or DataArray
-        Moments array.
-    {weight}
-    {mom_ndim}
-    copy : bool, default=True
-        If ``True`` (the default), return new array with updated weights.
-        Otherwise, return the original array with weights updated inplace.
-    """
-    out = data.copy() if copy else data
-    if mom_ndim == 1:
-        out[..., 0] = weight
-    else:
-        out[..., 0, 0] = weight
     return out
 
 
 # * concat
 @overload
 def concat(
-    arrays: Iterable[xr.DataArray],
+    arrays: Iterable[CentralMomentsT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> xr.DataArray: ...
+) -> CentralMomentsT: ...
 @overload
 def concat(
-    arrays: Iterable[CentralMoments[FloatT]],
+    arrays: Iterable[DataT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> CentralMoments[FloatT]: ...
+) -> DataT: ...
 @overload
 def concat(
-    arrays: Iterable[xCentralMoments[FloatT]],
+    arrays: Iterable[NDArrayT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> xCentralMoments[FloatT]: ...
-@overload
-def concat(
-    arrays: Iterable[NDArray[ScalarT]],
-    *,
-    axis: AxisReduce | MissingType = ...,
-    dim: DimsReduce | MissingType = ...,
-    **kwargs: Any,
-) -> NDArray[ScalarT]: ...
+) -> NDArrayT: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type]
 def concat(
-    arrays: Iterable[xr.DataArray]
-    | Iterable[CentralMoments[Any]]
-    | Iterable[xCentralMoments[Any]]
-    | Iterable[NDArrayAny],
+    arrays: Iterable[NDArrayT] | Iterable[DataT] | Iterable[CentralMomentsT],
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     **kwargs: Any,
-) -> xr.DataArray | CentralMoments[Any] | xCentralMoments[Any] | NDArrayAny:
+) -> NDArrayT | DataT | CentralMomentsT:
     """
     Concatenate moments objects.
 
     Parameters
     ----------
-    arrays : Iterable of ndarray or DataArray or CentralMoments or xCentralMoments
+    arrays : Iterable of ndarray or DataArray or CentralMomentsArray or CentralMomentsData
         Central moments objects to combine.
     axis : int, optional
         Axis to concatenate along. If specify axis for
-        :class:`~xarray.DataArray` or :class:`~.xCentralMoments` input objects
+        :class:`~xarray.DataArray` or :class:`~.CentralMomentsData` input objects
         with out ``dim``, then determine ``dim`` from ``dim =
         first.dims[axis]`` where ``first`` is the first item in ``arrays``.
     dim : str, optional
         Dimension to concatenate along (used for :class:`~xarray.DataArray` and
-        :class:`~.xCentralMoments` objects only)
+        :class:`~.CentralMomentsData` objects only)
     **kwargs
         Extra arguments to :func:`numpy.concatenate` or :func:`xarray.concat`.
 
     Returns
     -------
-    output : ndarray or DataArray or CentralMoments or xCentralMoments
+    output : ndarray or DataArray or CentralMomentsArray or CentralMomentsData
         Concatenated object.  Type is the same as the elements of ``arrays``.
 
     Examples
@@ -674,22 +762,22 @@ def concat(
     Dimensions without coordinates: new, a, b, mom
 
 
-    You can also concatenate :class:`~.CentralMoments` and :class:`~.xCentralMoments` objects
+    You can also concatenate :class:`~.CentralMomentsArray` and :class:`~.CentralMomentsData` objects
 
-    >>> cx = cmomy.CentralMoments(x)
-    >>> cy = cmomy.CentralMoments(y)
+    >>> cx = cmomy.CentralMomentsArray(x)
+    >>> cy = cmomy.CentralMomentsArray(y)
     >>> concat((cx, cy), axis=1)
-    <CentralMoments(val_shape=(2, 2), mom=(1,))>
+    <CentralMomentsArray(mom_ndim=1)>
     array([[[ 0.,  1.],
             [-0., -1.]],
     <BLANKLINE>
            [[ 2.,  3.],
             [-2., -3.]]])
 
-    >>> dcx = cmomy.xCentralMoments(dx)
-    >>> dcy = cmomy.xCentralMoments(dy)
+    >>> dcx = cmomy.CentralMomentsData(dx)
+    >>> dcy = cmomy.CentralMomentsData(dy)
     >>> concat((dcx, dcy), dim="new")
-    <xCentralMoments(val_shape=(2, 2, 1), mom=(1,))>
+    <CentralMomentsData(mom_ndim=1)>
     <xarray.DataArray (new: 2, a: 2, b: 1, mom: 2)> Size: 64B
     array([[[[ 0.,  1.]],
     <BLANKLINE>
@@ -706,24 +794,24 @@ def concat(
     """
     first, arrays_iter = peek_at(arrays)
 
-    if isinstance(first, np.ndarray):
+    if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(
+        return np.concatenate(  # type: ignore[return-value]
             tuple(arrays_iter),  # type: ignore[arg-type]
             axis=axis,
             dtype=first.dtype,
             **kwargs,
         )
 
-    if isinstance(first, xr.DataArray):
+    if is_xarray(first):
         if dim is MISSING or dim is None or dim in first.dims:
             axis, dim = select_axis_dim(first, axis=axis, dim=dim, default_axis=0)
         # otherwise, assume adding a new dimension...
-        return cast("xr.DataArray", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
+        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
 
     return type(first)(  # type: ignore[call-arg, return-value]
         concat(
-            (c.to_values() for c in arrays_iter),  # type: ignore[attr-defined]
+            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]
             axis=axis,
             dim=dim,
             **kwargs,

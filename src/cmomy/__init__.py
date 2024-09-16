@@ -9,20 +9,35 @@ if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
     # submodules
     from . import convert, random, reduction, resample, rolling, utils  # noqa: TCH004
-    from ._central_dataarray import xCentralMoments  # noqa: TCH004
-    from ._central_numpy import CentralMoments  # noqa: TCH004
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TCH004
     from .convert import concat  # noqa: TCH004
+    from .random import default_rng  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
-    from .resample import (
-        indices_to_freq,  # noqa: TCH004
-        random_freq,  # noqa: TCH004
-        random_indices,  # noqa: TCH004
-        randsamp_freq,  # noqa: TCH004
-        resample_data,  # noqa: TCH004
-        resample_vals,  # noqa: TCH004
+    from .resample import (  # noqa: TCH004
+        indices_to_freq,
+        random_freq,
+        random_indices,
+        randsamp_freq,
+        resample_data,
+        resample_vals,
     )
-    from .utils import assign_moment, moveaxis, select_moment  # noqa: TCH004
+    from .utils import (  # noqa: TCH004
+        assign_moment,
+        moveaxis,
+        select_moment,
+        vals_to_data,
+    )
+    from .wrapper import (  # noqa: TCH004
+        CentralMoments,
+        CentralMomentsArray,
+        CentralMomentsData,
+        wrap,
+        wrap_raw,
+        wrap_reduce_vals,
+        wrap_resample_vals,
+        xCentralMoments,
+        zeros_like,
+    )
 
 
 else:
@@ -40,9 +55,8 @@ else:
         ],
         submod_attrs={
             "convert": ["concat"],
-            "_central_numpy": ["CentralMoments"],
-            "_central_dataarray": ["xCentralMoments"],
             "confidence_interval": ["bootstrap_confidence_interval"],
+            "random": ["default_rng"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
                 "indices_to_freq",
@@ -52,7 +66,23 @@ else:
                 "resample_data",
                 "resample_vals",
             ],
-            "utils": ["moveaxis", "select_moment", "assign_moment"],
+            "utils": [
+                "moveaxis",
+                "select_moment",
+                "assign_moment",
+                "vals_to_data",
+            ],
+            "wrapper": [
+                "CentralMomentsArray",
+                "CentralMomentsData",
+                "CentralMoments",
+                "zeros_like",
+                "wrap_raw",
+                "wrap_resample_vals",
+                "wrap_reduce_vals",
+                "wrap",
+                "xCentralMoments",
+            ],
         },
     )
 
@@ -69,11 +99,14 @@ __email__ = "wpk@nist.gov"
 
 __all__ = [
     "CentralMoments",
+    "CentralMomentsArray",
+    "CentralMomentsData",
     "__version__",
     "assign_moment",
     "bootstrap_confidence_interval",
     "concat",
     "convert",
+    "default_rng",
     "indices_to_freq",
     "moveaxis",
     "random",
@@ -90,5 +123,11 @@ __all__ = [
     "rolling",
     "select_moment",
     "utils",
+    "vals_to_data",
+    "wrap",
+    "wrap_raw",
+    "wrap_reduce_vals",
+    "wrap_resample_vals",
     "xCentralMoments",
+    "zeros_like",
 ]

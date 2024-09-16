@@ -9,8 +9,15 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy import CentralMoments, xCentralMoments
+from cmomy import CentralMomentsArray, CentralMomentsData
 from cmomy.core.array_utils import select_dtype
+
+from ._dataarray_set_utils import (
+    do_wrap_method,
+    do_wrap_raw,
+    do_wrap_reduce_vals,
+    do_wrap_resample_vals,
+)
 
 if TYPE_CHECKING:
     from cmomy.core.typing import NDArrayAny
@@ -57,90 +64,94 @@ def _do_test(func, *args, expected, **kwargs):
 
 @dtype_out_marks
 @pytest.mark.parametrize(
-    ("func", "style", "kws", "out_shape"),
+    ("func", "kws", "out_shape"),
     [
-        (cmomy.reduction.reduce_vals, "reduce", {"mom": 2}, (1, 2, 3)),
-        (cmomy.reduction.reduce_data, "reduce", {"mom_ndim": 1}, (1, 2)),
+        (cmomy.reduction.reduce_vals, {"mom": 2, "axis": 0}, (1, 2, 3)),
+        (cmomy.reduction.reduce_data, {"mom_ndim": 1, "axis": 0}, (1, 2)),
+        (do_wrap_method("reduce"), {"mom_ndim": 1, "axis": 0}, (1, 2)),
         (
             cmomy.reduction.reduce_data_grouped,
-            "reduce",
-            {"mom_ndim": 1, "by": [0, 0, 1, 1, 1]},
+            {"mom_ndim": 1, "by": [0, 0, 1, 1, 1], "axis": 0},
+            (2, 1, 2),
+        ),
+        (
+            do_wrap_method("reduce"),
+            {"mom_ndim": 1, "by": [0, 0, 1, 1, 1], "axis": 0},
             (2, 1, 2),
         ),
         (
             cmomy.reduction.reduce_data_indexed,
-            "reduce",
             {
                 "mom_ndim": 1,
                 "index": range(5),
                 "group_start": [0, 2],
                 "group_end": [2, 5],
+                "axis": 0,
             },
             (2, 1, 2),
         ),
         (
             cmomy.resample_vals,
-            "resample",
-            {"mom": 2, "move_axis_to_end": False},
+            {"mom": 2, "move_axis_to_end": False, "axis": 0, "nrep": 10},
             (10, 1, 2, 3),
         ),
         (
             cmomy.resample_data,
-            "resample",
-            {"mom_ndim": 1, "move_axis_to_end": False},
+            {"mom_ndim": 1, "move_axis_to_end": False, "axis": 0, "nrep": 10},
+            (10, 1, 2),
+        ),
+        (
+            do_wrap_method("resample_and_reduce"),
+            {"mom_ndim": 1, "nrep": 10, "axis": 0},
             (10, 1, 2),
         ),
         (
             cmomy.resample.jackknife_vals,
-            "jackknife",
-            {"mom": 2, "move_axis_to_end": False},
+            {"mom": 2, "move_axis_to_end": False, "axis": 0},
             (5, 1, 2, 3),
         ),
         (
             cmomy.resample.jackknife_data,
-            "jackknife",
-            {"mom_ndim": 1, "move_axis_to_end": False},
+            {"mom_ndim": 1, "move_axis_to_end": False, "axis": 0},
             (5, 1, 2),
         ),
+        (do_wrap_method("jackknife_and_reduce"), {"mom_ndim": 1, "axis": 0}, (5, 1, 2)),
         (
             cmomy.rolling.rolling_vals,
-            "rolling",
-            {"mom": 2, "move_axis_to_end": False, "window": 2},
+            {"mom": 2, "move_axis_to_end": False, "window": 2, "axis": 0},
             (5, 1, 2, 3),
         ),
         (
             cmomy.rolling.rolling_data,
-            "rolling",
-            {"mom_ndim": 1, "move_axis_to_end": False, "window": 2},
+            {"mom_ndim": 1, "move_axis_to_end": False, "window": 2, "axis": 0},
             (5, 1, 2),
         ),
         (
             cmomy.rolling.rolling_exp_vals,
-            "rolling",
-            {"mom": 2, "move_axis_to_end": False, "alpha": 0.1},
+            {"mom": 2, "move_axis_to_end": False, "alpha": 0.1, "axis": 0},
             (5, 1, 2, 3),
         ),
         (
             cmomy.rolling.rolling_exp_data,
-            "rolling",
-            {"mom_ndim": 1, "move_axis_to_end": False, "alpha": 0.1},
+            {"mom_ndim": 1, "move_axis_to_end": False, "alpha": 0.1, "axis": 0},
             (5, 1, 2),
         ),
-        (cmomy.convert.moments_type, "convert", {"mom_ndim": 1}, (5, 1, 2)),
-        (cmomy.utils.vals_to_data, "convert", {"mom": 2}, (5, 1, 2, 3)),
-        (cmomy.convert.cumulative, "reduce", {"mom_ndim": 1}, (5, 1, 2)),
+        (cmomy.convert.moments_type, {"mom_ndim": 1}, (5, 1, 2)),
+        (do_wrap_raw, {"mom_ndim": 1}, (5, 1, 2)),
+        (cmomy.utils.vals_to_data, {"mom": 2}, (5, 1, 2, 3)),
+        (cmomy.convert.cumulative, {"mom_ndim": 1, "axis": 0}, (5, 1, 2)),
+        (do_wrap_method("cumulative"), {"mom_ndim": 1, "axis": 0}, (5, 1, 2)),
+        (do_wrap_reduce_vals, {"mom": 2, "axis": 0}, (1, 2, 3)),
         (
-            "from_resample_vals",
-            "resample",
-            {"mom": 2, "move_axis_to_end": False},
+            do_wrap_resample_vals,
+            {"mom": 2, "move_axis_to_end": False, "nrep": 10, "axis": 0},
             (10, 1, 2, 3),
         ),
-        ("from_vals", "reduce", {"mom": 2}, (1, 2, 3)),
-        (select_dtype, "convert", {"out": None}, (5, 1, 2)),
+        (select_dtype, {"out": None}, (5, 1, 2)),
     ],
 )
 def test_functions_with_out(
-    dtype_array, dtype_out, dtype, expected, func, style, kws, out_shape, as_dataarray
+    dtype_array, dtype_out, dtype, expected, func, kws, out_shape, as_dataarray
 ) -> None:
     shape = (5, 1, 2)
     x: NDArrayAny | xr.DataArray
@@ -150,14 +161,10 @@ def test_functions_with_out(
         x = np.zeros(shape, dtype=dtype_array)
 
     if isinstance(func, str):
-        cls = xCentralMoments if as_dataarray else CentralMoments
+        cls = CentralMomentsData if as_dataarray else CentralMomentsArray
         func = getattr(cls, func)
 
     kwargs = {"dtype": dtype, **kws}
-    if style != "convert":
-        kwargs["axis"] = 0
-    if style == "resample":
-        kwargs["freq"] = cmomy.random_freq(ndat=5, nrep=10)
     if dtype_out is not None and out_shape is not None:
         kwargs["out"] = np.zeros(out_shape, dtype=dtype_out)
     _do_test(func, x, expected=expected, **kwargs)
@@ -188,13 +195,14 @@ dtype_no_out_marks = pytest.mark.parametrize(
 
 @dtype_no_out_marks
 @pytest.mark.parametrize(
-    ("func", "style", "kws"),
+    ("func", "kws"),
     [
-        (cmomy.convert.moments_to_comoments, "convert", {"mom": (1, -1)}),
+        (cmomy.convert.moments_to_comoments, {"mom": (1, -1)}),
+        (do_wrap_method("moments_to_comoments"), {"mom": (1, -1)}),
     ],
 )
 def test_functions_without_out(
-    dtype_array, dtype, expected, func, style, kws, as_dataarray
+    dtype_array, dtype, expected, func, kws, as_dataarray
 ) -> None:
     shape = (5, 1, 3)
     x: NDArrayAny | xr.DataArray
@@ -204,11 +212,6 @@ def test_functions_without_out(
         x = np.zeros(shape, dtype=dtype_array)
 
     kwargs = {"dtype": dtype, **kws}
-    if style != "convert":
-        kwargs["axis"] = 0
-    if style == "resample":
-        kwargs["freq"] = cmomy.random_freq(ndat=5, nrep=10)
-
     _do_test(func, x, expected=expected, **kwargs)
 
 
@@ -232,8 +235,10 @@ dtype_mark = pytest.mark.parametrize(
 )
 
 dtype_base_mark = pytest.mark.parametrize("dtype_base", [np.float32, np.float64])
-cls_mark = pytest.mark.parametrize("cls", [CentralMoments, xCentralMoments])
+cls_mark = pytest.mark.parametrize("cls", [CentralMomentsArray, CentralMomentsData])
 use_out_mark = pytest.mark.parametrize("use_out", [False, True])
+
+cls_numpy_mark = pytest.mark.parametrize("cls", [CentralMomentsArray])
 
 
 @dtype_base_mark
@@ -251,12 +256,12 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
     _do_test(func, expected=expected)
 
 
-@cls_mark
+@cls_numpy_mark
 @dtype_base_mark
 @dtype_mark
 def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2,), dtype=dtype_base)
-    if cls == xCentralMoments:
+    if cls == CentralMomentsData:
         data = xr.DataArray(data)  # type: ignore[assignment]
 
     func = partial(cls, data, mom_ndim=1, dtype=dtype)
@@ -271,10 +276,10 @@ def test_init(cls, dtype_base, dtype, expected) -> None:
 def test_new_like(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2, 3, 4), dtype=dtype)
     data_base = np.zeros((2, 3, 4), dtype=dtype_base)
-    if cls == xCentralMoments:
-        xdata = xr.DataArray(data)
 
     c = cls.zeros(mom=3, val_shape=(2, 3), dtype=dtype_base)
+    if cls == CentralMomentsData:
+        xdata = xr.DataArray(data, dims=c.dims)
 
     assert c.dtype.type == dtype_base
 
@@ -284,20 +289,20 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
     elif dtype is None:
         assert c.new_like().dtype.type == dtype_base
         assert c.new_like(dtype=dtype).dtype.type == dtype_base
-        assert c.new_like(data=data).dtype.type == expected
-        assert c.new_like(data=data, dtype=dtype).dtype.type == expected
-        assert c.new_like(data=data_base).dtype.type == dtype_base
-        assert c.new_like(data=data_base, dtype=dtype).dtype.type == dtype_base
-        if cls == xCentralMoments:
-            assert c.new_like(data=xdata, dtype=dtype).dtype.type == expected
+        assert c.new_like(obj=data).dtype.type == expected
+        assert c.new_like(obj=data, dtype=dtype).dtype.type == expected
+        assert c.new_like(obj=data_base).dtype.type == dtype_base
+        assert c.new_like(obj=data_base, dtype=dtype).dtype.type == dtype_base
+        if cls == CentralMomentsData:
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected
 
     else:
         assert c.new_like().dtype.type == dtype_base
         assert c.new_like(dtype=dtype).dtype.type == expected
-        assert c.new_like(data=data).dtype.type == expected
-        assert c.new_like(data=data, dtype=dtype).dtype.type == expected
-        assert c.new_like(data=data_base).dtype.type == dtype_base
-        assert c.new_like(data=data_base, dtype=dtype).dtype.type == expected
-        if cls == xCentralMoments:
-            assert c.new_like(data=xdata).dtype.type == expected
-            assert c.new_like(data=xdata, dtype=dtype).dtype.type == expected
+        assert c.new_like(obj=data).dtype.type == expected
+        assert c.new_like(obj=data, dtype=dtype).dtype.type == expected
+        assert c.new_like(obj=data_base).dtype.type == dtype_base
+        assert c.new_like(obj=data_base, dtype=dtype).dtype.type == expected
+        if cls == CentralMomentsData:
+            assert c.new_like(obj=xdata).dtype.type == expected
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected

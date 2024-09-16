@@ -50,24 +50,12 @@ def get_params(
     return xy, w
 
 
-def factory_central_method(method):
-    def inner(x, *args, **kwargs):
-        cls = (
-            cmomy.xCentralMoments
-            if isinstance(x, xr.DataArray)
-            else cmomy.CentralMoments
-        )
-        return getattr(cls, method)(x, *args, **kwargs)
-
-    return inner
-
-
 @shapes_mark
 @pytest.mark.parametrize(
     ("func", "kwargs", "style"),
     [
         (cmomy.resample.resample_vals, {}, "resample"),
-        (factory_central_method("from_resample_vals"), {}, "resample"),
+        (cmomy.wrap_resample_vals, {}, "resample"),
         (cmomy.resample.jackknife_vals, {}, None),
         (
             cmomy.rolling.rolling_vals,

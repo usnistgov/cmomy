@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
     from typing import Any, Callable
 
-    from cmomy.core.typing import F, NumbaType
+    from cmomy.core.typing import FuncT, NumbaType
 
 
 # * Threading
@@ -68,7 +68,7 @@ def myguvectorize(
     fastmath: bool | None = None,
     writable: str | Iterable[str] | None = "out",
     **kwargs: Any,
-) -> Callable[[F], F]:
+) -> Callable[[FuncT], FuncT]:
     target = _get_target(parallel)
 
     signatures = _get_signatures(signature, signature_generator)
@@ -84,8 +84,8 @@ def myguvectorize(
             (writable,) if isinstance(writable, str) else tuple(writable)
         )
 
-    return cast(  # pyright: ignore[reportReturnType]
-        "Callable[[F], F]",
+    return cast(
+        "Callable[[FuncT], FuncT]",
         guvectorize(
             *args,
             nopython=nopython,
@@ -106,7 +106,7 @@ def myjit(
     cache: bool | None = None,
     inline: bool | None = None,
     **kwargs: Any,
-) -> Callable[[F], F]:
+) -> Callable[[FuncT], FuncT]:
     """Perform jitting."""
     signatures = _get_signatures(signature, signature_generator)
 
@@ -120,8 +120,8 @@ def myjit(
     if inline is not None:
         kwargs["inline"] = "always" if inline else "never"
 
-    return cast(  # pyright: ignore[reportReturnType]
-        "Callable[[F], F]",
+    return cast(
+        "Callable[[FuncT], FuncT]",
         njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),
     )
 

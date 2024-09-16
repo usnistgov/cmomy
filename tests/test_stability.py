@@ -4,8 +4,8 @@
 import numpy as np
 import pytest
 
-from cmomy import CentralMoments
-from cmomy._lib.utils import factory_binomial
+from cmomy import CentralMomentsArray
+from cmomy._lib._binomial import factory_binomial
 from cmomy.reduction import reduce_vals
 
 
@@ -54,7 +54,7 @@ def test_stability() -> None:
 
     mom = 5
     moments = reduce_vals(x, mom=mom, axis=0)
-    c = CentralMoments.from_vals(x, mom=mom, axis=0)
+    c = CentralMomentsArray.from_vals(x, mom=mom, axis=0)
     test = algo(x, mom=mom)
     test2 = algo2(x, mom=mom)
 
@@ -78,7 +78,7 @@ def test_stability() -> None:
 
     # calculated
     moments_shift = reduce_vals(x * a + b, mom=5, axis=0)
-    c_shift = CentralMoments.from_vals(x * a + b, mom=5, axis=0)
+    c_shift = CentralMomentsArray.from_vals(x * a + b, mom=5, axis=0)
     test_shift = algo(x * a + b, mom=5)
     test2_shift = algo2(x * a + b, mom=5)
 

@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from functools import lru_cache
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 
 from .validate import (
+    is_dataset,
+    is_ndarray,
     validate_mom_ndim,
 )
 
@@ -43,6 +46,16 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
 
 
 # * Axis normalizer -----------------------------------------------------------
+def _validate_ndim(ndim: int, mom_ndim: int | None) -> int:
+    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
+    if ndim <= 0:
+        msg = "No dimension to reduce/sample over."
+        if mom_ndim:
+            msg += " Trying to select moment dimensions."
+        raise ValueError(msg)
+    return ndim
+
+
 def normalize_axis_index(
     axis: int,
     ndim: int,
@@ -54,7 +67,7 @@ def normalize_axis_index(
         np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
-    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
+    ndim = _validate_ndim(ndim, mom_ndim)
     return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]
 
 
@@ -70,11 +83,9 @@ def normalize_axis_tuple(
         np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
-    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
-
+    ndim = _validate_ndim(ndim, mom_ndim)
     if axis is None:
         return tuple(range(ndim))
-
     return np_normalize_axis_tuple(axis, ndim, msg_prefix, allow_duplicate)  # type: ignore[no-any-return,unused-ignore]
 
 
@@ -135,26 +146,48 @@ def axes_data_reduction(
     ]
 
 
-def raise_if_wrong_shape(
-    array: NDArrayAny, shape: tuple[int, ...], name: str | None = None
-) -> None:
-    """Raise error if array.shape != shape"""
-    if array.shape != shape:
-        name = "out" if name is None else name
-        msg = f"{name}.shape={array.shape=} != required shape {shape}"
-        raise ValueError(msg)
-
-
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
 
 
+@overload
 def select_dtype(
-    x: xr.DataArray | ArrayLike,
+    x: xr.Dataset,
+    *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
-) -> np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
-    """Select a dtype from, in order, out, dtype, or passed array."""
-    if out is not None:
+) -> None | np.dtype[np.float32] | np.dtype[np.float64]: ...
+@overload
+def select_dtype(
+    x: xr.DataArray | ArrayLike,
+    *,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+) -> np.dtype[np.float32] | np.dtype[np.float64]: ...
+@overload
+def select_dtype(
+    x: xr.Dataset | xr.DataArray | ArrayLike,
+    *,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+) -> None | np.dtype[np.float32] | np.dtype[np.float64]: ...
+
+
+def select_dtype(
+    x: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+) -> None | np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
+    """
+    Select a dtype from, in order, out, dtype, or passed array.
+
+    If pass in a Dataset, return dtype
+    """
+    if is_dataset(x):
+        if dtype is None:
+            return dtype
+        dtype = np.dtype(dtype)
+    elif out is not None:
         dtype = out.dtype  # pyright: ignore[reportUnknownMemberType]
     elif dtype is not None:
         dtype = np.dtype(dtype)
@@ -166,6 +199,17 @@ def select_dtype(
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
+
+
+def asarray_maybe_recast(
+    data: ArrayLike, dtype: DTypeLike = None, recast: bool = False
+) -> NDArrayAny:
+    """Perform asarray with optional recast to `dtype` if not already an array."""
+    if is_ndarray(data):
+        if recast and dtype is not None:
+            return np.asarray(data, dtype=dtype)
+        return data  # pyright: ignore[reportUnknownVariableType]
+    return np.asarray(data, dtype=dtype)
 
 
 def optional_keepdims(
@@ -180,17 +224,30 @@ def optional_keepdims(
     return x
 
 
-# def optional_move_end_to_axis(
-#     out: NDArray[ScalarT],
-#     *,
-#     mom_ndim: Mom_NDim,
-#     axis: int,
-# ) -> NDArray[ScalarT]:
-#     """
-#     Move 'last' axis back to original position
+# * Dummy arrays --------------------------------------------------------------
+def dummy_array(
+    shape: int | tuple[int, ...],
+    dtype: DTypeLike = None,
+    broadcast: bool = True,
+) -> NDArrayAny:
+    """
+    Create a dummy array.
 
-#     Note that this assumes axis is negative (relative to end of array), and relative to `mom_dim`.
-#     """
-#     if axis != -1:
-#         np.moveaxis(out, -(mom_ndim + 1), axis - mom_ndim)  # noqa: ERA001
-#     return out  # noqa: ERA001
+    Intended for cases where array is passed to guvectorized function to
+    set a shape.
+    """
+    # lru_cache doesn't play nice with dtype typing.
+    return _dummy_array(shape, dtype, broadcast)  # type: ignore[arg-type]
+
+
+@lru_cache
+def _dummy_array(
+    shape: int | tuple[int, ...],
+    dtype: DTypeLike = None,
+    broadcast: bool = True,
+) -> NDArrayAny:
+    if broadcast:
+        if dtype is None:
+            dtype = np.float64
+        return np.broadcast_to(np.dtype(dtype).type(0), shape)
+    return np.empty(shape, dtype=dtype)

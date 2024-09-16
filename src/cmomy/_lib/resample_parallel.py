@@ -59,9 +59,20 @@ def resample_data_fromzero(
 @_vectorize(
     "(replicate,mom),(replicate,sample),(sample),(sample)",
     [
-        (nb.float32[:, :], nb.float32[:, :], nb.float32[:], nb.float32[:]),
-        (nb.float64[:, :], nb.float64[:, :], nb.float64[:], nb.float64[:]),
+        (
+            nb.float32[:, :],
+            nb.float32[:, :],
+            nb.float32[:],
+            nb.float32[:],
+        ),
+        (
+            nb.float64[:, :],
+            nb.float64[:, :],
+            nb.float64[:],
+            nb.float64[:],
+        ),
     ],
+    writable=None,
 )
 def resample_vals(
     out: NDArray[FloatT],

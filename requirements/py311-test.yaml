@@ -11,6 +11,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
+  - dask
   - docstring-inheritance
   - lazy_loader
   - module-utilities>=0.6
@@ -22,5 +23,5 @@ dependencies:
   - pytest-xdist
   - scipy
   - typing-extensions
-  - xarray>=0.16
+  - xarray>=2023.9.0
   - pip

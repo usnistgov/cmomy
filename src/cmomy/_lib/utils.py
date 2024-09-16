@@ -5,53 +5,12 @@ from typing import TYPE_CHECKING
 import numba as nb
 import numpy as np
 
-from ..options import OPTIONS
-from .decorators import is_in_unsafe_thread_pool, myjit
+from .decorators import myjit
 
 if TYPE_CHECKING:
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import NDArray
 
-    from cmomy.core.typing import IntDTypeT, NDArrayAny
-
-
-# * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
-def supports_parallel() -> bool:
-    """
-    Checks if system supports parallel numba functions.
-
-    If an unsafe thread pool is detected, return ``False``.
-
-    Returns
-    -------
-    bool :
-        ``True`` if supports parallel.  ``False`` otherwise.
-    """
-    return not is_in_unsafe_thread_pool()
-
-
-# * Binomial factors
-def _binom(n: int, k: int) -> float:
-    import math
-
-    if n > k:
-        return math.factorial(n) / (math.factorial(k) * math.factorial(n - k))
-    if n == k:
-        return 1.0
-    # n < k
-    return 0.0
-
-
-def factory_binomial(order: int, dtype: DTypeLike = np.float64) -> NDArrayAny:
-    """Create binomial coefs at given order."""
-    out = np.zeros((order + 1, order + 1), dtype=dtype)
-    for n in range(order + 1):
-        for k in range(order + 1):
-            out[n, k] = _binom(n, k)
-
-    return out
-
-
-BINOMIAL_FACTOR = factory_binomial(OPTIONS["nmax"])
+    from cmomy.core.typing import IntDTypeT
 
 
 # * resampling
