@@ -27,8 +27,8 @@ gitdb==4.0.11             # via gitpython
 gitpython==3.1.43         # via conda-lock
 grayskull==2.7.1          # via -r requirements/uvxrun-tools.txt
 html5lib==1.1             # via conda-lock
-idna==3.8                 # via requests
-importlib-metadata==8.4.0  # via keyring, twine
+idna==3.10                # via requests
+importlib-metadata==8.5.0  # via keyring, twine
 ipython==8.27.0           # via nbqa
 jaraco-classes==3.4.0     # via keyring
 jaraco-context==6.0.1     # via keyring
@@ -41,7 +41,7 @@ markupsafe==2.1.5         # via jinja2
 matplotlib-inline==0.1.7  # via ipython
 mdurl==0.1.2              # via markdown-it-py
 more-itertools==10.5.0    # via jaraco-classes, jaraco-functools
-msgpack==1.0.8            # via cachecontrol
+msgpack==1.1.0            # via cachecontrol
 mypy==1.11.2              # via -r requirements/uvxrun-tools.txt
 mypy-extensions==1.0.0    # via mypy
 nbqa==1.9.0               # via -r requirements/uvxrun-tools.txt
@@ -53,7 +53,7 @@ pastel==0.2.1             # via clikit
 pexpect==4.9.0            # via ipython
 pip==24.2                 # via grayskull
 pkginfo==1.10.0           # via conda-lock, grayskull, twine
-platformdirs==4.3.2       # via virtualenv
+platformdirs==4.3.3       # via virtualenv
 progressbar2==4.5.0       # via grayskull
 prompt-toolkit==3.0.47    # via ipython
 ptyprocess==0.7.0         # via pexpect
@@ -71,12 +71,12 @@ readme-renderer==44.0     # via twine
 requests==2.32.3          # via cachecontrol, conda-lock, ensureconda, grayskull, requests-toolbelt, twine
 requests-toolbelt==1.0.0  # via twine
 rfc3986==2.0.0            # via twine
-rich==13.8.0              # via twine
+rich==13.8.1              # via twine
 ruamel-yaml==0.18.6       # via conda-lock, conda-souschef, grayskull, ruamel-yaml-jinja2
 ruamel-yaml-clib==0.2.8   # via ruamel-yaml
 ruamel-yaml-jinja2==0.2.7  # via conda-souschef, grayskull
 semver==3.0.2             # via grayskull
-setuptools==74.1.2        # via conda-lock, grayskull
+setuptools==75.1.0        # via conda-lock, grayskull
 six==1.16.0               # via asttokens, html5lib
 smmap==5.0.1              # via gitdb
 soupsieve==2.6            # via beautifulsoup4
@@ -94,4 +94,4 @@ urllib3==1.26.20          # via conda-lock, requests, twine
 virtualenv==20.26.4       # via conda-lock
 wcwidth==0.2.13           # via prompt-toolkit
 webencodings==0.5.1       # via html5lib
-zipp==3.20.1              # via importlib-metadata
+zipp==3.20.2              # via importlib-metadata

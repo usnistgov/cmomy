@@ -168,12 +168,13 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     def keys(
         self: CentralMomentsDataset,
     ) -> KeysView[Hashable]:  # -> Iterator[Hashable]:
-        """Dict like key iterator"""
+        """Dict like keys view"""
         return self.as_dict().keys()  # type: ignore[misc]
 
     def values(
         self: CentralMomentsDataset,
     ) -> ValuesView[CentralMomentsDataArray]:  # -> Iterator[CentralMomentsDataArray]:
+        """Dict like values view"""
         return self.as_dict().values()  # type: ignore[misc]
 
     @overload
