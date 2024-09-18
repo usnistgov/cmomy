@@ -174,9 +174,13 @@ def moveaxis(
 
 
 # * Selecting subsets of data -------------------------------------------------
-_MOMENT_INDEXER_1 = {"weight": (0,), "cov": (2,), "xave": (1,), "xvar": (2,)}
-
-_MOMENT_INDEXER_2 = {
+_MOMENT_INDEXER_1: dict[str, tuple[int | slice, ...]] = {
+    "weight": (0,),
+    "cov": (2,),
+    "xave": (1,),
+    "xvar": (2,),
+}
+_MOMENT_INDEXER_2: dict[str, tuple[int | slice, ...]] = {
     "weight": (0, 0),
     "cov": (1, 1),
     "xave": (1, 0),
@@ -193,7 +197,7 @@ _MOMENT_INDEXER_2 = {
 @docfiller.decorate
 def moment_indexer(
     name: SelectMoment | str, mom_ndim: Mom_NDim, squeeze: bool = True
-) -> tuple[EllipsisType | int | list[int], ...]:
+) -> tuple[EllipsisType | int | list[int] | slice, ...]:
     """
     Get indexer for moments
 
@@ -207,7 +211,7 @@ def moment_indexer(
     -------
     indexer : tuple
     """
-    idx: tuple[int, ...] | tuple[list[int], ...]
+    idx: tuple[int, ...] | tuple[list[int], ...] | tuple[int | slice, ...]
 
     # special indexers
     if name == "all":
@@ -217,7 +221,9 @@ def moment_indexer(
     elif name == "var":
         idx = ((2,) if squeeze else ([2],)) if mom_ndim == 1 else ([2, 0], [0, 2])
     else:
-        indexer = _MOMENT_INDEXER_1 if mom_ndim == 1 else _MOMENT_INDEXER_2
+        indexer: dict[str, tuple[int | slice, ...]] = (
+            _MOMENT_INDEXER_1 if mom_ndim == 1 else _MOMENT_INDEXER_2
+        )
         if name not in indexer:
             msg = f"Unknown option {name} for {mom_ndim=}"
             raise ValueError(msg)
