@@ -239,7 +239,7 @@ def _dummy_docstrings() -> None:
         Size of moving window.
 
 
-    select_moment_name | moment : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar"}
+    select_moment_name | moment : {"weight", "ave", "var", "cov", "xave", "xvar", "yave", "yvar", "xmom_0", "xmom_1", "ymom_0", "ymom_1"}
         Name of moment(s) to select.
 
         - ``"weight"`` : weights
@@ -267,6 +267,7 @@ def _dummy_docstrings() -> None:
         - ``"xvar"``: Variance of first variable.
         - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
         - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+        - ``"xmom_n", "ymom_n"``: All values with first (second) variable moment == n.
         - ``"all"``: All values.
 
         Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape

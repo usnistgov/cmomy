@@ -174,6 +174,22 @@ def moveaxis(
 
 
 # * Selecting subsets of data -------------------------------------------------
+_MOMENT_INDEXER_1 = {"weight": (0,), "cov": (2,), "xave": (1,), "xvar": (2,)}
+
+_MOMENT_INDEXER_2 = {
+    "weight": (0, 0),
+    "cov": (1, 1),
+    "xave": (1, 0),
+    "xvar": (2, 0),
+    "yave": (0, 1),
+    "yvar": (0, 2),
+    "xmom_0": (0, slice(None)),
+    "xmom_1": (1, slice(None)),
+    "ymom_0": (slice(None), 0),
+    "ymom_1": (slice(None), 1),
+}
+
+
 @docfiller.decorate
 def moment_indexer(
     name: SelectMoment | str, mom_ndim: Mom_NDim, squeeze: bool = True
@@ -192,31 +208,21 @@ def moment_indexer(
     indexer : tuple
     """
     idx: tuple[int, ...] | tuple[list[int], ...]
-    if name == "weight":
-        idx = (0,) if mom_ndim == 1 else (0, 0)
+
+    # special indexers
+    if name == "all":
+        idx = ()
     elif name == "ave":
         idx = ((1,) if squeeze else ([1],)) if mom_ndim == 1 else ([1, 0], [0, 1])
     elif name == "var":
         idx = ((2,) if squeeze else ([2],)) if mom_ndim == 1 else ([2, 0], [0, 2])
-    elif name == "cov":
-        idx = (2,) if mom_ndim == 1 else (1, 1)
-    elif name == "xave":
-        idx = (1,) if mom_ndim == 1 else (1, 0)
-    elif name == "xvar":
-        idx = (2,) if mom_ndim == 1 else (2, 0)
-    elif name == "all":  # pragma: no cover
-        idx = ()
     else:
-        if name == "yave":
-            idx = (0, 1)
-        elif name == "yvar":
-            idx = (0, 2)
-        else:
-            msg = f"Unknown option {name}."
+        indexer = _MOMENT_INDEXER_1 if mom_ndim == 1 else _MOMENT_INDEXER_2
+        if name not in indexer:
+            msg = f"Unknown option {name} for {mom_ndim=}"
             raise ValueError(msg)
-        if mom_ndim != 2:
-            msg = f"{name} requires mom_ndim == 2"
-            raise ValueError(msg)
+        idx = indexer[name]
+
     return (..., *idx)
 
 
@@ -277,6 +283,9 @@ def select_moment(
     Examples
     --------
     >>> data = np.arange(2 * 3).reshape(2, 3)
+    >>> data
+    array([[0, 1, 2],
+           [3, 4, 5]])
     >>> select_moment(data, "weight", mom_ndim=1)
     array([0, 3])
     >>> select_moment(data, "ave", mom_ndim=1)
@@ -295,6 +304,15 @@ def select_moment(
     array(3)
     >>> select_moment(data, "cov", mom_ndim=2)
     array(4)
+
+    Use options ``"xmom_0"``, to select all values with first
+    moment equal ``0``, etc
+
+    >>> select_moment(data, "xmom_0", mom_ndim=2)
+    array([0, 1, 2])
+    >>> select_moment(data, "ymom_1", mom_ndim=2)
+    array([1, 4])
+
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     if is_xarray(data):
@@ -319,11 +337,15 @@ def select_moment(
                 mom_ndim,
                 "`len(coords_combined)` must equal `mom_ndim`.",
             )
-
         else:
-            output_core_dims = [[]]
             output_sizes = None
             coords_combined = None
+            if name.startswith("xmom_"):
+                output_core_dims = [mom_dims[1:]]
+            elif name.startswith("ymom_"):
+                output_core_dims = [mom_dims[:1]]
+            else:
+                output_core_dims = [[]]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _select_moment,
@@ -473,6 +495,13 @@ def assign_moment(
     >>> assign_moment(data, var=-1, mom_ndim=1)
     array([ 0,  1, -1])
 
+    Note that you can chain these together.  Note that the order of evaluation
+    is the order values are passed.
+
+
+    >>> assign_moment(data, weight=-1, ave=-2, mom_ndim=1)
+    array([-1, -2,  2])
+
 
     For multidimensional data, the passed ``value`` must conform to the
     selected data
@@ -508,7 +537,7 @@ def assign_moment(
         # figure out values shape...
         input_core_dims: list[Sequence[Hashable]] = [mom_dims]
         for name, value in moment_kwargs.items():
-            if np.isscalar(value):
+            if not is_xarray(value) or np.isscalar(value):
                 input_core_dims.append([])
             elif (
                 name in {"ave", "var"}
@@ -516,6 +545,10 @@ def assign_moment(
                 and dim_combined
             ):
                 input_core_dims.append([dim_combined])
+            elif name.startswith("xmom_"):
+                input_core_dims.append(mom_dims[1:])
+            elif name.startswith("ymom_"):
+                input_core_dims.append(mom_dims[:1])
             elif name == "all":
                 input_core_dims.append(mom_dims)
             else:

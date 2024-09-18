@@ -210,6 +210,10 @@ SelectMoment = Literal[
     "xvar",
     "yvar",
     "all",
+    "xmom_0",
+    "xmom_1",
+    "ymom_0",
+    "ymom_1",
 ]
 ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]

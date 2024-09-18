@@ -5,6 +5,8 @@ from __future__ import annotations
 from functools import lru_cache
 from typing import TYPE_CHECKING, NamedTuple, cast
 
+from cmomy.options import OPTIONS
+
 if TYPE_CHECKING:
     from types import ModuleType
     from typing import Any, Callable, Protocol
@@ -174,7 +176,15 @@ if TYPE_CHECKING:
 
 
 # * Threading safety.  Taken from https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
+
+
 @lru_cache
+def _safe_threadpool() -> bool:
+    from ._lib.decorators import is_in_unsafe_thread_pool
+
+    return not is_in_unsafe_thread_pool()
+
+
 def supports_parallel() -> bool:
     """
     Checks if system supports parallel numba functions.
@@ -186,9 +196,7 @@ def supports_parallel() -> bool:
     bool :
         ``True`` if supports parallel.  ``False`` otherwise.
     """
-    from ._lib.decorators import is_in_unsafe_thread_pool
-
-    return not is_in_unsafe_thread_pool()
+    return OPTIONS["parallel"] and _safe_threadpool()
 
 
 # * Heuristic for parallel

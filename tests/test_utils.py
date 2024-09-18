@@ -86,13 +86,13 @@ def test_moveaxis_dataarray(x, kws, expected, func):
             (3, 3),
             {"name": "yave", "mom_ndim": 1},
             ValueError,
-            ".*requires mom_ndim.*",
+            ".*Unknown option.*",
         ),
         (
             (3, 3),
             {"name": "yvar", "mom_ndim": 1},
             ValueError,
-            ".*requires mom_ndim.*",
+            ".*Unknown option.*",
         ),
         ((2,), {"name": "thing", "mom_ndim": 1}, ValueError, ".*Unknown option.*"),
     ],
@@ -201,6 +201,10 @@ def test_select_moment_mom_ndim_1(
         ({"name": "yave"}, (..., 0, 1)),
         ({"name": "yvar"}, (..., 0, 2)),
         ({"name": "cov"}, (..., 1, 1)),
+        ({"name": "xmom_0"}, (..., 0, slice(None))),
+        ({"name": "xmom_1"}, (..., 1, slice(None))),
+        ({"name": "ymom_0"}, (..., slice(None), 0)),
+        ({"name": "ymom_1"}, (..., slice(None), 1)),
     ],
 )
 @pytest.mark.parametrize("dim_combined", ["hello"])
@@ -345,6 +349,10 @@ def test_assign_moment_mom_ndim_1(
         ({"name": "yave"}, (..., 0, 1)),
         ({"name": "yvar"}, (..., 0, 2)),
         ({"name": "cov"}, (..., 1, 1)),
+        ({"name": "xmom_0"}, (..., 0, slice(None))),
+        ({"name": "xmom_1"}, (..., 1, slice(None))),
+        ({"name": "ymom_0"}, (..., slice(None), 0)),
+        ({"name": "ymom_1"}, (..., slice(None), 1)),
     ],
 )
 @pytest.mark.parametrize("scalar", [True, False])
