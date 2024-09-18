@@ -4,7 +4,9 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-# Useful if doing any command line editing of doc string stuff
+# TODO(wpk): Add in environment variables for these things...
+# CMOMY_FASTMATH ->
+# see https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
 
 NMAX = "nmax"
 FASTMATH = "fastmath"

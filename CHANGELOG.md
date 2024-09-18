@@ -18,6 +18,14 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.18.0 — 2024-09-18
+
+### Added
+
+- `cmomy.assign_moment` and `cmomy.select_moment` now accept options `xmom_0`,
+  `xmom_1`, `ymom_0`, and `ymom_1`. These allow selecting/assigning to slices.
+  Useful when convertering values to central moments array.
+
 ## v0.17.0 — 2024-09-16
 
 ### Added
