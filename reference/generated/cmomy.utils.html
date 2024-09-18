@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Interface to utility functions (cmomy.utils) &#8212; cmomy v0.17.0 documentation</title>
+    <title>Interface to utility functions (cmomy.utils) &#8212; cmomy v0.18.0 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=fa44fd50" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=f8a11b36"></script>
+    <script src="../../_static/documentation_options.js?v=e8212e15"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="Rolling and rolling exponential averages (rolling)" href="cmomy.rolling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-16"/>
+    <meta name="docbuild:last-update" content="2024-09-18"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.17.0 documentation</p>
+    <p class="title logo__title">cmomy v0.18.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -572,12 +572,12 @@ to the moments dimensions.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.utils.moment_indexer">
-<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">moment_indexer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L177-L220"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.moment_indexer" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">moment_indexer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L197-L232"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.moment_indexer" title="Link to this definition">#</a></dt>
 <dd><p>Get indexer for moments</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>moment</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;weight&quot;,</span> <span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;,</span> <span class="pre">&quot;cov&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;yvar&quot;}</span></code>) – <p>Name of moment(s) to select.</p>
+<li><p><strong>moment</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;weight&quot;,</span> <span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;,</span> <span class="pre">&quot;cov&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;xmom_0&quot;,</span> <span class="pre">&quot;xmom_1&quot;,</span> <span class="pre">&quot;ymom_0&quot;,</span> <span class="pre">&quot;ymom_1&quot;}</span></code>) – <p>Name of moment(s) to select.</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;</span></code> : weights</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;</span></code> : Averages.</p></li>
@@ -606,14 +606,14 @@ to the moments dimensions.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.utils.select_moment">
-<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">select_moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'variable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L237-L360"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.select_moment" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">select_moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'variable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L249-L388"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.select_moment" title="Link to this definition">#</a></dt>
 <dd><p>Select specific moments for a central moments array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> or <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Moment collection array</p></li>
 <li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>) – Value indicates if moments (<code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>) or comoments (<code class="docutils literal notranslate"><span class="pre">mom_ndim=2</span></code>).</p></li>
-<li><p><strong>moment</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;weight&quot;,</span> <span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;,</span> <span class="pre">&quot;cov&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;yvar&quot;}</span></code>) – <p>Name of moment(s) to select.</p>
+<li><p><strong>moment</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;weight&quot;,</span> <span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;,</span> <span class="pre">&quot;cov&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;xmom_0&quot;,</span> <span class="pre">&quot;xmom_1&quot;,</span> <span class="pre">&quot;ymom_0&quot;,</span> <span class="pre">&quot;ymom_1&quot;}</span></code>) – <p>Name of moment(s) to select.</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;</span></code> : weights</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;</span></code> : Averages.</p></li>
@@ -658,6 +658,9 @@ options, output has shape of input with moment dimensions removed.</p>
 </dl>
 <p class="rubric">Examples</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span>
+<span class="go">array([[0, 1, 2],</span>
+<span class="go">       [3, 4, 5]])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="go">array([0, 3])</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;ave&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -678,11 +681,19 @@ result in the last dimension having size <code class="docutils literal notransla
 <span class="go">array(4)</span>
 </pre></div>
 </div>
+<p>Use options <code class="docutils literal notranslate"><span class="pre">&quot;xmom_0&quot;</span></code>, to select all values with first
+moment equal <code class="docutils literal notranslate"><span class="pre">0</span></code>, etc</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;xmom_0&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array([0, 1, 2])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;ymom_1&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array([1, 4])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.utils.assign_moment">
-<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">assign_moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">moment_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L413-L556"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.assign_moment" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">assign_moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">moment_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L441-L595"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.assign_moment" title="Link to this definition">#</a></dt>
 <dd><p>Update weights of moments array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -698,6 +709,7 @@ result in the last dimension having size <code class="docutils literal notransla
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;xvar&quot;</span></code>: Variance of first variable.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;yave&quot;</span></code>: Average of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;yvar&quot;</span></code>: Variace of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xmom_n&quot;,</span> <span class="pre">&quot;ymom_n&quot;</span></code>: All values with first (second) variable moment == n.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code>: All values.</p></li>
 </ul>
 <p>Names <code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;cov&quot;</span></code> imply shape
@@ -754,6 +766,12 @@ first variable does not contain moments data.</p></li>
 <span class="go">array([ 0,  1, -1])</span>
 </pre></div>
 </div>
+<p>Note that you can chain these together.  Note that the order of evaluation
+is the order values are passed.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assign_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ave</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([-1, -2,  2])</span>
+</pre></div>
+</div>
 <p>For multidimensional data, the passed <code class="docutils literal notranslate"><span class="pre">value</span></code> must conform to the
 selected data</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
@@ -775,7 +793,7 @@ selected data</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.utils.vals_to_data">
-<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">vals_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L638-L776"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.vals_to_data" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">vals_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L677-L815"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.vals_to_data" title="Link to this definition">#</a></dt>
 <dd><p>Convert <cite>values</cite> to <cite>central moments array</cite>.</p>
 <p>This allows passing <cite>values</cite> based observations to <cite>data</cite> routines.
 See examples below for more details</p>
@@ -925,7 +943,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-16.
+  Last updated on 2024-09-18.
   <br/>
 </p>
   </div>
