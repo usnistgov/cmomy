@@ -169,7 +169,7 @@ def freq_to_indices(
 ) -> NDArray[IntDTypeT]: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def freq_to_indices(
     freq: ArrayLike | DataT,
     *,
@@ -428,7 +428,7 @@ def _randsamp_freq_dataarray_or_dataset(
     return xr.Dataset(out)  # pyright: ignore[reportReturnType]
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def randsamp_freq(
     *,
     freq: ArrayLike | xr.DataArray | DataT | None = None,
@@ -527,7 +527,7 @@ def randsamp_freq(
     # short circuit the most likely scenario...
     if freq is not None and not check:
         if is_xarray(freq):
-            return freq if dtype is None else freq.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
+            return freq if dtype is None else freq.astype(dtype, copy=False)  # type: ignore[return-value, unused-ignore] # pyright: ignore[reportUnknownMemberType]
         return np.asarray(freq, dtype=dtype)
 
     if ndat is None:
@@ -576,7 +576,7 @@ def randsamp_freq(
             nrep=nrep, ndat=ndat, nsamp=nsamp, rng=validate_rng(rng), replace=True
         )
 
-    return freq if dtype is None else freq.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
+    return freq if dtype is None else freq.astype(dtype, copy=False)  # type: ignore[return-value,unused-ignore] # pyright: ignore[reportUnknownMemberType]
 
 
 # * Utilities
@@ -648,7 +648,7 @@ def resample_data(
 
 
 # ** Public api
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def resample_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
@@ -885,7 +885,7 @@ def resample_vals(
 
 
 # ** public api
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -1030,7 +1030,7 @@ def resample_vals(  # noqa: PLR0913
                 *(d if d != dim else rep_dim for d in x.dims),  # type: ignore[union-attr]
                 *mom_dims,
             ]
-            xout = xout.transpose(..., *dims_order)
+            xout = xout.transpose(..., *dims_order)  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 
@@ -1209,7 +1209,7 @@ def jackknife_data(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def jackknife_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     data_reduced: ArrayLike | DataT | None = None,
@@ -1558,7 +1558,7 @@ def jackknife_vals(  # noqa: PLR0913
     if data_reduced is None:
         from .reduction import reduce_vals
 
-        data_reduced = reduce_vals(  # type: ignore[type-var, misc]
+        data_reduced = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
             x,  # pyright: ignore[reportArgumentType]
             *y,
             mom=mom,
@@ -1634,7 +1634,7 @@ def jackknife_vals(  # noqa: PLR0913
         )
 
         if not move_axis_to_end and is_dataarray(x):
-            xout = xout.transpose(..., *x.dims, *mom_dims)
+            xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
         return xout

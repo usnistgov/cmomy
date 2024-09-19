@@ -403,6 +403,7 @@ module = [
     "scipy.*",
     "scipy.special.*",
     "scipy.stats.*",
+    "dask.*",
 ]
 
 [[tool.mypy.overrides]]

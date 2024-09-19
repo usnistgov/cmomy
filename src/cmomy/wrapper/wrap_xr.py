@@ -169,13 +169,13 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         self: CentralMomentsDataset,
     ) -> KeysView[Hashable]:  # -> Iterator[Hashable]:
         """Dict like keys view"""
-        return self.as_dict().keys()  # type: ignore[misc]
+        return self.as_dict().keys()
 
     def values(
         self: CentralMomentsDataset,
     ) -> ValuesView[CentralMomentsDataArray]:  # -> Iterator[CentralMomentsDataArray]:
         """Dict like values view"""
-        return self.as_dict().values()  # type: ignore[misc]
+        return self.as_dict().values()
 
     @overload
     def iter(self: CentralMomentsDataArray) -> Iterator[CentralMomentsDataArray]: ...
@@ -193,7 +193,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             for obj in self._obj:
                 yield self.new_like(obj)  # noqa: DOC402
         else:
-            yield from self.keys()  # type: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+            yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
     @overload
     def __iter__(
@@ -962,7 +962,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
-        ).transpose(..., *self._mom_dims)
+        ).transpose(..., *self._mom_dims)  # pyright: ignore[reportUnknownArgumentType]
 
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
@@ -1004,7 +1004,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         if is_dataarray(self._obj):
             return self  # pyright: ignore[reportReturnType]
 
-        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self._mom_dims)
+        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self._mom_dims)  # pyright: ignore[reportUnknownArgumentType]
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
             mom_ndim=self._mom_ndim,

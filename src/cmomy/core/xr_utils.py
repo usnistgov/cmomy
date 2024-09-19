@@ -208,7 +208,7 @@ def move_mom_dims_to_end(
             msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
             raise ValueError(msg)
 
-        x = x.transpose(..., *mom_dims)
+        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
 
     return x
 

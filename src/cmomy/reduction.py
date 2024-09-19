@@ -147,7 +147,7 @@ def reduce_vals(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def reduce_vals(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -247,7 +247,7 @@ def reduce_vals(
         )
 
         if is_dataarray(x):
-            xout = xout.transpose(..., *x.dims, *mom_dims)
+            xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
         if not keepdims:
             xout = xout.squeeze(dim)
         return xout
@@ -379,7 +379,7 @@ def reduce_data(
 
 
 # ** public
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def reduce_data(
     data: ArrayLike | DataT,
     *,
@@ -758,7 +758,7 @@ def reduce_data_grouped(
 
 
 # ** public
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def reduce_data_grouped(  # noqa: PLR0913
     data: ArrayLike | DataT,
     by: ArrayLike,
@@ -896,7 +896,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
-                output_sizes={dim: np.max(by) + 1},
+                output_sizes={dim: np.max(by) + 1},  # pyright: ignore[reportArgumentType]
                 output_dtypes=dtype or np.float64,
             ),
         )
@@ -1142,7 +1142,7 @@ def reduce_data_indexed(
 
 
 # ** public
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def reduce_data_indexed(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
@@ -1398,7 +1398,7 @@ def _reduce_data_indexed(
         index,
         group_start,
         group_end,
-        scale,
+        scale,  # pyright: ignore[reportArgumentType]
         out=out,
         axes=axes,
         casting=casting,

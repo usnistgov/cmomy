@@ -229,7 +229,7 @@ def moment_indexer(
             raise ValueError(msg)
         idx = indexer[name]
 
-    return (..., *idx)
+    return (..., *idx)  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
 
 
 @overload
@@ -674,7 +674,7 @@ def vals_to_data(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def vals_to_data(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,

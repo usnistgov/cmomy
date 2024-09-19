@@ -128,7 +128,7 @@ def moments_type(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def moments_type(
     values_in: ArrayLike | DataT,
     *,
@@ -307,7 +307,7 @@ def cumulative(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def cumulative(
     values_in: ArrayLike | DataT,
     *,
@@ -529,7 +529,7 @@ def moments_to_comoments(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def moments_to_comoments(
     values: ArrayLike | DataT,
     *,

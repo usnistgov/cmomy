@@ -660,7 +660,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep) -> None:
 
 # * Chunking
 try:
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
 
     HAS_DASK = True
 except ImportError:

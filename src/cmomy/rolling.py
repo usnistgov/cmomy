@@ -253,7 +253,7 @@ def construct_rolling_window_array(
 
         # for safety, move window_dim to front...
         # this avoids it being placed after any moment dimensions...
-        return xout.transpose(*window_dim, ...)
+        return xout.transpose(*window_dim, ...)  # pyright: ignore[reportUnknownArgumentType]
 
     return construct_rolling_window_array(  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
         x=xr.DataArray(x),
@@ -338,7 +338,7 @@ def rolling_data(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def rolling_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
@@ -572,7 +572,7 @@ def rolling_vals(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def rolling_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -690,7 +690,7 @@ def rolling_vals(  # noqa: PLR0913
             ),
         )
         if not move_axis_to_end and is_dataarray(xout):
-            xout = xout.transpose(..., *x.dims, *mom_dims)
+            xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
         return xout
 
     # Numpy
@@ -848,7 +848,7 @@ def rolling_exp_data(
 ) -> NDArray[FloatT]: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def rolling_exp_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     alpha: ArrayLike,
@@ -1147,7 +1147,7 @@ def rolling_exp_vals(
 ) -> NDArray[FloatT]: ...
 
 
-@docfiller.decorate
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def rolling_exp_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -1268,7 +1268,7 @@ def rolling_exp_vals(  # noqa: PLR0913
         )
 
         if not move_axis_to_end and is_dataarray(xout):
-            xout = xout.transpose(..., *x.dims, *mom_dims)
+            xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
         return xout
 
     axis_neg, args = prepare_values_for_reduction(

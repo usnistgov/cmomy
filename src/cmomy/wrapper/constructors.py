@@ -414,7 +414,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
 
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     kws = _get_mom_dims_kws(x, mom_dims, mom_ndim)
-    obj = reduce_vals(  # type: ignore[type-var, misc]
+    obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
         x,  # pyright: ignore[reportArgumentType]
         *y,
         mom=mom,
@@ -588,7 +588,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
 
     from cmomy.resample import resample_vals
 
-    obj = resample_vals(  # type: ignore[type-var, misc]
+    obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]
         x,  # pyright: ignore[reportArgumentType]
         *y,
         freq=freq,

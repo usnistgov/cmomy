@@ -1420,7 +1420,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
         kws = cls._mom_dims_kws(mom_dims, mom_ndim)
-        obj = reduce_vals(  # type: ignore[type-var, misc]
+        obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
             x,  # pyright: ignore[reportArgumentType]
             *y,
             mom=mom,
@@ -1583,7 +1583,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         from cmomy.resample import resample_vals
 
-        obj = resample_vals(  # type: ignore[type-var, misc]
+        obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]
             x,  # pyright: ignore[reportArgumentType]
             *y,
             freq=freq,
