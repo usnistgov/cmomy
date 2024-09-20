@@ -832,7 +832,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         self,
         *,
         mom: tuple[int, int],
-        mom_dims2: MomDims | None = None,
+        mom_dims_out: MomDims | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
         keep_attrs: KeepAttrs = None,
@@ -845,8 +845,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         Parameters
         ----------
         {mom_moments_to_comoments}
-        mom_dims2 : tuple of str
+        mom_dims_out : tuple of str
             Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
+        {dtype}
+        {order_cf}
         {keep_attrs}
         {on_missing_core_dim}
         {apply_ufunc_kwargs}
@@ -865,10 +867,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         kws: dict[str, Any]
         if is_xarray(self._obj):
-            mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
-            kws = {"mom_dims": mom_dims2}
+            mom_dims_out = validate_mom_dims(mom_dims_out, mom_ndim=2)
+            kws = {"mom_dims": mom_dims_out}
         else:
-            mom_dims2 = None
+            mom_dims_out = None
             kws = {}
 
         return type(self)(
@@ -876,7 +878,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 self._obj,
                 mom=mom,
                 mom_dims=getattr(self, "mom_dims", None),
-                mom_dims2=mom_dims2,
+                mom_dims_out=mom_dims_out,
                 dtype=dtype,
                 order=order,
                 keep_attrs=keep_attrs,

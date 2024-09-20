@@ -430,9 +430,8 @@ class MomentsToComomentsKwargs(
 ):
     """Extra parameters for :func:`.convert.moments_to_comoments`"""
 
-    mom: Required[tuple[int, int]]
     mom_dims: MomDims | None
-    mom_dims2: MomDims | None
+    mom_dims_out: MomDims | None
     keep_attrs: KeepAttrs
     on_missing_core_dim: MissingCoreDimOptions
     apply_ufunc_kwargs: ApplyUFuncKwargs | None

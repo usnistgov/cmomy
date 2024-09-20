@@ -117,11 +117,14 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     data1 = cmomy.reduce_vals(x, axis=0, mom=3)
     data2 = cmomy.reduce_vals(x, x, axis=0, mom=(1, 2))
 
-    out = convert.moments_to_comoments(data1, mom=(1, -1), dtype=dtype)
+    out1 = convert.comoments_to_moments(data2, dtype=dtype)
+    out2 = convert.moments_to_comoments(data1, mom=(1, -1), dtype=dtype)
 
     if dtype is not None:
-        assert out.dtype.type == dtype
-    np.testing.assert_allclose(data2, out)
+        assert out1.dtype.type == dtype
+        assert out2.dtype.type == dtype
+    np.testing.assert_allclose(data1, out1)
+    np.testing.assert_allclose(data2, out2)
 
     # CentralMoments
     c = cmomy.CentralMoments(data1, mom_ndim=1)
@@ -132,13 +135,18 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     c2x = c2.to_x(mom_dims=("a", "b"))
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).obj, c2x.obj
+        cx.moments_to_comoments(mom=(1, -1), mom_dims_out=("a", "b")).obj, c2x.obj
     )
+    xr.testing.assert_allclose(convert.comoments_to_moments(c2x.obj), cx.obj)
 
     # same mom name as original
     xr.testing.assert_allclose(
         cx.moments_to_comoments(mom=(1, -1)).obj,
         c2x.obj.rename({"a": "mom_0", "b": "mom_1"}),
+    )
+    xr.testing.assert_allclose(
+        convert.comoments_to_moments(c2x.obj, mom_dims_out="a"),
+        cx.obj.rename({"mom_0": "a"}),
     )
 
     # raise error for mom_ndim=2
@@ -150,12 +158,14 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     cx = c.to_x(attrs={"hello": "there"})
 
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b")).obj, c2x.obj
+        cx.moments_to_comoments(mom=(1, -1), mom_dims_out=("a", "b")).obj, c2x.obj
     )
 
     c2x = c2.to_x(mom_dims=("a", "b"), attrs={"hello": "there"})
     xr.testing.assert_allclose(
-        cx.moments_to_comoments(mom=(1, -1), mom_dims2=("a", "b"), keep_attrs=True).obj,
+        cx.moments_to_comoments(
+            mom=(1, -1), mom_dims_out=("a", "b"), keep_attrs=True
+        ).obj,
         c2x.obj,
     )
 

@@ -504,6 +504,171 @@ def test_cmomy_convert_moments_to_comoments() -> None:
     )
 
 
+def test_cmomy_convert_comoments_to_moments() -> None:
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_float32),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_float64),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_arrayany),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_any),
+            Any,
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_dataarray),
+            xr.DataArray,
+        ),
+        xr.DataArray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_dataset),
+            xr.Dataset,
+        ),
+        xr.Dataset,
+        None,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_dataarray_any),
+            Any,
+        ),
+        xr.DataArray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_dataset_any),
+            Any,
+        ),
+        xr.Dataset,
+        None,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_arraylike),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_float32, dtype=float64),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_float64, dtype=float32),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_arrayany, dtype=float32),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_arraylike, dtype=float32),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_any, dtype=float32),
+            Any,
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_float32, dtype="f8"),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_dataarray, dtype=float32),
+            xr.DataArray,
+        ),
+        xr.DataArray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_dataset, dtype=float32),
+            xr.Dataset,
+        ),
+        xr.Dataset,
+        None,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.convert.comoments_to_moments(data_dataarray_any, dtype=float32),
+            Any,
+        ),
+        xr.DataArray,
+        float32,
+        None,
+    )
+
+
 def test_cmomy_reduce_data() -> None:
     check(
         assert_type(

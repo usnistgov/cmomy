@@ -498,32 +498,36 @@ def _validate_mom_moments_to_comoments(
 
 @overload
 def moments_to_comoments(
-    values: DataT,
+    data: DataT,
     *,
+    mom: tuple[int, int],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> DataT: ...
 # array
 @overload
 def moments_to_comoments(
-    values: ArrayLikeArg[FloatT],
+    data: ArrayLikeArg[FloatT],
     *,
+    mom: tuple[int, int],
     dtype: None = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArray[FloatT]: ...
 # dtype
 @overload
 def moments_to_comoments(
-    values: ArrayLike,
+    data: ArrayLike,
     *,
+    mom: tuple[int, int],
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArray[FloatT]: ...
 # fallback
 @overload
 def moments_to_comoments(
-    values: ArrayLike,
+    data: ArrayLike,
     *,
+    mom: tuple[int, int],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArrayAny: ...
@@ -531,13 +535,13 @@ def moments_to_comoments(
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
 def moments_to_comoments(
-    values: ArrayLike | DataT,
+    data: ArrayLike | DataT,
     *,
     mom: tuple[int, int],
     dtype: DTypeLike = None,
     order: ArrayOrderCF = None,
     mom_dims: MomDims | None = None,
-    mom_dims2: MomDims | None = None,
+    mom_dims_out: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -547,18 +551,14 @@ def moments_to_comoments(
 
     Parameters
     ----------
-    values : array-like or DataArray
+    data : array-like or DataArray or Dataset
         Moments array with ``mom_ndim==1``. It is assumed that the last
         dimension is the moments dimension.
     {mom_moments_to_comoments}
     {dtype}
     {order_cf}
-    mom_dims : str or tuple of str
-        Optional name of moment dimension of input (``mom_ndim=1``) data.  Defaults to
-        ``first.dims[-mom_ndim]`` where ``first`` is either ``values`` if a DataArray
-        or the first variable of ``values`` if a Dataset.  You may need to pass this value
-        if ``values`` is a Dataset.
-    mom_dims2 : tuple of str
+    {mom_dims_data}
+    mom_dims_out : tuple of str
         Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
     {keep_attrs}
     {on_missing_core_dim}
@@ -567,7 +567,7 @@ def moments_to_comoments(
     Returns
     -------
     output : ndarray or DataArray
-        Co-moments array.  Same type as ``values``.
+        Co-moments array.  Same type as ``data``.
 
 
     Examples
@@ -612,21 +612,21 @@ def moments_to_comoments(
     Note that this also works for raw moments.
 
     """
-    dtype = select_dtype(values, out=None, dtype=dtype)
-    if is_xarray(values):
-        mom_dim_in, *_ = validate_mom_dims(mom_dims, mom_ndim=1, out=values)
-        mom_dims2 = validate_mom_dims(mom_dims2, mom_ndim=2)
+    dtype = select_dtype(data, out=None, dtype=dtype)
+    if is_xarray(data):
+        mom_dim_in, *_ = validate_mom_dims(mom_dims, mom_ndim=1, out=data)
+        mom_dims_out = validate_mom_dims(mom_dims_out, mom_ndim=2)
 
-        if mom_dim_in in mom_dims2:
+        if mom_dim_in in mom_dims_out:
             # give this a temporary name for simplicity:
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
-            values = values.rename({old_name: mom_dim_in})
+            data = data.rename({old_name: mom_dim_in})
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_to_comoments,
-            values,
+            data,
             input_core_dims=[[mom_dim_in]],
-            output_core_dims=[mom_dims2],
+            output_core_dims=[mom_dims_out],
             kwargs={"mom": mom, "dtype": dtype},
             keep_attrs=keep_attrs,
             **get_apply_ufunc_kwargs(
@@ -635,10 +635,10 @@ def moments_to_comoments(
                 dask="parallelized",
                 output_sizes=dict(
                     zip(
-                        mom_dims2,
+                        mom_dims_out,
                         mom_to_mom_shape(
                             _validate_mom_moments_to_comoments(
-                                mom, values.sizes[mom_dim_in] - 1
+                                mom, data.sizes[mom_dim_in] - 1
                             )
                         ),
                     )
@@ -650,15 +650,148 @@ def moments_to_comoments(
         return xout
 
     # numpy
-    values = asarray_maybe_recast(values, dtype=dtype, recast=False)
-    mom = _validate_mom_moments_to_comoments(mom, values.shape[-1] - 1)
+    data = asarray_maybe_recast(data, dtype=dtype, recast=False)
+    mom = _validate_mom_moments_to_comoments(mom, data.shape[-1] - 1)
     out = np.empty(
-        (*values.shape[:-1], *mom_to_mom_shape(mom)),  # type: ignore[union-attr]
+        (*data.shape[:-1], *mom_to_mom_shape(mom)),  # type: ignore[union-attr]
         dtype=dtype,
         order=order,
     )
     for i, j in np.ndindex(*out.shape[-2:]):
-        out[..., i, j] = values[..., i + j]
+        out[..., i, j] = data[..., i + j]
+    return out
+
+
+@overload
+def comoments_to_moments(
+    data: DataT,
+    *,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> DataT: ...
+# array
+@overload
+def comoments_to_moments(
+    data: ArrayLikeArg[FloatT],
+    *,
+    dtype: None = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def comoments_to_moments(
+    data: ArrayLike,
+    *,
+    dtype: DTypeLikeArg[FloatT],
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def comoments_to_moments(
+    data: ArrayLike,
+    *,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> NDArrayAny: ...
+
+
+@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
+def comoments_to_moments(
+    data: ArrayLike | DataT,
+    *,
+    dtype: DTypeLike = None,
+    order: ArrayOrderCF = None,
+    mom_dims: MomDims | None = None,
+    mom_dims_out: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | DataT:
+    """
+    Convert comoments of same variable to moments array
+
+    Inverse of :func:`moments_to_comoments`.  Use with caution.
+    This is intended only to use for symmetric comoment arrays (i.e.,
+    one created from :func:`comoments_to_moments`).
+
+
+    Parameters
+    ----------
+    data : array-like or DataArray or Dataset
+        Moments array with ``mom_ndim==1``. It is assumed that the last
+        dimension is the moments dimension.
+    {dtype}
+    {order_cf}
+    {mom_dims_data}
+    mom_dims_out : tuple of str
+        Moments dimensions for output (``mom_ndim=1``) data.  Defaults to ``("mom_0",)``.
+    {keep_attrs}
+    {on_missing_core_dim}
+    {apply_ufunc_kwargs}
+
+    Returns
+    -------
+    output : ndarray or DataArray
+        Co-moments array.  Same type as ``data``.
+
+
+    Examples
+    --------
+    >>> import cmomy
+    >>> x = cmomy.default_rng(0).random(10)
+    >>> data2 = cmomy.reduce_vals(x, x, mom=(1, 2), axis=0)
+    >>> data2
+    array([[10.    ,  0.5505,  0.1014],
+           [ 0.5505,  0.1014, -0.0178]])
+    >>> comoments_to_moments(data2)
+    array([10.    ,  0.5505,  0.1014, -0.0178])
+
+
+    Note that this is identical to the following:
+
+    >>> cmomy.reduce_vals(x, mom=3, axis=0)
+    array([10.    ,  0.5505,  0.1014, -0.0178])
+    """
+    dtype = select_dtype(data, out=None, dtype=dtype)
+    if is_xarray(data):
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim=2, out=data)
+        mom_dim_out, *_ = validate_mom_dims(mom_dims_out, mom_ndim=1)
+        if mom_dim_out in mom_dims:
+            # give this a temporary name for simplicity:
+            new_name = f"_tmp_{mom_dim_out}"
+            data = data.rename({mom_dim_out: new_name})
+            mom_dims = tuple(new_name if d == mom_dim_out else d for d in mom_dims)
+
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            comoments_to_moments,
+            data,
+            input_core_dims=[mom_dims],
+            output_core_dims=[[mom_dim_out]],
+            kwargs={"dtype": dtype},
+            keep_attrs=keep_attrs,
+            **get_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                on_missing_core_dim=on_missing_core_dim,
+                dask="parallelized",
+                output_sizes={mom_dim_out: sum(data.sizes[k] for k in mom_dims) - 1},
+                output_dtypes=dtype or np.float64,
+            ),
+        )
+        return xout
+
+    data = asarray_maybe_recast(data, dtype, recast=False)
+
+    new_mom_len = sum(data.shape[-2:]) - 1
+    val_shape: tuple[int, ...] = data.shape[:-2]
+    out = np.empty((*val_shape, new_mom_len), dtype=dtype, order=order)
+
+    sampled = [False] * (new_mom_len + 1)
+    for i, j in np.ndindex(*data.shape[-2:]):
+        k = i + j
+        if not sampled[k]:
+            out[..., k] = data[..., i, j]
+            sampled[k] = True
+
     return out
 
 
