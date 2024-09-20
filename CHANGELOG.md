@@ -18,6 +18,13 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.19.0 — 2024-09-20
+
+### Added
+
+- Added `cmomy.convert.comoments_to_moments` routine, which is the inverse of
+  `cmomy.convert.moments_to_comoments`.
+
 ## v0.18.0 — 2024-09-18
 
 ### Added
