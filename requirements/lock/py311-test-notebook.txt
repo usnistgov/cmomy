@@ -39,7 +39,7 @@ nest-asyncio==1.6.0       # via ipykernel
 numba==0.60.0             # via -r requirements/test-notebook.txt
 numpy==2.0.2              # via bokeh, contourpy, numba, pandas, xarray, -r requirements/test-notebook.txt
 packaging==24.1           # via bokeh, dask, ipykernel, lazy-loader, pytest, pytest-sugar, xarray
-pandas==2.2.2             # via bokeh, xarray
+pandas==2.2.3             # via bokeh, xarray
 parso==0.8.4              # via jedi
 partd==1.4.2              # via dask
 pexpect==4.9.0            # via ipython

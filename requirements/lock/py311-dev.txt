@@ -43,7 +43,7 @@ nox==2024.4.15            # via -r requirements/dev.txt
 numba==0.60.0             # via -r requirements/dev.txt
 numpy==2.0.2              # via numba, pandas, pandas-stubs, scipy, xarray, -r requirements/dev.txt
 packaging==24.1           # via dask, ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray, -r requirements/dev.txt
-pandas==2.2.2             # via xarray
+pandas==2.2.3             # via xarray
 pandas-stubs==2.2.2.240909  # via -r requirements/dev.txt
 parso==0.8.4              # via jedi
 partd==1.4.2              # via dask

@@ -16,7 +16,7 @@ module-utilities==0.9.0   # via -r requirements/test.txt
 numba==0.60.0             # via -r requirements/test.txt
 numpy==2.0.2              # via numba, pandas, scipy, xarray, -r requirements/test.txt
 packaging==24.1           # via dask, lazy-loader, pytest, pytest-sugar, xarray
-pandas==2.2.2             # via xarray
+pandas==2.2.3             # via xarray
 partd==1.4.2              # via dask
 pluggy==1.5.0             # via pytest
 pytest==8.3.3             # via pytest-cov, pytest-sugar, pytest-xdist, -r requirements/test.txt
