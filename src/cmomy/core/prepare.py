@@ -147,7 +147,7 @@ def prepare_secondary_value_for_reduction(
     """
     raise_if_dataset(x, "Passed Dataset as secondary value with array primary value.")
 
-    out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=recast)  # type: ignore[arg-type]
+    out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=recast)  # type: ignore[arg-type, unused-ignore]
     if out.ndim == 0:
         return np.broadcast_to(out, nsamp)
 

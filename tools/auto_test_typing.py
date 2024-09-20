@@ -297,6 +297,7 @@ funcs_genarraylike_to_genarray_dtype_out = [
 ]
 funcs_genarraylike_to_genarray_dtype = [
     ("cmomy.convert.moments_to_comoments", "data_", None, "mom=(1, -1)"),
+    ("cmomy.convert.comoments_to_moments", "data_", None, "")
 ]
 funcs_genarray_to_genarray = [
     ("cmomy.utils.select_moment", "data_", None, '"weight", mom_ndim=1'),
@@ -704,5 +705,6 @@ s = len(set(out))
 if s != len(out):
     logger.info("duplicate in out %s %s", s, len(out))
 
-with open("./tests/test_typing_auto.py", "w", encoding="utf-8") as f:  # noqa: FURB103, PTH123
+with open("./tests/test_typing_auto.py", "w", encoding="utf-8") as f:  # noqa: PTH123
     f.write("\n".join(out))
+    f.write("\n")

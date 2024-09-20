@@ -11,7 +11,7 @@ import xarray as xr
 import cmomy
 
 try:
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
 
     HAS_DASK = True
 except ImportError:
