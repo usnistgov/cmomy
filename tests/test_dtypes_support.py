@@ -198,6 +198,7 @@ dtype_no_out_marks = pytest.mark.parametrize(
     ("func", "kws"),
     [
         (cmomy.convert.moments_to_comoments, {"mom": (1, -1)}),
+        (cmomy.convert.comoments_to_moments, {}),
         (do_wrap_method("moments_to_comoments"), {"mom": (1, -1)}),
     ],
 )
