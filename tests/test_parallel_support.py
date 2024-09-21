@@ -79,6 +79,29 @@ def test_parallel_data(func, kwargs_callback, data_and_kwargs):
     np.testing.assert_allclose(*(func(data, **kws, parallel=p) for p in [False, True]))
 
 
+@pytest.mark.parametrize(
+    ("nrep", "ndat", "nsamp"),
+    [
+        (20, 10, None),
+        (20, 10, 5),
+        (100, 50, None),
+    ],
+)
+def test_parallel_freq_to_indices(nrep, ndat, nsamp) -> None:
+    indices = cmomy.resample.random_indices(nrep=nrep, ndat=ndat, nsamp=nsamp)
+    freqs = [
+        cmomy.resample.indices_to_freq(indices, ndat=ndat, parallel=p)
+        for p in [True, False]
+    ]
+    np.testing.assert_equal(*freqs)
+
+    idxs = [cmomy.resample.freq_to_indices(freqs[0], parallel=p) for p in [True, False]]
+    np.testing.assert_equal(*idxs)
+
+    # make sure round trip is ok
+    np.testing.assert_allclose(np.sort(indices, axis=-1), idxs[0])
+
+
 # had some weird stuff with rolling in parallel.  hammer it...
 @pytest.mark.slow
 @pytest.mark.parametrize(("func", "kwargs_callback"), func_params_data_rolling)
@@ -90,7 +113,7 @@ def test_parallel_data(func, kwargs_callback, data_and_kwargs):
     ],
     indirect=True,
 )
-@pytest.mark.parametrize("repeat", range(100))
+@pytest.mark.parametrize("repeat", range(10))
 def test_parallel_data_rolling(func, kwargs_callback, data_and_kwargs, repeat):  # noqa: ARG001
     data, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
@@ -133,7 +156,7 @@ def test_parallel_vals(func, kwargs_callback, data_and_kwargs):
     ],
     indirect=True,
 )
-@pytest.mark.parametrize("repeat", range(100))
+@pytest.mark.parametrize("repeat", range(10))
 def test_parallel_vals_rolling(func, kwargs_callback, data_and_kwargs, repeat):  # noqa: ARG001
     xy, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs

@@ -11,12 +11,40 @@ from . import _push
 from .decorators import myguvectorize
 
 if TYPE_CHECKING:
+    import numpy as np
     from numpy.typing import NDArray
 
     from cmomy.core.typing import FloatT
 
 _PARALLEL = False
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
+
+
+@_vectorize(
+    "(ndat),(nsamp)",
+    [
+        (nb.int64[:], nb.int64[:]),
+    ],
+    writable="indices",
+)
+def freq_to_indices(freq: NDArray[np.int64], indices: NDArray[np.int64]) -> None:
+    count = 0
+    for d in range(len(freq)):
+        count_old = count
+        count += freq[d]
+        indices[count_old:count] = d
+
+
+@_vectorize(
+    "(nsamp),(ndat)",
+    [
+        (nb.int64[:], nb.int64[:]),
+    ],
+    writable="freq",
+)
+def indices_to_freq(indices: NDArray[np.int64], freq: NDArray[np.int64]) -> None:
+    for d in range(len(indices)):
+        freq[indices[d]] += 1
 
 
 @_vectorize(

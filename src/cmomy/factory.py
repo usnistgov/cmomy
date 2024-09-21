@@ -22,6 +22,24 @@ if TYPE_CHECKING:
 
     # Resample signature
     # These don't play well with pyright and overloading...
+    class FreqToIndices(Protocol):
+        def __call__(
+            self,
+            freq: NDArrayInt,
+            indices: NDArrayInt,
+            /,
+            **kwargs: Any,
+        ) -> tuple[()]: ...
+
+    class IndicesToFreq(Protocol):
+        def __call__(
+            self,
+            indices: NDArrayInt,
+            freq: NDArrayInt,
+            /,
+            **kwargs: Any,
+        ) -> tuple[()]: ...
+
     class ResampleVals(Protocol):
         def __call__(
             self,
@@ -251,6 +269,26 @@ def factory_pusher(
 
 
 # * Resample
+@lru_cache
+def factory_freq_to_indices(parallel: bool = True) -> FreqToIndices:
+    parallel = parallel and supports_parallel()
+    if parallel:
+        from ._lib.resample_parallel import freq_to_indices
+    else:
+        from ._lib.resample import freq_to_indices
+    return cast("FreqToIndices", freq_to_indices)
+
+
+@lru_cache
+def factory_indices_to_freq(parallel: bool = True) -> IndicesToFreq:
+    parallel = parallel and supports_parallel()
+    if parallel:
+        from ._lib.resample_parallel import indices_to_freq
+    else:
+        from ._lib.resample import indices_to_freq
+    return cast("IndicesToFreq", indices_to_freq)
+
+
 @lru_cache
 def factory_resample_vals(
     mom_ndim: Mom_NDim = 1,

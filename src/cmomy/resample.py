@@ -5,8 +5,6 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 
 from __future__ import annotations
 
-from itertools import starmap
-
 # if TYPE_CHECKING:
 from typing import TYPE_CHECKING, overload
 
@@ -48,6 +46,8 @@ from .core.xr_utils import (
     select_axis_dim,
 )
 from .factory import (
+    factory_freq_to_indices,
+    factory_indices_to_freq,
     factory_jackknife_data,
     factory_jackknife_vals,
     factory_resample_data,
@@ -131,6 +131,7 @@ def random_freq(
     nsamp: int | None = None,
     rng: RngTypes | None = None,
     replace: bool = True,
+    parallel: bool | None = None,
 ) -> NDArray[IntDTypeT]:
     """
     Create frequencies for random resampling (bootstrapping).
@@ -140,6 +141,7 @@ def random_freq(
     freq : ndarray
         Frequency array. ``freq[rep, k]`` is the number of times to sample from the `k`th
         observation for replicate `rep`.
+    {parallel}
 
     See Also
     --------
@@ -150,6 +152,7 @@ def random_freq(
             nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng, replace=replace
         ),
         ndat=ndat,
+        parallel=parallel,
     )
 
 
@@ -159,6 +162,7 @@ def freq_to_indices(
     *,
     shuffle: bool = ...,
     rng: RngTypes | None = ...,
+    parallel: bool | None = ...,
 ) -> DataT: ...
 @overload
 def freq_to_indices(
@@ -166,6 +170,7 @@ def freq_to_indices(
     *,
     shuffle: bool = ...,
     rng: RngTypes | None = ...,
+    parallel: bool | None = ...,
 ) -> NDArray[IntDTypeT]: ...
 
 
@@ -173,23 +178,25 @@ def freq_to_indices(
 def freq_to_indices(
     freq: ArrayLike | DataT,
     *,
-    shuffle: bool = True,
+    shuffle: bool = False,
     rng: RngTypes | None = None,
+    parallel: bool | None = None,
 ) -> NDArray[IntDTypeT] | DataT:
     """
     Convert a frequency array to indices array.
 
     This creates an "indices" array that is compatible with "freq" array.
     Note that by default, the indices for a single sample (along output[k, :])
-    are randomly shuffled.  If you pass `shuffle=False`, then the output will
-    be something like [[0,0,..., 1,1,..., 2,2, ...]].
+    are in sorted order (something like [[0, 0, ..., 1, 1, ...], ...]).
+    Pass ``shuffle = True`` to randomly shuffle indices along ``axis=1``.
 
     Parameters
     ----------
     {freq_xarray}
     shuffle :
-        If ``True`` (default), shuffle values for each row.
+        If ``True``, shuffle values for each row.
     {rng}
+    {parallel}
 
     Returns
     -------
@@ -206,29 +213,27 @@ def freq_to_indices(
             output_core_dims=[[rep_dim, dim]],
             # possible for data dimension to change size.
             exclude_dims={dim},
-            kwargs={"shuffle": shuffle, "rng": rng},
+            kwargs={"shuffle": shuffle, "rng": rng, "parallel": parallel},
         )
         return xout
 
-    freq = np.asarray(freq, dtype=np.int64)
-    indices_all: list[NDArrayAny] = []
-
-    # validate freq -> indices
-    nsamps = freq.sum(-1)
-    if any(nsamps[0] != nsamps):
+    freq = np.asarray(freq, np.int64)
+    nsamps = freq.sum(axis=-1)
+    nsamp = nsamps[0]
+    if np.any(nsamps != nsamp):
         msg = "Inconsistent number of samples from freq array"
         raise ValueError(msg)
 
-    for f in freq:
-        indices = np.concatenate(list(starmap(np.repeat, enumerate(f))))  # pyright: ignore[reportUnknownArgumentType]
-        indices_all.append(indices)
-
-    out = np.array(indices_all, dtype=freq.dtype)
+    indices = np.empty((freq.shape[0], nsamp), dtype=np.int64)
+    factory_freq_to_indices(parallel=parallel_heuristic(parallel, size=freq.size))(
+        freq,
+        indices,
+    )
 
     if shuffle:
         rng = validate_rng(rng)
-        rng.shuffle(out, axis=1)
-    return out
+        rng.shuffle(indices, axis=1)
+    return indices
 
 
 @overload
@@ -236,12 +241,14 @@ def indices_to_freq(
     indices: DataT,
     *,
     ndat: int | None = ...,
+    parallel: bool | None = ...,
 ) -> DataT: ...
 @overload
 def indices_to_freq(
     indices: ArrayLike,
     *,
     ndat: int | None = ...,
+    parallel: bool | None = ...,
 ) -> NDArray[IntDTypeT]: ...
 
 
@@ -249,6 +256,7 @@ def indices_to_freq(
     indices: ArrayLike | DataT,
     *,
     ndat: int | None = None,
+    parallel: bool | None = None,
 ) -> NDArray[IntDTypeT] | DataT:
     """
     Convert indices to frequency array.
@@ -267,18 +275,22 @@ def indices_to_freq(
             output_core_dims=[[rep_dim, dim]],
             # allow for possibility that dim will change size...
             exclude_dims={dim},
-            kwargs={"ndat": ndat},
+            kwargs={"ndat": ndat, "parallel": parallel},
         )
         return xout
 
-    from ._lib.utils import (
-        randsamp_indices_to_freq,
-    )
-
     indices = np.asarray(indices, np.int64)
     ndat = indices.shape[1] if ndat is None else ndat
+
+    if indices.max() >= ndat:
+        msg = f"Cannot have values >= {ndat=}"
+        raise ValueError(msg)
+
     freq = np.zeros((indices.shape[0], ndat), dtype=indices.dtype)
-    randsamp_indices_to_freq(indices, freq)
+
+    factory_indices_to_freq(parallel=parallel_heuristic(parallel, size=freq.size))(
+        indices, freq
+    )
 
     return freq
 
@@ -429,7 +441,7 @@ def _randsamp_freq_dataarray_or_dataset(
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def randsamp_freq(
+def randsamp_freq(  # noqa: PLR0913
     *,
     freq: ArrayLike | xr.DataArray | DataT | None = None,
     indices: ArrayLike | xr.DataArray | DataT | None = None,
@@ -446,6 +458,7 @@ def randsamp_freq(
     rng: RngTypes | None = None,
     dtype: DTypeLike = np.int64,
     check: bool = False,
+    parallel: bool | None = None,
 ) -> NDArrayAny | xr.DataArray | DataT:
     """
     Convenience function to create frequency table for resampling.
@@ -455,23 +468,24 @@ def randsamp_freq(
 
     Parameters
     ----------
+    {freq_xarray}
+    {indices}
     {ndat}
     {nrep}
     {nsamp}
-    {freq_xarray}
-    {indices}
-    check : bool, default=False
-        if `check` is `True`, then check `freq` and `indices` against `ndat` and `nrep`
-    {rng}
     data : ndarray or DataArray or Dataset
+        Optionally extract ``ndata`` from ``data``
     {axis}
     {dim}
-    mom_ndim : int, optional
-        If specified, then treat ``data`` as a moments array, and wrap negative
-        values for ``axis`` relative to value dimensions only.
-    jackknife : bool, default=False
-        If ``True``, return jackknife resampling frequency array (see :func:`jackknife_freq`).
-        Note that this overrides all other parameters.
+    {mom_ndim_optional}
+    {mom_dims_data}
+    {rep_dim}
+    {paired}
+    {rng}
+    {dtype}
+    check : bool, default=False
+        if `check` is `True`, then check `freq` and `indices` against `ndat` and `nrep`
+    {parallel}
 
 
     Notes
@@ -553,7 +567,7 @@ def randsamp_freq(
             check=check,
             is_freq=False,
         )
-        freq = indices_to_freq(indices, ndat=ndat)
+        freq = indices_to_freq(indices, ndat=ndat, parallel=parallel)
     elif nrep is None:
         msg = "must specify freq, indices, or nrep"
         raise ValueError(msg)
@@ -573,7 +587,12 @@ def randsamp_freq(
         )
     else:
         freq = random_freq(
-            nrep=nrep, ndat=ndat, nsamp=nsamp, rng=validate_rng(rng), replace=True
+            nrep=nrep,
+            ndat=ndat,
+            nsamp=nsamp,
+            rng=validate_rng(rng),
+            replace=True,
+            parallel=parallel,
         )
 
     return freq if dtype is None else freq.astype(dtype, copy=False)  # type: ignore[return-value,unused-ignore] # pyright: ignore[reportUnknownMemberType]
