@@ -18,6 +18,13 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.20.0 — 2024-09-21
+
+### Fixed
+
+- Made `cmomy.resample.freq_to_indices` and `cmomy.resample.indices_to_freq`
+  gufunc's. Much faster than old code (`freq_to_indices` was a bottleneck).
+
 ## v0.19.0 — 2024-09-20
 
 ### Added
