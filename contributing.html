@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Contributing &#8212; cmomy v0.19.0 documentation</title>
+    <title>Contributing &#8212; cmomy v0.20.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=14fb1bf9"></script>
+    <script src="_static/documentation_options.js?v=4385029a"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="License" href="license.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-20"/>
+    <meta name="docbuild:last-update" content="2024-09-21"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.19.0 documentation</p>
+    <p class="title logo__title">cmomy v0.20.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -710,22 +710,9 @@ to use only managed python:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">python-preference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;only-managed&quot;</span>
 </pre></div>
 </div>
-<p>To tell nox where to find python interpreters, define the environment variable
-<code class="docutils literal notranslate"><span class="pre">NOX_PYTHON_PATH</span></code> with something like:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">NOX_PYTHON_PATH</span><span class="o">=</span><span class="s2">&quot;~/path-to-pythons/*python-3.*/bin&quot;</span>
-</pre></div>
-</div>
-<p>or the user config file <code class="docutils literal notranslate"><span class="pre">config/userconfig.toml</span></code> with:</p>
-<div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="c1"># config/userconfig.toml</span>
-<span class="k">[nox.python]</span>
-<span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;~/path-to-pythons/*python-3.*/bin&quot;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>The variable <code class="docutils literal notranslate"><span class="pre">nox.python.paths</span></code> is a list of paths (with optional wildcards)
-added to the environment variable <code class="docutils literal notranslate"><span class="pre">PATH</span></code> to search for python interpreters. If
-using the environment variable <code class="docutils literal notranslate"><span class="pre">NOX_PYTHON_PATH</span></code>, paths should be separated with
-the colons (<code class="docutils literal notranslate"><span class="pre">:</span></code>). Either of the above will add the paths
-<code class="docutils literal notranslate"><span class="pre">~/path-to-pythons/*python-3.*/bin</span></code> to the search path.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> is setup to automatically add the python interpreters installed
+by <a class="reference external" href="https://github.com/astral-sh/uv">uv</a> to the path. Note that the python version needs to be installed before
+it can be used with <a class="reference external" href="https://github.com/wntrblm/nox">nox</a></p>
 </section>
 <section id="nox-session-options">
 <h3>Nox session options<a class="headerlink" href="#nox-session-options" title="Link to this heading">#</a></h3>
@@ -914,6 +901,13 @@ python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </sp
 <span class="c1"># locked:</span>
 pip-sync<span class="w"> </span>--python-path<span class="w"> </span>.venv/bin/python<span class="w"> </span>requirements/lock/py<span class="o">{</span>version<span class="o">}</span>-dev.txt
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.<span class="w"> </span>--no-deps
+</pre></div>
+</div>
+<p>Or if using <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>venv<span class="w"> </span>--python<span class="w"> </span><span class="m">3</span>.11<span class="w"> </span>.venv
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements/dev.txt
+<span class="c1"># or locked</span>
+uv<span class="w"> </span>pip<span class="w"> </span>sync<span class="w"> </span>requirements/lock/py311-dev.txt
 </pre></div>
 </div>
 <p>If you want to include the extra tools, replace <code class="docutils literal notranslate"><span class="pre">dev.txt</span></code> with
@@ -1109,7 +1103,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-20.
+  Last updated on 2024-09-21.
   <br/>
 </p>
   </div>

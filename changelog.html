@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Changelog &#8212; cmomy v0.19.0 documentation</title>
+    <title>Changelog &#8212; cmomy v0.20.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=14fb1bf9"></script>
+    <script src="_static/documentation_options.js?v=4385029a"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="Credits" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-20"/>
+    <meta name="docbuild:last-update" content="2024-09-21"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.19.0 documentation</p>
+    <p class="title logo__title">cmomy v0.20.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -478,6 +478,10 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">Unreleased</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-20-0-2024-09-21">v0.20.0 — 2024-09-21</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-19-0-2024-09-20">v0.19.0 — 2024-09-20</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
 </ul>
@@ -582,6 +586,16 @@ document.write(`
 <!-- prettier-ignore-end -->
 <!-- markdownlint-enable MD013 -->
 <!-- scriv-insert-here -->
+</section>
+<section id="v0-20-0-2024-09-21">
+<h2>v0.20.0 — 2024-09-21<a class="headerlink" href="#v0-20-0-2024-09-21" title="Link to this heading">#</a></h2>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Made <code class="docutils literal notranslate"><span class="pre">cmomy.resample.freq_to_indices</span></code> and <code class="docutils literal notranslate"><span class="pre">cmomy.resample.indices_to_freq</span></code>
+gufunc’s. Much faster than old code (<code class="docutils literal notranslate"><span class="pre">freq_to_indices</span></code> was a bottleneck).</p></li>
+</ul>
+</section>
 </section>
 <section id="v0-19-0-2024-09-20">
 <h2>v0.19.0 — 2024-09-20<a class="headerlink" href="#v0-19-0-2024-09-20" title="Link to this heading">#</a></h2>
@@ -1005,6 +1019,10 @@ modules.</p></li>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">Unreleased</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-20-0-2024-09-21">v0.20.0 — 2024-09-21</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-19-0-2024-09-20">v0.19.0 — 2024-09-20</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
 </ul>
@@ -1118,7 +1136,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-20.
+  Last updated on 2024-09-21.
   <br/>
 </p>
   </div>
