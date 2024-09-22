@@ -15,26 +15,6 @@ if TYPE_CHECKING:
 
 # * resampling
 @myjit(
-    signature=[
-        (nb.int64[:, :], nb.int64[:, :]),
-    ]
-)
-def randsamp_indices_to_freq(
-    indices: NDArray[IntDTypeT], freqs: NDArray[IntDTypeT]
-) -> None:
-    nrep, ndat = freqs.shape
-
-    assert indices.shape[0] == nrep
-    assert indices.max() < ndat
-
-    nsamp = indices.shape[1]
-    for r in range(nrep):
-        for d in range(nsamp):
-            idx = indices[r, d]
-            freqs[r, idx] += 1
-
-
-@myjit(
     [
         (nb.int64[:, :],),
     ]

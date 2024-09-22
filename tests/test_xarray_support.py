@@ -21,6 +21,7 @@ from cmomy.core.validate import is_dataarray, is_dataset
 
 from ._dataarray_set_utils import (
     do_bootstrap_data,
+    do_comoments_to_moments,
     do_moveaxis,
     do_reduce_data_grouped,
     do_reduce_data_indexed,
@@ -99,6 +100,7 @@ func_params_data_common = [
     (cmomy.convert.moments_type, remove_dim_from_kwargs),
     (cmomy.convert.cumulative, None),
     (cmomy.convert.moments_to_comoments, moments_to_comoments_kwargs),
+    (do_comoments_to_moments, remove_dim_from_kwargs),
     (partial(cmomy.utils.select_moment, name="weight"), remove_dim_from_kwargs),
     (partial(cmomy.utils.select_moment, name="ave"), remove_dim_from_kwargs),
     (

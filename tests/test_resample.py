@@ -288,6 +288,9 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
         xr.testing.assert_allclose if is_xarray(idx) else np.testing.assert_allclose
     )
 
+    with pytest.raises(ValueError):
+        resample.indices_to_freq(idx, ndat=indices.max() - 1)
+
     freq0 = resample.indices_to_freq(idx, ndat=ndat)
     freq1 = resample.randsamp_freq(indices=idx, ndat=ndat)
 
@@ -306,6 +309,15 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
     else:
         np.testing.assert_allclose(idx1, np.sort(idx, axis=-1))
     assert_allclose(freq0, resample.indices_to_freq(idx1, ndat=ndat))
+
+    idx2 = resample.freq_to_indices(freq0, shuffle=True)
+    with pytest.raises(AssertionError):
+        assert_allclose(idx1, idx2)
+
+    if is_dataset(idx):
+        assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # pyright: ignore[reportAttributeAccessIssue]
+    else:
+        np.testing.assert_allclose(idx1, np.sort(idx2, axis=-1))
 
 
 def test_central_randsamp_freq():

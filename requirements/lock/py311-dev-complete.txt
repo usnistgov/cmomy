@@ -54,7 +54,7 @@ nox==2024.4.15            # via -r requirements/dev-complete.txt
 numba==0.60.0             # via -r requirements/dev-complete.txt
 numpy==2.0.2              # via numba, pandas, pandas-stubs, scipy, xarray, -r requirements/dev-complete.txt
 packaging==24.1           # via dask, ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray, -r requirements/dev-complete.txt
-pandas==2.2.2             # via xarray
+pandas==2.2.3             # via xarray
 pandas-stubs==2.2.2.240909  # via -r requirements/dev-complete.txt
 parso==0.8.4              # via jedi
 partd==1.4.2              # via dask
@@ -92,7 +92,7 @@ types-pytz==2024.2.0.20240913  # via pandas-stubs
 typing-extensions==4.12.2  # via ipython, module-utilities, mypy, -r requirements/dev-complete.txt
 tzdata==2024.1            # via pandas
 urllib3==2.2.3            # via requests
-uv==0.4.12                # via -r requirements/dev-complete.txt
+uv==0.4.14                # via -r requirements/dev-complete.txt
 virtualenv==20.26.5       # via nox, pre-commit
 wcwidth==0.2.13           # via prompt-toolkit
 xarray==2024.9.0          # via -r requirements/dev-complete.txt

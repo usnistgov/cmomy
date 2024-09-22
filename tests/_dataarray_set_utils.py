@@ -24,6 +24,12 @@ def moments_to_comoments_kwargs(kwargs):
     return kwargs
 
 
+def do_comoments_to_moments(data, mom_ndim, **kwargs):
+    if mom_ndim == 1:
+        return data
+    return cmomy.convert.comoments_to_moments(data, **kwargs)
+
+
 def get_by(n):
     n0 = n // 2
     return [0] * n0 + [1] * (n - n0)
