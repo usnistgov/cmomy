@@ -597,7 +597,9 @@ def test_rolling_exp_weight(
     a = rolling.rolling_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
     )
-    b = cmomy.resample_vals(*xy, mom=mom, freq=freq, weight=weight, axis=axis)
+    b = cmomy.resample_vals(
+        *xy, mom=mom, sampler={"freq": freq}, weight=weight, axis=axis
+    )
     np.testing.assert_allclose(a, b)
 
     c = rolling.rolling_exp_data(

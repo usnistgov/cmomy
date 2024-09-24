@@ -90,6 +90,7 @@ if TYPE_CHECKING:
         ReduceDataIndexedKwargs,
         ReduceDataKwargs,
         ReduceValsKwargs,
+        Sampler,
     )
     from .core.typing_compat import Unpack
 
@@ -1410,7 +1411,7 @@ def _reduce_data_indexed(
 # * For testing purposes
 def resample_data_indexed(  # noqa: PLR0913
     data: ArrayT,
-    freq: NDArrayAny,
+    sampler: Sampler,
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = MISSING,
@@ -1424,14 +1425,27 @@ def resample_data_indexed(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     coords_policy: CoordsPolicy = "first",
-    group_dim: str | None = None,
+    rep_dim: str = "rep",
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
 ) -> ArrayT:
     """Resample using indexed reduction."""
+    from .resample import factory_sampler
+
+    sampler = factory_sampler(
+        sampler,
+        data=data,
+        axis=axis,
+        dim=dim,
+        mom_ndim=mom_ndim,
+        mom_dims=mom_dims,
+        rep_dim=rep_dim,
+        parallel=parallel,
+    )
+
     from ._lib.utils import freq_to_index_start_end_scales
 
-    index, start, end, scales = freq_to_index_start_end_scales(freq)
+    index, start, end, scales = freq_to_index_start_end_scales(sampler.freq)
 
     return reduce_data_indexed(  # pyright: ignore[reportReturnType]
         data=data,
@@ -1450,7 +1464,7 @@ def resample_data_indexed(  # noqa: PLR0913
         dim=dim,
         mom_dims=mom_dims,
         coords_policy=coords_policy,
-        group_dim=group_dim,
+        group_dim=rep_dim,
         groups=groups,
         keep_attrs=keep_attrs,
     )

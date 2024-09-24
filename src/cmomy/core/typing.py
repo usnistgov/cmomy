@@ -284,13 +284,7 @@ class _KeepDimsKwargs(TypedDict, total=False):
     keepdims: bool
 
 
-class _ResampleKwargs(TypedDict, total=False):
-    nrep: int | None
-    rng: RngTypes | None
-
-
-class _ResamplePairedKwargs(_ResampleKwargs, total=False):
-    paired: bool
+class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
 
 
@@ -363,7 +357,7 @@ class ReduceDataIndexedKwargs(
 # ** Resample
 class ResampleDataKwargs(
     _DataKwargs,
-    _ResamplePairedKwargs,
+    _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     total=False,
@@ -373,7 +367,7 @@ class ResampleDataKwargs(
 
 class ResampleValsKwargs(
     _ValsKwargs,
-    _ResamplePairedKwargs,
+    _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     total=False,
@@ -555,7 +549,6 @@ class WrapNPTransform(
 
 
 class WrapNPResampleAndReduceKwargs(
-    _ResampleKwargs,
     WrapNPTransform,
     total=False,
 ):

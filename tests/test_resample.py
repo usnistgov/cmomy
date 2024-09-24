@@ -77,20 +77,22 @@ def test_resample_data_0(data_and_kwargs, nrep):
     # using freq
     freq = cmomy.resample.indices_to_freq(indices)
     np.testing.assert_allclose(
-        cmomy.resample_data(data, freq=freq, axis=axis, mom_ndim=mom_ndim),
+        cmomy.resample_data(data, sampler={"freq": freq}, axis=axis, mom_ndim=mom_ndim),
         expected,
     )
 
     # using same rng
     np.testing.assert_allclose(
-        cmomy.resample_data(data, rng=123, nrep=nrep, axis=axis, mom_ndim=mom_ndim),
+        cmomy.resample_data(
+            data, sampler={"rng": 123, "nrep": nrep}, axis=axis, mom_ndim=mom_ndim
+        ),
         expected,
     )
 
     # against using reduce_data_indexed....
     np.testing.assert_allclose(
         cmomy.reduction.resample_data_indexed(
-            data, freq=freq, axis=axis, mom_ndim=mom_ndim
+            data, sampler={"freq": freq}, axis=axis, mom_ndim=mom_ndim
         ),
         expected,
     )
@@ -113,14 +115,18 @@ def test_resample_vals_0(data_and_kwargs, nrep):
     freq = cmomy.resample.indices_to_freq(indices)
     np.testing.assert_allclose(
         cmomy.resample_vals(
-            *xy, freq=freq, weight=weight, **kwargs, move_axis_to_end=False
+            *xy, sampler={"freq": freq}, weight=weight, **kwargs, move_axis_to_end=False
         ),
         expected,
     )
 
     np.testing.assert_allclose(
         cmomy.resample_vals(
-            *xy, weight=weight, nrep=nrep, rng=123, **kwargs, move_axis_to_end=False
+            *xy,
+            weight=weight,
+            sampler={"nrep": nrep, "rng": 123},
+            **kwargs,
+            move_axis_to_end=False,
         ),
         expected,
     )
@@ -147,7 +153,7 @@ def test_jackknife_data_0(data_and_kwargs, pass_reduced, as_dataarray):
 
     # using freq
     np.testing.assert_allclose(
-        cmomy.resample_data(data, freq=freq, axis=axis, mom_ndim=mom_ndim),
+        cmomy.resample_data(data, sampler={"freq": freq}, axis=axis, mom_ndim=mom_ndim),
         expected,
     )
 
@@ -190,7 +196,7 @@ def test_jackknife_vals_0(data_and_kwargs, pass_reduced, as_dataarray):
     # using jackknife freq
     np.testing.assert_allclose(
         cmomy.resample_vals(
-            *xy, freq=freq, weight=weight, **kwargs, move_axis_to_end=False
+            *xy, sampler={"freq": freq}, weight=weight, **kwargs, move_axis_to_end=False
         ),
         expected,
     )
@@ -356,32 +362,6 @@ def test_select_ndat() -> None:
 
     with pytest.raises(ValueError):
         resample.select_ndat(xdata)
-
-
-@pytest.mark.parametrize(
-    ("freq", "nrep", "expected"),
-    [
-        (None, None, ValueError),
-        (None, 10, 10),
-        (np.zeros((10, 2)), 5, 10),
-        (xr.DataArray(np.zeros((10, 2)), dims=["rep", "dim"]), 5, 10),
-        (
-            xr.Dataset({"a": xr.DataArray(np.zeros((10, 2)), dims=["rep", "dim"])}),
-            5,
-            10,
-        ),
-    ],
-)
-def test__select_nrep(freq, nrep, expected) -> None:
-    from cmomy.resample.resample import _select_nrep
-
-    func = _select_nrep
-    kwargs = {"freq": freq, "nrep": nrep, "rep_dim": "rep"}
-    if isinstance(expected, type):
-        with pytest.raises(expected):
-            func(**kwargs)
-    else:
-        assert func(**kwargs) == expected
 
 
 @pytest.mark.parametrize(

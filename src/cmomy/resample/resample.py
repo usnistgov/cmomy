@@ -50,7 +50,7 @@ from cmomy.factory import (
     parallel_heuristic,
 )
 
-from .sampler import randsamp_freq
+from .sampler import factory_sampler
 
 if TYPE_CHECKING:
     from typing import Any
@@ -81,24 +81,9 @@ if TYPE_CHECKING:
         NDArrayAny,
         ResampleDataKwargs,
         ResampleValsKwargs,
-        RngTypes,
+        Sampler,
     )
     from cmomy.core.typing_compat import Unpack
-
-
-# * Utilities
-def _select_nrep(
-    freq: ArrayLike | xr.DataArray | xr.Dataset | None,
-    nrep: int | None,
-    rep_dim: str,
-) -> int:
-    if freq is not None:
-        return freq.sizes[rep_dim] if is_xarray(freq) else np.shape(freq)[0]
-
-    if nrep is not None:
-        return nrep
-    msg = "Must specify either freq or nrep"
-    raise ValueError(msg)
 
 
 # * Resample data
@@ -107,7 +92,7 @@ def _select_nrep(
 def resample_data(
     data: DataT,
     *,
-    freq: ArrayLike | xr.DataArray | DataT | None = ...,
+    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -117,7 +102,7 @@ def resample_data(
 def resample_data(
     data: ArrayLikeArg[FloatT],
     *,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: None = ...,
     dtype: None = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -127,7 +112,7 @@ def resample_data(
 def resample_data(
     data: ArrayLike,
     *,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -137,7 +122,7 @@ def resample_data(
 def resample_data(
     data: ArrayLike,
     *,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[ResampleDataKwargs],
@@ -147,7 +132,7 @@ def resample_data(
 def resample_data(
     data: ArrayLike,
     *,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -159,11 +144,8 @@ def resample_data(
 def resample_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
+    sampler: Sampler,
     mom_ndim: Mom_NDim = 1,
-    freq: ArrayLike | xr.DataArray | DataT | None = None,
-    nrep: int | None = None,
-    rng: RngTypes | None = None,
-    paired: bool = True,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str = "rep",
@@ -180,16 +162,13 @@ def resample_data(  # noqa: PLR0913
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
-    Resample data according to frequency table.
+    Resample and reduce data.
 
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
+    {sampler}
     {mom_ndim}
-    {freq_xarray}
-    {nrep_optional}
-    {rng}
-    {paired}
     {axis}
     {dim}
     {rep_dim}
@@ -208,7 +187,7 @@ def resample_data(  # noqa: PLR0913
     -------
     out : ndarray or DataArray
         Resampled central moments. ``out.shape = (..., shape[axis-1], nrep, shape[axis+1], ...)``,
-        where ``shape = data.shape`` and ``nrep = freq.shape[0]``.
+        where ``shape = data.shape`` and ``nrep = sampler.nrep`` .
 
     See Also
     --------
@@ -217,18 +196,16 @@ def resample_data(  # noqa: PLR0913
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
-    freq = randsamp_freq(
+
+    sampler = factory_sampler(
+        sampler,
         data=data,
-        freq=freq,
-        nrep=nrep,
-        rng=rng,
-        dim=dim,
         axis=axis,
-        rep_dim=rep_dim,
-        mom_dims=mom_dims,
+        dim=dim,
         mom_ndim=mom_ndim,
-        paired=paired,
-        dtype=dtype,
+        mom_dims=mom_dims,
+        rep_dim=rep_dim,
+        parallel=parallel,
     )
 
     if is_xarray(data):
@@ -238,7 +215,7 @@ def resample_data(  # noqa: PLR0913
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_data,
             data,
-            freq,
+            sampler.freq,
             input_core_dims=[[dim, *mom_dims], [rep_dim, dim]],  # type: ignore[misc]
             output_core_dims=[[rep_dim, *mom_dims]],  # type: ignore[misc]
             kwargs={
@@ -262,7 +239,7 @@ def resample_data(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
-                output_sizes={rep_dim: _select_nrep(freq, nrep, rep_dim)},
+                output_sizes={rep_dim: sampler.nrep},
                 output_dtypes=dtype or np.float64,
             ),
         )
@@ -281,6 +258,7 @@ def resample_data(  # noqa: PLR0913
         recast=False,
         move_axis_to_end=move_axis_to_end,
     )
+    freq = sampler.freq
     assert is_ndarray(freq)  # noqa: S101
 
     return _resample_data(
@@ -340,7 +318,7 @@ def resample_vals(
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    freq: ArrayLike | xr.DataArray | DataT | None = ...,
+    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -351,7 +329,7 @@ def resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: None = ...,
     dtype: None = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -362,7 +340,7 @@ def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -373,7 +351,7 @@ def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[ResampleValsKwargs],
@@ -384,7 +362,7 @@ def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -397,11 +375,8 @@ def resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
+    sampler: Sampler,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
-    freq: ArrayLike | xr.DataArray | DataT | None = None,
-    nrep: int | None = None,
-    rng: RngTypes | None = None,
-    paired: bool = True,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = True,
     out: NDArrayAny | None = None,
@@ -418,17 +393,14 @@ def resample_vals(  # noqa: PLR0913
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
-    Resample data according to frequency table.
+    Resample and reduce values.
 
     Parameters
     ----------
     {x_genarray}
     {y_genarray}
-    {freq_xarray}
-    {nrep_optional}
-    {rng}
-    {paired}
     {mom}
+    {sampler}
     {weight_genarray}
     {axis}
     {move_axis_to_end}
@@ -448,7 +420,7 @@ def resample_vals(  # noqa: PLR0913
     -------
     out : ndarray or DataArray
         Resampled Central moments array. ``out.shape = (...,shape[axis-1], nrep, shape[axis+1], ...)``
-        where ``shape = x.shape``. and ``nrep = freq.shape[0]``.  This can be overridden by setting `move_axis_to_end`.
+        where ``shape = x.shape``. and ``nrep = sampler.nrep``.  This can be overridden by setting `move_axis_to_end`.
 
     Notes
     -----
@@ -456,23 +428,19 @@ def resample_vals(  # noqa: PLR0913
 
     See Also
     --------
-    random_freq
-    randsamp_freq
+    .resample.factory_sampler
     """
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    freq_validated = randsamp_freq(
+    sampler = factory_sampler(
+        sampler,
         data=x,
-        freq=freq,
-        nrep=nrep,
-        rng=rng,
-        dim=dim,
         axis=axis,
+        dim=dim,
         rep_dim=rep_dim,
-        paired=paired,
-        dtype=dtype,
+        parallel=parallel,
     )
 
     if is_xarray(x):
@@ -499,7 +467,7 @@ def resample_vals(  # noqa: PLR0913
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
             *xargs,
-            freq_validated,
+            sampler.freq,
             input_core_dims=[*input_core_dims, [rep_dim, dim]],  # type: ignore[has-type]
             output_core_dims=[[rep_dim, *mom_dims]],  # type: ignore[misc]
             kwargs={
@@ -525,7 +493,7 @@ def resample_vals(  # noqa: PLR0913
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={
-                    rep_dim: _select_nrep(freq, nrep, rep_dim),
+                    rep_dim: sampler.nrep,
                     **dict(zip(mom_dims, mom_to_mom_shape(mom))),
                 },
                 output_dtypes=dtype or np.float64,
@@ -555,7 +523,7 @@ def resample_vals(  # noqa: PLR0913
 
     return _resample_vals(
         *args,
-        freq=freq_validated,  # type: ignore[arg-type]
+        freq=sampler.freq,  # type: ignore[arg-type]
         mom=mom,
         mom_ndim=mom_ndim,
         axis_neg=axis_neg,
@@ -743,7 +711,7 @@ def jackknife_data(  # noqa: PLR0913
     frequency table from :func:``cmomy.resample.jackknife_freq``
 
     >>> freq = cmomy.resample.jackknife_freq(4)
-    >>> resample_data(data, freq=freq, mom_ndim=1, axis=0)
+    >>> resample_data(data, sampler=dict(freq=freq), mom_ndim=1, axis=0)
     array([[1.5582, 0.7822, 0.2247],
            [2.1787, 0.6322, 0.22  ],
            [1.5886, 0.5969, 0.0991],

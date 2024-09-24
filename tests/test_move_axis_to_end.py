@@ -83,7 +83,7 @@ def test_vals_move_axis_to_end(
 
     kws = {"weight": w, "mom": mom, "axis": axis, **kwargs}
     if style == "resample":
-        kws["freq"] = cmomy.randsamp_freq(ndat=xshape[axis], nrep=20)
+        kws["sampler"] = cmomy.resample.factory_sampler(ndat=xshape[axis], nrep=20)
 
     outs = [func(*xy, **kws, move_axis_to_end=m) for m in (True, False)]
 
@@ -146,7 +146,7 @@ def test_data_move_axis_to_end(
     kws = dict(axis=axis, mom_ndim=mom_ndim, **kwargs)
     ndat = cmomy.resample.select_ndat(data, axis=axis, mom_ndim=mom_ndim)
     if style == "resample":
-        kws["freq"] = cmomy.randsamp_freq(ndat=ndat, nrep=20)
+        kws["sampler"] = cmomy.resample.factory_sampler(ndat=ndat, nrep=20)
     elif style == "group":
         kws["by"] = rng.choice(4, size=ndat)
     elif style == "index":

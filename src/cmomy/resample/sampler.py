@@ -96,9 +96,6 @@ class IndexSampler(Generic[SamplerArrayT]):
         if self._indices is None and self._freq is None:
             msg = "Must specify indices or freq"
             raise ValueError(msg)
-        if self.indices.shape[0] != self.freq.shape[0]:
-            msg = "{indices.shape[0]=} != {freq.shape[0]=}"
-            raise ValueError(msg)
         # check indices?
 
     @property

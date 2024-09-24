@@ -151,8 +151,10 @@ def bootstrap_confidence_interval(
 
     >>> import cmomy
     >>> x = cmomy.default_rng(0).random((20))
-    >>> freq = cmomy.randsamp_freq(nrep=50, ndat=20, rng=np.random.default_rng(0))
-    >>> theta_boot = np.log(cmomy.resample_vals(x, mom=1, axis=0, freq=freq)[..., 1])
+    >>> sampler = cmomy.resample.factory_sampler(nrep=50, ndat=20, rng=0)
+    >>> theta_boot = np.log(
+    ...     cmomy.resample_vals(x, mom=1, axis=0, sampler=sampler)[..., 1]
+    ... )
     >>> bootstrap_confidence_interval(
     ...     theta_boot=theta_boot, axis=0, method="percentile"
     ... )
