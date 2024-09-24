@@ -55,7 +55,7 @@ if TYPE_CHECKING:
         NameType,
         NDArrayAny,
         RngTypes,
-        WrapNPReduce,
+        WrapNPReduceKwargs,
         WrapNPResampleAndReduceKwargs,
         WrapNPTransform,
     )
@@ -804,7 +804,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: None = ...,
         dtype: None = ...,
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> Self: ...
     @overload
     def reduce(
@@ -812,7 +812,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def reduce(
@@ -820,7 +820,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def reduce(
@@ -828,7 +828,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> CentralMomentsArrayAny: ...
 
     @docfiller_inherit_abc()

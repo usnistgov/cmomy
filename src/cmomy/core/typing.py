@@ -28,6 +28,7 @@ from numpy.typing import ArrayLike, NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
+    from cmomy.resample.sampler import IndexSampler
     from cmomy.wrapper import CentralMomentsArray, CentralMomentsData  # noqa: F401
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
@@ -53,7 +54,6 @@ CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any]")
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
 CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
 
-
 # * TypeVars ------------------------------------------------------------------
 #: General data set/array
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
@@ -70,6 +70,16 @@ ArrayT = TypeVar(  # type: ignore[misc]
     NDArray[np.float64],
     xr.DataArray,
     default=NDArray[np.float64],
+)
+
+NDArrayInt = NDArray[np.int64]
+SamplerArrayT = TypeVar(  # type: ignore[misc]
+    "SamplerArrayT",
+    NDArrayInt,
+    xr.DataArray,
+    xr.Dataset,
+    Union[xr.DataArray, xr.Dataset],
+    default=NDArrayInt,
 )
 
 FuncT = TypeVar("FuncT", bound=Callable[..., Any])
@@ -120,7 +130,6 @@ LongIntDType: TypeAlias = np.int64
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
 NDArrayFloats = NDArray[FloatDTypes]
 NDArrayBool = NDArray[np.bool_]
-NDArrayInt = NDArray[LongIntDType]
 IntDTypeT: TypeAlias = np.int64
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 
@@ -553,7 +562,7 @@ class WrapNPResampleAndReduceKwargs(
     """Extra parameters to :meth:`.CentralMomentsArray.resample_and_reduce`"""
 
 
-class WrapNPReduce(
+class WrapNPReduceKwargs(
     WrapNPTransform,
     _KeepDimsKwargs,
     total=False,
@@ -562,3 +571,42 @@ class WrapNPReduce(
 
     by: Groups
     block: int
+
+
+class IndexSamplerFromDataKwargs(
+    _AxisKwargs,
+    total=False,
+):
+    """Extra parameters to :meth:`cmomy.IndexSampler.from_data`"""
+
+    nrep: Required[int]
+    nsamp: int | None
+    mom_ndim: Mom_NDim | None
+    mom_dims: MomDims | None
+    rep_dim: str
+    rng: RngTypes | None
+    replace: bool
+    parallel: bool | None
+
+
+class FactoryIndexSamplerKwargs(
+    TypedDict,
+    total=False,
+):
+    """Extra parameters to factory_index_resampler"""
+
+    indices: NDArrayInt | xr.DataArray | xr.Dataset | None
+    freq: NDArrayInt | xr.DataArray | xr.Dataset | None
+    ndat: int | None
+    nrep: int | None
+    nsamp: int | None
+    paired: bool
+    rng: RngTypes | None
+    replace: bool
+    shuffle: bool
+
+
+Sampler: TypeAlias = Union[
+    "IndexSampler[Any]",
+    FactoryIndexSamplerKwargs,
+]

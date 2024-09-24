@@ -23,10 +23,26 @@ import xarray as xr
 import cmomy
 from cmomy import CentralMoments, resample
 from cmomy.core.validate import is_dataset, is_xarray
-
+from cmomy.resample import factory_sampler
 
 # * Main tests
-@pytest.fixture
+data_params = [
+    ((20, 4), {"mom_ndim": 1, "axis": 0}),
+    ((2, 20, 4), {"mom_ndim": 1, "axis": 0}),
+    ((20, 3, 3), {"mom_ndim": 2, "axis": 0}),
+    ((20, 2, 3, 3), {"mom_ndim": 2, "axis": 0}),
+]
+
+vals_params = [
+    ([20], {"mom": (3,), "axis": 0}),
+    ([20, 20], {"mom": (3,), "axis": 0}),
+    ([(20, 2)], {"mom": (3,), "axis": 0}),
+    ([20, 20], {"mom": (3, 3), "axis": 0}),
+    ([(20, 2), (20, 2), (20, 2)], {"mom": (3, 3), "axis": 0}),
+]
+
+
+@pytest.fixture(params=data_params)
 def data_and_kwargs(rng, request):
     shapes, kwargs = request.param
     if isinstance(shapes, list):
@@ -45,24 +61,7 @@ def unpack_data_to_xy_weight(data, mom):
     raise ValueError(msg)
 
 
-data_params = [
-    ((20, 4), {"mom_ndim": 1, "axis": 0}),
-    ((2, 20, 4), {"mom_ndim": 1, "axis": 0}),
-    ((20, 3, 3), {"mom_ndim": 2, "axis": 0}),
-    ((20, 2, 3, 3), {"mom_ndim": 2, "axis": 0}),
-]
-
-vals_params = [
-    ([20], {"mom": (3,), "axis": 0}),
-    ([20, 20], {"mom": (3,), "axis": 0}),
-    ([(20, 2)], {"mom": (3,), "axis": 0}),
-    ([20, 20], {"mom": (3, 3), "axis": 0}),
-    ([(20, 2), (20, 2), (20, 2)], {"mom": (3, 3), "axis": 0}),
-]
-
-
 # ** resample
-@pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
 @pytest.mark.parametrize("nrep", [10])
 def test_resample_data_0(data_and_kwargs, nrep):
     data, kwargs = data_and_kwargs
@@ -128,7 +127,6 @@ def test_resample_vals_0(data_and_kwargs, nrep):
 
 
 # ** Jackknife
-@pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
 @pytest.mark.parametrize("pass_reduced", [True, False])
 def test_jackknife_data_0(data_and_kwargs, pass_reduced, as_dataarray):
     data, kwargs = data_and_kwargs
@@ -375,7 +373,9 @@ def test_select_ndat() -> None:
     ],
 )
 def test__select_nrep(freq, nrep, expected) -> None:
-    func = resample._select_nrep
+    from cmomy.resample.resample import _select_nrep
+
+    func = _select_nrep
     kwargs = {"freq": freq, "nrep": nrep, "rep_dim": "rep"}
     if isinstance(expected, type):
         with pytest.raises(expected):
@@ -416,8 +416,10 @@ def test__select_nrep(freq, nrep, expected) -> None:
     ],
 )
 def test_validate_resample_array(data, kwargs, expected) -> None:
+    from cmomy.resample.sampler import _validate_resample_array
+
     with expected:
-        resample._validate_resample_array(data, **kwargs)
+        _validate_resample_array(data, **kwargs)
 
 
 def test_randsamp_freq() -> None:
@@ -470,3 +472,74 @@ def test_randsamp_freq() -> None:
 def test_randsamp_freq_from_data(expected, kwargs) -> None:
     out = resample.randsamp_freq(**kwargs, nrep=10, rng=np.random.default_rng(0))
     np.testing.assert_allclose(out, expected)
+
+
+@pytest.mark.parametrize(
+    ("nrep", "ndat", "nsamp"),
+    [
+        (10, 5, None),
+        (10, 5, 10),
+    ],
+)
+def test_indexresampler(rng, nrep, ndat, nsamp) -> None:
+    seed = rng.integers(0, 100)
+    indices = resample.random_indices(nrep, ndat, nsamp, rng=seed)
+    freq = resample.indices_to_freq(indices, ndat=ndat)
+
+    def _check_r(r, indices, freq):
+        np.testing.assert_equal(r.indices, indices)
+        np.testing.assert_equal(r.freq, freq)
+
+    _check_r(
+        resample.IndexSampler.from_params(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=seed),
+        indices,
+        freq,
+    )
+
+    _check_r(
+        resample.IndexSampler(indices=indices, ndat=ndat),
+        indices,
+        freq,
+    )
+
+    _check_r(
+        resample.IndexSampler(freq=freq, ndat=ndat), np.sort(indices, axis=-1), freq
+    )
+
+
+@pytest.mark.parametrize("expected", [resample.random_freq(nrep=10, ndat=5, rng=0)])
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"data": np.zeros((5, 2)), "axis": 0},
+        {"data": xr.DataArray(np.zeros((5, 2))), "dim": "dim_0"},
+        {"data": xr.Dataset({"x0": xr.DataArray(np.zeros((5, 2)))}), "dim": "dim_0"},
+        # test that mom_ndim -> mom_dims removed x1
+        {
+            "data": xr.Dataset(
+                {
+                    "x0": xr.DataArray(
+                        np.zeros((5, 2, 3, 3)), dims=["a", "b", "mom0", "mom1"]
+                    ),
+                    "x1": xr.DataArray(np.zeros(5), dims=["a"]),
+                }
+            ),
+            "dim": "a",
+            "mom_ndim": 2,
+            "paired": False,
+        },
+    ],
+)
+def test_indexresampler_from_data(expected, kwargs) -> None:
+    def _check(x):
+        np.testing.assert_equal(x.freq, expected)
+
+    _check(resample.IndexSampler.from_params(nrep=10, ndat=5, rng=0))
+
+    r = resample.IndexSampler.from_data(**kwargs, nrep=10, rng=0)
+    _check(r)
+    _check(factory_sampler(**kwargs, nrep=10, rng=0))
+    _check(factory_sampler({"nrep": 10, "rng": 0}, **kwargs))
+    _check(factory_sampler(r, **kwargs))
+    _check(factory_sampler({"freq": r.freq}, **kwargs))
+    _check(factory_sampler({"indices": r.indices}, **kwargs))
