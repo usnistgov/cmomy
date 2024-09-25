@@ -63,7 +63,6 @@ if TYPE_CHECKING:
         DimsType,
         Groups,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -383,14 +382,12 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         casting: Casting = "same_kind",
         parallel: bool | None = False,
         keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Parameters
         ----------
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
         """
         if scale is None:
@@ -424,7 +421,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=self._dtype or np.float64,
             ),
@@ -442,14 +438,12 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         casting: Casting = "same_kind",
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Parameters
         ----------
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
         """
 
@@ -489,7 +483,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=self._dtype or np.float64,
             ),
@@ -506,14 +499,12 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         casting: Casting = "same_kind",
         parallel: bool | None = False,
         keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Parameters
         ----------
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
         """
         self._check_y(y, self._mom_ndim)
@@ -542,7 +533,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=self._dtype or np.float64,
             ),
@@ -561,14 +551,12 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         casting: Casting = "same_kind",
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = True,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
         Parameters
         ----------
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
         """
         weight = 1.0 if weight is None else weight
@@ -619,7 +607,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=self._dtype or np.float64,
             ),
@@ -650,7 +637,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         group_dim: str | None = None,
         groups: Groups | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
@@ -668,7 +654,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         {group_dim}
         {groups}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Notes
@@ -802,7 +787,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 parallel=parallel,
                 use_reduce=use_reduce,
                 keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 
@@ -861,7 +845,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 group_dim=group_dim,
                 groups=groups,
                 keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 

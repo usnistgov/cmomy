@@ -36,7 +36,6 @@ if TYPE_CHECKING:
         FloatDTypes,
         FloatingT,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         NDArrayAny,
     )
@@ -55,7 +54,6 @@ def bootstrap_confidence_interval(
     dim: DimsReduce | MissingType = ...,
     ci_dim: str = ...,
     keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> DataT: ...
 @overload
@@ -71,7 +69,6 @@ def bootstrap_confidence_interval(
     dim: DimsReduce | MissingType = ...,
     ci_dim: str = ...,
     keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[FloatingT]: ...
 
@@ -89,7 +86,6 @@ def bootstrap_confidence_interval(
     dim: DimsReduce | MissingType = MISSING,
     ci_dim: str = "alpha",
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[FloatingT] | DataT:
     r"""
@@ -246,7 +242,6 @@ def bootstrap_confidence_interval(
                 keep_attrs=keep_attrs,
                 **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
-                    on_missing_core_dim=on_missing_core_dim,
                     dask="parallelized",
                     output_dtypes=dtype or np.float64,
                     output_sizes={ci_dim: len(alphas)},

@@ -24,44 +24,54 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
     [
         (
             {"apply_ufunc_kwargs": None},
-            {"dask": "forbidden", "dask_gufunc_kwargs": {}},
+            {
+                "dask": "parallel",
+                "dask_gufunc_kwargs": {},
+                "on_missing_core_dim": "copy",
+            },
         ),
         (
-            {"apply_ufunc_kwargs": {"on_missing_core_dim": "copy"}},
+            {"apply_ufunc_kwargs": {"on_missing_core_dim": "raise"}},
             {
-                "on_missing_core_dim": "copy",
-                "dask": "forbidden",
+                "on_missing_core_dim": "raise",
+                "dask": "parallel",
                 "dask_gufunc_kwargs": {},
             },
         ),
         (
             {
-                "apply_ufunc_kwargs": {"on_missing_core_dim": "copy"},
-                "on_missing_core_dim": "raise",
+                "apply_ufunc_kwargs": {"on_missing_core_dim": "raise"},
+                "on_missing_core_dim": "copy",
             },
             {
                 "on_missing_core_dim": "raise",
-                "dask": "forbidden",
+                "dask": "parallel",
                 "dask_gufunc_kwargs": {},
             },
         ),
         (
             {"output_sizes": {"rec": 2}},
-            {"dask": "forbidden", "dask_gufunc_kwargs": {"output_sizes": {"rec": 2}}},
+            {
+                "dask": "parallel",
+                "dask_gufunc_kwargs": {"output_sizes": {"rec": 2}},
+                "on_missing_core_dim": "copy",
+            },
         ),
         (
             {"output_sizes": {"rec": 2}, "dask_gufunc_kwargs": {"hello": "there"}},
             {
-                "dask": "forbidden",
+                "dask": "parallel",
                 "dask_gufunc_kwargs": {"hello": "there", "output_sizes": {"rec": 2}},
+                "on_missing_core_dim": "copy",
             },
         ),
         (
             {"output_dtypes": float},
             {
-                "dask": "forbidden",
+                "dask": "parallel",
                 "dask_gufunc_kwargs": {},
                 "output_dtypes": float,
+                "on_missing_core_dim": "copy",
             },
         ),
     ],

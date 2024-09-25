@@ -69,7 +69,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -140,7 +139,6 @@ def moments_type(
     order: ArrayOrder = None,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     r"""
@@ -161,7 +159,6 @@ def moments_type(
     {move_axis_to_end}
     {keep_attrs}
     {mom_dims_data}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -219,7 +216,6 @@ def moments_type(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=dtype or np.float64,
             ),
@@ -323,7 +319,6 @@ def cumulative(
     parallel: bool | None = None,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -346,7 +341,6 @@ def cumulative(
     {parallel}
     {keep_attrs}
     {mom_dims_data}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -410,7 +404,6 @@ def cumulative(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=dtype or np.float64,
             ),
@@ -543,7 +536,6 @@ def moments_to_comoments(
     mom_dims: MomDims | None = None,
     mom_dims_out: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -561,7 +553,6 @@ def moments_to_comoments(
     mom_dims_out : tuple of str
         Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -631,7 +622,6 @@ def moments_to_comoments(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes=dict(
                     zip(
@@ -704,7 +694,6 @@ def comoments_to_moments(
     mom_dims: MomDims | None = None,
     mom_dims_out: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -726,7 +715,6 @@ def comoments_to_moments(
     mom_dims_out : tuple of str
         Moments dimensions for output (``mom_ndim=1``) data.  Defaults to ``("mom_0",)``.
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -771,7 +759,6 @@ def comoments_to_moments(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={mom_dim_out: sum(data.sizes[k] for k in mom_dims) - 1},
                 output_dtypes=dtype or np.float64,

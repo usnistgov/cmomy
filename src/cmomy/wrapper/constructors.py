@@ -47,7 +47,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -362,7 +361,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     keepdims: bool = False,
     parallel: bool | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
@@ -385,7 +383,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     {keepdims}
     {parallel}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -429,7 +426,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         casting=casting,
         order=order,
         keep_attrs=keep_attrs,
-        on_missing_core_dim=on_missing_core_dim,
         apply_ufunc_kwargs=apply_ufunc_kwargs,
     )
 
@@ -522,7 +518,6 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     mom_dims: MomDims | None = None,
     rep_dim: str = "rep",
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
@@ -548,7 +543,6 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     {mom_dims}
     {rep_dim}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -593,7 +587,6 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         **kws,
         rep_dim=rep_dim,
         keep_attrs=keep_attrs,
-        on_missing_core_dim=on_missing_core_dim,
         apply_ufunc_kwargs=apply_ufunc_kwargs,
         dtype=dtype,
         out=out,
@@ -670,7 +663,6 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     order: ArrayOrder = None,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
@@ -691,7 +683,6 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     {order}
     {keep_attrs}
     {mom_dims}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -761,7 +752,6 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
             casting=casting,
             order=order,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             **kws,
         ),

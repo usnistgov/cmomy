@@ -242,7 +242,6 @@ ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
 class _MomDimsAndApplyUFuncKwargs(TypedDict, total=False):
     mom_dims: MomDims | None
     keep_attrs: KeepAttrs
-    on_missing_core_dim: MissingCoreDimOptions
     apply_ufunc_kwargs: ApplyUFuncKwargs | None
 
 

@@ -78,7 +78,6 @@ if TYPE_CHECKING:
         Groups,
         IndexAny,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -164,7 +163,6 @@ def reduce_vals(
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -186,7 +184,6 @@ def reduce_vals(
     {dim}
     {mom_dims}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -240,7 +237,6 @@ def reduce_vals(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={dim: 1, **dict(zip(mom_dims, mom_to_mom_shape(mom)))},
                 output_dtypes=dtype or np.float64,
@@ -396,7 +392,6 @@ def reduce_data(
     dim: DimsReduceMult | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -425,7 +420,6 @@ def reduce_data(
     {dim_mult}
     {mom_dims_data}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -475,7 +469,6 @@ def reduce_data(
                 keep_attrs=keep_attrs,
                 **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
-                    on_missing_core_dim=on_missing_core_dim,
                     dask="parallelized",
                     output_dtypes=dtype or np.float64,
                 ),
@@ -777,7 +770,6 @@ def reduce_data_grouped(  # noqa: PLR0913
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -801,7 +793,6 @@ def reduce_data_grouped(  # noqa: PLR0913
     {group_dim}
     {groups}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -895,7 +886,6 @@ def reduce_data_grouped(  # noqa: PLR0913
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={dim: np.max(by) + 1},  # pyright: ignore[reportArgumentType]
                 output_dtypes=dtype or np.float64,
@@ -1165,7 +1155,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -1196,7 +1185,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     {group_dim}
     {groups}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -1292,7 +1280,6 @@ def reduce_data_indexed(  # noqa: PLR0913
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={dim: len(group_start)},
                 output_dtypes=dtype or np.float64,

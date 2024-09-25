@@ -72,7 +72,6 @@ if TYPE_CHECKING:
         JackknifeDataKwargs,
         JackknifeValsKwargs,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -141,7 +140,7 @@ def resample_data(
 
 # ** Public api
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def resample_data(  # noqa: PLR0913
+def resample_data(
     data: ArrayLike | DataT,
     *,
     sampler: Sampler,
@@ -158,7 +157,6 @@ def resample_data(  # noqa: PLR0913
     keep_attrs: KeepAttrs = None,
     # dask specific...
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -180,7 +178,6 @@ def resample_data(  # noqa: PLR0913
     {parallel}
     {keep_attrs}
     {mom_dims_data}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -237,7 +234,6 @@ def resample_data(  # noqa: PLR0913
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={rep_dim: sampler.nrep},
                 output_dtypes=dtype or np.float64,
@@ -389,7 +385,6 @@ def resample_vals(  # noqa: PLR0913
     rep_dim: str = "rep",
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -413,7 +408,6 @@ def resample_vals(  # noqa: PLR0913
     {rep_dim}
     {mom_dims}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -490,7 +484,6 @@ def resample_vals(  # noqa: PLR0913
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={
                     rep_dim: sampler.nrep,
@@ -642,7 +635,7 @@ def jackknife_data(
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def jackknife_data(  # noqa: PLR0913
+def jackknife_data(
     data: ArrayLike | DataT,
     data_reduced: ArrayLike | DataT | None = None,
     *,
@@ -659,7 +652,6 @@ def jackknife_data(  # noqa: PLR0913
     keep_attrs: KeepAttrs = None,
     # dask specific...
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -686,7 +678,6 @@ def jackknife_data(  # noqa: PLR0913
     {parallel}
     {keep_attrs}
     {mom_dims_data}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -756,7 +747,6 @@ def jackknife_data(  # noqa: PLR0913
             casting=casting,
             order=order,
             mom_dims=mom_dims,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             use_reduce=False,
         )
@@ -792,7 +782,6 @@ def jackknife_data(  # noqa: PLR0913
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=dtype or np.float64,
             ),
@@ -944,7 +933,6 @@ def jackknife_vals(  # noqa: PLR0913
     rep_dim: str | None = "rep",
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> xr.Dataset | xr.DataArray | NDArrayAny:
     """
@@ -969,7 +957,6 @@ def jackknife_vals(  # noqa: PLR0913
     {rep_dim}
     {mom_dims}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -1001,7 +988,6 @@ def jackknife_vals(  # noqa: PLR0913
             dim=dim,
             mom_dims=mom_dims,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
     elif not is_xarray(data_reduced):
@@ -1058,7 +1044,6 @@ def jackknife_vals(  # noqa: PLR0913
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
                 output_dtypes=dtype or np.float64,

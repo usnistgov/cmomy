@@ -49,7 +49,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -258,7 +257,6 @@ def select_moment(
     coords_combined: str | Sequence[Hashable] | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[ScalarT] | DataT:
     """
@@ -274,7 +272,6 @@ def select_moment(
     {select_coords_combined}
     {keep_attrs}
     {mom_dims_data}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -367,7 +364,6 @@ def select_moment(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes=output_sizes,
                 output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
@@ -417,7 +413,6 @@ def assign_moment(
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     dim_combined: Hashable | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
 ) -> DataT: ...
@@ -432,7 +427,6 @@ def assign_moment(
     keep_attrs: KeepAttrs = ...,
     mom_dims: MomDims | None = ...,
     dim_combined: Hashable | None = ...,
-    on_missing_core_dim: MissingCoreDimOptions = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
 ) -> NDArray[ScalarT]: ...
@@ -450,7 +444,6 @@ def assign_moment(
     dim_combined: Hashable | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
 ) -> NDArray[ScalarT] | DataT:
@@ -473,7 +466,6 @@ def assign_moment(
         multiple values for ``name="ave"`` etc.
     {mom_dims_data}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
     **moment_kwargs
         Keyword argument form of ``moment``.  Must provide either ``moment`` or ``moment_kwargs``.
@@ -577,7 +569,6 @@ def assign_moment(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
                 if is_dataarray(data)
@@ -685,7 +676,6 @@ def vals_to_data(
     out: NDArrayAny | xr.DataArray | None = None,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -797,7 +787,6 @@ def vals_to_data(
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom)))
                 if out is None

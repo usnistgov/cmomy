@@ -182,13 +182,12 @@ def _dummy_docstrings() -> None:
         Name of moment dimensions. Defaults to ``data.dims[-mom_ndim:]``. This
         is primarily used if ``data`` is a :class:`~xarray.Dataset`, and the
         first variable does not contain moments data.
-    on_missing_core_dim : {"raise", "copy", "drop"}
-        How to handle missing core dimensions on input variables.
     apply_ufunc_kwargs : dict-like
-        Extra parameters to :func:`xarray.apply_ufunc`. The most import options
-        are ``on_missing_core_dim`` and ``keep_attrs``. Note that the default
-        value for ``on_missing_core_dim`` is ``"copy"``. Other options are
-        ``join``, ``dataset_join``, ``dataset_fill_value``, and
+        Extra parameters to :func:`xarray.apply_ufunc`. One useful option is
+        ``on_missing_core_dim``, which can take the value ``"copy"`` (the
+        default), ``"raise"``, or ``"drop"`` and controls what to do with
+        variables of a :class:`~xarray.Dataset` missing core dimensions. Other
+        options are ``join``, ``dataset_join``, ``dataset_fill_value``, and
         ``dask_gufunc_kwargs``. Unlisted options are handled internally.
     keep_attrs : {"drop", "identical", "no_conflicts", "drop_conflicts", "override"} or bool, optional
         - 'drop' or False: empty attrs on returned xarray object.

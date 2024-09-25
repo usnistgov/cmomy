@@ -49,7 +49,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT_,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -661,7 +660,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         dim_combined: str = "variable",
         coords_combined: str | Sequence[Hashable] | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "drop",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
         """
@@ -674,7 +672,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {select_dim_combined}
         {select_coords_combined}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -702,7 +699,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             squeeze=squeeze,
             keep_attrs=keep_attrs,
             mom_dims=getattr(self, "mom_dims", None),
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
@@ -715,7 +711,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         copy: bool = True,
         dim_combined: Hashable | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
         **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
     ) -> Self:
@@ -735,7 +730,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             multiple values for ``name="ave"`` etc.
         {mom_dims_data}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
         **moment_kwargs
             Keyword argument form of ``moment``.  Must provide either ``moment`` or ``moment_kwargs``.
@@ -758,7 +752,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             mom_dims=getattr(self, "mom_dims", None),
             dim_combined=dim_combined,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             **moment_kwargs,
         )
@@ -778,7 +771,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         order: ArrayOrder = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
         """
@@ -795,7 +787,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {parallel}
         {keep_attrs}
         {mom_dims_data}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -823,7 +814,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             parallel=parallel,
             keep_attrs=keep_attrs,
             mom_dims=getattr(self, "mom_dims", None),
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
@@ -836,7 +826,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
@@ -850,7 +839,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {dtype}
         {order_cf}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Return
@@ -882,7 +870,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 dtype=dtype,
                 order=order,
                 keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
             mom_ndim=2,
@@ -906,7 +893,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
@@ -924,7 +910,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {order}
         {parallel}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -991,7 +976,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 parallel=parallel,
                 keep_attrs=keep_attrs,
                 mom_dims=getattr(self, "mom_dims", None),
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
         )
@@ -1012,7 +996,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
@@ -1033,7 +1016,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {order}
         {parallel}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
 
@@ -1065,7 +1047,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             order=order,
             parallel=parallel,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
         return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]
@@ -1337,7 +1318,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         keepdims: bool = False,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self | CentralMomentsABC[Any]:
         """
@@ -1364,7 +1344,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {keepdims}
         {parallel}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -1409,7 +1388,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             casting=casting,
             order=order,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
@@ -1501,7 +1479,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         mom_dims: MomDims | None = None,
         rep_dim: str = "rep",
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self | CentralMomentsABC[Any]:
         """
@@ -1530,7 +1507,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {mom_dims}
         {rep_dim}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -1562,7 +1538,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             **kws,
             rep_dim=rep_dim,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             dtype=dtype,
             out=out,
@@ -1651,7 +1626,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         order: ArrayOrder = None,
         keep_attrs: KeepAttrs = None,
         mom_dims: MomDims | None = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self | CentralMomentsABC[Any]:
         """
@@ -1672,7 +1646,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {order}
         {keep_attrs}
         {mom_dims}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -1743,7 +1716,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 casting=casting,
                 order=order,
                 keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
                 **kws,
             ),
