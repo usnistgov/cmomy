@@ -40,7 +40,7 @@ from .core.validate import (
     validate_mom_ndim,
 )
 from .core.xr_utils import (
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     select_axis_dim,
     select_axis_dim_mult,
 )
@@ -423,7 +423,7 @@ def rolling_data(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -681,7 +681,7 @@ def rolling_vals(  # noqa: PLR0913
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -956,7 +956,7 @@ def rolling_exp_data(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -1258,7 +1258,7 @@ def rolling_exp_vals(  # noqa: PLR0913
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",

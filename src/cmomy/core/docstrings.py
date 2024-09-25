@@ -185,7 +185,11 @@ def _dummy_docstrings() -> None:
     on_missing_core_dim : {"raise", "copy", "drop"}
         How to handle missing core dimensions on input variables.
     apply_ufunc_kwargs : dict-like
-        Extra parameters to :func:`xarray.apply_ufunc`
+        Extra parameters to :func:`xarray.apply_ufunc`. The most import options
+        are ``on_missing_core_dim`` and ``keep_attrs``. Note that the default
+        value for ``on_missing_core_dim`` is ``"copy"``. Other options are
+        ``join``, ``dataset_join``, ``dataset_fill_value``, and
+        ``dask_gufunc_kwargs``. Unlisted options are handled internally.
     keep_attrs : {"drop", "identical", "no_conflicts", "drop_conflicts", "override"} or bool, optional
         - 'drop' or False: empty attrs on returned xarray object.
         - 'identical': all attrs must be the same on every object.

@@ -43,10 +43,10 @@ if TYPE_CHECKING:
 
 
 # * apply_ufunc_kws
-def get_apply_ufunc_kwargs(
+def factory_apply_ufunc_kwargs(
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    on_missing_core_dim: MissingCoreDimOptions | None = None,
-    dask: str = "forbidden",
+    on_missing_core_dim: MissingCoreDimOptions = "copy",
+    dask: str = "parallel",
     dask_gufunc_kwargs: Mapping[str, Any] | None = None,
     output_sizes: Mapping[Hashable, int] | None = None,
     output_dtypes: Any = None,
@@ -54,12 +54,11 @@ def get_apply_ufunc_kwargs(
     """
     Create kwargs to pass to :func:`xarray.apply_ufunc`
 
-    Pass in options with ``apply_ufunc_kwargs``.  The other options set defaults of that parameter
+    Pass in options with ``apply_ufunc_kwargs``.  The other options set defaults of that parameter.
     """
     out: dict[str, Any] = {} if apply_ufunc_kwargs is None else dict(apply_ufunc_kwargs)
-    if on_missing_core_dim:
-        out["on_missing_core_dim"] = on_missing_core_dim
 
+    out.setdefault("on_missing_core_dim", on_missing_core_dim)
     out.setdefault("dask", dask)
     out.setdefault(
         "dask_gufunc_kwargs",

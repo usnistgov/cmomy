@@ -35,7 +35,7 @@ from .core.validate import (
     validate_mom_ndim,
 )
 from .core.xr_utils import (
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     select_axis_dim,
 )
 from .factory import (
@@ -217,7 +217,7 @@ def moments_type(
                 "fastpath": is_dataarray(values_in),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -408,7 +408,7 @@ def cumulative(
                 "fastpath": is_dataarray(values_in),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -629,7 +629,7 @@ def moments_to_comoments(
             output_core_dims=[mom_dims_out],
             kwargs={"mom": mom, "dtype": dtype},
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -769,7 +769,7 @@ def comoments_to_moments(
             output_core_dims=[[mom_dim_out]],
             kwargs={"dtype": dtype},
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",

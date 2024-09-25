@@ -38,7 +38,7 @@ from cmomy.core.validate import (
     validate_mom_ndim,
 )
 from cmomy.core.xr_utils import (
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     raise_if_dataset,
     select_axis_dim,
 )
@@ -235,7 +235,7 @@ def resample_data(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -488,7 +488,7 @@ def resample_vals(  # noqa: PLR0913
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -790,7 +790,7 @@ def jackknife_data(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -1056,7 +1056,7 @@ def jackknife_vals(  # noqa: PLR0913
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",

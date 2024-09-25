@@ -24,7 +24,7 @@ from cmomy.core.validate import (
 from cmomy.core.xr_utils import (
     astype_dtype_dict,
     contains_dims,
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     get_mom_shape,
     select_axis_dim,
 )
@@ -422,7 +422,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             input_core_dims=[self._mom_dims, self._mom_dims],
             output_core_dims=[self._mom_dims],
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -487,7 +487,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             input_core_dims=[self._mom_dims, [dim, *self._mom_dims]],
             output_core_dims=[self._mom_dims],
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -540,7 +540,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             input_core_dims=core_dims,
             output_core_dims=[self.mom_dims],
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -617,7 +617,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             input_core_dims=[self._mom_dims, *input_core_dims],  # type: ignore[has-type]
             output_core_dims=[self._mom_dims],
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",

@@ -55,7 +55,7 @@ pip==24.2                 # via grayskull
 pkginfo==1.10.0           # via conda-lock, grayskull, twine
 platformdirs==4.3.6       # via virtualenv
 progressbar2==4.5.0       # via grayskull
-prompt-toolkit==3.0.47    # via ipython
+prompt-toolkit==3.0.48    # via ipython
 ptyprocess==0.7.0         # via pexpect
 pure-eval==0.2.3          # via stack-data
 pycodestyle==2.12.1       # via autopep8
@@ -63,10 +63,10 @@ pydantic==2.9.2           # via conda-lock
 pydantic-core==2.23.4     # via pydantic
 pygments==2.18.0          # via ipython, readme-renderer, rich
 pylev==1.4.0              # via clikit
-pyright==1.1.382          # via -r requirements/uvxrun-tools.txt
-python-utils==3.8.2       # via progressbar2
+pyright==1.1.382.post0    # via -r requirements/uvxrun-tools.txt
+python-utils==3.9.0       # via progressbar2
 pyyaml==6.0.2             # via conda-lock
-rapidfuzz==3.9.7          # via grayskull
+rapidfuzz==3.10.0         # via grayskull
 readme-renderer==44.0     # via twine
 requests==2.32.3          # via cachecontrol, conda-lock, ensureconda, grayskull, requests-toolbelt, twine
 requests-toolbelt==1.0.0  # via twine

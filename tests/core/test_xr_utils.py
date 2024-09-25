@@ -66,8 +66,8 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
         ),
     ],
 )
-def test_get_apply_ufunc_kwargs(kws, expected) -> None:
-    _do_test(xr_utils.get_apply_ufunc_kwargs, expected=expected, **kws)
+def test_factory_apply_ufunc_kwargs(kws, expected) -> None:
+    _do_test(xr_utils.factory_apply_ufunc_kwargs, expected=expected, **kws)
 
 
 @pytest.mark.parametrize(

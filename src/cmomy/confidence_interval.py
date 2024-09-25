@@ -19,7 +19,7 @@ from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prob import ndtr, ndtri
 from .core.validate import is_xarray, validate_axis
-from .core.xr_utils import get_apply_ufunc_kwargs, select_axis_dim
+from .core.xr_utils import factory_apply_ufunc_kwargs, select_axis_dim
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -244,7 +244,7 @@ def bootstrap_confidence_interval(
                     "method": method,
                 },
                 keep_attrs=keep_attrs,
-                **get_apply_ufunc_kwargs(
+                **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
                     on_missing_core_dim=on_missing_core_dim,
                     dask="parallelized",

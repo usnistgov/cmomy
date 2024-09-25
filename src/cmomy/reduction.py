@@ -40,7 +40,7 @@ from .core.validate import (
     validate_mom_ndim,
 )
 from .core.xr_utils import (
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     replace_coords_from_isel,
     select_axis_dim,
     select_axis_dim_mult,
@@ -238,7 +238,7 @@ def reduce_vals(
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -473,7 +473,7 @@ def reduce_data(
                     "order": order,
                 },
                 keep_attrs=keep_attrs,
-                **get_apply_ufunc_kwargs(
+                **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
                     on_missing_core_dim=on_missing_core_dim,
                     dask="parallelized",
@@ -893,7 +893,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -1290,7 +1290,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",

@@ -201,7 +201,6 @@ KeepAttrs: TypeAlias = Union[
     None,
 ]
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
-ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
 
 # * Literals ------------------------------------------------------------------
 ArrayOrderCF = Literal["C", "F", None]
@@ -237,14 +236,17 @@ BlockByModes: TypeAlias = Literal[
 
 # * Keyword args --------------------------------------------------------------
 # ** Common
-class _ApplyUFuncKwargs(TypedDict, total=False):
+ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
+
+
+class _MomDimsAndApplyUFuncKwargs(TypedDict, total=False):
     mom_dims: MomDims | None
     keep_attrs: KeepAttrs
     on_missing_core_dim: MissingCoreDimOptions
     apply_ufunc_kwargs: ApplyUFuncKwargs | None
 
 
-class _ReductionKwargs(_ApplyUFuncKwargs, total=False):
+class _ReductionKwargs(_MomDimsAndApplyUFuncKwargs, total=False):
     casting: Casting
 
 
@@ -430,22 +432,19 @@ class CumulativeKwargs(
 
 
 class MomentsToComomentsKwargs(
+    _MomDimsAndApplyUFuncKwargs,
     _OrderCFKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.moments_to_comoments`"""
 
-    mom_dims: MomDims | None
     mom_dims_out: MomDims | None
-    keep_attrs: KeepAttrs
-    on_missing_core_dim: MissingCoreDimOptions
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None
 
 
 # ** Utils
 class SelectMomentKwargs(
     _MomNDimKwargs,
-    _ApplyUFuncKwargs,
+    _MomDimsAndApplyUFuncKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.utils.select_moment`"""
@@ -457,7 +456,7 @@ class SelectMomentKwargs(
 
 class ValsToDataKwargs(
     _MomKwargs,
-    _ApplyUFuncKwargs,
+    _MomDimsAndApplyUFuncKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.utils.vals_to_data`"""

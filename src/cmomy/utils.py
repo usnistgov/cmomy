@@ -27,7 +27,7 @@ from .core.validate import (
     validate_mom_ndim,
 )
 from .core.xr_utils import (
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     select_axis_dim_mult,
 )
 
@@ -64,6 +64,7 @@ if TYPE_CHECKING:
     from .core.typing_compat import EllipsisType, Unpack
 
 
+# * moveaxis ------------------------------------------------------------------
 @overload
 def moveaxis(
     x: NDArray[ScalarT],
@@ -255,8 +256,8 @@ def select_moment(
     squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
-    keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
+    keep_attrs: KeepAttrs = None,
     on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[ScalarT] | DataT:
@@ -364,7 +365,7 @@ def select_moment(
                 "squeeze": squeeze,
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -402,7 +403,7 @@ def _select_moment(
     return data[idx]
 
 
-# * Assign value(s)
+# * Assign value(s) -----------------------------------------------------------
 # NOTE: Can't do kwargs trick used elsewhere, because want to be
 # able to use **moments_kwargs....
 @overload
@@ -574,7 +575,7 @@ def assign_moment(
                 "copy": copy,
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
@@ -610,7 +611,7 @@ def _assign_moment(
     return out
 
 
-# * Vals -> Data
+# * Vals -> Data --------------------------------------------------------------
 # TODO(wpk): move this to convert?
 @overload
 def vals_to_data(
@@ -794,7 +795,7 @@ def vals_to_data(
                 "fastpath": False,
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
