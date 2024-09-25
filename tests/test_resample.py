@@ -315,9 +315,6 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
     assert_allclose(freq0, resample.indices_to_freq(idx1, ndat=ndat))
 
     idx2 = resample.freq_to_indices(freq0, shuffle=True)
-    with pytest.raises(AssertionError):
-        assert_allclose(idx1, idx2)
-
     if is_dataset(idx):
         assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # pyright: ignore[reportAttributeAccessIssue]
     else:

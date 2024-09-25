@@ -678,6 +678,60 @@ def test_iterators() -> None:
 """)
 
 
+# sampler
+out.append("""
+
+def _check_typing_sampler(
+    idx_array: NDArrayAny,
+    idx_dataarray: xr.DataArray,
+    idx_dataset: xr.Dataset,
+    freq_array: NDArrayAny,
+    freq_dataarray: xr.DataArray,
+    freq_dataset: xr.Dataset,
+    data_array: NDArrayAny,
+    data_dataarray: xr.DataArray,
+    data_dataset: xr.Dataset,
+) -> None:
+    from cmomy import IndexSampler
+
+    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayAny])
+
+    assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
+    assert_type(IndexSampler(indices=idx_dataset), IndexSampler[xr.Dataset])
+
+    assert_type(IndexSampler(freq=freq_array), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler(freq=freq_dataarray), IndexSampler[xr.DataArray])
+    assert_type(IndexSampler(freq=freq_dataset), IndexSampler[xr.Dataset])
+
+    a = IndexSampler(indices=idx_array)
+    assert_type(a.freq, NDArrayAny)
+    assert_type(a.indices, NDArrayAny)
+
+    b = IndexSampler(indices=idx_dataarray)
+    assert_type(b.freq, xr.DataArray)
+    assert_type(b.indices, xr.DataArray)
+
+    c = IndexSampler(indices=idx_dataset)
+    assert_type(c.freq, xr.Dataset)
+    assert_type(c.indices, xr.Dataset)
+
+    assert_type(IndexSampler.from_data(data_array, nrep=100), IndexSampler[NDArrayAny])
+    assert_type(
+        IndexSampler.from_data(data_dataarray, nrep=100), IndexSampler[xr.DataArray]
+    )
+    assert_type(
+        IndexSampler.from_data(data_dataset, nrep=100), IndexSampler[xr.DataArray]
+    )
+
+    d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)
+    assert_type(d, IndexSampler[xr.DataArray | xr.Dataset])
+
+    assert_type(d.indices, xr.DataArray | xr.Dataset)
+    assert_type(d.indices, xr.DataArray | xr.Dataset)
+""")
+
+
 # * convert.concat
 params_array = [
     ("float32", None, None, "NDArray[float32]", "float32"),

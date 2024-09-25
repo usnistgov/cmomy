@@ -72,14 +72,14 @@ ArrayT = TypeVar(  # type: ignore[misc]
     default=NDArray[np.float64],
 )
 
-NDArrayInt = NDArray[np.int64]
+#: TypeVar of types wrapped by IndexSampler
 SamplerArrayT = TypeVar(  # type: ignore[misc]
     "SamplerArrayT",
-    NDArrayInt,
+    NDArray[Any],
     xr.DataArray,
     xr.Dataset,
     Union[xr.DataArray, xr.Dataset],
-    default=NDArrayInt,
+    default=NDArray[Any],
 )
 
 FuncT = TypeVar("FuncT", bound=Callable[..., Any])
@@ -128,6 +128,7 @@ DTypeAny: TypeAlias = Any
 FloatDTypes = Union[np.float32, np.float64]
 LongIntDType: TypeAlias = np.int64
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
+NDArrayInt = NDArray[np.int64]
 NDArrayFloats = NDArray[FloatDTypes]
 NDArrayBool = NDArray[np.bool_]
 IntDTypeT: TypeAlias = np.int64
@@ -570,7 +571,7 @@ class IndexSamplerFromDataKwargs(
     _AxisKwargs,
     total=False,
 ):
-    """Extra parameters to :meth:`cmomy.IndexSampler.from_data`"""
+    """Extra parameters to :meth:`.resample.IndexSampler.from_data`"""
 
     nrep: Required[int]
     nsamp: int | None
@@ -586,10 +587,10 @@ class FactoryIndexSamplerKwargs(
     TypedDict,
     total=False,
 ):
-    """Extra parameters to factory_index_resampler"""
+    """Extra parameters to :func:`.resample.factory_sampler`"""
 
-    indices: NDArrayInt | xr.DataArray | xr.Dataset | None
-    freq: NDArrayInt | xr.DataArray | xr.Dataset | None
+    indices: NDArrayAny | xr.DataArray | xr.Dataset | None
+    freq: NDArrayAny | xr.DataArray | xr.Dataset | None
     ndat: int | None
     nrep: int | None
     nsamp: int | None
@@ -599,6 +600,7 @@ class FactoryIndexSamplerKwargs(
     shuffle: bool
 
 
+#: IndexSampler or mapping which can be converted to IndexSampler
 Sampler: TypeAlias = Union[
     "IndexSampler[Any]",
     FactoryIndexSamplerKwargs,

@@ -41,9 +41,7 @@ def reduce_data_grouped(
     group_idx: NDArrayInt,
     out: NDArray[FloatT],
 ) -> None:
-    assert data.shape[1:] == out.shape[1:]
     assert group_idx.max() < out.shape[0]
-
     for s in range(data.shape[0]):
         group = group_idx[s]
         if group >= 0:
@@ -81,12 +79,6 @@ def reduce_data_indexed_fromzero(
     out: NDArray[FloatT],
 ) -> None:
     ngroup = len(group_start)
-
-    assert data.shape[1:] == out.shape[1:]
-    assert index.shape == scale.shape
-    assert len(group_end) == ngroup
-    assert out.shape[0] == ngroup
-
     out[...] = 0.0
 
     for group in range(ngroup):

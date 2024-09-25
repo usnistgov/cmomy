@@ -114,9 +114,8 @@ def cumulative(
     data: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
-    out[0, ...] = data[0, ...]
+    out[:, ...] = data[:, ...]
     for i in range(1, data.shape[0]):
-        out[i, ...] = data[i, ...]
         _push.push_data(out[i - 1, ...], out[i, ...])
 
 
@@ -132,7 +131,6 @@ def cumulative_inverse(
     data: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
-    out[0, ...] = data[0, ...]
+    out[:, ...] = data[:, ...]
     for i in range(1, data.shape[0]):
-        out[i, ...] = data[i, ...]
         _push.push_data_scale(data[i - 1, ...], -1.0, out[i, ...])

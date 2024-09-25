@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .random import default_rng  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (  # noqa: TCH004
+        IndexSampler,
         factory_sampler,
         random_freq,
         random_indices,
@@ -58,6 +59,7 @@ else:
             "random": ["default_rng"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
+                "IndexSampler",
                 "factory_sampler",
                 "random_indices",
                 "random_freq",
@@ -99,6 +101,7 @@ __all__ = [
     "CentralMoments",
     "CentralMomentsArray",
     "CentralMomentsData",
+    "IndexSampler",
     "__version__",
     "assign_moment",
     "bootstrap_confidence_interval",

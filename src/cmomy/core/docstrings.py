@@ -86,7 +86,7 @@ def _dummy_docstrings() -> None:
     order_cf | order : {"C", "F"}, optional
         Order argument. See :func:`numpy.zeros`.
     parallel : bool, optional
-        If ``True``, use parallel :mod:`numba` code if possible.
+        If ``True``, use parallel numba ``numba.njit`` or ``numba.guvectorized`` code if possible.
         If ``None``, use a heuristic to determine if should attempt to use parallel method.
     casting : {'no', 'equiv', 'safe', 'same_kind', 'unsafe'}, optional
         Controls what kind of data casting may occur.
@@ -126,12 +126,12 @@ def _dummy_docstrings() -> None:
         value dimensions (i.e., all dimensions excluding moment dimensions).
 
 
-    sampler : array-like or IndexResampler or mapping
-        Passed through :func:`.resample.factory_index_resampler` to create an
-        :class:`~.resample.IndexResampler`. Value can either be a frequency
-        array, an :class:`~.resample.IndexResampler`, or a mapping of
+    sampler : array-like or IndexSampler or mapping
+        Passed through :func:`.resample.factory_sampler` to create an
+        :class:`~.resample.IndexSampler`. Value can either be a frequency
+        array, an :class:`~.resample.IndexSampler`, or a mapping of
         parameters. The mapping can have form of
-        :class:`~.core.typing.FactoryIndexResamplerKwargs`. Allowable keys are
+        :class:`~.core.typing.FactoryIndexSamplerKwargs`. Allowable keys are
         ``freq``, ``indices``, ``ndat``, ``nrep``, ``nsamp``, ``paired``,
         ``rng``, ``replace``, ``shuffle``.
     freq_xarray | freq : array-like, DataArray, or Dataset of int

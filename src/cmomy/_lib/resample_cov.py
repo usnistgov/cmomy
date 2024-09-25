@@ -33,12 +33,6 @@ def resample_data_fromzero(
     out: NDArray[FloatT],
 ) -> None:
     nrep, nsamp = freq.shape
-
-    assert data.shape[1:] == out.shape[1:]
-    assert data.shape[0] == nsamp
-    assert out.shape[0] == nrep
-    assert data.shape[1:] == out.shape[1:]
-
     out[...] = 0.0
 
     for irep in range(nrep):
@@ -84,13 +78,6 @@ def resample_vals(
     w: NDArray[FloatT],
     x1: NDArray[FloatT],
 ) -> None:
-    nrep, nsamp = freq.shape
-
-    assert len(w) == nsamp
-    assert len(x0) == nsamp
-    assert len(x1) == nsamp
-    assert out.shape[0] == nrep
-
     for irep in range(freq.shape[0]):
         for isamp in range(freq.shape[1]):
             f = freq[irep, isamp]
@@ -114,8 +101,6 @@ def resample_vals(
 def jackknife_data_fromzero(
     data_reduced: NDArray[FloatT], data: NDArray[FloatT], out: NDArray[FloatT]
 ) -> None:
-    assert data.shape[1:] == data_reduced.shape
-
     # initially fill with data_reduced
     out[:, ...] = data_reduced
 
@@ -151,14 +136,8 @@ def jackknife_vals_fromzero(
     x1: NDArray[FloatT],
     out: NDArray[FloatT],
 ) -> None:
-    nsamp = len(x0)
-    assert len(x1) == nsamp
-    assert len(w) == nsamp
-    assert out.shape[0] == nsamp
-    assert data_reduced.shape == out.shape[1:]
-
     # initially fill with data_reduced
     out[:, ...] = data_reduced
 
-    for isamp in range(nsamp):
+    for isamp in range(len(x0)):
         _push.push_val(x0[isamp], x1[isamp], -w[isamp], out[isamp, ...])

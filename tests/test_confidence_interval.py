@@ -27,7 +27,7 @@ import cmomy
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from cmomy.core.typing import Moments, NDArrayAny
+    from cmomy.core.typing import Moments
 
 
 def test_ndtr(rng: np.random.Generator) -> None:
@@ -140,7 +140,7 @@ def xtheta_hat(xdata: xr.DataArray, mom, axis) -> xr.DataArray:
 
 @pytest.fixture
 def xtheta_boot(
-    xdata: xr.DataArray, mom: Moments, sampler: NDArrayAny, axis
+    xdata: xr.DataArray, mom: Moments, sampler: cmomy.IndexSampler, axis
 ) -> xr.DataArray:
     out = cmomy.resample_vals(xdata, mom=mom, axis=axis, sampler=sampler)
     dims_out = list(out.dims)

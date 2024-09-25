@@ -10,7 +10,6 @@ import xarray as xr
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.typing import (
-    NDArrayInt,
     SamplerArrayT,
 )
 from cmomy.core.validate import (
@@ -115,19 +114,19 @@ class IndexSampler(Generic[SamplerArrayT]):
         return self._indices
 
     @property
-    def _first_indices(self) -> NDArrayInt | xr.DataArray:
+    def _first_indices(self) -> NDArrayAny | xr.DataArray:
         if is_dataset(self.indices):
             return next(iter(self.indices.values()))
         return self.indices
 
     @property
-    def _first_freq(self) -> NDArrayInt | xr.DataArray:
+    def _first_freq(self) -> NDArrayAny | xr.DataArray:
         if is_dataset(self.freq):
             return next(iter(self.freq.values()))
         return self.freq
 
     @property
-    def _first(self) -> NDArrayInt | xr.DataArray:
+    def _first(self) -> NDArrayAny | xr.DataArray:
         if self._freq is not None:
             return self._first_freq
         return self._first_indices
@@ -156,7 +155,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         rng: RngTypes | None = None,
         replace: bool = True,
         parallel: bool | None = None,
-    ) -> IndexSampler[NDArrayInt]:
+    ) -> IndexSampler[NDArrayAny]:
         """
         Create sampler from parameters
 
@@ -174,7 +173,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         resample : IndexSampler
             Wrapped object will be an :class:`~np.ndarray` of integers.
         """
-        indices: NDArrayInt = random_indices(
+        indices: NDArrayAny = random_indices(
             nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng, replace=replace
         )
         return cls(indices=indices, ndat=ndat, parallel=parallel, fastpath=True)
@@ -214,7 +213,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         *,
         paired: bool = ...,
         **kwargs: Unpack[IndexSamplerFromDataKwargs],
-    ) -> IndexSampler[NDArrayInt]: ...
+    ) -> IndexSampler[NDArrayAny]: ...
 
     @classmethod
     @docfiller.decorate
@@ -234,7 +233,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         replace: bool = True,
         parallel: bool | None = None,
     ) -> (
-        IndexSampler[NDArrayInt]
+        IndexSampler[NDArrayAny]
         | IndexSampler[xr.DataArray]
         | IndexSampler[xr.DataArray | xr.Dataset]
     ):
@@ -269,7 +268,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         """
         ndat = select_ndat(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
 
-        indices: NDArrayInt | xr.DataArray | xr.Dataset
+        indices: NDArrayAny | xr.DataArray | xr.Dataset
         if is_xarray(data):
             indices = _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]
                 data=data,  # pyright: ignore[reportArgumentType]
@@ -300,8 +299,8 @@ class IndexSampler(Generic[SamplerArrayT]):
 def factory_sampler(  # noqa: PLR0913
     sampler: Sampler | None = None,
     *,
-    freq: NDArrayInt | xr.DataArray | xr.Dataset | None = None,
-    indices: NDArrayInt | xr.DataArray | xr.Dataset | None = None,
+    freq: NDArrayAny | xr.DataArray | xr.Dataset | None = None,
+    indices: NDArrayAny | xr.DataArray | xr.Dataset | None = None,
     ndat: int | None = None,
     nrep: int | None = None,
     nsamp: int | None = None,
@@ -322,14 +321,14 @@ def factory_sampler(  # noqa: PLR0913
 
     The main intent of the function is to be called by other functions/method
     that need a sampler. For example, it is used in `.resample_data`. You can
-    pass in a frequency array, an IndexSampler, or a mapping to create an
-    IndexSampler. The order of evaluation is as follows:
+    pass in a frequency array, an :class:`IndexSampler`, or a mapping to create an
+    :class:`IndexSampler`. The order of evaluation is as follows:
 
     #. ``sampler`` is a :class:`IndexSampler`: return ``sampler``.
     #. ``sampler`` is a mapping: return ``factory_sampler(**sampler, data=data, axis=axis, dim=dims, mom_ndim=mom_ndim, mom_dims=mom_dims, rep_dim=rep_dim)``.
-    #. ``sampler`` is None (most like the case with (2)).
-        #. if specify ``ndat``: return ``IndexSampler.from_param(...)``
-        #. if specify ``data``: return ``IndexSampler.from_data(...)``
+    #. ``sampler`` is ``None``:
+        - if specify ``ndat``: return ``IndexSampler.from_param(...)``
+        - if specify ``data``: return ``IndexSampler.from_data(...)``
 
 
     Parameters
@@ -453,7 +452,7 @@ def random_indices(
     nsamp: int | None = None,
     rng: RngTypes | None = None,
     replace: bool = True,
-) -> NDArrayInt:
+) -> NDArrayAny:
     """
     Create indices for random resampling (bootstrapping).
 
@@ -483,7 +482,7 @@ def random_freq(
     rng: RngTypes | None = None,
     replace: bool = True,
     parallel: bool | None = None,
-) -> NDArrayInt:
+) -> NDArrayAny:
     """
     Create frequencies for random resampling (bootstrapping).
 
@@ -628,7 +627,7 @@ def freq_to_indices(
     shuffle: bool = ...,
     rng: RngTypes | None = ...,
     parallel: bool | None = ...,
-) -> NDArrayInt: ...
+) -> NDArrayAny: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -638,7 +637,7 @@ def freq_to_indices(
     shuffle: bool = False,
     rng: RngTypes | None = None,
     parallel: bool | None = None,
-) -> NDArrayInt | DataT:
+) -> NDArrayAny | DataT:
     """
     Convert a frequency array to indices array.
 
@@ -706,7 +705,7 @@ def indices_to_freq(
     *,
     ndat: int | None = ...,
     parallel: bool | None = ...,
-) -> NDArrayInt: ...
+) -> NDArrayAny: ...
 
 
 def indices_to_freq(
@@ -714,7 +713,7 @@ def indices_to_freq(
     *,
     ndat: int | None = None,
     parallel: bool | None = None,
-) -> NDArrayInt | DataT:
+) -> NDArrayAny | DataT:
     """
     Convert indices to frequency array.
 
@@ -756,7 +755,7 @@ def indices_to_freq(
 @docfiller.decorate
 def jackknife_freq(
     ndat: int,
-) -> NDArrayInt:
+) -> NDArrayAny:
     r"""
     Frequency array for jackknife resampling.
 
@@ -838,53 +837,3 @@ def _validate_resample_array(
                 msg = f"Indices range [{min_}, {max_}) outside [0, {ndat - 1})"
                 raise ValueError(msg)
     return x
-
-
-def _check_typing(
-    idx_array: NDArrayInt,
-    idx_dataarray: xr.DataArray,
-    idx_dataset: xr.Dataset,
-    freq_array: NDArrayInt,
-    freq_dataarray: xr.DataArray,
-    freq_dataset: xr.Dataset,
-    data_array: NDArrayAny,
-    data_dataarray: xr.DataArray,
-    data_dataset: xr.Dataset,
-) -> None:
-    from typing import assert_type
-
-    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayInt])
-
-    assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayInt])
-    assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
-    assert_type(IndexSampler(indices=idx_dataset), IndexSampler[xr.Dataset])
-
-    assert_type(IndexSampler(freq=freq_array), IndexSampler[NDArrayInt])
-    assert_type(IndexSampler(freq=freq_dataarray), IndexSampler[xr.DataArray])
-    assert_type(IndexSampler(freq=freq_dataset), IndexSampler[xr.Dataset])
-
-    a = IndexSampler(indices=idx_array)
-    assert_type(a.freq, NDArrayInt)
-    assert_type(a.indices, NDArrayInt)
-
-    b = IndexSampler(indices=idx_dataarray)
-    assert_type(b.freq, xr.DataArray)
-    assert_type(b.indices, xr.DataArray)
-
-    c = IndexSampler(indices=idx_dataset)
-    assert_type(c.freq, xr.Dataset)
-    assert_type(c.indices, xr.Dataset)
-
-    assert_type(IndexSampler.from_data(data_array, nrep=100), IndexSampler[NDArrayInt])
-    assert_type(
-        IndexSampler.from_data(data_dataarray, nrep=100), IndexSampler[xr.DataArray]
-    )
-    assert_type(
-        IndexSampler.from_data(data_dataset, nrep=100), IndexSampler[xr.DataArray]
-    )
-
-    d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)
-    assert_type(d, IndexSampler[xr.DataArray | xr.Dataset])
-
-    assert_type(d.indices, xr.DataArray | xr.Dataset)
-    assert_type(d.indices, xr.DataArray | xr.Dataset)

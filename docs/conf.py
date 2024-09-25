@@ -230,6 +230,7 @@ napoleon_type_aliases = {
     "xCentralMoments": "~cmomy.xCentralMomentsXArray",
     "CentralMomentsArray": "~cmomy.CentralMomentsArray",
     "CentralMomentsData": "~cmomy.CentralMomentsData",
+    "IndexSampler": "~cmomy.resample.IndexSampler",
     # objects without namespace: numpy
     "ndarray": "~numpy.ndarray",
     "MaskedArray": "~numpy.ma.MaskedArray",

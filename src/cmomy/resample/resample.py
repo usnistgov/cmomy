@@ -523,7 +523,7 @@ def resample_vals(  # noqa: PLR0913
 
     return _resample_vals(
         *args,
-        freq=sampler.freq,  # type: ignore[arg-type]
+        freq=sampler.freq,
         mom=mom,
         mom_ndim=mom_ndim,
         axis_neg=axis_neg,
