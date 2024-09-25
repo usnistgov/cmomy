@@ -164,6 +164,8 @@ def _dummy_docstrings() -> None:
         :class:`~numpy.random.Generator` object with this seed
     resample_replace : bool
         If True, do resampling with replacement.
+    shuffle : bool
+        If ``True``, shuffle ``indices`` created from ``freq`` for each row.
 
 
     dims : hashable or sequence of hashable

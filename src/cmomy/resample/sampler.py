@@ -50,6 +50,7 @@ if TYPE_CHECKING:
 
 
 # * Class interface -----------------------------------------------------------
+@docfiller.decorate
 class IndexSampler(Generic[SamplerArrayT]):
     """
     Wrapper around `indices` and `freq` resample arrays
@@ -65,8 +66,11 @@ class IndexSampler(Generic[SamplerArrayT]):
         Indices resampling array.
     freq: ndarray, DataArray, or Dataset
         Frequency resampling table.
-    fastpath : bool
-        If ``True``, skip extra checks.
+    {ndat}
+    {parallel}
+    {shuffle}
+    {rng}
+    {fastpath}
     """
 
     def __init__(
@@ -649,8 +653,7 @@ def freq_to_indices(
     Parameters
     ----------
     {freq_xarray}
-    shuffle :
-        If ``True``, shuffle values for each row.
+    {shuffle}
     {rng}
     {parallel}
 

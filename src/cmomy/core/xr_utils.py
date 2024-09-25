@@ -51,7 +51,11 @@ def get_apply_ufunc_kwargs(
     output_sizes: Mapping[Hashable, int] | None = None,
     output_dtypes: Any = None,
 ) -> dict[str, Any]:
-    """Create apply_ufunc_kwargs dict."""
+    """
+    Create kwargs to pass to :func:`xarray.apply_ufunc`
+
+    Pass in options with ``apply_ufunc_kwargs``.  The other options set defaults of that parameter
+    """
     out: dict[str, Any] = {} if apply_ufunc_kwargs is None else dict(apply_ufunc_kwargs)
     if on_missing_core_dim:
         out["on_missing_core_dim"] = on_missing_core_dim

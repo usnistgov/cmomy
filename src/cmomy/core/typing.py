@@ -25,6 +25,7 @@ import pandas as pd
 import xarray as xr
 from numpy.typing import ArrayLike, NDArray
 
+from .docstrings import docfiller
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
@@ -583,11 +584,26 @@ class IndexSamplerFromDataKwargs(
     parallel: bool | None
 
 
+@docfiller.decorate
 class FactoryIndexSamplerKwargs(
     TypedDict,
     total=False,
 ):
-    """Extra parameters to :func:`.resample.factory_sampler`"""
+    """
+    Extra parameters to :func:`.resample.factory_sampler`
+
+    Parameters
+    ----------
+    {indices}
+    {freq_xarray}
+    {ndat}
+    {nrep}
+    {nsamp}
+    {paired}
+    {rng}
+    {resample_replace}
+    {shuffle}
+    """
 
     indices: NDArrayAny | xr.DataArray | xr.Dataset | None
     freq: NDArrayAny | xr.DataArray | xr.Dataset | None
