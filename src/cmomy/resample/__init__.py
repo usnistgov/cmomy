@@ -17,7 +17,6 @@ from .sampler import (
     jackknife_freq,
     random_freq,
     random_indices,
-    randsamp_freq,
     select_ndat,
 )
 
@@ -31,7 +30,6 @@ __all__ = [
     "jackknife_vals",
     "random_freq",
     "random_indices",
-    "randsamp_freq",
     "resample_data",
     "resample_vals",
     "select_ndat",

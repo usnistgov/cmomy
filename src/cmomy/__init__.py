@@ -14,10 +14,9 @@ if TYPE_CHECKING:
     from .random import default_rng  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (  # noqa: TCH004
-        indices_to_freq,
+        factory_sampler,
         random_freq,
         random_indices,
-        randsamp_freq,
         resample_data,
         resample_vals,
     )
@@ -59,10 +58,9 @@ else:
             "random": ["default_rng"],
             "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
             "resample": [
-                "indices_to_freq",
-                "random_freq",
+                "factory_sampler",
                 "random_indices",
-                "randsamp_freq",
+                "random_freq",
                 "resample_data",
                 "resample_vals",
             ],
@@ -107,12 +105,11 @@ __all__ = [
     "concat",
     "convert",
     "default_rng",
-    "indices_to_freq",
+    "factory_sampler",
     "moveaxis",
     "random",
     "random_freq",
     "random_indices",
-    "randsamp_freq",
     "reduce_data",
     "reduce_data_grouped",
     "reduce_vals",

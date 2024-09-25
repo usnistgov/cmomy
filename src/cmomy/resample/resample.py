@@ -192,7 +192,7 @@ def resample_data(  # noqa: PLR0913
     See Also
     --------
     random_freq
-    randsamp_freq
+    factory_sampler
     """
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)

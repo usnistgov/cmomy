@@ -530,7 +530,7 @@ def test_func_dataarray_and_dataset_push_vals(fixture_vals, as_dataarray) -> Non
         ("a", False, {"mom_dims": ("momA", "momB")}, []),
     ],
 )
-def test_randsamp_freq_dataset(
+def test_factory_sampler_dataset(
     data,
     dim,
     paired,

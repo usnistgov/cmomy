@@ -134,10 +134,6 @@ def _dummy_docstrings() -> None:
         :class:`~.core.typing.FactoryIndexResamplerKwargs`. Allowable keys are
         ``freq``, ``indices``, ``ndat``, ``nrep``, ``nsamp``, ``paired``,
         ``rng``, ``replace``, ``shuffle``.
-    freq : array-like of int
-        Array of shape ``(nrep, size)`` where `nrep` is the number of
-        replicates and ``size = self.shape[axis]``. `freq` is the weight that
-        each sample contributes to resamples values. See :func:`.randsamp_freq`
     freq_xarray | freq : array-like, DataArray, or Dataset of int
         Array of shape ``(nrep, size)`` where `nrep` is the number of
         replicates and ``size = self.shape[axis]``. `freq` is the weight that
@@ -145,14 +141,12 @@ def _dummy_docstrings() -> None:
         :mod:`xarray` object, it is assumed that the dimensions are in order of
         ``(rep_dim, dim)`` where ``rep_dim`` and ``dim`` are the name of the
         replicated and sampled dimension, respectively.
-        See :func:`.randsamp_freq`
     indices : array of int
         Array of shape ``(nrep, size)``.  If passed, create `freq` from indices.
-        See :func:`.randsamp_freq`.
     nrep : int
         Number of resample replicates.
     nrep_optional | nrep : int, optional
-        Construct ``freq`` (see :func:`.randsamp_freq`) with ``nrep``
+        Construct ``freq`` (see :func:`~.resample.factory_sampler`) with ``nrep``
         replicates if ``freq`` is not passed directly.
     paired : bool
         If ``False`` and generating ``freq`` from ``nrep`` with ``data`` of type

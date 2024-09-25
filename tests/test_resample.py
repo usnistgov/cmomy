@@ -296,7 +296,7 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
         resample.indices_to_freq(idx, ndat=indices.max() - 1)
 
     freq0 = resample.indices_to_freq(idx, ndat=ndat)
-    freq1 = resample.randsamp_freq(indices=idx, ndat=ndat)
+    freq1 = resample.factory_sampler(indices=idx, ndat=ndat).freq
 
     assert_allclose(freq0, freq1)
 
@@ -324,17 +324,15 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
         np.testing.assert_allclose(idx1, np.sort(idx2, axis=-1))
 
 
-def test_central_randsamp_freq():
+def test_central_factory_sampler():
     c = CentralMoments.zeros(mom=4, val_shape=(10, 4))
-    freq0 = resample.randsamp_freq(nrep=10, ndat=10, rng=np.random.default_rng(0))
-    freq2 = resample.randsamp_freq(
-        data=c.obj, axis=0, rng=np.random.default_rng(0), nrep=10
-    )
+    freq0 = resample.factory_sampler(nrep=10, ndat=10, rng=0).freq
+    freq2 = resample.factory_sampler(data=c.obj, axis=0, rng=0, nrep=10).freq
     np.testing.assert_allclose(freq0, freq2)
 
     # error if no ndat or data
-    with pytest.raises(TypeError, match="Must pass .*"):
-        resample.randsamp_freq()
+    with pytest.raises(ValueError, match="Must specify .*"):
+        resample.factory_sampler()
 
 
 def test_select_ndat() -> None:
@@ -402,26 +400,23 @@ def test_validate_resample_array(data, kwargs, expected) -> None:
         _validate_resample_array(data, **kwargs)
 
 
-def test_randsamp_freq() -> None:
+def test_factory_sampler() -> None:
     ndat = 5
     nrep = 10
 
-    f0 = resample.randsamp_freq(nrep=nrep, ndat=ndat, rng=np.random.default_rng(0))
+    f0 = resample.factory_sampler(nrep=nrep, ndat=ndat, rng=0).freq
     f1 = resample.random_freq(nrep=nrep, ndat=ndat, rng=np.random.default_rng(0))
     np.testing.assert_allclose(f0, f1)
 
     # test short circuit
-    f2 = resample.randsamp_freq(freq=f1, check=False)
+    f2 = resample.factory_sampler(freq=f1).freq
     assert f1 is f2
 
-    f2 = resample.randsamp_freq(nrep=nrep, ndat=ndat, freq=f1, check=True)
+    f2 = resample.factory_sampler(nrep=nrep, ndat=ndat, freq=f1).freq
     assert f1 is f2
 
     with pytest.raises(ValueError):
-        resample.randsamp_freq(ndat=10)
-
-    with pytest.raises(ValueError, match=".*Wrong ndat.*"):
-        _ = resample.randsamp_freq(ndat=10, nrep=nrep, freq=f1, check=True)
+        resample.factory_sampler(ndat=10)
 
 
 @pytest.mark.parametrize(
@@ -449,8 +444,8 @@ def test_randsamp_freq() -> None:
         },
     ],
 )
-def test_randsamp_freq_from_data(expected, kwargs) -> None:
-    out = resample.randsamp_freq(**kwargs, nrep=10, rng=np.random.default_rng(0))
+def test_factory_sampler_freq_from_data(expected, kwargs) -> None:
+    out = resample.factory_sampler(**kwargs, nrep=10, rng=0).freq
     np.testing.assert_allclose(out, expected)
 
 

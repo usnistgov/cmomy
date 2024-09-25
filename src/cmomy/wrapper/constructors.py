@@ -559,9 +559,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     --------
     wrap
     ~.resample.resample_vals
-    ~.resample.randsamp_freq
-    ~.resample.freq_to_indices
-    ~.resample.indices_to_freq
+    ~.resample.factory_sampler
 
 
     Examples
