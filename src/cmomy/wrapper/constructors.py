@@ -1,5 +1,5 @@
 """
-Attempt at a more generic wrapper class
+attempt at a more generic wrapper class
 
 Idea is to Wrap ndarray, xr.DataArray, and xr.Dataset objects...
 """
@@ -47,7 +47,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -55,7 +54,7 @@ if TYPE_CHECKING:
         NDArrayAny,
         ReduceValsKwargs,
         ResampleValsKwargs,
-        RngTypes,
+        Sampler,
         WrapKwargs,
         WrapRawKwargs,
         ZerosLikeKwargs,
@@ -362,7 +361,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     keepdims: bool = False,
     parallel: bool | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
@@ -385,7 +383,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     {keepdims}
     {parallel}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -429,7 +426,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         casting=casting,
         order=order,
         keep_attrs=keep_attrs,
-        on_missing_core_dim=on_missing_core_dim,
         apply_ufunc_kwargs=apply_ufunc_kwargs,
     )
 
@@ -447,7 +443,7 @@ def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    freq: ArrayLike | xr.DataArray | DataT | None = ...,
+    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -457,7 +453,7 @@ def wrap_resample_vals(  # type: ignore[misc]
     x: xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    freq: ArrayLike | xr.DataArray | DataT | None = ...,
+    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -467,7 +463,7 @@ def wrap_resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: None = ...,
     dtype: None = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -477,7 +473,7 @@ def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -487,7 +483,7 @@ def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[ResampleValsKwargs],
@@ -497,7 +493,7 @@ def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    freq: ArrayLike | None = ...,
+    sampler: Sampler,
     out: Any = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -509,13 +505,10 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
+    sampler: Sampler,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
-    freq: ArrayLike | xr.DataArray | DataT | None = None,
-    nrep: int | None = None,
-    rng: RngTypes | None = None,
-    paired: bool = True,
     move_axis_to_end: bool = True,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -525,7 +518,6 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     mom_dims: MomDims | None = None,
     rep_dim: str = "rep",
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
@@ -537,13 +529,10 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     {x_genarray}
     {y_genarray}
     {mom}
+    {sampler}
     {weight_genarray}
     {axis}
     {dim}
-    {freq}
-    {nrep}
-    {rng}
-    {paired}
     {move_axis_to_end}
     {order}
     {out}
@@ -554,7 +543,6 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     {mom_dims}
     {rep_dim}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -565,9 +553,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     --------
     wrap
     ~.resample.resample_vals
-    ~.resample.randsamp_freq
-    ~.resample.freq_to_indices
-    ~.resample.indices_to_freq
+    ~.resample.factory_sampler
 
 
     Examples
@@ -575,7 +561,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     >>> import cmomy
     >>> rng = cmomy.default_rng(0)
     >>> x = rng.random(10)
-    >>> cmomy.wrap_resample_vals(x, mom=2, axis=0, nrep=5)
+    >>> cmomy.wrap_resample_vals(x, mom=2, axis=0, sampler=dict(nrep=5))
     <CentralMomentsArray(mom_ndim=1)>
     array([[10.    ,  0.5397,  0.0757],
            [10.    ,  0.5848,  0.0618],
@@ -588,13 +574,10 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
 
     from cmomy.resample import resample_vals
 
-    obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]
+    obj = resample_vals(  # type: ignore[type-var, misc]
         x,  # pyright: ignore[reportArgumentType]
         *y,
-        freq=freq,
-        nrep=nrep,
-        rng=rng,
-        paired=paired,
+        sampler=sampler,
         mom=mom,
         weight=weight,
         axis=axis,
@@ -604,7 +587,6 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         **kws,
         rep_dim=rep_dim,
         keep_attrs=keep_attrs,
-        on_missing_core_dim=on_missing_core_dim,
         apply_ufunc_kwargs=apply_ufunc_kwargs,
         dtype=dtype,
         out=out,
@@ -619,7 +601,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     )
 
 
-# * From raw ------------------------------------------------------------------
+# * From raw -----------------------------------------------------------------
 @overload
 def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
     raw: DataT,
@@ -681,7 +663,6 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     order: ArrayOrder = None,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
@@ -702,7 +683,6 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     {order}
     {keep_attrs}
     {mom_dims}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -772,7 +752,6 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
             casting=casting,
             order=order,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             **kws,
         ),

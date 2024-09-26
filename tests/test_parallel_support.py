@@ -25,7 +25,7 @@ func_params_data = [
     (cmomy.reduce_data, None),
     (do_reduce_data_grouped, None),
     (do_reduce_data_indexed, None),
-    (partial(cmomy.resample_data, nrep=10, rng=0), None),
+    (partial(cmomy.resample_data, sampler={"nrep": 10, "rng": 0}), None),
     (cmomy.resample.jackknife_data, None),
     (cmomy.convert.cumulative, None),
     *func_params_data_rolling,
@@ -40,7 +40,7 @@ func_params_vals_rolling = [
 
 func_params_vals = [
     (cmomy.reduce_vals, None),
-    (partial(cmomy.resample_vals, nrep=20, rng=0), None),
+    (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),
     (cmomy.resample.jackknife_vals, None),
     *func_params_vals_rolling,
 ]

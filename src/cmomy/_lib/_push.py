@@ -120,7 +120,6 @@ def push_data(data: NDArray[FloatT], out: NDArray[FloatT]) -> None:
             one_alpha_b *= one_alpha
             minus_b *= -1.0
 
-        # think I can scrap this?
         tmp += delta * alpha * one_alpha * delta_b * (-minus_b * alpha_b + one_alpha_b)
         out[a1] = tmp
 
@@ -176,9 +175,6 @@ def push_data_scale(
             one_alpha_b *= one_alpha
             minus_b *= -1.0
 
-        # think I can scrap this?
-        c = 0
-        b = a1 - c
         tmp += delta * alpha * one_alpha * delta_b * (-minus_b * alpha_b + one_alpha_b)
         out[a1] = tmp
 

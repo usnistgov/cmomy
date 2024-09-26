@@ -267,6 +267,7 @@ central_dataset_any: CentralMomentsDataAny = CentralMomentsData(data_dataset_any
 # ca_or_cs = cast("CentralMomentsData[xr.DataArray] | CentralMomentsData[xr.DataArray]", CentralMomentsData(data_dataarray_or_sdata))  # noqa: ERA001
 
 freq = cmomy.random_freq(ndat=10, nrep=2)
+sampler = cmomy.resample.IndexSampler(freq=freq)
 by = [0] * 5 + [1] * 5
 _, index, group_start, group_end = cmomy.reduction.factor_by_to_index(by)
 """
@@ -283,8 +284,8 @@ funcs_genarraylike_to_genarray_dtype_out = [
     ("cmomy.reduce_vals", "vals_", "reduce_out_", "{axis_dim}, mom=2"),
     ("cmomy.reduce_data_grouped", "data_", "group_out_", "{axis_dim}, mom_ndim=1, by=by"),
     ("cmomy.reduction.reduce_data_indexed", "data_", "group_out_", "{axis_dim}, mom_ndim=1, index=index, group_start=group_start, group_end=group_end"),
-    ("cmomy.resample_data", "data_", "group_out_", "{axis_dim}, mom_ndim=1, freq=freq"),
-    ("cmomy.resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, freq=freq"),
+    ("cmomy.resample_data", "data_", "group_out_", "{axis_dim}, mom_ndim=1, sampler=sampler"),
+    ("cmomy.resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, sampler=sampler"),
     ("cmomy.resample.jackknife_data", "data_", "transform_out_", "{axis_dim}, mom_ndim=1"),
     ("cmomy.resample.jackknife_vals", "vals_", "transform_out_", "{axis_dim}, mom=2"),
     ("cmomy.convert.moments_type", "data_", "transform_out_", "mom_ndim=1"),
@@ -409,7 +410,7 @@ params_genarraylike_to_wrapped_dtype_out = [
 
 funcs_genarraylike_to_wrapped_dtype_out = [
     ("cmomy.wrap_reduce_vals", "vals_", "reduce_out_", "{axis_dim}, mom=2"),
-    ("cmomy.wrap_resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, freq=freq"),
+    ("cmomy.wrap_resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, sampler=sampler"),
     ("cmomy.wrap_raw", "data_", "transform_out_", ""),
 ]
 
@@ -448,7 +449,7 @@ params_arraylike_to_class_out = [
 ]
 funcs_arraylike_to_class_out = [
     ("cmomy.CentralMomentsArray.from_vals", "vals_", "group_out_", "{axis_dim}, mom=2"),
-    ("cmomy.CentralMomentsArray.from_resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, freq=freq"),
+    ("cmomy.CentralMomentsArray.from_resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, sampler=sampler"),
     ("cmomy.CentralMomentsArray.from_raw", "data_", "transform_out_", "mom_ndim=1"),
 ]
 out.extend(get_list(funcs_arraylike_to_class_out, params_arraylike_to_class_out))
@@ -556,7 +557,7 @@ funcs_class_method_dtype = [
     ("moments_to_comoments", "central_", None, "mom=(1, -1)"),
 ]
 funcs_class_method_dtype_out = [
-    ("resample_and_reduce", "central_", "group_out_", "{axis_dim}, freq=freq"),
+    ("resample_and_reduce", "central_", "group_out_", "{axis_dim}, sampler=sampler"),
     ("jackknife_and_reduce", "central_", "transform_out_", "{axis_dim}"),
     ("reduce", "central_", "reduce_out_", "{axis_dim}"),
 ]
@@ -674,6 +675,60 @@ def test_iterators() -> None:
     assert_type(central_dataset.keys(), KeysView[Hashable])
     assert_type(central_dataset.values(), ValuesView[CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.items(), ItemsView[Hashable, CentralMomentsData[xr.DataArray]])
+""")
+
+
+# sampler
+out.append("""
+
+def _check_typing_sampler(
+    idx_array: NDArrayAny,
+    idx_dataarray: xr.DataArray,
+    idx_dataset: xr.Dataset,
+    freq_array: NDArrayAny,
+    freq_dataarray: xr.DataArray,
+    freq_dataset: xr.Dataset,
+    data_array: NDArrayAny,
+    data_dataarray: xr.DataArray,
+    data_dataset: xr.Dataset,
+) -> None:
+    from cmomy import IndexSampler
+
+    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayAny])
+
+    assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
+    assert_type(IndexSampler(indices=idx_dataset), IndexSampler[xr.Dataset])
+
+    assert_type(IndexSampler(freq=freq_array), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler(freq=freq_dataarray), IndexSampler[xr.DataArray])
+    assert_type(IndexSampler(freq=freq_dataset), IndexSampler[xr.Dataset])
+
+    a = IndexSampler(indices=idx_array)
+    assert_type(a.freq, NDArrayAny)
+    assert_type(a.indices, NDArrayAny)
+
+    b = IndexSampler(indices=idx_dataarray)
+    assert_type(b.freq, xr.DataArray)
+    assert_type(b.indices, xr.DataArray)
+
+    c = IndexSampler(indices=idx_dataset)
+    assert_type(c.freq, xr.Dataset)
+    assert_type(c.indices, xr.Dataset)
+
+    assert_type(IndexSampler.from_data(data_array, nrep=100), IndexSampler[NDArrayAny])
+    assert_type(
+        IndexSampler.from_data(data_dataarray, nrep=100), IndexSampler[xr.DataArray]
+    )
+    assert_type(
+        IndexSampler.from_data(data_dataset, nrep=100), IndexSampler[xr.DataArray]
+    )
+
+    d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)
+    assert_type(d, IndexSampler[xr.DataArray | xr.Dataset])
+
+    assert_type(d.indices, xr.DataArray | xr.Dataset)
+    assert_type(d.indices, xr.DataArray | xr.Dataset)
 """)
 
 

@@ -60,10 +60,9 @@ Resampling routines available at top level (:mod:`.resample`)
 
    ~resample.resample_data
    ~resample.resample_vals
+   ~resample.factory_sampler
    ~resample.random_freq
    ~resample.random_indices
-   ~resample.randsamp_freq
-   ~resample.indices_to_freq
 
 
 Default random number generator (:mod:`cmomy.random`)

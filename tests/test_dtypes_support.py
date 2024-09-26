@@ -92,17 +92,22 @@ def _do_test(func, *args, expected, **kwargs):
         ),
         (
             cmomy.resample_vals,
-            {"mom": 2, "move_axis_to_end": False, "axis": 0, "nrep": 10},
+            {"mom": 2, "move_axis_to_end": False, "axis": 0, "sampler": {"nrep": 10}},
             (10, 1, 2, 3),
         ),
         (
             cmomy.resample_data,
-            {"mom_ndim": 1, "move_axis_to_end": False, "axis": 0, "nrep": 10},
+            {
+                "mom_ndim": 1,
+                "move_axis_to_end": False,
+                "axis": 0,
+                "sampler": {"nrep": 10},
+            },
             (10, 1, 2),
         ),
         (
             do_wrap_method("resample_and_reduce"),
-            {"mom_ndim": 1, "nrep": 10, "axis": 0},
+            {"mom_ndim": 1, "sampler": {"nrep": 10}, "axis": 0},
             (10, 1, 2),
         ),
         (
@@ -144,7 +149,7 @@ def _do_test(func, *args, expected, **kwargs):
         (do_wrap_reduce_vals, {"mom": 2, "axis": 0}, (1, 2, 3)),
         (
             do_wrap_resample_vals,
-            {"mom": 2, "move_axis_to_end": False, "nrep": 10, "axis": 0},
+            {"mom": 2, "move_axis_to_end": False, "sampler": {"nrep": 10}, "axis": 0},
             (10, 1, 2, 3),
         ),
         (select_dtype, {"out": None}, (5, 1, 2)),

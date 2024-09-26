@@ -40,7 +40,7 @@ from .core.validate import (
     validate_mom_ndim,
 )
 from .core.xr_utils import (
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     select_axis_dim,
     select_axis_dim_mult,
 )
@@ -73,7 +73,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -358,7 +357,6 @@ def rolling_data(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -382,7 +380,6 @@ def rolling_data(  # noqa: PLR0913
     {dim}
     {keep_attrs}
     {mom_dims_data}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -423,9 +420,8 @@ def rolling_data(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=dtype or np.float64,
             ),
@@ -593,7 +589,6 @@ def rolling_vals(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -619,7 +614,6 @@ def rolling_vals(  # noqa: PLR0913
     {dim}
     {mom_dims}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -681,9 +675,8 @@ def rolling_vals(  # noqa: PLR0913
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
                 output_dtypes=dtype or np.float64,
@@ -867,7 +860,6 @@ def rolling_exp_data(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -893,7 +885,6 @@ def rolling_exp_data(  # noqa: PLR0913
     {dim}
     {keep_attrs}
     {mom_dims_data}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -956,9 +947,8 @@ def rolling_exp_data(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_dtypes=dtype or np.float64,
             ),
@@ -1168,7 +1158,6 @@ def rolling_exp_vals(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -1196,7 +1185,6 @@ def rolling_exp_vals(  # noqa: PLR0913
     {dim}
     {mom_dims}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -1258,9 +1246,8 @@ def rolling_exp_vals(  # noqa: PLR0913
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
                 output_dtypes=dtype or np.float64,

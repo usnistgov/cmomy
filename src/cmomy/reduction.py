@@ -40,7 +40,7 @@ from .core.validate import (
     validate_mom_ndim,
 )
 from .core.xr_utils import (
-    get_apply_ufunc_kwargs,
+    factory_apply_ufunc_kwargs,
     replace_coords_from_isel,
     select_axis_dim,
     select_axis_dim_mult,
@@ -78,7 +78,6 @@ if TYPE_CHECKING:
         Groups,
         IndexAny,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -90,6 +89,7 @@ if TYPE_CHECKING:
         ReduceDataIndexedKwargs,
         ReduceDataKwargs,
         ReduceValsKwargs,
+        Sampler,
     )
     from .core.typing_compat import Unpack
 
@@ -163,7 +163,6 @@ def reduce_vals(
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -185,7 +184,6 @@ def reduce_vals(
     {dim}
     {mom_dims}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -237,9 +235,8 @@ def reduce_vals(
                 "fastpath": is_dataarray(x),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={dim: 1, **dict(zip(mom_dims, mom_to_mom_shape(mom)))},
                 output_dtypes=dtype or np.float64,
@@ -395,7 +392,6 @@ def reduce_data(
     dim: DimsReduceMult | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -424,7 +420,6 @@ def reduce_data(
     {dim_mult}
     {mom_dims_data}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -472,9 +467,8 @@ def reduce_data(
                     "order": order,
                 },
                 keep_attrs=keep_attrs,
-                **get_apply_ufunc_kwargs(
+                **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
-                    on_missing_core_dim=on_missing_core_dim,
                     dask="parallelized",
                     output_dtypes=dtype or np.float64,
                 ),
@@ -776,7 +770,6 @@ def reduce_data_grouped(  # noqa: PLR0913
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -800,7 +793,6 @@ def reduce_data_grouped(  # noqa: PLR0913
     {group_dim}
     {groups}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -892,9 +884,8 @@ def reduce_data_grouped(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={dim: np.max(by) + 1},  # pyright: ignore[reportArgumentType]
                 output_dtypes=dtype or np.float64,
@@ -1164,7 +1155,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -1195,7 +1185,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     {group_dim}
     {groups}
     {keep_attrs}
-    {on_missing_core_dim}
     {apply_ufunc_kwargs}
 
     Returns
@@ -1289,9 +1278,8 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
             },
             keep_attrs=keep_attrs,
-            **get_apply_ufunc_kwargs(
+            **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
-                on_missing_core_dim=on_missing_core_dim,
                 dask="parallelized",
                 output_sizes={dim: len(group_start)},
                 output_dtypes=dtype or np.float64,
@@ -1410,7 +1398,7 @@ def _reduce_data_indexed(
 # * For testing purposes
 def resample_data_indexed(  # noqa: PLR0913
     data: ArrayT,
-    freq: NDArrayAny,
+    sampler: Sampler,
     *,
     mom_ndim: Mom_NDim,
     axis: AxisReduce | MissingType = MISSING,
@@ -1424,14 +1412,27 @@ def resample_data_indexed(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     coords_policy: CoordsPolicy = "first",
-    group_dim: str | None = None,
+    rep_dim: str = "rep",
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
 ) -> ArrayT:
     """Resample using indexed reduction."""
+    from .resample import factory_sampler
+
+    sampler = factory_sampler(
+        sampler,
+        data=data,
+        axis=axis,
+        dim=dim,
+        mom_ndim=mom_ndim,
+        mom_dims=mom_dims,
+        rep_dim=rep_dim,
+        parallel=parallel,
+    )
+
     from ._lib.utils import freq_to_index_start_end_scales
 
-    index, start, end, scales = freq_to_index_start_end_scales(freq)
+    index, start, end, scales = freq_to_index_start_end_scales(sampler.freq)
 
     return reduce_data_indexed(  # pyright: ignore[reportReturnType]
         data=data,
@@ -1450,7 +1451,7 @@ def resample_data_indexed(  # noqa: PLR0913
         dim=dim,
         mom_dims=mom_dims,
         coords_policy=coords_policy,
-        group_dim=group_dim,
+        group_dim=rep_dim,
         groups=groups,
         keep_attrs=keep_attrs,
     )

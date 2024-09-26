@@ -54,8 +54,8 @@ if TYPE_CHECKING:
         MomentsStrict,
         NameType,
         NDArrayAny,
-        RngTypes,
-        WrapNPReduce,
+        Sampler,
+        WrapNPReduceKwargs,
         WrapNPResampleAndReduceKwargs,
         WrapNPTransform,
     )
@@ -651,7 +651,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     def resample_and_reduce(
         self,
         *,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: None = ...,
         dtype: None = ...,
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -660,7 +660,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     def resample_and_reduce(
         self,
         *,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -669,7 +669,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     def resample_and_reduce(
         self,
         *,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -678,7 +678,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     def resample_and_reduce(
         self,
         *,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -689,9 +689,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         *,
         axis: AxisReduce | MissingType = -1,
-        freq: ArrayLike | None = None,
-        nrep: int | None = None,
-        rng: RngTypes | None = None,
+        sampler: Sampler,
         move_axis_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
@@ -715,7 +713,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                [0.0165, 0.8133, 0.9128],
                [0.6066, 0.7295, 0.5436]])
 
-        >>> c.resample_and_reduce(axis=0, nrep=5, rng=0)
+        >>> c.resample_and_reduce(axis=0, sampler=dict(nrep=5, rng=0))
         <CentralMomentsArray(mom_ndim=1)>
         array([[0.6397, 0.7338, 0.563 ],
                [1.9109, 0.2698, 0.041 ],
@@ -725,9 +723,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         """
         return super().resample_and_reduce(
             axis=axis,
-            freq=freq,
-            nrep=nrep,
-            rng=rng,
+            sampler=sampler,
             move_axis_to_end=move_axis_to_end,
             out=out,
             dtype=dtype,
@@ -804,7 +800,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: None = ...,
         dtype: None = ...,
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> Self: ...
     @overload
     def reduce(
@@ -812,7 +808,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def reduce(
@@ -820,7 +816,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def reduce(
@@ -828,7 +824,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPReduce],
+        **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> CentralMomentsArrayAny: ...
 
     @docfiller_inherit_abc()

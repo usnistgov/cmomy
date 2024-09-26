@@ -19,7 +19,7 @@ from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prob import ndtr, ndtri
 from .core.validate import is_xarray, validate_axis
-from .core.xr_utils import get_apply_ufunc_kwargs, select_axis_dim
+from .core.xr_utils import factory_apply_ufunc_kwargs, select_axis_dim
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -36,7 +36,6 @@ if TYPE_CHECKING:
         FloatDTypes,
         FloatingT,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         NDArrayAny,
     )
@@ -55,7 +54,6 @@ def bootstrap_confidence_interval(
     dim: DimsReduce | MissingType = ...,
     ci_dim: str = ...,
     keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> DataT: ...
 @overload
@@ -71,7 +69,6 @@ def bootstrap_confidence_interval(
     dim: DimsReduce | MissingType = ...,
     ci_dim: str = ...,
     keep_attrs: KeepAttrs = ...,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[FloatingT]: ...
 
@@ -89,7 +86,6 @@ def bootstrap_confidence_interval(
     dim: DimsReduce | MissingType = MISSING,
     ci_dim: str = "alpha",
     keep_attrs: KeepAttrs = None,
-    on_missing_core_dim: MissingCoreDimOptions = "copy",
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[FloatingT] | DataT:
     r"""
@@ -151,8 +147,10 @@ def bootstrap_confidence_interval(
 
     >>> import cmomy
     >>> x = cmomy.default_rng(0).random((20))
-    >>> freq = cmomy.randsamp_freq(nrep=50, ndat=20, rng=np.random.default_rng(0))
-    >>> theta_boot = np.log(cmomy.resample_vals(x, mom=1, axis=0, freq=freq)[..., 1])
+    >>> sampler = cmomy.resample.factory_sampler(nrep=50, ndat=20, rng=0)
+    >>> theta_boot = np.log(
+    ...     cmomy.resample_vals(x, mom=1, axis=0, sampler=sampler)[..., 1]
+    ... )
     >>> bootstrap_confidence_interval(
     ...     theta_boot=theta_boot, axis=0, method="percentile"
     ... )
@@ -242,9 +240,8 @@ def bootstrap_confidence_interval(
                     "method": method,
                 },
                 keep_attrs=keep_attrs,
-                **get_apply_ufunc_kwargs(
+                **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
-                    on_missing_core_dim=on_missing_core_dim,
                     dask="parallelized",
                     output_dtypes=dtype or np.float64,
                     output_sizes={ci_dim: len(alphas)},

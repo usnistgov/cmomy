@@ -14,7 +14,21 @@ PARALLEL = "parallel"
 CACHE = "cache"
 
 
-OPTIONS: dict[str, Any] = {NMAX: 20, PARALLEL: True, CACHE: True, FASTMATH: True}
+def _set_options_from_environment() -> dict[str, Any]:
+    import os
+
+    def _get_boolean(key: str, default: str) -> bool:
+        return os.environ.get(key, default).lower() in {"true", "t", "1"}
+
+    return {
+        NMAX: int(os.environ.get("CMOMY_NMAX", "20")),
+        CACHE: _get_boolean("CMOMY_NUMBA_CACHE", "true"),
+        PARALLEL: _get_boolean("CMOMY_NUMBA_PARALLEL", "true"),
+        FASTMATH: _get_boolean("CMOMY_NUMBA_FASTMATH", "true"),
+    }
+
+
+OPTIONS: dict[str, Any] = _set_options_from_environment()
 
 
 def _isbool(x: Any) -> bool:
@@ -23,10 +37,6 @@ def _isbool(x: Any) -> bool:
 
 def _isint(x: Any) -> bool:
     return isinstance(x, int)
-
-
-# def _isstr(x: Any) -> bool:
-#     return isinstance(x, str)  # noqa: ERA001
 
 
 _VALIDATORS: dict[str, Callable[[Any], bool]] = {

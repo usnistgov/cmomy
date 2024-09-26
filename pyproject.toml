@@ -106,7 +106,7 @@ optional-dependencies.uvxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.381",
+    "pyright>=1.1.382",
     "twine>=5.0.0",
 ]
 urls.Documentation = "https://pages.nist.gov/cmomy/"
@@ -424,6 +424,7 @@ strict = [
     "tools/*.py",
     "src/cmomy/*.py",
     "src/cmomy/wrapper/*.py",
+    "src/cmomy/resample/*.py",
     "src/cmomy/_lib/_binomial.py",
     "src/cmomy/core/__init__.py",
     "src/cmomy/core/array_utils.py",

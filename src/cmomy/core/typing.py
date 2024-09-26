@@ -25,9 +25,11 @@ import pandas as pd
 import xarray as xr
 from numpy.typing import ArrayLike, NDArray
 
+from .docstrings import docfiller
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
+    from cmomy.resample.sampler import IndexSampler
     from cmomy.wrapper import CentralMomentsArray, CentralMomentsData  # noqa: F401
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
@@ -53,7 +55,6 @@ CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any]")
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
 CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
 
-
 # * TypeVars ------------------------------------------------------------------
 #: General data set/array
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
@@ -70,6 +71,16 @@ ArrayT = TypeVar(  # type: ignore[misc]
     NDArray[np.float64],
     xr.DataArray,
     default=NDArray[np.float64],
+)
+
+#: TypeVar of types wrapped by IndexSampler
+SamplerArrayT = TypeVar(  # type: ignore[misc]
+    "SamplerArrayT",
+    NDArray[Any],
+    xr.DataArray,
+    xr.Dataset,
+    Union[xr.DataArray, xr.Dataset],
+    default=NDArray[Any],
 )
 
 FuncT = TypeVar("FuncT", bound=Callable[..., Any])
@@ -118,9 +129,9 @@ DTypeAny: TypeAlias = Any
 FloatDTypes = Union[np.float32, np.float64]
 LongIntDType: TypeAlias = np.int64
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
+NDArrayInt = NDArray[np.int64]
 NDArrayFloats = NDArray[FloatDTypes]
 NDArrayBool = NDArray[np.bool_]
-NDArrayInt = NDArray[LongIntDType]
 IntDTypeT: TypeAlias = np.int64
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 
@@ -190,7 +201,6 @@ KeepAttrs: TypeAlias = Union[
     None,
 ]
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
-ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
 
 # * Literals ------------------------------------------------------------------
 ArrayOrderCF = Literal["C", "F", None]
@@ -226,14 +236,16 @@ BlockByModes: TypeAlias = Literal[
 
 # * Keyword args --------------------------------------------------------------
 # ** Common
-class _ApplyUFuncKwargs(TypedDict, total=False):
+ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
+
+
+class _MomDimsAndApplyUFuncKwargs(TypedDict, total=False):
     mom_dims: MomDims | None
     keep_attrs: KeepAttrs
-    on_missing_core_dim: MissingCoreDimOptions
     apply_ufunc_kwargs: ApplyUFuncKwargs | None
 
 
-class _ReductionKwargs(_ApplyUFuncKwargs, total=False):
+class _ReductionKwargs(_MomDimsAndApplyUFuncKwargs, total=False):
     casting: Casting
 
 
@@ -275,13 +287,7 @@ class _KeepDimsKwargs(TypedDict, total=False):
     keepdims: bool
 
 
-class _ResampleKwargs(TypedDict, total=False):
-    nrep: int | None
-    rng: RngTypes | None
-
-
-class _ResamplePairedKwargs(_ResampleKwargs, total=False):
-    paired: bool
+class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
 
 
@@ -354,7 +360,7 @@ class ReduceDataIndexedKwargs(
 # ** Resample
 class ResampleDataKwargs(
     _DataKwargs,
-    _ResamplePairedKwargs,
+    _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     total=False,
@@ -364,7 +370,7 @@ class ResampleDataKwargs(
 
 class ResampleValsKwargs(
     _ValsKwargs,
-    _ResamplePairedKwargs,
+    _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     total=False,
@@ -425,22 +431,19 @@ class CumulativeKwargs(
 
 
 class MomentsToComomentsKwargs(
+    _MomDimsAndApplyUFuncKwargs,
     _OrderCFKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.moments_to_comoments`"""
 
-    mom_dims: MomDims | None
     mom_dims_out: MomDims | None
-    keep_attrs: KeepAttrs
-    on_missing_core_dim: MissingCoreDimOptions
-    apply_ufunc_kwargs: ApplyUFuncKwargs | None
 
 
 # ** Utils
 class SelectMomentKwargs(
     _MomNDimKwargs,
-    _ApplyUFuncKwargs,
+    _MomDimsAndApplyUFuncKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.utils.select_moment`"""
@@ -452,7 +455,7 @@ class SelectMomentKwargs(
 
 class ValsToDataKwargs(
     _MomKwargs,
-    _ApplyUFuncKwargs,
+    _MomDimsAndApplyUFuncKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.utils.vals_to_data`"""
@@ -546,14 +549,13 @@ class WrapNPTransform(
 
 
 class WrapNPResampleAndReduceKwargs(
-    _ResampleKwargs,
     WrapNPTransform,
     total=False,
 ):
     """Extra parameters to :meth:`.CentralMomentsArray.resample_and_reduce`"""
 
 
-class WrapNPReduce(
+class WrapNPReduceKwargs(
     WrapNPTransform,
     _KeepDimsKwargs,
     total=False,
@@ -562,3 +564,61 @@ class WrapNPReduce(
 
     by: Groups
     block: int
+
+
+class IndexSamplerFromDataKwargs(
+    _AxisKwargs,
+    total=False,
+):
+    """Extra parameters to :meth:`.resample.IndexSampler.from_data`"""
+
+    nrep: Required[int]
+    nsamp: int | None
+    mom_ndim: Mom_NDim | None
+    mom_dims: MomDims | None
+    rep_dim: str
+    rng: RngTypes | None
+    replace: bool
+    parallel: bool | None
+
+
+@docfiller.decorate
+class FactoryIndexSamplerKwargs(
+    TypedDict,
+    total=False,
+):
+    """
+    Extra parameters to :func:`.resample.factory_sampler`
+
+    Parameters
+    ----------
+    {indices}
+    {freq_xarray}
+    {ndat}
+    {nrep}
+    {nsamp}
+    {paired}
+    {rng}
+    {resample_replace}
+    {shuffle}
+    """
+
+    indices: NDArrayAny | xr.DataArray | xr.Dataset | None
+    freq: NDArrayAny | xr.DataArray | xr.Dataset | None
+    ndat: int | None
+    nrep: int | None
+    nsamp: int | None
+    paired: bool
+    rng: RngTypes | None
+    replace: bool
+    shuffle: bool
+
+
+#: IndexSampler or mapping which can be converted to IndexSampler
+Sampler: TypeAlias = Union[
+    NDArrayAny,
+    xr.DataArray,
+    xr.Dataset,
+    "IndexSampler[Any]",
+    FactoryIndexSamplerKwargs,
+]

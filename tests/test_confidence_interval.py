@@ -27,7 +27,7 @@ import cmomy
 if TYPE_CHECKING:
     from numpy.typing import NDArray
 
-    from cmomy.core.typing import Moments, NDArrayAny
+    from cmomy.core.typing import Moments
 
 
 def test_ndtr(rng: np.random.Generator) -> None:
@@ -94,9 +94,12 @@ def mom() -> Moments:
 
 
 @pytest.fixture
-def freq(data, axis, nrep) -> NDArrayAny:
-    return cmomy.randsamp_freq(  # type: ignore[return-value]
-        data=data, axis=axis, nrep=nrep, rng=np.random.default_rng(0)
+def sampler(data, axis, nrep) -> cmomy.resample.IndexSampler:
+    return cmomy.resample.factory_sampler(
+        data=data,
+        axis=axis,
+        nrep=nrep,
+        rng=0,
     )
 
 
@@ -109,10 +112,10 @@ def theta_hat(
 
 @pytest.fixture
 def theta_boot(
-    data: NDArray[np.float64], mom: Moments, freq, axis
+    data: NDArray[np.float64], mom: Moments, sampler, axis
 ) -> NDArray[np.float64]:
     return np.moveaxis(
-        cmomy.resample_vals(data, mom=mom, axis=axis, freq=freq), -2, axis
+        cmomy.resample_vals(data, mom=mom, axis=axis, sampler=sampler), -2, axis
     )
 
 
@@ -137,9 +140,9 @@ def xtheta_hat(xdata: xr.DataArray, mom, axis) -> xr.DataArray:
 
 @pytest.fixture
 def xtheta_boot(
-    xdata: xr.DataArray, mom: Moments, freq: NDArrayAny, axis
+    xdata: xr.DataArray, mom: Moments, sampler: cmomy.IndexSampler, axis
 ) -> xr.DataArray:
-    out = cmomy.resample_vals(xdata, mom=mom, axis=axis, freq=freq)
+    out = cmomy.resample_vals(xdata, mom=mom, axis=axis, sampler=sampler)
     dims_out = list(out.dims)
     dims_out[axis] = out.dims[-2]
     dims_out[-2] = out.dims[axis]

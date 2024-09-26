@@ -31,7 +31,7 @@ def is_in_unsafe_thread_pool() -> bool:
 
 @lru_cache
 def _thread_backend() -> str | None:
-    # Note that `importlib.util.find_spec` doesn't work for these; it will falsely
+    # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
         from numba.np.ufunc import (
             tbbpool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
