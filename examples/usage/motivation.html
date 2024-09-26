@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Why cmomy? &#8212; cmomy v0.20.0 documentation</title>
+    <title>Why cmomy? &#8212; cmomy v0.21.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=4385029a"></script>
+    <script src="../../_static/documentation_options.js?v=bf5f3776"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="prev" title="User guide" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-21"/>
+    <meta name="docbuild:last-update" content="2024-09-25"/>
   </head>
   
   
@@ -146,7 +146,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.20.0 documentation</p>
+    <p class="title logo__title">cmomy v0.21.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -211,6 +211,7 @@
 
 
 
+
 <li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
 
@@ -240,6 +241,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="../../reference/generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
 
 
 
@@ -739,7 +744,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -747,7 +752,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -757,6 +763,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -1021,7 +1031,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([ 1.0000e+03,  5.1691e-01,  8.0989e-02, -2.0856e-03])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-3e6acde6-5f9e-4e4e-8c21-a4e58fe7368c' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-3e6acde6-5f9e-4e4e-8c21-a4e58fe7368c' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-d119416b-10a1-455c-ab43-03807d74b947' class='xr-array-in' type='checkbox' checked><label for='section-d119416b-10a1-455c-ab43-03807d74b947' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>1e+03 0.5169 0.08099 -0.002086</span></div><div class='xr-array-data'><pre>array([ 1.000000e+03,  5.169063e-01,  8.098908e-02, -2.085567e-03])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([ 1.0000e+03,  5.1691e-01,  8.0989e-02, -2.0856e-03])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-afbf4646-ff6e-408a-8165-c03e7193bd59' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-afbf4646-ff6e-408a-8165-c03e7193bd59' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-53dd951f-b25a-4d9e-9e7f-8151d78b4821' class='xr-array-in' type='checkbox' checked><label for='section-53dd951f-b25a-4d9e-9e7f-8151d78b4821' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>1e+03 0.5169 0.08099 -0.002086</span></div><div class='xr-array-data'><pre>array([ 1.000000e+03,  5.169063e-01,  8.098908e-02, -2.085567e-03])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>You can access the underlying data using the <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.obj" title="cmomy.CentralMomentsArray.obj"><code class="xref py py-attr docutils literal notranslate"><span class="pre">cmomy.CentralMomentsArray.obj</span></code></a> attribute.</p>
 <div class="cell docutils container">
@@ -1180,7 +1190,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -1188,7 +1198,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -1198,6 +1209,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -1462,7 +1477,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-09acc60d-d5c4-470c-aec4-89648a38cf3d' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-09acc60d-d5c4-470c-aec4-89648a38cf3d' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-0fcb7dc0-dc2c-4f59-8ed5-778851789f08' class='xr-array-in' type='checkbox' checked><label for='section-0fcb7dc0-dc2c-4f59-8ed5-778851789f08' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-b4fec399-f25f-4525-84de-69c560f6de64' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b4fec399-f25f-4525-84de-69c560f6de64' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-2fac9d6c-c58d-45cb-abc2-e93fee8abaa5' class='xr-array-in' type='checkbox' checked><label for='section-2fac9d6c-c58d-45cb-abc2-e93fee8abaa5' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>Or, you can push all the values one at a time!</p>
 <div class="cell docutils container">
@@ -1559,7 +1574,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -1567,7 +1582,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -1577,6 +1593,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -1841,7 +1861,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-12ce7189-3046-4719-bbbf-d0817bbe234c' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-12ce7189-3046-4719-bbbf-d0817bbe234c' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-cd71c66c-a326-4bc1-852f-c8d0a0407afb' class='xr-array-in' type='checkbox' checked><label for='section-cd71c66c-a326-4bc1-852f-c8d0a0407afb' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-75141b8f-9730-4394-baae-b1af3c7c48f1' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-75141b8f-9730-4394-baae-b1af3c7c48f1' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-1b65c2ef-4286-4381-9cfe-fe235d899306' class='xr-array-in' type='checkbox' checked><label for='section-1b65c2ef-4286-4381-9cfe-fe235d899306' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>The values can even be differently weighted.</p>
 <div class="cell docutils container">
@@ -1938,7 +1958,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -1946,7 +1966,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -1956,6 +1977,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -2220,7 +2245,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-b97a3f96-0e99-49df-933e-d07ab04f31d4' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b97a3f96-0e99-49df-933e-d07ab04f31d4' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-7ea16599-63bc-4be7-aa75-d809fae9f1a6' class='xr-array-in' type='checkbox' checked><label for='section-7ea16599-63bc-4be7-aa75-d809fae9f1a6' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-c09c55b3-bef5-481c-a995-9e71e43cb01e' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-c09c55b3-bef5-481c-a995-9e71e43cb01e' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-75de1cee-1e5d-4e91-a239-a0b583b368c8' class='xr-array-in' type='checkbox' checked><label for='section-75de1cee-1e5d-4e91-a239-a0b583b368c8' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>Alternatively, you can add objects together.</p>
 <div class="cell docutils container">
@@ -2314,7 +2339,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -2322,7 +2347,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -2332,6 +2358,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -2596,7 +2626,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-7dd364fc-a98e-4dff-9ed9-e8174b241c7b' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-7dd364fc-a98e-4dff-9ed9-e8174b241c7b' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-e4a48e38-d6fa-4225-aadb-b66ffcbf0d1c' class='xr-array-in' type='checkbox' checked><label for='section-e4a48e38-d6fa-4225-aadb-b66ffcbf0d1c' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([5.0000e+02, 4.9192e-01, 8.8959e-02, 1.3873e-04, 1.3778e-02])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 4</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-82278984-653c-4c44-9ffe-5b9c3e1b1f4b' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-82278984-653c-4c44-9ffe-5b9c3e1b1f4b' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-05ff937d-8c02-4505-bf82-50ba9c5c294d' class='xr-array-in' type='checkbox' checked><label for='section-05ff937d-8c02-4505-bf82-50ba9c5c294d' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>500.0 0.4919 0.08896 0.0001387 0.01378</span></div><div class='xr-array-data'><pre>array([5.000000e+02, 4.919195e-01, 8.895944e-02, 1.387264e-04, 1.377840e-02])</pre></div></div></li></ul></div></div></div></div>
 </div>
 <p>Or more simply:</p>
 <div class="cell docutils container">
@@ -2737,7 +2767,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -2745,7 +2775,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -2755,6 +2786,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -3019,7 +3054,7 @@ dl.xr-attrs {
   stroke: currentColor;
   fill: currentColor;
 }
-</style><pre class='xr-text-repr-fallback'>array([4.8363e+01, 5.0295e-01, 9.2209e-02, 6.3664e-04])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-59fa79a1-1e01-44c7-8dcf-b8258e6ed61d' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-59fa79a1-1e01-44c7-8dcf-b8258e6ed61d' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-979eb547-c826-4608-8734-874c2a42ec63' class='xr-array-in' type='checkbox' checked><label for='section-979eb547-c826-4608-8734-874c2a42ec63' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.503 0.09221 0.0006366</span></div><div class='xr-array-data'><pre>array([4.836319e+01, 5.029529e-01, 9.220858e-02, 6.366441e-04])</pre></div></div></li></ul></div></div></div></div>
+</style><pre class='xr-text-repr-fallback'>array([4.8363e+01, 5.0295e-01, 9.2209e-02, 6.3664e-04])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: 3</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-9366e346-64ee-4fca-94d2-723dbc92bc81' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-9366e346-64ee-4fca-94d2-723dbc92bc81' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-7528aab2-e729-411b-a912-3e91a76c3ac2' class='xr-array-in' type='checkbox' checked><label for='section-7528aab2-e729-411b-a912-3e91a76c3ac2' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.503 0.09221 0.0006366</span></div><div class='xr-array-data'><pre>array([4.836319e+01, 5.029529e-01, 9.220858e-02, 6.366441e-04])</pre></div></div></li></ul></div></div></div></div>
 </div>
 </section>
 <section id="comoments">
@@ -3117,7 +3152,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -3125,7 +3160,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -3135,6 +3171,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -3401,7 +3441,7 @@ dl.xr-attrs {
 }
 </style><pre class='xr-text-repr-fallback'>array([[ 4.8363e+01,  4.8516e-01,  7.5856e-02],
        [ 5.0295e-01, -1.2237e-02,  3.2919e-04],
-       [ 9.2209e-02, -4.2304e-03,  6.5653e-03]])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: (2, 2)</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-6ba5f663-bb10-4ff2-932c-401fd114e67b' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-6ba5f663-bb10-4ff2-932c-401fd114e67b' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-b3204ff2-9076-4721-8a37-9dc5aaec2af8' class='xr-array-in' type='checkbox' checked><label for='section-b3204ff2-9076-4721-8a37-9dc5aaec2af8' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.4852 0.07586 0.503 ... 0.0003292 0.09221 -0.00423 0.006565</span></div><div class='xr-array-data'><pre>array([[ 4.836319e+01,  4.851622e-01,  7.585550e-02],
+       [ 9.2209e-02, -4.2304e-03,  6.5653e-03]])</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsArray</div><ul class='xr-dim-list'><li><span>mom</span>: (2, 2)</li></ul><div class='xr-obj-type'><class 'numpy.ndarray'></div></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-7db5ef1d-077f-47d8-9494-c3595549fd76' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-7db5ef1d-077f-47d8-9494-c3595549fd76' class='xr-section-summary'  title='Expand/collapse section'>Info: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-837a845c-745b-4059-ba0b-eb1b4372efe6' class='xr-array-in' type='checkbox' checked><label for='section-837a845c-745b-4059-ba0b-eb1b4372efe6' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>48.36 0.4852 0.07586 0.503 ... 0.0003292 0.09221 -0.00423 0.006565</span></div><div class='xr-array-data'><pre>array([[ 4.836319e+01,  4.851622e-01,  7.585550e-02],
        [ 5.029529e-01, -1.223740e-02,  3.291919e-04],
        [ 9.220858e-02, -4.230387e-03,  6.565301e-03]])</pre></div></div></li></ul></div></div></div></div>
 </div>
@@ -3502,7 +3542,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -3510,7 +3550,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -3520,6 +3561,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -3793,14 +3838,14 @@ array([[[0.0625, 0.5585, 0.0184],
 
        [[0.951 , 0.0224, 0.627 ],
         [0.0179, 0.382 , 0.3126]]])
-Dimensions without coordinates: rec, a, b</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>rec</span>: 3</li><li><span>a</span>: 2</li><li><span>b</span>: 3</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-5fcd9520-613c-457e-a392-7ae564f2df8a' class='xr-array-in' type='checkbox' checked><label for='section-5fcd9520-613c-457e-a392-7ae564f2df8a' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>0.06247 0.5585 0.01837 0.4284 0.4153 ... 0.627 0.01787 0.382 0.3126</span></div><div class='xr-array-data'><pre>array([[[0.0625, 0.5585, 0.0184],
+Dimensions without coordinates: rec, a, b</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>rec</span>: 3</li><li><span>a</span>: 2</li><li><span>b</span>: 3</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-3b6ee80b-c807-4019-b769-931adcec0b14' class='xr-array-in' type='checkbox' checked><label for='section-3b6ee80b-c807-4019-b769-931adcec0b14' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>0.06247 0.5585 0.01837 0.4284 0.4153 ... 0.627 0.01787 0.382 0.3126</span></div><div class='xr-array-data'><pre>array([[[0.0625, 0.5585, 0.0184],
         [0.4284, 0.4153, 0.0854]],
 
        [[0.0821, 0.587 , 0.0041],
         [0.7317, 0.3686, 0.2628]],
 
        [[0.951 , 0.0224, 0.627 ],
-        [0.0179, 0.382 , 0.3126]]])</pre></div></div></li><li class='xr-section-item'><input id='section-fe555dfd-64ea-40e5-8bbd-e045b0ecd390' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-fe555dfd-64ea-40e5-8bbd-e045b0ecd390' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-15af0fa5-62e8-4ab3-85ca-0e15ca945b01' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-15af0fa5-62e8-4ab3-85ca-0e15ca945b01' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-32dea5c3-50e7-480a-9cb5-409af8458477' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-32dea5c3-50e7-480a-9cb5-409af8458477' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
+        [0.0179, 0.382 , 0.3126]]])</pre></div></div></li><li class='xr-section-item'><input id='section-a6493de4-69c5-4c12-9d8e-ab5f10aa0f3f' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-a6493de4-69c5-4c12-9d8e-ab5f10aa0f3f' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-cb9ebde4-95ca-4caa-a290-563a91944546' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-cb9ebde4-95ca-4caa-a290-563a91944546' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-fd016f5a-f865-4144-ba46-bb5f3ea4913e' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-fd016f5a-f865-4144-ba46-bb5f3ea4913e' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
 </div>
 <p>To create a cmomy object wrapping a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a>, use <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a></p>
 <div class="cell docutils container">
@@ -3893,7 +3938,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -3901,7 +3946,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -3911,6 +3957,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -4183,7 +4233,7 @@ array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
        [[1.0000e+02, 4.8831e-01, 8.2432e-02, 1.6465e-04],
         [1.0000e+02, 4.6920e-01, 9.2950e-02, 5.5999e-03],
         [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])
-Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsData</div><ul class='xr-dim-list'><li><span>val_shape</span>: (2, 3)</li><li><span>mom</span>: 3</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-39016c45-da99-40c4-8aac-140413ce4ae3' class='xr-section-summary-in' type='checkbox'  checked><label for='section-39016c45-da99-40c4-8aac-140413ce4ae3' class='xr-section-summary' >Info: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>val_dims :</span></dt><dd>(a, b)</dd><dt><span>mom_dims :</span></dt><dd>mom_0</dd></dl></div></li></ul></div></div><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
+Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>CentralMomentsData</div><ul class='xr-dim-list'><li><span>val_shape</span>: (2, 3)</li><li><span>mom</span>: 3</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><input id='section-50407951-e535-4b8a-a6a8-58b91620dc41' class='xr-section-summary-in' type='checkbox'  checked><label for='section-50407951-e535-4b8a-a6a8-58b91620dc41' class='xr-section-summary' >Info: <span>(2)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'><dt><span>val_dims :</span></dt><dd>(a, b)</dd><dt><span>mom_dims :</span></dt><dd>mom_0</dd></dl></div></li></ul></div></div><div><svg style="position: absolute; width: 0; height: 0; overflow: hidden">
 <defs>
 <symbol id="icon-database" viewBox="0 0 32 32">
 <path d="M16 0c-8.837 0-16 2.239-16 5v4c0 2.761 7.163 5 16 5s16-2.239 16-5v-4c0-2.761-7.163-5-16-5z"></path>
@@ -4265,7 +4315,7 @@ body.vscode-dark {
 .xr-sections {
   padding-left: 0 !important;
   display: grid;
-  grid-template-columns: 150px auto auto 1fr 20px 20px;
+  grid-template-columns: 150px auto auto 1fr 0 20px 0 20px;
 }
 
 .xr-section-item {
@@ -4273,7 +4323,8 @@ body.vscode-dark {
 }
 
 .xr-section-item input {
-  display: none;
+  display: inline-block;
+  opacity: 0;
 }
 
 .xr-section-item input + label {
@@ -4283,6 +4334,10 @@ body.vscode-dark {
 .xr-section-item input:enabled + label {
   cursor: pointer;
   color: var(--xr-font-color2);
+}
+
+.xr-section-item input:focus + label {
+  border: 2px solid var(--xr-font-color0);
 }
 
 .xr-section-item input:enabled + label:hover {
@@ -4555,13 +4610,13 @@ array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
        [[1.0000e+02, 4.8831e-01, 8.2432e-02, 1.6465e-04],
         [1.0000e+02, 4.6920e-01, 9.2950e-02, 5.5999e-03],
         [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])
-Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>a</span>: 2</li><li><span>b</span>: 3</li><li><span>mom_0</span>: 4</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-87ea4fb3-b668-436c-a05d-5a600e86919b' class='xr-array-in' type='checkbox' checked><label for='section-87ea4fb3-b668-436c-a05d-5a600e86919b' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>100.0 0.4066 0.09047 0.01381 100.0 ... 100.0 0.4889 0.07696 0.002323</span></div><div class='xr-array-data'><pre>array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
+Dimensions without coordinates: a, b, mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>a</span>: 2</li><li><span>b</span>: 3</li><li><span>mom_0</span>: 4</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-6487f26f-49a1-4efd-af0c-f5e908732675' class='xr-array-in' type='checkbox' checked><label for='section-6487f26f-49a1-4efd-af0c-f5e908732675' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>100.0 0.4066 0.09047 0.01381 100.0 ... 100.0 0.4889 0.07696 0.002323</span></div><div class='xr-array-data'><pre>array([[[1.0000e+02, 4.0657e-01, 9.0470e-02, 1.3814e-02],
         [1.0000e+02, 4.9516e-01, 7.3811e-02, 1.1677e-03],
         [1.0000e+02, 4.6592e-01, 8.1210e-02, 3.3827e-03]],
 
        [[1.0000e+02, 4.8831e-01, 8.2432e-02, 1.6465e-04],
         [1.0000e+02, 4.6920e-01, 9.2950e-02, 5.5999e-03],
-        [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])</pre></div></div></li><li class='xr-section-item'><input id='section-290f5024-4fe8-43ca-9b80-84a2329ff983' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-290f5024-4fe8-43ca-9b80-84a2329ff983' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-1d43492d-0912-4dec-9ec6-5d97244c62dc' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-1d43492d-0912-4dec-9ec6-5d97244c62dc' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-7f4712ba-a6aa-40e0-aa17-680d716695c6' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-7f4712ba-a6aa-40e0-aa17-680d716695c6' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
+        [1.0000e+02, 4.8891e-01, 7.6961e-02, 2.3232e-03]]])</pre></div></div></li><li class='xr-section-item'><input id='section-afb641f7-add5-426e-a1a4-2d7110961b44' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-afb641f7-add5-426e-a1a4-2d7110961b44' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-66009772-931f-4c12-bb1a-6ccb17d43816' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-66009772-931f-4c12-bb1a-6ccb17d43816' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-108a073a-7648-4119-9612-77289cf6d735' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-108a073a-7648-4119-9612-77289cf6d735' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
 </div>
 <p>Most everything that <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> can do, <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a> can also do.</p>
 </section>
@@ -4650,7 +4705,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-21.
+  Last updated on 2024-09-25.
   <br/>
 </p>
   </div>

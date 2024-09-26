@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cmomy.wrap_reduce_vals &#8212; cmomy v0.20.0 documentation</title>
+    <title>cmomy.wrap_reduce_vals &#8212; cmomy v0.21.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=4385029a"></script>
+    <script src="../../_static/documentation_options.js?v=bf5f3776"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="cmomy.wrap" href="cmomy.wrap.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-21"/>
+    <meta name="docbuild:last-update" content="2024-09-25"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.20.0 documentation</p>
+    <p class="title logo__title">cmomy v0.21.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -209,6 +209,7 @@
 
 
 
+
 <li class="toctree-l2"><a class="reference internal" href="cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
 
@@ -238,6 +239,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
 
 
 
@@ -493,7 +498,7 @@ document.write(`
 <h1>cmomy.wrap_reduce_vals<a class="headerlink" href="#cmomy-wrap-reduce-vals" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.wrap_reduce_vals">
-<span class="sig-prename descclassname"><span class="pre">cmomy.</span></span><span class="sig-name descname"><span class="pre">wrap_reduce_vals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'same_kind'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">on_missing_core_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'copy'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/wrapper/constructors.py#L349-L441"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.wrap_reduce_vals" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.</span></span><span class="sig-name descname"><span class="pre">wrap_reduce_vals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">casting</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'same_kind'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keepdims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/wrapper/constructors.py#L348-L437"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.wrap_reduce_vals" title="Link to this definition">#</a></dt>
 <dd><p>Create wrapped object from values.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -542,7 +547,8 @@ option is ignored.</p></li>
 <li><p><strong>keepdims</strong> – If this is set to True, the axes which are reduced are left in the
 result as dimensions with size one. With this option, the result will
 broadcast correctly against the input array.</p></li>
-<li><p><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>) – flags to <cite>numba.njit</cite></p></li>
+<li><p><strong>parallel</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, use parallel numba <code class="docutils literal notranslate"><span class="pre">numba.njit</span></code> or <code class="docutils literal notranslate"><span class="pre">numba.guvectorized</span></code> code if possible.
+If <code class="docutils literal notranslate"><span class="pre">None</span></code>, use a heuristic to determine if should attempt to use parallel method.</p></li>
 <li><p><strong>keep_attrs</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;drop&quot;,</span> <span class="pre">&quot;identical&quot;,</span> <span class="pre">&quot;no_conflicts&quot;,</span> <span class="pre">&quot;drop_conflicts&quot;,</span> <span class="pre">&quot;override&quot;}</span></code> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – <ul>
 <li><p>‘drop’ or False: empty attrs on returned xarray object.</p></li>
 <li><p>’identical’: all attrs must be the same on every object.</p></li>
@@ -551,8 +557,12 @@ broadcast correctly against the input array.</p></li>
 <li><p>’override’ or True: skip comparing and copy attrs from the first object to the result.</p></li>
 </ul>
 </p></li>
-<li><p><strong>on_missing_core_dim</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;raise&quot;,</span> <span class="pre">&quot;copy&quot;,</span> <span class="pre">&quot;drop&quot;}</span></code>) – How to handle missing core dimensions on input variables.</p></li>
-<li><p><strong>apply_ufunc_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.12)"><span class="xref std std-term">dict-like</span></a>) – Extra parameters to <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.apply_ufunc.html#xarray.apply_ufunc" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.apply_ufunc()</span></code></a></p></li>
+<li><p><strong>apply_ufunc_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.12)"><span class="xref std std-term">dict-like</span></a>) – Extra parameters to <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.apply_ufunc.html#xarray.apply_ufunc" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.apply_ufunc()</span></code></a>. One useful option is
+<code class="docutils literal notranslate"><span class="pre">on_missing_core_dim</span></code>, which can take the value <code class="docutils literal notranslate"><span class="pre">&quot;copy&quot;</span></code> (the
+default), <code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;drop&quot;</span></code> and controls what to do with
+variables of a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> missing core dimensions. Other
+options are <code class="docutils literal notranslate"><span class="pre">join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_fill_value</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">dask_gufunc_kwargs</span></code>. Unlisted options are handled internally.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -660,7 +670,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-21.
+  Last updated on 2024-09-25.
   <br/>
 </p>
   </div>

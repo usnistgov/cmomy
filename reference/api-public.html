@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Top level API (cmomy) &#8212; cmomy v0.20.0 documentation</title>
+    <title>Top level API (cmomy) &#8212; cmomy v0.21.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=4385029a"></script>
+    <script src="../_static/documentation_options.js?v=bf5f3776"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@
     <link rel="prev" title="API reference" href="index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-21"/>
+    <meta name="docbuild:last-update" content="2024-09-25"/>
   </head>
   
   
@@ -146,7 +146,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.20.0 documentation</p>
+    <p class="title logo__title">cmomy v0.21.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -211,6 +211,7 @@
 
 
 
+
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
 
@@ -240,6 +241,10 @@
 
 
 <li class="toctree-l2"><a class="reference internal" href="generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
 
 
 
@@ -542,7 +547,7 @@ document.write(`
 <tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.wrap_reduce_vals.html#cmomy.wrap_reduce_vals" title="cmomy.wrap_reduce_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_reduce_vals</span></code></a>(x, *y, mom[, weight, axis, ...])</p></td>
 <td><p>Create wrapped object from values.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.wrap_resample_vals.html#cmomy.wrap_resample_vals" title="cmomy.wrap_resample_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_resample_vals</span></code></a>(x, *y, mom[, weight, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.wrap_resample_vals.html#cmomy.wrap_resample_vals" title="cmomy.wrap_resample_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_resample_vals</span></code></a>(x, *y, mom, sampler[, ...])</p></td>
 <td><p>Create wrapped object from resampled values.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.wrap_raw.html#cmomy.wrap_raw" title="cmomy.wrap_raw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wrap_raw</span></code></a>(raw, *[, mom_ndim, out, dtype, ...])</p></td>
@@ -576,23 +581,20 @@ document.write(`
 <h2>Resampling routines available at top level (<a class="reference internal" href="generated/cmomy.resample.html#module-cmomy.resample" title="cmomy.resample"><code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code></a>)<a class="headerlink" href="#resampling-routines-available-at-top-level-resample" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_data" title="cmomy.resample.resample_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_data</span></code></a>(data, *[, mom_ndim, freq, ...])</p></td>
-<td><p>Resample data according to frequency table.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_data" title="cmomy.resample.resample_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_data</span></code></a>(data, *, sampler[, mom_ndim, ...])</p></td>
+<td><p>Resample and reduce data.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_vals" title="cmomy.resample.resample_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_vals</span></code></a>(x, *y, mom[, weight, freq, ...])</p></td>
-<td><p>Resample data according to frequency table.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.resample_vals" title="cmomy.resample.resample_vals"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample_vals</span></code></a>(x, *y, mom, sampler[, weight, ...])</p></td>
+<td><p>Resample and reduce values.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_freq" title="cmomy.resample.random_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_freq</span></code></a>(nrep, ndat[, nsamp, rng, replace])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.factory_sampler" title="cmomy.resample.factory_sampler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">factory_sampler</span></code></a>([sampler, freq, indices, ...])</p></td>
+<td><p>Factory method to create sampler.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_freq" title="cmomy.resample.random_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_freq</span></code></a>(nrep, ndat[, nsamp, rng, ...])</p></td>
 <td><p>Create frequencies for random resampling (bootstrapping).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_indices" title="cmomy.resample.random_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_indices</span></code></a>(nrep, ndat[, nsamp, rng, replace])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.random_indices" title="cmomy.resample.random_indices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">random_indices</span></code></a>(nrep, ndat[, nsamp, rng, replace])</p></td>
 <td><p>Create indices for random resampling (bootstrapping).</p></td>
-</tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.randsamp_freq" title="cmomy.resample.randsamp_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">randsamp_freq</span></code></a>(*[, freq, indices, ndat, ...])</p></td>
-<td><p>Convenience function to create frequency table for resampling.</p></td>
-</tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.html#cmomy.resample.indices_to_freq" title="cmomy.resample.indices_to_freq"><code class="xref py py-obj docutils literal notranslate"><span class="pre">indices_to_freq</span></code></a>(indices, *[, ndat, parallel])</p></td>
-<td><p>Convert indices to frequency array.</p></td>
 </tr>
 </tbody>
 </table>
@@ -782,7 +784,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-21.
+  Last updated on 2024-09-25.
   <br/>
 </p>
   </div>

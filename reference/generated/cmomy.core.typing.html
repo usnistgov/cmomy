@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Typing aliases (cmomy.core.typing) &#8212; cmomy v0.20.0 documentation</title>
+    <title>Typing aliases (cmomy.core.typing) &#8212; cmomy v0.21.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=4385029a"></script>
+    <script src="../../_static/documentation_options.js?v=bf5f3776"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="Interface to utility functions (cmomy.utils)" href="cmomy.utils.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-21"/>
+    <meta name="docbuild:last-update" content="2024-09-25"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.20.0 documentation</p>
+    <p class="title logo__title">cmomy v0.21.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -209,6 +209,7 @@
 
 
 
+
 <li class="toctree-l2"><a class="reference internal" href="cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
 
 
@@ -238,6 +239,10 @@
 
 
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
 
 
 
@@ -481,6 +486,7 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.GenArrayT"><code class="docutils literal notranslate"><span class="pre">GenArrayT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DataT"><code class="docutils literal notranslate"><span class="pre">DataT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayT"><code class="docutils literal notranslate"><span class="pre">ArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SamplerArrayT"><code class="docutils literal notranslate"><span class="pre">SamplerArrayT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ScalarT"><code class="docutils literal notranslate"><span class="pre">ScalarT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatingT"><code class="docutils literal notranslate"><span class="pre">FloatingT</span></code></a></li>
@@ -509,7 +515,10 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ZerosLikeKwargs"><code class="docutils literal notranslate"><span class="pre">ZerosLikeKwargs</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPTransform"><code class="docutils literal notranslate"><span class="pre">WrapNPTransform</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPResampleAndReduceKwargs"><code class="docutils literal notranslate"><span class="pre">WrapNPResampleAndReduceKwargs</span></code></a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPReduce"><code class="docutils literal notranslate"><span class="pre">WrapNPReduce</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPReduceKwargs"><code class="docutils literal notranslate"><span class="pre">WrapNPReduceKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.IndexSamplerFromDataKwargs"><code class="docutils literal notranslate"><span class="pre">IndexSamplerFromDataKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FactoryIndexSamplerKwargs"><code class="docutils literal notranslate"><span class="pre">FactoryIndexSamplerKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Sampler"><code class="docutils literal notranslate"><span class="pre">Sampler</span></code></a></li>
 </ul>
 
             </nav>
@@ -537,83 +546,92 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ArrayT" title="cmomy.core.typing.ArrayT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ArrayT</span></code></a></p></td>
 <td><p>TypeVar of array types with restriction</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.FloatT" title="cmomy.core.typing.FloatT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatT</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.SamplerArrayT" title="cmomy.core.typing.SamplerArrayT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SamplerArrayT</span></code></a></p></td>
+<td><p>TypeVar of types wrapped by IndexSampler</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.FloatT" title="cmomy.core.typing.FloatT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatT</span></code></a></p></td>
 <td><p>TypeVar of floating point precision (np.float32, np.float64, default=Any)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ScalarT" title="cmomy.core.typing.ScalarT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarT</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ScalarT" title="cmomy.core.typing.ScalarT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScalarT</span></code></a></p></td>
 <td><p>TypeVar of for np.generic dtype.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.FloatingT" title="cmomy.core.typing.FloatingT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatingT</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.FloatingT" title="cmomy.core.typing.FloatingT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatingT</span></code></a></p></td>
 <td><p>TypeVar of floating point precision (all)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceDataKwargs" title="cmomy.core.typing.ReduceDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceDataKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceDataKwargs" title="cmomy.core.typing.ReduceDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceDataKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_data" title="cmomy.reduction.reduce_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_data()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceValsKwargs" title="cmomy.core.typing.ReduceValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceValsKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceValsKwargs" title="cmomy.core.typing.ReduceValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceValsKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_vals" title="cmomy.reduction.reduce_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_vals()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceDataGroupedKwargs" title="cmomy.core.typing.ReduceDataGroupedKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceDataGroupedKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceDataGroupedKwargs" title="cmomy.core.typing.ReduceDataGroupedKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceDataGroupedKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_data_grouped" title="cmomy.reduction.reduce_data_grouped"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_data_grouped()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceDataIndexedKwargs" title="cmomy.core.typing.ReduceDataIndexedKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceDataIndexedKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ReduceDataIndexedKwargs" title="cmomy.core.typing.ReduceDataIndexedKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReduceDataIndexedKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_data_indexed" title="cmomy.reduction.reduce_data_indexed"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_data_indexed()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ResampleDataKwargs" title="cmomy.core.typing.ResampleDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResampleDataKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ResampleDataKwargs" title="cmomy.core.typing.ResampleDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResampleDataKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.resample_data" title="cmomy.resample.resample_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.resample_data()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ResampleValsKwargs" title="cmomy.core.typing.ResampleValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResampleValsKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ResampleValsKwargs" title="cmomy.core.typing.ResampleValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ResampleValsKwargs</span></code></a></p></td>
 <td><p>Extra parameters for <a class="reference internal" href="cmomy.resample.html#cmomy.resample.resample_vals" title="cmomy.resample.resample_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.resample_vals()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.JackknifeDataKwargs" title="cmomy.core.typing.JackknifeDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JackknifeDataKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.JackknifeDataKwargs" title="cmomy.core.typing.JackknifeDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JackknifeDataKwargs</span></code></a></p></td>
 <td><p>Extra parameters for <a class="reference internal" href="cmomy.resample.html#cmomy.resample.jackknife_data" title="cmomy.resample.jackknife_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.jackknife_data()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.JackknifeValsKwargs" title="cmomy.core.typing.JackknifeValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JackknifeValsKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.JackknifeValsKwargs" title="cmomy.core.typing.JackknifeValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">JackknifeValsKwargs</span></code></a></p></td>
 <td><p>Extra parameters for <a class="reference internal" href="cmomy.resample.html#cmomy.resample.jackknife_data" title="cmomy.resample.jackknife_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.jackknife_data()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapRawKwargs" title="cmomy.core.typing.WrapRawKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapRawKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapRawKwargs" title="cmomy.core.typing.WrapRawKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapRawKwargs</span></code></a></p></td>
 <td><p>Extra parameters for <a class="reference internal" href="cmomy.wrap_raw.html#cmomy.wrap_raw" title="cmomy.wrap_raw"><code class="xref py py-func docutils literal notranslate"><span class="pre">wrap_raw()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.MomentsTypeKwargs" title="cmomy.core.typing.MomentsTypeKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MomentsTypeKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.MomentsTypeKwargs" title="cmomy.core.typing.MomentsTypeKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MomentsTypeKwargs</span></code></a></p></td>
 <td><p>Extra parameters for <a class="reference internal" href="cmomy.convert.html#cmomy.convert.moments_type" title="cmomy.convert.moments_type"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert.moments_type()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.CumulativeKwargs" title="cmomy.core.typing.CumulativeKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CumulativeKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.CumulativeKwargs" title="cmomy.core.typing.CumulativeKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CumulativeKwargs</span></code></a></p></td>
 <td><p>Extra parameters for <a class="reference internal" href="cmomy.convert.html#cmomy.convert.cumulative" title="cmomy.convert.cumulative"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert.cumulative()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.MomentsToComomentsKwargs" title="cmomy.core.typing.MomentsToComomentsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MomentsToComomentsKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.MomentsToComomentsKwargs" title="cmomy.core.typing.MomentsToComomentsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MomentsToComomentsKwargs</span></code></a></p></td>
 <td><p>Extra parameters for <a class="reference internal" href="cmomy.convert.html#cmomy.convert.moments_to_comoments" title="cmomy.convert.moments_to_comoments"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert.moments_to_comoments()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.SelectMomentKwargs" title="cmomy.core.typing.SelectMomentKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SelectMomentKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.SelectMomentKwargs" title="cmomy.core.typing.SelectMomentKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SelectMomentKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.utils.html#cmomy.utils.select_moment" title="cmomy.utils.select_moment"><code class="xref py py-func docutils literal notranslate"><span class="pre">utils.select_moment()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ValsToDataKwargs" title="cmomy.core.typing.ValsToDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValsToDataKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ValsToDataKwargs" title="cmomy.core.typing.ValsToDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ValsToDataKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.utils.html#cmomy.utils.vals_to_data" title="cmomy.utils.vals_to_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">utils.vals_to_data()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingDataKwargs" title="cmomy.core.typing.RollingDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingDataKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingDataKwargs" title="cmomy.core.typing.RollingDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingDataKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_data" title="cmomy.rolling.rolling_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_data()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingValsKwargs" title="cmomy.core.typing.RollingValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingValsKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingValsKwargs" title="cmomy.core.typing.RollingValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingValsKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_vals" title="cmomy.rolling.rolling_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_vals()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingExpDataKwargs" title="cmomy.core.typing.RollingExpDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingExpDataKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingExpDataKwargs" title="cmomy.core.typing.RollingExpDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingExpDataKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_exp_data" title="cmomy.rolling.rolling_exp_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_exp_data()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingExpValsKwargs" title="cmomy.core.typing.RollingExpValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingExpValsKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.RollingExpValsKwargs" title="cmomy.core.typing.RollingExpValsKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RollingExpValsKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_exp_vals" title="cmomy.rolling.rolling_exp_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_exp_vals()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapKwargs" title="cmomy.core.typing.WrapKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapKwargs</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapKwargs" title="cmomy.core.typing.WrapKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.wrap.html#cmomy.wrap" title="cmomy.wrap"><code class="xref py py-func docutils literal notranslate"><span class="pre">cmomy.wrap()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.ZerosLikeKwargs" title="cmomy.core.typing.ZerosLikeKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZerosLikeKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.ZerosLikeKwargs" title="cmomy.core.typing.ZerosLikeKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ZerosLikeKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.zeros_like.html#cmomy.zeros_like" title="cmomy.zeros_like"><code class="xref py py-func docutils literal notranslate"><span class="pre">cmomy.zeros_like()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapNPTransform" title="cmomy.core.typing.WrapNPTransform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapNPTransform</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapNPTransform" title="cmomy.core.typing.WrapNPTransform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapNPTransform</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.cumulative" title="cmomy.CentralMomentsArray.cumulative"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CentralMomentsArray.cumulative()</span></code></a></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapNPResampleAndReduceKwargs" title="cmomy.core.typing.WrapNPResampleAndReduceKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapNPResampleAndReduceKwargs</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapNPResampleAndReduceKwargs" title="cmomy.core.typing.WrapNPResampleAndReduceKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapNPResampleAndReduceKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.resample_and_reduce" title="cmomy.CentralMomentsArray.resample_and_reduce"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CentralMomentsArray.resample_and_reduce()</span></code></a></p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapNPReduce" title="cmomy.core.typing.WrapNPReduce"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapNPReduce</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.WrapNPReduceKwargs" title="cmomy.core.typing.WrapNPReduceKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">WrapNPReduceKwargs</span></code></a></p></td>
 <td><p>Extra parameters to <a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.reduce" title="cmomy.CentralMomentsArray.reduce"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CentralMomentsArray.reduce()</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.IndexSamplerFromDataKwargs" title="cmomy.core.typing.IndexSamplerFromDataKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IndexSamplerFromDataKwargs</span></code></a></p></td>
+<td><p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.IndexSampler.from_data" title="cmomy.resample.IndexSampler.from_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resample.IndexSampler.from_data()</span></code></a></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.FactoryIndexSamplerKwargs" title="cmomy.core.typing.FactoryIndexSamplerKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FactoryIndexSamplerKwargs</span></code></a></p></td>
+<td><p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.factory_sampler" title="cmomy.resample.factory_sampler"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.factory_sampler()</span></code></a></p></td>
 </tr>
 </tbody>
 </table>
@@ -637,6 +655,13 @@ document.write(`
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ArrayT</span></span><a class="headerlink" href="#cmomy.core.typing.ArrayT" title="Link to this definition">#</a></dt>
 <dd><p>TypeVar of array types with restriction</p>
 <p>alias of TypeVar(‘ArrayT’, ~numpy.ndarray[~typing.Any, ~numpy.dtype[~numpy.float32]], ~numpy.ndarray[~typing.Any, ~numpy.dtype[~numpy.float64]], ~xarray.core.dataarray.DataArray)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.core.typing.SamplerArrayT">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">SamplerArrayT</span></span><a class="headerlink" href="#cmomy.core.typing.SamplerArrayT" title="Link to this definition">#</a></dt>
+<dd><p>TypeVar of types wrapped by IndexSampler</p>
+<p>alias of TypeVar(‘SamplerArrayT’, ~numpy.ndarray[~typing.Any, ~numpy.dtype[~typing.Any]], ~xarray.core.dataarray.DataArray, ~xarray.core.dataset.Dataset, ~xarray.core.dataarray.DataArray | ~xarray.core.dataset.Dataset)</p>
 </dd></dl>
 
 <dl class="py class">
@@ -683,163 +708,210 @@ document.write(`
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ReduceDataKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L301-L312"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceDataKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L307-L318"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceDataKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_data" title="cmomy.reduction.reduce_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_data()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ReduceValsKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L315-L321"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceValsKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L321-L327"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceValsKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_vals" title="cmomy.reduction.reduce_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_vals()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ReduceDataGroupedKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceDataGroupedKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L324-L333"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceDataGroupedKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceDataGroupedKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L330-L339"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceDataGroupedKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_data_grouped" title="cmomy.reduction.reduce_data_grouped"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_data_grouped()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ReduceDataIndexedKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceDataIndexedKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L336-L351"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceDataIndexedKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ReduceDataIndexedKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L342-L357"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ReduceDataIndexedKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_data_indexed" title="cmomy.reduction.reduce_data_indexed"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduction.reduce_data_indexed()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ResampleDataKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ResampleDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L355-L362"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ResampleDataKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ResampleDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L361-L368"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ResampleDataKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.resample_data" title="cmomy.resample.resample_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.resample_data()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ResampleValsKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ResampleValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L365-L372"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ResampleValsKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ResampleValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L371-L378"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ResampleValsKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters for <a class="reference internal" href="cmomy.resample.html#cmomy.resample.resample_vals" title="cmomy.resample.resample_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.resample_vals()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.JackknifeDataKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">JackknifeDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L375-L383"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.JackknifeDataKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">JackknifeDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L381-L389"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.JackknifeDataKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters for <a class="reference internal" href="cmomy.resample.html#cmomy.resample.jackknife_data" title="cmomy.resample.jackknife_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.jackknife_data()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.JackknifeValsKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">JackknifeValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L386-L394"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.JackknifeValsKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">JackknifeValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L392-L400"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.JackknifeValsKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters for <a class="reference internal" href="cmomy.resample.html#cmomy.resample.jackknife_data" title="cmomy.resample.jackknife_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.jackknife_data()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.WrapRawKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapRawKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L398-L404"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapRawKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapRawKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L404-L410"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapRawKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters for <a class="reference internal" href="cmomy.wrap_raw.html#cmomy.wrap_raw" title="cmomy.wrap_raw"><code class="xref py py-func docutils literal notranslate"><span class="pre">wrap_raw()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.MomentsTypeKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomentsTypeKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L407-L413"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.MomentsTypeKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomentsTypeKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L413-L419"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.MomentsTypeKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters for <a class="reference internal" href="cmomy.convert.html#cmomy.convert.moments_type" title="cmomy.convert.moments_type"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert.moments_type()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.CumulativeKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">CumulativeKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L416-L424"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.CumulativeKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">CumulativeKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L422-L430"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.CumulativeKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters for <a class="reference internal" href="cmomy.convert.html#cmomy.convert.cumulative" title="cmomy.convert.cumulative"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert.cumulative()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.MomentsToComomentsKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomentsToComomentsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L427-L437"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.MomentsToComomentsKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomentsToComomentsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L433-L440"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.MomentsToComomentsKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters for <a class="reference internal" href="cmomy.convert.html#cmomy.convert.moments_to_comoments" title="cmomy.convert.moments_to_comoments"><code class="xref py py-func docutils literal notranslate"><span class="pre">convert.moments_to_comoments()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.SelectMomentKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">SelectMomentKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L441-L450"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.SelectMomentKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">SelectMomentKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L444-L453"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.SelectMomentKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.utils.html#cmomy.utils.select_moment" title="cmomy.utils.select_moment"><code class="xref py py-func docutils literal notranslate"><span class="pre">utils.select_moment()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ValsToDataKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ValsToDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L453-L458"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ValsToDataKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ValsToDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L456-L461"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ValsToDataKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.utils.html#cmomy.utils.vals_to_data" title="cmomy.utils.vals_to_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">utils.vals_to_data()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.RollingDataKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L476-L479"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingDataKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L479-L482"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingDataKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_data" title="cmomy.rolling.rolling_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_data()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.RollingValsKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L482-L488"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingValsKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L485-L491"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingValsKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_vals" title="cmomy.rolling.rolling_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_vals()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.RollingExpDataKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingExpDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L491-L498"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingExpDataKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingExpDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L494-L501"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingExpDataKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_exp_data" title="cmomy.rolling.rolling_exp_data"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_exp_data()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.RollingExpValsKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingExpValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L501-L508"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingExpValsKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RollingExpValsKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L504-L511"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.RollingExpValsKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.rolling.html#cmomy.rolling.rolling_exp_vals" title="cmomy.rolling.rolling_exp_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">rolling.rolling_exp_vals()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.WrapKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L512-L520"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L515-L523"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.wrap.html#cmomy.wrap" title="cmomy.wrap"><code class="xref py py-func docutils literal notranslate"><span class="pre">cmomy.wrap()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.ZerosLikeKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ZerosLikeKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L523-L532"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ZerosLikeKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ZerosLikeKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L526-L535"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.ZerosLikeKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.zeros_like.html#cmomy.zeros_like" title="cmomy.zeros_like"><code class="xref py py-func docutils literal notranslate"><span class="pre">cmomy.zeros_like()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.WrapNPTransform">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapNPTransform</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L536-L545"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapNPTransform" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapNPTransform</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L539-L548"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapNPTransform" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.cumulative" title="cmomy.CentralMomentsArray.cumulative"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CentralMomentsArray.cumulative()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="cmomy.core.typing.WrapNPResampleAndReduceKwargs">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapNPResampleAndReduceKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L548-L553"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapNPResampleAndReduceKwargs" title="Link to this definition">#</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapNPResampleAndReduceKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L551-L555"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapNPResampleAndReduceKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.resample_and_reduce" title="cmomy.CentralMomentsArray.resample_and_reduce"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CentralMomentsArray.resample_and_reduce()</span></code></a></p>
 </dd></dl>
 
 <dl class="py class">
-<dt class="sig sig-object py" id="cmomy.core.typing.WrapNPReduce">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapNPReduce</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L556-L564"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapNPReduce" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="cmomy.core.typing.WrapNPReduceKwargs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">WrapNPReduceKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L558-L566"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.WrapNPReduceKwargs" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
 <p>Extra parameters to <a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.reduce" title="cmomy.CentralMomentsArray.reduce"><code class="xref py py-meth docutils literal notranslate"><span class="pre">CentralMomentsArray.reduce()</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.core.typing.IndexSamplerFromDataKwargs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">IndexSamplerFromDataKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L569-L582"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.IndexSamplerFromDataKwargs" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a></p>
+<p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.IndexSampler.from_data" title="cmomy.resample.IndexSampler.from_data"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resample.IndexSampler.from_data()</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.core.typing.FactoryIndexSamplerKwargs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">FactoryIndexSamplerKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/core/typing.py#L585-L614"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.FactoryIndexSamplerKwargs" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.TypedDict" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></a></p>
+<p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.factory_sampler" title="cmomy.resample.factory_sampler"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.factory_sampler()</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array" title="(in NumPy v2.1)"><span class="xref std std-term">array</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Array of shape <code class="docutils literal notranslate"><span class="pre">(nrep,</span> <span class="pre">size)</span></code>.  If passed, create <cite>freq</cite> from indices.</p></li>
+<li><p><strong>freq</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.1)"><span class="xref std std-term">array-like</span></a>, <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>, or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Array of shape <code class="docutils literal notranslate"><span class="pre">(nrep,</span> <span class="pre">size)</span></code> where <cite>nrep</cite> is the number of
+replicates and <code class="docutils literal notranslate"><span class="pre">size</span> <span class="pre">=</span> <span class="pre">self.shape[axis]</span></code>. <cite>freq</cite> is the weight that
+each sample contributes to resamples values. If <code class="docutils literal notranslate"><span class="pre">freq</span></code> is an
+<a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object, it is assumed that the dimensions are in order of
+<code class="docutils literal notranslate"><span class="pre">(rep_dim,</span> <span class="pre">dim)</span></code> where <code class="docutils literal notranslate"><span class="pre">rep_dim</span></code> and <code class="docutils literal notranslate"><span class="pre">dim</span></code> are the name of the
+replicated and sampled dimension, respectively.</p></li>
+<li><p><strong>ndat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Size of data along resampled axis.</p></li>
+<li><p><strong>nrep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of resample replicates.</p></li>
+<li><p><strong>nsamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of samples in a single resampled replicate. Defaults to size of
+data along sampled axis.</p></li>
+<li><p><strong>paired</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code> and generating <code class="docutils literal notranslate"><span class="pre">freq</span></code> from <code class="docutils literal notranslate"><span class="pre">nrep</span></code> with <code class="docutils literal notranslate"><span class="pre">data</span></code> of type
+<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>, Generate unique <code class="docutils literal notranslate"><span class="pre">freq</span></code> for each variable in
+<code class="docutils literal notranslate"><span class="pre">data</span></code>. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, treat all variables in <code class="docutils literal notranslate"><span class="pre">data</span></code> as paired, and
+use same <code class="docutils literal notranslate"><span class="pre">freq</span></code> for each.</p></li>
+<li><p><strong>rng</strong> – Random number generator object. Defaults to output of
+<a class="reference internal" href="cmomy.random.html#cmomy.random.default_rng" title="cmomy.random.default_rng"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_rng()</span></code></a>. If pass in a seed value, create a new
+<a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a> object with this seed</p></li>
+<li><p><strong>resample_replace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True, do resampling with replacement.</p></li>
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, shuffle <code class="docutils literal notranslate"><span class="pre">indices</span></code> created from <code class="docutils literal notranslate"><span class="pre">freq</span></code> for each row.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.Sampler">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">Sampler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.Sampler" title="Link to this definition">#</a></dt>
+<dd><p>IndexSampler or mapping which can be converted to IndexSampler</p>
+<p>alias of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.12)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>]] | <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> | <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">IndexSampler[Any]</span></code> | <a class="reference internal" href="#cmomy.core.typing.FactoryIndexSamplerKwargs" title="cmomy.core.typing.FactoryIndexSamplerKwargs"><code class="xref py py-class docutils literal notranslate"><span class="pre">FactoryIndexSamplerKwargs</span></code></a></p>
 </dd></dl>
 
 
@@ -892,6 +964,7 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.GenArrayT"><code class="docutils literal notranslate"><span class="pre">GenArrayT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DataT"><code class="docutils literal notranslate"><span class="pre">DataT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayT"><code class="docutils literal notranslate"><span class="pre">ArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SamplerArrayT"><code class="docutils literal notranslate"><span class="pre">SamplerArrayT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ScalarT"><code class="docutils literal notranslate"><span class="pre">ScalarT</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatingT"><code class="docutils literal notranslate"><span class="pre">FloatingT</span></code></a></li>
@@ -920,7 +993,10 @@ document.write(`
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ZerosLikeKwargs"><code class="docutils literal notranslate"><span class="pre">ZerosLikeKwargs</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPTransform"><code class="docutils literal notranslate"><span class="pre">WrapNPTransform</span></code></a></li>
 <li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPResampleAndReduceKwargs"><code class="docutils literal notranslate"><span class="pre">WrapNPResampleAndReduceKwargs</span></code></a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPReduce"><code class="docutils literal notranslate"><span class="pre">WrapNPReduce</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.WrapNPReduceKwargs"><code class="docutils literal notranslate"><span class="pre">WrapNPReduceKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.IndexSamplerFromDataKwargs"><code class="docutils literal notranslate"><span class="pre">IndexSamplerFromDataKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FactoryIndexSamplerKwargs"><code class="docutils literal notranslate"><span class="pre">FactoryIndexSamplerKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Sampler"><code class="docutils literal notranslate"><span class="pre">Sampler</span></code></a></li>
 </ul>
 
   </nav></div>
@@ -955,7 +1031,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-21.
+  Last updated on 2024-09-25.
   <br/>
 </p>
   </div>
