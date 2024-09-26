@@ -14,8 +14,6 @@ Test wrapped object elsewhere...
 
 from __future__ import annotations
 
-from contextlib import nullcontext
-
 import numpy as np
 import pytest
 import xarray as xr
@@ -61,6 +59,7 @@ def unpack_data_to_xy_weight(data, mom):
     raise ValueError(msg)
 
 
+# * resampling
 # ** resample
 @pytest.mark.parametrize("nrep", [10])
 def test_resample_data_0(data_and_kwargs, nrep):
@@ -234,7 +233,7 @@ def test_jackknife_data_rep_dim() -> None:
     ).dims == (*data.dims, "mom")
 
 
-# * Testing utilities
+# * sampler
 @pytest.mark.parametrize("ndat", [50])
 @pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("nsamp", [None, 20])
@@ -359,44 +358,6 @@ def test_select_ndat() -> None:
         resample.select_ndat(xdata)
 
 
-@pytest.mark.parametrize(
-    ("data", "kwargs", "expected"),
-    [
-        (
-            np.zeros((2, 3, 4)),
-            {"nrep": 2, "ndat": 3, "is_freq": True},
-            pytest.raises(ValueError),
-        ),
-        (
-            np.zeros((2, 3)),
-            {"nrep": 3, "ndat": 3, "is_freq": True},
-            pytest.raises(ValueError),
-        ),
-        (
-            np.zeros((2, 3)),
-            {"nrep": None, "ndat": 3, "is_freq": True},
-            nullcontext(None),
-        ),
-        (
-            np.zeros((2, 3)),
-            {"nrep": 2, "ndat": 5, "is_freq": True},
-            pytest.raises(ValueError),
-        ),
-        (np.zeros((2, 3)), {"nrep": 2, "ndat": 5, "is_freq": False}, nullcontext(None)),
-        (
-            np.zeros((2, 3)) + 10,
-            {"nrep": 2, "ndat": 5, "is_freq": False},
-            pytest.raises(ValueError),
-        ),
-    ],
-)
-def test_validate_resample_array(data, kwargs, expected) -> None:
-    from cmomy.resample.sampler import _validate_resample_array
-
-    with expected:
-        _validate_resample_array(data, **kwargs)
-
-
 def test_factory_sampler() -> None:
     ndat = 5
     nrep = 10
@@ -446,6 +407,11 @@ def test_factory_sampler_freq_from_data(expected, kwargs) -> None:
     np.testing.assert_allclose(out, expected)
 
 
+def _check_r(r, indices, freq):
+    np.testing.assert_equal(r.indices, indices)
+    np.testing.assert_equal(r.freq, freq)
+
+
 @pytest.mark.parametrize(
     ("nrep", "ndat", "nsamp"),
     [
@@ -457,10 +423,6 @@ def test_indexresampler(rng, nrep, ndat, nsamp) -> None:
     seed = rng.integers(0, 100)
     indices = resample.random_indices(nrep, ndat, nsamp, rng=seed)
     freq = resample.indices_to_freq(indices, ndat=ndat)
-
-    def _check_r(r, indices, freq):
-        np.testing.assert_equal(r.indices, indices)
-        np.testing.assert_equal(r.freq, freq)
 
     _check_r(
         resample.IndexSampler.from_params(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=seed),
@@ -477,6 +439,100 @@ def test_indexresampler(rng, nrep, ndat, nsamp) -> None:
     _check_r(
         resample.IndexSampler(freq=freq, ndat=ndat), np.sort(indices, axis=-1), freq
     )
+
+
+def test_indexresampler_raises() -> None:
+    with pytest.raises(ValueError, match="Must specify.*"):
+        cmomy.IndexSampler()
+
+    freq = cmomy.random_freq(10, 5)
+
+    with pytest.raises(ValueError, match="ndat.*"):
+        cmomy.IndexSampler(freq=freq, ndat=4)
+
+
+def test_indexresampler_dataset() -> None:
+    indices = xr.Dataset(
+        {
+            k: xr.DataArray(cmomy.random_freq(10, 5, rng=i), dims=["rep", "rec"])
+            for i, k in enumerate(["data0", "data1"])
+        }
+    )
+
+    sampler = cmomy.IndexSampler(indices=indices)
+
+    xr.testing.assert_equal(sampler._first_indices, indices["data0"])
+    xr.testing.assert_equal(
+        sampler._first_freq, cmomy.resample.indices_to_freq(indices["data0"])
+    )
+
+    sampler2 = cmomy.factory_sampler(indices=indices)
+
+    xr.testing.assert_equal(sampler.indices, sampler2.indices)
+    xr.testing.assert_equal(sampler.freq, sampler2.freq)
+
+
+def test_factory_sampler_raises() -> None:
+    data = np.zeros(5)
+
+    sampler = cmomy.factory_sampler(data=data, axis=0, nrep=10, rng=0)
+    assert sampler.indices.shape == (10, 5)
+
+    with pytest.raises(ValueError, match="Must specify nrep.*"):
+        _ = cmomy.factory_sampler(nrep=10)
+
+
+def test_factroy_sampler_dataset() -> None:
+    nrep = 10
+    ndat = 5
+    data = xr.Dataset(
+        {
+            "data0": xr.DataArray(np.zeros(ndat), dims=["a"]),
+            "data1": xr.DataArray(np.zeros((ndat, 2, 3)), dims=["a", "mom_0", "mom_1"]),
+            "data2": xr.DataArray(np.zeros((ndat, 2, 3)), dims=["a", "mom_0", "mom_1"]),
+            "data3": xr.DataArray(np.zeros(3), dims=["b"]),
+        }
+    )
+
+    rng = np.random.default_rng(0)
+    expected = xr.Dataset(
+        {
+            k: xr.DataArray(cmomy.random_freq(nrep, ndat, rng=rng), dims=["rep", "a"])
+            for k in ("data1", "data2")
+        }
+    )
+
+    out = cmomy.factory_sampler(
+        data=data,
+        nrep=nrep,
+        dim="a",
+        rng=0,
+        paired=False,
+        mom_dims=["mom_0", "mom_1"],
+    )
+
+    xr.testing.assert_equal(expected, out.freq)
+
+    out = cmomy.factory_sampler(
+        data=data.drop_vars("data0"),
+        nrep=nrep,
+        dim="a",
+        rng=0,
+        paired=False,
+        mom_ndim=2,
+    )
+    xr.testing.assert_equal(expected, out.freq)
+
+    out = cmomy.factory_sampler(
+        data=data.drop_vars("data0"),
+        nrep=nrep,
+        dim="a",
+        rng=0,
+        paired=False,
+    )
+    xr.testing.assert_equal(expected, out.freq)
+
+    assert repr(out) == f"<IndexSampler(nrep: {nrep}, ndat: {ndat})>"
 
 
 @pytest.mark.parametrize("expected", [resample.random_freq(nrep=10, ndat=5, rng=0)])
@@ -515,3 +571,5 @@ def test_indexresampler_from_data(expected, kwargs) -> None:
     _check(factory_sampler(r, **kwargs))
     _check(factory_sampler({"freq": r.freq}, **kwargs))
     _check(factory_sampler({"indices": r.indices}, **kwargs))
+    _check(factory_sampler(r.freq))
+    _check(factory_sampler(r.freq, **kwargs))

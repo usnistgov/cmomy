@@ -16,7 +16,6 @@ from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
-    raise_if_wrong_value,
     validate_mom_dims,
     validate_mom_ndim,
 )
@@ -32,7 +31,7 @@ if TYPE_CHECKING:
     from collections.abc import Hashable
     from typing import Any, Literal
 
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import ArrayLike
 
     from cmomy.core.typing import (
         AxisReduce,
@@ -99,6 +98,12 @@ class IndexSampler(Generic[SamplerArrayT]):
         if self._indices is None and self._freq is None:
             msg = "Must specify indices or freq"
             raise ValueError(msg)
+
+        if self._ndat is not None and self._freq is not None:
+            freq_ndat = self._first_freq.shape[-1]
+            if freq_ndat != self._ndat:
+                msg = f"ndat={self._ndat} != freq.shape[-1]={freq_ndat}"
+                raise ValueError(msg)
         # check indices?
 
     @property
@@ -146,7 +151,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         return self._first.shape[0]
 
     def __repr__(self) -> str:
-        return f"<IndexResamper(nrep: {self.nrep}, ndat: {self.ndat})>"
+        return f"<IndexSampler(nrep: {self.nrep}, ndat: {self.ndat})>"
 
     # * constructors
     @classmethod
@@ -329,10 +334,11 @@ def factory_sampler(  # noqa: PLR0913
     :class:`IndexSampler`. The order of evaluation is as follows:
 
     #. ``sampler`` is a :class:`IndexSampler`: return ``sampler``.
-    #. ``sampler`` is a mapping: return ``factory_sampler(**sampler, data=data, axis=axis, dim=dims, mom_ndim=mom_ndim, mom_dims=mom_dims, rep_dim=rep_dim)``.
     #. ``sampler`` is ``None``:
         - if specify ``ndat``: return ``IndexSampler.from_param(...)``
         - if specify ``data``: return ``IndexSampler.from_data(...)``
+    #. ``sampler`` is array-like: return ``IndexSampler(freq=sampler, ...)``
+    #. ``sampler`` is a mapping: return ``factory_sampler(**sampler, data=data, axis=axis, dim=dims, mom_ndim=mom_ndim, mom_dims=mom_dims, rep_dim=rep_dim)``.
 
 
     Parameters
@@ -796,47 +802,3 @@ def jackknife_freq(
     freq = np.ones((ndat, ndat), dtype=np.int64)
     np.fill_diagonal(freq, 0.0)
     return freq
-
-
-# * old code to be removed
-# * General frequency table generation.
-def _validate_resample_array(
-    x: ArrayLike | DataT,
-    ndat: int,
-    nrep: int | None,
-    is_freq: bool,
-    check: bool = True,
-    dtype: DTypeLike = np.int64,
-) -> NDArrayAny | DataT:
-    if is_xarray(x):
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            _validate_resample_array,
-            x,
-            kwargs={
-                "ndat": ndat,
-                "nrep": nrep,
-                "is_freq": is_freq,
-                "check": check,
-                "dtype": dtype,
-            },
-        )
-        return xout
-
-    x = np.asarray(x, dtype=dtype)
-    if check:
-        name = "freq" if is_freq else "indices"
-        raise_if_wrong_value(x.ndim, 2, f"`{name}` has wrong number of dimensions.")
-
-        if nrep is not None:
-            raise_if_wrong_value(x.shape[0], nrep, "Wrong nrep.")
-
-        if is_freq:
-            raise_if_wrong_value(x.shape[1], ndat, "Wrong ndat.")
-
-        else:
-            # only restriction is that values in [0, ndat)
-            min_, max_ = x.min(), x.max()
-            if min_ < 0 or max_ >= ndat:
-                msg = f"Indices range [{min_}, {max_}) outside [0, {ndat - 1})"
-                raise ValueError(msg)
-    return x

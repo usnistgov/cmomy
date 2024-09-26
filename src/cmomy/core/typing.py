@@ -616,6 +616,9 @@ class FactoryIndexSamplerKwargs(
 
 #: IndexSampler or mapping which can be converted to IndexSampler
 Sampler: TypeAlias = Union[
+    NDArrayAny,
+    xr.DataArray,
+    xr.Dataset,
     "IndexSampler[Any]",
     FactoryIndexSamplerKwargs,
 ]
