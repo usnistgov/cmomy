@@ -93,10 +93,16 @@ func_params_data_common = [
     (partial(cmomy.reduce_data, use_reduce=False), None),
     (do_reduce_data_grouped, None),
     (do_reduce_data_indexed, None),  # default coords_policy="first"
-    (partial(cmomy.resample_data, nrep=20, rng=0, paired=True), None),
+    (
+        partial(cmomy.resample_data, sampler={"nrep": 20, "rng": 0, "paired": True}),
+        None,
+    ),
     (cmomy.resample.jackknife_data, None),
-    (partial(do_bootstrap_data, nrep=20, method="percentile"), None),
-    (partial(do_bootstrap_data, nrep=20, method="bca"), None),
+    (
+        partial(do_bootstrap_data, sampler={"nrep": 20, "rng": 0}, method="percentile"),
+        None,
+    ),
+    (partial(do_bootstrap_data, sampler={"nrep": 20, "rng": 0}, method="bca"), None),
     (cmomy.convert.moments_type, remove_dim_from_kwargs),
     (cmomy.convert.cumulative, None),
     (cmomy.convert.moments_to_comoments, moments_to_comoments_kwargs),
@@ -116,7 +122,10 @@ func_params_data_common = [
     (do_wrap, remove_dim_from_kwargs),
     (do_wrap_raw, remove_dim_from_kwargs),
     (do_wrap_method("reduce"), None),
-    (partial(do_wrap_method("resample_and_reduce"), nrep=20, rng=0), None),
+    (
+        partial(do_wrap_method("resample_and_reduce"), sampler={"nrep": 20, "rng": 0}),
+        None,
+    ),
     (do_wrap_method("jackknife_and_reduce"), None),
     (do_wrap_method("cumulative"), None),
     (do_wrap_method("to_raw"), remove_dim_from_kwargs),
@@ -141,7 +150,7 @@ func_params_data_dataset = [
 # ** Vals
 func_params_vals_common = [
     (cmomy.reduce_vals, None),
-    (partial(cmomy.resample_vals, nrep=20, rng=0), None),
+    (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),
     (cmomy.resample.jackknife_vals, None),
     (cmomy.utils.vals_to_data, remove_dim_from_kwargs),
     (partial(cmomy.rolling.rolling_vals, window=2), None),
@@ -521,7 +530,7 @@ def test_func_dataarray_and_dataset_push_vals(fixture_vals, as_dataarray) -> Non
         ("a", False, {"mom_dims": ("momA", "momB")}, []),
     ],
 )
-def test_randsamp_freq_dataset(
+def test_factory_sampler_dataset(
     data,
     dim,
     paired,
@@ -534,7 +543,7 @@ def test_randsamp_freq_dataset(
     kwargs = {"nrep": nrep, "rep_dim": rep_dim, "paired": paired, **kws}
 
     # paired
-    out = cmomy.resample.randsamp_freq(
+    out = cmomy.resample.factory_sampler(
         data=data,
         dim=dim,
         **kwargs,
@@ -565,10 +574,10 @@ def test_randsamp_freq_dataset(
             dims=[rep_dim, dim],
         )
 
-    xr.testing.assert_allclose(out, expected)
+    xr.testing.assert_allclose(out.freq, expected)
 
     # and should get back self from this
-    assert cmomy.resample.randsamp_freq(freq=out, check=False, dtype=None) is out
+    assert cmomy.resample.factory_sampler(out) is out
 
 
 @pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
@@ -578,11 +587,14 @@ def test_randsamp_freq_dataset(
 def test_resample_data_dataset(data_and_kwargs, nrep, paired) -> None:
     ds, kwargs = data_and_kwargs
     assert not is_dataarray(ds)
+    sampler = cmomy.resample.factory_sampler(
+        data=ds, **kwargs, nrep=nrep, rng=0, paired=paired
+    )
 
-    dfreq = cmomy.randsamp_freq(data=ds, **kwargs, nrep=nrep, rng=0, paired=paired)
-
-    out = cmomy.resample_data(ds, **kwargs, freq=dfreq)
+    out = cmomy.resample_data(ds, **kwargs, sampler=sampler)
     dim = kwargs["dim"]
+
+    freq = sampler.freq
     for name in ds:
         da = ds[name]
         if dim in da.dims and (
@@ -591,7 +603,7 @@ def test_resample_data_dataset(data_and_kwargs, nrep, paired) -> None:
             da = cmomy.resample_data(
                 da,
                 **kwargs,
-                freq=dfreq if is_dataarray(dfreq) else dfreq[name],
+                sampler={"freq": freq if is_dataarray(freq) else freq[name]},
                 move_axis_to_end=True,
             )
 
@@ -603,9 +615,11 @@ def test_resample_data_dataset(data_and_kwargs, nrep, paired) -> None:
         cmomy.resample_data(
             ds,
             **kwargs,
-            nrep=nrep,
-            rng=0,
-            paired=paired,
+            sampler={
+                "nrep": nrep,
+                "rng": 0,
+                "paired": paired,
+            },
         ),
     )
 
@@ -618,10 +632,13 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep) -> None:
     kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
 
     dim = kwargs["dim"]
-    dfreq = cmomy.randsamp_freq(data=x, dim=dim, nrep=nrep, rng=0, paired=paired)
+    sampler = cmomy.resample.factory_sampler(
+        data=x, dim=dim, nrep=nrep, rng=0, paired=paired
+    )
+    freq = sampler.freq
 
     xy = (x,) if y is None else (x, y)
-    out = cmomy.resample_vals(*xy, weight=weight, **kwargs, freq=dfreq)
+    out = cmomy.resample_vals(*xy, weight=weight, **kwargs, sampler=sampler)
 
     for name in x:
         da = x[name]
@@ -641,7 +658,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep) -> None:
                 *_xy,
                 weight=w,
                 **kwargs,
-                freq=dfreq if is_dataarray(dfreq) else dfreq[name],
+                sampler={"freq": freq if is_dataarray(freq) else freq[name]},
             )
 
         xr.testing.assert_allclose(out[name], da)
@@ -653,9 +670,11 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep) -> None:
             *xy,
             weight=weight,
             **kwargs,
-            nrep=nrep,
-            rng=0,
-            paired=paired,
+            sampler={
+                "nrep": nrep,
+                "rng": 0,
+                "paired": paired,
+            },
         ),
     )
 
@@ -767,8 +786,18 @@ def test_func_vals_chunking(fixture_vals, func, kwargs_callback):
         (partial(cmomy.reduce_data, use_reduce=False), None),
         (do_reduce_data_grouped, None),
         (partial(do_reduce_data_indexed, coords_policy=None), None),
-        (partial(cmomy.resample_data, rng=0, nrep=20, paired=True), None),
-        (partial(cmomy.resample_data, rng=0, nrep=20, paired=False), None),
+        (
+            partial(
+                cmomy.resample_data, sampler={"rng": 0, "nrep": 20, "paired": True}
+            ),
+            None,
+        ),
+        (
+            partial(
+                cmomy.resample_data, sampler={"rng": 0, "nrep": 20, "paired": False}
+            ),
+            None,
+        ),
         (cmomy.resample.jackknife_data, None),
         (cmomy.convert.moments_type, remove_dim_from_kwargs),
         (cmomy.convert.cumulative, None),
@@ -810,8 +839,18 @@ def test_func_data_chunking_out_parameter(
     ("func", "kwargs_callback"),
     [
         (cmomy.reduce_vals, None),
-        (partial(cmomy.resample_vals, rng=0, nrep=20, paired=True), None),
-        (partial(cmomy.resample_vals, rng=0, nrep=20, paired=False), None),
+        (
+            partial(
+                cmomy.resample_vals, sampler={"rng": 0, "nrep": 20, "paired": True}
+            ),
+            None,
+        ),
+        (
+            partial(
+                cmomy.resample_vals, sampler={"rng": 0, "nrep": 20, "paired": False}
+            ),
+            None,
+        ),
         (cmomy.resample.jackknife_vals, None),
         # (cmomy.utils.vals_to_data, remove_dim_from_kwargs),  # noqa: ERA001
         (partial(cmomy.rolling.rolling_vals, window=2), None),

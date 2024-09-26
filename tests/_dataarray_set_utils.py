@@ -64,11 +64,11 @@ def do_reduce_data_indexed(data, **kwargs):
     )
 
 
-def do_bootstrap_data(data, nrep, method, **kwargs):
+def do_bootstrap_data(data, sampler, method, **kwargs):
     kwargs = kwargs.copy()
     kwargs.pop("move_axis_to_end", None)
 
-    args = [cmomy.resample_data(data, nrep=nrep, rng=0, **kwargs)]
+    args = [cmomy.resample_data(data, sampler=sampler, **kwargs)]
     if method in {"basic", "bca"}:
         args.append(cmomy.reduce_data(data, **kwargs))
     if method == "bca":
@@ -86,8 +86,9 @@ def do_wrap_reduce_vals(*args, **kwargs):
     return cmomy.wrap_reduce_vals(*args, **kwargs).obj
 
 
-def do_wrap_resample_vals(*args, nrep=20, rng=0, **kwargs):
-    return cmomy.wrap_resample_vals(*args, nrep=nrep, rng=rng, **kwargs).obj
+def do_wrap_resample_vals(*args, sampler=None, **kwargs):
+    sampler = sampler or {"nrep": 20, "rng": 0}
+    return cmomy.wrap_resample_vals(*args, sampler=sampler, **kwargs).obj
 
 
 def do_moveaxis(data, **kwargs):  # noqa: ARG001

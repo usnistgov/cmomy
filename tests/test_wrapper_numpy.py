@@ -207,8 +207,8 @@ def test_resample(wrapped) -> None:
             wrapped.resample(indices, axis=0)
 
     else:
-        freq = cmomy.resample.indices_to_freq(indices)
-        expected = wrapped.resample_and_reduce(axis=0, freq=freq)
+        sampler = cmomy.resample.factory_sampler(indices=indices)
+        expected = wrapped.resample_and_reduce(axis=0, sampler=sampler)
         np.testing.assert_allclose(
             wrapped.resample(indices, axis=0).reduce(axis=1),
             expected,
@@ -257,10 +257,18 @@ def test_vals(rng, val_shape, mom, use_weight):
 
     # resample...
     c = CentralMomentsArray.from_resample_vals(
-        *xy, weight=weight, axis=0, mom=mom, nrep=20, rng=np.random.default_rng(0)
+        *xy,
+        weight=weight,
+        axis=0,
+        mom=mom,
+        sampler={"nrep": 20, "rng": 0},
     )
     expected = cmomy.resample_vals(
-        *xy, weight=weight, axis=0, mom=mom, nrep=20, rng=np.random.default_rng(0)
+        *xy,
+        weight=weight,
+        axis=0,
+        mom=mom,
+        sampler={"nrep": 20, "rng": 0},
     )
     np.testing.assert_allclose(c, expected)
 
@@ -483,7 +491,7 @@ def _reduce_block(data, axis, block, **kwargs):
         (
             "resample_and_reduce",
             cmomy.resample_data,
-            lambda: {"nrep": 10, "rng": np.random.default_rng(0)},
+            lambda: {"sampler": {"nrep": 10, "rng": 0}},
         ),
         ("jackknife_and_reduce", cmomy.resample.jackknife_data, lambda: {}),  # noqa: PIE807
         ("reduce", cmomy.reduce_data, lambda: {}),  # noqa: PIE807

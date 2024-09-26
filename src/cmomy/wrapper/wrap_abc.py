@@ -49,7 +49,6 @@ if TYPE_CHECKING:
         DTypeLikeArg,
         FloatT_,
         KeepAttrs,
-        MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
         MomDims,
@@ -59,7 +58,7 @@ if TYPE_CHECKING:
         NDArrayInt,
         ReduceValsKwargs,
         ResampleValsKwargs,
-        RngTypes,
+        Sampler,
         SelectMoment,
         WrapRawKwargs,
     )
@@ -661,7 +660,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         dim_combined: str = "variable",
         coords_combined: str | Sequence[Hashable] | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "drop",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
         """
@@ -674,7 +672,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {select_dim_combined}
         {select_coords_combined}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -702,7 +699,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             squeeze=squeeze,
             keep_attrs=keep_attrs,
             mom_dims=getattr(self, "mom_dims", None),
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
@@ -715,7 +711,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         copy: bool = True,
         dim_combined: Hashable | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
         **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
     ) -> Self:
@@ -735,7 +730,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             multiple values for ``name="ave"`` etc.
         {mom_dims_data}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
         **moment_kwargs
             Keyword argument form of ``moment``.  Must provide either ``moment`` or ``moment_kwargs``.
@@ -758,7 +752,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             mom_dims=getattr(self, "mom_dims", None),
             dim_combined=dim_combined,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             **moment_kwargs,
         )
@@ -778,7 +771,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         order: ArrayOrder = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
         """
@@ -795,7 +787,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {parallel}
         {keep_attrs}
         {mom_dims_data}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -823,7 +814,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             parallel=parallel,
             keep_attrs=keep_attrs,
             mom_dims=getattr(self, "mom_dims", None),
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
@@ -836,7 +826,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
@@ -850,7 +839,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {dtype}
         {order_cf}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Return
@@ -882,7 +870,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 dtype=dtype,
                 order=order,
                 keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
             mom_ndim=2,
@@ -891,13 +878,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
     # *** .resample -----------------------------------------------------------
     @docfiller.decorate
-    def resample_and_reduce(  # noqa: PLR0913
+    def resample_and_reduce(
         self,
         *,
-        freq: ArrayLike | xr.DataArray | GenArrayT | None = None,
-        nrep: int | None = None,
-        rng: RngTypes | None = None,
-        paired: bool = True,
+        sampler: Sampler,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         rep_dim: str = "rep",
@@ -909,7 +893,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
@@ -917,10 +900,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
-        {freq}
-        {nrep_optional}
-        {rng}
-        {paired}
+        {sampler}
         {axis_data_and_dim}
         {rep_dim}
         {move_axis_to_end}
@@ -930,7 +910,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {order}
         {parallel}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -938,14 +917,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         output : object
             Instance of calling class. Note that new object will have
             ``(...,shape[axis-1], nrep, shape[axis+1], ...)``,
-            where ``nrep = freq.shape[0]``.
+            where ``nrep`` is the number of replicates.
 
         See Also
         --------
         reduce
-        ~.resample.randsamp_freq : random frequency sample
-        ~.resample.freq_to_indices : convert frequency sample to index sample
-        ~.resample.indices_to_freq : convert index sample to frequency sample
+        ~.resample.factory_sampler
         ~.resample.resample_data : method to perform resampling
 
         Examples
@@ -965,28 +942,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                [ 1.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02]])
         Dimensions without coordinates: rec, mom_0
 
-        Note that for reproducible results, must set numba random
-        seed as well
-
-        >>> freq = cmomy.randsamp_freq(data=da.obj, dim="rec", nrep=5)
+        >>> sampler = cmomy.resample.factory_sampler(data=da.obj, dim="rec", nrep=5)
         >>> da_resamp = da.resample_and_reduce(
         ...     dim="rec",
-        ...     freq=freq,
+        ...     sampler=sampler,
         ... )
         >>> da_resamp
-        <CentralMomentsData(mom_ndim=1)>
-        <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
-        array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
-               [ 3.0000e+01,  5.3435e-01,  1.0038e-01, -1.2329e-02],
-               [ 3.0000e+01,  5.2922e-01,  1.0360e-01, -1.6009e-02],
-               [ 3.0000e+01,  5.5413e-01,  8.3204e-02, -1.1267e-02],
-               [ 3.0000e+01,  5.4899e-01,  8.6627e-02, -1.5407e-02]])
-        Dimensions without coordinates: rep, mom_0
-
-        Alternatively, we can resample and reduce
-
-        >>> indices = cmomy.resample.freq_to_indices(freq)
-        >>> da.sel(rec=xr.DataArray(indices, dims=["rep", "rec"])).reduce(dim="rec")
         <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (rep: 5, mom_0: 4)> Size: 160B
         array([[ 3.0000e+01,  5.0944e-01,  1.1978e-01, -1.4644e-02],
@@ -999,15 +960,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """
         from cmomy.resample import resample_data
 
-        # pyright error due to `freq` above...
         return self._new_like(
             obj=resample_data(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
                 self._obj,  # pyright: ignore[reportArgumentType]
                 mom_ndim=self._mom_ndim,
-                freq=freq,
-                nrep=nrep,
-                rng=rng,
-                paired=paired,
+                sampler=sampler,
                 axis=axis,
                 dim=dim,
                 rep_dim=rep_dim,
@@ -1019,7 +976,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 parallel=parallel,
                 keep_attrs=keep_attrs,
                 mom_dims=getattr(self, "mom_dims", None),
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
         )
@@ -1040,7 +996,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
         """
@@ -1061,7 +1016,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {order}
         {parallel}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
 
@@ -1093,7 +1047,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             order=order,
             parallel=parallel,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
         return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]
@@ -1365,7 +1318,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         keepdims: bool = False,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self | CentralMomentsABC[Any]:
         """
@@ -1392,7 +1344,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {keepdims}
         {parallel}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -1437,7 +1388,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             casting=casting,
             order=order,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
@@ -1455,7 +1405,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         x: DataT_,
         *y: ArrayLike | xr.DataArray | DataT_,
         weight: ArrayLike | xr.DataArray | DataT_ | None = ...,
-        freq: ArrayLike | xr.DataArray | DataT_ | None = ...,
+        sampler: Sampler,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
         **kwargs: Unpack[ResampleValsKwargs],
@@ -1467,7 +1417,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         x: ArrayLikeArg[FloatT_],
         *y: ArrayLike,
         weight: ArrayLike | None = ...,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: None = ...,
         dtype: None = ...,
         **kwargs: Unpack[ResampleValsKwargs],
@@ -1479,7 +1429,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = ...,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
         **kwargs: Unpack[ResampleValsKwargs],
@@ -1491,7 +1441,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         x: ArrayLike,
         *y: ArrayLike,
         weight: ArrayLike | None = ...,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
         **kwargs: Unpack[ResampleValsKwargs],
@@ -1503,7 +1453,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         x: Any,
         *y: ArrayLike,
         weight: ArrayLike | None = ...,
-        freq: ArrayLike | None = ...,
+        sampler: Sampler,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
         **kwargs: Unpack[ResampleValsKwargs],
@@ -1516,13 +1466,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         x: ArrayLike | DataT_,
         *y: ArrayLike | xr.DataArray | DataT_,
         mom: Moments,
+        sampler: Sampler,
         weight: ArrayLike | xr.DataArray | DataT_ | None = None,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        freq: ArrayLike | xr.DataArray | DataT_ | None = None,
-        nrep: int | None = None,
-        rng: RngTypes | None = None,
-        paired: bool = True,
         move_axis_to_end: bool = True,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
@@ -1532,7 +1479,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         mom_dims: MomDims | None = None,
         rep_dim: str = "rep",
         keep_attrs: KeepAttrs = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self | CentralMomentsABC[Any]:
         """
@@ -1547,13 +1493,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         *y : array-like or {t_array}
             Additional values (needed if ``len(mom) > 1``).
         {mom}
+        {sampler}
         {weight}
         {axis}
         {dim}
-        {freq}
-        {nrep}
-        {rng}
-        {paired}
         {move_axis_to_end}
         {order}
         {out}
@@ -1564,7 +1507,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {mom_dims}
         {rep_dim}
         {keep_attrs}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -1576,9 +1518,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         See Also
         --------
         ~.resample.resample_vals
-        ~.resample.randsamp_freq
-        ~.resample.freq_to_indices
-        ~.resample.indices_to_freq
+        ~.resample.factory_sampler
         """
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
         kws = cls._mom_dims_kws(mom_dims, mom_ndim)
@@ -1588,10 +1528,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]
             x,  # pyright: ignore[reportArgumentType]
             *y,
-            freq=freq,
-            nrep=nrep,
-            rng=rng,
-            paired=paired,
+            sampler=sampler,
             mom=mom,
             weight=weight,
             axis=axis,
@@ -1601,7 +1538,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             **kws,
             rep_dim=rep_dim,
             keep_attrs=keep_attrs,
-            on_missing_core_dim=on_missing_core_dim,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             dtype=dtype,
             out=out,
@@ -1690,7 +1626,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         order: ArrayOrder = None,
         keep_attrs: KeepAttrs = None,
         mom_dims: MomDims | None = None,
-        on_missing_core_dim: MissingCoreDimOptions = "copy",
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self | CentralMomentsABC[Any]:
         """
@@ -1711,7 +1646,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {order}
         {keep_attrs}
         {mom_dims}
-        {on_missing_core_dim}
         {apply_ufunc_kwargs}
 
         Returns
@@ -1782,7 +1716,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 casting=casting,
                 order=order,
                 keep_attrs=keep_attrs,
-                on_missing_core_dim=on_missing_core_dim,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
                 **kws,
             ),

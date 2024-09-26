@@ -85,8 +85,9 @@ def _dummy_docstrings() -> None:
         Order argument.  See :func:`numpy.asarray`.
     order_cf | order : {"C", "F"}, optional
         Order argument. See :func:`numpy.zeros`.
-    parallel : bool, default=True
-        flags to `numba.njit`
+    parallel : bool, optional
+        If ``True``, use parallel numba ``numba.njit`` or ``numba.guvectorized`` code if possible.
+        If ``None``, use a heuristic to determine if should attempt to use parallel method.
     casting : {'no', 'equiv', 'safe', 'same_kind', 'unsafe'}, optional
         Controls what kind of data casting may occur.
 
@@ -125,10 +126,14 @@ def _dummy_docstrings() -> None:
         value dimensions (i.e., all dimensions excluding moment dimensions).
 
 
-    freq : array-like of int
-        Array of shape ``(nrep, size)`` where `nrep` is the number of replicates and
-        ``size = self.shape[axis]``.  `freq` is the weight that each sample contributes
-        to resamples values.  See :func:`.randsamp_freq`
+    sampler : array-like or IndexSampler or mapping
+        Passed through :func:`.resample.factory_sampler` to create an
+        :class:`~.resample.IndexSampler`. Value can either be a frequency
+        array, an :class:`~.resample.IndexSampler`, or a mapping of
+        parameters. The mapping can have form of
+        :class:`~.core.typing.FactoryIndexSamplerKwargs`. Allowable keys are
+        ``freq``, ``indices``, ``ndat``, ``nrep``, ``nsamp``, ``paired``,
+        ``rng``, ``replace``, ``shuffle``.
     freq_xarray | freq : array-like, DataArray, or Dataset of int
         Array of shape ``(nrep, size)`` where `nrep` is the number of
         replicates and ``size = self.shape[axis]``. `freq` is the weight that
@@ -136,14 +141,12 @@ def _dummy_docstrings() -> None:
         :mod:`xarray` object, it is assumed that the dimensions are in order of
         ``(rep_dim, dim)`` where ``rep_dim`` and ``dim`` are the name of the
         replicated and sampled dimension, respectively.
-        See :func:`.randsamp_freq`
     indices : array of int
         Array of shape ``(nrep, size)``.  If passed, create `freq` from indices.
-        See :func:`.randsamp_freq`.
     nrep : int
         Number of resample replicates.
     nrep_optional | nrep : int, optional
-        Construct ``freq`` (see :func:`.randsamp_freq`) with ``nrep``
+        Construct ``freq`` (see :func:`~.resample.factory_sampler`) with ``nrep``
         replicates if ``freq`` is not passed directly.
     paired : bool
         If ``False`` and generating ``freq`` from ``nrep`` with ``data`` of type
@@ -159,6 +162,10 @@ def _dummy_docstrings() -> None:
         Random number generator object. Defaults to output of
         :func:`~.random.default_rng`. If pass in a seed value, create a new
         :class:`~numpy.random.Generator` object with this seed
+    resample_replace : bool
+        If True, do resampling with replacement.
+    shuffle : bool
+        If ``True``, shuffle ``indices`` created from ``freq`` for each row.
 
 
     dims : hashable or sequence of hashable
@@ -175,10 +182,13 @@ def _dummy_docstrings() -> None:
         Name of moment dimensions. Defaults to ``data.dims[-mom_ndim:]``. This
         is primarily used if ``data`` is a :class:`~xarray.Dataset`, and the
         first variable does not contain moments data.
-    on_missing_core_dim : {"raise", "copy", "drop"}
-        How to handle missing core dimensions on input variables.
     apply_ufunc_kwargs : dict-like
-        Extra parameters to :func:`xarray.apply_ufunc`
+        Extra parameters to :func:`xarray.apply_ufunc`. One useful option is
+        ``on_missing_core_dim``, which can take the value ``"copy"`` (the
+        default), ``"raise"``, or ``"drop"`` and controls what to do with
+        variables of a :class:`~xarray.Dataset` missing core dimensions. Other
+        options are ``join``, ``dataset_join``, ``dataset_fill_value``, and
+        ``dask_gufunc_kwargs``. Unlisted options are handled internally.
     keep_attrs : {"drop", "identical", "no_conflicts", "drop_conflicts", "override"} or bool, optional
         - 'drop' or False: empty attrs on returned xarray object.
         - 'identical': all attrs must be the same on every object.

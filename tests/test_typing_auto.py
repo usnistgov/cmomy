@@ -109,6 +109,7 @@ central_dataset_any: CentralMomentsDataAny = CentralMomentsData(data_dataset_any
 # ca_or_cs = cast("CentralMomentsData[xr.DataArray] | CentralMomentsData[xr.DataArray]", CentralMomentsData(data_dataarray_or_sdata))  # noqa: ERA001
 
 freq = cmomy.random_freq(ndat=10, nrep=2)
+sampler = cmomy.resample.IndexSampler(freq=freq)
 by = [0] * 5 + [1] * 5
 _, index, group_start, group_end = cmomy.reduction.factor_by_to_index(by)
 
@@ -1728,7 +1729,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
 def test_cmomy_resample_data() -> None:
     check(
         assert_type(
-            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, sampler=sampler),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1737,7 +1738,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float64, axis=0, mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_float64, axis=0, mom_ndim=1, sampler=sampler),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1746,7 +1747,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_arrayany, axis=0, mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_arrayany, axis=0, mom_ndim=1, sampler=sampler),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1755,7 +1756,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_any, axis=0, mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_any, axis=0, mom_ndim=1, sampler=sampler),
             Any,
         ),
         np.ndarray,
@@ -1764,7 +1765,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, sampler=sampler),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -1773,7 +1774,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataset, dim="dim_0", mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_dataset, dim="dim_0", mom_ndim=1, sampler=sampler),
             xr.Dataset,
         ),
         xr.Dataset,
@@ -1782,7 +1783,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataarray_any, dim="dim_0", mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_dataarray_any, dim="dim_0", mom_ndim=1, sampler=sampler),
             Any,
         ),
         xr.DataArray,
@@ -1791,7 +1792,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataset_any, dim="dim_0", mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_dataset_any, dim="dim_0", mom_ndim=1, sampler=sampler),
             Any,
         ),
         xr.Dataset,
@@ -1800,7 +1801,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, freq=freq),
+            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, sampler=sampler),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1809,7 +1810,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, freq=freq, dtype=float64),
+            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, sampler=sampler, dtype=float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1818,7 +1819,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float64, axis=0, mom_ndim=1, freq=freq, dtype=float32),
+            cmomy.resample_data(data_float64, axis=0, mom_ndim=1, sampler=sampler, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1827,7 +1828,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_arrayany, axis=0, mom_ndim=1, freq=freq, dtype=float32),
+            cmomy.resample_data(data_arrayany, axis=0, mom_ndim=1, sampler=sampler, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1836,7 +1837,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, freq=freq, dtype=float32),
+            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, sampler=sampler, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1845,7 +1846,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_any, axis=0, mom_ndim=1, freq=freq, dtype=float32),
+            cmomy.resample_data(data_any, axis=0, mom_ndim=1, sampler=sampler, dtype=float32),
             Any,
         ),
         np.ndarray,
@@ -1854,7 +1855,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, freq=freq, dtype="f8"),
+            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, sampler=sampler, dtype="f8"),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1863,7 +1864,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, freq=freq, dtype=float32),
+            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, sampler=sampler, dtype=float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -1872,7 +1873,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataset, dim="dim_0", mom_ndim=1, freq=freq, dtype=float32),
+            cmomy.resample_data(data_dataset, dim="dim_0", mom_ndim=1, sampler=sampler, dtype=float32),
             xr.Dataset,
         ),
         xr.Dataset,
@@ -1881,7 +1882,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataarray_any, dim="dim_0", mom_ndim=1, freq=freq, dtype=float32),
+            cmomy.resample_data(data_dataarray_any, dim="dim_0", mom_ndim=1, sampler=sampler, dtype=float32),
             Any,
         ),
         xr.DataArray,
@@ -1890,7 +1891,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, freq=freq, out=group_out_float64),
+            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, sampler=sampler, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1899,7 +1900,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, freq=freq, out=group_out_float64),
+            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, sampler=sampler, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1908,7 +1909,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_any, axis=0, mom_ndim=1, freq=freq, out=group_out_float32),
+            cmomy.resample_data(data_any, axis=0, mom_ndim=1, sampler=sampler, out=group_out_float32),
             Any,
         ),
         np.ndarray,
@@ -1917,7 +1918,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, freq=freq, out=group_out_arrayany),
+            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, sampler=sampler, out=group_out_arrayany),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1926,7 +1927,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, freq=freq, out=group_out_float32),
+            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, sampler=sampler, out=group_out_float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -1935,7 +1936,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataarray_any, dim="dim_0", mom_ndim=1, freq=freq, out=group_out_float32),
+            cmomy.resample_data(data_dataarray_any, dim="dim_0", mom_ndim=1, sampler=sampler, out=group_out_float32),
             Any,
         ),
         xr.DataArray,
@@ -1944,7 +1945,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, freq=freq, dtype=float32, out=group_out_float64),
+            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, sampler=sampler, dtype=float32, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1953,7 +1954,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, freq=freq, dtype=float32, out=group_out_float64),
+            cmomy.resample_data(data_arraylike, axis=0, mom_ndim=1, sampler=sampler, dtype=float32, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1962,7 +1963,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_any, axis=0, mom_ndim=1, freq=freq, dtype=float64, out=group_out_float32),
+            cmomy.resample_data(data_any, axis=0, mom_ndim=1, sampler=sampler, dtype=float64, out=group_out_float32),
             Any,
         ),
         np.ndarray,
@@ -1971,7 +1972,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, freq=freq, dtype=float64, out=group_out_arrayany),
+            cmomy.resample_data(data_float32, axis=0, mom_ndim=1, sampler=sampler, dtype=float64, out=group_out_arrayany),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1980,7 +1981,7 @@ def test_cmomy_resample_data() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, freq=freq, dtype="f8", out=group_out_float32),
+            cmomy.resample_data(data_dataarray, dim="dim_0", mom_ndim=1, sampler=sampler, dtype="f8", out=group_out_float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -1992,7 +1993,7 @@ def test_cmomy_resample_data() -> None:
 def test_cmomy_resample_vals() -> None:
     check(
         assert_type(
-            cmomy.resample_vals(vals_float32, axis=0, mom=2, freq=freq),
+            cmomy.resample_vals(vals_float32, axis=0, mom=2, sampler=sampler),
             NDArray[float32],
         ),
         np.ndarray,
@@ -2001,7 +2002,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float64, axis=0, mom=2, freq=freq),
+            cmomy.resample_vals(vals_float64, axis=0, mom=2, sampler=sampler),
             NDArray[float64],
         ),
         np.ndarray,
@@ -2010,7 +2011,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_arrayany, axis=0, mom=2, freq=freq),
+            cmomy.resample_vals(vals_arrayany, axis=0, mom=2, sampler=sampler),
             NDArray[Any],
         ),
         np.ndarray,
@@ -2019,7 +2020,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_any, axis=0, mom=2, freq=freq),
+            cmomy.resample_vals(vals_any, axis=0, mom=2, sampler=sampler),
             Any,
         ),
         np.ndarray,
@@ -2028,7 +2029,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq),
+            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -2037,7 +2038,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataset, dim="dim_0", mom=2, freq=freq),
+            cmomy.resample_vals(vals_dataset, dim="dim_0", mom=2, sampler=sampler),
             xr.Dataset,
         ),
         xr.Dataset,
@@ -2046,7 +2047,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataarray_any, dim="dim_0", mom=2, freq=freq),
+            cmomy.resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler),
             Any,
         ),
         xr.DataArray,
@@ -2055,7 +2056,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataset_any, dim="dim_0", mom=2, freq=freq),
+            cmomy.resample_vals(vals_dataset_any, dim="dim_0", mom=2, sampler=sampler),
             Any,
         ),
         xr.Dataset,
@@ -2064,7 +2065,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, freq=freq),
+            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler),
             NDArray[Any],
         ),
         np.ndarray,
@@ -2073,7 +2074,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float32, axis=0, mom=2, freq=freq, dtype=float64),
+            cmomy.resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, dtype=float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -2082,7 +2083,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float64, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.resample_vals(vals_float64, axis=0, mom=2, sampler=sampler, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -2091,7 +2092,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_arrayany, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.resample_vals(vals_arrayany, axis=0, mom=2, sampler=sampler, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -2100,7 +2101,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -2109,7 +2110,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_any, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.resample_vals(vals_any, axis=0, mom=2, sampler=sampler, dtype=float32),
             Any,
         ),
         np.ndarray,
@@ -2118,7 +2119,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float32, axis=0, mom=2, freq=freq, dtype="f8"),
+            cmomy.resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, dtype="f8"),
             NDArray[Any],
         ),
         np.ndarray,
@@ -2127,7 +2128,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq, dtype=float32),
+            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -2136,7 +2137,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataset, dim="dim_0", mom=2, freq=freq, dtype=float32),
+            cmomy.resample_vals(vals_dataset, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
             xr.Dataset,
         ),
         xr.Dataset,
@@ -2145,7 +2146,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataarray_any, dim="dim_0", mom=2, freq=freq, dtype=float32),
+            cmomy.resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
             Any,
         ),
         xr.DataArray,
@@ -2154,7 +2155,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float32, axis=0, mom=2, freq=freq, out=group_out_float64),
+            cmomy.resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -2163,7 +2164,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, freq=freq, out=group_out_float64),
+            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -2172,7 +2173,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_any, axis=0, mom=2, freq=freq, out=group_out_float32),
+            cmomy.resample_vals(vals_any, axis=0, mom=2, sampler=sampler, out=group_out_float32),
             Any,
         ),
         np.ndarray,
@@ -2181,7 +2182,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float32, axis=0, mom=2, freq=freq, out=group_out_arrayany),
+            cmomy.resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, out=group_out_arrayany),
             NDArray[Any],
         ),
         np.ndarray,
@@ -2190,7 +2191,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq, out=group_out_float32),
+            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, out=group_out_float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -2199,7 +2200,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataarray_any, dim="dim_0", mom=2, freq=freq, out=group_out_float32),
+            cmomy.resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler, out=group_out_float32),
             Any,
         ),
         xr.DataArray,
@@ -2208,7 +2209,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float32, axis=0, mom=2, freq=freq, dtype=float32, out=group_out_float64),
+            cmomy.resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, dtype=float32, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -2217,7 +2218,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, freq=freq, dtype=float32, out=group_out_float64),
+            cmomy.resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, dtype=float32, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -2226,7 +2227,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_any, axis=0, mom=2, freq=freq, dtype=float64, out=group_out_float32),
+            cmomy.resample_vals(vals_any, axis=0, mom=2, sampler=sampler, dtype=float64, out=group_out_float32),
             Any,
         ),
         np.ndarray,
@@ -2235,7 +2236,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_float32, axis=0, mom=2, freq=freq, dtype=float64, out=group_out_arrayany),
+            cmomy.resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, dtype=float64, out=group_out_arrayany),
             NDArray[Any],
         ),
         np.ndarray,
@@ -2244,7 +2245,7 @@ def test_cmomy_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq, dtype="f8", out=group_out_float32),
+            cmomy.resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, dtype="f8", out=group_out_float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -5037,7 +5038,7 @@ def test_cmomy_wrap_reduce_vals() -> None:
 def test_cmomy_wrap_resample_vals() -> None:
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -5046,7 +5047,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_float64, axis=0, mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_float64, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -5055,7 +5056,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_arrayany, axis=0, mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_arrayany, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -5064,7 +5065,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -5073,7 +5074,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, sampler=sampler),
             Any,
         ),
         CentralMomentsArray,
@@ -5082,7 +5083,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler),
             CentralMomentsData[xr.DataArray],
         ),
         CentralMomentsData,
@@ -5091,7 +5092,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataset, dim="dim_0", mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_dataset, dim="dim_0", mom=2, sampler=sampler),
             CentralMomentsData[xr.Dataset],
         ),
         CentralMomentsData,
@@ -5100,7 +5101,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler),
             Any,
         ),
         CentralMomentsData,
@@ -5109,7 +5110,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataset_any, dim="dim_0", mom=2, freq=freq),
+            cmomy.wrap_resample_vals(vals_dataset_any, dim="dim_0", mom=2, sampler=sampler),
             Any,
         ),
         CentralMomentsData,
@@ -5118,7 +5119,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, freq=freq, dtype=float64),
+            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, dtype=float64),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -5127,7 +5128,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, dtype=float32),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -5136,7 +5137,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, sampler=sampler, dtype=float32),
             Any,
         ),
         CentralMomentsArray,
@@ -5145,7 +5146,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq, dtype=float32),
+            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
             CentralMomentsData[xr.DataArray],
         ),
         CentralMomentsData,
@@ -5154,7 +5155,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataset, dim="dim_0", mom=2, freq=freq, dtype=float32),
+            cmomy.wrap_resample_vals(vals_dataset, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
             CentralMomentsData[xr.Dataset],
         ),
         CentralMomentsData,
@@ -5163,7 +5164,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, freq=freq, dtype=float32),
+            cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
             Any,
         ),
         CentralMomentsData,
@@ -5172,7 +5173,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, freq=freq, out=group_out_float64),
+            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, out=group_out_float64),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -5181,7 +5182,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_float64, axis=0, mom=2, freq=freq, out=group_out_float32),
+            cmomy.wrap_resample_vals(vals_float64, axis=0, mom=2, sampler=sampler, out=group_out_float32),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -5190,7 +5191,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, freq=freq, out=group_out_float64),
+            cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, out=group_out_float64),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -5199,7 +5200,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, freq=freq, out=group_out_arrayany),
+            cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, out=group_out_arrayany),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -5208,7 +5209,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, freq=freq, out=group_out_float32),
+            cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, sampler=sampler, out=group_out_float32),
             Any,
         ),
         CentralMomentsArray,
@@ -5217,7 +5218,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq, out=group_out_float32),
+            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, out=group_out_float32),
             CentralMomentsData[xr.DataArray],
         ),
         CentralMomentsData,
@@ -5226,7 +5227,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, freq=freq, out=group_out_arrayany),
+            cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, out=group_out_arrayany),
             CentralMomentsData[xr.DataArray],
         ),
         CentralMomentsData,
@@ -5235,7 +5236,7 @@ def test_cmomy_wrap_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, freq=freq, out=group_out_float32),
+            cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler, out=group_out_float32),
             Any,
         ),
         CentralMomentsData,
@@ -5634,7 +5635,7 @@ def test_cmomy_CentralMomentsArray_from_vals() -> None:
 def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_float32, axis=0, mom=2, freq=freq),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -5643,7 +5644,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_float64, axis=0, mom=2, freq=freq),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_float64, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -5652,7 +5653,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_arrayany, axis=0, mom=2, freq=freq),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_arrayany, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -5661,7 +5662,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_arraylike, axis=0, mom=2, freq=freq),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -5670,7 +5671,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_any, axis=0, mom=2, freq=freq),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_any, axis=0, mom=2, sampler=sampler),
             Any,
         ),
         CentralMomentsArray,
@@ -5679,7 +5680,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_float32, axis=0, mom=2, freq=freq, dtype=float64),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, dtype=float64),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -5688,7 +5689,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_arraylike, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, dtype=float32),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -5697,7 +5698,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_any, axis=0, mom=2, freq=freq, dtype=float32),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_any, axis=0, mom=2, sampler=sampler, dtype=float32),
             Any,
         ),
         CentralMomentsArray,
@@ -5706,7 +5707,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_float32, axis=0, mom=2, freq=freq, out=group_out_arrayany),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, out=group_out_arrayany),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -5715,7 +5716,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_arrayany, axis=0, mom=2, freq=freq, dtype=float64, out=group_out_float32),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_arrayany, axis=0, mom=2, sampler=sampler, dtype=float64, out=group_out_float32),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -5724,7 +5725,7 @@ def test_cmomy_CentralMomentsArray_from_resample_vals() -> None:
     )
     check(
         assert_type(
-            cmomy.CentralMomentsArray.from_resample_vals(vals_any, axis=0, mom=2, freq=freq, out=group_out_float64),
+            cmomy.CentralMomentsArray.from_resample_vals(vals_any, axis=0, mom=2, sampler=sampler, out=group_out_float64),
             Any,
         ),
         CentralMomentsArray,
@@ -6315,7 +6316,7 @@ def test_moments_to_comoments() -> None:
 def test_resample_and_reduce() -> None:
     check(
         assert_type(
-            central_float64.resample_and_reduce(axis=0, freq=freq),
+            central_float64.resample_and_reduce(axis=0, sampler=sampler),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -6324,7 +6325,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_arraylike.resample_and_reduce(axis=0, freq=freq),
+            central_arraylike.resample_and_reduce(axis=0, sampler=sampler),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -6333,7 +6334,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_any.resample_and_reduce(axis=0, freq=freq),
+            central_any.resample_and_reduce(axis=0, sampler=sampler),
             Any,
         ),
         CentralMomentsArray,
@@ -6342,7 +6343,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_dataarray.resample_and_reduce(dim="dim_0", freq=freq),
+            central_dataarray.resample_and_reduce(dim="dim_0", sampler=sampler),
             CentralMomentsData[xr.DataArray],
         ),
         CentralMomentsData,
@@ -6351,7 +6352,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_dataset.resample_and_reduce(dim="dim_0", freq=freq),
+            central_dataset.resample_and_reduce(dim="dim_0", sampler=sampler),
             CentralMomentsData[xr.Dataset],
         ),
         CentralMomentsData,
@@ -6360,7 +6361,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_dataarray_any.resample_and_reduce(dim="dim_0", freq=freq),
+            central_dataarray_any.resample_and_reduce(dim="dim_0", sampler=sampler),
             CentralMomentsData[Any],
         ),
         CentralMomentsData,
@@ -6369,7 +6370,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_dataset_any.resample_and_reduce(dim="dim_0", freq=freq),
+            central_dataset_any.resample_and_reduce(dim="dim_0", sampler=sampler),
             CentralMomentsData[Any],
         ),
         CentralMomentsData,
@@ -6378,7 +6379,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_float32.resample_and_reduce(axis=0, freq=freq, dtype=float64),
+            central_float32.resample_and_reduce(axis=0, sampler=sampler, dtype=float64),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -6387,7 +6388,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_float64.resample_and_reduce(axis=0, freq=freq, dtype="f4"),
+            central_float64.resample_and_reduce(axis=0, sampler=sampler, dtype="f4"),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -6396,7 +6397,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_arraylike.resample_and_reduce(axis=0, freq=freq, dtype=float32),
+            central_arraylike.resample_and_reduce(axis=0, sampler=sampler, dtype=float32),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -6405,7 +6406,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_dataarray.resample_and_reduce(dim="dim_0", freq=freq, dtype=float32),
+            central_dataarray.resample_and_reduce(dim="dim_0", sampler=sampler, dtype=float32),
             CentralMomentsData[xr.DataArray],
         ),
         CentralMomentsData,
@@ -6414,7 +6415,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_float32.resample_and_reduce(axis=0, freq=freq, out=group_out_float64),
+            central_float32.resample_and_reduce(axis=0, sampler=sampler, out=group_out_float64),
             CentralMomentsArray[float64],
         ),
         CentralMomentsArray,
@@ -6423,7 +6424,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_float32.resample_and_reduce(axis=0, freq=freq, out=group_out_arrayany),
+            central_float32.resample_and_reduce(axis=0, sampler=sampler, out=group_out_arrayany),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,
@@ -6432,7 +6433,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_arraylike.resample_and_reduce(axis=0, freq=freq, dtype=float64, out=group_out_float32),
+            central_arraylike.resample_and_reduce(axis=0, sampler=sampler, dtype=float64, out=group_out_float32),
             CentralMomentsArray[float32],
         ),
         CentralMomentsArray,
@@ -6441,7 +6442,7 @@ def test_resample_and_reduce() -> None:
     )
     check(
         assert_type(
-            central_dataarray.resample_and_reduce(dim="dim_0", freq=freq, out=group_out_float32),
+            central_dataarray.resample_and_reduce(dim="dim_0", sampler=sampler, out=group_out_float32),
             CentralMomentsData[xr.DataArray],
         ),
         CentralMomentsData,
@@ -7190,6 +7191,57 @@ def test_iterators() -> None:
     assert_type(central_dataset.keys(), KeysView[Hashable])
     assert_type(central_dataset.values(), ValuesView[CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.items(), ItemsView[Hashable, CentralMomentsData[xr.DataArray]])
+
+
+
+def _check_typing_sampler(
+    idx_array: NDArrayAny,
+    idx_dataarray: xr.DataArray,
+    idx_dataset: xr.Dataset,
+    freq_array: NDArrayAny,
+    freq_dataarray: xr.DataArray,
+    freq_dataset: xr.Dataset,
+    data_array: NDArrayAny,
+    data_dataarray: xr.DataArray,
+    data_dataset: xr.Dataset,
+) -> None:
+    from cmomy import IndexSampler
+
+    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayAny])
+
+    assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
+    assert_type(IndexSampler(indices=idx_dataset), IndexSampler[xr.Dataset])
+
+    assert_type(IndexSampler(freq=freq_array), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler(freq=freq_dataarray), IndexSampler[xr.DataArray])
+    assert_type(IndexSampler(freq=freq_dataset), IndexSampler[xr.Dataset])
+
+    a = IndexSampler(indices=idx_array)
+    assert_type(a.freq, NDArrayAny)
+    assert_type(a.indices, NDArrayAny)
+
+    b = IndexSampler(indices=idx_dataarray)
+    assert_type(b.freq, xr.DataArray)
+    assert_type(b.indices, xr.DataArray)
+
+    c = IndexSampler(indices=idx_dataset)
+    assert_type(c.freq, xr.Dataset)
+    assert_type(c.indices, xr.Dataset)
+
+    assert_type(IndexSampler.from_data(data_array, nrep=100), IndexSampler[NDArrayAny])
+    assert_type(
+        IndexSampler.from_data(data_dataarray, nrep=100), IndexSampler[xr.DataArray]
+    )
+    assert_type(
+        IndexSampler.from_data(data_dataset, nrep=100), IndexSampler[xr.DataArray]
+    )
+
+    d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)
+    assert_type(d, IndexSampler[xr.DataArray | xr.Dataset])
+
+    assert_type(d.indices, xr.DataArray | xr.Dataset)
+    assert_type(d.indices, xr.DataArray | xr.Dataset)
 
     check(
         assert_type(
