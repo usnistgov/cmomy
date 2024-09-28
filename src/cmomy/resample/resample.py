@@ -206,8 +206,8 @@ def resample_data(
     )
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
         mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_data,
@@ -754,8 +754,9 @@ def jackknife_data(
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = [dim, *validate_mom_dims(mom_dims, mom_ndim, data)]
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = [dim, *mom_dims]  # type: ignore[misc]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_data,

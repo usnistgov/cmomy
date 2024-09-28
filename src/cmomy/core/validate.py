@@ -261,3 +261,37 @@ def validate_mom_dims(
         msg = f"mom_dims={validated} inconsistent with {mom_ndim=}"
         raise ValueError(msg)
     return cast("MomDimsStrict", validated)
+
+
+def validate_mom_dims_and_mom_ndim(
+    mom_dims: Hashable | Sequence[Hashable] | None,
+    mom_ndim: int | None,
+    out: Any = None,
+) -> tuple[MomDimsStrict, Mom_NDim]:
+    """Validate mom_dims and mom_ndim."""
+    if mom_ndim is not None:
+        mom_ndim = validate_mom_ndim(mom_ndim)
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, out)
+        return mom_dims, mom_ndim
+
+    if mom_dims is not None:
+        mom_dims = cast(
+            "MomDimsStrict",
+            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]
+        )
+        mom_ndim = validate_mom_ndim(len(mom_dims))
+        return mom_dims, mom_ndim
+
+    msg = "Must specify at least one of mom_dims or mom_ndim"
+    raise ValueError(msg)
+
+
+def validate_optional_mom_dims_and_mom_ndim(
+    mom_dims: Hashable | Sequence[Hashable] | None,
+    mom_ndim: int | None,
+    out: Any = None,
+) -> tuple[MomDimsStrict | None, Mom_NDim | None]:
+    """Validate optional mom_dims and mom_ndim"""
+    if mom_dims is None and mom_ndim is None:
+        return None, None
+    return validate_mom_dims_and_mom_ndim(mom_dims, mom_ndim, out)

@@ -1063,7 +1063,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         from cmomy.resample import select_ndat
 
         return block_by(
-            ndat=select_ndat(self._obj, axis=axis, dim=dim, mom_ndim=self._mom_ndim),
+            ndat=select_ndat(
+                self._obj,
+                axis=axis,
+                dim=dim,
+                mom_ndim=self._mom_ndim,
+                mom_dims=getattr(self, "mom_dims", None),
+            ),
             block=block,
             mode=mode,
         )

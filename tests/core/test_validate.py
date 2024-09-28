@@ -135,6 +135,25 @@ def test_validate_mom_dims(args, expected):
 
 
 @pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        ((None, 1), (("mom_0",), 1)),
+        ((None, 2), (("mom_0", "mom_1"), 2)),
+        (("a", None), (("a",), 1)),
+        ((("a", "b"), None), (("a", "b"), 2)),
+        ((["a"], None), (("a",), 1)),
+        ((["a", "b"], None), (("a", "b"), 2)),
+        ((["a", "b"], 1), ValueError),
+        (("a", 2), ValueError),
+        ((("a,"), 2), ValueError),
+        ((None, None), (None, None)),
+    ],
+)
+def test_validate_optional_mom_dims_mom_ndim(args, expected):
+    _do_test(validate.validate_optional_mom_dims_and_mom_ndim, *args, expected=expected)
+
+
+@pytest.mark.parametrize(
     ("arg", "expected"),
     [
         (1, 1),

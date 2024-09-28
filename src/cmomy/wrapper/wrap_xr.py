@@ -458,7 +458,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
         if is_xarray(datas):
             axis, dim = select_axis_dim(
-                datas, axis=axis, dim=dim, mom_ndim=self._mom_ndim
+                datas, axis=axis, dim=dim, mom_dims=self._mom_dims
             )
 
         else:
@@ -777,6 +777,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             data = reduce_data(
                 self._obj,
                 mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
                 axis=axis,
                 dim=dim,
                 out=out,
@@ -803,6 +804,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             data = reduce_data_indexed(
                 self._obj,
                 mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
                 index=index,
                 group_start=group_start,
                 group_end=group_end,
@@ -833,6 +835,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             data = reduce_data_grouped(
                 self._obj,
                 mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
                 by=codes,
                 axis=axis,
                 dim=dim,

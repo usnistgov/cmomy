@@ -432,7 +432,8 @@ def reduce_data(
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_dims=mom_dims)
         xout: DataT
         if use_reduce:
             xout = data.reduce(  # type: ignore[assignment]
@@ -449,7 +450,6 @@ def reduce_data(
             )
 
         else:
-            mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
             xout = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 _reduce_data,
                 data,
@@ -856,8 +856,9 @@ def reduce_data_grouped(  # noqa: PLR0913
     by = np.asarray(by, dtype=np.int64)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = (dim, *mom_dims)  # type: ignore[misc]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_grouped,
@@ -1240,8 +1241,9 @@ def reduce_data_indexed(  # noqa: PLR0913
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = (dim, *mom_dims)  # type: ignore[misc]
 
         # Yes, doing this here and in nmpy section.
         index, group_start, group_end = _validate_index(

@@ -25,6 +25,7 @@ from .core.validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+    validate_optional_mom_dims_and_mom_ndim,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -73,6 +74,7 @@ def moveaxis(
     dim: str | Sequence[Hashable] | MissingType = ...,
     dest_dim: str | Sequence[Hashable] | MissingType = ...,
     mom_ndim: Mom_NDim | None = ...,
+    mom_dims: MomDims | None = ...,
 ) -> NDArray[ScalarT]: ...
 @overload
 def moveaxis(
@@ -83,6 +85,7 @@ def moveaxis(
     dim: str | Sequence[Hashable] | MissingType = ...,
     dest_dim: str | Sequence[Hashable] | MissingType = ...,
     mom_ndim: Mom_NDim | None = ...,
+    mom_dims: MomDims | None = ...,
 ) -> xr.DataArray: ...
 
 
@@ -95,6 +98,7 @@ def moveaxis(
     dim: str | Sequence[Hashable] | MissingType = MISSING,
     dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
+    mom_dims: MomDims | None = None,
 ) -> NDArray[ScalarT] | xr.DataArray:
     """
     Generalized moveaxis for moments arrays.
@@ -112,6 +116,7 @@ def moveaxis(
     dest_dim : str or sequence of hashable
         Destination of each original dimension.
     {mom_ndim_optional}
+    {mom_dims_data}
 
     Returns
     -------
@@ -150,12 +155,13 @@ def moveaxis(
     >>> moveaxis(dx, dim="a", dest=-1, mom_ndim=1).dims
     ('b', 'c', 'a', 'mom_0')
     """
-    mom_ndim = None if mom_ndim is None else validate_mom_ndim(mom_ndim)
-
     if is_dataarray(x):
-        axes0, dims0 = select_axis_dim_mult(x, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, x
+        )
+        axes0, dims0 = select_axis_dim_mult(x, axis=axis, dim=dim, mom_dims=mom_dims)
         axes1, dims1 = select_axis_dim_mult(
-            x, axis=dest, dim=dest_dim, mom_ndim=mom_ndim
+            x, axis=dest, dim=dest_dim, mom_dims=mom_dims
         )
 
         raise_if_wrong_value(
@@ -167,6 +173,7 @@ def moveaxis(
             order.insert(dst, src)
         return x.transpose(*(x.dims[o] for o in order))
 
+    mom_ndim = None if mom_ndim is None else validate_mom_ndim(mom_ndim)
     axes0 = normalize_axis_tuple(validate_axis_mult(axis), x.ndim, mom_ndim)
     axes1 = normalize_axis_tuple(validate_axis_mult(dest), x.ndim, mom_ndim)
 

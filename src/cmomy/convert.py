@@ -376,8 +376,9 @@ def cumulative(
     mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray(values_in):
-        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, values_in)]]
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
+        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = [[dim, *mom_dims]]  # type: ignore[misc]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _cumulative,

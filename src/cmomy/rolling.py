@@ -38,6 +38,7 @@ from .core.validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
+    validate_optional_mom_dims_and_mom_ndim,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -99,6 +100,7 @@ def construct_rolling_window_array(
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
     mom_ndim: Mom_NDim | None = ...,
+    mom_dims: MomDims | None = ...,
     # xarray specific
     dim: DimsReduceMult | MissingType = ...,
     window_dim: str | Sequence[str] | None = ...,
@@ -115,6 +117,7 @@ def construct_rolling_window_array(
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
     mom_ndim: Mom_NDim | None = ...,
+    mom_dims: MomDims | None = ...,
     # xarray specific
     dim: DimsReduceMult | MissingType = ...,
     window_dim: str | Sequence[str] | None = ...,
@@ -131,6 +134,7 @@ def construct_rolling_window_array(
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
     mom_ndim: Mom_NDim | None = ...,
+    mom_dims: MomDims | None = ...,
     # xarray specific
     dim: DimsReduceMult | MissingType = ...,
     window_dim: str | Sequence[str] | None = ...,
@@ -149,6 +153,7 @@ def construct_rolling_window_array(
     stride: int | Sequence[int] = 1,
     fill_value: ArrayLike = np.nan,
     mom_ndim: Mom_NDim | None = None,
+    mom_dims: MomDims | None = None,
     # xarray specific
     dim: DimsReduceMult | MissingType = MISSING,
     window_dim: str | Sequence[str] | None = None,
@@ -173,6 +178,7 @@ def construct_rolling_window_array(
     fill_value : scalar
         Fill value for missing values.
     {mom_ndim}
+    {mom_dims_data}
     dim : str or sequence of hashable
     window_dim : str or Sequence of str, optional
         Names of output window dimension(s).
@@ -219,8 +225,10 @@ def construct_rolling_window_array(
     xarray.core.rolling.DataArrayRolling.construct
     """
     if is_xarray(x):
-        mom_ndim = validate_mom_ndim(mom_ndim) if mom_ndim is not None else mom_ndim
-        axis, dim = select_axis_dim_mult(x, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, x
+        )
+        axis, dim = select_axis_dim_mult(x, axis=axis, dim=dim, mom_dims=mom_dims)
 
         nroll = len(dim)
         window = (window,) * nroll if isinstance(window, int) else window
@@ -391,8 +399,9 @@ def rolling_data(  # noqa: PLR0913
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = [[dim, *validate_mom_dims(mom_dims, mom_ndim, data)]]
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = [[dim, *mom_dims]]  # type: ignore[misc]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_data,
@@ -903,8 +912,9 @@ def rolling_exp_data(  # noqa: PLR0913
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = [dim, *validate_mom_dims(mom_dims, mom_ndim, data)]
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = [dim, *mom_dims]  # type: ignore[misc]
 
         if not is_xarray(alpha):
             # prepare array alpha
