@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cmomy.wrap &#8212; cmomy v0.21.0 documentation</title>
+    <title>cmomy.wrap &#8212; cmomy v0.22.0 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=bf5f3776"></script>
+    <script src="../../_static/documentation_options.js?v=61406f03"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="cmomy.xCentralMoments" href="cmomy.xCentralMoments.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2024-09-25"/>
+    <meta name="docbuild:last-update" content="2024-09-28"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v0.21.0 documentation</p>
+    <p class="title logo__title">cmomy v0.22.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -498,7 +498,7 @@ document.write(`
 <h1>cmomy.wrap<a class="headerlink" href="#cmomy-wrap" title="Link to this heading">#</a></h1>
 <dl class="py function">
 <dt class="sig sig-object py" id="cmomy.wrap">
-<span class="sig-prename descclassname"><span class="pre">cmomy.</span></span><span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fastpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/wrapper/constructors.py#L103-L176"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.wrap" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">cmomy.</span></span><span class="sig-name descname"><span class="pre">wrap</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fastpath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/wrapper/constructors.py#L103-L176"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.wrap" title="Link to this definition">#</a></dt>
 <dd><p>Wrap object with central moments class.</p>
 <p>This will choose the correct wrapper class given the
 type of array (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object).</p>
@@ -506,9 +506,16 @@ type of array (<a class="reference external" href="https://numpy.org/doc/stable/
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>obj</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.1)"><span class="xref std std-term">array-like</span></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>) – Central Moments array.</p></li>
-<li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>) – Value indicates if moments (<code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>) or comoments (<code class="docutils literal notranslate"><span class="pre">mom_ndim=2</span></code>).</p></li>
-<li><p><strong>mom_dims</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.12)"><span class="xref std std-term">hashable</span></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.12)"><span class="xref std std-term">hashable</span></a>) – Name of moment dimensions. Defaults to <code class="docutils literal notranslate"><span class="pre">(&quot;mom_0&quot;,)</span></code> for
-<code class="docutils literal notranslate"><span class="pre">mom_ndim==1</span></code> and <code class="docutils literal notranslate"><span class="pre">(mom_0,</span> <span class="pre">mom_1)</span></code> for <code class="docutils literal notranslate"><span class="pre">mom_ndim==2</span></code></p></li>
+<li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>, <em>optional</em>) – Value indicates if moments (<code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>) or comoments
+(<code class="docutils literal notranslate"><span class="pre">mom_ndim=2</span></code>). If not specified and data is an <a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object
+attempt to infer <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> from <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>.
+Otherwise, default to <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>.</p></li>
+<li><p><strong>mom_dims</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.12)"><span class="xref std std-term">hashable</span></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.12)"><span class="xref std std-term">hashable</span></a>) – Name of moment dimensions. If specified, infer <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> from
+<code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If also pass <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>, check that <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> is
+consistent with <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If not specified, defaults to
+<code class="docutils literal notranslate"><span class="pre">data.dims[-mom_ndim:]</span></code>. This is primarily used if <code class="docutils literal notranslate"><span class="pre">data</span></code> is a
+<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2024.9.1.dev0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>, or if <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> are not the last
+dimensions.</p></li>
 <li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> for output data.</p></li>
 <li><p><strong>copy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – If True, copy the data. If None or False, attempt to use view. Note
 that <code class="docutils literal notranslate"><span class="pre">False</span></code> values will be converted to <code class="docutils literal notranslate"><span class="pre">None</span></code> for numpy versions
@@ -626,7 +633,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2024-09-25.
+  Last updated on 2024-09-28.
   <br/>
 </p>
   </div>
