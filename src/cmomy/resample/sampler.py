@@ -179,7 +179,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         Returns
         -------
         resample : IndexSampler
-            Wrapped object will be an :class:`~np.ndarray` of integers.
+            Wrapped object will be an :class:`~numpy.ndarray` of integers.
         """
         indices: NDArrayAny = random_indices(
             nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng, replace=replace
