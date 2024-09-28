@@ -24,6 +24,7 @@ from cmomy.core.validate import (
     validate_mom_dims,
     validate_mom_ndim,
 )
+from cmomy.core.xr_utils import get_mom_dims_kws
 from cmomy.factory import factory_pusher, parallel_heuristic
 from cmomy.utils import assign_moment
 
@@ -103,10 +104,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         self,
         obj: GenArrayT,
         *,
-        mom_ndim: Mom_NDim = 1,
+        mom_ndim: Mom_NDim | None = None,
         fastpath: bool = False,
     ) -> None:
-        self._mom_ndim = mom_ndim if fastpath else validate_mom_ndim(mom_ndim)
+        self._mom_ndim = (
+            cast("Mom_NDim", mom_ndim)
+            if fastpath
+            else validate_mom_ndim(mom_ndim, mom_ndim_default=1)
+        )
         self._obj = obj
 
         if fastpath:
@@ -351,19 +356,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     def _check_y(y: tuple[Any, ...], mom_ndim: int) -> None:
         raise_if_wrong_value(
             len(y), mom_ndim - 1, "`len(y)` must equal `mom_ndim - 1`."
-        )
-
-    @classmethod
-    def _mom_dims_kws(
-        cls,
-        mom_dims: MomDims | None,
-        mom_ndim: Mom_NDim,
-        out: Any = None,
-    ) -> dict[str, Any]:
-        return (
-            {"mom_dims": validate_mom_dims(mom_dims, mom_ndim, out)}
-            if hasattr(cls, "mom_dims")
-            else {}
         )
 
     # ** Pushing --------------------------------------------------------------
@@ -1378,7 +1370,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         from cmomy.reduction import reduce_vals
 
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        kws = cls._mom_dims_kws(mom_dims, mom_ndim)
+        kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
         obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
             x,  # pyright: ignore[reportArgumentType]
             *y,
@@ -1527,7 +1519,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         ~.resample.factory_sampler
         """
         mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        kws = cls._mom_dims_kws(mom_dims, mom_ndim)
+        kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
 
         from cmomy.resample import resample_vals
 
@@ -1625,7 +1617,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: ArrayLike | xr.DataArray | xr.Dataset,
         *,
-        mom_ndim: Mom_NDim = 1,
+        mom_ndim: Mom_NDim | None = None,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -1711,7 +1703,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """
         from cmomy import convert
 
-        kws = cls._mom_dims_kws(mom_dims, mom_ndim, raw)
+        kws = get_mom_dims_kws(
+            raw, mom_dims, mom_ndim, raw, mom_ndim_default=1, include_mom_ndim=True
+        )
+        mom_ndim = kws.pop("mom_ndim")
         return cls(
             obj=convert.moments_type(  # type: ignore[arg-type]
                 raw,
@@ -1725,7 +1720,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
                 **kws,
             ),
-            mom_ndim=mom_ndim,
+            mom_ndim=mom_ndim,  # type: ignore[arg-type]
             **kws,
             fastpath=True,
         )

@@ -19,7 +19,7 @@ from cmomy.core.validate import (
     is_xarray,
     raise_if_wrong_value,
     validate_floating_dtype,
-    validate_mom_dims,
+    validate_mom_dims_and_mom_ndim,
 )
 from cmomy.core.xr_utils import (
     astype_dtype_dict,
@@ -103,7 +103,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         self,
         obj: DataT,
         *,
-        mom_ndim: Mom_NDim = 1,
+        mom_ndim: Mom_NDim | None = None,
         mom_dims: MomDims | None = None,
         fastpath: bool = False,
     ) -> None:
@@ -111,11 +111,13 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             msg = "obj must be a DataArray or Dataset, not {type(obj)}"
             raise TypeError(msg)
 
-        self._mom_dims = (
-            cast("MomDimsStrict", mom_dims)
-            if fastpath
-            else validate_mom_dims(mom_dims, mom_ndim, obj)
-        )
+        if fastpath:
+            self._mom_dims = cast("MomDimsStrict", mom_dims)
+        else:
+            mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+                mom_dims, mom_ndim, obj, mom_ndim_default=1
+            )
+            self._mom_dims = mom_dims
 
         # NOTE: Why this ignore?
         super().__init__(obj=obj, mom_ndim=mom_ndim, fastpath=fastpath)  # type: ignore[arg-type]

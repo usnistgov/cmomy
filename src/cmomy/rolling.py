@@ -37,6 +37,7 @@ from .core.validate import (
     validate_axis,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
+    validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
     validate_optional_mom_dims_and_mom_ndim,
 )
@@ -351,7 +352,7 @@ def rolling_data(  # noqa: PLR0913
     *,
     window: int,
     axis: AxisReduce | MissingType = MISSING,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
@@ -395,11 +396,12 @@ def rolling_data(  # noqa: PLR0913
     out : ndarray or DataArray or Dataset
         Moving average data, of same shape and type as ``data``.
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
         core_dims = [[dim, *mom_dims]]  # type: ignore[misc]
 
@@ -441,6 +443,7 @@ def rolling_data(  # noqa: PLR0913
         return xout
 
     # Numpy
+    mom_ndim = validate_mom_ndim(mom_ndim)
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,
@@ -856,7 +859,7 @@ def rolling_exp_data(  # noqa: PLR0913
     alpha: ArrayLike,
     *,
     axis: AxisReduce | MissingType = MISSING,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     min_periods: int | None = None,
     adjust: bool = True,
     zero_missing_weights: bool = True,
@@ -908,11 +911,12 @@ def rolling_exp_data(  # noqa: PLR0913
     pandas.DataFrame.ewm
 
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
         core_dims = [dim, *mom_dims]  # type: ignore[misc]
 
@@ -969,6 +973,7 @@ def rolling_exp_data(  # noqa: PLR0913
         return xout
 
     # save the original axis for alpha_axis...
+    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
     axis_orig = validate_axis(axis)
     axis, data = prepare_data_for_reduction(
         data,

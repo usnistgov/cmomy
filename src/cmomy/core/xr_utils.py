@@ -13,6 +13,9 @@ from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .missing import MISSING
 from .validate import (
     is_dataset,
+    is_xarray,
+    validate_mom_dims_and_mom_ndim,
+    validate_mom_ndim,
     validate_not_none,
 )
 
@@ -24,7 +27,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     import xarray as xr
-    from numpy.typing import DTypeLike
+    from numpy.typing import ArrayLike, DTypeLike
 
     from .typing import (
         ApplyUFuncKwargs,
@@ -311,3 +314,29 @@ def astype_dtype_dict(
         raise ValueError(msg)
 
     return dtype
+
+
+def get_mom_dims_kws(
+    target: ArrayLike | xr.DataArray | xr.Dataset,
+    mom_dims: MomDims | None,
+    mom_ndim: Mom_NDim | None,
+    out: Any = None,
+    mom_ndim_default: Mom_NDim | None = None,
+    include_mom_ndim: bool = False,
+) -> dict[str, Any]:
+    """Get kwargs for mom_dims and mom_ndim"""
+    if is_xarray(target):
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, out, mom_ndim_default=mom_ndim_default
+        )
+        return (
+            {"mom_dims": mom_dims, "mom_ndim": mom_ndim}
+            if include_mom_ndim
+            else {"mom_dims": mom_dims}
+        )
+
+    if include_mom_ndim:
+        return {
+            "mom_ndim": validate_mom_ndim(mom_ndim, mom_ndim_default=mom_ndim_default)
+        }
+    return {}

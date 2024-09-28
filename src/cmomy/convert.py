@@ -32,6 +32,7 @@ from .core.validate import (
     is_ndarray,
     is_xarray,
     validate_mom_dims,
+    validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
 )
 from .core.xr_utils import (
@@ -131,7 +132,7 @@ def moments_type(
 def moments_type(
     values_in: ArrayLike | DataT,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -196,9 +197,10 @@ def moments_type(
 
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    mom_ndim = validate_mom_ndim(mom_ndim)
     if is_xarray(values_in):
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, values_in, mom_ndim_default=1
+        )
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
             values_in,
@@ -225,7 +227,7 @@ def moments_type(
     return _moments_type(
         values_in,
         out=out,
-        mom_ndim=mom_ndim,
+        mom_ndim=validate_mom_ndim(mom_ndim, mom_ndim_default=1),
         to=to,
         dtype=dtype,
         casting=casting,
@@ -309,7 +311,7 @@ def cumulative(
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     inverse: bool = False,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
@@ -373,10 +375,11 @@ def cumulative(
 
 
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray(values_in):
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, values_in)
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, values_in, mom_ndim_default=1
+        )
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_dims=mom_dims)
         core_dims = [[dim, *mom_dims]]  # type: ignore[misc]
 
@@ -415,6 +418,7 @@ def cumulative(
         return xout
 
     # Numpy
+    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
     axis, values_in = prepare_data_for_reduction(
         values_in,
         axis=axis,

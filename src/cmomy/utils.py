@@ -24,6 +24,7 @@ from .core.validate import (
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
+    validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
     validate_optional_mom_dims_and_mom_ndim,
 )
@@ -258,7 +259,7 @@ def select_moment(
     data: NDArray[ScalarT] | DataT,
     name: SelectMoment,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
@@ -325,12 +326,13 @@ def select_moment(
     array([1, 4])
 
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     if is_xarray(data):
         if name == "all":
             return data
 
-        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim, out=data)
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
         # input/output dimensions
         input_core_dims = [mom_dims]
         output_core_dims: list[Sequence[Hashable]]
@@ -386,7 +388,7 @@ def select_moment(
 
     return _select_moment(
         data,
-        mom_ndim=mom_ndim,
+        mom_ndim=validate_mom_ndim(mom_ndim, mom_ndim_default=1),
         name=name,
         squeeze=squeeze,
     )
@@ -414,7 +416,7 @@ def assign_moment(
     data: DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim | None = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -428,7 +430,7 @@ def assign_moment(
     data: NDArray[ScalarT],
     moment: Mapping[SelectMoment, ArrayLike] | None = None,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim | None = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -445,7 +447,7 @@ def assign_moment(
     data: NDArray[ScalarT] | DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim | None = None,
     squeeze: bool = True,
     copy: bool = True,
     dim_combined: Hashable | None = None,
@@ -528,8 +530,6 @@ def assign_moment(
            [3, 1, 5]])
 
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
-
     # get names ands values
     moment_kwargs = either_dict_or_kwargs(  # type: ignore[assignment]
         moment if moment is None else dict(moment),
@@ -538,8 +538,9 @@ def assign_moment(
     )
 
     if is_xarray(data):
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
-
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
         # figure out values shape...
         input_core_dims: list[Sequence[Hashable]] = [mom_dims]
         for name, value in moment_kwargs.items():
@@ -588,7 +589,7 @@ def assign_moment(
         data,
         *moment_kwargs.values(),
         names=moment_kwargs.keys(),  # type: ignore[arg-type]
-        mom_ndim=mom_ndim,
+        mom_ndim=validate_mom_ndim(mom_ndim),
         squeeze=squeeze,
         copy=copy,
     )
