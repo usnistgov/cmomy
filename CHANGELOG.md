@@ -18,6 +18,15 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.22.0 — 2024-09-28
+
+### Changed
+
+- For xarray (DataArray and Dataset) central moments data, routines will infer
+  `mom_ndim` from `mom_dims`. For example, can calling
+  `cmomy.reduce_data(data, mom_dims=("mom_0", "mom_1"), dim="a")` will infer
+  `mom_ndim=1`.
+
 ## v0.21.0 — 2024-09-25
 
 ### Removed
