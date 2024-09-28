@@ -19,7 +19,7 @@ from cmomy.core.validate import (
     is_xarray,
     raise_if_wrong_value,
     validate_floating_dtype,
-    validate_mom_dims,
+    validate_mom_dims_and_mom_ndim,
 )
 from cmomy.core.xr_utils import (
     astype_dtype_dict,
@@ -92,6 +92,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
     Parameters
     ----------
+    {mom_ndim_data}
     {mom_dims_data}
     """
 
@@ -103,7 +104,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         self,
         obj: DataT,
         *,
-        mom_ndim: Mom_NDim = 1,
+        mom_ndim: Mom_NDim | None = None,
         mom_dims: MomDims | None = None,
         fastpath: bool = False,
     ) -> None:
@@ -111,11 +112,13 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             msg = "obj must be a DataArray or Dataset, not {type(obj)}"
             raise TypeError(msg)
 
-        self._mom_dims = (
-            cast("MomDimsStrict", mom_dims)
-            if fastpath
-            else validate_mom_dims(mom_dims, mom_ndim, obj)
-        )
+        if fastpath:
+            self._mom_dims = cast("MomDimsStrict", mom_dims)
+        else:
+            mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+                mom_dims, mom_ndim, obj, mom_ndim_default=1
+            )
+            self._mom_dims = mom_dims
 
         # NOTE: Why this ignore?
         super().__init__(obj=obj, mom_ndim=mom_ndim, fastpath=fastpath)  # type: ignore[arg-type]
@@ -458,7 +461,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
         if is_xarray(datas):
             axis, dim = select_axis_dim(
-                datas, axis=axis, dim=dim, mom_ndim=self._mom_ndim
+                datas, axis=axis, dim=dim, mom_dims=self._mom_dims
             )
 
         else:
@@ -777,6 +780,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             data = reduce_data(
                 self._obj,
                 mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
                 axis=axis,
                 dim=dim,
                 out=out,
@@ -803,6 +807,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             data = reduce_data_indexed(
                 self._obj,
                 mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
                 index=index,
                 group_start=group_start,
                 group_end=group_end,
@@ -833,6 +838,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             data = reduce_data_grouped(
                 self._obj,
                 mom_ndim=self._mom_ndim,
+                mom_dims=self._mom_dims,
                 by=codes,
                 axis=axis,
                 dim=dim,

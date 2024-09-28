@@ -16,10 +16,11 @@ def _dummy_docstrings() -> None:
         a single variable.  If length 2 tuple, then comoments of two variables
     mom_ndim : {1, 2}
         Value indicates if moments (``mom_ndim = 1``) or comoments (``mom_ndim=2``).
-    mom_ndim_optional | mom_ndim : {1, 2, None}
+        Defaults to ``mom_ndim=1``.
+    mom_ndim_optional | mom_ndim : {1, 2}, optional
         If ``mom_ndim`` is not ``None``, then wrap axis relative to ``mom_ndim``.
         For Example, with mom_ndim=``2``, ``axis = -1`` will be transformed to ``axis = -3``.
-
+        If ``mom_dims`` is passed and data is an :mod:`xarray` object, infer ``mom_n=ndim`` from ``mom_dims``.
 
     copy : bool, optional
         If True, copy the data. If None or False, attempt to use view. Note
@@ -179,9 +180,17 @@ def _dummy_docstrings() -> None:
         Name of moment dimensions. Defaults to ``("mom_0",)`` for
         ``mom_ndim==1`` and ``(mom_0, mom_1)`` for ``mom_ndim==2``
     mom_dims_data | mom_dims : hashable or tuple of hashable
-        Name of moment dimensions. Defaults to ``data.dims[-mom_ndim:]``. This
-        is primarily used if ``data`` is a :class:`~xarray.Dataset`, and the
-        first variable does not contain moments data.
+        Name of moment dimensions. If specified, infer ``mom_ndim`` from
+        ``mom_dims``. If also pass ``mom_ndim``, check that ``mom_dims`` is
+        consistent with ``mom_dims``. If not specified, defaults to
+        ``data.dims[-mom_ndim:]``. This is primarily used if ``data`` is a
+        :class:`~xarray.Dataset`, or if ``mom_dims`` are not the last
+        dimensions.
+    mom_ndim_data | mom_ndim: {1, 2}, optional
+        Value indicates if moments (``mom_ndim = 1``) or comoments
+        (``mom_ndim=2``). If not specified and data is an :mod:`xarray` object
+        attempt to infer ``mom_ndim`` from ``mom_dims``.
+        Otherwise, default to ``mom_ndim = 1``.
     apply_ufunc_kwargs : dict-like
         Extra parameters to :func:`xarray.apply_ufunc`. One useful option is
         ``on_missing_core_dim``, which can take the value ``"copy"`` (the

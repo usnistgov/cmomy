@@ -17,5 +17,5 @@ pytz==2024.2              # via pandas
 six==1.16.0               # via python-dateutil
 types-pytz==2024.2.0.20240913  # via pandas-stubs
 typing-extensions==4.12.2  # via module-utilities, -r requirements/typing.txt
-tzdata==2024.1            # via pandas
+tzdata==2024.2            # via pandas
 xarray==2024.9.0          # via -r requirements/typing.txt

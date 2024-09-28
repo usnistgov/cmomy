@@ -13,7 +13,9 @@ from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .missing import MISSING
 from .validate import (
     is_dataset,
-    validate_mom_dims,
+    is_xarray,
+    validate_mom_dims_and_mom_ndim,
+    validate_mom_ndim,
     validate_not_none,
 )
 
@@ -25,7 +27,7 @@ if TYPE_CHECKING:
     from typing import Any
 
     import xarray as xr
-    from numpy.typing import DTypeLike
+    from numpy.typing import ArrayLike, DTypeLike
 
     from .typing import (
         ApplyUFuncKwargs,
@@ -73,13 +75,26 @@ def factory_apply_ufunc_kwargs(
 
 
 # * Select axis/dim -----------------------------------------------------------
+def _check_dim_in_mom_dims(
+    *,
+    axis: int | None = None,
+    dim: Hashable,
+    mom_dims: MomDimsStrict | None,
+) -> None:
+    if mom_dims is not None and dim in mom_dims:
+        axis_msg = f", {axis=}" if axis is not None else ""
+        msg = f"Cannot select moment dimension. {dim=}{axis_msg}."
+        raise ValueError(msg)
+
+
 def select_axis_dim(
     data: xr.DataArray | xr.Dataset,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
+    *,
     default_axis: AxisReduce | MissingType = MISSING,
     default_dim: DimsReduce | MissingType = MISSING,
-    mom_ndim: Mom_NDim | None = None,
+    mom_dims: MomDimsStrict | None = None,
 ) -> tuple[int, Hashable]:
     """Produce axis/dim from input."""
     # for now, disallow None values
@@ -90,6 +105,8 @@ def select_axis_dim(
         if axis is not MISSING or dim is MISSING:
             msg = "For Dataset, must specify ``dim`` value other than ``None`` only."
             raise ValueError(msg)
+
+        _check_dim_in_mom_dims(dim=dim, mom_dims=mom_dims)
         return 0, dim
 
     default_axis = validate_not_none(default_axis, "default_axis")
@@ -110,21 +127,18 @@ def select_axis_dim(
 
     if dim is not MISSING:
         axis = data.get_axis_num(dim)
-        if axis >= data.ndim - (0 if mom_ndim is None else mom_ndim):
-            msg = f"Cannot select moment dimension. {axis=}, {dim=}."
-            raise ValueError(msg)
 
     elif axis is not MISSING:
-        if isinstance(axis, str):
-            msg = f"Using string value for axis is deprecated.  Please use `dim` option instead.  Passed {axis} of type {type(axis)}"
-            raise ValueError(msg)
-        # wrap axis
-        axis = normalize_axis_index(axis, data.ndim, mom_ndim)  # type: ignore[arg-type]
+        axis = normalize_axis_index(
+            axis=axis,  # type: ignore[arg-type]
+            ndim=data.ndim - (0 if mom_dims is None else len(mom_dims)),
+        )
         dim = data.dims[axis]
     else:  # pragma: no cover
         msg = f"Unknown dim {dim} and axis {axis}"
         raise TypeError(msg)
 
+    _check_dim_in_mom_dims(dim=dim, axis=axis, mom_dims=mom_dims)
     return axis, dim
 
 
@@ -132,9 +146,9 @@ def select_axis_dim_mult(  # noqa: C901
     data: xr.DataArray | xr.Dataset,
     axis: AxisReduceMult | MissingType = MISSING,
     dim: DimsReduceMult | MissingType = MISSING,
+    *,
     default_axis: AxisReduceMult | MissingType = MISSING,
     default_dim: DimsReduceMult | MissingType = MISSING,
-    mom_ndim: Mom_NDim | None = None,
     mom_dims: MomDimsStrict | None = None,
 ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
     """
@@ -142,20 +156,31 @@ def select_axis_dim_mult(  # noqa: C901
 
     This is like `select_axis_dim`, but allows multiple values in axis/dim.
     """
+
+    def _get_dim_none() -> tuple[Hashable, ...]:
+        dim_ = tuple(data.dims)
+        if mom_dims:
+            dim_ = tuple(d for d in dim_ if d not in mom_dims)
+        return dim_
+
+    def _check_dim(dim_: tuple[Hashable, ...]) -> None:
+        if mom_dims is not None:
+            for d in dim_:
+                _check_dim_in_mom_dims(dim=d, mom_dims=mom_dims)
+
+    dim_: tuple[Hashable, ...]
+    axis_: tuple[int, ...]
     if is_dataset(data):
         if axis is not MISSING or dim is MISSING:
             msg = "For Dataset, must specify ``dim`` value only."
             raise ValueError(msg)
 
         if dim is None:
-            dim = tuple(data.dims)
-
-            if mom_dims is None and mom_ndim is not None:
-                mom_dims = validate_mom_dims(None, mom_ndim, data)
-
-            if mom_dims is not None:
-                dim = tuple(d for d in dim if d not in mom_dims)
-        return (), (dim,) if isinstance(dim, str) else dim  # type: ignore[return-value]
+            dim_ = _get_dim_none()
+        else:
+            dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
+            _check_dim(dim_)
+        return (), dim_
 
     # Allow None, which implies choosing all dimensions...
     if axis is MISSING and dim is MISSING:
@@ -171,32 +196,23 @@ def select_axis_dim_mult(  # noqa: C901
         msg = "Can only specify one of axis or dim"
         raise ValueError(msg)
 
-    ndim = data.ndim - (0 if mom_ndim is None else mom_ndim)
-    dim_: tuple[Hashable, ...]
-    axis_: tuple[int, ...]
-
     if dim is not MISSING:
-        dim_ = (
-            data.dims[:ndim]
-            if dim is None
-            else (dim,)
-            if isinstance(dim, str)
-            else tuple(dim)  # type: ignore[arg-type]
-        )
+        if dim is None:
+            dim_ = _get_dim_none()
+        else:
+            dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
 
         axis_ = data.get_axis_num(dim_)
-        if any(a >= ndim for a in axis_):
-            msg = f"Cannot select moment dimension. {axis_=}, {dim_=}."
-            raise ValueError(msg)
-
     elif axis is not MISSING:
-        axis_ = normalize_axis_tuple(axis, data.ndim, mom_ndim)
+        ndim = data.ndim - (0 if mom_dims is None else len(mom_dims))
+        axis_ = normalize_axis_tuple(axis, ndim)
         dim_ = tuple(data.dims[a] for a in axis_)
 
     else:  # pragma: no cover
         msg = f"Unknown dim {dim} and axis {axis}"
         raise TypeError(msg)
 
+    _check_dim(dim_)
     return axis_, dim_
 
 
@@ -298,3 +314,29 @@ def astype_dtype_dict(
         raise ValueError(msg)
 
     return dtype
+
+
+def get_mom_dims_kws(
+    target: ArrayLike | xr.DataArray | xr.Dataset,
+    mom_dims: MomDims | None,
+    mom_ndim: Mom_NDim | None,
+    out: Any = None,
+    mom_ndim_default: Mom_NDim | None = None,
+    include_mom_ndim: bool = False,
+) -> dict[str, Any]:
+    """Get kwargs for mom_dims and mom_ndim"""
+    if is_xarray(target):
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, out, mom_ndim_default=mom_ndim_default
+        )
+        return (
+            {"mom_dims": mom_dims, "mom_ndim": mom_ndim}
+            if include_mom_ndim
+            else {"mom_dims": mom_dims}
+        )
+
+    if include_mom_ndim:
+        return {
+            "mom_ndim": validate_mom_ndim(mom_ndim, mom_ndim_default=mom_ndim_default)
+        }
+    return {}

@@ -16,8 +16,7 @@ from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
-    validate_mom_dims,
-    validate_mom_ndim,
+    validate_optional_mom_dims_and_mom_ndim,
 )
 from cmomy.core.xr_utils import select_axis_dim
 from cmomy.factory import (
@@ -180,7 +179,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         Returns
         -------
         resample : IndexSampler
-            Wrapped object will be an :class:`~np.ndarray` of integers.
+            Wrapped object will be an :class:`~numpy.ndarray` of integers.
         """
         indices: NDArrayAny = random_indices(
             nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng, replace=replace
@@ -275,7 +274,9 @@ class IndexSampler(Generic[SamplerArrayT]):
             the resulting Dataset has only one variable, and a
             :class:`~xarray.Dataset` otherwise.
         """
-        ndat = select_ndat(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        ndat = select_ndat(
+            data, axis=axis, dim=dim, mom_ndim=mom_ndim, mom_dims=mom_dims
+        )
 
         indices: NDArrayAny | xr.DataArray | xr.Dataset
         if is_xarray(data):
@@ -534,8 +535,11 @@ def _randsamp_indices_dataarray_or_dataset(
     replace: bool = True,
 ) -> xr.DataArray | DataT:
     """Create a resampling DataArray or Dataset."""
-    dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)[1]
-    # make sure to validate rng here in case call multiple have dataset...
+    mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
+        mom_dims, mom_ndim, data
+    )
+    dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)[1]
+    # make sure to validate rng here in case call multiple have dataset
     rng = validate_rng(rng)
 
     def _get_unique_indices() -> xr.DataArray:
@@ -548,14 +552,7 @@ def _randsamp_indices_dataarray_or_dataset(
         return _get_unique_indices()
 
     # generate non-paired dataset
-    if mom_ndim:
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
-    elif mom_dims:
-        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]
-        mom_ndim = validate_mom_ndim(len(mom_dims))
-    else:
-        mom_dims = ()
-    dims = {dim, *mom_dims}  # type: ignore[misc]
+    dims = {dim, *(() if mom_dims is None else mom_dims)}  # type: ignore[misc]
     out: dict[Hashable, xr.DataArray] = {}
     for name, da in data.items():
         if dims.issubset(da.dims):
@@ -574,6 +571,7 @@ def select_ndat(
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
+    mom_dims: MomDims | None = None,
 ) -> int:
     """
     Determine ndat from array.
@@ -584,6 +582,7 @@ def select_ndat(
     {axis}
     {dim}
     {mom_ndim_optional}
+    {mom_dims_data}
 
     Returns
     -------
@@ -605,12 +604,15 @@ def select_ndat(
     >>> select_ndat(xdata, dim="mom", mom_ndim=1)
     Traceback (most recent call last):
     ...
-    ValueError: Cannot select moment dimension. axis=2, dim='mom'.
+    ValueError: Cannot select moment dimension. dim='mom', axis=2.
     """
     from cmomy.core.array_utils import normalize_axis_index
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data
+        )
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
         return data.sizes[dim]
 
     if isinstance(axis, int):
