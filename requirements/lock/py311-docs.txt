@@ -2,7 +2,7 @@
 #    uv pip compile --python-version=3.11 -o requirements/lock/py311-docs.txt requirements/docs.txt
 accessible-pygments==0.0.5  # via pydata-sphinx-theme
 alabaster==1.0.0          # via sphinx
-anyio==4.5.0              # via starlette, watchfiles
+anyio==4.6.0              # via starlette, watchfiles
 appnope==0.1.4            # via ipykernel
 asttokens==2.4.1          # via stack-data
 attrs==24.2.0             # via jsonschema, jupyter-cache, referencing
@@ -14,7 +14,7 @@ charset-normalizer==3.3.2  # via requests
 click==8.1.7              # via jupyter-cache, uvicorn
 colorama==0.4.6           # via sphinx-autobuild
 comm==0.2.2               # via ipykernel
-debugpy==1.8.5            # via ipykernel
+debugpy==1.8.6            # via ipykernel
 decorator==5.1.1          # via ipython
 docstring-inheritance==2.2.1  # via -r requirements/docs.txt
 docutils==0.21.2          # via myst-parser, pydata-sphinx-theme, sphinx
@@ -42,7 +42,7 @@ matplotlib-inline==0.1.7  # via ipykernel, ipython
 mdit-py-plugins==0.4.2    # via myst-parser
 mdurl==0.1.2              # via markdown-it-py
 module-utilities==0.9.0   # via -r requirements/docs.txt
-myst-nb==1.1.1            # via -r requirements/docs.txt
+myst-nb==1.1.2            # via -r requirements/docs.txt
 myst-parser==4.0.0        # via myst-nb
 nbclient==0.10.0          # via jupyter-cache, myst-nb
 nbformat==5.10.4          # via jupyter-cache, myst-nb, nbclient
@@ -54,7 +54,7 @@ pandas==2.2.3             # via xarray
 parso==0.8.4              # via jedi
 pexpect==4.9.0            # via ipython
 platformdirs==4.3.6       # via jupyter-core
-prompt-toolkit==3.0.47    # via ipython
+prompt-toolkit==3.0.48    # via ipython
 psutil==6.0.0             # via ipykernel
 ptyprocess==0.7.0         # via pexpect
 pure-eval==0.2.3          # via stack-data
@@ -86,16 +86,16 @@ sphinxcontrib-serializinghtml==2.0.0  # via sphinx
 sphinxcontrib-spelling==8.0.0  # via -r requirements/docs.txt
 sqlalchemy==2.0.35        # via jupyter-cache
 stack-data==0.6.3         # via ipython
-starlette==0.38.5         # via sphinx-autobuild
+starlette==0.39.1         # via sphinx-autobuild
 tabulate==0.9.0           # via jupyter-cache
 tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 typing-extensions==4.12.2  # via ipython, module-utilities, myst-nb, pydata-sphinx-theme, sqlalchemy, -r requirements/docs.txt
-tzdata==2024.1            # via pandas
+tzdata==2024.2            # via pandas
 urllib3==2.2.3            # via requests
-uvicorn==0.30.6           # via sphinx-autobuild
+uvicorn==0.31.0           # via sphinx-autobuild
 watchfiles==0.24.0        # via sphinx-autobuild
 wcwidth==0.2.13           # via prompt-toolkit
-websockets==13.0.1        # via sphinx-autobuild
+websockets==13.1          # via sphinx-autobuild
 xarray==2024.9.0          # via -r requirements/docs.txt
 zipp==3.20.2              # via importlib-metadata

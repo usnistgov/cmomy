@@ -37,6 +37,7 @@ from .core.validate import (
     validate_axis_mult,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
+    validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
 )
 from .core.xr_utils import (
@@ -380,7 +381,7 @@ def reduce_data(
 def reduce_data(
     data: ArrayLike | DataT,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     axis: AxisReduceMult | MissingType = MISSING,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -401,7 +402,7 @@ def reduce_data(
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim}
+    {mom_ndim_data}
     {axis_data_mult}
     {out}
     {dtype}
@@ -428,11 +429,12 @@ def reduce_data(
         Reduced data array with shape ``data.shape`` with ``axis`` removed.
         Same type as input ``data``.
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
-
     if is_xarray(data):
-        axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
+        axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_dims=mom_dims)
         xout: DataT
         if use_reduce:
             xout = data.reduce(  # type: ignore[assignment]
@@ -449,7 +451,6 @@ def reduce_data(
             )
 
         else:
-            mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
             xout = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 _reduce_data,
                 data,
@@ -477,6 +478,7 @@ def reduce_data(
         return xout
 
     # Numpy
+    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
     return _reduce_data(
         asarray_maybe_recast(data, dtype=dtype, recast=False),
         mom_ndim=mom_ndim,
@@ -757,7 +759,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     data: ArrayLike | DataT,
     by: ArrayLike,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
@@ -779,7 +781,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim}
+    {mom_ndim_data}
     {by}
     {axis_data}
     {move_axis_to_end}
@@ -851,13 +853,15 @@ def reduce_data_grouped(  # noqa: PLR0913
 
 
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
     by = np.asarray(by, dtype=np.int64)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = (dim, *mom_dims)  # type: ignore[misc]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_grouped,
@@ -901,6 +905,7 @@ def reduce_data_grouped(  # noqa: PLR0913
         return xout
 
     # Numpy
+    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
     axis, data = prepare_data_for_reduction(
         data=data,
         axis=axis,
@@ -1137,7 +1142,7 @@ def reduce_data_indexed(
 def reduce_data_indexed(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
@@ -1163,7 +1168,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim}
+    {mom_ndim_data}
     index : ndarray
         Index into `data.shape[axis]`.
     group_start, group_end : ndarray
@@ -1236,12 +1241,14 @@ def reduce_data_indexed(  # noqa: PLR0913
       * group    (group) <U1 12B 'a' 'b' 'c'
     Dimensions without coordinates: mom
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = (dim, *validate_mom_dims(mom_dims, mom_ndim, data))
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = (dim, *mom_dims)  # type: ignore[misc]
 
         # Yes, doing this here and in nmpy section.
         index, group_start, group_end = _validate_index(
@@ -1314,6 +1321,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         return xout
 
     # Numpy
+    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
     axis, data = prepare_data_for_reduction(
         data=data,
         axis=axis,
@@ -1400,7 +1408,7 @@ def resample_data_indexed(  # noqa: PLR0913
     data: ArrayT,
     sampler: Sampler,
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: Mom_NDim | None = None,
     axis: AxisReduce | MissingType = MISSING,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,

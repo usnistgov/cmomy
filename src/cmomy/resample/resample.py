@@ -35,6 +35,7 @@ from cmomy.core.validate import (
     raise_if_wrong_value,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
+    validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
 )
 from cmomy.core.xr_utils import (
@@ -144,7 +145,7 @@ def resample_data(
     data: ArrayLike | DataT,
     *,
     sampler: Sampler,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str = "rep",
@@ -166,7 +167,7 @@ def resample_data(
     ----------
     {data_numpy_or_dataarray_or_dataset}
     {sampler}
-    {mom_ndim}
+    {mom_ndim_data}
     {axis}
     {dim}
     {rep_dim}
@@ -191,7 +192,6 @@ def resample_data(
     random_freq
     factory_sampler
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     sampler = factory_sampler(
@@ -206,8 +206,10 @@ def resample_data(
     )
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, data)
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_data,
@@ -246,6 +248,7 @@ def resample_data(
         return xout
 
     # Numpy
+    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,
@@ -639,7 +642,7 @@ def jackknife_data(
     data: ArrayLike | DataT,
     data_reduced: ArrayLike | DataT | None = None,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     rep_dim: str | None = "rep",
@@ -662,7 +665,7 @@ def jackknife_data(
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim}
+    {mom_ndim_data}
     {axis}
     {dim}
     data_reduced : array-like or DataArray, optional
@@ -730,7 +733,6 @@ def jackknife_data(
     Dimensions without coordinates: jackknife, mom
 
     """
-    mom_ndim = validate_mom_ndim(mom_ndim)
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if data_reduced is None:
@@ -754,8 +756,11 @@ def jackknife_data(
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
     if is_xarray(data):
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_ndim=mom_ndim)
-        core_dims = [dim, *validate_mom_dims(mom_dims, mom_ndim, data)]
+        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim, data, mom_ndim_default=1
+        )
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        core_dims = [dim, *mom_dims]  # type: ignore[misc]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_data,
@@ -794,6 +799,7 @@ def jackknife_data(
         return xout
 
     # numpy
+    mom_ndim = validate_mom_ndim(mom_ndim)
     axis, data = prepare_data_for_reduction(
         data,
         axis=axis,

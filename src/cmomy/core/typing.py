@@ -253,8 +253,8 @@ class _ParallelKwargs(TypedDict, total=False):
     parallel: bool | None
 
 
-class _MomNDimKwargs(TypedDict, total=False):
-    mom_ndim: Mom_NDim
+class _MomNDimOptionalKwargs(TypedDict, total=False):
+    mom_ndim: Mom_NDim | None
 
 
 class _MomKwargs(TypedDict, total=False):
@@ -291,8 +291,8 @@ class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
 
 
-class _DataKwargs(
-    _MomNDimKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
+class _DataOptionalKwargs(
+    _MomNDimOptionalKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
 ):
     pass
 
@@ -305,7 +305,7 @@ class _ValsKwargs(
 
 # ** Reduction
 class ReduceDataKwargs(
-    _MomNDimKwargs,
+    _MomNDimOptionalKwargs,
     _AxisMultKwargs,
     _ReductionKwargs,
     _OrderKwargs,
@@ -328,7 +328,7 @@ class ReduceValsKwargs(
 
 
 class ReduceDataGroupedKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     total=False,
@@ -340,7 +340,7 @@ class ReduceDataGroupedKwargs(
 
 
 class ReduceDataIndexedKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     total=False,
@@ -359,7 +359,7 @@ class ReduceDataIndexedKwargs(
 
 # ** Resample
 class ResampleDataKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
@@ -379,7 +379,7 @@ class ResampleValsKwargs(
 
 
 class JackknifeDataKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     total=False,
@@ -402,7 +402,7 @@ class JackknifeValsKwargs(
 
 # ** Convert
 class WrapRawKwargs(
-    _MomNDimKwargs,
+    _MomNDimOptionalKwargs,
     _ReductionKwargs,
     _OrderKwargs,
     total=False,
@@ -420,7 +420,7 @@ class MomentsTypeKwargs(
 
 
 class CumulativeKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     total=False,
@@ -442,7 +442,7 @@ class MomentsToComomentsKwargs(
 
 # ** Utils
 class SelectMomentKwargs(
-    _MomNDimKwargs,
+    _MomNDimOptionalKwargs,
     _MomDimsAndApplyUFuncKwargs,
     total=False,
 ):
@@ -477,7 +477,7 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
 
 
 class RollingDataKwargs(
-    _DataKwargs, _RollingKwargs, _MoveAxisToEndKwargs, _OrderKwargs, total=False
+    _DataOptionalKwargs, _RollingKwargs, _MoveAxisToEndKwargs, _OrderKwargs, total=False
 ):
     """Extra parameters to :func:`.rolling.rolling_data`"""
 
@@ -492,7 +492,7 @@ class RollingValsKwargs(
 
 
 class RollingExpDataKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
@@ -513,7 +513,7 @@ class RollingExpValsKwargs(
 
 # ** Wrap
 class WrapKwargs(
-    _MomNDimKwargs,
+    _MomNDimOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :func:`cmomy.wrap`"""

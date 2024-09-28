@@ -21,5 +21,5 @@ pytz==2024.2              # via pandas
 six==1.16.0               # via python-dateutil
 termcolor==2.4.0          # via pytest-sugar
 typing-extensions==4.12.2  # via module-utilities, -r requirements/test.txt
-tzdata==2024.1            # via pandas
+tzdata==2024.2            # via pandas
 xarray==2024.9.0          # via -r requirements/test.txt

@@ -17,8 +17,8 @@ from cmomy.core.missing import MISSING
 from cmomy.core.validate import (
     is_xarray,
     validate_mom_and_mom_ndim,
-    validate_mom_dims,
 )
+from cmomy.core.xr_utils import get_mom_dims_kws
 
 from .wrap_np import CentralMomentsArray
 from .wrap_xr import CentralMomentsData
@@ -104,7 +104,7 @@ def wrap(
 def wrap(  # pyright: ignore[reportInconsistentOverload]
     obj: ArrayLike | DataT,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     mom_dims: MomDims | None = None,
     dtype: DTypeLike | Mapping[str, DTypeLike] = None,
     copy: bool | None = False,
@@ -120,8 +120,8 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
     ----------
     obj : array-like or DataArray or Dataset
         Central Moments array.
-    {mom_ndim}
-    {mom_dims}
+    {mom_ndim_data}
+    {mom_dims_data}
     {dtype}
     {copy}
     {fastpath}
@@ -410,7 +410,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     from cmomy.reduction import reduce_vals
 
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    kws = _get_mom_dims_kws(x, mom_dims, mom_ndim)
+    kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
     obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
         x,  # pyright: ignore[reportArgumentType]
         *y,
@@ -570,7 +570,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
            [10.    ,  0.5808,  0.0685]])
     """
     mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    kws = _get_mom_dims_kws(x, mom_dims, mom_ndim)
+    kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
 
     from cmomy.resample import resample_vals
 
@@ -656,7 +656,7 @@ def wrap_raw(
 def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     raw: ArrayLike | DataT,
     *,
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: Mom_NDim | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -676,7 +676,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     ----------
     raw : array-like or DataArray or Dataset
         Raw moment array.
-    {mom_ndim}
+    {mom_ndim_data}
     {out}
     {dtype}
     {casting}
@@ -741,11 +741,13 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     """
     from cmomy import convert
 
-    kws = _get_mom_dims_kws(raw, mom_dims, mom_ndim, raw)
+    kws = get_mom_dims_kws(
+        raw, mom_dims, mom_ndim, raw, mom_ndim_default=1, include_mom_ndim=True
+    )
     return wrap(  # pyright: ignore[reportUnknownVariableType]
         obj=convert.moments_type(
             raw,
-            mom_ndim=mom_ndim,
+            **kws,
             to="central",
             out=out,
             dtype=dtype,
@@ -753,23 +755,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
             order=order,
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
-            **kws,
         ),
-        mom_ndim=mom_ndim,
         **kws,
         fastpath=True,
-    )
-
-
-# * Utilities -----------------------------------------------------------------
-def _get_mom_dims_kws(
-    target: ArrayLike | xr.DataArray | xr.Dataset,
-    mom_dims: MomDims | None,
-    mom_ndim: Mom_NDim,
-    out: Any = None,
-) -> dict[str, Any]:
-    return (
-        {"mom_dims": validate_mom_dims(mom_dims, mom_ndim, out)}
-        if is_xarray(target)
-        else {}
     )

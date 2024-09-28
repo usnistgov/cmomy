@@ -75,10 +75,15 @@ def is_mom_tuple(mom: tuple[int, ...]) -> TypeIs[MomentsStrict]:
     return len(mom) in {1, 2} and all(m > 0 for m in mom)
 
 
-def validate_mom_ndim(mom_ndim: int | None) -> Mom_NDim:
+def validate_mom_ndim(
+    mom_ndim: int | None, mom_ndim_default: Mom_NDim | None = None
+) -> Mom_NDim:
     """Raise error if mom_ndim invalid."""
     if is_mom_ndim(mom_ndim):
         return mom_ndim
+
+    if mom_ndim is None and mom_ndim_default is not None:
+        return mom_ndim_default
 
     msg = f"{mom_ndim=} must be either 1 or 2"
     raise ValueError(msg)
@@ -261,3 +266,42 @@ def validate_mom_dims(
         msg = f"mom_dims={validated} inconsistent with {mom_ndim=}"
         raise ValueError(msg)
     return cast("MomDimsStrict", validated)
+
+
+def validate_mom_dims_and_mom_ndim(
+    mom_dims: Hashable | Sequence[Hashable] | None,
+    mom_ndim: int | None,
+    out: Any = None,
+    mom_ndim_default: int | None = None,
+) -> tuple[MomDimsStrict, Mom_NDim]:
+    """Validate mom_dims and mom_ndim."""
+    if mom_ndim is not None:
+        mom_ndim = validate_mom_ndim(mom_ndim)
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, out)
+        return mom_dims, mom_ndim
+
+    if mom_dims is not None:
+        mom_dims = cast(
+            "MomDimsStrict",
+            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]
+        )
+        mom_ndim = validate_mom_ndim(len(mom_dims))
+        return mom_dims, mom_ndim
+
+    if mom_ndim_default is not None:
+        return validate_mom_dims_and_mom_ndim(mom_dims, mom_ndim_default, out)
+
+    msg = "Must specify at least one of mom_dims or mom_ndim"
+    raise ValueError(msg)
+
+
+def validate_optional_mom_dims_and_mom_ndim(
+    mom_dims: Hashable | Sequence[Hashable] | None,
+    mom_ndim: int | None,
+    out: Any = None,
+    mom_ndim_default: int | None = None,
+) -> tuple[MomDimsStrict | None, Mom_NDim | None]:
+    """Validate optional mom_dims and mom_ndim"""
+    if mom_dims is None and mom_ndim is None and mom_ndim_default is None:
+        return None, None
+    return validate_mom_dims_and_mom_ndim(mom_dims, mom_ndim, out, mom_ndim_default)
