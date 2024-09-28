@@ -120,8 +120,8 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
     ----------
     obj : array-like or DataArray or Dataset
         Central Moments array.
-    {mom_ndim}
-    {mom_dims}
+    {mom_ndim_data}
+    {mom_dims_data}
     {dtype}
     {copy}
     {fastpath}
@@ -676,7 +676,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     ----------
     raw : array-like or DataArray or Dataset
         Raw moment array.
-    {mom_ndim}
+    {mom_ndim_data}
     {out}
     {dtype}
     {casting}

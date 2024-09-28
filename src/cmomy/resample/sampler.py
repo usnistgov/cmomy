@@ -582,6 +582,7 @@ def select_ndat(
     {axis}
     {dim}
     {mom_ndim_optional}
+    {mom_dims_data}
 
     Returns
     -------

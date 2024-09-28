@@ -1637,13 +1637,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         ----------
         raw : {t_array}
             Raw moment array.
-        {mom_ndim}
+        {mom_ndim_data}
         {out}
         {dtype}
         {casting}
         {order}
         {keep_attrs}
-        {mom_dims}
+        {mom_dims_data}
         {apply_ufunc_kwargs}
 
         Returns

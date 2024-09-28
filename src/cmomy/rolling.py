@@ -178,7 +178,7 @@ def construct_rolling_window_array(
         Size of strides in rolling window.
     fill_value : scalar
         Fill value for missing values.
-    {mom_ndim}
+    {mom_ndim_optional}
     {mom_dims_data}
     dim : str or sequence of hashable
     window_dim : str or Sequence of str, optional
@@ -376,7 +376,7 @@ def rolling_data(  # noqa: PLR0913
     data : array-like or DataArray or Dataset
     {window}
     {axis}
-    {mom_ndim}
+    {mom_ndim_data}
     {min_periods}
     {center}
     {zero_missing_weights}
@@ -883,7 +883,7 @@ def rolling_exp_data(  # noqa: PLR0913
     alpha : array-like
         `alpha` values.
     {axis}
-    {mom_ndim}
+    {mom_ndim_data}
     {min_periods}
     adjust : bool, default=True
         Same as ``adjust`` parameter of :meth:`pandas.DataFrame.ewm`

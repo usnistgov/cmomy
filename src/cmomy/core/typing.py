@@ -253,10 +253,6 @@ class _ParallelKwargs(TypedDict, total=False):
     parallel: bool | None
 
 
-class _MomNDimKwargs(TypedDict, total=False):
-    mom_ndim: Mom_NDim
-
-
 class _MomNDimOptionalKwargs(TypedDict, total=False):
     mom_ndim: Mom_NDim | None
 
@@ -293,12 +289,6 @@ class _KeepDimsKwargs(TypedDict, total=False):
 
 class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
-
-
-class _DataKwargs(
-    _MomNDimKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
-):
-    pass
 
 
 class _DataOptionalKwargs(
@@ -369,7 +359,7 @@ class ReduceDataIndexedKwargs(
 
 # ** Resample
 class ResampleDataKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
@@ -389,7 +379,7 @@ class ResampleValsKwargs(
 
 
 class JackknifeDataKwargs(
-    _DataKwargs,
+    _DataOptionalKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     total=False,

@@ -149,7 +149,7 @@ def moments_type(
     ----------
     values_in : array-like, DataArray, or Dataset
         The moments array to convert from.
-    {mom_ndim}
+    {mom_ndim_data}
     to : {{"raw", "central"}}
         The style of the ``values_in`` to convert to. If ``"raw"``, convert from central to raw.
         If ``"central"`` convert from raw to central moments.
@@ -331,7 +331,7 @@ def cumulative(
     values_in : array-like, DataArray, or Dataset
     {axis}
     {dim}
-    {mom_ndim}
+    {mom_ndim_data}
     inverse : bool, optional
         Default is to create a cumulative moments array.  Pass ``inverse=True`` to convert from
         cumulative moments array back to normal moments.

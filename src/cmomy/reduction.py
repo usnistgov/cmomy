@@ -402,7 +402,7 @@ def reduce_data(
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim}
+    {mom_ndim_data}
     {axis_data_mult}
     {out}
     {dtype}
@@ -781,7 +781,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim}
+    {mom_ndim_data}
     {by}
     {axis_data}
     {move_axis_to_end}
@@ -1168,7 +1168,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim}
+    {mom_ndim_data}
     index : ndarray
         Index into `data.shape[axis]`.
     group_start, group_end : ndarray
