@@ -89,6 +89,33 @@ def normalize_axis_tuple(
     return np_normalize_axis_tuple(axis, ndim, msg_prefix, allow_duplicate)  # type: ignore[no-any-return,unused-ignore]
 
 
+def moveaxis_order(
+    ndim: int,
+    source: int | Iterable[int],
+    destination: int | Iterable[int],
+) -> list[int]:
+    """
+    Get new order of array for moveaxis
+
+    Using ``x.transpose(*moveaxis_order(x.ndim, source, destination))``
+    is equivalent to ``np.moveaxis(x, source, destination)``.
+
+    Useful for keeping track of where indices end up.
+    To extract to new position for an axis, use ``order.index(axis)``.
+    """
+    source = normalize_axis_tuple(source, ndim, msg_prefix="source")
+    destination = normalize_axis_tuple(destination, ndim, msg_prefix="destination")
+    if len(source) != len(destination):
+        msg = "source and destination must have same length"
+        raise ValueError(msg)
+
+    order = [n for n in range(ndim) if n not in source]
+    for dest, src in sorted(zip(destination, source)):
+        order.insert(dest, src)
+
+    return order
+
+
 def positive_to_negative_index(index: int, ndim: int) -> int:
     """
     Convert positive index to negative index

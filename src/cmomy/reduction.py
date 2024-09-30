@@ -15,6 +15,7 @@ from .core.array_utils import (
     asarray_maybe_recast,
     axes_data_reduction,
     get_axes_from_values,
+    moveaxis_order,
     normalize_axis_tuple,
     optional_keepdims,
     select_dtype,
@@ -39,6 +40,7 @@ from .core.validate import (
     validate_mom_dims,
     validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
+    validate_mom_ndim_and_mom_axes,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -81,6 +83,8 @@ if TYPE_CHECKING:
         KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomAxes,
+        MomAxesStrict,
         MomDims,
         Moments,
         MomentsStrict,
@@ -383,6 +387,7 @@ def reduce_data(
     *,
     mom_ndim: Mom_NDim | None = None,
     axis: AxisReduceMult | MissingType = MISSING,
+    mom_axes: MomAxes | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -432,17 +437,22 @@ def reduce_data(
     dtype = select_dtype(data, out=out, dtype=dtype)
     if is_xarray(data):
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_ndim_default=1
+            mom_dims,
+            mom_ndim,
+            data,
+            mom_ndim_default=1,
+            mom_axes=mom_axes,
         )
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_dims=mom_dims)
         xout: DataT
         if use_reduce:
-            xout = data.reduce(  # type: ignore[assignment]
+            xout = data.transpose(..., *mom_dims).reduce(  # type: ignore[assignment]
                 _reduce_data,
                 dim=dim,
                 keep_attrs=bool(keep_attrs),
                 keepdims=keepdims,
                 mom_ndim=mom_ndim,
+                mom_axes=None,
                 parallel=parallel,
                 out=out,
                 dtype=dtype,
@@ -458,6 +468,7 @@ def reduce_data(
                 output_core_dims=[mom_dims],
                 kwargs={
                     "mom_ndim": mom_ndim,
+                    "mom_axes": None,
                     "axis": range(-len(dim), 0),
                     "out": None if is_dataset(data) else out,
                     "dtype": dtype,
@@ -478,10 +489,13 @@ def reduce_data(
         return xout
 
     # Numpy
-    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
+    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
+        mom_ndim, mom_axes, mom_ndim_default=1
+    )
     return _reduce_data(
         asarray_maybe_recast(data, dtype=dtype, recast=False),
         mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         axis=validate_axis_mult(axis),
         out=out,
         dtype=dtype,
@@ -495,7 +509,9 @@ def reduce_data(
 
 def _reduce_data(
     data: NDArrayAny,
+    *,
     mom_ndim: Mom_NDim,
+    mom_axes: MomAxesStrict | None = None,
     axis: AxisReduceMult,
     out: NDArrayAny | None,
     dtype: DTypeLike,
@@ -509,21 +525,30 @@ def _reduce_data(
         dtype = select_dtype(data, out=out, dtype=dtype)
 
     # special to support multiple reduction dimensions...
-    ndim = data.ndim - mom_ndim
-    axis_tuple = normalize_axis_tuple(
-        axis,
-        ndim,
-        msg_prefix="reduce_data",
-    )
+    _mom_axes: tuple[int, ...]
+    axis_tuple: tuple[int, ...]
 
-    # move axis to end and reshape
-    data = np.moveaxis(data, axis_tuple, range(ndim - len(axis_tuple), ndim))
-    new_shape = (
-        *data.shape[: -(len(axis_tuple) + mom_ndim)],
-        -1,
-        *data.shape[-mom_ndim:],
-    )
-    data = data.reshape(new_shape)
+    if mom_axes is not None:
+        _mom_axes = normalize_axis_tuple(mom_axes, data.ndim, msg_prefix="mom_axes")
+    else:
+        _mom_axes = tuple(range(data.ndim - mom_ndim, data.ndim))
+
+    if axis is None:
+        axis_tuple = tuple(a for a in range(data.ndim) if a not in _mom_axes)
+    else:
+        axis_tuple = normalize_axis_tuple(
+            axis,
+            data.ndim,
+            mom_ndim=mom_ndim if mom_axes is None else None,
+            msg_prefix="reduce_data",
+        )
+
+    # move reduction dimensions to end and reshape
+    _order = moveaxis_order(data.ndim, axis_tuple, range(-len(axis_tuple), 0))
+    data = data.transpose(*_order)
+    data = data.reshape(*data.shape[: -len(axis_tuple)], -1)
+    # transform _mom_axes to new positions
+    _mom_axes = tuple(_order.index(a) for a in _mom_axes)
 
     out = factory_reduce_data(
         mom_ndim=mom_ndim,
@@ -531,6 +556,8 @@ def _reduce_data(
     )(
         data,
         out=out,
+        # data, out
+        axes=[(-1, *_mom_axes), _mom_axes],
         dtype=dtype,
         casting=casting,
         order=order,

@@ -176,6 +176,10 @@ Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
 Mom_NDim = Literal[1, 2]
 
+
+MomAxes = Moments
+MomAxesStrict = MomentsStrict
+
 # * Xarray specific stuff -----------------------------------------------------
 # fix if using autodoc typehints...
 DimsReduce: TypeAlias = Union[Hashable, None]
@@ -257,6 +261,10 @@ class _MomNDimOptionalKwargs(TypedDict, total=False):
     mom_ndim: Mom_NDim | None
 
 
+class _MomAxesOptionalKwargs(TypedDict, total=False):
+    mom_axes: MomAxes | None
+
+
 class _MomKwargs(TypedDict, total=False):
     mom: Required[Moments]
 
@@ -311,6 +319,7 @@ class ReduceDataKwargs(
     _OrderKwargs,
     _ParallelKwargs,
     _KeepDimsKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data`"""
