@@ -319,11 +319,19 @@ def validate_optional_mom_dims_and_mom_ndim(
     mom_ndim: int | None,
     out: Any = None,
     mom_ndim_default: int | None = None,
+    mom_axes: int | Sequence[int] | None = None,
 ) -> tuple[MomDimsStrict | None, Mom_NDim | None]:
     """Validate optional mom_dims and mom_ndim"""
-    if mom_dims is None and mom_ndim is None and mom_ndim_default is None:
+    if (
+        mom_dims is None
+        and mom_ndim is None
+        and mom_ndim_default is None
+        and mom_axes is None
+    ):
         return None, None
-    return validate_mom_dims_and_mom_ndim(mom_dims, mom_ndim, out, mom_ndim_default)
+    return validate_mom_dims_and_mom_ndim(
+        mom_dims, mom_ndim, out, mom_ndim_default, mom_axes
+    )
 
 
 def validate_mom_ndim_and_mom_axes(
@@ -342,4 +350,4 @@ def validate_mom_ndim_and_mom_axes(
     elif len(mom_axes) != mom_ndim:
         msg = f"{len(mom_axes)=} != {mom_ndim=}"
         raise ValueError(msg)
-    return mom_ndim, mom_axes
+    return cast("Mom_NDim", mom_ndim), mom_axes

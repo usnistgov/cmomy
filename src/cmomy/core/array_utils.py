@@ -27,6 +27,7 @@ if TYPE_CHECKING:
         ArrayOrderCF,
         AxesGUFunc,
         Mom_NDim,
+        MomAxesStrict,
         NDArrayAny,
         ScalarT,
     )
@@ -142,7 +143,7 @@ def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
 
 
 # new style preparation for reduction....
-_MOM_AXES_TUPLE = {1: (-1,), 2: (-2, -1)}
+_MOM_AXES_TUPLE: dict[int, MomAxesStrict] = {1: (-1,), 2: (-2, -1)}
 
 
 def axes_data_reduction(
@@ -150,6 +151,7 @@ def axes_data_reduction(
     mom_ndim: Mom_NDim,
     axis: int,
     out_has_axis: bool = False,
+    mom_axes: MomAxesStrict | None = None,
 ) -> AxesGUFunc:
     """
     axes for reducing data along axis
@@ -162,7 +164,7 @@ def axes_data_reduction(
 
     Can also pass in "inner" dimensions (elements 1:-1 of output)
     """
-    mom_axes = _MOM_AXES_TUPLE[mom_ndim]
+    mom_axes = _MOM_AXES_TUPLE[mom_ndim] if mom_axes is None else mom_axes
     data_axes = (axis, *mom_axes)
     out_axes = data_axes if out_has_axis else mom_axes
 

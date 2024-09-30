@@ -23,7 +23,7 @@ from .core.array_utils import (
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
-    prepare_data_for_reduction,
+    prepare_data_for_reduction_mom_axes,
     prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
@@ -39,7 +39,6 @@ from .core.validate import (
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim,
     validate_mom_ndim_and_mom_axes,
 )
 from .core.xr_utils import (
@@ -409,6 +408,7 @@ def reduce_data(
     {data_numpy_or_dataarray_or_dataset}
     {mom_ndim_data}
     {axis_data_mult}
+    {mom_axes}
     {out}
     {dtype}
     {casting}
@@ -542,6 +542,9 @@ def _reduce_data(
             mom_ndim=mom_ndim if mom_axes is None else None,
             msg_prefix="reduce_data",
         )
+
+    if axis_tuple == ():
+        return data
 
     # move reduction dimensions to end and reshape
     _order = moveaxis_order(data.ndim, axis_tuple, range(-len(axis_tuple), 0))
@@ -788,6 +791,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     *,
     mom_ndim: Mom_NDim | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    mom_axes: MomAxes | None = None,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -811,6 +815,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     {mom_ndim_data}
     {by}
     {axis_data}
+    {mom_axes}
     {move_axis_to_end}
     {parallel}
     {out}
@@ -885,7 +890,11 @@ def reduce_data_grouped(  # noqa: PLR0913
 
     if is_xarray(data):
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_ndim_default=1
+            mom_dims,
+            mom_ndim,
+            data,
+            mom_ndim_default=1,
+            mom_axes=mom_axes,
         )
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
         core_dims = (dim, *mom_dims)  # type: ignore[misc]
@@ -899,6 +908,7 @@ def reduce_data_grouped(  # noqa: PLR0913
             exclude_dims={dim},
             kwargs={
                 "mom_ndim": mom_ndim,
+                "mom_axes": None,
                 # Need total axis here...
                 "axis": -(mom_ndim + 1),
                 "dtype": dtype,
@@ -932,19 +942,23 @@ def reduce_data_grouped(  # noqa: PLR0913
         return xout
 
     # Numpy
-    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
-    axis, data = prepare_data_for_reduction(
+    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
+        mom_ndim, mom_axes, mom_ndim_default=1
+    )
+    axis, mom_axes, data = prepare_data_for_reduction_mom_axes(
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
         dtype=dtype,
         recast=False,
         move_axis_to_end=move_axis_to_end,
+        mom_axes=mom_axes,
     )
     return _reduce_data_grouped(
         data,
         by=by,
         mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         axis=axis,
         dtype=dtype,
         out=out,
@@ -960,6 +974,7 @@ def _reduce_data_grouped(
     by: NDArrayInt,
     *,
     mom_ndim: Mom_NDim,
+    mom_axes: MomAxesStrict,
     axis: int,
     dtype: DTypeLike,
     casting: Casting,
@@ -972,7 +987,9 @@ def _reduce_data_grouped(
         dtype = select_dtype(data, out=out, dtype=dtype)
 
     # include inner core dims for by
-    axes = axes_data_reduction((-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
+    axes = axes_data_reduction(
+        (-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True, mom_axes=mom_axes
+    )
     raise_if_wrong_value(len(by), data.shape[axis], "Wrong length of `by`.")
 
     if out is None:
@@ -1175,6 +1192,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     group_end: ArrayLike,
     scale: ArrayLike | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    mom_axes: MomAxes | None = None,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -1272,7 +1290,11 @@ def reduce_data_indexed(  # noqa: PLR0913
 
     if is_xarray(data):
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_ndim_default=1
+            mom_dims,
+            mom_ndim,
+            data,
+            mom_ndim_default=1,
+            mom_axes=mom_axes,
         )
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
         core_dims = (dim, *mom_dims)  # type: ignore[misc]
@@ -1293,6 +1315,7 @@ def reduce_data_indexed(  # noqa: PLR0913
             exclude_dims={dim},
             kwargs={
                 "axis": -(mom_ndim + 1),
+                "mom_axes": mom_axes,
                 "mom_ndim": mom_ndim,
                 "index": index,
                 "group_start": group_start,
@@ -1348,14 +1371,17 @@ def reduce_data_indexed(  # noqa: PLR0913
         return xout
 
     # Numpy
-    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
-    axis, data = prepare_data_for_reduction(
+    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
+        mom_ndim, mom_axes=mom_axes, mom_ndim_default=1
+    )
+    axis, mom_axes, data = prepare_data_for_reduction_mom_axes(
         data=data,
         axis=axis,
         mom_ndim=mom_ndim,
         dtype=dtype,
         recast=False,
         move_axis_to_end=move_axis_to_end,
+        mom_axes=mom_axes,
     )
     index, group_start, group_end = _validate_index(
         ndat=data.shape[axis],
@@ -1367,6 +1393,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     return _reduce_data_indexed(
         data,
         axis=axis,
+        mom_axes=mom_axes,
         mom_ndim=mom_ndim,
         index=index,
         group_start=group_start,
@@ -1385,6 +1412,7 @@ def _reduce_data_indexed(
     data: NDArrayAny,
     *,
     axis: int,
+    mom_axes: MomAxesStrict,
     mom_ndim: Mom_NDim,
     index: NDArrayAny,
     group_start: NDArrayAny,
@@ -1410,7 +1438,11 @@ def _reduce_data_indexed(
 
     # include inner dims for index, start, end, scale
     axes = axes_data_reduction(
-        *(-1,) * 4, mom_ndim=mom_ndim, axis=axis, out_has_axis=True
+        *(-1,) * 4,
+        mom_ndim=mom_ndim,
+        axis=axis,
+        out_has_axis=True,
+        mom_axes=mom_axes,
     )
 
     return factory_reduce_data_indexed(
@@ -1437,6 +1469,7 @@ def resample_data_indexed(  # noqa: PLR0913
     *,
     mom_ndim: Mom_NDim | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    mom_axes: MomAxes | None = None,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -1458,6 +1491,7 @@ def resample_data_indexed(  # noqa: PLR0913
         sampler,
         data=data,
         axis=axis,
+        mom_axes=mom_axes,
         dim=dim,
         mom_ndim=mom_ndim,
         mom_dims=mom_dims,
@@ -1477,6 +1511,7 @@ def resample_data_indexed(  # noqa: PLR0913
         group_end=end,
         scale=scales,
         axis=axis,
+        mom_axes=mom_axes,
         move_axis_to_end=move_axis_to_end,
         parallel=parallel,
         out=out,

@@ -39,6 +39,7 @@ if TYPE_CHECKING:
         IndexSamplerFromDataKwargs,
         MissingType,
         Mom_NDim,
+        MomAxes,
         MomDims,
         NDArrayAny,
         RngTypes,
@@ -232,6 +233,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         nrep: int,
         nsamp: int | None = None,
         axis: AxisReduce | MissingType = MISSING,
+        mom_axes: MomAxes | None = None,
         dim: DimsReduce | MissingType = MISSING,
         mom_ndim: Mom_NDim | None = None,
         mom_dims: MomDims | None = None,
@@ -254,6 +256,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         {nrep}
         {nsamp}
         {axis}
+        {mom_axes}
         {dim}
         {mom_ndim_optional}
         {mom_dims_data}
@@ -275,7 +278,12 @@ class IndexSampler(Generic[SamplerArrayT]):
             :class:`~xarray.Dataset` otherwise.
         """
         ndat = select_ndat(
-            data, axis=axis, dim=dim, mom_ndim=mom_ndim, mom_dims=mom_dims
+            data,
+            axis=axis,
+            dim=dim,
+            mom_ndim=mom_ndim,
+            mom_dims=mom_dims,
+            mom_axes=mom_axes,
         )
 
         indices: NDArrayAny | xr.DataArray | xr.Dataset
@@ -284,6 +292,7 @@ class IndexSampler(Generic[SamplerArrayT]):
                 data=data,  # pyright: ignore[reportArgumentType]
                 nrep=nrep,
                 axis=axis,
+                mom_axes=mom_axes,
                 dim=dim,
                 nsamp=nsamp,
                 ndat=ndat,
@@ -320,6 +329,7 @@ def factory_sampler(  # noqa: PLR0913
     shuffle: bool = False,
     data: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     axis: AxisReduce | MissingType = MISSING,
+    mom_axes: MomAxes | None = None,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
     mom_dims: MomDims | None = None,
@@ -420,6 +430,7 @@ def factory_sampler(  # noqa: PLR0913
                     nrep=nrep,
                     nsamp=nsamp,
                     axis=axis,
+                    mom_axes=mom_axes,
                     dim=dim,
                     mom_ndim=mom_ndim,
                     mom_dims=mom_dims,
@@ -525,6 +536,7 @@ def _randsamp_indices_dataarray_or_dataset(
     nrep: int,
     ndat: int,
     axis: AxisReduce | MissingType = MISSING,
+    mom_axes: MomAxes | None = None,
     dim: DimsReduce | MissingType = MISSING,
     nsamp: int | None = None,
     rep_dim: str = "rep",
@@ -536,9 +548,17 @@ def _randsamp_indices_dataarray_or_dataset(
 ) -> xr.DataArray | DataT:
     """Create a resampling DataArray or Dataset."""
     mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
-        mom_dims, mom_ndim, data
+        mom_dims,
+        mom_ndim,
+        data,
+        mom_axes=mom_axes,
     )
-    dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)[1]
+    dim = select_axis_dim(
+        data,
+        axis=axis,
+        dim=dim,
+        mom_dims=mom_dims,
+    )[1]
     # make sure to validate rng here in case call multiple have dataset
     rng = validate_rng(rng)
 
@@ -570,6 +590,7 @@ def select_ndat(
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
+    mom_axes: MomAxes | None = None,
     mom_ndim: Mom_NDim | None = None,
     mom_dims: MomDims | None = None,
 ) -> int:
@@ -607,10 +628,11 @@ def select_ndat(
     ValueError: Cannot select moment dimension. dim='mom', axis=2.
     """
     from cmomy.core.array_utils import normalize_axis_index
+    # TODO(wpk): Add some flag to catch passed mom_dims or mom_axes and use absolute normalize axis (not relative to mom_ndim)
 
     if is_xarray(data):
         mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data
+            mom_dims, mom_ndim, data, mom_axes=mom_axes
         )
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
         return data.sizes[dim]

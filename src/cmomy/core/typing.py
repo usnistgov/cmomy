@@ -340,6 +340,7 @@ class ReduceDataGroupedKwargs(
     _DataOptionalKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data_grouped`"""
@@ -352,6 +353,7 @@ class ReduceDataIndexedKwargs(
     _DataOptionalKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data_indexed`"""
@@ -577,6 +579,7 @@ class WrapNPReduceKwargs(
 
 class IndexSamplerFromDataKwargs(
     _AxisKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :meth:`.resample.IndexSampler.from_data`"""

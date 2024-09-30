@@ -191,6 +191,12 @@ def _dummy_docstrings() -> None:
         (``mom_ndim=2``). If not specified and data is an :mod:`xarray` object
         attempt to infer ``mom_ndim`` from ``mom_dims``.
         Otherwise, default to ``mom_ndim = 1``.
+    mom_axes : int or tuple of int, optional
+        Location of the moment dimensions. Default to ``(-mom_ndim,
+        -mom_ndim+1, ...)``. If specified and ``mom_ndim`` is None, set
+        ``mom_ndim`` to ``len(mom_axes)``. Note that if ``mom_axes`` is
+        specified, negative values are relative to the end of the array. This
+        is also the case for ``axes`` if ``mom_axes`` is specified.
     apply_ufunc_kwargs : dict-like
         Extra parameters to :func:`xarray.apply_ufunc`. One useful option is
         ``on_missing_core_dim``, which can take the value ``"copy"`` (the

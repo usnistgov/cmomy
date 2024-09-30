@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 
@@ -41,6 +41,7 @@ if TYPE_CHECKING:
         DimsReduce,
         MissingType,
         Mom_NDim,
+        MomAxesStrict,
         MomentsStrict,
         NDArrayAny,
         ScalarT,
@@ -48,6 +49,8 @@ if TYPE_CHECKING:
 
 
 # * Data
+
+
 def prepare_data_for_reduction(
     data: ArrayLike,
     axis: AxisReduce | MissingType,
@@ -58,7 +61,12 @@ def prepare_data_for_reduction(
 ) -> tuple[int, NDArrayAny]:
     """Convert central moments array to correct form for reduction."""
     data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
-    axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim)
+
+    axis = normalize_axis_index(
+        validate_axis(axis),
+        data.ndim,
+        mom_ndim,
+    )
 
     if move_axis_to_end:
         # make sure this axis is positive in case we want to use it again...
@@ -68,6 +76,38 @@ def prepare_data_for_reduction(
         axis_out = axis
 
     return axis_out, data
+
+
+def prepare_data_for_reduction_mom_axes(
+    data: ArrayLike,
+    axis: AxisReduce | MissingType,
+    mom_ndim: Mom_NDim,
+    dtype: DTypeLike,
+    recast: bool = True,
+    move_axis_to_end: bool = False,
+    mom_axes: MomAxesStrict | None = None,
+) -> tuple[int, MomAxesStrict, NDArrayAny]:
+    """Convert central moments array to correct form for reduction."""
+    data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
+
+    axis = normalize_axis_index(
+        validate_axis(axis),
+        data.ndim,
+        # if pass mom_axes, wrap relative to end
+        # If don't, wrap relative to mom_ndim
+        mom_ndim if mom_axes is None else None,
+    )
+
+    mom_axes_end = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
+    mom_axes = mom_axes_end if mom_axes is None else mom_axes
+    if move_axis_to_end:
+        axis_out = data.ndim - (mom_ndim + 1)
+        data = np.moveaxis(data, (axis, *mom_axes), (axis_out, *mom_axes_end))
+        mom_axes = mom_axes_end
+    else:
+        axis_out = axis
+
+    return axis_out, mom_axes, data
 
 
 # * Vals
