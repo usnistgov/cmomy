@@ -16,7 +16,7 @@ from cmomy.core.validate import is_dataarray, is_ndarray
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
-    from cmomy.core.typing import Mom_NDim, NDArrayAny
+    from cmomy.core.typing import MomNDim, NDArrayAny
 
 
 def _do_test(func, *args, expected=None, match=None, **kwargs):
@@ -489,7 +489,7 @@ def test_vals_to_data_xarray() -> None:
     assert check.data is out.data
 
     xr.testing.assert_allclose(out0, out.transpose(*out0.dims))
-    mom_ndim: Mom_NDim = 2
+    mom_ndim: MomNDim = 2
     np.testing.assert_allclose(
         utils.select_moment(out, "weight", mom_ndim=mom_ndim), 0.1
     )

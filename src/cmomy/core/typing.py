@@ -182,7 +182,7 @@ NumbaType = Any
 #: Moments type
 Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
-Mom_NDim = Literal[1, 2]
+MomNDim = Literal[1, 2]
 
 
 MomAxes = Moments
@@ -266,7 +266,7 @@ class _ParallelKwargs(TypedDict, total=False):
 
 
 class _MomNDimOptionalKwargs(TypedDict, total=False):
-    mom_ndim: Mom_NDim | None
+    mom_ndim: MomNDim | None
 
 
 class _MomAxesOptionalKwargs(TypedDict, total=False):
@@ -621,7 +621,7 @@ class IndexSamplerFromDataKwargs(
 
     nrep: Required[int]
     nsamp: int | None
-    mom_ndim: Mom_NDim | None
+    mom_ndim: MomNDim | None
     mom_dims: MomDims | None
     rep_dim: str
     rng: RngTypes | None

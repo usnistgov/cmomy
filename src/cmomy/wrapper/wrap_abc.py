@@ -51,11 +51,11 @@ if TYPE_CHECKING:
         FloatT_,
         KeepAttrs,
         MissingType,
-        Mom_NDim,
         MomAxes,
         MomDims,
         Moments,
         MomentsStrict,
+        MomNDim,
         NDArrayAny,
         NDArrayInt,
         ReduceValsKwargs,
@@ -99,17 +99,17 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     __slots__ = ("_mom_ndim", "_obj")
 
     _obj: GenArrayT
-    _mom_ndim: Mom_NDim
+    _mom_ndim: MomNDim
 
     def __init__(
         self,
         obj: GenArrayT,
         *,
-        mom_ndim: Mom_NDim | None = None,
+        mom_ndim: MomNDim | None = None,
         fastpath: bool = False,
     ) -> None:
         self._mom_ndim = (
-            cast("Mom_NDim", mom_ndim)
+            cast("MomNDim", mom_ndim)
             if fastpath
             else validate_mom_ndim(mom_ndim, mom_ndim_default=1)
         )
@@ -137,7 +137,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return self._obj
 
     @property
-    def mom_ndim(self) -> Mom_NDim:
+    def mom_ndim(self) -> MomNDim:
         """Number of moment dimensions."""
         return self._mom_ndim
 
@@ -1621,7 +1621,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         cls,
         raw: ArrayLike | xr.DataArray | xr.Dataset,
         *,
-        mom_ndim: Mom_NDim | None = None,
+        mom_ndim: MomNDim | None = None,
         mom_axes: MomAxes | None = None,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,

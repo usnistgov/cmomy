@@ -17,7 +17,7 @@ from cmomy.core.validate import is_dataarray
 if TYPE_CHECKING:
     from typing import TypedDict
 
-    from cmomy.core.typing import Mom_NDim, MomentsStrict, NDArrayAny, SelectMoment
+    from cmomy.core.typing import MomentsStrict, MomNDim, NDArrayAny, SelectMoment
 
     class RollingDict(TypedDict):
         window: int
@@ -195,7 +195,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     min_periods: int | None,
     center: bool,
     missing: bool,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
     mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # type: ignore[assignment]
@@ -411,7 +411,7 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     adjust: bool,
     missing: bool,
     min_periods: int | None,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
     mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
@@ -560,7 +560,7 @@ def test_rolling_exp_weight(
     rng: np.random.Generator,
     adjust: bool,
     alpha: float | None,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     axis = 0
     shape = (50, 2, 3)
@@ -616,7 +616,7 @@ def test_rolling_exp_weight(
 def test_rolling_exp_multiple_alpha(
     rng: np.random.Generator,
     adjust: bool,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     axis = 0
     shape = (50, 2)

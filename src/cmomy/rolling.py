@@ -76,10 +76,10 @@ if TYPE_CHECKING:
         FloatT,
         KeepAttrs,
         MissingType,
-        Mom_NDim,
         MomDims,
         Moments,
         MomentsStrict,
+        MomNDim,
         NDArrayAny,
         RollingDataKwargs,
         RollingExpDataKwargs,
@@ -100,7 +100,7 @@ def construct_rolling_window_array(
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
-    mom_ndim: Mom_NDim | None = ...,
+    mom_ndim: MomNDim | None = ...,
     mom_dims: MomDims | None = ...,
     # xarray specific
     dim: DimsReduceMult | MissingType = ...,
@@ -117,7 +117,7 @@ def construct_rolling_window_array(
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
-    mom_ndim: Mom_NDim | None = ...,
+    mom_ndim: MomNDim | None = ...,
     mom_dims: MomDims | None = ...,
     # xarray specific
     dim: DimsReduceMult | MissingType = ...,
@@ -134,7 +134,7 @@ def construct_rolling_window_array(
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
-    mom_ndim: Mom_NDim | None = ...,
+    mom_ndim: MomNDim | None = ...,
     mom_dims: MomDims | None = ...,
     # xarray specific
     dim: DimsReduceMult | MissingType = ...,
@@ -153,7 +153,7 @@ def construct_rolling_window_array(
     center: bool | Sequence[bool] = False,
     stride: int | Sequence[int] = 1,
     fill_value: ArrayLike = np.nan,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     mom_dims: MomDims | None = None,
     # xarray specific
     dim: DimsReduceMult | MissingType = MISSING,
@@ -290,7 +290,7 @@ def _pad_along_axis(
 
 
 def _optional_zero_missing_weight(
-    data: NDArray[ScalarT], mom_ndim: Mom_NDim, zero_missing_weights: bool
+    data: NDArray[ScalarT], mom_ndim: MomNDim, zero_missing_weights: bool
 ) -> NDArray[ScalarT]:
     """Note that this modifies ``data`` inplace.  Pass in a copy if this is not what you want."""
     if zero_missing_weights:
@@ -352,7 +352,7 @@ def rolling_data(  # noqa: PLR0913
     *,
     window: int,
     axis: AxisReduce | MissingType = MISSING,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
@@ -475,7 +475,7 @@ def _rolling_data(
     *,
     window: int,
     axis: int,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     min_periods: int | None,
     center: bool,
     zero_missing_weights: bool,
@@ -732,7 +732,7 @@ def _rolling_vals(
     # x, weight, *y
     *args: NDArrayAny,
     mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     window: int,
     axis_neg: int,
     min_periods: int | None,
@@ -859,7 +859,7 @@ def rolling_exp_data(  # noqa: PLR0913
     alpha: ArrayLike,
     *,
     axis: AxisReduce | MissingType = MISSING,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     min_periods: int | None = None,
     adjust: bool = True,
     zero_missing_weights: bool = True,
@@ -1019,7 +1019,7 @@ def _prepare_alpha_array(
     axis_orig: AxisReduce | MissingType,  # This should be the original axis
     ndat: int,
     ndim: int | None,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     dtype: DTypeLike,
     move_axis_to_end: bool,
 ) -> tuple[int, NDArrayAny]:
@@ -1049,7 +1049,7 @@ def _rolling_exp_data(
     *,
     axis: int,
     alpha_axis: int,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     min_periods: int | None,
     adjust: bool,
     zero_missing_weights: bool,
@@ -1308,7 +1308,7 @@ def _rolling_exp_vals(
     alpha: NDArrayAny,
     *y: NDArrayAny,
     mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     axis_neg: int,
     adjust: bool,
     min_periods: int | None,

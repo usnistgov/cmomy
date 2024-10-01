@@ -54,12 +54,12 @@ if TYPE_CHECKING:
         FloatT,
         KeepAttrs,
         MissingType,
-        Mom_NDim,
         MomAxes,
         MomAxesStrict,
         MomDims,
         Moments,
         MomentsStrict,
+        MomNDim,
         NDArrayAny,
         ScalarT,
         SelectMoment,
@@ -78,7 +78,7 @@ def moveaxis(
     *,
     dim: str | Sequence[Hashable] | MissingType = ...,
     dest_dim: str | Sequence[Hashable] | MissingType = ...,
-    mom_ndim: Mom_NDim | None = ...,
+    mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
 ) -> NDArray[ScalarT]: ...
@@ -90,7 +90,7 @@ def moveaxis(
     *,
     dim: str | Sequence[Hashable] | MissingType = ...,
     dest_dim: str | Sequence[Hashable] | MissingType = ...,
-    mom_ndim: Mom_NDim | None = ...,
+    mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
 ) -> xr.DataArray: ...
@@ -104,7 +104,7 @@ def moveaxis(
     *,
     dim: str | Sequence[Hashable] | MissingType = MISSING,
     dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
 ) -> NDArray[ScalarT] | xr.DataArray:
@@ -213,7 +213,7 @@ _MOMENT_INDEXER_2: dict[str, tuple[int | slice, ...]] = {
 
 @docfiller.decorate
 def moment_indexer(
-    name: SelectMoment | str, mom_ndim: Mom_NDim, squeeze: bool = True
+    name: SelectMoment | str, mom_ndim: MomNDim, squeeze: bool = True
 ) -> tuple[EllipsisType | int | list[int] | slice, ...]:
     """
     Get indexer for moments
@@ -268,7 +268,7 @@ def select_moment(
     data: NDArray[ScalarT] | DataT,
     name: SelectMoment,
     *,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     squeeze: bool = True,
     dim_combined: str = "variable",
@@ -418,7 +418,7 @@ def select_moment(
 def _select_moment(
     data: NDArray[ScalarT],
     *,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     name: SelectMoment,
     squeeze: bool,
 ) -> NDArray[ScalarT]:
@@ -437,7 +437,7 @@ def assign_moment(
     data: DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
-    mom_ndim: Mom_NDim | None = ...,
+    mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     squeeze: bool = ...,
     copy: bool = ...,
@@ -452,7 +452,7 @@ def assign_moment(
     data: NDArray[ScalarT],
     moment: Mapping[SelectMoment, ArrayLike] | None = None,
     *,
-    mom_ndim: Mom_NDim | None = ...,
+    mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     squeeze: bool = ...,
     copy: bool = ...,
@@ -470,7 +470,7 @@ def assign_moment(
     data: NDArray[ScalarT] | DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     squeeze: bool = True,
     copy: bool = True,
@@ -632,7 +632,7 @@ def _assign_moment(
     data: NDArray[ScalarT],
     *values: ArrayLike | xr.DataArray | xr.Dataset,
     names: Iterable[SelectMoment],
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     mom_axes: MomAxesStrict | None,
     squeeze: bool,
     copy: bool,
@@ -858,7 +858,7 @@ def _vals_to_data(
     weight: ArrayLike | xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
     mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
     fastpath: bool,

@@ -39,11 +39,11 @@ if TYPE_CHECKING:
         DimsReduceMult,
         MissingCoreDimOptions,
         MissingType,
-        Mom_NDim,
         MomAxes,
         MomDims,
         MomDimsStrict,
         MomentsStrict,
+        MomNDim,
     )
 
 
@@ -135,7 +135,7 @@ def select_axis_dim(
         axis = normalize_axis_index(
             axis=axis,  # type: ignore[arg-type]
             ndim=data.ndim,
-            mom_ndim=None if mom_dims is None else cast("Mom_NDim", len(mom_dims)),
+            mom_ndim=None if mom_dims is None else cast("MomNDim", len(mom_dims)),
         )
         dim = data.dims[axis]
     else:  # pragma: no cover
@@ -211,7 +211,7 @@ def select_axis_dim_mult(  # noqa: C901
         axis_ = normalize_axis_tuple(
             axis,
             data.ndim,
-            mom_ndim=None if mom_dims is None else cast("Mom_NDim", len(mom_dims)),
+            mom_ndim=None if mom_dims is None else cast("MomNDim", len(mom_dims)),
         )
         dim_ = tuple(data.dims[a] for a in axis_)
 
@@ -224,7 +224,7 @@ def select_axis_dim_mult(  # noqa: C901
 
 
 def move_mom_dims_to_end(
-    x: xr.DataArray, mom_dims: MomDims, mom_ndim: Mom_NDim | None = None
+    x: xr.DataArray, mom_dims: MomDims, mom_ndim: MomNDim | None = None
 ) -> xr.DataArray:
     """Move moment dimensions to end"""
     if mom_dims is not None:
@@ -326,9 +326,9 @@ def astype_dtype_dict(
 def get_mom_dims_kws(
     target: ArrayLike | xr.DataArray | xr.Dataset,
     mom_dims: MomDims | None,
-    mom_ndim: Mom_NDim | None,
+    mom_ndim: MomNDim | None,
     out: Any = None,
-    mom_ndim_default: Mom_NDim | None = None,
+    mom_ndim_default: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     include_mom_ndim: bool = False,
 ) -> dict[str, Any]:

@@ -43,9 +43,9 @@ if TYPE_CHECKING:
         AxisReduce,
         DimsReduce,
         MissingType,
-        Mom_NDim,
         MomAxesStrict,
         MomentsStrict,
+        MomNDim,
         NDArrayAny,
         ScalarT,
     )
@@ -57,7 +57,7 @@ if TYPE_CHECKING:
 def prepare_data_for_reduction(
     data: ArrayLike,
     axis: AxisReduce | MissingType,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     dtype: DTypeLike,
     recast: bool = True,
     move_axis_to_end: bool = False,
@@ -84,7 +84,7 @@ def prepare_data_for_reduction(
 def prepare_data_for_reduction_mom_axes(
     data: ArrayLike,
     axis: AxisReduceWrap | MissingType,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     mom_axes: MomAxesStrict,
     dtype: DTypeLike,
     recast: bool = True,
@@ -292,7 +292,7 @@ def xprepare_out_for_resample_vals(
     target: xr.DataArray | xr.Dataset,
     out: NDArray[ScalarT] | None,
     dim: DimsReduce,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     move_axis_to_end: bool,
 ) -> NDArray[ScalarT] | None:
     """Prepare out for resampling"""
@@ -315,7 +315,7 @@ def xprepare_out_for_resample_vals(
 def xprepare_out_for_resample_data(
     out: NDArray[ScalarT] | None,
     *,
-    mom_ndim: Mom_NDim | None,
+    mom_ndim: MomNDim | None,
     axis: int,
     move_axis_to_end: bool,
     data: Any = None,

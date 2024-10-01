@@ -11,7 +11,7 @@ import xarray as xr
 import cmomy
 
 if TYPE_CHECKING:
-    from cmomy.core.typing import Mom_NDim
+    from cmomy.core.typing import MomNDim
 
 
 shapes_mark = pytest.mark.parametrize(
@@ -77,7 +77,7 @@ def test_vals_move_axis_to_end(
     kwargs,
     style,
 ) -> None:
-    mom_ndim: Mom_NDim = len(mom)  # type: ignore[assignment]
+    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray)
 

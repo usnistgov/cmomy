@@ -25,8 +25,8 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         AxesGUFunc,
-        Mom_NDim,
         MomAxesStrict,
+        MomNDim,
         NDArrayAny,
         ScalarT,
     )
@@ -49,7 +49,7 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
 def normalize_axis_index(
     axis: complex,
     ndim: int,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     msg_prefix: str | None = None,
 ) -> int:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
@@ -69,7 +69,7 @@ def normalize_axis_index(
 def normalize_axis_tuple(
     axis: complex | Iterable[complex] | None,
     ndim: int,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     msg_prefix: str | None = None,
     allow_duplicate: bool = False,
 ) -> tuple[int, ...]:
@@ -155,7 +155,7 @@ _MOM_AXES_TUPLE: dict[int, MomAxesStrict] = {1: (-1,), 2: (-2, -1)}
 
 def axes_data_reduction(
     *inner: int | tuple[int, ...],
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
     axis: int,
     out_has_axis: bool = False,
     mom_axes: MomAxesStrict | None = None,
