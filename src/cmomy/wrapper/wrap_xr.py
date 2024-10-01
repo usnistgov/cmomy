@@ -65,6 +65,7 @@ if TYPE_CHECKING:
         KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomAxes,
         MomDims,
         MomDimsStrict,
         Moments,
@@ -105,6 +106,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         obj: DataT,
         *,
         mom_ndim: Mom_NDim | None = None,
+        mom_axes: MomAxes | None = None,
         mom_dims: MomDims | None = None,
         fastpath: bool = False,
     ) -> None:
@@ -116,7 +118,11 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             self._mom_dims = cast("MomDimsStrict", mom_dims)
         else:
             mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-                mom_dims, mom_ndim, obj, mom_ndim_default=1
+                mom_dims,
+                mom_ndim,
+                obj,
+                mom_ndim_default=1,
+                mom_axes=mom_axes,
             )
             self._mom_dims = mom_dims
 

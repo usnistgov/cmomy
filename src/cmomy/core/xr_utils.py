@@ -15,7 +15,7 @@ from .validate import (
     is_dataset,
     is_xarray,
     validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim,
+    validate_mom_ndim_and_mom_axes,
     validate_not_none,
 )
 
@@ -29,6 +29,8 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike
 
+    from cmomy.core.typing import AxisReduceMultWrap, AxisReduceWrap
+
     from .typing import (
         ApplyUFuncKwargs,
         AxisReduce,
@@ -38,6 +40,7 @@ if TYPE_CHECKING:
         MissingCoreDimOptions,
         MissingType,
         Mom_NDim,
+        MomAxes,
         MomDims,
         MomDimsStrict,
         MomentsStrict,
@@ -89,7 +92,7 @@ def _check_dim_in_mom_dims(
 
 def select_axis_dim(
     data: xr.DataArray | xr.Dataset,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     *,
     default_axis: AxisReduce | MissingType = MISSING,
@@ -131,7 +134,8 @@ def select_axis_dim(
     elif axis is not MISSING:
         axis = normalize_axis_index(
             axis=axis,  # type: ignore[arg-type]
-            ndim=data.ndim - (0 if mom_dims is None else len(mom_dims)),
+            ndim=data.ndim,
+            mom_ndim=None if mom_dims is None else cast("Mom_NDim", len(mom_dims)),
         )
         dim = data.dims[axis]
     else:  # pragma: no cover
@@ -144,7 +148,7 @@ def select_axis_dim(
 
 def select_axis_dim_mult(  # noqa: C901
     data: xr.DataArray | xr.Dataset,
-    axis: AxisReduceMult | MissingType = MISSING,
+    axis: AxisReduceMultWrap | MissingType = MISSING,
     dim: DimsReduceMult | MissingType = MISSING,
     *,
     default_axis: AxisReduceMult | MissingType = MISSING,
@@ -204,8 +208,11 @@ def select_axis_dim_mult(  # noqa: C901
 
         axis_ = data.get_axis_num(dim_)
     elif axis is not MISSING:
-        ndim = data.ndim - (0 if mom_dims is None else len(mom_dims))
-        axis_ = normalize_axis_tuple(axis, ndim)
+        axis_ = normalize_axis_tuple(
+            axis,
+            data.ndim,
+            mom_ndim=None if mom_dims is None else cast("Mom_NDim", len(mom_dims)),
+        )
         dim_ = tuple(data.dims[a] for a in axis_)
 
     else:  # pragma: no cover
@@ -322,12 +329,17 @@ def get_mom_dims_kws(
     mom_ndim: Mom_NDim | None,
     out: Any = None,
     mom_ndim_default: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     include_mom_ndim: bool = False,
 ) -> dict[str, Any]:
     """Get kwargs for mom_dims and mom_ndim"""
     if is_xarray(target):
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, out, mom_ndim_default=mom_ndim_default
+            mom_dims,
+            mom_ndim,
+            out,
+            mom_ndim_default=mom_ndim_default,
+            mom_axes=mom_axes,
         )
         return (
             {"mom_dims": mom_dims, "mom_ndim": mom_ndim}
@@ -336,7 +348,11 @@ def get_mom_dims_kws(
         )
 
     if include_mom_ndim:
+        mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
+            mom_ndim, mom_axes, mom_ndim_default=mom_ndim_default
+        )
         return {
-            "mom_ndim": validate_mom_ndim(mom_ndim, mom_ndim_default=mom_ndim_default)
+            "mom_ndim": mom_ndim,
+            "mom_axes": mom_axes,
         }
     return {}

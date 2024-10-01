@@ -5,7 +5,7 @@ Routines to perform central moments reduction (:mod:`~cmomy.reduction`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import pandas as pd
@@ -35,7 +35,7 @@ from .core.validate import (
     is_dataset,
     is_xarray,
     raise_if_wrong_value,
-    validate_axis_mult,
+    validate_axis_mult_wrap,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_dims_and_mom_ndim,
@@ -68,7 +68,8 @@ if TYPE_CHECKING:
         ArrayT,
         AxesGUFunc,
         AxisReduce,
-        AxisReduceMult,
+        AxisReduceMultWrap,
+        AxisReduceWrap,
         BlockByModes,
         Casting,
         CoordsPolicy,
@@ -157,7 +158,7 @@ def reduce_vals(
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -385,7 +386,7 @@ def reduce_data(
     data: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim | None = None,
-    axis: AxisReduceMult | MissingType = MISSING,
+    axis: AxisReduceMultWrap | MissingType = MISSING,
     mom_axes: MomAxes | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -445,6 +446,8 @@ def reduce_data(
         )
         axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_dims=mom_dims)
         xout: DataT
+
+        mom_axes = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
         if use_reduce:
             xout = data.transpose(..., *mom_dims).reduce(  # type: ignore[assignment]
                 _reduce_data,
@@ -452,7 +455,7 @@ def reduce_data(
                 keep_attrs=bool(keep_attrs),
                 keepdims=keepdims,
                 mom_ndim=mom_ndim,
-                mom_axes=None,
+                mom_axes=mom_axes,
                 parallel=parallel,
                 out=out,
                 dtype=dtype,
@@ -468,8 +471,8 @@ def reduce_data(
                 output_core_dims=[mom_dims],
                 kwargs={
                     "mom_ndim": mom_ndim,
-                    "mom_axes": None,
-                    "axis": range(-len(dim), 0),
+                    "mom_axes": mom_axes,
+                    "axis": tuple(range(-len(dim) - mom_ndim, -mom_ndim)),
                     "out": None if is_dataset(data) else out,
                     "dtype": dtype,
                     "parallel": parallel,
@@ -496,7 +499,7 @@ def reduce_data(
         asarray_maybe_recast(data, dtype=dtype, recast=False),
         mom_ndim=mom_ndim,
         mom_axes=mom_axes,
-        axis=validate_axis_mult(axis),
+        axis=validate_axis_mult_wrap(axis),
         out=out,
         dtype=dtype,
         casting=casting,
@@ -511,8 +514,8 @@ def _reduce_data(
     data: NDArrayAny,
     *,
     mom_ndim: Mom_NDim,
-    mom_axes: MomAxesStrict | None = None,
-    axis: AxisReduceMult,
+    mom_axes: MomAxesStrict,
+    axis: AxisReduceMultWrap,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
@@ -528,18 +531,14 @@ def _reduce_data(
     _mom_axes: tuple[int, ...]
     axis_tuple: tuple[int, ...]
 
-    if mom_axes is not None:
-        _mom_axes = normalize_axis_tuple(mom_axes, data.ndim, msg_prefix="mom_axes")
-    else:
-        _mom_axes = tuple(range(data.ndim - mom_ndim, data.ndim))
-
+    _mom_axes = normalize_axis_tuple(mom_axes, data.ndim, msg_prefix="mom_axes")
     if axis is None:
         axis_tuple = tuple(a for a in range(data.ndim) if a not in _mom_axes)
     else:
         axis_tuple = normalize_axis_tuple(
             axis,
             data.ndim,
-            mom_ndim=mom_ndim if mom_axes is None else None,
+            mom_ndim=mom_ndim,
             msg_prefix="reduce_data",
         )
 
@@ -790,7 +789,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     by: ArrayLike,
     *,
     mom_ndim: Mom_NDim | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     mom_axes: MomAxes | None = None,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
@@ -908,7 +907,7 @@ def reduce_data_grouped(  # noqa: PLR0913
             exclude_dims={dim},
             kwargs={
                 "mom_ndim": mom_ndim,
-                "mom_axes": None,
+                "mom_axes": tuple(range(-mom_ndim, 0)),
                 # Need total axis here...
                 "axis": -(mom_ndim + 1),
                 "dtype": dtype,
@@ -1191,7 +1190,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     group_start: ArrayLike,
     group_end: ArrayLike,
     scale: ArrayLike | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     mom_axes: MomAxes | None = None,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
@@ -1315,7 +1314,7 @@ def reduce_data_indexed(  # noqa: PLR0913
             exclude_dims={dim},
             kwargs={
                 "axis": -(mom_ndim + 1),
-                "mom_axes": mom_axes,
+                "mom_axes": tuple(range(-mom_ndim, 0)),
                 "mom_ndim": mom_ndim,
                 "index": index,
                 "group_start": group_start,

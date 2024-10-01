@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 from xarray.namedarray.utils import either_dict_or_kwargs
 
-from .core.array_utils import normalize_axis_tuple, select_dtype
+from .core.array_utils import moveaxis_order, normalize_axis_tuple, select_dtype
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
@@ -21,12 +21,13 @@ from .core.validate import (
     is_dataset,
     is_xarray,
     raise_if_wrong_value,
-    validate_axis_mult,
+    validate_axis_mult_wrap,
     validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim,
+    validate_mom_ndim_and_mom_axes,
     validate_optional_mom_dims_and_mom_ndim,
+    validate_optional_mom_ndim_and_mom_axes,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -47,12 +48,15 @@ if TYPE_CHECKING:
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
+        AxesWrap,
         DataT,
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomAxes,
+        MomAxesStrict,
         MomDims,
         Moments,
         MomentsStrict,
@@ -69,23 +73,25 @@ if TYPE_CHECKING:
 @overload
 def moveaxis(
     x: NDArray[ScalarT],
-    axis: int | tuple[int, ...] | MissingType = ...,
-    dest: int | tuple[int, ...] | MissingType = ...,
+    axis: AxesWrap | MissingType = ...,
+    dest: AxesWrap | MissingType = ...,
     *,
     dim: str | Sequence[Hashable] | MissingType = ...,
     dest_dim: str | Sequence[Hashable] | MissingType = ...,
     mom_ndim: Mom_NDim | None = ...,
+    mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
 ) -> NDArray[ScalarT]: ...
 @overload
 def moveaxis(
     x: xr.DataArray,
-    axis: int | tuple[int, ...] | MissingType = ...,
-    dest: int | tuple[int, ...] | MissingType = ...,
+    axis: AxesWrap | MissingType = ...,
+    dest: AxesWrap | MissingType = ...,
     *,
     dim: str | Sequence[Hashable] | MissingType = ...,
     dest_dim: str | Sequence[Hashable] | MissingType = ...,
     mom_ndim: Mom_NDim | None = ...,
+    mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
 ) -> xr.DataArray: ...
 
@@ -93,12 +99,13 @@ def moveaxis(
 @docfiller.decorate
 def moveaxis(
     x: NDArray[ScalarT] | xr.DataArray,
-    axis: int | tuple[int, ...] | MissingType = MISSING,
-    dest: int | tuple[int, ...] | MissingType = MISSING,
+    axis: AxesWrap | MissingType = MISSING,
+    dest: AxesWrap | MissingType = MISSING,
     *,
     dim: str | Sequence[Hashable] | MissingType = MISSING,
     dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
 ) -> NDArray[ScalarT] | xr.DataArray:
     """
@@ -108,9 +115,9 @@ def moveaxis(
     ----------
     x : ndarray or DataArray
         input data
-    axis : int or sequence of int
-        Original positions of axes to move.
-    dest : int or sequence of int
+    axis : complex or sequence of complex
+        Original positions of axes to move.  Complex values wrapped relative to ``mom_ndim``.
+    dest : complex or sequence of complex
         Destination positions for each original axes.
     dim : str or sequence of hashable
         Original dimensions to move (for DataArray).
@@ -139,45 +146,47 @@ def moveaxis(
     >>> moveaxis(x, 0, -1).shape
     (3, 4, 5, 2)
 
-    Specifying ``mom_ndim`` will result in negative axis relative
+    Specifying ``mom_ndim`` will result in negative complex axis relative
     to the moments dimensions.
 
-    >>> moveaxis(x, 0, -1, mom_ndim=1).shape
+    >>> moveaxis(x, 0, -1j, mom_ndim=1).shape
     (3, 4, 2, 5)
+
+    Note that if ``mom_ndim`` is not specified, then complex axis are equivalent to
+    integer axis.
+
+    >>> moveaxis(x, 0, -1j).shape
+    (3, 4, 5, 2)
 
     Multiple axes can also be specified.
 
-    >>> moveaxis(x, (1, 0), (-2, -1), mom_ndim=1).shape
+    >>> moveaxis(x, (1, 0), (-2j, -1j), mom_ndim=1).shape
     (4, 3, 2, 5)
 
     This also works with dataarrays
 
     >>> dx = xr.DataArray(x, dims=["a", "b", "c", "mom_0"])
-    >>> moveaxis(dx, dim="a", dest=-1, mom_ndim=1).dims
+    >>> moveaxis(dx, dim="a", dest=-1j, mom_ndim=1).dims
     ('b', 'c', 'a', 'mom_0')
     """
     if is_dataarray(x):
         mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, x
+            mom_dims, mom_ndim, x, mom_axes=mom_axes
         )
-        axes0, dims0 = select_axis_dim_mult(x, axis=axis, dim=dim, mom_dims=mom_dims)
-        axes1, dims1 = select_axis_dim_mult(
-            x, axis=dest, dim=dest_dim, mom_dims=mom_dims
-        )
+        axes0, _ = select_axis_dim_mult(x, axis=axis, dim=dim, mom_dims=mom_dims)
+        axes1, _ = select_axis_dim_mult(x, axis=dest, dim=dest_dim, mom_dims=mom_dims)
 
-        raise_if_wrong_value(
-            len(dims0), len(dims1), "`dim` and `dest_dim` must have same length."
-        )
-
-        order = [n for n in range(x.ndim) if n not in axes0]
-        for dst, src in sorted(zip(axes1, axes0)):
-            order.insert(dst, src)
+        order = moveaxis_order(x.ndim, axes0, axes1, normalize=False)
         return x.transpose(*(x.dims[o] for o in order))
 
-    mom_ndim = None if mom_ndim is None else validate_mom_ndim(mom_ndim)
-    axes0 = normalize_axis_tuple(validate_axis_mult(axis), x.ndim, mom_ndim)
-    axes1 = normalize_axis_tuple(validate_axis_mult(dest), x.ndim, mom_ndim)
-
+    mom_ndim, mom_axes = validate_optional_mom_ndim_and_mom_axes(mom_ndim, mom_axes)
+    axes0 = normalize_axis_tuple(validate_axis_mult_wrap(axis), x.ndim, mom_ndim)
+    axes1 = normalize_axis_tuple(validate_axis_mult_wrap(dest), x.ndim, mom_ndim)
+    if mom_axes is not None:
+        _axes = normalize_axis_tuple(mom_axes, x.ndim)
+        if any(a in _axes for axes in (axes0, axes1) for a in axes):
+            msg = f"axis={axes0}, dest={axes1}, cannot overload {_axes}."
+            raise ValueError(msg)
     return np.moveaxis(x, axes0, axes1)
 
 
@@ -260,6 +269,7 @@ def select_moment(
     name: SelectMoment,
     *,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
@@ -289,7 +299,8 @@ def select_moment(
         dimensions of ``output`` has shape ``mom_ndim`` with each element
         corresponding to the `ith` variable. If ``squeeze=True`` and
         `mom_ndim==1`, this last dimension is removed. For all other ``name``
-        options, output has shape of input with moment dimensions removed.
+        options, output has shape of input with moment dimensions removed.  In all cases, ``mom_dims`` or ``mom_axes``
+        are first moved to the last dimensions.
 
 
     Examples
@@ -331,7 +342,11 @@ def select_moment(
             return data
 
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_ndim_default=1
+            mom_dims,
+            mom_ndim,
+            data,
+            mom_ndim_default=1,
+            mom_axes=mom_axes,
         )
         # input/output dimensions
         input_core_dims = [mom_dims]
@@ -386,9 +401,15 @@ def select_moment(
             )
         return xout
 
+    mom_ndim, _mom_axes = validate_mom_ndim_and_mom_axes(
+        mom_ndim, mom_axes, mom_ndim_default=1
+    )
+    if mom_axes is not None:
+        data = np.moveaxis(data, _mom_axes, range(-mom_ndim, 0))
+
     return _select_moment(
         data,
-        mom_ndim=validate_mom_ndim(mom_ndim, mom_ndim_default=1),
+        mom_ndim=mom_ndim,
         name=name,
         squeeze=squeeze,
     )
@@ -417,6 +438,7 @@ def assign_moment(
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
     mom_ndim: Mom_NDim | None = ...,
+    mom_axes: MomAxes | None = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -431,6 +453,7 @@ def assign_moment(
     moment: Mapping[SelectMoment, ArrayLike] | None = None,
     *,
     mom_ndim: Mom_NDim | None = ...,
+    mom_axes: MomAxes | None = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -448,6 +471,7 @@ def assign_moment(
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     squeeze: bool = True,
     copy: bool = True,
     dim_combined: Hashable | None = None,
@@ -539,7 +563,11 @@ def assign_moment(
 
     if is_xarray(data):
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_ndim_default=1
+            mom_dims,
+            mom_ndim,
+            data,
+            mom_ndim_default=1,
+            mom_axes=mom_axes,
         )
         # figure out values shape...
         input_core_dims: list[Sequence[Hashable]] = [mom_dims]
@@ -571,6 +599,7 @@ def assign_moment(
             kwargs={
                 "names": moment_kwargs.keys(),
                 "mom_ndim": mom_ndim,
+                "mom_axes": None,
                 "squeeze": squeeze,
                 "copy": copy,
             },
@@ -585,11 +614,15 @@ def assign_moment(
         )
         return xout
 
+    mom_ndim, _mom_axes = validate_mom_ndim_and_mom_axes(
+        mom_ndim, mom_axes, mom_ndim_default=1
+    )
     return _assign_moment(
         data,
         *moment_kwargs.values(),
         names=moment_kwargs.keys(),  # type: ignore[arg-type]
-        mom_ndim=validate_mom_ndim(mom_ndim),
+        mom_ndim=mom_ndim,
+        mom_axes=mom_axes if mom_axes is None else _mom_axes,
         squeeze=squeeze,
         copy=copy,
     )
@@ -600,13 +633,20 @@ def _assign_moment(
     *values: ArrayLike | xr.DataArray | xr.Dataset,
     names: Iterable[SelectMoment],
     mom_ndim: Mom_NDim,
+    mom_axes: MomAxesStrict | None,
     squeeze: bool,
     copy: bool,
 ) -> NDArray[ScalarT]:
     out = data.copy() if copy else data
 
+    if mom_axes is not None:
+        out = np.moveaxis(out, mom_axes, range(-mom_ndim, 0))
+
     for name, value in zip(names, values):
         out[moment_indexer(name, mom_ndim, squeeze)] = value
+
+    if mom_axes is not None:
+        out = np.moveaxis(out, range(-mom_ndim, 0), mom_axes)
     return out
 
 

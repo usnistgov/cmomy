@@ -18,6 +18,7 @@ from .validate import (
     is_dataarray,
     is_dataset,
     validate_axis,
+    validate_axis_wrap,
 )
 from .xr_utils import (
     raise_if_dataset,
@@ -34,6 +35,8 @@ if TYPE_CHECKING:
 
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
+
+    from cmomy.core.typing import AxisReduceWrap
 
     from .typing import (
         ArrayOrderCF,
@@ -80,28 +83,25 @@ def prepare_data_for_reduction(
 
 def prepare_data_for_reduction_mom_axes(
     data: ArrayLike,
-    axis: AxisReduce | MissingType,
+    axis: AxisReduceWrap | MissingType,
     mom_ndim: Mom_NDim,
+    mom_axes: MomAxesStrict,
     dtype: DTypeLike,
     recast: bool = True,
     move_axis_to_end: bool = False,
-    mom_axes: MomAxesStrict | None = None,
 ) -> tuple[int, MomAxesStrict, NDArrayAny]:
     """Convert central moments array to correct form for reduction."""
     data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
 
     axis = normalize_axis_index(
-        validate_axis(axis),
+        validate_axis_wrap(axis),
         data.ndim,
-        # if pass mom_axes, wrap relative to end
-        # If don't, wrap relative to mom_ndim
-        mom_ndim if mom_axes is None else None,
+        mom_ndim=mom_ndim,
     )
 
-    mom_axes_end = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
-    mom_axes = mom_axes_end if mom_axes is None else mom_axes
     if move_axis_to_end:
         axis_out = data.ndim - (mom_ndim + 1)
+        mom_axes_end = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
         data = np.moveaxis(data, (axis, *mom_axes), (axis_out, *mom_axes_end))
         mom_axes = mom_axes_end
     else:
@@ -115,7 +115,7 @@ def prepare_values_for_reduction(
     target: ArrayLike,
     *args: ArrayLike | xr.Dataset,
     narrays: int,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dtype: DTypeLike,
     recast: bool = True,
     move_axis_to_end: bool = True,
@@ -136,7 +136,7 @@ def prepare_values_for_reduction(
         raise ValueError(msg)
 
     target = asarray_maybe_recast(target, dtype=dtype, recast=recast)
-    axis = normalize_axis_index(validate_axis(axis), target.ndim)
+    axis = normalize_axis_index(validate_axis_wrap(axis), target.ndim)
     nsamp = target.shape[axis]
 
     axis_neg = positive_to_negative_index(axis, target.ndim)
@@ -211,7 +211,7 @@ def xprepare_values_for_reduction(
     *args: ArrayLike | xr.DataArray | xr.Dataset,
     narrays: int,
     dim: DimsReduce | MissingType,
-    axis: AxisReduce | MissingType,
+    axis: AxisReduceWrap | MissingType,
     dtype: DTypeLike,
     recast: bool = True,
 ) -> tuple[

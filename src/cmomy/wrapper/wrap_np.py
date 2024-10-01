@@ -24,6 +24,7 @@ from cmomy.core.validate import (
     validate_axis,
     validate_floating_dtype,
     validate_mom_and_mom_ndim,
+    validate_mom_ndim_and_mom_axes,
 )
 
 if TYPE_CHECKING:
@@ -49,6 +50,7 @@ if TYPE_CHECKING:
         Groups,
         MissingType,
         Mom_NDim,
+        MomAxes,
         MomDims,
         Moments,
         MomentsStrict,
@@ -92,6 +94,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         obj: ArrayLikeArg[FloatT],
         *,
         mom_ndim: Mom_NDim | None = ...,
+        mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: None = ...,
         order: ArrayOrder = ...,
@@ -103,6 +106,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         obj: ArrayLike,
         *,
         mom_ndim: Mom_NDim | None = ...,
+        mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: DTypeLikeArg[FloatT],
         order: ArrayOrder = ...,
@@ -114,6 +118,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         obj: ArrayLike,
         *,
         mom_ndim: Mom_NDim | None = ...,
+        mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrder = ...,
@@ -125,21 +130,30 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         obj: ArrayLike,
         *,
         mom_ndim: Mom_NDim | None = None,
+        mom_axes: MomAxes | None = None,
         copy: bool | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrder = None,
         fastpath: bool = False,
     ) -> None:
-        if not fastpath:
+        if fastpath:
+            if not is_ndarray(obj):
+                msg = f"Must pass ndarray as data.  Not {type(obj)=}"
+                raise TypeError(msg)
+        else:
             obj = np.array(
                 obj,
                 dtype=dtype,
                 copy=copy_if_needed(copy),
                 order=order,
             )
-        elif not is_ndarray(obj):
-            msg = f"Must pass ndarray as data.  Not {type(obj)=}"
-            raise TypeError(msg)
+
+            mom_ndim, _mom_axes = validate_mom_ndim_and_mom_axes(
+                mom_ndim, mom_axes, mom_ndim_default=1
+            )
+
+            if mom_axes:
+                obj = np.moveaxis(obj, _mom_axes, range(-mom_ndim, 0))
 
         super().__init__(
             obj,

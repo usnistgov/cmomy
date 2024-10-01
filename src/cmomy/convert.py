@@ -19,7 +19,7 @@ from .core.array_utils import (
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prepare import (
-    prepare_data_for_reduction,
+    prepare_data_for_reduction_mom_axes,
     xprepare_out_for_resample_data,
 )
 from .core.utils import (
@@ -33,7 +33,7 @@ from .core.validate import (
     is_xarray,
     validate_mom_dims,
     validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim,
+    validate_mom_ndim_and_mom_axes,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -55,6 +55,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core.typing import AxisReduceWrap, MomAxesStrict
+
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
@@ -72,6 +74,7 @@ if TYPE_CHECKING:
         KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomAxes,
         MomDims,
         MomentsToComomentsKwargs,
         MomentsTypeKwargs,
@@ -133,6 +136,7 @@ def moments_type(
     values_in: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -196,10 +200,15 @@ def moments_type(
     * ``values_in[..., i, j]`` : :math:`\langle a^i b^j \rangle`,
 
     """
+    # TODO(wpk): add move_axis_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray(values_in):
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, values_in, mom_ndim_default=1
+            mom_dims,
+            mom_ndim,
+            values_in,
+            mom_ndim_default=1,
+            mom_axes=mom_axes,
         )
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
@@ -208,6 +217,7 @@ def moments_type(
             output_core_dims=[mom_dims],
             kwargs={
                 "mom_ndim": mom_ndim,
+                "mom_axes": tuple(range(-mom_ndim, 0)),
                 "to": to,
                 "out": None if is_dataset(values_in) else out,
                 "dtype": dtype,
@@ -224,10 +234,14 @@ def moments_type(
         )
         return xout
 
+    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
+        mom_ndim, mom_axes, mom_ndim_default=1
+    )
     return _moments_type(
         values_in,
         out=out,
-        mom_ndim=validate_mom_ndim(mom_ndim, mom_ndim_default=1),
+        mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         to=to,
         dtype=dtype,
         casting=casting,
@@ -240,6 +254,7 @@ def _moments_type(
     values_in: ArrayLike,
     out: NDArrayAny | None,
     mom_ndim: Mom_NDim,
+    mom_axes: MomAxesStrict,
     to: ConvertStyle,
     dtype: DTypeLike,
     casting: Casting,
@@ -252,6 +267,7 @@ def _moments_type(
     return factory_convert(mom_ndim=mom_ndim, to=to)(
         values_in,  # type: ignore[arg-type]
         out=out,
+        axes=[mom_axes, mom_axes],
         dtype=dtype,
         casting=casting,
         order=order,
@@ -309,9 +325,10 @@ def cumulative(
 def cumulative(
     values_in: ArrayLike | DataT,
     *,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     inverse: bool = False,
     move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
@@ -378,7 +395,11 @@ def cumulative(
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray(values_in):
         mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, values_in, mom_ndim_default=1
+            mom_dims,
+            mom_ndim,
+            values_in,
+            mom_ndim_default=1,
+            mom_axes=mom_axes,
         )
         axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_dims=mom_dims)
         core_dims = [[dim, *mom_dims]]  # type: ignore[misc]
@@ -390,6 +411,7 @@ def cumulative(
             output_core_dims=core_dims,
             kwargs={
                 "mom_ndim": mom_ndim,
+                "mom_axes": tuple(range(-mom_ndim, 0)),
                 "inverse": inverse,
                 "axis": -(mom_ndim + 1),
                 "out": xprepare_out_for_resample_data(
@@ -418,11 +440,14 @@ def cumulative(
         return xout
 
     # Numpy
-    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
-    axis, values_in = prepare_data_for_reduction(
+    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
+        mom_ndim, mom_axes, mom_ndim_default=1
+    )
+    axis, mom_axes, values_in = prepare_data_for_reduction_mom_axes(
         values_in,
         axis=axis,
         mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         dtype=None,
         recast=False,
         move_axis_to_end=move_axis_to_end,
@@ -432,6 +457,7 @@ def cumulative(
         out=out,
         axis=axis,
         mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         inverse=inverse,
         parallel=parallel,
         dtype=dtype,
@@ -446,6 +472,7 @@ def _cumulative(
     out: NDArrayAny | None,
     axis: int,
     mom_ndim: Mom_NDim,
+    mom_axes: MomAxesStrict,
     inverse: bool,
     parallel: bool | None,
     dtype: DTypeLike,
@@ -456,7 +483,9 @@ def _cumulative(
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
-    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
+    axes = axes_data_reduction(
+        mom_ndim=mom_ndim, axis=axis, out_has_axis=True, mom_axes=mom_axes
+    )
     return factory_cumulative(
         mom_ndim=mom_ndim,
         inverse=inverse,
@@ -538,6 +567,7 @@ def moments_to_comoments(
     mom: tuple[int, int],
     dtype: DTypeLike = None,
     order: ArrayOrderCF = None,
+    mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_dims_out: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
@@ -610,7 +640,11 @@ def moments_to_comoments(
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
     if is_xarray(data):
-        mom_dim_in, *_ = validate_mom_dims(mom_dims, mom_ndim=1, out=data)
+        mom_dims, _ = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim=1, out=data, mom_axes=mom_axes
+        )
+        mom_dim_in = mom_dims[0]
+
         mom_dims_out = validate_mom_dims(mom_dims_out, mom_ndim=2)
 
         if mom_dim_in in mom_dims_out:
@@ -646,7 +680,12 @@ def moments_to_comoments(
 
     # numpy
     data = asarray_maybe_recast(data, dtype=dtype, recast=False)
+    # make sure mom_axes are at the end...
+    _, mom_axes = validate_mom_ndim_and_mom_axes(1, mom_axes)
+    data = np.moveaxis(data, mom_axes, -1)
+
     mom = _validate_mom_moments_to_comoments(mom, data.shape[-1] - 1)
+
     out = np.empty(
         (*data.shape[:-1], *mom_to_mom_shape(mom)),  # type: ignore[union-attr]
         dtype=dtype,
@@ -696,6 +735,7 @@ def comoments_to_moments(
     *,
     dtype: DTypeLike = None,
     order: ArrayOrderCF = None,
+    mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_dims_out: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
@@ -747,7 +787,9 @@ def comoments_to_moments(
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
     if is_xarray(data):
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim=2, out=data)
+        mom_dims, _ = validate_mom_dims_and_mom_ndim(
+            mom_dims, mom_ndim=2, out=data, mom_axes=mom_axes
+        )
         mom_dim_out, *_ = validate_mom_dims(mom_dims_out, mom_ndim=1)
         if mom_dim_out in mom_dims:
             # give this a temporary name for simplicity:
@@ -772,6 +814,9 @@ def comoments_to_moments(
         return xout
 
     data = asarray_maybe_recast(data, dtype, recast=False)
+    # make sure mom_axes at end
+    _, mom_axes = validate_mom_ndim_and_mom_axes(2, mom_axes)
+    data = np.moveaxis(data, mom_axes, (-2, -1))
 
     new_mom_len = sum(data.shape[-2:]) - 1
     val_shape: tuple[int, ...] = data.shape[:-2]

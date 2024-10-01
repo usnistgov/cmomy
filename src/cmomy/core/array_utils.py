@@ -10,7 +10,6 @@ import numpy as np
 from .validate import (
     is_dataset,
     is_ndarray,
-    validate_mom_ndim,
 )
 
 if TYPE_CHECKING:
@@ -47,18 +46,8 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
 
 
 # * Axis normalizer -----------------------------------------------------------
-def _validate_ndim(ndim: int, mom_ndim: int | None) -> int:
-    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
-    if ndim <= 0:
-        msg = "No dimension to reduce/sample over."
-        if mom_ndim:
-            msg += " Trying to select moment dimensions."
-        raise ValueError(msg)
-    return ndim
-
-
 def normalize_axis_index(
-    axis: int,
+    axis: complex,
     ndim: int,
     mom_ndim: Mom_NDim | None = None,
     msg_prefix: str | None = None,
@@ -68,32 +57,45 @@ def normalize_axis_index(
         np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
-    ndim = _validate_ndim(ndim, mom_ndim)
+    if isinstance(axis, complex):
+        axis = int(axis.imag)
+        if mom_ndim is not None:
+            ndim -= mom_ndim
+
+    # normalize will catch if try to pass a float
     return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]
 
 
 def normalize_axis_tuple(
-    axis: int | Iterable[int] | None,
+    axis: complex | Iterable[complex] | None,
     ndim: int,
     mom_ndim: Mom_NDim | None = None,
     msg_prefix: str | None = None,
     allow_duplicate: bool = False,
 ) -> tuple[int, ...]:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
-    from .compat import (
-        np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
+    if axis is None:
+        return tuple(range(ndim - (0 if mom_ndim is None else mom_ndim)))
+
+    if isinstance(axis, (int, float, complex)):
+        axis = (axis,)
+
+    out = tuple(
+        normalize_axis_index(a, ndim=ndim, mom_ndim=mom_ndim, msg_prefix=msg_prefix)
+        for a in axis
     )
 
-    ndim = _validate_ndim(ndim, mom_ndim)
-    if axis is None:
-        return tuple(range(ndim))
-    return np_normalize_axis_tuple(axis, ndim, msg_prefix, allow_duplicate)  # type: ignore[no-any-return,unused-ignore]
+    if not allow_duplicate and len(set(out)) != len(out):
+        msg = f"Repeat axis in {out}"
+        raise ValueError(msg)
+    return out
 
 
 def moveaxis_order(
     ndim: int,
     source: int | Iterable[int],
     destination: int | Iterable[int],
+    normalize: bool = True,
 ) -> list[int]:
     """
     Get new order of array for moveaxis
@@ -104,8 +106,13 @@ def moveaxis_order(
     Useful for keeping track of where indices end up.
     To extract to new position for an axis, use ``order.index(axis)``.
     """
-    source = normalize_axis_tuple(source, ndim, msg_prefix="source")
-    destination = normalize_axis_tuple(destination, ndim, msg_prefix="destination")
+    if normalize:
+        source = normalize_axis_tuple(source, ndim, msg_prefix="source")
+        destination = normalize_axis_tuple(destination, ndim, msg_prefix="destination")
+    else:
+        source = cast("Sequence[int]", source)
+        destination = cast("Sequence[int]", destination)
+
     if len(source) != len(destination):
         msg = "source and destination must have same length"
         raise ValueError(msg)

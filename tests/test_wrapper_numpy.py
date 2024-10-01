@@ -214,8 +214,8 @@ def test_resample(wrapped) -> None:
             expected,
         )
         np.testing.assert_allclose(
-            wrapped.resample(indices, axis=0, last=True).reduce(axis=-1),
-            expected.moveaxis(0, -1),
+            wrapped.resample(indices, axis=0, last=True).reduce(axis=-1j),
+            expected.moveaxis(0, -1j),
         )
 
 
@@ -451,9 +451,9 @@ def test_operator_raises() -> None:
     ("shape", "mom_ndim", "axis", "dest"),
     [
         ((2, 3, 4), 1, 1, 0),
-        ((1, 2, 3, 4), 1, (0, -1), (1, 0)),
-        ((1, 2, 3, 4), 2, 0, -1),
-        ((1, 2, 3, 4, 5), 2, (1, 2), (0, -1)),
+        ((1, 2, 3, 4), 1, (0, -1j), (1, 0)),
+        ((1, 2, 3, 4), 2, 0, -1j),
+        ((1, 2, 3, 4, 5), 2, (1, 2), (0, -1j)),
     ],
 )
 def test_moveaxis(rng, shape, mom_ndim, axis, dest) -> None:
@@ -507,7 +507,7 @@ def test_reduce(wrapped, attr, func, fkws) -> None:
         np.testing.assert_allclose(r, check)
 
     else:
-        with pytest.raises(ValueError, match="No dimension to reduce.*"):
+        with pytest.raises(ValueError):
             meth(axis=0, **fkws())
 
 

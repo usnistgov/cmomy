@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Generic, overload
 import numpy as np
 import xarray as xr
 
+from cmomy.core.array_utils import normalize_axis_tuple
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.typing import (
@@ -16,7 +17,9 @@ from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    validate_axis_wrap,
     validate_optional_mom_dims_and_mom_ndim,
+    validate_optional_mom_ndim_and_mom_axes,
 )
 from cmomy.core.xr_utils import select_axis_dim
 from cmomy.factory import (
@@ -33,7 +36,7 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
     from cmomy.core.typing import (
-        AxisReduce,
+        AxisReduceWrap,
         DataT,
         DimsReduce,
         IndexSamplerFromDataKwargs,
@@ -232,9 +235,9 @@ class IndexSampler(Generic[SamplerArrayT]):
         *,
         nrep: int,
         nsamp: int | None = None,
-        axis: AxisReduce | MissingType = MISSING,
-        mom_axes: MomAxes | None = None,
+        axis: AxisReduceWrap | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        mom_axes: MomAxes | None = None,
         mom_ndim: Mom_NDim | None = None,
         mom_dims: MomDims | None = None,
         rep_dim: str = "rep",
@@ -256,8 +259,8 @@ class IndexSampler(Generic[SamplerArrayT]):
         {nrep}
         {nsamp}
         {axis}
-        {mom_axes}
         {dim}
+        {mom_axes}
         {mom_ndim_optional}
         {mom_dims_data}
         {rep_dim}
@@ -328,7 +331,7 @@ def factory_sampler(  # noqa: PLR0913
     replace: bool = True,
     shuffle: bool = False,
     data: ArrayLike | xr.DataArray | xr.Dataset | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     mom_axes: MomAxes | None = None,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: Mom_NDim | None = None,
@@ -535,7 +538,7 @@ def _randsamp_indices_dataarray_or_dataset(
     *,
     nrep: int,
     ndat: int,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     mom_axes: MomAxes | None = None,
     dim: DimsReduce | MissingType = MISSING,
     nsamp: int | None = None,
@@ -588,10 +591,10 @@ def _randsamp_indices_dataarray_or_dataset(
 def select_ndat(
     data: ArrayLike | xr.DataArray | xr.Dataset,
     *,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
-    mom_axes: MomAxes | None = None,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
 ) -> int:
     """
@@ -603,6 +606,7 @@ def select_ndat(
     {axis}
     {dim}
     {mom_ndim_optional}
+    {mom_axes}
     {mom_dims_data}
 
     Returns
@@ -615,7 +619,11 @@ def select_ndat(
     >>> data = np.zeros((2, 3, 4))
     >>> select_ndat(data, axis=1)
     3
-    >>> select_ndat(data, axis=-1, mom_ndim=2)
+
+    To wrap relative to the last ``mom_ndim`` dimensions of ``data``, use complex
+    axes
+
+    >>> select_ndat(data, axis=-1j, mom_ndim=2)
     2
 
 
@@ -637,12 +645,17 @@ def select_ndat(
         axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
         return data.sizes[dim]
 
-    if isinstance(axis, int):
-        data = np.asarray(data)
-        axis = normalize_axis_index(axis, data.ndim, mom_ndim=mom_ndim)
-        return data.shape[axis]
-    msg = "Must specify integer axis for array input."
-    raise TypeError(msg)
+    axis = validate_axis_wrap(axis)
+    data = np.asarray(data)
+    mom_ndim, mom_axes = validate_optional_mom_ndim_and_mom_axes(mom_ndim, mom_axes)
+    axis = normalize_axis_index(validate_axis_wrap(axis), data.ndim, mom_ndim=mom_ndim)
+    if mom_axes:
+        _axes = normalize_axis_tuple(mom_axes, data.ndim)
+        if axis in _axes:
+            msg = f"{axis=} cannot be in mom_axes={_axes}."
+            raise ValueError(msg)
+
+    return data.shape[axis]
 
 
 # * Convert -------------------------------------------------------------------

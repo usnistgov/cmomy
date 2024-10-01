@@ -13,7 +13,7 @@ import numpy as np
 
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
-from cmomy.core.typing import GenArrayT
+from cmomy.core.typing import AxisReduceWrap, GenArrayT
 from cmomy.core.utils import mom_shape_to_mom
 from cmomy.core.validate import (
     is_dataset,
@@ -52,6 +52,7 @@ if TYPE_CHECKING:
         KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomAxes,
         MomDims,
         Moments,
         MomentsStrict,
@@ -739,6 +740,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             data=self._obj,
             moment=moment,
             mom_ndim=self._mom_ndim,
+            mom_axes=None,
             squeeze=squeeze,
             copy=copy,
             mom_dims=getattr(self, "mom_dims", None),
@@ -756,6 +758,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        mom_axes: MomAxes | None = None,
         move_axis_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
@@ -797,6 +800,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             axis=axis,
             dim=dim,
             mom_ndim=self._mom_ndim,
+            mom_axes=mom_axes,
             inverse=False,
             move_axis_to_end=move_axis_to_end,
             out=out,
@@ -1306,7 +1310,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         *y: ArrayLike | xr.DataArray | DataT_,
         mom: Moments,
         weight: ArrayLike | xr.DataArray | DataT_ | None = None,
-        axis: AxisReduce | MissingType = MISSING,
+        axis: AxisReduceWrap | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         mom_dims: MomDims | None = None,
         out: NDArrayAny | None = None,
@@ -1466,7 +1470,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         mom: Moments,
         sampler: Sampler,
         weight: ArrayLike | xr.DataArray | DataT_ | None = None,
-        axis: AxisReduce | MissingType = MISSING,
+        axis: AxisReduceWrap | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         move_axis_to_end: bool = True,
         out: NDArrayAny | None = None,
@@ -1618,6 +1622,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         raw: ArrayLike | xr.DataArray | xr.Dataset,
         *,
         mom_ndim: Mom_NDim | None = None,
+        mom_axes: MomAxes | None = None,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -1704,11 +1709,17 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         from cmomy import convert
 
         kws = get_mom_dims_kws(
-            raw, mom_dims, mom_ndim, raw, mom_ndim_default=1, include_mom_ndim=True
+            raw,
+            mom_dims,
+            mom_ndim,
+            raw,
+            mom_ndim_default=1,
+            include_mom_ndim=True,
+            mom_axes=mom_axes,
         )
         mom_ndim = kws.pop("mom_ndim")
         return cls(
-            obj=convert.moments_type(  # type: ignore[arg-type]
+            obj=convert.moments_type(  # type: ignore[call-overload, misc]
                 raw,
                 mom_ndim=mom_ndim,
                 to="central",
@@ -1720,7 +1731,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
                 **kws,
             ),
-            mom_ndim=mom_ndim,  # type: ignore[arg-type]
+            mom_ndim=mom_ndim,
             **kws,
             fastpath=True,
         )

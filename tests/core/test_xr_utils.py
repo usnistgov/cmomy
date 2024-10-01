@@ -94,10 +94,10 @@ def test_factory_apply_ufunc_kwargs(kws, expected) -> None:
         ({"default_dim": "a"}, (0, "a")),
         ({"default_dim": "mom"}, (2, "mom")),
         ({"axis": -1}, (2, "mom")),
-        ({"axis": -1, "mom_dims": ("mom",)}, (1, "b")),
+        ({"axis": -1j, "mom_dims": ("mom",)}, (1, "b")),
         (
             {
-                "axis": -1,
+                "axis": -1j,
                 "mom_dims": (
                     "b",
                     "mom",
@@ -169,7 +169,7 @@ def test_select_axis_dim_dataset(data, kws, expected) -> None:
         ({"axis": 0}, ((0,), ("a",))),
         ({"axis": 1}, ((1,), ("b",))),
         ({"axis": -1}, ((2,), ("mom",))),
-        ({"axis": -1, "mom_dims": ("mom",)}, ((1,), ("b",))),
+        ({"axis": -1j, "mom_dims": ("mom",)}, ((1,), ("b",))),
         ({"dim": "a"}, ((0,), ("a",))),
         ({"dim": "b"}, ((1,), ("b",))),
         ({"dim": "mom"}, ((2,), ("mom",))),
@@ -356,7 +356,7 @@ def test_astype_dtype_dict(data, dtype, expected) -> None:
                 "mom_ndim_default": 1,
                 "include_mom_ndim": True,
             },
-            {"mom_ndim": 1},
+            {"mom_ndim": 1, "mom_axes": (-1,)},
         ),
     ],
 )

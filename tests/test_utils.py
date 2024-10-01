@@ -37,10 +37,11 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
     ("kws", "expected"),
     [
         ({"axis": 0, "dest": -1, "mom_ndim": None}, (2, 3, 4, 1)),
-        ({"axis": 0, "dest": -1, "mom_ndim": 1}, (2, 3, 1, 4)),
-        ({"axis": 0, "dest": -1, "mom_ndim": 2}, (2, 1, 3, 4)),
-        ({"axis": (1, 0), "dest": (-2, -1), "mom_ndim": 1}, (3, 2, 1, 4)),
-        ({"axis": (1, 0), "dest": (-2,), "mom_ndim": 1}, ValueError),
+        ({"axis": 0, "dest": -1, "mom_ndim": 1}, ValueError),
+        ({"axis": 0, "dest": -1j, "mom_ndim": 1}, (2, 3, 1, 4)),
+        ({"axis": 0, "dest": -1j, "mom_ndim": 2}, (2, 1, 3, 4)),
+        ({"axis": (1, 0), "dest": (-2j, -1j), "mom_ndim": 1}, (3, 2, 1, 4)),
+        ({"axis": (1, 0), "dest": (-2j,), "mom_ndim": 1}, ValueError),
     ],
 )
 def test_moveaxis(x, kws, expected, func):
@@ -51,11 +52,11 @@ def test_moveaxis(x, kws, expected, func):
 @pytest.mark.parametrize(
     ("kws", "expected"),
     [
-        ({"dim": "dim_0", "dest": -1, "mom_ndim": None}, (2, 3, 4, 1)),
-        ({"dim": "dim_0", "dest": -1, "mom_ndim": 1}, (2, 3, 1, 4)),
-        ({"dim": "dim_0", "dest": -1, "mom_ndim": 2}, (2, 1, 3, 4)),
-        ({"dim": ("dim_1", "dim_0"), "dest": (-2, -1), "mom_ndim": 1}, (3, 2, 1, 4)),
-        ({"dim": ("dim_1", "dim_0"), "dest": (-2,), "mom_ndim": 1}, ValueError),
+        ({"dim": "dim_0", "dest": -1j, "mom_ndim": None}, (2, 3, 4, 1)),
+        ({"dim": "dim_0", "dest": -1j, "mom_ndim": 1}, (2, 3, 1, 4)),
+        ({"dim": "dim_0", "dest": -1j, "mom_ndim": 2}, (2, 1, 3, 4)),
+        ({"dim": ("dim_1", "dim_0"), "dest": (-2j, -1j), "mom_ndim": 1}, (3, 2, 1, 4)),
+        ({"dim": ("dim_1", "dim_0"), "dest": (-2j,), "mom_ndim": 1}, ValueError),
         ({"dim": "dim_0", "dest_dim": "dim_3", "mom_ndim": None}, (2, 3, 4, 1)),
         ({"dim": "dim_0", "dest_dim": "dim_2", "mom_ndim": 1}, (2, 3, 1, 4)),
         ({"dim": "dim_0", "dest_dim": "dim_1", "mom_ndim": 2}, (2, 1, 3, 4)),

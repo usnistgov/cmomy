@@ -23,6 +23,8 @@ if TYPE_CHECKING:
     from .typing import (
         AxisReduce,
         AxisReduceMult,
+        AxisReduceMultWrap,
+        AxisReduceWrap,
         MissingType,
         Mom_NDim,
         MomAxesStrict,
@@ -242,7 +244,29 @@ def validate_axis(axis: AxisReduce | MissingType) -> int:
     return axis
 
 
+def validate_axis_wrap(axis: AxisReduceWrap | MissingType) -> complex:
+    """
+    Validate that axis is an integer.
+
+    In the future, will allow axis to be None also.
+    """
+    if axis is None or axis is MISSING:
+        msg = f"Must specify axis. Received {axis=}."
+        raise TypeError(msg)
+    return axis
+
+
 def validate_axis_mult(axis: AxisReduceMult | MissingType) -> AxisReduceMult:
+    """Validate that axis is specified."""
+    if axis is MISSING:
+        msg = f"Must specify axis. Received {axis=}."
+        raise TypeError(msg)
+    return axis
+
+
+def validate_axis_mult_wrap(
+    axis: AxisReduceMultWrap | MissingType,
+) -> AxisReduceMultWrap:
     """Validate that axis is specified."""
     if axis is MISSING:
         msg = f"Must specify axis. Received {axis=}."
@@ -338,10 +362,11 @@ def validate_mom_ndim_and_mom_axes(
     mom_ndim: int | None,
     mom_axes: int | Sequence[int] | None = None,
     mom_ndim_default: Mom_NDim | None = None,
-) -> tuple[Mom_NDim, MomAxesStrict | None]:
+) -> tuple[Mom_NDim, MomAxesStrict]:
     """Validate ``mom_ndim`` and ``mom_axes``."""
     if mom_axes is None:
         mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default)
+        mom_axes = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
         return mom_ndim, mom_axes
 
     mom_axes = validate_mom_axes(mom_axes)
@@ -351,3 +376,14 @@ def validate_mom_ndim_and_mom_axes(
         msg = f"{len(mom_axes)=} != {mom_ndim=}"
         raise ValueError(msg)
     return cast("Mom_NDim", mom_ndim), mom_axes
+
+
+def validate_optional_mom_ndim_and_mom_axes(
+    mom_ndim: int | None,
+    mom_axes: int | Sequence[int] | None = None,
+    mom_ndim_default: Mom_NDim | None = None,
+) -> tuple[Mom_NDim | None, MomAxesStrict | None]:
+    """Validate optional ``mom_ndim`` and ``mom_axes``."""
+    if mom_ndim is None and mom_axes is None and mom_ndim_default is None:
+        return None, None
+    return validate_mom_ndim_and_mom_axes(mom_ndim, mom_axes, mom_ndim_default)

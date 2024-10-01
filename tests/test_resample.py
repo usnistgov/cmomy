@@ -337,8 +337,8 @@ def test_select_ndat() -> None:
     assert resample.select_ndat(data, axis=0) == 2
     assert resample.select_ndat(data, axis=-1) == 5
 
-    assert resample.select_ndat(data, axis=-1, mom_ndim=1) == 4
-    assert resample.select_ndat(data, axis=-1, mom_ndim=2) == 3
+    assert resample.select_ndat(data, axis=-1j, mom_ndim=1) == 4
+    assert resample.select_ndat(data, axis=-1j, mom_ndim=2) == 3
 
     with pytest.raises(TypeError, match="Must specify .*"):
         resample.select_ndat(data)

@@ -110,9 +110,17 @@ NDArrayFloatingT = TypeVar("NDArrayFloatingT", bound="NDArray[np.floating[Any]]"
 # * Numpy ---------------------------------------------------------------------
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
+Axes = Union[int, "tuple[int, ...]"]
+AxesWrap = Union[complex, "tuple[complex, ...]"]
+
+
 AxisReduce: TypeAlias = Union[int, None]
+AxisReduceWrap: TypeAlias = Union[complex, None]
+
 AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
+
 AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
+AxisReduceMultWrap: TypeAlias = Union[complex, "tuple[complex, ...]", None]
 
 # Rng
 RngTypes: TypeAlias = Union[
@@ -274,8 +282,13 @@ class _AxisKwargs(TypedDict, total=False):
     dim: DimsReduce | MissingType
 
 
-class _AxisMultKwargs(TypedDict, total=False):
-    axis: AxisReduceMult | MissingType
+class _AxisWrapKwargs(TypedDict, total=False):
+    axis: AxisReduceWrap | MissingType
+    dim: DimsReduce | MissingType
+
+
+class _AxisMultWrapKwargs(TypedDict, total=False):
+    axis: AxisReduceMultWrap | MissingType
     dim: DimsReduceMult | MissingType
 
 
@@ -305,8 +318,24 @@ class _DataOptionalKwargs(
     pass
 
 
+class _DataOptionalWrapKwargs(
+    _MomNDimOptionalKwargs,
+    _AxisWrapKwargs,
+    _ReductionKwargs,
+    _ParallelKwargs,
+    total=False,
+):
+    pass
+
+
 class _ValsKwargs(
     _MomKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
+):
+    pass
+
+
+class _ValsWrapKwargs(
+    _MomKwargs, _AxisWrapKwargs, _ReductionKwargs, _ParallelKwargs, total=False
 ):
     pass
 
@@ -314,7 +343,7 @@ class _ValsKwargs(
 # ** Reduction
 class ReduceDataKwargs(
     _MomNDimOptionalKwargs,
-    _AxisMultKwargs,
+    _AxisMultWrapKwargs,
     _ReductionKwargs,
     _OrderKwargs,
     _ParallelKwargs,
@@ -328,7 +357,7 @@ class ReduceDataKwargs(
 
 
 class ReduceValsKwargs(
-    _ValsKwargs,
+    _ValsWrapKwargs,
     _OrderCFKwargs,
     _KeepDimsKwargs,
     total=False,
@@ -337,7 +366,7 @@ class ReduceValsKwargs(
 
 
 class ReduceDataGroupedKwargs(
-    _DataOptionalKwargs,
+    _DataOptionalWrapKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomAxesOptionalKwargs,
@@ -350,7 +379,7 @@ class ReduceDataGroupedKwargs(
 
 
 class ReduceDataIndexedKwargs(
-    _DataOptionalKwargs,
+    _DataOptionalWrapKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomAxesOptionalKwargs,
@@ -370,17 +399,18 @@ class ReduceDataIndexedKwargs(
 
 # ** Resample
 class ResampleDataKwargs(
-    _DataOptionalKwargs,
+    _DataOptionalWrapKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.resample.resample_data`"""
 
 
 class ResampleValsKwargs(
-    _ValsKwargs,
+    _ValsWrapKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
@@ -390,9 +420,10 @@ class ResampleValsKwargs(
 
 
 class JackknifeDataKwargs(
-    _DataOptionalKwargs,
+    _DataOptionalWrapKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
@@ -401,7 +432,7 @@ class JackknifeDataKwargs(
 
 
 class JackknifeValsKwargs(
-    _ValsKwargs,
+    _ValsWrapKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     total=False,
@@ -416,6 +447,7 @@ class WrapRawKwargs(
     _MomNDimOptionalKwargs,
     _ReductionKwargs,
     _OrderKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.wrap_raw`"""
@@ -431,9 +463,10 @@ class MomentsTypeKwargs(
 
 
 class CumulativeKwargs(
-    _DataOptionalKwargs,
+    _DataOptionalWrapKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.cumulative`"""
@@ -444,6 +477,7 @@ class CumulativeKwargs(
 class MomentsToComomentsKwargs(
     _MomDimsAndApplyUFuncKwargs,
     _OrderCFKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.moments_to_comoments`"""
@@ -455,6 +489,7 @@ class MomentsToComomentsKwargs(
 class SelectMomentKwargs(
     _MomNDimOptionalKwargs,
     _MomDimsAndApplyUFuncKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.utils.select_moment`"""
@@ -578,7 +613,7 @@ class WrapNPReduceKwargs(
 
 
 class IndexSamplerFromDataKwargs(
-    _AxisKwargs,
+    _AxisWrapKwargs,
     _MomAxesOptionalKwargs,
     total=False,
 ):

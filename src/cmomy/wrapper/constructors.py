@@ -34,7 +34,7 @@ if TYPE_CHECKING:
         ArrayLikeArg,
         ArrayOrder,
         ArrayOrderCF,
-        AxisReduce,
+        AxisReduceWrap,
         Casting,
         CentralMomentsArrayAny,
         CentralMomentsArrayT,
@@ -49,6 +49,7 @@ if TYPE_CHECKING:
         KeepAttrs,
         MissingType,
         Mom_NDim,
+        MomAxes,
         MomDims,
         Moments,
         NDArrayAny,
@@ -105,6 +106,7 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
     obj: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     dtype: DTypeLike | Mapping[str, DTypeLike] = None,
     copy: bool | None = False,
@@ -163,13 +165,15 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
         return CentralMomentsData(
             obj=obj,  # type: ignore[arg-type]
             mom_ndim=mom_ndim,
+            mom_axes=mom_axes,
             mom_dims=mom_dims,
             fastpath=fastpath,
         )
 
-    return CentralMomentsArray(
+    return CentralMomentsArray(  # type: ignore[misc]
         obj=obj,  # type: ignore[arg-type]
         mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         fastpath=fastpath,
         dtype=dtype,  # type: ignore[arg-type]
         copy=copy,
@@ -351,7 +355,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     out: NDArrayAny | None = None,
@@ -507,7 +511,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     mom: Moments,
     sampler: Sampler,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     move_axis_to_end: bool = True,
     out: NDArrayAny | None = None,
@@ -657,6 +661,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     raw: ArrayLike | DataT,
     *,
     mom_ndim: Mom_NDim | None = None,
+    mom_axes: MomAxes | None = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -742,7 +747,13 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     from cmomy import convert
 
     kws = get_mom_dims_kws(
-        raw, mom_dims, mom_ndim, raw, mom_ndim_default=1, include_mom_ndim=True
+        raw,
+        mom_dims,
+        mom_ndim,
+        raw,
+        mom_ndim_default=1,
+        include_mom_ndim=True,
+        mom_axes=mom_axes,
     )
     return wrap(  # pyright: ignore[reportUnknownVariableType]
         obj=convert.moments_type(
