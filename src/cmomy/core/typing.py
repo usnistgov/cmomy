@@ -277,11 +277,6 @@ class _MomKwargs(TypedDict, total=False):
     mom: Required[Moments]
 
 
-class _AxisKwargs(TypedDict, total=False):
-    axis: AxisReduce | MissingType
-    dim: DimsReduce | MissingType
-
-
 class _AxisWrapKwargs(TypedDict, total=False):
     axis: AxisReduceWrap | MissingType
     dim: DimsReduce | MissingType
@@ -312,24 +307,12 @@ class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
 
 
-class _DataOptionalKwargs(
-    _MomNDimOptionalKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
-):
-    pass
-
-
 class _DataOptionalWrapKwargs(
     _MomNDimOptionalKwargs,
     _AxisWrapKwargs,
     _ReductionKwargs,
     _ParallelKwargs,
     total=False,
-):
-    pass
-
-
-class _ValsKwargs(
-    _MomKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
 ):
     pass
 
@@ -523,13 +506,18 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
 
 
 class RollingDataKwargs(
-    _DataOptionalKwargs, _RollingKwargs, _MoveAxisToEndKwargs, _OrderKwargs, total=False
+    _DataOptionalWrapKwargs,
+    _RollingKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
+    _MomAxesOptionalKwargs,
+    total=False,
 ):
     """Extra parameters to :func:`.rolling.rolling_data`"""
 
 
 class RollingValsKwargs(
-    _ValsKwargs,
+    _ValsWrapKwargs,
     _RollingKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
@@ -538,17 +526,20 @@ class RollingValsKwargs(
 
 
 class RollingExpDataKwargs(
-    _DataOptionalKwargs,
+    _DataOptionalWrapKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomAxesOptionalKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.rolling.rolling_exp_data`"""
 
+    alpha_axis: AxisReduceWrap | MissingType
+
 
 class RollingExpValsKwargs(
-    _ValsKwargs,
+    _ValsWrapKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,

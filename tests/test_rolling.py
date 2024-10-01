@@ -37,13 +37,13 @@ def test__optional_zero_missing_weights(mom_ndim) -> None:
     data[(..., *(0,) * mom_ndim)] = np.nan
 
     # no change
-    out = rolling._optional_zero_missing_weight(data.copy(), mom_ndim, False)
+    out = rolling._optional_zero_missing_weight(data.copy(), range(-mom_ndim, 0), False)
     np.testing.assert_equal(out, data)
 
     # change
     check = data.copy()
     check[(..., *(0,) * mom_ndim)] = 0.0
-    out = rolling._optional_zero_missing_weight(data.copy(), mom_ndim, True)
+    out = rolling._optional_zero_missing_weight(data.copy(), range(-mom_ndim, 0), True)
     np.testing.assert_allclose(out, check)
 
 
@@ -546,6 +546,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         alpha=alphas.to_numpy(),
         mom_ndim=1,
         axis=axis,
+        alpha_axis=axis,
         adjust=adjust,
     )
 
@@ -632,7 +633,7 @@ def test_rolling_exp_multiple_alpha(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
     )
     c = rolling.rolling_exp_data(
-        data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust
+        data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust, alpha_axis=axis
     )
     np.testing.assert_allclose(
         a,
