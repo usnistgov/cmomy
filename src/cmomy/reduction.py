@@ -5,7 +5,7 @@ Routines to perform central moments reduction (:mod:`~cmomy.reduction`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import pandas as pd
@@ -13,17 +13,20 @@ import xarray as xr
 
 from .core.array_utils import (
     asarray_maybe_recast,
-    axes_data_reduction,
+    axes_data_reduction_mom_params,
     get_axes_from_values,
     moveaxis_order,
-    normalize_axis_tuple,
     optional_keepdims,
     select_dtype,
 )
 from .core.docstrings import docfiller
 from .core.missing import MISSING
+from .core.moment_params import (
+    MomParamsArray,
+    MomParamsXArray,
+)
 from .core.prepare import (
-    prepare_data_for_reduction_mom_axes,
+    prepare_data_for_reduction_mom_params,
     prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
@@ -37,9 +40,6 @@ from .core.validate import (
     raise_if_wrong_value,
     validate_axis_mult_wrap,
     validate_mom_and_mom_ndim,
-    validate_mom_dims,
-    validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim_and_mom_axes,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -83,7 +83,6 @@ if TYPE_CHECKING:
         KeepAttrs,
         MissingType,
         MomAxes,
-        MomAxesStrict,
         MomDims,
         Moments,
         MomentsStrict,
@@ -209,7 +208,7 @@ def reduce_vals(
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
     if is_xarray(x):
-        mom_dims = validate_mom_dims(mom_dims=mom_dims, mom_ndim=mom_ndim)
+        mom_dims = MomParamsXArray.factory(ndim=mom_ndim, dims=mom_dims).dims
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -436,26 +435,23 @@ def reduce_data(
         Same type as input ``data``.
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
+    mom_params: MomParamsArray | MomParamsXArray
     if is_xarray(data):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims,
-            mom_ndim,
-            data,
-            mom_ndim_default=1,
-            mom_axes=mom_axes,
+        mom_params = MomParamsXArray.factory(
+            ndim=mom_ndim, axes=mom_axes, dims=mom_dims, data=data, default_ndim=1
         )
-        axis, dim = select_axis_dim_mult(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        axis, dim = select_axis_dim_mult(
+            data, axis=axis, dim=dim, mom_dims=mom_params.dims
+        )
         xout: DataT
 
-        mom_axes = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
         if use_reduce:
-            xout = data.transpose(..., *mom_dims).reduce(  # type: ignore[assignment]
+            xout = data.transpose(..., *mom_params.dims).reduce(  # type: ignore[assignment]
                 _reduce_data,
                 dim=dim,
                 keep_attrs=bool(keep_attrs),
                 keepdims=keepdims,
-                mom_ndim=mom_ndim,
-                mom_axes=mom_axes,
+                mom_params=mom_params.to_array(),
                 parallel=parallel,
                 out=out,
                 dtype=dtype,
@@ -467,12 +463,11 @@ def reduce_data(
             xout = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 _reduce_data,
                 data,
-                input_core_dims=[[*dim, *mom_dims]],  # type: ignore[misc]
-                output_core_dims=[mom_dims],
+                input_core_dims=[[*dim, *mom_params.dims]],  # type: ignore[misc, union-attr]
+                output_core_dims=[mom_params.dims],
                 kwargs={
-                    "mom_ndim": mom_ndim,
-                    "mom_axes": mom_axes,
-                    "axis": tuple(range(-len(dim) - mom_ndim, -mom_ndim)),
+                    "mom_params": mom_params.to_array(),
+                    "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
                     "out": None if is_dataset(data) else out,
                     "dtype": dtype,
                     "parallel": parallel,
@@ -492,13 +487,10 @@ def reduce_data(
         return xout
 
     # Numpy
-    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
-        mom_ndim, mom_axes, mom_ndim_default=1
-    )
+    mom_params = MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1)
     return _reduce_data(
         asarray_maybe_recast(data, dtype=dtype, recast=False),
-        mom_ndim=mom_ndim,
-        mom_axes=mom_axes,
+        mom_params=mom_params,
         axis=validate_axis_mult_wrap(axis),
         out=out,
         dtype=dtype,
@@ -513,8 +505,7 @@ def reduce_data(
 def _reduce_data(
     data: NDArrayAny,
     *,
-    mom_ndim: MomNDim,
-    mom_axes: MomAxesStrict,
+    mom_params: MomParamsArray,
     axis: AxisReduceMultWrap,
     out: NDArrayAny | None,
     dtype: DTypeLike,
@@ -527,19 +518,14 @@ def _reduce_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    # special to support multiple reduction dimensions...
-    _mom_axes: tuple[int, ...]
     axis_tuple: tuple[int, ...]
 
-    _mom_axes = normalize_axis_tuple(mom_axes, data.ndim, msg_prefix="mom_axes")
+    mom_params = mom_params.normalize_axes(data.ndim)
     if axis is None:
-        axis_tuple = tuple(a for a in range(data.ndim) if a not in _mom_axes)
+        axis_tuple = tuple(a for a in range(data.ndim) if a not in mom_params.axes)
     else:
-        axis_tuple = normalize_axis_tuple(
-            axis,
-            data.ndim,
-            mom_ndim=mom_ndim,
-            msg_prefix="reduce_data",
+        axis_tuple = mom_params.normalize_axis_tuple(
+            axis, data.ndim, msg_prefix="reduce_data"
         )
 
     if axis_tuple == ():
@@ -549,11 +535,12 @@ def _reduce_data(
     _order = moveaxis_order(data.ndim, axis_tuple, range(-len(axis_tuple), 0))
     data = data.transpose(*_order)
     data = data.reshape(*data.shape[: -len(axis_tuple)], -1)
+
     # transform _mom_axes to new positions
-    _mom_axes = tuple(_order.index(a) for a in _mom_axes)
+    _mom_axes = tuple(_order.index(a) for a in mom_params.axes)
 
     out = factory_reduce_data(
-        mom_ndim=mom_ndim,
+        mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
         data,
@@ -886,17 +873,12 @@ def reduce_data_grouped(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
     by = np.asarray(by, dtype=np.int64)
-
     if is_xarray(data):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims,
-            mom_ndim,
-            data,
-            mom_ndim_default=1,
-            mom_axes=mom_axes,
+        xmom_params = MomParamsXArray.factory(
+            ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=data, default_ndim=1
         )
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
-        core_dims = (dim, *mom_dims)  # type: ignore[misc]
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=xmom_params.dims)
+        core_dims = (dim, *xmom_params.dims)  # type: ignore[misc, has-type]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_grouped,
@@ -906,14 +888,13 @@ def reduce_data_grouped(  # noqa: PLR0913
             output_core_dims=[core_dims],
             exclude_dims={dim},
             kwargs={
-                "mom_ndim": mom_ndim,
-                "mom_axes": tuple(range(-mom_ndim, 0)),
+                "mom_params": xmom_params.to_array(),
                 # Need total axis here...
-                "axis": -(mom_ndim + 1),
+                "axis": -(xmom_params.ndim + 1),
                 "dtype": dtype,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_ndim,
+                    mom_ndim=xmom_params.ndim,
                     axis=axis,
                     move_axis_to_end=move_axis_to_end,
                     data=data,
@@ -941,23 +922,18 @@ def reduce_data_grouped(  # noqa: PLR0913
         return xout
 
     # Numpy
-    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
-        mom_ndim, mom_axes, mom_ndim_default=1
-    )
-    axis, mom_axes, data = prepare_data_for_reduction_mom_axes(
+    axis, mom_params, data = prepare_data_for_reduction_mom_params(
         data=data,
         axis=axis,
-        mom_ndim=mom_ndim,
+        mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
         dtype=dtype,
         recast=False,
         move_axis_to_end=move_axis_to_end,
-        mom_axes=mom_axes,
     )
     return _reduce_data_grouped(
         data,
         by=by,
-        mom_ndim=mom_ndim,
-        mom_axes=mom_axes,
+        mom_params=mom_params,
         axis=axis,
         dtype=dtype,
         out=out,
@@ -972,8 +948,7 @@ def _reduce_data_grouped(
     data: NDArrayAny,
     by: NDArrayInt,
     *,
-    mom_ndim: MomNDim,
-    mom_axes: MomAxesStrict,
+    mom_params: MomParamsArray,
     axis: int,
     dtype: DTypeLike,
     casting: Casting,
@@ -986,8 +961,11 @@ def _reduce_data_grouped(
         dtype = select_dtype(data, out=out, dtype=dtype)
 
     # include inner core dims for by
-    axes = axes_data_reduction(
-        (-1,), mom_ndim=mom_ndim, axis=axis, out_has_axis=True, mom_axes=mom_axes
+    axes = axes_data_reduction_mom_params(
+        (-1,),
+        mom_params=mom_params,
+        axis=axis,
+        out_has_axis=True,
     )
     raise_if_wrong_value(len(by), data.shape[axis], "Wrong length of `by`.")
 
@@ -999,7 +977,7 @@ def _reduce_data_grouped(
         out.fill(0.0)
 
     factory_reduce_data_grouped(
-        mom_ndim=mom_ndim,
+        mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
         data,
@@ -1288,15 +1266,11 @@ def reduce_data_indexed(  # noqa: PLR0913
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray(data):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims,
-            mom_ndim,
-            data,
-            mom_ndim_default=1,
-            mom_axes=mom_axes,
+        xmom_params = MomParamsXArray.factory(
+            ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=data, default_ndim=1
         )
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
-        core_dims = (dim, *mom_dims)  # type: ignore[misc]
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=xmom_params.dims)
+        core_dims = (dim, *xmom_params.dims)  # type: ignore[misc, has-type]
 
         # Yes, doing this here and in nmpy section.
         index, group_start, group_end = _validate_index(
@@ -1313,16 +1287,15 @@ def reduce_data_indexed(  # noqa: PLR0913
             output_core_dims=[core_dims],
             exclude_dims={dim},
             kwargs={
-                "axis": -(mom_ndim + 1),
-                "mom_axes": tuple(range(-mom_ndim, 0)),
-                "mom_ndim": mom_ndim,
+                "axis": -(xmom_params.ndim + 1),
+                "mom_params": xmom_params.to_array(),
                 "index": index,
                 "group_start": group_start,
                 "group_end": group_end,
                 "scale": scale,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_ndim,
+                    mom_ndim=xmom_params.ndim,
                     axis=axis,
                     move_axis_to_end=move_axis_to_end,
                     data=data,
@@ -1370,18 +1343,15 @@ def reduce_data_indexed(  # noqa: PLR0913
         return xout
 
     # Numpy
-    mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
-        mom_ndim, mom_axes=mom_axes, mom_ndim_default=1
-    )
-    axis, mom_axes, data = prepare_data_for_reduction_mom_axes(
+    axis, mom_params, data = prepare_data_for_reduction_mom_params(
         data=data,
         axis=axis,
-        mom_ndim=mom_ndim,
+        mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
         dtype=dtype,
         recast=False,
         move_axis_to_end=move_axis_to_end,
-        mom_axes=mom_axes,
     )
+
     index, group_start, group_end = _validate_index(
         ndat=data.shape[axis],
         index=index,
@@ -1392,8 +1362,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     return _reduce_data_indexed(
         data,
         axis=axis,
-        mom_axes=mom_axes,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
         index=index,
         group_start=group_start,
         group_end=group_end,
@@ -1411,8 +1380,7 @@ def _reduce_data_indexed(
     data: NDArrayAny,
     *,
     axis: int,
-    mom_axes: MomAxesStrict,
-    mom_ndim: MomNDim,
+    mom_params: MomParamsArray,
     index: NDArrayAny,
     group_start: NDArrayAny,
     group_end: NDArrayAny,
@@ -1436,16 +1404,15 @@ def _reduce_data_indexed(
         )
 
     # include inner dims for index, start, end, scale
-    axes = axes_data_reduction(
+    axes = axes_data_reduction_mom_params(
         *(-1,) * 4,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
         axis=axis,
         out_has_axis=True,
-        mom_axes=mom_axes,
     )
 
     return factory_reduce_data_indexed(
-        mom_ndim=mom_ndim,
+        mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
         data,

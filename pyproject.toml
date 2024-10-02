@@ -432,6 +432,7 @@ strict = [
     "src/cmomy/core/docstrings.py",
     # "src/cmomy/core/formatting.py",
     "src/cmomy/core/missing.py",
+    "src/cmomy/core/moment_params.py",
     "src/cmomy/core/prepare.py",
     "src/cmomy/core/prob.py",
     "src/cmomy/core/typing.py",

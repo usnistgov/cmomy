@@ -21,6 +21,8 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
+
     from .typing import (
         ArrayOrder,
         ArrayOrderCF,
@@ -180,6 +182,32 @@ def axes_data_reduction(
         *((x,) if isinstance(x, int) else x for x in inner),
         out_axes,
     ]
+
+
+def axes_data_reduction_mom_params(
+    *inner: int | tuple[int, ...],
+    axis: int,
+    mom_params: MomParamsArray | MomParamsXArray,
+    out_has_axis: bool = False,
+) -> AxesGUFunc:
+    """
+    axes for reducing data along axis
+
+    if ``out_has_axis == True``, then treat like resample,
+    so output will still have ``axis`` with new size in output.
+
+    It is assumed that `axis` is validated against a moments array,
+    (i.e., negative values should be ``< -mom_ndim``)
+
+    Can also pass in "inner" dimensions (elements 1:-1 of output)
+    """
+    return axes_data_reduction(
+        *inner,
+        axis=axis,
+        mom_ndim=mom_params.ndim,
+        mom_axes=mom_params.axes,
+        out_has_axis=out_has_axis,
+    )
 
 
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}

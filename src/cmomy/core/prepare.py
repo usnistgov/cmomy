@@ -36,6 +36,7 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core.moment_params import MomParamsArray
     from cmomy.core.typing import AxisReduceWrap
 
     from .typing import (
@@ -108,6 +109,34 @@ def prepare_data_for_reduction_mom_axes(
         axis_out = axis
 
     return axis_out, mom_axes, data
+
+
+def prepare_data_for_reduction_mom_params(
+    data: ArrayLike,
+    axis: AxisReduceWrap | MissingType,
+    mom_params: MomParamsArray,
+    dtype: DTypeLike,
+    recast: bool = True,
+    move_axis_to_end: bool = False,
+) -> tuple[int, MomParamsArray, NDArrayAny]:
+    """Convert central moments array to correct form for reduction."""
+    data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
+    axis = normalize_axis_index(
+        validate_axis_wrap(axis),
+        data.ndim,
+        mom_ndim=mom_params.ndim,
+    )
+
+    if move_axis_to_end:
+        axis_out = data.ndim - (mom_params.ndim + 1)
+        mom_params_orig, mom_params = mom_params, mom_params.move_axes_to_end()
+        data = np.moveaxis(
+            data, (axis, *mom_params_orig.axes), (axis_out, *mom_params.axes)
+        )
+    else:
+        axis_out = axis
+
+    return axis_out, mom_params, data
 
 
 # * Vals

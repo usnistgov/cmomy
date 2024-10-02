@@ -55,6 +55,7 @@ CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any]")
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
 CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
 
+
 # * TypeVars ------------------------------------------------------------------
 #: General data set/array
 GenArrayT = TypeVar("GenArrayT", NDArray[Any], xr.DataArray, xr.Dataset)
@@ -174,6 +175,7 @@ ArrayLikeArg = Union[
 # NumbaType = Union[nb.typing.Integer, nb.typing.Array]  # noqa: ERA001
 # The above isn't working for pyright.  Just using any for now...
 NumbaType = Any
+
 
 # * Moments -------------------------------------------------------------------
 # NOTE: using the strict form for Moments

@@ -7,9 +7,12 @@ from typing import TYPE_CHECKING, Generic, overload
 import numpy as np
 import xarray as xr
 
-from cmomy.core.array_utils import normalize_axis_tuple
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import (
+    MomParamsArrayOptional,
+    MomParamsXArrayOptional,
+)
 from cmomy.core.typing import (
     SamplerArrayT,
 )
@@ -18,8 +21,6 @@ from cmomy.core.validate import (
     is_dataset,
     is_xarray,
     validate_axis_wrap,
-    validate_optional_mom_dims_and_mom_ndim,
-    validate_optional_mom_ndim_and_mom_axes,
 )
 from cmomy.core.xr_utils import select_axis_dim
 from cmomy.factory import (
@@ -550,17 +551,14 @@ def _randsamp_indices_dataarray_or_dataset(
     replace: bool = True,
 ) -> xr.DataArray | DataT:
     """Create a resampling DataArray or Dataset."""
-    mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
-        mom_dims,
-        mom_ndim,
-        data,
-        mom_axes=mom_axes,
+    mom_params = MomParamsXArrayOptional.factory(
+        ndim=mom_ndim, dims=mom_dims, data=data, axes=mom_axes
     )
     dim = select_axis_dim(
         data,
         axis=axis,
         dim=dim,
-        mom_dims=mom_dims,
+        mom_dims=mom_params.dims,
     )[1]
     # make sure to validate rng here in case call multiple have dataset
     rng = validate_rng(rng)
@@ -575,7 +573,7 @@ def _randsamp_indices_dataarray_or_dataset(
         return _get_unique_indices()
 
     # generate non-paired dataset
-    dims = {dim, *(() if mom_dims is None else mom_dims)}  # type: ignore[misc]
+    dims = {dim, *(() if mom_params.dims is None else mom_params.dims)}  # type: ignore[misc, has-type]
     out: dict[Hashable, xr.DataArray] = {}
     for name, da in data.items():
         if dims.issubset(da.dims):
@@ -635,25 +633,25 @@ def select_ndat(
     ...
     ValueError: Cannot select moment dimension. dim='mom', axis=2.
     """
-    from cmomy.core.array_utils import normalize_axis_index
-    # TODO(wpk): Add some flag to catch passed mom_dims or mom_axes and use absolute normalize axis (not relative to mom_ndim)
-
     if is_xarray(data):
-        mom_dims, mom_ndim = validate_optional_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_axes=mom_axes
+        xmom_params = MomParamsXArrayOptional.factory(
+            ndim=mom_ndim,
+            axes=mom_axes,
+            dims=mom_dims,
+            data=data,
         )
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=xmom_params.dims)
         return data.sizes[dim]
 
     axis = validate_axis_wrap(axis)
     data = np.asarray(data)
-    mom_ndim, mom_axes = validate_optional_mom_ndim_and_mom_axes(mom_ndim, mom_axes)
-    axis = normalize_axis_index(validate_axis_wrap(axis), data.ndim, mom_ndim=mom_ndim)
-    if mom_axes:
-        _axes = normalize_axis_tuple(mom_axes, data.ndim)
-        if axis in _axes:
-            msg = f"{axis=} cannot be in mom_axes={_axes}."
-            raise ValueError(msg)
+    mom_params = MomParamsArrayOptional.factory(
+        ndim=mom_ndim, axes=mom_axes
+    ).normalize_axes(data.ndim)
+    axis = mom_params.normalize_axis_index(validate_axis_wrap(axis), data.ndim)
+    if mom_params.axes is not None and axis in mom_params.axes:
+        msg = f"{axis=} cannot be in mom_axes={mom_params.axes}."
+        raise ValueError(msg)
 
     return data.shape[axis]
 
