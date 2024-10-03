@@ -392,7 +392,7 @@ def cumulative(
             axis=axis,
             dim=dim,
         )
-        core_dims = [[dim, *xmom_params.dims]]  # type: ignore[misc, has-type]
+        core_dims = [[dim, *xmom_params.dims]]  # type: ignore[has-type]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _cumulative,

@@ -13,6 +13,7 @@ import numpy as np
 
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import MomParamsBase
 from cmomy.core.typing import GenArrayT
 from cmomy.core.utils import mom_shape_to_mom
 from cmomy.core.validate import (
@@ -21,7 +22,6 @@ from cmomy.core.validate import (
     raise_if_wrong_value,
     validate_floating_dtype,
     validate_mom_dims,
-    validate_mom_ndim,
 )
 from cmomy.factory import factory_pusher, parallel_heuristic
 from cmomy.utils import assign_moment
@@ -35,6 +35,7 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike
 
+    from cmomy.core.moment_params import MomParamsBase
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayOrder,
@@ -94,23 +95,19 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     cmomy.wrap_raw
     """
 
-    __slots__ = ("_mom_ndim", "_obj")
+    __slots__ = ("_mom_params", "_obj")
 
     _obj: GenArrayT
-    _mom_ndim: MomNDim
+    _mom_params: MomParamsBase
 
     def __init__(
         self,
         obj: GenArrayT,
         *,
-        mom_ndim: MomNDim | None = None,
+        mom_params: MomParamsBase,
         fastpath: bool = False,
     ) -> None:
-        self._mom_ndim = (
-            cast("MomNDim", mom_ndim)
-            if fastpath
-            else validate_mom_ndim(mom_ndim, mom_ndim_default=1)
-        )
+        self._mom_params = mom_params
         self._obj = obj
 
         if fastpath:
@@ -137,7 +134,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @property
     def mom_ndim(self) -> MomNDim:
         """Number of moment dimensions."""
-        return self._mom_ndim
+        return self._mom_params.ndim
 
     @property
     @abstractmethod
@@ -168,7 +165,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """Shape of values dimensions."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self.shape[: -self._mom_ndim]
+        return self.shape[: -self.mom_ndim]
 
     @property
     def ndim(self) -> int:
@@ -182,7 +179,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """Number of values dimensions (``ndim - mom_ndim``)."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self.ndim - self._mom_ndim
+        return self.ndim - self.mom_ndim
 
     def __repr__(self) -> str:
         """Repr for class."""
@@ -208,9 +205,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return np.asarray(self)
 
     # ** Create/copy/new ------------------------------------------------------
-    @abstractmethod
     def _new_like(self, obj: GenArrayT) -> Self:
         """Create new object with same properties (mom_ndim, etc) as self with no checks and fastpath"""
+        return type(self)(
+            obj=obj,
+            mom_params=self._mom_params,
+            fastpath=True,
+        )
 
     @abstractmethod
     @docfiller.decorate
@@ -331,7 +332,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
     # ** Utils ----------------------------------------------------------------
     def _raise_if_not_mom_ndim_1(self) -> None:
-        if self._mom_ndim != 1:
+        if self.mom_ndim != 1:
             msg = "Only implemented for `mom_ndim==1`"
             raise ValueError(msg)
 
@@ -360,7 +361,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     # ** Pushing --------------------------------------------------------------
     def _pusher(self, parallel: bool | None = None, size: int | None = None) -> Pusher:
         return factory_pusher(
-            mom_ndim=self._mom_ndim, parallel=parallel_heuristic(parallel, size=size)
+            mom_ndim=self.mom_ndim, parallel=parallel_heuristic(parallel, size=size)
         )
 
     @abstractmethod
@@ -635,7 +636,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             dest=dest,
             dim=dim,
             dest_dim=dest_dim,
-            mom_ndim=self._mom_ndim,
+            mom_ndim=self.mom_ndim,
         )
 
         return self.new_like(
@@ -684,7 +685,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return select_moment(
             self._obj,
             name=name,
-            mom_ndim=self._mom_ndim,
+            mom_ndim=self.mom_ndim,
             dim_combined=dim_combined,
             coords_combined=coords_combined,
             squeeze=squeeze,
@@ -737,7 +738,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         obj = assign_moment(
             data=self._obj,
             moment=moment,
-            mom_ndim=self._mom_ndim,
+            mom_ndim=self.mom_ndim,
             mom_axes=None,
             squeeze=squeeze,
             copy=copy,
@@ -797,7 +798,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             self._obj,
             axis=axis,
             dim=dim,
-            mom_ndim=self._mom_ndim,
+            mom_ndim=self.mom_ndim,
             mom_axes=mom_axes,
             inverse=False,
             move_axis_to_end=move_axis_to_end,
@@ -850,10 +851,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         kws: dict[str, Any]
         if is_xarray(self._obj):
             mom_dims_out = validate_mom_dims(mom_dims_out, mom_ndim=2)
-            kws = {"mom_dims": mom_dims_out}
+            kws = {"mom_ndim": 2, "mom_dims": mom_dims_out}
         else:
             mom_dims_out = None
-            kws = {}
+            kws = {"mom_ndim": 2}
 
         return type(self)(
             convert.moments_to_comoments(
@@ -866,7 +867,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
-            mom_ndim=2,
             **kws,
         )
 
@@ -957,7 +957,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return self._new_like(
             obj=resample_data(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
                 self._obj,  # pyright: ignore[reportArgumentType]
-                mom_ndim=self._mom_ndim,
+                mom_ndim=self.mom_ndim,
                 sampler=sampler,
                 axis=axis,
                 dim=dim,
@@ -1029,7 +1029,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         obj: GenArrayT = jackknife_data(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
             self._obj,  # pyright: ignore[reportArgumentType]
-            mom_ndim=self._mom_ndim,
+            mom_ndim=self.mom_ndim,
             axis=axis,
             dim=dim,
             data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
@@ -1061,7 +1061,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 self._obj,
                 axis=axis,
                 dim=dim,
-                mom_ndim=self._mom_ndim,
+                mom_ndim=self.mom_ndim,
                 mom_dims=getattr(self, "mom_dims", None),
             ),
             block=block,
@@ -1155,7 +1155,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return assign_moment(
             self._obj,
             {"weight": 1, "ave": 0},
-            mom_ndim=self._mom_ndim,
+            mom_ndim=self.mom_ndim,
             copy=True,
         )
 
@@ -1187,9 +1187,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         """
         from cmomy.convert import moments_type
 
-        out = moments_type(self._obj, mom_ndim=self._mom_ndim, to="raw")
+        out = moments_type(self._obj, mom_ndim=self.mom_ndim, to="raw")
         if weight is not None:
-            out = assign_moment(out, weight=weight, mom_ndim=self._mom_ndim, copy=False)
+            out = assign_moment(out, weight=weight, mom_ndim=self.mom_ndim, copy=False)
         return out
 
     def rmom(self) -> GenArrayT:

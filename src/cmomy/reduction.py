@@ -219,7 +219,7 @@ def reduce_vals(
             _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
-            output_core_dims=[[dim, *xmom_params.dims]],  # type: ignore[misc, has-type]  # no clue...
+            output_core_dims=[[dim, *xmom_params.dims]],  # type: ignore[has-type]  # no clue...
             exclude_dims={dim},
             kwargs={
                 "mom": mom,

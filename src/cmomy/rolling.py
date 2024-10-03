@@ -416,7 +416,7 @@ def rolling_data(  # noqa: PLR0913
             ndim=mom_ndim, axes=mom_axes, dims=mom_dims, data=data, default_ndim=1
         )
         axis, dim = xmom_params.select_axis_dim(data, axis=axis, dim=dim)
-        core_dims = [[dim, *xmom_params.dims]]  # type: ignore[misc, has-type]
+        core_dims = [[dim, *xmom_params.dims]]  # type: ignore[has-type]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_data,
@@ -675,7 +675,7 @@ def rolling_vals(  # noqa: PLR0913
             _rolling_vals,
             *xargs,
             input_core_dims=input_core_dims,
-            output_core_dims=[[dim, *xmom_params.dims]],  # type: ignore[misc, has-type]
+            output_core_dims=[[dim, *xmom_params.dims]],  # type: ignore[has-type]
             kwargs={
                 "mom": mom,
                 "mom_params": xmom_params.to_array(),
@@ -932,7 +932,7 @@ def rolling_exp_data(  # noqa: PLR0913
             ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=data, default_ndim=1
         )
         axis, dim = xmom_params.select_axis_dim(data, axis=axis, dim=dim)
-        core_dims = [dim, *xmom_params.dims]  # type: ignore[misc,has-type]
+        core_dims = [dim, *xmom_params.dims]  # type: ignore[has-type]
 
         if not is_xarray(alpha):
             # prepare array alpha
@@ -1240,7 +1240,7 @@ def rolling_exp_vals(  # noqa: PLR0913
             _rolling_exp_vals,
             *xargs,
             input_core_dims=input_core_dims,
-            output_core_dims=[[dim, *xmom_params.dims]],  # type: ignore[misc, has-type]
+            output_core_dims=[[dim, *xmom_params.dims]],  # type: ignore[has-type]
             kwargs={
                 "mom": mom,
                 "mom_params": xmom_params.to_array(),

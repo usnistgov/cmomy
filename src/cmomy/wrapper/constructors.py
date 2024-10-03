@@ -14,6 +14,7 @@ import xarray as xr
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
 from cmomy.core.validate import (
     is_xarray,
     validate_mom_and_mom_ndim,
@@ -164,16 +165,15 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
 
         return CentralMomentsData(
             obj=obj,  # type: ignore[arg-type]
-            mom_ndim=mom_ndim,
-            mom_axes=mom_axes,
-            mom_dims=mom_dims,
+            mom_params=MomParamsXArray.factory(
+                ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=obj, default_ndim=1
+            ),
             fastpath=fastpath,
         )
 
     return CentralMomentsArray(  # type: ignore[misc]
         obj=obj,  # type: ignore[arg-type]
-        mom_ndim=mom_ndim,
-        mom_axes=mom_axes,
+        mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
         fastpath=fastpath,
         dtype=dtype,  # type: ignore[arg-type]
         copy=copy,
@@ -578,7 +578,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
 
     from cmomy.resample import resample_vals
 
-    obj = resample_vals(  # type: ignore[type-var, misc]
+    obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]  # unused in python3.12
         x,  # pyright: ignore[reportArgumentType]
         *y,
         sampler=sampler,

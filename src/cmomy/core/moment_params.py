@@ -75,7 +75,14 @@ class MomParams:
 
 
 @dataclass
-class MomParamsArray(_Mixin):
+class MomParamsBase:
+    """Base class for moment parameters."""
+
+    ndim: MomNDim
+
+
+@dataclass
+class MomParamsArray(MomParamsBase, _Mixin):
     """Array Mom Params."""
 
     ndim: MomNDim
@@ -105,28 +112,30 @@ class MomParamsArray(_Mixin):
     @classmethod
     def factory(
         cls,
-        mom_kws: MomParamsDict | None = None,
+        mom_params: Self | MomParamsDict | None = None,
         ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
-        mom_kws = {} if mom_kws is None else MomParamsDict(mom_kws)  # type: ignore[misc]
+        if isinstance(mom_params, cls):
+            return mom_params
+        mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
         if ndim is not None:
-            mom_kws["ndim"] = ndim
-        mom_kws.setdefault("axes", axes)
-        return cls.from_params(**mom_kws, default_ndim=default_ndim)
+            mom_params["ndim"] = ndim
+        mom_params.setdefault("axes", axes)
+        return cls.from_params(**mom_params, default_ndim=default_ndim)
 
     @classmethod
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_kws: MomParamsDict | None = None,
+        mom_params: Self | MomParamsDict | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> tuple[MomentsStrict, Self]:
         mom = validate_mom(mom)
         return mom, cls.factory(
-            ndim=len(mom), mom_kws=mom_kws, axes=axes, default_ndim=default_ndim
+            ndim=len(mom), mom_params=mom_params, axes=axes, default_ndim=default_ndim
         )
 
     def move_axes_to_end(self) -> Self:
@@ -193,10 +202,9 @@ class MomParamsArrayOptional(MomParamsArray):
 
 
 @dataclass
-class MomParamsXArray(_Mixin):
+class MomParamsXArray(MomParamsBase, _Mixin):
     """XArray mom parameters."""
 
-    ndim: MomNDim
     dims: MomDimsStrict
 
     @classmethod
@@ -220,25 +228,28 @@ class MomParamsXArray(_Mixin):
     @classmethod
     def factory(
         cls,
-        mom_kws: MomParamsDict | None = None,
+        mom_params: Self | MomParamsDict | None = None,
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
-        mom_kws = {} if mom_kws is None else MomParamsDict(mom_kws)  # type: ignore[misc]
+        if isinstance(mom_params, cls):
+            return mom_params
+
+        mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
         if ndim is not None:
-            mom_kws["ndim"] = ndim
-        mom_kws.setdefault("dims", dims)
-        mom_kws.setdefault("axes", axes)
-        return cls.from_params(**mom_kws, data=data, default_ndim=default_ndim)
+            mom_params["ndim"] = ndim
+        mom_params.setdefault("dims", dims)
+        mom_params.setdefault("axes", axes)
+        return cls.from_params(**mom_params, data=data, default_ndim=default_ndim)
 
     @classmethod
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_kws: MomParamsDict | None = None,
+        mom_params: Self | MomParamsDict | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
@@ -247,7 +258,7 @@ class MomParamsXArray(_Mixin):
         mom = validate_mom(mom)
         return mom, cls.factory(
             ndim=len(mom),
-            mom_kws=mom_kws,
+            mom_params=mom_params,
             dims=dims,
             axes=axes,
             data=data,

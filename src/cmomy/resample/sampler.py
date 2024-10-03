@@ -112,18 +112,19 @@ class IndexSampler(Generic[SamplerArrayT]):
     @property
     def freq(self) -> SamplerArrayT:
         if self._freq is None:
-            self._freq = indices_to_freq(
+            # TODO(wpk): need these ignores for mypy with python3.12.  Figure out if can remove...
+            self._freq = indices_to_freq(  # type: ignore[assignment, unused-ignore]
                 self.indices, ndat=self.ndat, parallel=self._parallel
             )
-        return self._freq
+        return self._freq  # type: ignore[return-value, unused-ignore]
 
     @property
     def indices(self) -> SamplerArrayT:
         if self._indices is None:
-            self._indices = freq_to_indices(
+            self._indices = freq_to_indices(  # type: ignore[assignment, unused-ignore]
                 self.freq, shuffle=self._shuffle, rng=self._rng, parallel=self._parallel
             )
-        return self._indices
+        return self._indices  # type: ignore[return-value, unused-ignore]
 
     @property
     def _first_indices(self) -> NDArrayAny | xr.DataArray:

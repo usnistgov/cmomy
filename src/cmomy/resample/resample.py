@@ -218,7 +218,7 @@ def resample_data(  # noqa: PLR0913
             data,
             sampler.freq,
             input_core_dims=[[dim, *xmom_params.dims], [rep_dim, dim]],  # type: ignore[has-type]
-            output_core_dims=[[rep_dim, *xmom_params.dims]],  # type: ignore[misc, has-type]
+            output_core_dims=[[rep_dim, *xmom_params.dims]],  # type: ignore[has-type]
             kwargs={
                 "mom_params": xmom_params.to_array(),
                 "axis": -(xmom_params.ndim + 1),
@@ -466,7 +466,7 @@ def resample_vals(  # noqa: PLR0913
             *xargs,
             sampler.freq,
             input_core_dims=[*input_core_dims, [rep_dim, dim]],  # type: ignore[has-type]
-            output_core_dims=[[rep_dim, *xmom_params.dims]],  # type: ignore[misc, has-type]
+            output_core_dims=[[rep_dim, *xmom_params.dims]],  # type: ignore[has-type]
             kwargs={
                 "mom": mom,
                 "mom_params": xmom_params.to_array(),
@@ -497,7 +497,7 @@ def resample_vals(  # noqa: PLR0913
         )
 
         if not move_axis_to_end and is_dataarray(x):
-            dims_order = [  # type: ignore[misc]
+            dims_order = [
                 *(d if d != dim else rep_dim for d in x.dims),  # type: ignore[union-attr]
                 *xmom_params.dims,  # type: ignore[has-type]
             ]
@@ -763,7 +763,7 @@ def jackknife_data(  # noqa: PLR0913
             ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=data, default_ndim=1
         )
         axis, dim = xmom_params.select_axis_dim(data, axis=axis, dim=dim)
-        core_dims = [dim, *xmom_params.dims]  # type: ignore[misc, has-type]
+        core_dims = [dim, *xmom_params.dims]  # type: ignore[has-type]
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_data,
             data,
@@ -1029,7 +1029,7 @@ def jackknife_vals(  # noqa: PLR0913
             *xargs,
             data_reduced,
             input_core_dims=input_core_dims,
-            output_core_dims=[(dim, *xmom_params.dims)],  # type: ignore[misc, has-type]
+            output_core_dims=[(dim, *xmom_params.dims)],  # type: ignore[has-type]
             kwargs={
                 "mom": mom,
                 "mom_params": xmom_params.to_array(),
