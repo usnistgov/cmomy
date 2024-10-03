@@ -251,12 +251,12 @@ def test_vals(rng, val_shape, mom, use_weight):
             c.push_val(*args)
     np.testing.assert_allclose(expected, c)
 
-    # from_vals
-    c = CentralMomentsArray.from_vals(*xy, weight=weight, axis=0, mom=mom)
+    # from vals
+    c = cmomy.wrap_reduce_vals(*xy, weight=weight, axis=0, mom=mom)
     np.testing.assert_allclose(c, expected)
 
     # resample...
-    c = CentralMomentsArray.from_resample_vals(
+    c = cmomy.wrap_resample_vals(
         *xy,
         weight=weight,
         axis=0,
@@ -515,7 +515,7 @@ def test_from_raw(wrapped) -> None:
     data, mom_ndim = wrapped.obj, wrapped.mom_ndim
 
     raw = wrapped.to_raw()
-    new = CentralMomentsArray.from_raw(raw, mom_ndim=wrapped.mom_ndim)
+    new = cmomy.wrap_raw(raw, mom_ndim=wrapped.mom_ndim)
 
     np.testing.assert_allclose(
         raw, cmomy.convert.moments_type(data, mom_ndim=mom_ndim, to="raw")

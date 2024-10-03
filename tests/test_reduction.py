@@ -82,8 +82,7 @@ def test_reduce_vals_keepdims(
 
     np.testing.assert_allclose(np.squeeze(out, axis), check)
 
-    cls = cmomy.CentralMomentsData if as_dataarray else cmomy.CentralMomentsArray
-    c = cls.from_vals(x, **kws, keepdims=True)  # type: ignore[attr-defined]
+    c = cmomy.wrap_reduce_vals(x, **kws, keepdims=True)
     assert c.shape == new_shape
 
     np.testing.assert_allclose(c, out)

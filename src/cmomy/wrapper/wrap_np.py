@@ -277,21 +277,21 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMomentsArray.from_vals(rng.random(10), mom=3, axis=0)
+        >>> import cmomy
+        >>> rng = cmomy.default_rng(0)
+        >>> da = CentralMomentsArray(rng.random(4))
         >>> da
         <CentralMomentsArray(mom_ndim=1)>
-        array([10.    ,  0.5505,  0.1014, -0.0178])
+        array([0.637 , 0.2698, 0.041 , 0.0165])
 
-        >>> da2 = da.new_like().zero()
+        >>> da2 = da.new_like()
         >>> da2
         <CentralMomentsArray(mom_ndim=1)>
         array([0., 0., 0., 0.])
 
-        >>> da
+        >>> da.new_like([1, 2, 3, 4], dtype=np.float32)
         <CentralMomentsArray(mom_ndim=1)>
-        array([10.    ,  0.5505,  0.1014, -0.0178])
+        array([1., 2., 3., 4.], dtype=float32)
         """
         if obj is None:
             obj = np.zeros_like(self.obj, dtype=dtype)
@@ -393,7 +393,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is equivalent to
 
-        >>> CentralMomentsArray.from_vals(xs.reshape(-1), mom=2, axis=0)
+        >>> cmomy.wrap_reduce_vals(xs.reshape(-1), mom=2, axis=0)
         <CentralMomentsArray(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
@@ -439,7 +439,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is equivalent to
 
-        >>> CentralMomentsArray.from_vals(xs.reshape(-1), mom=2, axis=0)
+        >>> cmomy.wrap_reduce_vals(xs.reshape(-1), mom=2, axis=0)
         <CentralMomentsArray(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
@@ -497,7 +497,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is the same as
 
-        >>> CentralMomentsArray.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        >>> cmomy.wrap_reduce_vals(x, y, weight=w, mom=(2, 2), axis=0)
         <CentralMomentsArray(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
@@ -552,7 +552,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is the same as
 
-        >>> CentralMomentsArray.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        >>> cmomy.wrap_reduce_vals(x, y, weight=w, mom=(2, 2), axis=0)
         <CentralMomentsArray(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
@@ -1008,9 +1008,9 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMomentsArray.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
+        >>> import cmomy
+        >>> rng = cmomy.default_rng(0)
+        >>> da = cmomy.wrap_reduce_vals(rng.random((10, 2, 3)), mom=2, axis=0)
         >>> da
         <CentralMomentsArray(mom_ndim=1)>
         array([[[10.    ,  0.5205,  0.0452],

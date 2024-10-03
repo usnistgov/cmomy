@@ -1126,7 +1126,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         >>> import cmomy
         >>> rng = cmomy.default_rng(0)
         >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
-        >>> da = CentralMomentsData.from_vals(vals, mom=2, dim="rec")
+        >>> da = cmomy.wrap_reduce_vals(vals, mom=2, dim="rec")
         >>> da
         <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
@@ -1344,9 +1344,9 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         --------
         >>> import cmomy
         >>> rng = cmomy.default_rng(0)
-        >>> da = cmomy.CentralMomentsArray.from_vals(
-        ...     rng.random((10, 3)), axis=0, mom=2
-        ... ).to_x(dims="x", coords=dict(x=list("abc")))
+        >>> da = cmomy.wrap_reduce_vals(rng.random((10, 3)), axis=0, mom=2).to_x(
+        ...     dims="x", coords=dict(x=list("abc"))
+        ... )
         >>> da
         <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (x: 3, mom_0: 3)> Size: 72B

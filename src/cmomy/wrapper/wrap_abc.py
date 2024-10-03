@@ -7,24 +7,22 @@ Idea is to Wrap ndarray, xr.DataArray, and xr.Dataset objects...
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, cast, overload
+from typing import TYPE_CHECKING, Any, Generic, cast
 
 import numpy as np
 
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
-from cmomy.core.typing import AxisReduceWrap, GenArrayT
+from cmomy.core.typing import GenArrayT
 from cmomy.core.utils import mom_shape_to_mom
 from cmomy.core.validate import (
     is_dataset,
     is_xarray,
     raise_if_wrong_value,
     validate_floating_dtype,
-    validate_mom_and_mom_ndim,
     validate_mom_dims,
     validate_mom_ndim,
 )
-from cmomy.core.xr_utils import get_mom_dims_kws
 from cmomy.factory import factory_pusher, parallel_heuristic
 from cmomy.utils import assign_moment
 
@@ -35,20 +33,16 @@ if TYPE_CHECKING:
     )
 
     import xarray as xr
-    from numpy.typing import ArrayLike, DTypeLike, NDArray
+    from numpy.typing import ArrayLike, DTypeLike
 
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
-        ArrayLikeArg,
         ArrayOrder,
         ArrayOrderCF,
         AxisReduce,
         BlockByModes,
         Casting,
-        DataT_,
         DimsReduce,
-        DTypeLikeArg,
-        FloatT_,
         KeepAttrs,
         MissingType,
         MomAxes,
@@ -58,15 +52,11 @@ if TYPE_CHECKING:
         MomNDim,
         NDArrayAny,
         NDArrayInt,
-        ReduceValsKwargs,
-        ResampleValsKwargs,
         Sampler,
         SelectMoment,
-        WrapRawKwargs,
     )
-    from cmomy.core.typing_compat import Self, Unpack
+    from cmomy.core.typing_compat import Self
     from cmomy.factory import Pusher
-    from cmomy.wrapper import CentralMomentsArray, CentralMomentsData
 
 
 @docfiller.decorate  # noqa: PLR0904
@@ -94,6 +84,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j)
             \rangle & i + j > 0
         \end{{cases}}
+
+
+    See Also
+    --------
+    commy.wrap
+    cmomy.wrap_reduce_vals
+    cmomy.wrap_resample_vals
+    cmomy.wrap_raw
     """
 
     __slots__ = ("_mom_ndim", "_obj")
@@ -1245,493 +1243,3 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         --------
         numpy.zeros
         """
-
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: DataT_,
-        *y: ArrayLike | xr.DataArray | DataT_,
-        weight: ArrayLike | xr.DataArray | DataT_ | None = ...,
-        out: NDArrayAny | None = ...,
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[ReduceValsKwargs],
-    ) -> CentralMomentsData[DataT_]: ...
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: ArrayLikeArg[FloatT_],
-        *y: ArrayLike,
-        weight: ArrayLike | None = ...,
-        out: None = ...,
-        dtype: None = ...,
-        **kwargs: Unpack[ReduceValsKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: ArrayLike,
-        *y: ArrayLike,
-        weight: ArrayLike | None = ...,
-        out: NDArray[FloatT_],
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[ReduceValsKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: ArrayLike,
-        *y: ArrayLike,
-        weight: ArrayLike | None = ...,
-        out: None = ...,
-        dtype: DTypeLikeArg[FloatT_],
-        **kwargs: Unpack[ReduceValsKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_vals(
-        cls,
-        x: Any,
-        *y: Any,
-        weight: Any = ...,
-        out: NDArrayAny | None = ...,
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[ReduceValsKwargs],
-    ) -> Self: ...
-
-    @classmethod
-    @docfiller.decorate
-    def from_vals(
-        cls,
-        x: ArrayLike | DataT_,
-        *y: ArrayLike | xr.DataArray | DataT_,
-        mom: Moments,
-        weight: ArrayLike | xr.DataArray | DataT_ | None = None,
-        axis: AxisReduceWrap | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        mom_dims: MomDims | None = None,
-        out: NDArrayAny | None = None,
-        dtype: DTypeLike = None,
-        casting: Casting = "same_kind",
-        order: ArrayOrderCF = None,
-        keepdims: bool = False,
-        parallel: bool | None = None,
-        keep_attrs: KeepAttrs = None,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> Self | CentralMomentsABC[Any]:
-        """
-        Create from observations/values.
-
-        Parameters
-        ----------
-        x : array-like or {t_array}
-            Values to reduce.
-        *y : array-like or {t_array}
-            Additional values (needed if ``len(mom)==2``).
-        weight : scalar or array-like
-            Optional weight.  If scalar or array, attempt to
-            broadcast to `x0.shape`
-        {mom}
-        {axis}
-        {dim}
-        {mom_dims}
-        {keepdims}
-        {out}
-        {dtype}
-        {casting}
-        {order}
-        {keepdims}
-        {parallel}
-        {keep_attrs}
-        {apply_ufunc_kwargs}
-
-        Returns
-        -------
-        object
-            Instance of calling class.
-
-        See Also
-        --------
-        push_vals
-        ~.reduction.reduce_vals
-
-        Examples
-        --------
-        >>> import cmomy
-        >>> rng = cmomy.default_rng(0)
-        >>> x = rng.random((100, 3))
-        >>> da = cmomy.CentralMomentsArray.from_vals(x, axis=0, mom=2)
-        >>> da
-        <CentralMomentsArray(mom_ndim=1)>
-        array([[1.0000e+02, 5.5313e-01, 8.8593e-02],
-               [1.0000e+02, 5.5355e-01, 7.1942e-02],
-               [1.0000e+02, 5.1413e-01, 1.0407e-01]])
-
-        """
-        from cmomy.reduction import reduce_vals
-
-        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
-        obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
-            x,  # pyright: ignore[reportArgumentType]
-            *y,
-            mom=mom,
-            weight=weight,
-            axis=axis,
-            dim=dim,
-            **kws,
-            keepdims=keepdims,
-            parallel=parallel,
-            out=out,
-            dtype=dtype,
-            casting=casting,
-            order=order,
-            keep_attrs=keep_attrs,
-            apply_ufunc_kwargs=apply_ufunc_kwargs,
-        )
-
-        return cls(
-            obj=obj,  # type: ignore[arg-type]
-            mom_ndim=mom_ndim,
-            **kws,
-            fastpath=True,
-        )
-
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: DataT_,
-        *y: ArrayLike | xr.DataArray | DataT_,
-        weight: ArrayLike | xr.DataArray | DataT_ | None = ...,
-        sampler: Sampler,
-        out: NDArrayAny | None = ...,
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[ResampleValsKwargs],
-    ) -> CentralMomentsData[DataT_]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: ArrayLikeArg[FloatT_],
-        *y: ArrayLike,
-        weight: ArrayLike | None = ...,
-        sampler: Sampler,
-        out: None = ...,
-        dtype: None = ...,
-        **kwargs: Unpack[ResampleValsKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: ArrayLike,
-        *y: ArrayLike,
-        weight: ArrayLike | None = ...,
-        sampler: Sampler,
-        out: NDArray[FloatT_],
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[ResampleValsKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: ArrayLike,
-        *y: ArrayLike,
-        weight: ArrayLike | None = ...,
-        sampler: Sampler,
-        out: None = ...,
-        dtype: DTypeLikeArg[FloatT_],
-        **kwargs: Unpack[ResampleValsKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_resample_vals(
-        cls,
-        x: Any,
-        *y: ArrayLike,
-        weight: ArrayLike | None = ...,
-        sampler: Sampler,
-        out: NDArrayAny | None = ...,
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[ResampleValsKwargs],
-    ) -> Self: ...
-
-    @classmethod
-    @docfiller.decorate
-    def from_resample_vals(  # noqa: PLR0913
-        cls,
-        x: ArrayLike | DataT_,
-        *y: ArrayLike | xr.DataArray | DataT_,
-        mom: Moments,
-        sampler: Sampler,
-        weight: ArrayLike | xr.DataArray | DataT_ | None = None,
-        axis: AxisReduceWrap | MissingType = MISSING,
-        dim: DimsReduce | MissingType = MISSING,
-        move_axis_to_end: bool = True,
-        out: NDArrayAny | None = None,
-        dtype: DTypeLike = None,
-        casting: Casting = "same_kind",
-        order: ArrayOrderCF = None,
-        parallel: bool | None = None,
-        mom_dims: MomDims | None = None,
-        rep_dim: str = "rep",
-        keep_attrs: KeepAttrs = None,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> Self | CentralMomentsABC[Any]:
-        """
-        Create from resample observations/values.
-
-        This effectively resamples `x`.
-
-        Parameters
-        ----------
-        x : array-like or {t_array}
-            Observations.
-        *y : array-like or {t_array}
-            Additional values (needed if ``len(mom) > 1``).
-        {mom}
-        {sampler}
-        {weight}
-        {axis}
-        {dim}
-        {move_axis_to_end}
-        {order}
-        {out}
-        {dtype}
-        {casting}
-        {order_cf}
-        {parallel}
-        {mom_dims}
-        {rep_dim}
-        {keep_attrs}
-        {apply_ufunc_kwargs}
-
-        Returns
-        -------
-        object
-            Instance of calling class
-
-
-        See Also
-        --------
-        ~.resample.resample_vals
-        ~.resample.factory_sampler
-        """
-        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-        kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
-
-        from cmomy.resample import resample_vals
-
-        obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]
-            x,  # pyright: ignore[reportArgumentType]
-            *y,
-            sampler=sampler,
-            mom=mom,
-            weight=weight,
-            axis=axis,
-            dim=dim,
-            move_axis_to_end=move_axis_to_end,
-            parallel=parallel,
-            **kws,
-            rep_dim=rep_dim,
-            keep_attrs=keep_attrs,
-            apply_ufunc_kwargs=apply_ufunc_kwargs,
-            dtype=dtype,
-            out=out,
-            casting=casting,
-            order=order,
-        )
-        return cls(
-            obj=obj,  # type: ignore[arg-type]
-            mom_ndim=mom_ndim,
-            **kws,
-            fastpath=True,
-        )
-
-    @overload
-    @classmethod
-    def from_raw(
-        cls,
-        raw: DataT_,
-        *,
-        out: NDArrayAny | None = ...,
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapRawKwargs],
-    ) -> CentralMomentsData[DataT_]: ...
-    @overload
-    @classmethod
-    def from_raw(
-        cls,
-        raw: ArrayLikeArg[FloatT_],
-        *,
-        out: None = ...,
-        dtype: None = ...,
-        **kwargs: Unpack[WrapRawKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_raw(
-        cls,
-        raw: ArrayLike,
-        *,
-        out: NDArray[FloatT_],
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapRawKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_raw(
-        cls,
-        raw: ArrayLike,
-        *,
-        out: None = ...,
-        dtype: DTypeLikeArg[FloatT_],
-        **kwargs: Unpack[WrapRawKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
-    @overload
-    @classmethod
-    def from_raw(
-        cls,
-        raw: ArrayLike,
-        *,
-        out: NDArrayAny | None = ...,
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapRawKwargs],
-    ) -> CentralMomentsArray[Any]: ...
-
-    @overload
-    @classmethod
-    def from_raw(
-        cls,
-        raw: Any,
-        *,
-        out: NDArrayAny | None = ...,
-        dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapRawKwargs],
-    ) -> Any: ...
-
-    @classmethod
-    @docfiller.decorate
-    def from_raw(
-        cls,
-        raw: ArrayLike | xr.DataArray | xr.Dataset,
-        *,
-        mom_ndim: MomNDim | None = None,
-        mom_axes: MomAxes | None = None,
-        out: NDArrayAny | None = None,
-        dtype: DTypeLike = None,
-        casting: Casting = "same_kind",
-        order: ArrayOrder = None,
-        keep_attrs: KeepAttrs = None,
-        mom_dims: MomDims | None = None,
-        apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-    ) -> Self | CentralMomentsABC[Any]:
-        """
-        Create object from raw moment data.
-
-        raw[..., i, j] = <x**i y**j>.
-        raw[..., 0, 0] = `weight`
-
-
-        Parameters
-        ----------
-        raw : {t_array}
-            Raw moment array.
-        {mom_ndim_data}
-        {out}
-        {dtype}
-        {casting}
-        {order}
-        {keep_attrs}
-        {mom_dims_data}
-        {apply_ufunc_kwargs}
-
-        Returns
-        -------
-        output : {klass}
-
-        See Also
-        --------
-        to_raw
-        rmom
-        .convert.moments_type
-
-        Notes
-        -----
-        Weights are taken from ``raw[...,0, 0]``.
-        Using raw moments can result in numerical issues, especially for higher moments.  Use with care.
-
-        Examples
-        --------
-        >>> import cmomy
-        >>> rng = cmomy.default_rng(0)
-        >>> x = rng.random(10)
-        >>> raw_x = (x[:, None] ** np.arange(5)).mean(axis=0)
-
-        >>> dx_raw = cmomy.CentralMomentsArray.from_raw(raw_x, mom_ndim=1)
-        >>> print(dx_raw.mean())
-        0.5505105129032412
-        >>> dx_raw.cmom()
-        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
-
-        Which is equivalent to creating raw moments from values
-        >>> dx_cen = cmomy.CentralMomentsArray.from_vals(x, axis=0, mom=4)
-        >>> print(dx_cen.mean())
-        0.5505105129032413
-        >>> dx_cen.cmom()
-        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
-
-        But note that calculating using from_raw can lead to
-        numerical issues.  For example
-
-        >>> y = x + 10000
-        >>> raw_y = (y[:, None] ** np.arange(5)).mean(axis=0)
-        >>> dy_raw = cmomy.CentralMomentsArray.from_raw(raw_y, mom_ndim=1)
-        >>> print(dy_raw.mean() - 10000)
-        0.5505105129050207
-
-        Note that the central moments don't match!
-
-        >>> np.isclose(dy_raw.cmom(), dx_raw.cmom())
-        array([ True,  True,  True, False, False])
-
-        >>> dy_cen = cmomy.CentralMomentsArray.from_vals(y, axis=0, mom=4)
-        >>> print(dy_cen.mean() - 10000)
-        0.5505105129032017
-        >>> dy_cen.cmom()  # this matches above
-        array([ 1.    ,  0.    ,  0.1014, -0.0178,  0.02  ])
-        """
-        from cmomy import convert
-
-        kws = get_mom_dims_kws(
-            raw,
-            mom_dims,
-            mom_ndim,
-            raw,
-            mom_ndim_default=1,
-            include_mom_ndim=True,
-            mom_axes=mom_axes,
-        )
-        mom_ndim = kws.pop("mom_ndim")
-        return cls(
-            obj=convert.moments_type(  # type: ignore[call-overload, misc]
-                raw,
-                mom_ndim=mom_ndim,
-                to="central",
-                out=out,
-                dtype=dtype,
-                casting=casting,
-                order=order,
-                keep_attrs=keep_attrs,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-                **kws,
-            ),
-            mom_ndim=mom_ndim,
-            **kws,
-            fastpath=True,
-        )
