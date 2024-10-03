@@ -278,7 +278,7 @@ def validate_axis_mult_wrap(
 def validate_mom_dims(
     mom_dims: Hashable | Sequence[Hashable] | None,
     mom_ndim: MomNDim,
-    out: Any = None,
+    out: object = None,
     mom_axes: MomAxesStrict | None = None,
 ) -> MomDimsStrict:
     """Validate mom_dims to correct form."""
@@ -313,7 +313,7 @@ def validate_mom_dims(
 def validate_mom_dims_and_mom_ndim(
     mom_dims: Hashable | Sequence[Hashable] | None,
     mom_ndim: int | None,
-    out: Any = None,
+    out: object = None,
     mom_ndim_default: int | None = None,
     mom_axes: int | Sequence[int] | None = None,
 ) -> tuple[MomDimsStrict, MomNDim]:
@@ -341,7 +341,7 @@ def validate_mom_dims_and_mom_ndim(
 def validate_optional_mom_dims_and_mom_ndim(
     mom_dims: Hashable | Sequence[Hashable] | None,
     mom_ndim: int | None,
-    out: Any = None,
+    out: object = None,
     mom_ndim_default: int | None = None,
     mom_axes: int | Sequence[int] | None = None,
 ) -> tuple[MomDimsStrict | None, MomNDim | None]:

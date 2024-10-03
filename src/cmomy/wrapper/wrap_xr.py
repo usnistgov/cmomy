@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import MomParamsXArray
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -19,7 +20,6 @@ from cmomy.core.validate import (
     is_xarray,
     raise_if_wrong_value,
     validate_floating_dtype,
-    validate_mom_dims_and_mom_ndim,
 )
 from cmomy.core.xr_utils import (
     astype_dtype_dict,
@@ -97,9 +97,10 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     {mom_dims_data}
     """
 
-    __slots__ = ("_mom_dims",)
+    __slots__ = ("_mom_dims", "_mom_params")
 
     _mom_dims: MomDimsStrict
+    _mom_params: MomParamsXArray
 
     def __init__(
         self,
@@ -116,18 +117,24 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
         if fastpath:
             self._mom_dims = cast("MomDimsStrict", mom_dims)
-        else:
-            mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-                mom_dims,
-                mom_ndim,
-                obj,
-                mom_ndim_default=1,
-                mom_axes=mom_axes,
+            self._mom_params = MomParamsXArray(
+                ndim=cast("MomNDim", mom_ndim),
+                dims=self._mom_dims,
             )
-            self._mom_dims = mom_dims
+
+        else:
+            self._mom_params = MomParamsXArray.factory(
+                ndim=mom_ndim,
+                dims=mom_dims,
+                axes=mom_axes,
+                data=obj,
+                default_ndim=1,
+            )
+
+            self._mom_dims = self._mom_params.dims
 
         # NOTE: Why this ignore?
-        super().__init__(obj=obj, mom_ndim=mom_ndim, fastpath=fastpath)  # type: ignore[arg-type]
+        super().__init__(obj=obj, mom_ndim=self._mom_params.ndim, fastpath=fastpath)  # type: ignore[arg-type]
 
     # ** Properties ------------------------------------------------------------
     @property

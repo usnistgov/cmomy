@@ -22,7 +22,6 @@ from cmomy.core.validate import (
     is_xarray,
     validate_axis_wrap,
 )
-from cmomy.core.xr_utils import select_axis_dim
 from cmomy.factory import (
     factory_freq_to_indices,
     factory_indices_to_freq,
@@ -554,11 +553,10 @@ def _randsamp_indices_dataarray_or_dataset(
     mom_params = MomParamsXArrayOptional.factory(
         ndim=mom_ndim, dims=mom_dims, data=data, axes=mom_axes
     )
-    dim = select_axis_dim(
+    dim = mom_params.select_axis_dim(
         data,
         axis=axis,
         dim=dim,
-        mom_dims=mom_params.dims,
     )[1]
     # make sure to validate rng here in case call multiple have dataset
     rng = validate_rng(rng)
@@ -573,7 +571,7 @@ def _randsamp_indices_dataarray_or_dataset(
         return _get_unique_indices()
 
     # generate non-paired dataset
-    dims = {dim, *(() if mom_params.dims is None else mom_params.dims)}  # type: ignore[misc, has-type]
+    dims = {dim, *(() if mom_params.dims is None else mom_params.dims)}  # type: ignore[has-type]
     out: dict[Hashable, xr.DataArray] = {}
     for name, da in data.items():
         if dims.issubset(da.dims):
@@ -640,7 +638,7 @@ def select_ndat(
             dims=mom_dims,
             data=data,
         )
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=xmom_params.dims)
+        axis, dim = xmom_params.select_axis_dim(data, axis=axis, dim=dim)
         return data.sizes[dim]
 
     axis = validate_axis_wrap(axis)
@@ -648,10 +646,9 @@ def select_ndat(
     mom_params = MomParamsArrayOptional.factory(
         ndim=mom_ndim, axes=mom_axes
     ).normalize_axes(data.ndim)
+
     axis = mom_params.normalize_axis_index(validate_axis_wrap(axis), data.ndim)
-    if mom_params.axes is not None and axis in mom_params.axes:
-        msg = f"{axis=} cannot be in mom_axes={mom_params.axes}."
-        raise ValueError(msg)
+    mom_params.raise_if_in_mom_axes(axis)
 
     return data.shape[axis]
 

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, overload
+from typing import TYPE_CHECKING, Generic, cast, overload
 
 import numpy as np
 import xarray as xr
@@ -13,6 +13,7 @@ from cmomy.core.array_utils import (
 )
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import MomParamsArray
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -24,7 +25,6 @@ from cmomy.core.validate import (
     validate_axis,
     validate_floating_dtype,
     validate_mom_and_mom_ndim,
-    validate_mom_ndim_and_mom_axes,
 )
 
 if TYPE_CHECKING:
@@ -50,6 +50,7 @@ if TYPE_CHECKING:
         Groups,
         MissingType,
         MomAxes,
+        MomAxesStrict,
         MomDims,
         Moments,
         MomentsStrict,
@@ -87,6 +88,10 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     {dtype}
 
     """
+
+    __slots__ = ("_mom_params",)
+
+    _mom_params: MomParamsArray
 
     @overload
     def __init__(
@@ -140,6 +145,12 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             if not is_ndarray(obj):
                 msg = f"Must pass ndarray as data.  Not {type(obj)=}"
                 raise TypeError(msg)
+
+            self._mom_params = MomParamsArray(
+                ndim=cast("MomNDim", mom_ndim),
+                axes=cast("MomAxesStrict", tuple(range(-cast("MomNDim", mom_ndim), 0))),
+            )
+
         else:
             obj = np.array(
                 obj,
@@ -148,16 +159,19 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 order=order,
             )
 
-            mom_ndim, _mom_axes = validate_mom_ndim_and_mom_axes(
-                mom_ndim, mom_axes, mom_ndim_default=1
+            self._mom_params = MomParamsArray.factory(
+                ndim=mom_ndim, axes=mom_axes, default_ndim=1
             )
 
             if mom_axes:
-                obj = np.moveaxis(obj, _mom_axes, range(-mom_ndim, 0))
+                _axes = self._mom_params.axes
+                self._mom_params = self._mom_params.move_axes_to_end()
+                if _axes != self._mom_params.axes:
+                    obj = np.moveaxis(obj, _axes, self._mom_params.axes)
 
         super().__init__(
             obj,
-            mom_ndim=mom_ndim,
+            mom_ndim=self._mom_params.ndim,
             fastpath=fastpath,
         )
 

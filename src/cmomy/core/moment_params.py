@@ -6,7 +6,9 @@ from dataclasses import asdict, dataclass, replace
 from typing import TYPE_CHECKING, TypedDict, cast
 
 from .array_utils import normalize_axis_index, normalize_axis_tuple
+from .missing import MISSING
 from .validate import (
+    validate_mom,
     validate_mom_axes,
     validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
@@ -19,8 +21,14 @@ if TYPE_CHECKING:
     import xarray as xr
 
     from .typing import (
+        AxisReduceMultWrap,
+        AxisReduceWrap,
+        DimsReduce,
+        DimsReduceMult,
+        MissingType,
         MomAxesStrict,
         MomDimsStrict,
+        MomentsStrict,
         MomNDim,
     )
     from .typing_compat import Self, Unpack
@@ -46,6 +54,9 @@ class MomParamsDict(TypedDict, total=False):
 class _Mixin:
     def asdict(self) -> MomParamsDict:
         return cast("MomParamsDict", asdict(self))  # type: ignore[call-overload]
+
+    def new_like(self, **kwargs: Any) -> Self:
+        return replace(self, **kwargs)  # type: ignore[type-var]
 
 
 @dataclass
@@ -94,8 +105,8 @@ class MomParamsArray(_Mixin):
     @classmethod
     def factory(
         cls,
-        ndim: int | None = None,
         mom_kws: MomParamsDict | None = None,
+        ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
@@ -104,6 +115,19 @@ class MomParamsArray(_Mixin):
             mom_kws["ndim"] = ndim
         mom_kws.setdefault("axes", axes)
         return cls.from_params(**mom_kws, default_ndim=default_ndim)
+
+    @classmethod
+    def factory_mom(
+        cls,
+        mom: int | Sequence[int],
+        mom_kws: MomParamsDict | None = None,
+        axes: int | Sequence[int] | None = None,
+        default_ndim: MomNDim | None = None,
+    ) -> tuple[MomentsStrict, Self]:
+        mom = validate_mom(mom)
+        return mom, cls.factory(
+            ndim=len(mom), mom_kws=mom_kws, axes=axes, default_ndim=default_ndim
+        )
 
     def move_axes_to_end(self) -> Self:
         return replace(self, axes=cast("MomAxesStrict", tuple(range(-self.ndim, 0))))
@@ -142,13 +166,18 @@ class MomParamsArray(_Mixin):
             ),
         )
 
+    def raise_if_in_mom_axes(self, *axes: int) -> None:
+        if self.axes is not None and any(a in self.axes for a in axes):  # pyright: ignore[reportUnnecessaryComparison]
+            msg = f"provided axis/axes cannot overlap mom_axes={self.axes}."
+            raise ValueError(msg)
+
 
 @dataclass
 class MomParamsArrayOptional(MomParamsArray):
     """Optional array mom params."""
 
-    ndim: MomNDim | None  # type: ignore[assignment]
-    axes: MomAxesStrict | None  # type: ignore[assignment]
+    ndim: MomNDim | None = None  # type: ignore[assignment]
+    axes: MomAxesStrict | None = None  # type: ignore[assignment]
 
     @classmethod
     def from_params(
@@ -176,7 +205,7 @@ class MomParamsXArray(_Mixin):
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
-        data: xr.DataArray | xr.Dataset | None = None,
+        data: object = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
         dims, ndim = validate_mom_dims_and_mom_ndim(
@@ -191,11 +220,11 @@ class MomParamsXArray(_Mixin):
     @classmethod
     def factory(
         cls,
-        ndim: int | None = None,
         mom_kws: MomParamsDict | None = None,
+        ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
-        data: xr.DataArray | xr.Dataset | None = None,
+        data: object = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
         mom_kws = {} if mom_kws is None else MomParamsDict(mom_kws)  # type: ignore[misc]
@@ -204,6 +233,26 @@ class MomParamsXArray(_Mixin):
         mom_kws.setdefault("dims", dims)
         mom_kws.setdefault("axes", axes)
         return cls.from_params(**mom_kws, data=data, default_ndim=default_ndim)
+
+    @classmethod
+    def factory_mom(
+        cls,
+        mom: int | Sequence[int],
+        mom_kws: MomParamsDict | None = None,
+        dims: Hashable | Sequence[Hashable] | None = None,
+        axes: int | Sequence[int] | None = None,
+        data: object = None,
+        default_ndim: MomNDim | None = None,
+    ) -> tuple[MomentsStrict, Self]:
+        mom = validate_mom(mom)
+        return mom, cls.factory(
+            ndim=len(mom),
+            mom_kws=mom_kws,
+            dims=dims,
+            axes=axes,
+            data=data,
+            default_ndim=default_ndim,
+        )
 
     @property
     def axes(self) -> MomAxesStrict:
@@ -217,13 +266,53 @@ class MomParamsXArray(_Mixin):
     def to_array(self) -> MomParamsArray:
         return MomParamsArray(ndim=self.ndim, axes=self.axes)
 
+    def select_axis_dim(
+        self,
+        data: xr.DataArray | xr.Dataset,
+        axis: AxisReduceWrap | MissingType = MISSING,
+        dim: DimsReduce | MissingType = MISSING,
+        *,
+        default_axis: AxisReduceWrap | MissingType = MISSING,
+        default_dim: DimsReduce | MissingType = MISSING,
+    ) -> tuple[int, Hashable]:
+        from .xr_utils import select_axis_dim
+
+        return select_axis_dim(
+            data=data,
+            axis=axis,
+            dim=dim,
+            default_axis=default_axis,
+            default_dim=default_dim,
+            mom_dims=self.dims,
+        )
+
+    def select_axis_dim_mult(
+        self,
+        data: xr.DataArray | xr.Dataset,
+        axis: AxisReduceMultWrap | MissingType = MISSING,
+        dim: DimsReduceMult | MissingType = MISSING,
+        *,
+        default_axis: AxisReduceMultWrap | MissingType = MISSING,
+        default_dim: DimsReduceMult | MissingType = MISSING,
+    ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
+        from .xr_utils import select_axis_dim_mult
+
+        return select_axis_dim_mult(
+            data=data,
+            axis=axis,
+            dim=dim,
+            default_axis=default_axis,
+            default_dim=default_dim,
+            mom_dims=self.dims,
+        )
+
 
 @dataclass
 class MomParamsXArrayOptional(MomParamsXArray):
     """Optional"""
 
-    ndim: MomNDim | None  # type: ignore[assignment]
-    dims: MomDimsStrict | None  # type: ignore[assignment]
+    ndim: MomNDim | None = None  # type: ignore[assignment]
+    dims: MomDimsStrict | None = None  # type: ignore[assignment]
 
     @classmethod
     def from_params(
@@ -231,7 +320,7 @@ class MomParamsXArrayOptional(MomParamsXArray):
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
-        data: xr.DataArray | xr.Dataset | None = None,
+        data: object = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
         if ndim is None and dims is None and axes is None and default_ndim is None:

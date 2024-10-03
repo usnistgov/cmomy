@@ -33,8 +33,6 @@ if TYPE_CHECKING:
 
     from .typing import (
         ApplyUFuncKwargs,
-        AxisReduce,
-        AxisReduceMult,
         DimsReduce,
         DimsReduceMult,
         MissingCoreDimOptions,
@@ -95,7 +93,7 @@ def select_axis_dim(
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     *,
-    default_axis: AxisReduce | MissingType = MISSING,
+    default_axis: AxisReduceWrap | MissingType = MISSING,
     default_dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDimsStrict | None = None,
 ) -> tuple[int, Hashable]:
@@ -151,7 +149,7 @@ def select_axis_dim_mult(  # noqa: C901
     axis: AxisReduceMultWrap | MissingType = MISSING,
     dim: DimsReduceMult | MissingType = MISSING,
     *,
-    default_axis: AxisReduceMult | MissingType = MISSING,
+    default_axis: AxisReduceMultWrap | MissingType = MISSING,
     default_dim: DimsReduceMult | MissingType = MISSING,
     mom_dims: MomDimsStrict | None = None,
 ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
