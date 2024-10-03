@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from cmomy.core import array_utils
+from cmomy.core.moment_params import MomParamsArray
 
 
 # * catch all args only test
@@ -134,6 +135,9 @@ def test_positive_to_negative_index(args, expected) -> None:
     ],
 )
 def test_axes_data_reduction(args, kwargs, expected) -> None:
+    kwargs = kwargs.copy()
+    mom_ndim = kwargs.pop("mom_ndim")
+    kwargs["mom_params"] = MomParamsArray.factory(ndim=mom_ndim)
     _do_test(array_utils.axes_data_reduction, *args, expected=expected, **kwargs)
 
 

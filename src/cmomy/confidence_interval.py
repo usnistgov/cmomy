@@ -13,13 +13,14 @@ import numpy as np
 import xarray as xr
 
 from cmomy.core.array_utils import select_dtype
+from cmomy.core.moment_params import default_mom_params_xarray
 
 from .core.compat import copy_if_needed
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prob import ndtr, ndtri
 from .core.validate import is_xarray, validate_axis
-from .core.xr_utils import factory_apply_ufunc_kwargs, select_axis_dim
+from .core.xr_utils import factory_apply_ufunc_kwargs
 
 if TYPE_CHECKING:
     from collections.abc import Hashable
@@ -201,7 +202,9 @@ def bootstrap_confidence_interval(
         alphas = np.asarray([alpha * 0.5, 1.0 - alpha * 0.5])
 
     if is_xarray(theta_boot):
-        axis, dim = select_axis_dim(theta_boot, axis=axis, dim=dim)
+        axis, dim = default_mom_params_xarray.select_axis_dim(
+            theta_boot, axis=axis, dim=dim
+        )
 
         if is_xarray(theta_jack):
             theta_jack = theta_jack.rename({dim: "_rep_jack"})

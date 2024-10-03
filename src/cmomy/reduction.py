@@ -13,7 +13,7 @@ import xarray as xr
 
 from .core.array_utils import (
     asarray_maybe_recast,
-    axes_data_reduction_mom_params,
+    axes_data_reduction,
     get_axes_from_values,
     moveaxis_order,
     optional_keepdims,
@@ -26,7 +26,7 @@ from .core.moment_params import (
     MomParamsXArray,
 )
 from .core.prepare import (
-    prepare_data_for_reduction_mom_params,
+    prepare_data_for_reduction,
     prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
@@ -923,7 +923,7 @@ def reduce_data_grouped(  # noqa: PLR0913
         return xout
 
     # Numpy
-    axis, mom_params, data = prepare_data_for_reduction_mom_params(
+    axis, mom_params, data = prepare_data_for_reduction(
         data=data,
         axis=axis,
         mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
@@ -962,7 +962,7 @@ def _reduce_data_grouped(
         dtype = select_dtype(data, out=out, dtype=dtype)
 
     # include inner core dims for by
-    axes = axes_data_reduction_mom_params(
+    axes = axes_data_reduction(
         (-1,),
         mom_params=mom_params,
         axis=axis,
@@ -1344,7 +1344,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         return xout
 
     # Numpy
-    axis, mom_params, data = prepare_data_for_reduction_mom_params(
+    axis, mom_params, data = prepare_data_for_reduction(
         data=data,
         axis=axis,
         mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
@@ -1405,7 +1405,7 @@ def _reduce_data_indexed(
         )
 
     # include inner dims for index, start, end, scale
-    axes = axes_data_reduction_mom_params(
+    axes = axes_data_reduction(
         *(-1,) * 4,
         mom_params=mom_params,
         axis=axis,

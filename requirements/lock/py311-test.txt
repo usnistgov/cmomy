@@ -29,7 +29,7 @@ pyyaml==6.0.2             # via dask
 scipy==1.14.1             # via -r requirements/test.txt
 six==1.16.0               # via python-dateutil
 termcolor==2.4.0          # via pytest-sugar
-tomli==2.0.1              # via coverage
+tomli==2.0.2              # via coverage
 toolz==0.12.1             # via dask, partd
 typing-extensions==4.12.2  # via module-utilities, -r requirements/test.txt
 tzdata==2024.2            # via pandas

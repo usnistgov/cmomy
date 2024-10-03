@@ -2,9 +2,15 @@
 # pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
+import numpy as np
 import pytest
+import xarray as xr
 
-from cmomy.core.moment_params import MomParamsXArray, MomParamsXArrayOptional
+from cmomy.core.moment_params import (
+    MomParamsXArray,
+    MomParamsXArrayOptional,
+    default_mom_params_xarray,
+)
 
 
 # * catch all args only test
@@ -64,3 +70,165 @@ def test_MomParamsXArray(args, expected) -> None:
 
     kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args))
     _do_test(_func, expected=expected, **kws)
+
+
+# * select axis/dim
+def _wrap_select_method(method):
+    def func(*args, **kws):
+        if "mom_dims" in kws:
+            kws = kws.copy()
+            mom_dims = kws.pop("mom_dims")
+            mom_params = MomParamsXArray.factory(dims=mom_dims)
+        else:
+            mom_params = default_mom_params_xarray
+
+        return getattr(mom_params, method)(*args, **kws)
+
+    return func
+
+
+@pytest.mark.parametrize(
+    "data", [xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom"))]
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({}, ValueError),
+        ({"default_axis": 0, "default_dim": "hello"}, ValueError),
+        ({"axis": 0, "dim": "a"}, ValueError),
+        ({"default_axis": 0}, (0, "a")),
+        ({"default_axis": -1}, (2, "mom")),
+        ({"default_dim": "a"}, (0, "a")),
+        ({"default_dim": "mom"}, (2, "mom")),
+        ({"axis": -1}, (2, "mom")),
+        ({"axis": -1j, "mom_dims": ("mom",)}, (1, "b")),
+        (
+            {
+                "axis": -1j,
+                "mom_dims": (
+                    "b",
+                    "mom",
+                ),
+            },
+            (0, "a"),
+        ),
+        (
+            {
+                "axis": -1,
+                "mom_dims": (
+                    "a",
+                    "b",
+                    "mom",
+                ),
+            },
+            ValueError,
+        ),
+        ({"axis": 2, "mom_dims": ("mom",)}, ValueError),
+        ({"dim": "a", "mom_dims": ("a",)}, ValueError),
+        ({"dim": "mom", "mom_dims": ("a",)}, (2, "mom")),
+        ({"dim": "hello"}, ValueError),
+    ],
+)
+def test_select_axis_dim(data, kws, expected) -> None:
+    _do_test(_wrap_select_method("select_axis_dim"), data, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+            }
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"axis": 0}, ValueError),
+        ({"dim": "a"}, (0, "a")),
+    ],
+)
+def test_select_axis_dim_dataset(data, kws, expected) -> None:
+    _do_test(_wrap_select_method("select_axis_dim"), data, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    "data", [xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom"))]
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"default_axis": 0, "default_dim": "hello"}, ValueError),
+        ({"axis": 0, "dim": "a"}, ValueError),
+        ({"axis": 2, "mom_dims": ("mom",)}, ValueError),
+        ({"dim": "mom", "mom_dims": ("mom",)}, ValueError),
+        ({"axis": (0, 2), "mom_dims": ("mom",)}, ValueError),
+        ({"dim": ("a", "mom"), "mom_dims": ("mom",)}, ValueError),
+        ({"dim": "a", "mom_dims": ("a",)}, ValueError),
+        # other
+        ({"axis": 0}, ((0,), ("a",))),
+        ({"axis": 1}, ((1,), ("b",))),
+        ({"axis": -1}, ((2,), ("mom",))),
+        ({"axis": -1j, "mom_dims": ("mom",)}, ((1,), ("b",))),
+        ({"dim": "a"}, ((0,), ("a",))),
+        ({"dim": "b"}, ((1,), ("b",))),
+        ({"dim": "mom"}, ((2,), ("mom",))),
+        ({"axis": (0, 1)}, ((0, 1), ("a", "b"))),
+        ({"axis": (1, 0)}, ((1, 0), ("b", "a"))),
+        ({"axis": None}, ((0, 1, 2), ("a", "b", "mom"))),
+        ({"axis": None, "mom_dims": ("mom",)}, ((0, 1), ("a", "b"))),
+        ({"dim": ("a", "b")}, ((0, 1), ("a", "b"))),
+        ({"dim": ("b", "a")}, ((1, 0), ("b", "a"))),
+        ({"dim": ("a", "mom")}, ((0, 2), ("a", "mom"))),
+        ({"dim": None}, ((0, 1, 2), ("a", "b", "mom"))),
+        ({"dim": None, "mom_dims": ("mom",)}, ((0, 1), ("a", "b"))),
+        ({"default_axis": (0, 1)}, ((0, 1), ("a", "b"))),
+        ({"default_dim": None, "mom_dims": ("mom",)}, ((0, 1), ("a", "b"))),
+        # using "other"
+        ({"dim": "mom", "mom_dims": ("a", "b")}, ((2,), ("mom",))),
+    ],
+)
+def test_select_axis_dim_mult(data, kws, expected) -> None:
+    _do_test(
+        _wrap_select_method("select_axis_dim_mult"), data, expected=expected, **kws
+    )
+
+
+@pytest.mark.parametrize(
+    "data",
+    [
+        xr.Dataset(
+            {
+                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+            }
+        )
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        # errors
+        ({}, ValueError),
+        ({"axis": 0}, ValueError),
+        ({"dim": None}, ((), ("a", "b", "mom"))),
+        ({"dim": None, "mom_dims": ("mom",)}, ((), ("a", "b"))),
+        # This is exactly what select does.  It calculates mom_dims from dimensions of "first"
+        # array.
+        ({"dim": None, "mom_dims": ("b", "mom")}, ((), ("a",))),
+        ({"dim": "a"}, ((), ("a",))),
+        ({"dim": "b"}, ((), ("b",))),
+        ({"dim": ("a", "b")}, ((), ("a", "b"))),
+    ],
+)
+def test_select_axis_dim_mult_dataset(data, kws, expected) -> None:
+    _do_test(
+        _wrap_select_method("select_axis_dim_mult"), data, expected=expected, **kws
+    )

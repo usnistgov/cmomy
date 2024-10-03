@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 
 import numpy as np
 
+from cmomy.core.moment_params import default_mom_params_xarray
 from cmomy.core.utils import mom_to_mom_shape
 
 from .array_utils import (
@@ -17,12 +18,10 @@ from .missing import MISSING
 from .validate import (
     is_dataarray,
     is_dataset,
-    validate_axis,
     validate_axis_wrap,
 )
 from .xr_utils import (
     raise_if_dataset,
-    select_axis_dim,
 )
 
 if TYPE_CHECKING:
@@ -41,10 +40,8 @@ if TYPE_CHECKING:
 
     from .typing import (
         ArrayOrderCF,
-        AxisReduce,
         DimsReduce,
         MissingType,
-        MomAxesStrict,
         MomentsStrict,
         MomNDim,
         NDArrayAny,
@@ -53,65 +50,7 @@ if TYPE_CHECKING:
 
 
 # * Data
-
-
 def prepare_data_for_reduction(
-    data: ArrayLike,
-    axis: AxisReduce | MissingType,
-    mom_ndim: MomNDim,
-    dtype: DTypeLike,
-    recast: bool = True,
-    move_axis_to_end: bool = False,
-) -> tuple[int, NDArrayAny]:
-    """Convert central moments array to correct form for reduction."""
-    data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
-
-    axis = normalize_axis_index(
-        validate_axis(axis),
-        data.ndim,
-        mom_ndim,
-    )
-
-    if move_axis_to_end:
-        # make sure this axis is positive in case we want to use it again...
-        axis_out = data.ndim - (mom_ndim + 1)
-        data = np.moveaxis(data, axis, axis_out)
-    else:
-        axis_out = axis
-
-    return axis_out, data
-
-
-def prepare_data_for_reduction_mom_axes(
-    data: ArrayLike,
-    axis: AxisReduceWrap | MissingType,
-    mom_ndim: MomNDim,
-    mom_axes: MomAxesStrict,
-    dtype: DTypeLike,
-    recast: bool = True,
-    move_axis_to_end: bool = False,
-) -> tuple[int, MomAxesStrict, NDArrayAny]:
-    """Convert central moments array to correct form for reduction."""
-    data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
-
-    axis = normalize_axis_index(
-        validate_axis_wrap(axis),
-        data.ndim,
-        mom_ndim=mom_ndim,
-    )
-
-    if move_axis_to_end:
-        axis_out = data.ndim - (mom_ndim + 1)
-        mom_axes_end = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
-        data = np.moveaxis(data, (axis, *mom_axes), (axis_out, *mom_axes_end))
-        mom_axes = mom_axes_end
-    else:
-        axis_out = axis
-
-    return axis_out, mom_axes, data
-
-
-def prepare_data_for_reduction_mom_params(
     data: ArrayLike,
     axis: AxisReduceWrap | MissingType,
     mom_params: MomParamsArray,
@@ -265,7 +204,7 @@ def xprepare_values_for_reduction(
         msg = f"Number of arrays {len(args) + 1} != {narrays}"
         raise ValueError(msg)
 
-    axis, dim = select_axis_dim(
+    axis, dim = default_mom_params_xarray.select_axis_dim(
         target,
         axis=axis,
         dim=dim,

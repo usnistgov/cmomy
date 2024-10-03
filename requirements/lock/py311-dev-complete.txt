@@ -28,7 +28,7 @@ idna==3.10                # via requests
 importlib-metadata==8.5.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev-complete.txt
-ipython==8.27.0           # via ipykernel, -r requirements/dev-complete.txt
+ipython==8.28.0           # via ipykernel, -r requirements/dev-complete.txt
 jedi==0.19.1              # via ipython
 jinja2==3.1.4             # via scriv
 jsonschema==4.23.0        # via nbformat
@@ -84,15 +84,15 @@ scriv==1.5.1              # via -r requirements/dev-complete.txt
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.4.0          # via pytest-sugar
-tomli==2.0.1              # via coverage
+tomli==2.0.2              # via coverage
 toolz==0.12.1             # via dask, partd
 tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
-types-pytz==2024.2.0.20240913  # via pandas-stubs
+types-pytz==2024.2.0.20241003  # via pandas-stubs
 typing-extensions==4.12.2  # via ipython, module-utilities, mypy, -r requirements/dev-complete.txt
 tzdata==2024.2            # via pandas
 urllib3==2.2.3            # via requests
-uv==0.4.17                # via -r requirements/dev-complete.txt
+uv==0.4.18                # via -r requirements/dev-complete.txt
 virtualenv==20.26.6       # via nox, pre-commit
 wcwidth==0.2.13           # via prompt-toolkit
 xarray==2024.9.0          # via -r requirements/dev-complete.txt

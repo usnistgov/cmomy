@@ -27,7 +27,6 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         AxesGUFunc,
-        MomAxesStrict,
         MomNDim,
         NDArrayAny,
         ScalarT,
@@ -152,39 +151,7 @@ def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
 
 
 # new style preparation for reduction....
-_MOM_AXES_TUPLE: dict[int, MomAxesStrict] = {1: (-1,), 2: (-2, -1)}
-
-
 def axes_data_reduction(
-    *inner: int | tuple[int, ...],
-    mom_ndim: MomNDim,
-    axis: int,
-    out_has_axis: bool = False,
-    mom_axes: MomAxesStrict | None = None,
-) -> AxesGUFunc:
-    """
-    axes for reducing data along axis
-
-    if ``out_has_axis == True``, then treat like resample,
-    so output will still have ``axis`` with new size in output.
-
-    It is assumed that `axis` is validated against a moments array,
-    (i.e., negative values should be ``< -mom_ndim``)
-
-    Can also pass in "inner" dimensions (elements 1:-1 of output)
-    """
-    mom_axes = _MOM_AXES_TUPLE[mom_ndim] if mom_axes is None else mom_axes
-    data_axes = (axis, *mom_axes)
-    out_axes = data_axes if out_has_axis else mom_axes
-
-    return [
-        data_axes,
-        *((x,) if isinstance(x, int) else x for x in inner),
-        out_axes,
-    ]
-
-
-def axes_data_reduction_mom_params(
     *inner: int | tuple[int, ...],
     axis: int,
     mom_params: MomParamsArray | MomParamsXArray,
@@ -201,13 +168,14 @@ def axes_data_reduction_mom_params(
 
     Can also pass in "inner" dimensions (elements 1:-1 of output)
     """
-    return axes_data_reduction(
-        *inner,
-        axis=axis,
-        mom_ndim=mom_params.ndim,
-        mom_axes=mom_params.axes,
-        out_has_axis=out_has_axis,
-    )
+    data_axes = (axis, *mom_params.axes)
+    out_axes = data_axes if out_has_axis else mom_params.axes
+
+    return [
+        data_axes,
+        *((x,) if isinstance(x, int) else x for x in inner),
+        out_axes,
+    ]
 
 
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}

@@ -10,7 +10,7 @@ from numpy.typing import NDArray
 
 from cmomy.core.array_utils import (
     asarray_maybe_recast,
-    axes_data_reduction_mom_params,
+    axes_data_reduction,
     get_axes_from_values,
     select_dtype,
 )
@@ -21,7 +21,7 @@ from cmomy.core.moment_params import (
     MomParamsXArray,
 )
 from cmomy.core.prepare import (
-    prepare_data_for_reduction_mom_params,
+    prepare_data_for_reduction,
     prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
@@ -250,7 +250,7 @@ def resample_data(  # noqa: PLR0913
         return xout
 
     # Numpy
-    axis, mom_params, data = prepare_data_for_reduction_mom_params(
+    axis, mom_params, data = prepare_data_for_reduction(
         data,
         axis=axis,
         mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
@@ -294,7 +294,7 @@ def _resample_data(
     # include inner core dimensions for freq
     axes = [
         (-2, -1),
-        *axes_data_reduction_mom_params(
+        *axes_data_reduction(
             mom_params=mom_params,
             axis=axis,
             out_has_axis=True,
@@ -801,7 +801,7 @@ def jackknife_data(  # noqa: PLR0913
         return xout
 
     # numpy
-    axis, mom_params, data = prepare_data_for_reduction_mom_params(
+    axis, mom_params, data = prepare_data_for_reduction(
         data,
         axis=axis,
         mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
@@ -842,7 +842,7 @@ def _jackknife_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    axes_data, axes_mom = axes_data_reduction_mom_params(
+    axes_data, axes_mom = axes_data_reduction(
         axis=axis,
         mom_params=mom_params,
         out_has_axis=True,

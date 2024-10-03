@@ -13,14 +13,18 @@ import xarray as xr
 
 from .core.array_utils import (
     asarray_maybe_recast,
-    axes_data_reduction_mom_params,
+    axes_data_reduction,
     select_dtype,
 )
 from .core.docstrings import docfiller
 from .core.missing import MISSING
-from .core.moment_params import MomParamsArray, MomParamsXArray, MomParamsXArrayOptional
+from .core.moment_params import (
+    MomParamsArray,
+    MomParamsXArray,
+    default_mom_params_xarray,
+)
 from .core.prepare import (
-    prepare_data_for_reduction_mom_params,
+    prepare_data_for_reduction,
     xprepare_out_for_resample_data,
 )
 from .core.utils import (
@@ -429,7 +433,7 @@ def cumulative(
         return xout
 
     # Numpy
-    axis, mom_params, values_in = prepare_data_for_reduction_mom_params(
+    axis, mom_params, values_in = prepare_data_for_reduction(
         values_in,
         axis=axis,
         mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
@@ -466,7 +470,7 @@ def _cumulative(
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
-    axes = axes_data_reduction_mom_params(
+    axes = axes_data_reduction(
         mom_params=mom_params,
         axis=axis,
         out_has_axis=True,
@@ -967,7 +971,7 @@ def concat(
 
     if is_xarray(first):
         if dim is MISSING or dim is None or dim in first.dims:
-            axis, dim = MomParamsXArrayOptional().select_axis_dim(
+            axis, dim = default_mom_params_xarray.select_axis_dim(
                 first, axis=axis, dim=dim, default_axis=0
             )
         # otherwise, assume adding a new dimension...

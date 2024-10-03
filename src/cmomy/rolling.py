@@ -12,7 +12,7 @@ import xarray as xr
 
 from .core.array_utils import (
     asarray_maybe_recast,
-    axes_data_reduction_mom_params,
+    axes_data_reduction,
     get_axes_from_values,
     normalize_axis_index,
     positive_to_negative_index,
@@ -26,7 +26,7 @@ from .core.moment_params import (
     MomParamsXArrayOptional,
 )
 from .core.prepare import (
-    prepare_data_for_reduction_mom_params,
+    prepare_data_for_reduction,
     prepare_out_from_values,
     prepare_values_for_reduction,
     xprepare_out_for_resample_data,
@@ -306,7 +306,7 @@ def _optional_zero_missing_weight(
         s: list[Any] = [slice(None)] * data.ndim
         for m in mom_axes:
             s[m] = 0
-        w = data[*s]
+        w = data[tuple(s)]
         w[np.isnan(w)] = 0.0
     return data
 
@@ -456,7 +456,7 @@ def rolling_data(  # noqa: PLR0913
         return xout
 
     # Numpy
-    axis, mom_params, data = prepare_data_for_reduction_mom_params(
+    axis, mom_params, data = prepare_data_for_reduction(
         data,
         axis=axis,
         mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
@@ -509,7 +509,7 @@ def _rolling_data(
         # add in window, count
         (),
         (),
-        *axes_data_reduction_mom_params(
+        *axes_data_reduction(
             axis=axis,
             mom_params=mom_params,
             out_has_axis=True,
@@ -985,7 +985,7 @@ def rolling_exp_data(  # noqa: PLR0913
         return xout
 
     # save the original axis for alpha_axis...
-    axis, mom_params, data = prepare_data_for_reduction_mom_params(
+    axis, mom_params, data = prepare_data_for_reduction(
         data,
         axis=axis,
         mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
@@ -1072,7 +1072,7 @@ def _rolling_exp_data(
         (alpha_axis,),
         (),
         (),
-        *axes_data_reduction_mom_params(
+        *axes_data_reduction(
             mom_params=mom_params,
             axis=axis,
             out_has_axis=True,

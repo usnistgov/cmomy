@@ -411,6 +411,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         datas: ArrayLike,
         *,
         axis: AxisReduce = -1,
+        mom_axes: MomAxes | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = None,
     ) -> Self:
@@ -433,14 +434,15 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         <CentralMomentsArray(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
-        axis, datas = prepare_data_for_reduction(
+        axis, _, datas = prepare_data_for_reduction(
             data=datas,
             axis=axis,
-            mom_ndim=self.mom_ndim,
+            mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
             dtype=self.dtype,
             recast=False,
+            move_axis_to_end=True,
         )
-        axes = axes_data_reduction(mom_ndim=self.mom_ndim, axis=axis)
+        axes = axes_data_reduction(mom_params=self._mom_params, axis=axis)
 
         self._pusher(parallel, size=datas.size).datas(
             datas,

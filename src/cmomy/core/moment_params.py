@@ -8,10 +8,12 @@ from typing import TYPE_CHECKING, TypedDict, cast
 from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .missing import MISSING
 from .validate import (
+    is_dataset,
     validate_mom,
     validate_mom_axes,
     validate_mom_dims_and_mom_ndim,
     validate_mom_ndim,
+    validate_not_none,
 )
 
 if TYPE_CHECKING:
@@ -31,7 +33,10 @@ if TYPE_CHECKING:
         MomentsStrict,
         MomNDim,
     )
-    from .typing_compat import Self, Unpack
+    from .typing_compat import Self, TypeVar, Unpack
+
+    _Axis = TypeVar("_Axis")
+    _Dim = TypeVar("_Dim")
 
 
 class MomParamsDict(TypedDict, total=False):
@@ -277,6 +282,39 @@ class MomParamsXArray(MomParamsBase, _Mixin):
     def to_array(self) -> MomParamsArray:
         return MomParamsArray(ndim=self.ndim, axes=self.axes)
 
+    def _check_dim_in_mom_dims(
+        self,
+        *,
+        axis: int | None = None,
+        dim: Hashable,
+    ) -> None:
+        if self.dims is not None and dim in self.dims:  # pyright: ignore[reportUnnecessaryComparison]
+            axis_msg = f", {axis=}" if axis is not None else ""
+            msg = f"Cannot select moment dimension. {dim=}{axis_msg}."
+            raise ValueError(msg)
+
+    @staticmethod
+    def _axis_dim_defaults(
+        *,
+        axis: _Axis,
+        dim: _Dim,
+        default_axis: _Axis,
+        default_dim: _Dim,
+    ) -> tuple[_Axis, _Dim]:
+        if axis is MISSING and dim is MISSING:
+            if default_axis is not MISSING and default_dim is MISSING:
+                axis = default_axis
+            elif default_axis is MISSING and default_dim is not MISSING:
+                dim = default_dim
+            else:
+                msg = "Must specify axis or dim, or one of default_axis or default_dim"
+                raise ValueError(msg)
+
+        elif axis is not MISSING and dim is not MISSING:
+            msg = "Can only specify one of axis or dim"
+            raise ValueError(msg)
+        return axis, dim  # pyright: ignore[reportReturnType]
+
     def select_axis_dim(
         self,
         data: xr.DataArray | xr.Dataset,
@@ -286,16 +324,38 @@ class MomParamsXArray(MomParamsBase, _Mixin):
         default_axis: AxisReduceWrap | MissingType = MISSING,
         default_dim: DimsReduce | MissingType = MISSING,
     ) -> tuple[int, Hashable]:
-        from .xr_utils import select_axis_dim
+        axis = validate_not_none(axis, "axis")
+        dim = validate_not_none(dim, "dim")
 
-        return select_axis_dim(
-            data=data,
-            axis=axis,
-            dim=dim,
-            default_axis=default_axis,
-            default_dim=default_dim,
-            mom_dims=self.dims,
-        )
+        if is_dataset(data):
+            if axis is not MISSING or dim is MISSING:
+                msg = (
+                    "For Dataset, must specify ``dim`` value other than ``None`` only."
+                )
+                raise ValueError(msg)
+            self._check_dim_in_mom_dims(dim=dim)
+            return 0, dim
+
+        default_axis = validate_not_none(default_axis, "default_axis")
+        default_dim = validate_not_none(default_dim, "default_dim")
+        axis, dim = self._axis_dim_defaults(
+            axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
+        )  # pyright: ignore[reportAssignmentType]
+
+        if dim is not MISSING:
+            axis = data.get_axis_num(dim)
+        elif axis is not MISSING:
+            axis = self.to_array().normalize_axis_index(
+                axis=axis,  # type: ignore[arg-type]
+                data_ndim=data.ndim,
+            )
+            dim = data.dims[axis]
+        else:  # pragma: no cover
+            msg = f"Unknown dim {dim} and axis {axis}"
+            raise TypeError(msg)
+
+        self._check_dim_in_mom_dims(dim=dim, axis=axis)
+        return axis, dim
 
     def select_axis_dim_mult(
         self,
@@ -306,16 +366,53 @@ class MomParamsXArray(MomParamsBase, _Mixin):
         default_axis: AxisReduceMultWrap | MissingType = MISSING,
         default_dim: DimsReduceMult | MissingType = MISSING,
     ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
-        from .xr_utils import select_axis_dim_mult
+        def _get_dim_none() -> tuple[Hashable, ...]:
+            dim_ = tuple(data.dims)
+            if self.dims is not None:  # pyright: ignore[reportUnnecessaryComparison]
+                dim_ = tuple(d for d in dim_ if d not in self.dims)
+            return dim_
 
-        return select_axis_dim_mult(
-            data=data,
-            axis=axis,
-            dim=dim,
-            default_axis=default_axis,
-            default_dim=default_dim,
-            mom_dims=self.dims,
-        )
+        def _check_dim(dim_: tuple[Hashable, ...]) -> None:
+            if self.dims is not None:  # pyright: ignore[reportUnnecessaryComparison]
+                for d in dim_:
+                    self._check_dim_in_mom_dims(dim=d)
+
+        dim_: tuple[Hashable, ...]
+        axis_: tuple[int, ...]
+        if is_dataset(data):
+            if axis is not MISSING or dim is MISSING:
+                msg = "For Dataset, must specify ``dim`` value only."
+                raise ValueError(msg)
+
+            if dim is None:
+                dim_ = _get_dim_none()
+            else:
+                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
+                _check_dim(dim_)
+            return (), dim_
+
+        axis, dim = self._axis_dim_defaults(
+            axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
+        )  # pyright: ignore[reportAssignmentType]
+
+        if dim is not MISSING:
+            if dim is None:
+                dim_ = _get_dim_none()
+            else:
+                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
+            axis_ = data.get_axis_num(dim_)
+        elif axis is not MISSING:
+            axis_ = self.to_array().normalize_axis_tuple(
+                axis,
+                data.ndim,
+            )
+            dim_ = tuple(data.dims[a] for a in axis_)
+        else:  # pragma: no cover
+            msg = f"Unknown dim {dim} and axis {axis}"
+            raise TypeError(msg)
+
+        _check_dim(dim_)
+        return axis_, dim_
 
 
 @dataclass
@@ -343,3 +440,6 @@ class MomParamsXArrayOptional(MomParamsXArray):
             ndim=self.ndim,
             axes=None if self.ndim is None else self.axes,
         )
+
+
+default_mom_params_xarray = MomParamsXArrayOptional()

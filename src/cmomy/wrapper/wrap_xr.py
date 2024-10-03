@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 
 from cmomy.core.missing import MISSING
-from cmomy.core.moment_params import MomParamsXArray
+from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -26,7 +26,6 @@ from cmomy.core.xr_utils import (
     contains_dims,
     factory_apply_ufunc_kwargs,
     get_mom_shape,
-    select_axis_dim,
 )
 
 if TYPE_CHECKING:
@@ -431,6 +430,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        mom_axes: MomAxes | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = True,
@@ -453,17 +453,17 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             return out
 
         if is_xarray(datas):
-            axis, dim = select_axis_dim(
-                datas, axis=axis, dim=dim, mom_dims=self.mom_dims
+            axis, dim = self._mom_params.select_axis_dim(
+                datas,
+                axis=axis,
+                dim=dim,
             )
 
         else:
-            # Removed restriction that you could only pass array with wrapped DataArray.
-            # Trust the user to do what they want....
-            axis, datas = prepare_data_for_reduction(
+            axis, _, datas = prepare_data_for_reduction(
                 datas,
                 axis=axis,
-                mom_ndim=self.mom_ndim,
+                mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
                 dtype=self._dtype,
                 move_axis_to_end=True,
                 recast=False,

@@ -21,7 +21,7 @@ python-dateutil==2.9.0.post0  # via pandas
 pytz==2024.2              # via pandas
 six==1.16.0               # via python-dateutil
 termcolor==2.4.0          # via pytest-sugar
-tomli==2.0.1              # via coverage, pytest
+tomli==2.0.2              # via coverage, pytest
 typing-extensions==4.12.2  # via module-utilities, -r requirements/test.txt
 tzdata==2024.2            # via pandas
 xarray==2024.9.0          # via -r requirements/test.txt

@@ -923,7 +923,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         --------
         >>> import cmomy
         >>> rng = cmomy.default_rng(0)
-        >>> da = cmomy.CentralMomentsArray.from_vals(
+        >>> da = cmomy.wrap_reduce_vals(
         ...     rng.random((10, 3)),
         ...     mom=3,
         ...     axis=0,
