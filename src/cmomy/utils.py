@@ -58,6 +58,7 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
+        MomParamsInput,
         NDArrayAny,
         ScalarT,
         SelectMoment,
@@ -79,6 +80,7 @@ def moveaxis(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
+    mom_params: MomParamsInput = ...,
 ) -> NDArray[ScalarT]: ...
 @overload
 def moveaxis(
@@ -91,6 +93,7 @@ def moveaxis(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
+    mom_params: MomParamsInput = ...,
 ) -> xr.DataArray: ...
 
 
@@ -105,6 +108,7 @@ def moveaxis(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
 ) -> NDArray[ScalarT] | xr.DataArray:
     """
     Generalized moveaxis for moments arrays.
@@ -168,15 +172,15 @@ def moveaxis(
     ('b', 'c', 'a', 'mom_0')
     """
     if is_dataarray(x):
-        xmom_params = MomParamsXArrayOptional.factory(
-            ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
+        mom_params = MomParamsXArrayOptional.factory(
+            mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
         )
-        axes0, _ = xmom_params.select_axis_dim_mult(
+        axes0, _ = mom_params.select_axis_dim_mult(
             x,
             axis=axis,
             dim=dim,
         )
-        axes1, _ = xmom_params.select_axis_dim_mult(
+        axes1, _ = mom_params.select_axis_dim_mult(
             x,
             axis=dest,
             dim=dest_dim,
@@ -186,7 +190,7 @@ def moveaxis(
         return x.transpose(*(x.dims[o] for o in order))
 
     mom_params = MomParamsArrayOptional.factory(
-        ndim=mom_ndim, axes=mom_axes
+        mom_params=mom_params, ndim=mom_ndim, axes=mom_axes
     ).normalize_axes(x.ndim)
     axes0, axes1 = (
         mom_params.normalize_axis_tuple(validate_axis_mult_wrap(a), x.ndim)
@@ -253,7 +257,7 @@ def moment_indexer(
             raise ValueError(msg)
         idx = indexer[name]
 
-    return (..., *idx)  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+    return (..., *idx)  # pyright: ignore[reportUnknownVariableType]  # python3.9
 
 
 @overload
@@ -277,6 +281,7 @@ def select_moment(
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_params: MomParamsInput = None,
     squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
@@ -348,34 +353,39 @@ def select_moment(
         if name == "all":
             return data
 
-        xmom_params = MomParamsXArray.factory(
-            ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=data, default_ndim=1
+        mom_params = MomParamsXArray.factory(
+            mom_params=mom_params,
+            ndim=mom_ndim,
+            dims=mom_dims,
+            axes=mom_axes,
+            data=data,
+            default_ndim=1,
         )
 
         # input/output dimensions
-        input_core_dims = [xmom_params.dims]
+        input_core_dims = [mom_params.dims]
         output_core_dims: list[Sequence[Hashable]]
         output_sizes: dict[Hashable, int] | None
-        if name in {"ave", "var"} and (xmom_params.ndim != 1 or not squeeze):
+        if name in {"ave", "var"} and (mom_params.ndim != 1 or not squeeze):
             output_core_dims = [[dim_combined]]
-            output_sizes = {dim_combined: xmom_params.ndim}
+            output_sizes = {dim_combined: mom_params.ndim}
             if coords_combined is None:
-                coords_combined = xmom_params.dims
+                coords_combined = mom_params.dims
             elif isinstance(coords_combined, str):
                 coords_combined = [coords_combined]
 
             raise_if_wrong_value(
                 len(coords_combined),
-                xmom_params.ndim,
+                mom_params.ndim,
                 "`len(coords_combined)` must equal `mom_ndim`.",
             )
         else:
             output_sizes = None
             coords_combined = None
             if name.startswith("xmom_"):
-                output_core_dims = [xmom_params.dims[1:]]
+                output_core_dims = [mom_params.dims[1:]]
             elif name.startswith("ymom_"):
-                output_core_dims = [xmom_params.dims[:1]]
+                output_core_dims = [mom_params.dims[:1]]
             else:
                 output_core_dims = [[]]
 
@@ -385,7 +395,7 @@ def select_moment(
             input_core_dims=input_core_dims,
             output_core_dims=output_core_dims,
             kwargs={
-                "mom_params": xmom_params.to_array(),
+                "mom_params": mom_params.to_array(),
                 "name": name,
                 "squeeze": squeeze,
             },
@@ -405,11 +415,13 @@ def select_moment(
             )
         return xout
 
-    mom_params = MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1)
-    if mom_axes is not None:
-        _axes = mom_params.axes
-        mom_params = mom_params.move_axes_to_end()
-        data = np.moveaxis(data, _axes, mom_params.axes)
+    mom_params = MomParamsArray.factory(
+        mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+    )
+    mom_params_end = mom_params.move_axes_to_end()
+    if mom_params.axes != mom_params_end.axes:
+        data = np.moveaxis(data, mom_params.axes, mom_params_end.axes)
+        mom_params = mom_params_end
 
     return _select_moment(
         data,
@@ -443,6 +455,7 @@ def assign_moment(
     *,
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
+    mom_params: MomParamsInput = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -458,6 +471,7 @@ def assign_moment(
     *,
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
+    mom_params: MomParamsInput = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -476,6 +490,7 @@ def assign_moment(
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_params: MomParamsInput = None,
     squeeze: bool = True,
     copy: bool = True,
     dim_combined: Hashable | None = None,
@@ -567,7 +582,12 @@ def assign_moment(
 
     if is_xarray(data):
         mom_params = MomParamsXArray.factory(
-            ndim=mom_ndim, axes=mom_axes, dims=mom_dims, data=data, default_ndim=1
+            mom_params=mom_params,
+            ndim=mom_ndim,
+            axes=mom_axes,
+            dims=mom_dims,
+            data=data,
+            default_ndim=1,
         )
         # figure out values shape...
         input_core_dims: list[Sequence[Hashable]] = [mom_params.dims]
@@ -617,7 +637,9 @@ def assign_moment(
         data,
         *moment_kwargs.values(),
         names=moment_kwargs.keys(),  # type: ignore[arg-type]
-        mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
+        mom_params=MomParamsArray.factory(
+            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+        ),
         squeeze=squeeze,
         copy=copy,
     )
@@ -715,6 +737,7 @@ def vals_to_data(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
+    mom_params: MomParamsInput = None,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
@@ -797,9 +820,10 @@ def vals_to_data(
     weight = 1.0 if weight is None else weight
     args: list[Any] = [x, weight, *y]
 
-    mom_params: MomParamsArray | MomParamsXArray
     if is_xarray(x):
-        mom, mom_params = MomParamsXArray.factory_mom(mom=mom, dims=mom_dims, data=out)
+        mom, mom_params = MomParamsXArray.factory_mom(
+            mom_params=mom_params, mom=mom, dims=mom_dims, data=out
+        )
         _check_y(mom_params.ndim)
 
         # Explicitly select type depending o out
@@ -841,7 +865,7 @@ def vals_to_data(
             ),
         )
 
-    mom, mom_params = MomParamsArray.factory_mom(mom=mom)
+    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
     _check_y(mom_params.ndim)
     return _vals_to_data(  # type: ignore[return-value]
         *args,
@@ -881,4 +905,6 @@ def _vals_to_data(
     }
     if mom_params.ndim == 2:
         moment_kwargs["yave"] = _y[0]
-    return assign_moment(out, moment_kwargs, mom_ndim=mom_params.ndim, copy=False)
+    return assign_moment(
+        out, moment_kwargs, mom_ndim=mom_params.ndim, mom_params=mom_params, copy=False
+    )

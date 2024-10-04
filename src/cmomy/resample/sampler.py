@@ -44,6 +44,7 @@ if TYPE_CHECKING:
         MomAxes,
         MomDims,
         MomNDim,
+        MomParamsInput,
         NDArrayAny,
         RngTypes,
         Sampler,
@@ -238,9 +239,10 @@ class IndexSampler(Generic[SamplerArrayT]):
         nsamp: int | None = None,
         axis: AxisReduceWrap | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        mom_axes: MomAxes | None = None,
         mom_ndim: MomNDim | None = None,
+        mom_axes: MomAxes | None = None,
         mom_dims: MomDims | None = None,
+        mom_params: MomParamsInput = None,
         rep_dim: str = "rep",
         paired: bool = True,
         rng: RngTypes | None = None,
@@ -288,6 +290,7 @@ class IndexSampler(Generic[SamplerArrayT]):
             mom_ndim=mom_ndim,
             mom_dims=mom_dims,
             mom_axes=mom_axes,
+            mom_params=mom_params,
         )
 
         indices: NDArrayAny | xr.DataArray | xr.Dataset
@@ -296,14 +299,15 @@ class IndexSampler(Generic[SamplerArrayT]):
                 data=data,  # pyright: ignore[reportArgumentType]
                 nrep=nrep,
                 axis=axis,
-                mom_axes=mom_axes,
                 dim=dim,
                 nsamp=nsamp,
                 ndat=ndat,
                 rep_dim=rep_dim,
                 paired=paired,
                 mom_ndim=mom_ndim,
+                mom_axes=mom_axes,
                 mom_dims=mom_dims,
+                mom_params=mom_params,
                 rng=rng,
             )
         else:
@@ -322,6 +326,7 @@ class IndexSampler(Generic[SamplerArrayT]):
 def factory_sampler(  # noqa: PLR0913
     sampler: Sampler | None = None,
     *,
+    # factory sampler parameters
     freq: NDArrayAny | xr.DataArray | xr.Dataset | None = None,
     indices: NDArrayAny | xr.DataArray | xr.Dataset | None = None,
     ndat: int | None = None,
@@ -331,12 +336,14 @@ def factory_sampler(  # noqa: PLR0913
     rng: RngTypes | None = None,
     replace: bool = True,
     shuffle: bool = False,
+    # other parameters
     data: ArrayLike | xr.DataArray | xr.Dataset | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
-    mom_axes: MomAxes | None = None,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
+    mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     rep_dim: str = "rep",
     parallel: bool | None = None,
 ) -> IndexSampler[Any]:
@@ -434,10 +441,11 @@ def factory_sampler(  # noqa: PLR0913
                     nrep=nrep,
                     nsamp=nsamp,
                     axis=axis,
-                    mom_axes=mom_axes,
                     dim=dim,
                     mom_ndim=mom_ndim,
+                    mom_axes=mom_axes,
                     mom_dims=mom_dims,
+                    mom_params=mom_params,
                     rep_dim=rep_dim,
                     paired=paired,
                     rng=rng,
@@ -459,14 +467,17 @@ def factory_sampler(  # noqa: PLR0913
         )
 
     return factory_sampler(
+        sampler=None,
+        **sampler,
         data=data,
         axis=axis,
         dim=dim,
         mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         mom_dims=mom_dims,
+        mom_params=mom_params,
         rep_dim=rep_dim,
         parallel=parallel,
-        **sampler,
     )
 
 
@@ -540,21 +551,22 @@ def _randsamp_indices_dataarray_or_dataset(
     nrep: int,
     ndat: int,
     axis: AxisReduceWrap | MissingType = MISSING,
-    mom_axes: MomAxes | None = None,
     dim: DimsReduce | MissingType = MISSING,
     nsamp: int | None = None,
     rep_dim: str = "rep",
     paired: bool = True,
     mom_ndim: MomNDim | None = None,
+    mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     rng: RngTypes | None = None,
     replace: bool = True,
 ) -> xr.DataArray | DataT:
     """Create a resampling DataArray or Dataset."""
-    mom_params = MomParamsXArrayOptional.factory(
-        ndim=mom_ndim, dims=mom_dims, data=data, axes=mom_axes
+    xmom_params = MomParamsXArrayOptional.factory(
+        mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, data=data, axes=mom_axes
     )
-    dim = mom_params.select_axis_dim(
+    dim = xmom_params.select_axis_dim(
         data,
         axis=axis,
         dim=dim,
@@ -572,7 +584,7 @@ def _randsamp_indices_dataarray_or_dataset(
         return _get_unique_indices()
 
     # generate non-paired dataset
-    dims = {dim, *(() if mom_params.dims is None else mom_params.dims)}  # type: ignore[has-type]
+    dims = {dim, *(() if xmom_params.dims is None else xmom_params.dims)}  # type: ignore[has-type]
     out: dict[Hashable, xr.DataArray] = {}
     for name, da in data.items():
         if dims.issubset(da.dims):
@@ -593,6 +605,7 @@ def select_ndat(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
 ) -> int:
     """
     Determine ndat from array.
@@ -633,19 +646,20 @@ def select_ndat(
     ValueError: Cannot select moment dimension. dim='mom', axis=2.
     """
     if is_xarray(data):
-        xmom_params = MomParamsXArrayOptional.factory(
+        mom_params = MomParamsXArrayOptional.factory(
+            mom_params=mom_params,
             ndim=mom_ndim,
             axes=mom_axes,
             dims=mom_dims,
             data=data,
         )
-        axis, dim = xmom_params.select_axis_dim(data, axis=axis, dim=dim)
+        axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         return data.sizes[dim]
 
     axis = validate_axis_wrap(axis)
     data = np.asarray(data)
     mom_params = MomParamsArrayOptional.factory(
-        ndim=mom_ndim, axes=mom_axes
+        mom_params=mom_params, ndim=mom_ndim, axes=mom_axes
     ).normalize_axes(data.ndim)
 
     axis = mom_params.normalize_axis_index(validate_axis_wrap(axis), data.ndim)

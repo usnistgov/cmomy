@@ -14,12 +14,11 @@ import xarray as xr
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
-from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
+from cmomy.core.moment_params import factory_mom_params
 from cmomy.core.validate import (
     is_xarray,
-    validate_mom_and_mom_ndim,
+    validate_mom,
 )
-from cmomy.core.xr_utils import get_mom_dims_kws
 
 from .wrap_np import CentralMomentsArray
 from .wrap_xr import CentralMomentsData
@@ -53,6 +52,7 @@ if TYPE_CHECKING:
         MomDims,
         Moments,
         MomNDim,
+        MomParamsInput,
         NDArrayAny,
         ReduceValsKwargs,
         ResampleValsKwargs,
@@ -109,6 +109,7 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     dtype: DTypeLike | Mapping[str, DTypeLike] = None,
     copy: bool | None = False,
     fastpath: bool = False,
@@ -155,6 +156,16 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
     Dimensions without coordinates: mom
 
     """
+    mom_params = factory_mom_params(
+        obj,
+        mom_params=mom_params,
+        ndim=mom_ndim,
+        axes=mom_axes,
+        dims=mom_dims,
+        data=obj,
+        default_ndim=1,
+    )
+
     if is_xarray(obj):
         if not fastpath:
             copy = copy_if_needed(copy)
@@ -165,15 +176,13 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
 
         return CentralMomentsData(
             obj=obj,  # type: ignore[arg-type]
-            mom_params=MomParamsXArray.factory(
-                ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=obj, default_ndim=1
-            ),
+            mom_params=mom_params,
             fastpath=fastpath,
         )
 
-    return CentralMomentsArray(  # type: ignore[misc]
+    return CentralMomentsArray(
         obj=obj,  # type: ignore[arg-type]
-        mom_params=MomParamsArray.factory(ndim=mom_ndim, axes=mom_axes, default_ndim=1),
+        mom_params=mom_params,
         fastpath=fastpath,
         dtype=dtype,  # type: ignore[arg-type]
         copy=copy,
@@ -278,17 +287,16 @@ def zeros_like(
                 chunked_array_type=chunked_array_type,
                 from_array_kwargs=from_array_kwargs,
             ),
-            mom_ndim=c.mom_ndim,
-            mom_dims=c.mom_dims,
+            mom_params=c.mom_params,
         )
-    return wrap(  # type: ignore[no-any-return]
+    return wrap(
         np.zeros_like(
             c.obj,
             dtype=dtype,  # type: ignore[arg-type]
             order=order,
             subok=subok,
         ),
-        mom_ndim=c.mom_ndim,
+        mom_params=c.mom_params,
     )
 
 
@@ -356,6 +364,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
+    mom_params: MomParamsInput = None,
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     out: NDArrayAny | None = None,
@@ -413,8 +422,10 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     """
     from cmomy.reduction import reduce_vals
 
-    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
+    mom = validate_mom(mom)
+    mom_params = factory_mom_params(
+        x, mom_params=mom_params, ndim=len(mom), dims=mom_dims
+    )
     obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
         x,  # pyright: ignore[reportArgumentType]
         *y,
@@ -422,7 +433,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         weight=weight,
         axis=axis,
         dim=dim,
-        **kws,
+        mom_params=mom_params,
         keepdims=keepdims,
         parallel=parallel,
         out=out,
@@ -435,8 +446,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
 
     return wrap(  # pyright: ignore[reportUnknownVariableType]
         obj=obj,  # pyright: ignore[reportUnknownArgumentType]
-        mom_ndim=mom_ndim,
-        **kws,
+        mom_params=mom_params,
         fastpath=True,
     )
 
@@ -512,6 +522,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     sampler: Sampler,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
+    mom_params: MomParamsInput = None,
     dim: DimsReduce | MissingType = MISSING,
     move_axis_to_end: bool = True,
     out: NDArrayAny | None = None,
@@ -573,22 +584,24 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
            [10.    ,  0.6138,  0.1081],
            [10.    ,  0.5808,  0.0685]])
     """
-    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
-    kws = get_mom_dims_kws(x, mom_dims, mom_ndim)
-
     from cmomy.resample import resample_vals
+
+    mom = validate_mom(mom)
+    mom_params = factory_mom_params(
+        target=x, mom_params=mom_params, ndim=len(mom), dims=mom_dims
+    )
 
     obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]  # unused in python3.12
         x,  # pyright: ignore[reportArgumentType]
         *y,
         sampler=sampler,
         mom=mom,
+        mom_params=mom_params,
         weight=weight,
         axis=axis,
         dim=dim,
         move_axis_to_end=move_axis_to_end,
         parallel=parallel,
-        **kws,
         rep_dim=rep_dim,
         keep_attrs=keep_attrs,
         apply_ufunc_kwargs=apply_ufunc_kwargs,
@@ -599,8 +612,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     )
     return wrap(  # pyright: ignore[reportUnknownVariableType]
         obj=obj,  # pyright: ignore[reportUnknownArgumentType]
-        mom_ndim=mom_ndim,
-        **kws,
+        mom_params=mom_params,
         fastpath=True,
     )
 
@@ -662,6 +674,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_params: MomParamsInput = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -746,19 +759,20 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     """
     from cmomy import convert
 
-    kws = get_mom_dims_kws(
-        raw,
-        mom_dims,
-        mom_ndim,
-        raw,
-        mom_ndim_default=1,
-        include_mom_ndim=True,
-        mom_axes=mom_axes,
+    mom_params = factory_mom_params(
+        target=raw,
+        mom_params=mom_params,
+        ndim=mom_ndim,
+        axes=mom_axes,
+        dims=mom_dims,
+        data=raw,
+        default_ndim=1,
     )
-    return wrap(  # pyright: ignore[reportUnknownVariableType]
+
+    return wrap(
         obj=convert.moments_type(
             raw,
-            **kws,
+            mom_params=mom_params,
             to="central",
             out=out,
             dtype=dtype,
@@ -767,6 +781,6 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         ),
-        **kws,
+        mom_params=mom_params,
         fastpath=True,
     )

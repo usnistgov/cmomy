@@ -11,9 +11,6 @@ from cmomy.core.typing import MomentsStrict
 
 from .validate import (
     is_dataset,
-    is_xarray,
-    validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim_and_mom_axes,
 )
 
 if TYPE_CHECKING:
@@ -24,12 +21,11 @@ if TYPE_CHECKING:
     from typing import Any
 
     import xarray as xr
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import DTypeLike
 
     from .typing import (
         ApplyUFuncKwargs,
         MissingCoreDimOptions,
-        MomAxes,
         MomDims,
         MomDimsStrict,
         MomentsStrict,
@@ -79,7 +75,7 @@ def move_mom_dims_to_end(
             msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
             raise ValueError(msg)
 
-        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
 
     return x
 
@@ -166,38 +162,3 @@ def astype_dtype_dict(
         raise ValueError(msg)
 
     return dtype
-
-
-def get_mom_dims_kws(
-    target: ArrayLike | xr.DataArray | xr.Dataset,
-    mom_dims: MomDims | None,
-    mom_ndim: MomNDim | None,
-    out: Any = None,
-    mom_ndim_default: MomNDim | None = None,
-    mom_axes: MomAxes | None = None,
-    include_mom_ndim: bool = False,
-) -> dict[str, Any]:
-    """Get kwargs for mom_dims and mom_ndim"""
-    if is_xarray(target):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims,
-            mom_ndim,
-            out,
-            mom_ndim_default=mom_ndim_default,
-            mom_axes=mom_axes,
-        )
-        return (
-            {"mom_dims": mom_dims, "mom_ndim": mom_ndim}
-            if include_mom_ndim
-            else {"mom_dims": mom_dims}
-        )
-
-    if include_mom_ndim:
-        mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(
-            mom_ndim, mom_axes, mom_ndim_default=mom_ndim_default
-        )
-        return {
-            "mom_ndim": mom_ndim,
-            "mom_axes": mom_axes,
-        }
-    return {}

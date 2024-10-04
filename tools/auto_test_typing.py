@@ -704,10 +704,10 @@ def _check_typing_sampler(
     )
 
     d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)
-    assert_type(d, IndexSampler[xr.DataArray | xr.Dataset])
+    assert_type(d, IndexSampler["xr.DataArray | xr.Dataset"])
 
-    assert_type(d.indices, xr.DataArray | xr.Dataset)
-    assert_type(d.indices, xr.DataArray | xr.Dataset)
+    assert_type(d.indices, "xr.DataArray | xr.Dataset")
+    assert_type(d.indices, "xr.DataArray | xr.Dataset")
 """)
 
 

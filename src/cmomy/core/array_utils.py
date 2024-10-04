@@ -240,7 +240,7 @@ def asarray_maybe_recast(
     if is_ndarray(data):
         if recast and dtype is not None:
             return np.asarray(data, dtype=dtype)
-        return data  # pyright: ignore[reportUnknownVariableType]
+        return data
     return np.asarray(data, dtype=dtype)
 
 

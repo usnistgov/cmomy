@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass, replace
-from typing import TYPE_CHECKING, TypedDict, cast
+from typing import TYPE_CHECKING, TypedDict, cast, overload
 
 from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .missing import MISSING
 from .validate import (
     is_dataset,
+    is_xarray,
     validate_mom,
     validate_mom_axes,
     validate_mom_dims_and_mom_ndim,
@@ -21,8 +22,10 @@ if TYPE_CHECKING:
     from typing import Any
 
     import xarray as xr
+    from numpy.typing import ArrayLike
 
     from .typing import (
+        AxesGUFunc,
         AxisReduceMultWrap,
         AxisReduceWrap,
         DimsReduce,
@@ -32,8 +35,9 @@ if TYPE_CHECKING:
         MomDimsStrict,
         MomentsStrict,
         MomNDim,
+        MomParamsInput,
     )
-    from .typing_compat import Self, TypeVar, Unpack
+    from .typing_compat import Self, TypeVar
 
     _Axis = TypeVar("_Axis")
     _Dim = TypeVar("_Dim")
@@ -56,38 +60,55 @@ class MomParamsDict(TypedDict, total=False):
     dims: Hashable | Sequence[Hashable] | None
 
 
-class _Mixin:
+@dataclass
+class _MixinAsDict:
     def asdict(self) -> MomParamsDict:
-        return cast("MomParamsDict", asdict(self))  # type: ignore[call-overload]
-
-    def new_like(self, **kwargs: Any) -> Self:
-        return replace(self, **kwargs)  # type: ignore[type-var]
+        return cast("MomParamsDict", asdict(self))
 
 
 @dataclass
-class MomParams:
-    """Dataclass for moment parameters"""
+class MomParamsBase(_MixinAsDict):
+    """Base class for moment parameters."""
+
+    ndim: MomNDim
+
+    def new_like(self, **kwargs: Any) -> Self:
+        return replace(self, **kwargs)
+
+    def normalize_axis_index(
+        self, axis: complex, data_ndim: int, msg_prefix: str | None = None
+    ) -> int:
+        return normalize_axis_index(
+            axis=axis, ndim=data_ndim, mom_ndim=self.ndim, msg_prefix=msg_prefix
+        )
+
+    def normalize_axis_tuple(
+        self,
+        axis: complex | Iterable[complex] | None,
+        data_ndim: int,
+        msg_prefix: str | None = None,
+        allow_duplicate: bool = False,
+    ) -> tuple[int, ...]:
+        return normalize_axis_tuple(
+            axis=axis,
+            ndim=data_ndim,
+            mom_ndim=self.ndim,
+            msg_prefix=msg_prefix,
+            allow_duplicate=allow_duplicate,
+        )
+
+
+@dataclass
+class MomParams(_MixinAsDict):
+    """Dataclass for moment parameters input"""
 
     ndim: int | None = None
     axes: int | Sequence[int] | None = None
     dims: Hashable | Sequence[Hashable] | None = None
 
-    def asdict(self) -> MomParamsDict:
-        return cast("MomParamsDict", asdict(self))
-
-    def new_like(self, **kwargs: Unpack[MomParamsDict]) -> Self:
-        return replace(self, **kwargs)
-
 
 @dataclass
-class MomParamsBase:
-    """Base class for moment parameters."""
-
-    ndim: MomNDim
-
-
-@dataclass
-class MomParamsArray(MomParamsBase, _Mixin):
+class MomParamsArray(MomParamsBase):
     """Array Mom Params."""
 
     ndim: MomNDim
@@ -117,14 +138,21 @@ class MomParamsArray(MomParamsBase, _Mixin):
     @classmethod
     def factory(
         cls,
-        mom_params: Self | MomParamsDict | None = None,
+        mom_params: MomParamsInput = None,
         ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
         if isinstance(mom_params, cls):
+            if ndim is not None:
+                assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
-        mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
+
+        if isinstance(mom_params, (MomParams, MomParamsBase)):
+            mom_params = mom_params.asdict()
+        else:
+            mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
+
         if ndim is not None:
             mom_params["ndim"] = ndim
         mom_params.setdefault("axes", axes)
@@ -134,7 +162,7 @@ class MomParamsArray(MomParamsBase, _Mixin):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: Self | MomParamsDict | None = None,
+        mom_params: MomParamsInput = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> tuple[MomentsStrict, Self]:
@@ -145,28 +173,6 @@ class MomParamsArray(MomParamsBase, _Mixin):
 
     def move_axes_to_end(self) -> Self:
         return replace(self, axes=cast("MomAxesStrict", tuple(range(-self.ndim, 0))))
-
-    def normalize_axis_index(
-        self, axis: complex, data_ndim: int, msg_prefix: str | None = None
-    ) -> int:
-        return normalize_axis_index(
-            axis=axis, ndim=data_ndim, mom_ndim=self.ndim, msg_prefix=msg_prefix
-        )
-
-    def normalize_axis_tuple(
-        self,
-        axis: complex | Iterable[complex] | None,
-        data_ndim: int,
-        msg_prefix: str | None = None,
-        allow_duplicate: bool = False,
-    ) -> tuple[int, ...]:
-        return normalize_axis_tuple(
-            axis=axis,
-            ndim=data_ndim,
-            mom_ndim=self.ndim,
-            msg_prefix=msg_prefix,
-            allow_duplicate=allow_duplicate,
-        )
 
     def normalize_axes(self, data_ndim: int) -> Self:
         """Normalize self.axes in new object."""
@@ -179,6 +185,32 @@ class MomParamsArray(MomParamsBase, _Mixin):
                 self.axes, data_ndim, msg_prefix="normalize_axes"
             ),
         )
+
+    def axes_data_reduction(
+        self,
+        *inner: int | tuple[int, ...],
+        axis: int,
+        out_has_axis: bool = False,
+    ) -> AxesGUFunc:
+        """
+        axes for reducing data along axis
+
+        if ``out_has_axis == True``, then treat like resample,
+        so output will still have ``axis`` with new size in output.
+
+        It is assumed that `axis` is validated against a moments array,
+        (i.e., negative values should be ``< -mom_ndim``)
+
+        Can also pass in "inner" dimensions (elements 1:-1 of output)
+        """
+        data_axes = (axis, *self.axes)
+        out_axes = data_axes if out_has_axis else self.axes
+
+        return [
+            data_axes,
+            *((x,) if isinstance(x, int) else x for x in inner),
+            out_axes,
+        ]
 
     def raise_if_in_mom_axes(self, *axes: int) -> None:
         if self.axes is not None and any(a in self.axes for a in axes):  # pyright: ignore[reportUnnecessaryComparison]
@@ -207,7 +239,7 @@ class MomParamsArrayOptional(MomParamsArray):
 
 
 @dataclass
-class MomParamsXArray(MomParamsBase, _Mixin):
+class MomParamsXArray(MomParamsBase):
     """XArray mom parameters."""
 
     dims: MomDimsStrict
@@ -233,7 +265,7 @@ class MomParamsXArray(MomParamsBase, _Mixin):
     @classmethod
     def factory(
         cls,
-        mom_params: Self | MomParamsDict | None = None,
+        mom_params: MomParamsInput = None,
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
@@ -241,9 +273,15 @@ class MomParamsXArray(MomParamsBase, _Mixin):
         default_ndim: MomNDim | None = None,
     ) -> Self:
         if isinstance(mom_params, cls):
+            if ndim is not None:
+                assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
 
-        mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
+        if isinstance(mom_params, (MomParams, MomParamsBase)):
+            mom_params = mom_params.asdict()
+        else:
+            mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
+
         if ndim is not None:
             mom_params["ndim"] = ndim
         mom_params.setdefault("dims", dims)
@@ -254,7 +292,7 @@ class MomParamsXArray(MomParamsBase, _Mixin):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: Self | MomParamsDict | None = None,
+        mom_params: MomParamsInput = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
@@ -282,7 +320,14 @@ class MomParamsXArray(MomParamsBase, _Mixin):
     def to_array(self) -> MomParamsArray:
         return MomParamsArray(ndim=self.ndim, axes=self.axes)
 
-    def _check_dim_in_mom_dims(
+    def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
+        """Core dimensions (*dims, *self.dims)"""
+        if self.dims is None:  # pyright: ignore[reportUnnecessaryComparison]
+            raise ValueError
+        return (*dims, *self.dims)
+
+    # ** Select
+    def _raise_if_dim_in_mom_dims(
         self,
         *,
         axis: int | None = None,
@@ -333,7 +378,7 @@ class MomParamsXArray(MomParamsBase, _Mixin):
                     "For Dataset, must specify ``dim`` value other than ``None`` only."
                 )
                 raise ValueError(msg)
-            self._check_dim_in_mom_dims(dim=dim)
+            self._raise_if_dim_in_mom_dims(dim=dim)
             return 0, dim
 
         default_axis = validate_not_none(default_axis, "default_axis")
@@ -345,7 +390,7 @@ class MomParamsXArray(MomParamsBase, _Mixin):
         if dim is not MISSING:
             axis = data.get_axis_num(dim)
         elif axis is not MISSING:
-            axis = self.to_array().normalize_axis_index(
+            axis = self.normalize_axis_index(
                 axis=axis,  # type: ignore[arg-type]
                 data_ndim=data.ndim,
             )
@@ -354,7 +399,7 @@ class MomParamsXArray(MomParamsBase, _Mixin):
             msg = f"Unknown dim {dim} and axis {axis}"
             raise TypeError(msg)
 
-        self._check_dim_in_mom_dims(dim=dim, axis=axis)
+        self._raise_if_dim_in_mom_dims(dim=dim, axis=axis)
         return axis, dim
 
     def select_axis_dim_mult(
@@ -375,7 +420,7 @@ class MomParamsXArray(MomParamsBase, _Mixin):
         def _check_dim(dim_: tuple[Hashable, ...]) -> None:
             if self.dims is not None:  # pyright: ignore[reportUnnecessaryComparison]
                 for d in dim_:
-                    self._check_dim_in_mom_dims(dim=d)
+                    self._raise_if_dim_in_mom_dims(dim=d)
 
         dim_: tuple[Hashable, ...]
         axis_: tuple[int, ...]
@@ -402,7 +447,7 @@ class MomParamsXArray(MomParamsBase, _Mixin):
                 dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
             axis_ = data.get_axis_num(dim_)
         elif axis is not MISSING:
-            axis_ = self.to_array().normalize_axis_tuple(
+            axis_ = self.normalize_axis_tuple(
                 axis,
                 data.ndim,
             )
@@ -443,3 +488,52 @@ class MomParamsXArrayOptional(MomParamsXArray):
 
 
 default_mom_params_xarray = MomParamsXArrayOptional()
+
+
+@overload
+def factory_mom_params(
+    target: xr.DataArray | xr.Dataset,
+    *,
+    mom_params: MomParamsInput = ...,
+    ndim: int | None = ...,
+    axes: int | Sequence[int] | None = ...,
+    dims: Hashable | Sequence[Hashable] | None = ...,
+    data: object = ...,
+    default_ndim: MomNDim | None = ...,
+) -> MomParamsXArray: ...
+@overload
+def factory_mom_params(
+    target: ArrayLike,
+    *,
+    mom_params: MomParamsInput = ...,
+    ndim: int | None = ...,
+    axes: int | Sequence[int] | None = ...,
+    dims: Hashable | Sequence[Hashable] | None = ...,
+    data: object = ...,
+    default_ndim: MomNDim | None = ...,
+) -> MomParamsArray: ...
+
+
+def factory_mom_params(
+    target: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    mom_params: MomParamsInput = None,
+    ndim: int | None = None,
+    axes: int | Sequence[int] | None = None,
+    dims: Hashable | Sequence[Hashable] | None = None,
+    data: object = None,
+    default_ndim: MomNDim | None = None,
+) -> MomParamsArray | MomParamsXArray:
+    """Factory method to create mom_params."""
+    if is_xarray(target):
+        return MomParamsXArray.factory(
+            mom_params=mom_params,
+            ndim=ndim,
+            axes=axes,
+            dims=dims,
+            data=data,
+            default_ndim=default_ndim,
+        )
+    return MomParamsArray.factory(
+        mom_params=mom_params, ndim=ndim, axes=axes, default_ndim=default_ndim
+    )

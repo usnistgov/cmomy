@@ -69,6 +69,7 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
+        MomParamsInput,
         NameType,
         NDArrayAny,
     )
@@ -105,7 +106,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         mom_ndim: MomNDim | None = None,
         mom_axes: MomAxes | None = None,
         mom_dims: MomDims | None = None,
-        mom_params: MomParamsXArray | None = None,
+        mom_params: MomParamsInput = None,
         fastpath: bool = False,
     ) -> None:
         if not is_xarray(obj):
@@ -113,7 +114,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             raise TypeError(msg)
 
         if fastpath:
-            assert mom_params is not None  # noqa: S101
+            assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
         else:
             mom_params = MomParamsXArray.factory(
                 mom_params=mom_params,
@@ -128,6 +129,10 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         super().__init__(obj=obj, mom_params=mom_params, fastpath=fastpath)  # type: ignore[arg-type]
 
     # ** Properties ------------------------------------------------------------
+    @property
+    def mom_params(self) -> MomParamsXArray:
+        return self._mom_params
+
     @property
     @docfiller_abc()
     def mom_shape(self) -> MomentsStrict:
@@ -944,7 +949,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
-        ).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        ).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
 
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
@@ -985,7 +990,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         if is_dataarray(self._obj):
             return self  # pyright: ignore[reportReturnType]
 
-        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
             mom_params=self._mom_params,
