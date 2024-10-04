@@ -27,7 +27,7 @@ from .core.validate import (
     is_dataset,
     is_xarray,
     raise_if_wrong_value,
-    validate_axis_mult_wrap,
+    validate_axis_mult,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -193,7 +193,7 @@ def moveaxis(
         mom_params=mom_params, ndim=mom_ndim, axes=mom_axes
     ).normalize_axes(x.ndim)
     axes0, axes1 = (
-        mom_params.normalize_axis_tuple(validate_axis_mult_wrap(a), x.ndim)
+        mom_params.normalize_axis_tuple(validate_axis_mult(a), x.ndim)
         for a in (axis, dest)
     )
     mom_params.raise_if_in_mom_axes(*axes0, *axes1)

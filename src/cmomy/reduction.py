@@ -37,7 +37,7 @@ from .core.validate import (
     is_dataset,
     is_xarray,
     raise_if_wrong_value,
-    validate_axis_mult_wrap,
+    validate_axis_mult,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -502,7 +502,7 @@ def reduce_data(  # noqa: PLR0913
     return _reduce_data(
         asarray_maybe_recast(data, dtype=dtype, recast=False),
         mom_params=mom_params,
-        axis=validate_axis_mult_wrap(axis),
+        axis=validate_axis_mult(axis),
         out=out,
         dtype=dtype,
         casting=casting,

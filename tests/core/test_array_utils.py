@@ -201,14 +201,3 @@ def test_optional_keepdims(shape, axis, out) -> None:
         assert array_utils.optional_keepdims(x, axis=axis, keepdims=keepdims).shape == (
             out if keepdims else shape
         )
-
-
-@pytest.mark.parametrize("shape", [(10,), (2, 2)])
-@pytest.mark.parametrize("dtype", [np.float32, None])
-@pytest.mark.parametrize("broadcast", [True, False])
-def test_dummy_array(shape, dtype, broadcast) -> None:
-    out = array_utils.dummy_array(shape, dtype, broadcast)
-
-    assert out.shape == shape
-    assert out.dtype.type is (dtype or np.float64)
-    assert out.flags["OWNDATA"] is not broadcast

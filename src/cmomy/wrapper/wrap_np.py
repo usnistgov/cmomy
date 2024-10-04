@@ -23,7 +23,7 @@ from cmomy.core.validate import (
     raise_if_wrong_value,
     validate_axis,
     validate_floating_dtype,
-    validate_mom_and_mom_ndim,
+    validate_mom,
 )
 
 if TYPE_CHECKING:
@@ -67,7 +67,7 @@ if TYPE_CHECKING:
 from numpy.typing import NDArray
 
 from cmomy.core.docstrings import docfiller_central as docfiller
-from cmomy.core.typing import FloatT
+from cmomy.core.typing import AxisReduceWrap, FloatT
 
 from .wrap_abc import CentralMomentsABC
 
@@ -947,7 +947,8 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         {dtype}
         {order}
         """
-        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+        mom = validate_mom(mom)
+        mom_params = MomParamsArray.factory(ndim=len(mom))
 
         vshape: tuple[int, ...]
         if val_shape is None:
@@ -960,7 +961,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         # add in moments
         shape: tuple[int, ...] = (*vshape, *mom_to_mom_shape(mom))
 
-        return cls(np.zeros(shape, dtype=dtype, order=order), mom_ndim=mom_ndim)
+        return cls(np.zeros(shape, dtype=dtype, order=order), mom_params=mom_params)
 
     # ** Custom for this class -------------------------------------------------
     def _raise_if_scalar(self, message: str | None = None) -> None:
@@ -1034,7 +1035,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         indices: ArrayLike,
         *,
-        axis: AxisReduce = -1,
+        axis: AxisReduceWrap = -1,
         last: bool = False,
     ) -> Self:
         """
@@ -1062,7 +1063,10 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         """
         self._raise_if_scalar()
-        axis = validate_axis(axis)
+
+        axis = self._mom_params.normalize_axis_index(
+            validate_axis(axis), self._obj.ndim
+        )
 
         obj = self.obj
         last_dim = obj.ndim - self.mom_ndim - 1

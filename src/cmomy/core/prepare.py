@@ -18,7 +18,7 @@ from .missing import MISSING
 from .validate import (
     is_dataarray,
     is_dataset,
-    validate_axis_wrap,
+    validate_axis,
 )
 from .xr_utils import (
     raise_if_dataset,
@@ -61,7 +61,7 @@ def prepare_data_for_reduction(
     """Convert central moments array to correct form for reduction."""
     data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
     axis = normalize_axis_index(
-        validate_axis_wrap(axis),
+        validate_axis(axis),
         data.ndim,
         mom_ndim=mom_params.ndim,
     )
@@ -104,7 +104,7 @@ def prepare_values_for_reduction(
         raise ValueError(msg)
 
     target = asarray_maybe_recast(target, dtype=dtype, recast=recast)
-    axis = normalize_axis_index(validate_axis_wrap(axis), target.ndim)
+    axis = normalize_axis_index(validate_axis(axis), target.ndim)
     nsamp = target.shape[axis]
 
     axis_neg = positive_to_negative_index(axis, target.ndim)

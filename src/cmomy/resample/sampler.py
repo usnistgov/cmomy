@@ -20,7 +20,7 @@ from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
-    validate_axis_wrap,
+    validate_axis,
 )
 from cmomy.factory import (
     factory_freq_to_indices,
@@ -656,13 +656,13 @@ def select_ndat(
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         return data.sizes[dim]
 
-    axis = validate_axis_wrap(axis)
+    axis = validate_axis(axis)
     data = np.asarray(data)
     mom_params = MomParamsArrayOptional.factory(
         mom_params=mom_params, ndim=mom_ndim, axes=mom_axes
     ).normalize_axes(data.ndim)
 
-    axis = mom_params.normalize_axis_index(validate_axis_wrap(axis), data.ndim)
+    axis = mom_params.normalize_axis_index(validate_axis(axis), data.ndim)
     mom_params.raise_if_in_mom_axes(axis)
 
     return data.shape[axis]

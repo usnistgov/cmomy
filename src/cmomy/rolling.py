@@ -39,7 +39,7 @@ from .core.utils import (
 from .core.validate import (
     is_dataarray,
     is_xarray,
-    validate_axis_wrap,
+    validate_axis,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -1061,7 +1061,7 @@ def _prepare_alpha_array(
     elif alpha.ndim == 1 or alpha_axis is MISSING:
         alpha_axis = -1
     else:
-        alpha_axis = normalize_axis_index(validate_axis_wrap(alpha_axis), alpha.ndim)
+        alpha_axis = normalize_axis_index(validate_axis(alpha_axis), alpha.ndim)
         alpha_axis = positive_to_negative_index(alpha_axis, alpha.ndim)
         if move_axis_to_end and alpha_axis != -1:
             alpha = np.moveaxis(alpha, alpha_axis, -1)

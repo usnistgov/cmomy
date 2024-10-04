@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
@@ -254,32 +253,3 @@ def optional_keepdims(
     if keepdims:
         return np.expand_dims(x, axis)
     return x
-
-
-# * Dummy arrays --------------------------------------------------------------
-def dummy_array(
-    shape: int | tuple[int, ...],
-    dtype: DTypeLike = None,
-    broadcast: bool = True,
-) -> NDArrayAny:
-    """
-    Create a dummy array.
-
-    Intended for cases where array is passed to guvectorized function to
-    set a shape.
-    """
-    # lru_cache doesn't play nice with dtype typing.
-    return _dummy_array(shape, dtype, broadcast)  # type: ignore[arg-type]
-
-
-@lru_cache
-def _dummy_array(
-    shape: int | tuple[int, ...],
-    dtype: DTypeLike = None,
-    broadcast: bool = True,
-) -> NDArrayAny:
-    if broadcast:
-        if dtype is None:
-            dtype = np.float64
-        return np.broadcast_to(np.dtype(dtype).type(0), shape)
-    return np.empty(shape, dtype=dtype)
