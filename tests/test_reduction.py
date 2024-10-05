@@ -124,6 +124,19 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
     np.testing.assert_allclose(c, out)
 
 
+@pytest.mark.parametrize("mom_ndim", [1, 2])
+def test_reduce_data_axis_none(rng, mom_ndim) -> None:
+    data = rng.random((10, 2, 3, 4))
+
+    data_collapse = data.reshape(-1, *data.shape[-mom_ndim:])
+
+    expected = cmomy.reduce_data(data_collapse, axis=0, mom_ndim=mom_ndim)
+
+    check = cmomy.reduce_data(data, axis=None, mom_ndim=mom_ndim)
+
+    np.testing.assert_allclose(check, expected)
+
+
 @pytest.mark.parametrize(
     ("shape", "kws"),
     [

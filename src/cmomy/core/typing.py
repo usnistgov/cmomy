@@ -574,6 +574,7 @@ class RollingExpValsKwargs(
 # ** Wrap
 class WrapKwargs(
     _MomNDimKwargs,
+    _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
 ):

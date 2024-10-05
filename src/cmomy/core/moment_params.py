@@ -322,8 +322,6 @@ class MomParamsXArray(MomParamsBase):
 
     def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
         """Core dimensions (*dims, *self.dims)"""
-        if self.dims is None:  # pyright: ignore[reportUnnecessaryComparison]
-            raise ValueError
         return (*dims, *self.dims)
 
     # ** Select
@@ -479,12 +477,6 @@ class MomParamsXArrayOptional(MomParamsXArray):
         if ndim is None and dims is None and axes is None and default_ndim is None:
             return cls(None, None)
         return super().from_params(ndim, dims, axes, data, default_ndim)
-
-    def to_array(self) -> MomParamsArrayOptional:
-        return MomParamsArrayOptional(
-            ndim=self.ndim,
-            axes=None if self.ndim is None else self.axes,
-        )
 
 
 default_mom_params_xarray = MomParamsXArrayOptional()

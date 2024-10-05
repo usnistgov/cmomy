@@ -7,6 +7,7 @@ import pytest
 import xarray as xr
 
 from cmomy.core.moment_params import (
+    MomParamsArray,
     MomParamsXArray,
     MomParamsXArrayOptional,
     default_mom_params_xarray,
@@ -20,6 +21,103 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
             func(*args, **kwargs)
     else:
         assert func(*args, **kwargs) == expected
+
+
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({"ndim": 1}, (1, (-1,))),
+        ({"ndim": 2}, (2, (-2, -1))),
+        ({"axes": -2}, (1, (-2,))),
+        ({"axes": [1, 2]}, (2, (1, 2))),
+        ({}, ValueError),
+        ({"default_ndim": 1}, (1, (-1,))),
+        ({"ndim": 2, "axes": -1}, ValueError),
+    ],
+)
+def test_MomParamsArray(kws, expected) -> None:
+    def _func(*args, **kwargs):
+        m = MomParamsArray.factory(*args, **kwargs)
+        return m.ndim, m.axes
+
+    _do_test(_func, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({"ndim": 1}, (1, ("mom_0",))),
+        ({"ndim": 2}, (2, ("mom_0", "mom_1"))),
+        ({"dims": "a"}, (1, ("a",))),
+        ({"dims": ("a", "b")}, (2, ("a", "b"))),
+        ({}, ValueError),
+        ({"default_ndim": 1}, (1, ("mom_0",))),
+        ({"ndim": 2, "dims": "a"}, ValueError),
+    ],
+)
+def test_MomParamsXArray(kws, expected) -> None:
+    def _func(*args, **kwargs):
+        m = MomParamsXArray.factory(*args, **kwargs)
+        return (
+            m.ndim,
+            m.dims,
+        )
+
+    _do_test(_func, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"])],
+)
+@pytest.mark.parametrize(
+    ("kws", "expected"),
+    [
+        ({"ndim": 1}, (1, ("c",))),
+        ({"ndim": 2}, (2, ("b", "c"))),
+        ({"dims": "a"}, (1, ("a",))),
+        ({"dims": ("mom_0", "mom_1")}, (2, ("mom_0", "mom_1"))),
+        ({}, ValueError),
+        ({"default_ndim": 1}, (1, ("c",))),
+        ({"ndim": 2, "dims": "a"}, ValueError),
+        ({"axes": 0}, (1, ("a",))),
+        ({"axes": (0, 1)}, (2, ("a", "b"))),
+    ],
+)
+def test_MomParamsXArray_data(data, kws, expected) -> None:
+    def _func(*args, **kwargs):
+        m = MomParamsXArray.factory(*args, **kwargs)
+        return (
+            m.ndim,
+            m.dims,
+        )
+
+    _do_test(_func, expected=expected, data=data, **kws)
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        ((None, 1), (("mom_0",), 1)),
+        ((None, 2), (("mom_0", "mom_1"), 2)),
+        (("a", None), (("a",), 1)),
+        ((("a", "b"), None), (("a", "b"), 2)),
+        ((["a"], None), (("a",), 1)),
+        ((["a", "b"], None), (("a", "b"), 2)),
+        ((["a", "b"], 1), ValueError),
+        (("a", 2), ValueError),
+        ((("a,"), 2), ValueError),
+        ((None, None), ValueError),
+        ((None, None, None, 1), (("mom_0",), 1)),
+    ],
+)
+def test_MomParamsXArray_other(args, expected) -> None:
+    def _func(*args, **kwargs):
+        m = MomParamsXArray.factory(*args, **kwargs)
+        return m.dims, m.ndim
+
+    kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args))
+    _do_test(_func, expected=expected, **kws)
 
 
 @pytest.mark.parametrize(
@@ -41,31 +139,6 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
 def test_MomParamsXArrayOptional(args, expected) -> None:
     def _func(*args, **kwargs):
         m = MomParamsXArrayOptional.factory(*args, **kwargs)
-        return m.dims, m.ndim
-
-    kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args))
-    _do_test(_func, expected=expected, **kws)
-
-
-@pytest.mark.parametrize(
-    ("args", "expected"),
-    [
-        ((None, 1), (("mom_0",), 1)),
-        ((None, 2), (("mom_0", "mom_1"), 2)),
-        (("a", None), (("a",), 1)),
-        ((("a", "b"), None), (("a", "b"), 2)),
-        ((["a"], None), (("a",), 1)),
-        ((["a", "b"], None), (("a", "b"), 2)),
-        ((["a", "b"], 1), ValueError),
-        (("a", 2), ValueError),
-        ((("a,"), 2), ValueError),
-        ((None, None), ValueError),
-        ((None, None, None, 1), (("mom_0",), 1)),
-    ],
-)
-def test_MomParamsXArray(args, expected) -> None:
-    def _func(*args, **kwargs):
-        m = MomParamsXArray.factory(*args, **kwargs)
         return m.dims, m.ndim
 
     kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args))

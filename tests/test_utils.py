@@ -415,6 +415,28 @@ def test_assign_moment_multiple(data, mom_ndim, wrapper, moment) -> None:
         xr.testing.assert_allclose(expected, out)
 
 
+def test_select_moment_mom_axes(rng) -> None:
+    data = rng.random((10, 2, 3, 4))
+
+    data_move = cmomy.moveaxis(data, (-2, -1), (1, 2))
+
+    a = cmomy.select_moment(data, "ave", mom_ndim=2)
+    b = cmomy.select_moment(data_move, "ave", mom_axes=(1, 2))
+
+    np.testing.assert_equal(a, b)
+
+
+def test_assign_moment_mom_axes(rng) -> None:
+    data = rng.random((10, 2, 3, 4))
+
+    data_move = cmomy.moveaxis(data, (-2, -1), (1, 2))
+
+    a = cmomy.assign_moment(data, ave=0, mom_ndim=2)
+    b = cmomy.assign_moment(data_move, ave=0, mom_axes=(1, 2))
+
+    np.testing.assert_equal(a, cmomy.moveaxis(b, (1, 2), (-2, -1)))
+
+
 # * Vals -> Data
 @pytest.mark.parametrize(
     ("xshape", "yshape", "wshape", "mom", "out_shape"),

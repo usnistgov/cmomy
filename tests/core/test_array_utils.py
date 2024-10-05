@@ -86,6 +86,7 @@ def test_normalize_axis_index(args, expected):
         ((-1j, 3, 2), (0,)),
         ((1, 3, 2), (1,)),
         ((1j, 3, 2), ValueError),
+        (((0, 0), 2), ValueError),
     ],
 )
 def test_normalize_axis_tuple(args, expected):

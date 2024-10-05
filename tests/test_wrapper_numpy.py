@@ -534,3 +534,13 @@ def test_jackknife_and_reduce(rng) -> None:
     b = c.jackknife_and_reduce(axis=0, data_reduced=c.reduce(axis=0))
 
     np.testing.assert_allclose(a, b)
+
+
+def test_wrap_mom_axes(rng) -> None:
+    data = rng.random((10, 2, 3, 4))
+    data_moved = np.moveaxis(data, (-2, -1), (0, 1))
+
+    a = cmomy.wrap(data, mom_ndim=2)
+    b = cmomy.wrap(data_moved, mom_axes=(0, 1))
+
+    np.testing.assert_array_equal(a, b)

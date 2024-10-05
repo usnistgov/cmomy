@@ -70,6 +70,71 @@ def test_validate_mom_ndim(arg, expected, match) -> None:
 
 
 @pytest.mark.parametrize(
+    ("arg", "expected"),
+    [
+        (1, (1,)),
+        ((1,), (1,)),
+        ((1, 2), (1, 2)),
+        ([1, 2], (1, 2)),
+        (0, ValueError),
+        ([0, 1], ValueError),
+        ((_ for _ in (1, 2)), (1, 2)),
+    ],
+)
+def test_validate_mom(arg, expected) -> None:
+    _do_test(validate.validate_mom, arg, expected=expected)
+
+
+@pytest.mark.parametrize(
+    ("arg", "expected"),
+    [(0, (0,)), ((1, 2), (1, 2)), ((1, 2, 3), ValueError), ([0], (0,))],
+)
+def test_validate_mom_axes(arg, expected) -> None:
+    _do_test(validate.validate_mom_axes, arg, expected=expected)
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        (
+            (1,),
+            (1, (-1,)),
+        ),
+        (
+            (2,),
+            (2, (-2, -1)),
+        ),
+        (
+            (None, 0),
+            (1, (0,)),
+        ),
+        (
+            (None, [1, 2]),
+            (2, (1, 2)),
+        ),
+        (
+            (1, [1, 2]),
+            ValueError,
+        ),
+        (
+            (2, [1, 2]),
+            (2, (1, 2)),
+        ),
+        (
+            (None, None, 1),
+            (1, (-1,)),
+        ),
+        (
+            (2, 1),
+            ValueError,
+        ),
+    ],
+)
+def test_validate_mom_ndim_and_mom_axes(args, expected) -> None:
+    _do_test(validate.validate_mom_ndim_and_mom_axes, *args, expected=expected)
+
+
+@pytest.mark.parametrize(
     ("arg", "expected", "match"),
     [
         (3, (3,), None),

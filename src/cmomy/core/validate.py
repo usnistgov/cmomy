@@ -169,6 +169,26 @@ def validate_not_none(x: T | None, name: str = "value") -> T:
     return x
 
 
+def validate_mom_ndim_and_mom_axes(
+    mom_ndim: int | None,
+    mom_axes: int | Sequence[int] | None = None,
+    mom_ndim_default: MomNDim | None = None,
+) -> tuple[MomNDim, MomAxesStrict]:
+    """Validate ``mom_ndim`` and ``mom_axes``."""
+    if mom_axes is None:
+        mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default)
+        mom_axes = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
+        return mom_ndim, mom_axes
+
+    mom_axes = validate_mom_axes(mom_axes)
+    if mom_ndim is None:
+        mom_ndim = cast("MomNDim", len(mom_axes))
+    elif len(mom_axes) != mom_ndim:
+        msg = f"{len(mom_axes)=} != {mom_ndim=}"
+        raise ValueError(msg)
+    return cast("MomNDim", mom_ndim), mom_axes
+
+
 # * Validate Axis -------------------------------------------------------------
 def validate_axis(axis: T | None | MissingType) -> T:
     """
@@ -254,23 +274,3 @@ def validate_mom_dims_and_mom_ndim(
 
     msg = "Must specify at least one of mom_dims or mom_ndim"
     raise ValueError(msg)
-
-
-def validate_mom_ndim_and_mom_axes(
-    mom_ndim: int | None,
-    mom_axes: int | Sequence[int] | None = None,
-    mom_ndim_default: MomNDim | None = None,
-) -> tuple[MomNDim, MomAxesStrict]:
-    """Validate ``mom_ndim`` and ``mom_axes``."""
-    if mom_axes is None:
-        mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default)
-        mom_axes = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
-        return mom_ndim, mom_axes
-
-    mom_axes = validate_mom_axes(mom_axes)
-    if mom_ndim is None:
-        mom_ndim = cast("MomNDim", len(mom_axes))
-    elif len(mom_axes) != mom_ndim:
-        msg = f"{len(mom_axes)=} != {mom_ndim=}"
-        raise ValueError(msg)
-    return cast("MomNDim", mom_ndim), mom_axes
