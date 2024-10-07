@@ -97,6 +97,7 @@ def construct_rolling_window_array(
     window: int | Sequence[int],
     *,
     axis: AxisReduceMultWrap | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
@@ -105,7 +106,6 @@ def construct_rolling_window_array(
     mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
     # xarray specific
-    dim: DimsReduceMult | MissingType = ...,
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
     **kwargs: Any,
@@ -116,6 +116,7 @@ def construct_rolling_window_array(
     window: int | Sequence[int],
     *,
     axis: AxisReduceMultWrap | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
@@ -124,7 +125,6 @@ def construct_rolling_window_array(
     mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
     # xarray specific
-    dim: DimsReduceMult | MissingType = ...,
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
     **kwargs: Any,
@@ -135,6 +135,7 @@ def construct_rolling_window_array(
     window: int | Sequence[int],
     *,
     axis: AxisReduceMultWrap | MissingType = ...,
+    dim: DimsReduceMult | MissingType = ...,
     center: bool | Sequence[bool] = ...,
     stride: int | Sequence[int] = ...,
     fill_value: ArrayLike = ...,
@@ -143,7 +144,6 @@ def construct_rolling_window_array(
     mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
     # xarray specific
-    dim: DimsReduceMult | MissingType = ...,
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
     **kwargs: Any,
@@ -156,6 +156,7 @@ def construct_rolling_window_array(
     window: int | Sequence[int],
     *,
     axis: AxisReduceMultWrap | MissingType = MISSING,
+    dim: DimsReduceMult | MissingType = MISSING,
     center: bool | Sequence[bool] = False,
     stride: int | Sequence[int] = 1,
     fill_value: ArrayLike = np.nan,
@@ -164,7 +165,6 @@ def construct_rolling_window_array(
     mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     # xarray specific
-    dim: DimsReduceMult | MissingType = MISSING,
     window_dim: str | Sequence[str] | None = None,
     keep_attrs: bool | None = None,
     **kwargs: Any,
@@ -178,6 +178,7 @@ def construct_rolling_window_array(
         Input array.
     axis : int or iterable of int
         To sample along.
+    dim : str or sequence of hashable
     window : int or sequence of int
         Window size.
     center : bool
@@ -187,11 +188,12 @@ def construct_rolling_window_array(
     fill_value : scalar
         Fill value for missing values.
     {mom_ndim_optional}
-    {mom_dims_data}
     {mom_axes}
-    dim : str or sequence of hashable
+    {mom_dims_data}
+    {mom_params}
     window_dim : str or Sequence of str, optional
-        Names of output window dimension(s).
+        Names of output window dimension(s). Default to ``rolling_{dim}`` where
+        ``{dim}`` is replaced by ``dim`` names.
     {keep_attrs}
     **kwargs
         Extra arguments to :meth:`xarray.DataArray.rolling` or :meth:`xarray.Dataset.rolling`.
@@ -369,22 +371,22 @@ def rolling_data(  # noqa: PLR0913
     *,
     window: int,
     axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    move_axis_to_end: bool = False,
     # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
     keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -395,19 +397,21 @@ def rolling_data(  # noqa: PLR0913
     data : array-like or DataArray or Dataset
     {window}
     {axis}
+    {dim}
     {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     {min_periods}
     {center}
     {zero_missing_weights}
-    {move_axis_to_end}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
-    {dim}
+    {move_axis_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -611,21 +615,21 @@ def rolling_vals(  # noqa: PLR0913
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
     window: int,
-    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
-    move_axis_to_end: bool = True,
-    mom_params: MomParamsInput = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
+    move_axis_to_end: bool = True,
     # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -638,19 +642,20 @@ def rolling_vals(  # noqa: PLR0913
     {y_genarray}
     {mom}
     {window}
-    {weight_genarray}
     {axis}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
     {min_periods}
     {center}
     {zero_missing_weights}
-    {move_axis_to_end}
     {out}
     {dtype}
     {casting}
     {order_cf}
     {parallel}
-    {dim}
-    {mom_dims}
+    {move_axis_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -887,22 +892,22 @@ def rolling_exp_data(  # noqa: PLR0913
     alpha: ArrayLike,
     *,
     axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     min_periods: int | None = None,
     alpha_axis: AxisReduceWrap | MissingType = MISSING,
     adjust: bool = True,
     zero_missing_weights: bool = True,
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    dim: DimsReduce | MissingType = MISSING,
+    move_axis_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -914,20 +919,24 @@ def rolling_exp_data(  # noqa: PLR0913
     alpha : array-like
         `alpha` values.
     {axis}
+    {dim}
     {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     {min_periods}
+    alpha_axis : int
+        Axis of ``alpha`` corresponding to ``axis`` for ``data``.
     adjust : bool, default=True
         Same as ``adjust`` parameter of :meth:`pandas.DataFrame.ewm`
     {zero_missing_weights}
-    {move_axis_to_end}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
-    {dim}
+    {move_axis_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -1185,21 +1194,21 @@ def rolling_exp_vals(  # noqa: PLR0913
     *y: ArrayLike | xr.DataArray | DataT,
     alpha: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     min_periods: int | None = None,
     adjust: bool = True,
     zero_missing_weights: bool = True,
-    mom_params: MomParamsInput = None,
-    move_axis_to_end: bool = True,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
+    move_axis_to_end: bool = True,
     # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -1213,20 +1222,21 @@ def rolling_exp_vals(  # noqa: PLR0913
     alpha : array-like
         `alpha` values.
     {mom}
-    {weight_genarray}
     {axis}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
     {min_periods}
     adjust : bool, default=True
         Same as ``adjust`` parameter of :meth:`pandas.DataFrame.ewm`
     {zero_missing_weights}
-    {move_axis_to_end}
     {out}
     {dtype}
     {casting}
     {order_cf}
     {parallel}
-    {dim}
-    {mom_dims}
+    {move_axis_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 

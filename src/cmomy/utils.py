@@ -126,7 +126,9 @@ def moveaxis(
     dest_dim : str or sequence of hashable
         Destination of each original dimension.
     {mom_ndim_optional}
+    {mom_axes}
     {mom_dims_data}
+    {mom_params}
 
     Returns
     -------
@@ -281,11 +283,11 @@ def select_moment(
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArray[ScalarT] | DataT:
@@ -296,12 +298,14 @@ def select_moment(
     ----------
     {data}
     {mom_ndim}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     {select_moment_name}
     {select_squeeze}
     {select_dim_combined}
     {select_coords_combined}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -455,11 +459,11 @@ def assign_moment(
     *,
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
+    mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     dim_combined: Hashable | None = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
@@ -471,11 +475,11 @@ def assign_moment(
     *,
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
+    mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
-    mom_dims: MomDims | None = ...,
     dim_combined: Hashable | None = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
@@ -490,11 +494,11 @@ def assign_moment(
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     squeeze: bool = True,
     copy: bool = True,
     dim_combined: Hashable | None = None,
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
@@ -508,6 +512,9 @@ def assign_moment(
         Moments array.
     {assign_moment_mapping}
     {mom_ndim}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     {select_squeeze}
     copy : bool, default=True
         If ``True`` (the default), return new array with updated weights.
@@ -516,7 +523,6 @@ def assign_moment(
     dim_combined : str, optional
         Name of dimensions for multiple values. Must supply if passing in
         multiple values for ``name="ave"`` etc.
-    {mom_dims_data}
     {keep_attrs}
     {apply_ufunc_kwargs}
     **moment_kwargs
@@ -737,11 +743,11 @@ def vals_to_data(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    mom_params: MomParamsInput = None,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -759,8 +765,12 @@ def vals_to_data(
         Secondary value (if comoments).
     {mom}
     {weight}
+    {mom_dims}
+    {mom_params}
     {dtype}
     {out}
+    {keep_attrs}
+    {apply_ufunc_kwargs}
 
     Returns
     -------

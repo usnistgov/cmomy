@@ -1,3 +1,7 @@
+Modules
+=======
+
+
 .. autosummary::
    :toctree: generated/
    :template: autodocsumm/module-inherit.rst

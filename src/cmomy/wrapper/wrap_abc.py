@@ -44,6 +44,7 @@ if TYPE_CHECKING:
         DimsReduce,
         KeepAttrs,
         MissingType,
+        MomAxes,
         MomDims,
         Moments,
         MomentsStrict,
@@ -66,7 +67,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     ----------
     obj : {t_array}
         Central moments array.
-    {mom_ndim}
+    {mom_params}
     fastpath : bool
         For internal use.
 
@@ -86,7 +87,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
     See Also
     --------
-    commy.wrap
+    cmomy.wrap
     cmomy.wrap_reduce_vals
     cmomy.wrap_resample_vals
     cmomy.wrap_raw
@@ -127,6 +128,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     def obj(self) -> GenArrayT:
         """Underlying object."""
         return self._obj
+
+    @property
+    def mom_params(self) -> MomParamsBase:
+        """Moments parameters object."""
+        return self._mom_params
 
     @property
     def mom_ndim(self) -> MomNDim:
@@ -396,6 +402,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         datas: Any,
         *,
         axis: AxisReduce = -1,
+        mom_axes: MomAxes | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = None,
     ) -> Self:
@@ -406,6 +413,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         ----------
         datas : array-like or {t_array}
             Collection of accumulation arrays to push onto ``self``.
+        {mom_axes}
         {axis_data_and_dim}
         {casting}
         {parallel}
@@ -754,12 +762,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
-        move_axis_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
         order: ArrayOrder = None,
         parallel: bool | None = None,
+        move_axis_to_end: bool = False,
         keep_attrs: KeepAttrs = None,
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
@@ -1168,7 +1176,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         See Also
         --------
-        from_raw
+        .wrap_raw
         .convert.moments_type
         """
         from cmomy.convert import moments_type

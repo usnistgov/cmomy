@@ -94,6 +94,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     Parameters
     ----------
     {mom_ndim_data}
+    {mom_axes}
     {mom_dims_data}
     """
 

@@ -138,10 +138,8 @@ def _dummy_docstrings() -> None:
     freq_xarray | freq : array-like, DataArray, or Dataset of int
         Array of shape ``(nrep, size)`` where `nrep` is the number of
         replicates and ``size = self.shape[axis]``. `freq` is the weight that
-        each sample contributes to resamples values. If ``freq`` is an
-        :mod:`xarray` object, it is assumed that the dimensions are in order of
-        ``(rep_dim, dim)`` where ``rep_dim`` and ``dim`` are the name of the
-        replicated and sampled dimension, respectively.
+        each sample contributes to a replicate. If ``freq`` is an
+        :mod:`xarray` object, it should have dimensions ``rep_dim`` and ``dim``.
     indices : array of int
         Array of shape ``(nrep, size)``.  If passed, create `freq` from indices.
     nrep : int
@@ -197,6 +195,12 @@ def _dummy_docstrings() -> None:
         ``mom_ndim`` to ``len(mom_axes)``. Note that if ``mom_axes`` is
         specified, negative values are relative to the end of the array. This
         is also the case for ``axes`` if ``mom_axes`` is specified.
+    mom_params : :class:`cmomy.MomParams` or :class:`cmomy.MomParamsDict` or dict, optional
+        Moment parameters. You can set moment parameters ``axes`` and ``dims``
+        using this option. For example, passing ``mom_params={"dim": ("a",
+        "b")}`` is equivalent to passing ``mom_dims=("a", "b")``. You can also
+        pass as a :class:`cmomy.MomParams` object with
+        ``mom_params=cmomy.MomParams(dims=("a", "b"))``.
     apply_ufunc_kwargs : dict-like
         Extra parameters to :func:`xarray.apply_ufunc`. One useful option is
         ``on_missing_core_dim``, which can take the value ``"copy"`` (the

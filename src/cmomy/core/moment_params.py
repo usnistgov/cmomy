@@ -5,7 +5,10 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, replace
 from typing import TYPE_CHECKING, TypedDict, cast, overload
 
+from module_utilities.docfiller import DocFiller
+
 from .array_utils import normalize_axis_index, normalize_axis_tuple
+from .docstrings import docfiller as _docfiller
 from .missing import MISSING
 from .validate import (
     is_dataset,
@@ -43,16 +46,34 @@ if TYPE_CHECKING:
     _Dim = TypeVar("_Dim")
 
 
+_docstring_local = """
+Parameters
+----------
+axes : int or sequence of int
+    Axes/Axis for moment dimension(s) (equivalent to ``mom_ndim``).
+dims : str or sequence of hashable
+    Name of moment dimensions for :mod:`xarray` objects (equivalent to ``mom_dims``).
+ndim : {1, 2}
+    Number of moment dimensions.
+default_ndim : {1, 2}
+    Fallback value for ``ndim``.
+"""
+
+docfiller = _docfiller.append(
+    DocFiller.from_docstring(_docstring_local, combine_keys="parameters")
+)
+
+
+@docfiller.decorate
 class MomParamsDict(TypedDict, total=False):
     """
-    Input moment parameters.
+    Input dict for moment parameters.
 
     Parameters
     ----------
-    axes : int or sequence of int
-        Axes/Axis for moment dimension(s).
-    dims : str or sequence of hashable
-        Name of moment dimensions (for :mod:`xarray` objects).
+    {axes}
+    {dims}
+    {ndim}
     """
 
     ndim: int | None
@@ -67,17 +88,45 @@ class _MixinAsDict:
 
 
 @dataclass
+@docfiller.decorate
+class MomParams(_MixinAsDict):
+    """
+    Dataclass for moment parameters input
+
+    Parameters
+    ----------
+    {ndim}
+    {axes}
+    {ndim}
+    """
+
+    ndim: int | None = None
+    axes: int | Sequence[int] | None = None
+    dims: Hashable | Sequence[Hashable] | None = None
+
+
+@dataclass
+@docfiller.decorate
 class MomParamsBase(_MixinAsDict):
-    """Base class for moment parameters."""
+    """
+    Base class for moment parameters.
+
+    Parameters
+    ----------
+    {ndim}
+
+    """
 
     ndim: MomNDim
 
     def new_like(self, **kwargs: Any) -> Self:
+        """Create new object from key, value pairs."""
         return replace(self, **kwargs)
 
     def normalize_axis_index(
         self, axis: complex, data_ndim: int, msg_prefix: str | None = None
     ) -> int:
+        """Normalize axis relative to ``self.ndim``"""
         return normalize_axis_index(
             axis=axis, ndim=data_ndim, mom_ndim=self.ndim, msg_prefix=msg_prefix
         )
@@ -89,6 +138,7 @@ class MomParamsBase(_MixinAsDict):
         msg_prefix: str | None = None,
         allow_duplicate: bool = False,
     ) -> tuple[int, ...]:
+        """Normalize axis tuple relative to ``self.ndim``."""
         return normalize_axis_tuple(
             axis=axis,
             ndim=data_ndim,
@@ -99,17 +149,16 @@ class MomParamsBase(_MixinAsDict):
 
 
 @dataclass
-class MomParams(_MixinAsDict):
-    """Dataclass for moment parameters input"""
-
-    ndim: int | None = None
-    axes: int | Sequence[int] | None = None
-    dims: Hashable | Sequence[Hashable] | None = None
-
-
-@dataclass
+@docfiller.decorate
 class MomParamsArray(MomParamsBase):
-    """Array Mom Params."""
+    """
+    Array Mom Params.
+
+    Parameters
+    ----------
+    {ndim}
+    {axes}
+    """
 
     ndim: MomNDim
     axes: MomAxesStrict
@@ -122,6 +171,7 @@ class MomParamsArray(MomParamsBase):
         default_ndim: MomNDim | None = None,
         dims: Any = None,  # noqa: ARG003  # in case pass in dims parameter, it will be ignored.
     ) -> Self:
+        """Create object from parameters."""
         if axes is None:
             ndim = validate_mom_ndim(ndim, default_ndim)
             axes = cast("MomAxesStrict", tuple(range(-ndim, 0)))
@@ -136,6 +186,7 @@ class MomParamsArray(MomParamsBase):
         return cls(ndim=cast("MomNDim", ndim), axes=axes)
 
     @classmethod
+    @docfiller.decorate
     def factory(
         cls,
         mom_params: MomParamsInput = None,
@@ -143,6 +194,16 @@ class MomParamsArray(MomParamsBase):
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
+        """
+        Factory method.
+
+        Parameters
+        ----------
+        {mom_params}
+        {ndim}
+        {axes}
+        {default_ndim}
+        """
         if isinstance(mom_params, cls):
             if ndim is not None:
                 assert mom_params.ndim == ndim  # noqa: S101
@@ -159,6 +220,7 @@ class MomParamsArray(MomParamsBase):
         return cls.from_params(**mom_params, default_ndim=default_ndim)
 
     @classmethod
+    @docfiller.decorate
     def factory_mom(
         cls,
         mom: int | Sequence[int],
@@ -166,16 +228,27 @@ class MomParamsArray(MomParamsBase):
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> tuple[MomentsStrict, Self]:
+        """
+        Factory method to validate ``mom`` and create ``mom_params`` object.
+
+        Parameters
+        ----------
+        {mom}
+        {mom_params}
+        {axes}
+        {default_ndim}
+        """
         mom = validate_mom(mom)
         return mom, cls.factory(
             ndim=len(mom), mom_params=mom_params, axes=axes, default_ndim=default_ndim
         )
 
     def move_axes_to_end(self) -> Self:
+        """Create new object with ``self.axes`` at end."""
         return replace(self, axes=cast("MomAxesStrict", tuple(range(-self.ndim, 0))))
 
     def normalize_axes(self, data_ndim: int) -> Self:
-        """Normalize self.axes in new object."""
+        """Normalize self.axes in new object relative to ``data_ndim``."""
         if self.axes is None:  # pyright: ignore[reportUnnecessaryComparison]
             return self
 
@@ -213,15 +286,14 @@ class MomParamsArray(MomParamsBase):
         ]
 
     def raise_if_in_mom_axes(self, *axes: int) -> None:
+        """Raise ``ValueError`` if any ``axes`` in ``self.axes``."""
         if self.axes is not None and any(a in self.axes for a in axes):  # pyright: ignore[reportUnnecessaryComparison]
             msg = f"provided axis/axes cannot overlap mom_axes={self.axes}."
             raise ValueError(msg)
 
 
 @dataclass
-class MomParamsArrayOptional(MomParamsArray):
-    """Optional array mom params."""
-
+class MomParamsArrayOptional(MomParamsArray):  # noqa: D101
     ndim: MomNDim | None = None  # type: ignore[assignment]
     axes: MomAxesStrict | None = None  # type: ignore[assignment]
 
@@ -233,14 +305,23 @@ class MomParamsArrayOptional(MomParamsArray):
         default_ndim: MomNDim | None = None,
         dims: Any = None,  # noqa: ARG003  # in case pass dims parameter, it will be ignored.
     ) -> Self:
+        """Create from parameters."""
         if ndim is None and axes is None and default_ndim is None:
             return cls(None, None)
         return super().from_params(ndim, axes, default_ndim)
 
 
 @dataclass
+@docfiller.decorate
 class MomParamsXArray(MomParamsBase):
-    """XArray mom parameters."""
+    """
+    XArray mom parameters.
+
+    Parameters
+    ----------
+    {ndim}
+    {dims}
+    """
 
     dims: MomDimsStrict
 
@@ -253,6 +334,7 @@ class MomParamsXArray(MomParamsBase):
         data: object = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
+        """Create from parameters."""
         dims, ndim = validate_mom_dims_and_mom_ndim(
             mom_dims=dims,
             mom_ndim=ndim,
@@ -263,6 +345,7 @@ class MomParamsXArray(MomParamsBase):
         return cls(ndim=ndim, dims=dims)
 
     @classmethod
+    @docfiller.decorate
     def factory(
         cls,
         mom_params: MomParamsInput = None,
@@ -272,6 +355,18 @@ class MomParamsXArray(MomParamsBase):
         data: object = None,
         default_ndim: MomNDim | None = None,
     ) -> Self:
+        """
+        Factory create object
+
+        Parameters
+        ----------
+        {mom_params}
+        {ndim}
+        {dims}
+        {axes}
+        {data}
+        {default_ndim}
+        """
         if isinstance(mom_params, cls):
             if ndim is not None:
                 assert mom_params.ndim == ndim  # noqa: S101
@@ -318,6 +413,7 @@ class MomParamsXArray(MomParamsBase):
         return cast("MomAxesStrict", tuple(range(-self.ndim, 0)))
 
     def to_array(self) -> MomParamsArray:
+        """Convert to MomParamsArray object."""
         return MomParamsArray(ndim=self.ndim, axes=self.axes)
 
     def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
@@ -459,9 +555,7 @@ class MomParamsXArray(MomParamsBase):
 
 
 @dataclass
-class MomParamsXArrayOptional(MomParamsXArray):
-    """Optional"""
-
+class MomParamsXArrayOptional(MomParamsXArray):  # noqa: D101
     ndim: MomNDim | None = None  # type: ignore[assignment]
     dims: MomDimsStrict | None = None  # type: ignore[assignment]
 
@@ -506,6 +600,7 @@ def factory_mom_params(
 ) -> MomParamsArray: ...
 
 
+@docfiller.decorate
 def factory_mom_params(
     target: ArrayLike | xr.DataArray | xr.Dataset,
     *,
@@ -516,7 +611,26 @@ def factory_mom_params(
     data: object = None,
     default_ndim: MomNDim | None = None,
 ) -> MomParamsArray | MomParamsXArray:
-    """Factory method to create mom_params."""
+    """
+    Factory method to create mom_params.
+
+    Parameters
+    ----------
+    targert : array-like or DataArray or Dataset
+        Return object corresponding to data type of ``target``.
+    {mom_params}
+    {ndim}
+    {axes}
+    {dims}
+    data : array-like or DataArray or Dataset, optional
+        Optional data to use as template to extract ``ndim`` using ``axes`` or ``ndim``.
+    {default_ndim}
+
+    Returns
+    -------
+    MomParamsArray or MomParamsXArray
+        Moment parameters object.
+    """
     if is_xarray(target):
         return MomParamsXArray.factory(
             mom_params=mom_params,

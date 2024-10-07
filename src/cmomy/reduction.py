@@ -152,17 +152,17 @@ def reduce_vals(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | DataT | None = None,
-    mom_params: MomParamsInput = None,
     axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
-    keepdims: bool = False,
     parallel: bool | None = None,
-    dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
+    keepdims: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -174,16 +174,17 @@ def reduce_vals(
     {x_genarray}
     {y_genarray}
     {mom}
-    {weight_genarray}
     {axis}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
     {out}
     {dtype}
     {casting}
     {order_cf}
-    {keepdims}
     {parallel}
-    {dim}
-    {mom_dims}
+    {keepdims}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -386,10 +387,12 @@ def reduce_data(
 def reduce_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
+    axis: AxisReduceMultWrap | MissingType = MISSING,
+    dim: DimsReduceMult | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
+    mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
     mom_params: MomParamsInput = None,
-    axis: AxisReduceMultWrap | MissingType = MISSING,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -397,8 +400,6 @@ def reduce_data(  # noqa: PLR0913
     keepdims: bool = False,
     parallel: bool | None = None,
     use_reduce: bool = True,
-    dim: DimsReduceMult | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -409,9 +410,12 @@ def reduce_data(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim_data}
     {axis_data_mult}
+    {dim_mult}
+    {mom_ndim_data}
     {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     {out}
     {dtype}
     {casting}
@@ -426,8 +430,6 @@ def reduce_data(  # noqa: PLR0913
         dask data to :class:`~numpy.ndarray` arrays. Also, not using reduce Can
         be useful if reducing a dataset which contains arrays that do not
         contain ``mom_dims`` that should be dropped.
-    {dim_mult}
-    {mom_dims_data}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -786,18 +788,18 @@ def reduce_data_grouped(  # noqa: PLR0913
     data: ArrayLike | DataT,
     by: ArrayLike,
     *,
-    mom_ndim: MomNDim | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
+    move_axis_to_end: bool = False,
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
@@ -810,18 +812,19 @@ def reduce_data_grouped(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim_data}
     {by}
     {axis_data}
+    {dim}
+    {mom_ndim_data}
     {mom_axes}
-    {move_axis_to_end}
-    {parallel}
+    {mom_dims_data}
+    {mom_params}
     {out}
     {dtype}
     {casting}
     {order_cf}
-    {dim}
-    {mom_dims_data}
+    {move_axis_to_end}
+    {parallel}
     {group_dim}
     {groups}
     {keep_attrs}
@@ -1181,22 +1184,22 @@ def reduce_data_indexed(
 def reduce_data_indexed(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
-    mom_ndim: MomNDim | None = None,
     index: ArrayLike,
     group_start: ArrayLike,
     group_end: ArrayLike,
     scale: ArrayLike | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
+    move_axis_to_end: bool = False,
     coords_policy: CoordsPolicy = "first",
     group_dim: str | None = None,
     groups: Groups | None = None,
@@ -1209,7 +1212,6 @@ def reduce_data_indexed(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim_data}
     index : ndarray
         Index into `data.shape[axis]`.
     group_start, group_end : ndarray
@@ -1219,14 +1221,17 @@ def reduce_data_indexed(  # noqa: PLR0913
     scale : ndarray, optional
         Weights of same size as ``index``.
     {axis_data}
-    {move_axis_to_end}
+    {dim}
+    {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
-    {dim}
-    {mom_dims_data}
+    {move_axis_to_end}
     {coords_policy}
     {group_dim}
     {groups}

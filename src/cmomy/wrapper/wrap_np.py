@@ -82,6 +82,8 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
     Parameters
     ----------
+    {mom_ndim_data}
+    {mom_axes}
     {copy}
     {order}
     {dtype}

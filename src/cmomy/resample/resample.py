@@ -146,19 +146,18 @@ def resample_data(  # noqa: PLR0913
     sampler: Sampler,
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
-    rep_dim: str = "rep",
-    move_axis_to_end: bool = False,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
+    rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    move_axis_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    # dask specific...
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -168,19 +167,20 @@ def resample_data(  # noqa: PLR0913
     ----------
     {data_numpy_or_dataarray_or_dataset}
     {sampler}
-    {mom_ndim_data}
     {axis}
     {dim}
-    {rep_dim}
-    {move_axis_to_end}
+    {mom_ndim_data}
     {mom_axes}
+    {mom_dims_data}
+    {mom_params}
+    {rep_dim}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
+    {move_axis_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -340,8 +340,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: None = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -351,8 +351,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -362,8 +362,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[ResampleValsKwargs],
@@ -373,8 +373,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -386,21 +386,20 @@ def resample_vals(
 def resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    mom: Moments,
     sampler: Sampler,
-    mom_params: MomParamsInput = None,
-    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom: Moments,
     axis: AxisReduceWrap | MissingType = MISSING,
-    move_axis_to_end: bool = True,
+    dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    rep_dim: str = "rep",
-    mom_dims: MomDims | None = None,
+    move_axis_to_end: bool = True,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -411,19 +410,20 @@ def resample_vals(  # noqa: PLR0913
     ----------
     {x_genarray}
     {y_genarray}
-    {mom}
     {sampler}
-    {weight_genarray}
+    {mom}
     {axis}
-    {move_axis_to_end}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
+    {rep_dim}
     {out}
     {dtype}
     {casting}
     {order_cf}
     {parallel}
-    {dim}
-    {rep_dim}
-    {mom_dims}
+    {move_axis_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -658,17 +658,16 @@ def jackknife_data(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     rep_dim: str | None = "rep",
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    move_axis_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    # dask specific...
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -679,22 +678,23 @@ def jackknife_data(  # noqa: PLR0913
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim_data}
-    {axis}
-    {dim}
     data_reduced : array-like or DataArray, optional
         ``data`` reduced along ``axis`` or ``dim``.  This will be calculated using
         :func:`.reduce_data` if not passed.
-    rep_dim : str, optional
-        Optionally output ``dim`` to ``rep_dim``.
-    {move_axis_to_end}
+    {axis}
+    {dim}
+    {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
+    {rep_dim}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
+    {move_axis_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -946,21 +946,21 @@ def jackknife_vals(
 def jackknife_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    mom: Moments,
     data_reduced: ArrayLike | DataT | None = None,
-    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom: Moments,
     axis: AxisReduceWrap | MissingType = MISSING,
-    move_axis_to_end: bool = True,
+    dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
+    rep_dim: str | None = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    move_axis_to_end: bool = True,
     # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    rep_dim: str | None = "rep",
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> xr.Dataset | xr.DataArray | NDArrayAny:
@@ -971,20 +971,22 @@ def jackknife_vals(  # noqa: PLR0913
     ----------
     {x_genarray}
     {y_genarray}
-    {mom}
     data_reduced : array-like or DataArray, optional
         ``data`` reduced along ``axis`` or ``dim``.  This will be calculated using
         :func:`.reduce_vals` if not passed.  Same type restrictions as ``weight``.
-    {weight_genarray}
+    {mom}
     {axis}
-    {move_axis_to_end}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
+    {rep_dim}
+    {out}
+    {dtype}
+    {casting}
     {order}
     {parallel}
-    {dtype}
-    {out}
-    {dim}
-    {rep_dim}
-    {mom_dims}
+    {move_axis_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 

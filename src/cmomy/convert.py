@@ -156,6 +156,9 @@ def moments_type(
     values_in : array-like, DataArray, or Dataset
         The moments array to convert from.
     {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     to : {{"raw", "central"}}
         The style of the ``values_in`` to convert to. If ``"raw"``, convert from central to raw.
         If ``"central"`` convert from raw to central moments.
@@ -165,7 +168,6 @@ def moments_type(
     {order}
     {move_axis_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -330,16 +332,16 @@ def cumulative(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     inverse: bool = False,
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    move_axis_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -351,17 +353,19 @@ def cumulative(  # noqa: PLR0913
     {axis}
     {dim}
     {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     inverse : bool, optional
         Default is to create a cumulative moments array.  Pass ``inverse=True`` to convert from
         cumulative moments array back to normal moments.
-    {move_axis_to_end}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
+    {move_axis_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -568,12 +572,12 @@ def moments_to_comoments(
     data: ArrayLike | DataT,
     *,
     mom: tuple[int, int],
-    dtype: DTypeLike = None,
-    order: ArrayOrderCF = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     mom_dims_out: MomDims | None = None,
+    dtype: DTypeLike = None,
+    order: ArrayOrderCF = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -586,11 +590,13 @@ def moments_to_comoments(
         Moments array with ``mom_ndim==1``. It is assumed that the last
         dimension is the moments dimension.
     {mom_moments_to_comoments}
-    {dtype}
-    {order_cf}
+    {mom_axes}
     {mom_dims_data}
+    {mom_params}
     mom_dims_out : tuple of str
         Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
+    {dtype}
+    {order_cf}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -735,12 +741,12 @@ def comoments_to_moments(
 def comoments_to_moments(
     data: ArrayLike | DataT,
     *,
-    dtype: DTypeLike = None,
-    order: ArrayOrderCF = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     mom_dims_out: MomDims | None = None,
+    dtype: DTypeLike = None,
+    order: ArrayOrderCF = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -757,11 +763,13 @@ def comoments_to_moments(
     data : array-like or DataArray or Dataset
         Moments array with ``mom_ndim==1``. It is assumed that the last
         dimension is the moments dimension.
-    {dtype}
-    {order_cf}
+    {mom_axes}
+    {mom_params}
     {mom_dims_data}
     mom_dims_out : tuple of str
         Moments dimensions for output (``mom_ndim=1``) data.  Defaults to ``("mom_0",)``.
+    {dtype}
+    {order_cf}
     {keep_attrs}
     {apply_ufunc_kwargs}
 

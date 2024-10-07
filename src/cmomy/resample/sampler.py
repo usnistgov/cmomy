@@ -263,9 +263,10 @@ class IndexSampler(Generic[SamplerArrayT]):
         {nsamp}
         {axis}
         {dim}
-        {mom_axes}
         {mom_ndim_optional}
+        {mom_axes}
         {mom_dims_data}
+        {mom_params}
         {rep_dim}
         {paired}
         {rng}
@@ -329,8 +330,8 @@ def factory_sampler(  # noqa: PLR0913
     # factory sampler parameters
     freq: NDArrayAny | xr.DataArray | xr.Dataset | None = None,
     indices: NDArrayAny | xr.DataArray | xr.Dataset | None = None,
-    ndat: int | None = None,
     nrep: int | None = None,
+    ndat: int | None = None,
     nsamp: int | None = None,
     paired: bool = True,
     rng: RngTypes | None = None,
@@ -366,6 +367,7 @@ def factory_sampler(  # noqa: PLR0913
     Parameters
     ----------
     {sampler}
+    {freq_xarray}
     {indices}
     {nrep}
     {ndat}
@@ -379,7 +381,9 @@ def factory_sampler(  # noqa: PLR0913
     {axis}
     {dim}
     {mom_ndim_optional}
+    {mom_axes}
     {mom_dims_data}
+    {mom_params}
     {rep_dim}
     {parallel}
 
@@ -618,6 +622,7 @@ def select_ndat(
     {mom_ndim_optional}
     {mom_axes}
     {mom_dims_data}
+    {mom_params}
 
     Returns
     -------
