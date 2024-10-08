@@ -18,6 +18,7 @@ from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import (
     MomParamsArray,
     MomParamsXArray,
+    factory_mom_params,
 )
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
@@ -518,12 +519,18 @@ def resample_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end and is_dataarray(x):
-            dims_order = [
-                *(d if d != dim else rep_dim for d in x.dims),  # type: ignore[union-attr]
-                *xmom_params.dims,  # type: ignore[has-type]
-            ]
-            xout = xout.transpose(..., *dims_order)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                prepend=...,
+                replace={dim: rep_dim},
+                append=xmom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(
+                ..., rep_dim, *xmom_params.dims, missing_dims="ignore"
+            )
 
         return xout
 
@@ -669,6 +676,7 @@ def jackknife_data(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_axes_reduced: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     rep_dim: str | None = "rep",
@@ -696,6 +704,10 @@ def jackknife_data(  # noqa: PLR0913
     {dim}
     {mom_ndim_data}
     {mom_axes}
+    mom_axes_reduced : int or sequence of int
+        Location(s) of moment dimensions in ``data_reduced``.  This option is only needed
+        if ``data_reduced`` is passed in and is an array.  Defaults to ``mom_axes``, or last dimensions
+        of ``data_reduced``.
     {mom_dims_data}
     {mom_params}
     {rep_dim}
@@ -759,14 +771,20 @@ def jackknife_data(  # noqa: PLR0913
 
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
-
+    mom_params = factory_mom_params(
+        data,
+        mom_params=mom_params,
+        ndim=mom_ndim,
+        axes=mom_axes,
+        dims=mom_dims,
+        data=data,
+        default_ndim=1,
+    )
     if data_reduced is None:
         from cmomy.reduction import reduce_data
 
         data_reduced = reduce_data(
             data=data,
-            mom_ndim=mom_ndim,
-            mom_axes=mom_axes,
             mom_params=mom_params,
             dim=dim,
             axis=axis,
@@ -775,24 +793,23 @@ def jackknife_data(  # noqa: PLR0913
             dtype=dtype,
             casting=casting,
             order=order,
-            mom_dims=mom_dims,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
+            move_axes_to_end=True,
             use_reduce=False,
         )
+        mom_axes_reduced = None
+
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
     if is_xarray(data):
-        mom_params = MomParamsXArray.factory(
-            mom_params=mom_params,
-            ndim=mom_ndim,
-            dims=mom_dims,
-            axes=mom_axes,
-            data=data,
-            default_ndim=1,
-        )
+        assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = mom_params.core_dims(dim)
+
+        if not is_xarray(data_reduced) and mom_axes_reduced is not None:
+            np.moveaxis(data_reduced, mom_axes_reduced, mom_params.axes)
+
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_data,
             data,
@@ -802,6 +819,7 @@ def jackknife_data(  # noqa: PLR0913
             kwargs={
                 "axis": -(mom_params.ndim + 1),
                 "mom_params": mom_params.to_array(),
+                "mom_axes_reduced": mom_axes_reduced,
                 "out": xprepare_out_for_resample_data(
                     out,
                     mom_ndim=mom_params.ndim,
@@ -823,19 +841,24 @@ def jackknife_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end and is_dataarray(data):
-            xout = xout.transpose(*data.dims)
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=data,
+            )
+        elif is_dataset(xout):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
         return xout
 
     # numpy
+    assert isinstance(mom_params, MomParamsArray)  # noqa: S101
     axis, mom_params, data = prepare_data_for_reduction(
         data,
         axis=axis,
-        mom_params=MomParamsArray.factory(
-            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
-        ),
+        mom_params=mom_params,
         dtype=dtype,
         recast=False,
         move_axes_to_end=move_axes_to_end,
@@ -847,6 +870,7 @@ def jackknife_data(  # noqa: PLR0913
         data,
         data_reduced,
         mom_params=mom_params,
+        mom_axes_reduced=mom_axes_reduced,
         axis=axis,
         out=out,
         dtype=dtype,
@@ -862,6 +886,7 @@ def _jackknife_data(
     data_reduced: NDArrayAny,
     *,
     mom_params: MomParamsArray,
+    mom_axes_reduced: MomAxes | None,
     axis: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
@@ -873,9 +898,16 @@ def _jackknife_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
+    if mom_axes_reduced is None:
+        mom_axes_reduced = mom_params.move_axes_to_end().axes
+    else:
+        mom_axes_reduced = MomParamsArray.factory(
+            ndim=mom_params.ndim, axes=mom_axes_reduced
+        ).axes
+
     axes = [
-        # data_reduced
-        mom_params.axes,
+        # data_reduce
+        mom_axes_reduced,
         # data, out
         *mom_params.axes_data_reduction(axis=axis, out_has_axis=True),
     ]
@@ -1086,8 +1118,16 @@ def jackknife_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end and is_dataarray(x):
-            xout = xout.transpose(..., *x.dims, *mom_params.dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                prepend=...,
+                append=mom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
         return xout

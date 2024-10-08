@@ -50,44 +50,6 @@ def test_reduce_vals_axis(rng, shape, axis) -> None:
     np.testing.assert_allclose(a, b)
 
 
-@pytest.mark.parametrize(
-    ("shape", "axis", "mom"),
-    [
-        ((2, 3, 4), 0, 3),
-        ((2, 3, 4), 1, 3),
-        ((2, 3, 4), 2, 3),
-    ],
-)
-def test_reduce_vals_keepdims(
-    shape: tuple[int, ...],
-    axis: int,
-    mom: int,
-    rng: np.random.Generator,
-    as_dataarray: bool,
-) -> None:
-    x = rng.random(shape)
-    if as_dataarray:
-        x = xr.DataArray(x)  # type: ignore[assignment]
-
-    kws = {"mom": mom, "axis": axis}
-
-    check = cmomy.reduce_vals(x, **kws, keepdims=False)  # type: ignore[call-overload]
-
-    new_shape = [*shape, *cmomy.utils.mom_to_mom_shape(mom)]
-    new_shape[axis] = 1
-    new_shape = tuple(new_shape)  # type: ignore[assignment]
-
-    out = cmomy.reduce_vals(x, **kws, keepdims=True)  # type: ignore[call-overload]
-    assert out.shape == new_shape
-
-    np.testing.assert_allclose(np.squeeze(out, axis), check)
-
-    c = cmomy.wrap_reduce_vals(x, **kws, keepdims=True)
-    assert c.shape == new_shape
-
-    np.testing.assert_allclose(c, out)
-
-
 # * reduce_data ---------------------------------------------------------------
 @pytest.mark.parametrize(
     ("shape", "axis", "mom_ndim"),

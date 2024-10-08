@@ -105,6 +105,10 @@ class MomParams(_MixinAsDict):
     dims: Hashable | Sequence[Hashable] | None = None
 
 
+def _mom_axes_last(mom_ndim: MomNDim) -> MomAxesStrict:
+    return cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
+
+
 @dataclass
 @docfiller.decorate
 class MomParamsBase(_MixinAsDict):
@@ -147,6 +151,10 @@ class MomParamsBase(_MixinAsDict):
             allow_duplicate=allow_duplicate,
         )
 
+    @property
+    def axes_last(self) -> MomAxesStrict:
+        return _mom_axes_last(self.ndim)
+
 
 @dataclass
 @docfiller.decorate
@@ -174,7 +182,7 @@ class MomParamsArray(MomParamsBase):
         """Create object from parameters."""
         if axes is None:
             ndim = validate_mom_ndim(ndim, default_ndim)
-            axes = cast("MomAxesStrict", tuple(range(-ndim, 0)))
+            axes = _mom_axes_last(ndim)
             return cls(ndim=ndim, axes=axes)
 
         axes = validate_mom_axes(axes)
@@ -245,7 +253,7 @@ class MomParamsArray(MomParamsBase):
 
     def move_axes_to_end(self) -> Self:
         """Create new object with ``self.axes`` at end."""
-        return replace(self, axes=cast("MomAxesStrict", tuple(range(-self.ndim, 0))))
+        return replace(self, axes=self.axes_last)
 
     def normalize_axes(self, data_ndim: int) -> Self:
         """Normalize self.axes in new object relative to ``data_ndim``."""
@@ -278,6 +286,29 @@ class MomParamsArray(MomParamsBase):
         """
         data_axes = (axis, *self.axes)
         out_axes = data_axes if out_has_axis else self.axes
+
+        return [
+            data_axes,
+            *((x,) if isinstance(x, int) else x for x in inner),
+            out_axes,
+        ]
+
+    def axes_data_reduction2(
+        self,
+        *inner: int | tuple[int, ...],
+        axis: int,
+        axis_out: int | None = None,
+        move_axes_to_end: bool = False,
+    ) -> AxesGUFunc:
+        """
+        axes for reducing data along axis
+
+        if ``axis_out``, include this axis in out_axes.
+        """
+        data_axes = (axis, *self.axes)
+
+        _axes = range(-self.ndim, 0) if move_axes_to_end else self.axes
+        out_axes = tuple(_axes) if axis_out is None else (axis_out, *_axes)
 
         return [
             data_axes,
@@ -410,7 +441,7 @@ class MomParamsXArray(MomParamsBase):
 
         Because this is intended to be used with apply_gufunc, the moment axes are moved to the end.
         """
-        return cast("MomAxesStrict", tuple(range(-self.ndim, 0)))
+        return self.axes_last
 
     def to_array(self) -> MomParamsArray:
         """Convert to MomParamsArray object."""

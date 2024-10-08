@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
-from cmomy.core.moment_params import default_mom_params_xarray
+from cmomy.core.moment_params import MomParamsXArray, default_mom_params_xarray
 from cmomy.core.utils import mom_to_mom_shape
 
 from .array_utils import (
@@ -256,6 +256,49 @@ def xprepare_secondary_value_for_reduction(
 
 
 # * Out
+def xprepare_out_for_reduce_data(
+    target: xr.DataArray | xr.Dataset,
+    out: NDArray[ScalarT] | None,
+    *,
+    dim: tuple[Hashable, ...],
+    mom_params: MomParamsXArray,
+    move_axes_to_end: bool,
+) -> NDArray[ScalarT] | None:
+    """Prepare out for reduce_data"""
+    if out is None or is_dataset(target):
+        return None
+
+    if move_axes_to_end:
+        return out
+
+    dims = [d for d in target.dims if d not in dim]
+    axes0 = [dims.index(d) for d in mom_params.dims]
+    axes1 = range(-mom_params.ndim, 0)
+
+    return np.moveaxis(out, axes0, axes1)
+
+
+def xprepare_out_for_transform(
+    target: xr.DataArray | xr.Dataset,
+    out: NDArray[ScalarT] | None,
+    *,
+    mom_params: MomParamsXArray,
+    move_axes_to_end: bool,
+) -> NDArray[ScalarT] | None:
+    """Prepare out for transform."""
+    if out is None or is_dataset(target):
+        return None
+
+    if move_axes_to_end:
+        return out
+
+    return np.moveaxis(
+        out,
+        target.get_axis_num(mom_params.dims),
+        mom_params.axes,
+    )
+
+
 def xprepare_out_for_resample_vals(
     target: xr.DataArray | xr.Dataset,
     out: NDArray[ScalarT] | None,

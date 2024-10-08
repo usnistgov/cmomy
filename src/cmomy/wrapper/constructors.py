@@ -371,7 +371,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
-    keepdims: bool = False,
     parallel: bool | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -388,12 +387,10 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     {axis}
     {dim}
     {mom_dims}
-    {keepdims}
     {out}
     {dtype}
     {casting}
     {order}
-    {keepdims}
     {parallel}
     {keep_attrs}
     {apply_ufunc_kwargs}
@@ -434,7 +431,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         axis=axis,
         dim=dim,
         mom_params=mom_params,
-        keepdims=keepdims,
         parallel=parallel,
         out=out,
         dtype=dtype,

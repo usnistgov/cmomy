@@ -28,6 +28,7 @@ from .core.prepare import (
     prepare_data_for_reduction,
     prepare_out_from_values,
     prepare_values_for_reduction,
+    xprepare_out_for_reduce_data,
     xprepare_out_for_resample_data,
     xprepare_values_for_reduction,
 )
@@ -150,7 +151,7 @@ def reduce_vals(
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_vals(  # noqa: PLR0913
+def reduce_vals(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
@@ -164,8 +165,6 @@ def reduce_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    keepdims: bool = False,
-    move_axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -187,8 +186,6 @@ def reduce_vals(  # noqa: PLR0913
     {casting}
     {order_cf}
     {parallel}
-    {keepdims}
-    {move_axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -227,14 +224,12 @@ def reduce_vals(  # noqa: PLR0913
             _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
-            output_core_dims=[mom_params.core_dims(dim)],
-            exclude_dims={dim},
+            output_core_dims=[mom_params.dims],
             kwargs={
                 "mom": mom,
                 "mom_params": mom_params.to_array(),
                 "parallel": parallel,
                 "axis_neg": -1,
-                "keepdims": True,
                 "out": None if is_dataset(x) else out,
                 "dtype": dtype,
                 "casting": casting,
@@ -246,25 +241,12 @@ def reduce_vals(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={
-                    dim: 1,
                     **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
                 },
                 output_dtypes=dtype or np.float64,
             ),
         )
 
-        if not move_axes_to_end:
-            xout = transpose_like(
-                xout,
-                template=x,
-                prepend=...,
-                append=mom_params.dims,
-            )
-        elif is_dataset(x):
-            xout = xout.transpose(..., *x.dims, *mom_params.dims)
-
-        if not keepdims:
-            xout = xout.squeeze(dim)
         return xout
 
     # Numpy
@@ -280,7 +262,7 @@ def reduce_vals(  # noqa: PLR0913
         move_axes_to_end=False,
     )
 
-    out = _reduce_vals(
+    return _reduce_vals(
         *args,
         mom=mom,
         mom_params=mom_params,
@@ -290,18 +272,8 @@ def reduce_vals(  # noqa: PLR0913
         order=order,
         axis_neg=axis_neg,
         parallel=parallel,
-        keepdims=keepdims,
         fastpath=True,
     )
-
-    if move_axes_to_end and keepdims:
-        out = np.moveaxis(
-            out,
-            (axis_neg - mom_params.ndim),
-            -(mom_params.ndim + 1),
-        )
-
-    return out
 
 
 def _reduce_vals(
@@ -315,7 +287,6 @@ def _reduce_vals(
     casting: Casting,
     order: ArrayOrderCF,
     parallel: bool | None,
-    keepdims: bool,
     fastpath: bool = False,
 ) -> NDArrayAny:
     if not fastpath:
@@ -349,11 +320,7 @@ def _reduce_vals(
         signature=(dtype,) * (len(args) + 1),
     )
 
-    return optional_keepdims(
-        out,
-        axis=axis_neg - mom_params.ndim,
-        keepdims=keepdims,
-    )
+    return out
 
 
 # * Reduce data ---------------------------------------------------------------
@@ -485,7 +452,13 @@ def reduce_data(  # noqa: PLR0913
                 keepdims=keepdims,
                 mom_params=mom_params.to_array(),
                 parallel=parallel,
-                out=out,
+                out=xprepare_out_for_reduce_data(
+                    target=data,
+                    out=out,
+                    dim=dim,
+                    mom_params=mom_params,
+                    move_axes_to_end=move_axes_to_end,
+                ),
                 dtype=dtype,
                 casting=casting,
                 order=order,
@@ -497,14 +470,21 @@ def reduce_data(  # noqa: PLR0913
                 _reduce_data,
                 data,
                 input_core_dims=[mom_params.core_dims(*dim)],
-                output_core_dims=[mom_params.dims],
+                output_core_dims=[mom_params.core_dims(*dim)],
+                exclude_dims=set(dim),
                 kwargs={
                     "mom_params": mom_params.to_array(),
                     "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
-                    "out": None if is_dataset(data) else out,
+                    "out": xprepare_out_for_reduce_data(
+                        target=data,
+                        out=out,
+                        dim=dim,
+                        mom_params=mom_params,
+                        move_axes_to_end=move_axes_to_end,
+                    ),
                     "dtype": dtype,
                     "parallel": parallel,
-                    "keepdims": False,
+                    "keepdims": True,
                     "fastpath": is_dataarray(data),
                     "casting": casting,
                     "order": order,
@@ -515,20 +495,22 @@ def reduce_data(  # noqa: PLR0913
                     apply_ufunc_kwargs,
                     dask="parallelized",
                     output_dtypes=dtype or np.float64,
+                    output_sizes=dict.fromkeys(dim, 1),
                 ),
             )
+
+            if not keepdims:
+                xout = xout.squeeze(dim)
 
         if not move_axes_to_end:
             xout = transpose_like(
                 xout,
                 template=data,
-                remove=None if use_reduce and keepdims else dim,
+                remove=None if keepdims else dim,
             )
         else:
             _order: tuple[Hashable, ...] = (
-                mom_params.core_dims(*dim)
-                if use_reduce and keepdims
-                else mom_params.dims
+                mom_params.core_dims(*dim) if keepdims else mom_params.dims
             )
             xout = xout.transpose(..., *_order, missing_dims="ignore")
 
@@ -593,7 +575,7 @@ def _reduce_data(
 
     if move_axes_to_end and out is not None:
         # easier to move these in case have keepdims...
-        out = np.moveaxis(out, range(-mom_params.ndim, 0), mom_params.axes)
+        out = np.moveaxis(out, range(-mom_params.ndim, 0), _mom_axes)
 
     out = factory_reduce_data(
         mom_ndim=mom_params.ndim,
@@ -619,7 +601,7 @@ def _reduce_data(
             order0 = (*axis_tuple, *mom_params.axes)
             order1 = tuple(range(-mom_params.ndim - len(axis_tuple), 0))
         else:
-            order0 = mom_params.axes
+            order0 = _mom_axes
             order1 = mom_params.move_axes_to_end().axes
 
         out = np.moveaxis(out, order0, order1)

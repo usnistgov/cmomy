@@ -25,6 +25,7 @@ from .core.moment_params import (
 from .core.prepare import (
     prepare_data_for_reduction,
     xprepare_out_for_resample_data,
+    xprepare_out_for_transform,
 )
 from .core.utils import (
     mom_to_mom_shape,
@@ -38,6 +39,7 @@ from .core.validate import (
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
+    transpose_like,
 )
 from .factory import (
     factory_convert,
@@ -138,14 +140,15 @@ def moments_type(
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
+    move_axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     r"""
@@ -215,6 +218,7 @@ def moments_type(
             data=values_in,
             default_ndim=1,
         )
+
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
             values_in,
@@ -223,11 +227,17 @@ def moments_type(
             kwargs={
                 "mom_params": mom_params.to_array(),
                 "to": to,
-                "out": None if is_dataset(values_in) else out,
+                "out": xprepare_out_for_transform(
+                    target=values_in,
+                    out=out,
+                    mom_params=mom_params,
+                    move_axes_to_end=move_axes_to_end,
+                ),
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
                 "fastpath": is_dataarray(values_in),
+                "move_axes_to_end": False,
             },
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
@@ -235,9 +245,9 @@ def moments_type(
                 dask="parallelized",
                 output_dtypes=dtype or np.float64,
             ),
-        ).transpose(
-            *values_in.dims
-        )  # TODO(wpk): probably a better way to do transpose...
+        )
+        if not move_axes_to_end:
+            xout = transpose_like(xout, template=values_in)
         return xout
 
     return _moments_type(
@@ -250,6 +260,7 @@ def moments_type(
         dtype=dtype,
         casting=casting,
         order=order,
+        move_axes_to_end=move_axes_to_end,
         fastpath=True,
     )
 
@@ -262,15 +273,20 @@ def _moments_type(
     dtype: DTypeLike,
     casting: Casting,
     order: ArrayOrder,
+    move_axes_to_end: bool,
     fastpath: bool,
 ) -> NDArrayAny:
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
+    _axes_out = (
+        mom_params.move_axes_to_end().axes if move_axes_to_end else mom_params.axes
+    )
+
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
         values_in,  # type: ignore[arg-type]
         out=out,
-        axes=[mom_params.axes, mom_params.axes],
+        axes=[mom_params.axes, _axes_out],
         dtype=dtype,
         casting=casting,
         order=order,
@@ -445,8 +461,14 @@ def cumulative(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end and is_dataarray(xout):
-            xout = xout.transpose(*values_in.dims)
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=values_in,
+            )
+        elif is_dataset(xout):
+            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")
+
         return xout
 
     # Numpy
@@ -603,8 +625,8 @@ def moments_to_comoments(
     Returns
     -------
     output : ndarray or DataArray
-        Co-moments array.  Same type as ``data``.
-
+        Co-moments array.  Same type as ``data``.  Note that new moment dimensions are
+        always the last dimensions.
 
     Examples
     --------
@@ -618,6 +640,16 @@ def moments_to_comoments(
     array([[10.    ,  0.5505,  0.1014],
            [ 0.5505,  0.1014, -0.0178],
            [ 0.1014, -0.0178,  0.02  ]])
+
+    Note that new moment dimensions are always last.
+
+    >>> data = cmomy.default_rng(0).random((6, 1, 2))
+    >>> a = moments_to_comoments(data, mom_axes=0, mom=(2, -1))
+    >>> a.shape
+    (1, 2, 3, 4)
+    >>> b = moments_to_comoments(np.moveaxis(data, 0, -1), mom=(2, -1))
+    >>> np.testing.assert_equal(a, b)
+
 
 
     Which is identical to

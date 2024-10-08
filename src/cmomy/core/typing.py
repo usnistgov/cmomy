@@ -357,9 +357,7 @@ class ReduceDataKwargs(
 class ReduceValsKwargs(
     _ValsKwargs,
     _OrderCFKwargs,
-    _KeepDimsKwargs,
     _MomParamsKwargs,
-    _MoveAxisToEndKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""
@@ -430,6 +428,7 @@ class JackknifeDataKwargs(
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
     rep_dim: str | None
+    mom_axes_reduced: MomAxes | None
 
 
 class JackknifeValsKwargs(
@@ -458,6 +457,7 @@ class WrapRawKwargs(
 
 class MomentsTypeKwargs(
     WrapRawKwargs,
+    _MoveAxisToEndKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.moments_type`"""
