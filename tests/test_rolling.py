@@ -175,7 +175,7 @@ def test_rolling_data(
         _do_test_select(out, name, 1, expected)
 
     # vals
-    out2 = rolling.rolling_vals(x, axis=axis, mom=3, move_axis_to_end=False, **kws)
+    out2 = rolling.rolling_vals(x, axis=axis, mom=3, move_axes_to_end=False, **kws)
 
     np.testing.assert_allclose(
         out,

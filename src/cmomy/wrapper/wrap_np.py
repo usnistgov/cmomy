@@ -444,7 +444,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
             dtype=self.dtype,
             recast=False,
-            move_axis_to_end=True,
+            move_axes_to_end=True,
         )
 
         self._pusher(parallel, size=datas.size).datas(
@@ -613,7 +613,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         *,
         axis: AxisReduce | MissingType = MISSING,
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -622,7 +622,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     ) -> NDArrayAny:
         return super().cumulative(
             axis=axis,
-            move_axis_to_end=move_axis_to_end,
+            move_axes_to_end=move_axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -713,7 +713,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         axis: AxisReduce | MissingType = -1,
         sampler: Sampler,
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -747,7 +747,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         return super().resample_and_reduce(
             axis=axis,
             sampler=sampler,
-            move_axis_to_end=move_axis_to_end,
+            move_axes_to_end=move_axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -798,7 +798,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         data_reduced: ArrayLike | None = None,
         axis: AxisReduce | MissingType = -1,
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -808,7 +808,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         return super().jackknife_and_reduce(
             data_reduced=data_reduced,  # type: ignore[arg-type]
             axis=axis,
-            move_axis_to_end=move_axis_to_end,
+            move_axes_to_end=move_axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -857,7 +857,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         by: Groups | None = None,
         block: int | None = None,
         axis: AxisReduce | MissingType = MISSING,
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -890,7 +890,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 mom_params=self._mom_params,
                 by=by,
                 axis=axis,
-                move_axis_to_end=move_axis_to_end,
+                move_axes_to_end=move_axes_to_end,
                 out=out,
                 dtype=dtype,
                 casting=casting,

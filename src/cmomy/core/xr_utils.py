@@ -7,8 +7,6 @@ from collections.abc import (
 )
 from typing import TYPE_CHECKING, cast
 
-from cmomy.core.typing import MomentsStrict
-
 from .validate import (
     is_dataset,
 )
@@ -17,6 +15,7 @@ if TYPE_CHECKING:
     from collections.abc import (
         Collection,
         Hashable,
+        Sequence,
     )
     from typing import Any
 
@@ -25,12 +24,14 @@ if TYPE_CHECKING:
 
     from .typing import (
         ApplyUFuncKwargs,
+        DataT,
         MissingCoreDimOptions,
         MomDims,
         MomDimsStrict,
         MomentsStrict,
         MomNDim,
     )
+    from .typing_compat import EllipsisType
 
 
 # * apply_ufunc_kws
@@ -162,3 +163,73 @@ def astype_dtype_dict(
         raise ValueError(msg)
 
     return dtype
+
+
+# * Transpose like ------------------------------------------------------------
+def transpose_like(
+    data_out: DataT,
+    template: xr.DataArray | xr.Dataset,
+    replace: Mapping[Hashable, Hashable] | None = None,
+    remove: str | Sequence[Hashable] | None = None,
+    keep_attrs: bool | None = True,
+    prepend: Sequence[Hashable] | EllipsisType | None = None,
+    append: Sequence[Hashable] | EllipsisType | None = None,
+) -> DataT:
+    """Transpose ``data_out`` like ``template``."""
+    replace = {} if replace is None else dict(replace)
+    _remove: set[Hashable] = (
+        set()
+        if remove is None
+        else set([remove])  # noqa: C405
+        if isinstance(remove, str)
+        else set(remove)
+    )
+
+    prepend = [] if prepend is None else [prepend] if prepend is ... else prepend
+    append = [] if append is None else [append] if append is ... else append
+
+    if is_dataset(data_out):
+        return data_out.map(  # pyright: ignore[reportUnknownMemberType]
+            _transpose_like,
+            keep_attrs=keep_attrs,
+            template=template,
+            replace=replace,
+            remove=_remove,
+            prepend=prepend,
+            append=append,
+        )
+    return _transpose_like(
+        data_out,
+        template=template,
+        replace=replace,
+        remove=_remove,
+        prepend=prepend,
+        append=append,
+    )
+
+
+def _transpose_like(
+    data_out: DataT,
+    template: xr.DataArray | xr.Dataset,
+    replace: dict[Hashable, Hashable],
+    remove: set[Hashable],
+    prepend: Sequence[Hashable],
+    append: Sequence[Hashable],
+) -> DataT:
+    if is_dataset(template):
+        template = template[data_out.name]
+
+    order = list(template.dims)
+    if remove:
+        for r in remove:
+            if r in order:
+                order.remove(r)
+
+    if replace:
+        order = [replace.get(o, o) for o in order]
+
+    order = [*prepend, *order, *append]  # type: ignore[has-type]
+
+    if order != list(data_out.dims):
+        data_out = data_out.transpose(*order, missing_dims="ignore")
+    return data_out

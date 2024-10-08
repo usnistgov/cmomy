@@ -65,7 +65,7 @@ def get_params(
         (cmomy.rolling.rolling_exp_vals, {"alpha": 0.2}, None),
     ],
 )
-def test_vals_move_axis_to_end(
+def test_vals_move_axes_to_end(
     rng,
     xshape,
     yshape,
@@ -85,7 +85,7 @@ def test_vals_move_axis_to_end(
     if style == "resample":
         kws["sampler"] = cmomy.resample.factory_sampler(ndat=xshape[axis], nrep=20)
 
-    outs = [func(*xy, **kws, move_axis_to_end=m) for m in (True, False)]
+    outs = [func(*xy, **kws, move_axes_to_end=m) for m in (True, False)]
 
     np.testing.assert_allclose(
         outs[0],
@@ -95,7 +95,7 @@ def test_vals_move_axis_to_end(
     # using out parameter
     _outs = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(*xy, **kws, out=o, move_axis_to_end=m)
+        func(*xy, **kws, out=o, move_axes_to_end=m)
         for m, o in zip((True, False), _outs)
     ]
 
@@ -129,7 +129,7 @@ from cmomy.core.array_utils import normalize_axis_index
         (cmomy.convert.cumulative, {}, "convert"),
     ],
 )
-def test_data_move_axis_to_end(
+def test_data_move_axes_to_end(
     rng,
     shape,
     axis,
@@ -155,7 +155,7 @@ def test_data_move_axis_to_end(
             cmomy.reduction.factor_by_to_index(groups)
         )
 
-    outs = [func(data, **kws, move_axis_to_end=m) for m in (True, False)]
+    outs = [func(data, **kws, move_axes_to_end=m) for m in (True, False)]
     np.testing.assert_allclose(
         outs[0],
         np.moveaxis(
@@ -168,7 +168,7 @@ def test_data_move_axis_to_end(
     # using out parameter
     _outs = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(data, **kws, out=o, move_axis_to_end=m)
+        func(data, **kws, out=o, move_axes_to_end=m)
         for m, o in zip((True, False), _outs)
     ]
 

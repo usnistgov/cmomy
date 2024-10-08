@@ -300,7 +300,7 @@ class _AxisMultKwargs(TypedDict, total=False):
 
 
 class _MoveAxisToEndKwargs(TypedDict, total=False):
-    move_axis_to_end: bool
+    move_axes_to_end: bool
 
 
 class _OrderKwargs(TypedDict, total=False):
@@ -346,6 +346,7 @@ class ReduceDataKwargs(
     _KeepDimsKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
+    _MoveAxisToEndKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data`"""
@@ -358,6 +359,7 @@ class ReduceValsKwargs(
     _OrderCFKwargs,
     _KeepDimsKwargs,
     _MomParamsKwargs,
+    _MoveAxisToEndKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""

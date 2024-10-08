@@ -66,7 +66,7 @@ def do_reduce_data_indexed(data, **kwargs):
 
 def do_bootstrap_data(data, sampler, method, **kwargs):
     kwargs = kwargs.copy()
-    kwargs.pop("move_axis_to_end", None)
+    kwargs.pop("move_axes_to_end", None)
 
     args = [cmomy.resample_data(data, sampler=sampler, **kwargs)]
     if method in {"basic", "bca"}:

@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     from numpy.typing import DTypeLike, NDArray
 
     from .typing import (
+        DataT,
         MissingType,
         MomAxesStrict,
         MomDimsStrict,
@@ -38,17 +39,22 @@ def is_ndarray(x: Any) -> TypeIs[NDArray[Any]]:
     return isinstance(x, np.ndarray)
 
 
-def is_dataarray(x: Any) -> TypeIs[xr.DataArray]:
+def is_dataarray(x: object) -> TypeIs[xr.DataArray]:
     """Typeguard dataarray."""
     return isinstance(x, xr.DataArray)
 
 
-def is_dataset(x: Any) -> TypeIs[xr.Dataset]:
+def is_dataset(x: object) -> TypeIs[xr.Dataset]:
     """Typeguard dataset"""
     return isinstance(x, xr.Dataset)
 
 
-def is_xarray(x: Any) -> TypeIs[xr.Dataset | xr.DataArray]:
+def is_xarray(x: object) -> TypeIs[xr.Dataset | xr.DataArray]:
+    """Typeguard xarray object"""
+    return isinstance(x, (xr.DataArray, xr.Dataset))
+
+
+def is_xarray_typevar(x: object | DataT) -> TypeIs[DataT]:
     """Typeguard xarray object"""
     return isinstance(x, (xr.DataArray, xr.Dataset))
 

@@ -767,7 +767,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         casting: Casting = "same_kind",
         order: ArrayOrder = None,
         parallel: bool | None = None,
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         keep_attrs: KeepAttrs = None,
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
@@ -777,7 +777,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         Parameters
         ----------
         {axis_data_and_dim}
-        {move_axis_to_end}
+        {move_axes_to_end}
         {out}
         {dtype}
         {casting}
@@ -804,7 +804,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             dim=dim,
             mom_params=self._mom_params,
             inverse=False,
-            move_axis_to_end=move_axis_to_end,
+            move_axes_to_end=move_axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -875,7 +875,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         rep_dim: str = "rep",
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -893,7 +893,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {sampler}
         {axis_data_and_dim}
         {rep_dim}
-        {move_axis_to_end}
+        {move_axes_to_end}
         {out}
         {dtype}
         {casting}
@@ -958,7 +958,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 axis=axis,
                 dim=dim,
                 rep_dim=rep_dim,
-                move_axis_to_end=move_axis_to_end,
+                move_axes_to_end=move_axes_to_end,
                 dtype=dtype,
                 out=out,
                 casting=casting,
@@ -977,7 +977,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         dim: DimsReduce | MissingType = MISSING,
         data_reduced: Self | GenArrayT | None = None,
         rep_dim: str | None = "rep",
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -998,7 +998,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             Data reduced along ``axis``. Array of same type as ``self.obj`` or
             same type as ``self``.
         {rep_dim}
-        {move_axis_to_end}
+        {move_axes_to_end}
         {out}
         {dtype}
         {casting}
@@ -1029,7 +1029,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             dim=dim,
             data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
             rep_dim=rep_dim,
-            move_axis_to_end=move_axis_to_end,
+            move_axes_to_end=move_axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -1077,7 +1077,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             If specified, perform block average reduction with blocks
             of this size.  Negative values are transformed to all data.
         {axis_data_and_dim}
-        {move_axis_to_end}
+        {move_axes_to_end}
         {out}
         {dtype}
         {casting}

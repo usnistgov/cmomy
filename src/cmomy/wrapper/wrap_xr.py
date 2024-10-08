@@ -471,7 +471,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 axis=axis,
                 mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
                 dtype=self._dtype,
-                move_axis_to_end=True,
+                move_axes_to_end=True,
                 recast=False,
             )
             dim = "_dummy123"
@@ -583,7 +583,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 dtype=self._dtype,
                 recast=False,
                 narrays=self.mom_ndim + 1,
-                move_axis_to_end=True,
+                move_axes_to_end=True,
             )
             dim = "_dummy123"
             input_core_dims = [[dim]] * len(xargs)
@@ -625,7 +625,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         by: str | Groups | None = None,
         block: int | None = None,
         axis: AxisReduce | MissingType = MISSING,
-        move_axis_to_end: bool = False,
+        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -812,7 +812,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 group_end=group_end,
                 axis=axis,
                 dim=dim,
-                move_axis_to_end=move_axis_to_end,
+                move_axes_to_end=move_axes_to_end,
                 parallel=parallel,
                 dtype=dtype,
                 out=out,
@@ -841,7 +841,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 by=codes,
                 axis=axis,
                 dim=dim,
-                move_axis_to_end=move_axis_to_end,
+                move_axes_to_end=move_axes_to_end,
                 parallel=parallel,
                 dtype=dtype,
                 out=out,

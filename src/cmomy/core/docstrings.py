@@ -101,14 +101,11 @@ def _dummy_docstrings() -> None:
         If this is set to True, the axes which are reduced are left in the
         result as dimensions with size one. With this option, the result will
         broadcast correctly against the input array.
-    move_axis_to_end : bool
-        If ``True``, place sampled dimension at end (just before moments
-        dimensions) in output. Otherwise, place sampled dimension at same
-        position as input ``axis``. Note that if the result is a
-        :class:`xarray.Dataset` object, then ``move_axis_to_end = True``
-        always.
-
-
+    move_axes_to_end : bool
+        If ``True``, place sampled dimension (if exists in output) and moment dimensions at end of
+        output. Otherwise, place sampled dimension (if exists in output) at same position as input
+        ``axis`` and moment dimensions at same position as input (if input does
+        not contain moment dimensions, place them at end of array).
     axis : int
         Axis to reduce/sample along.
     axis_data | axis : int, optional

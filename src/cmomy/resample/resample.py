@@ -32,6 +32,7 @@ from cmomy.core.utils import (
 )
 from cmomy.core.validate import (
     is_dataarray,
+    is_dataset,
     is_ndarray,
     is_xarray,
     raise_if_wrong_value,
@@ -39,6 +40,7 @@ from cmomy.core.validate import (
 from cmomy.core.xr_utils import (
     factory_apply_ufunc_kwargs,
     raise_if_dataset,
+    transpose_like,
 )
 from cmomy.factory import (
     factory_jackknife_data,
@@ -156,7 +158,7 @@ def resample_data(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    move_axis_to_end: bool = False,
+    move_axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -179,7 +181,7 @@ def resample_data(  # noqa: PLR0913
     {casting}
     {order}
     {parallel}
-    {move_axis_to_end}
+    {move_axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -233,7 +235,7 @@ def resample_data(  # noqa: PLR0913
                     out,
                     mom_ndim=mom_params.ndim,
                     axis=axis,
-                    move_axis_to_end=move_axis_to_end,
+                    move_axes_to_end=move_axes_to_end,
                     data=data,
                 ),
                 "dtype": dtype,
@@ -251,7 +253,16 @@ def resample_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(data):
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=data,
+                replace={dim: rep_dim},
+            )
+        elif is_dataset(xout):
+            xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")
+
+        if not move_axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr, misc,index,operator]
             xout = xout.transpose(*dims_order)
         return xout
@@ -265,7 +276,7 @@ def resample_data(  # noqa: PLR0913
         ),
         dtype=None,
         recast=False,
-        move_axis_to_end=move_axis_to_end,
+        move_axes_to_end=move_axes_to_end,
     )
     freq = sampler.freq
     assert is_ndarray(freq)  # noqa: S101
@@ -399,7 +410,7 @@ def resample_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    move_axis_to_end: bool = True,
+    move_axes_to_end: bool = True,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -423,7 +434,7 @@ def resample_vals(  # noqa: PLR0913
     {casting}
     {order_cf}
     {parallel}
-    {move_axis_to_end}
+    {move_axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -431,7 +442,7 @@ def resample_vals(  # noqa: PLR0913
     -------
     out : ndarray or DataArray
         Resampled Central moments array. ``out.shape = (...,shape[axis-1], nrep, shape[axis+1], ...)``
-        where ``shape = x.shape``. and ``nrep = sampler.nrep``.  This can be overridden by setting `move_axis_to_end`.
+        where ``shape = x.shape``. and ``nrep = sampler.nrep``.  This can be overridden by setting `move_axes_to_end`.
 
     Notes
     -----
@@ -487,7 +498,7 @@ def resample_vals(  # noqa: PLR0913
                     out=out,
                     dim=dim,
                     mom_ndim=xmom_params.ndim,
-                    move_axis_to_end=move_axis_to_end,
+                    move_axes_to_end=move_axes_to_end,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -507,7 +518,7 @@ def resample_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(x):
+        if not move_axes_to_end and is_dataarray(x):
             dims_order = [
                 *(d if d != dim else rep_dim for d in x.dims),  # type: ignore[union-attr]
                 *xmom_params.dims,  # type: ignore[has-type]
@@ -526,7 +537,7 @@ def resample_vals(  # noqa: PLR0913
         dtype=dtype,
         recast=False,
         narrays=mom_params.ndim + 1,
-        move_axis_to_end=move_axis_to_end,
+        move_axes_to_end=move_axes_to_end,
     )
 
     return _resample_vals(
@@ -666,7 +677,7 @@ def jackknife_data(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    move_axis_to_end: bool = False,
+    move_axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -693,7 +704,7 @@ def jackknife_data(  # noqa: PLR0913
     {casting}
     {order}
     {parallel}
-    {move_axis_to_end}
+    {move_axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -795,7 +806,7 @@ def jackknife_data(  # noqa: PLR0913
                     out,
                     mom_ndim=mom_params.ndim,
                     axis=axis,
-                    move_axis_to_end=move_axis_to_end,
+                    move_axes_to_end=move_axes_to_end,
                     data=data,
                 ),
                 "dtype": dtype,
@@ -812,7 +823,7 @@ def jackknife_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(data):
+        if not move_axes_to_end and is_dataarray(data):
             xout = xout.transpose(*data.dims)
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
@@ -827,7 +838,7 @@ def jackknife_data(  # noqa: PLR0913
         ),
         dtype=dtype,
         recast=False,
-        move_axis_to_end=move_axis_to_end,
+        move_axes_to_end=move_axes_to_end,
     )
 
     assert is_ndarray(data_reduced)  # noqa: S101
@@ -959,7 +970,7 @@ def jackknife_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    move_axis_to_end: bool = True,
+    move_axes_to_end: bool = True,
     # xarray specific
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -986,7 +997,7 @@ def jackknife_vals(  # noqa: PLR0913
     {casting}
     {order}
     {parallel}
-    {move_axis_to_end}
+    {move_axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -1058,7 +1069,7 @@ def jackknife_vals(  # noqa: PLR0913
                     out=out,
                     dim=dim,
                     mom_ndim=mom_params.ndim,
-                    move_axis_to_end=move_axis_to_end,
+                    move_axes_to_end=move_axes_to_end,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -1075,7 +1086,7 @@ def jackknife_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(x):
+        if not move_axes_to_end and is_dataarray(x):
             xout = xout.transpose(..., *x.dims, *mom_params.dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
@@ -1091,7 +1102,7 @@ def jackknife_vals(  # noqa: PLR0913
         dtype=dtype,
         recast=False,
         narrays=mom_params.ndim + 1,
-        move_axis_to_end=move_axis_to_end,
+        move_axes_to_end=move_axes_to_end,
     )
 
     assert is_ndarray(data_reduced)  # noqa: S101

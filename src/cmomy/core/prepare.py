@@ -56,7 +56,7 @@ def prepare_data_for_reduction(
     mom_params: MomParamsArray,
     dtype: DTypeLike,
     recast: bool = True,
-    move_axis_to_end: bool = False,
+    move_axes_to_end: bool = False,
 ) -> tuple[int, MomParamsArray, NDArrayAny]:
     """Convert central moments array to correct form for reduction."""
     data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
@@ -66,7 +66,7 @@ def prepare_data_for_reduction(
         mom_ndim=mom_params.ndim,
     )
 
-    if move_axis_to_end:
+    if move_axes_to_end:
         axis_out = data.ndim - (mom_params.ndim + 1)
         mom_params_orig, mom_params = mom_params, mom_params.move_axes_to_end()
         data = np.moveaxis(
@@ -86,7 +86,7 @@ def prepare_values_for_reduction(
     axis: AxisReduceWrap | MissingType = MISSING,
     dtype: DTypeLike,
     recast: bool = True,
-    move_axis_to_end: bool = True,
+    move_axes_to_end: bool = True,
 ) -> tuple[int, tuple[NDArrayAny, ...]]:
     """
     Convert input value arrays to correct form for reduction.
@@ -108,7 +108,7 @@ def prepare_values_for_reduction(
     nsamp = target.shape[axis]
 
     axis_neg = positive_to_negative_index(axis, target.ndim)
-    if move_axis_to_end and axis_neg != -1:
+    if move_axes_to_end and axis_neg != -1:
         target = np.moveaxis(target, axis_neg, -1)
 
     others: Iterable[NDArrayAny] = (
@@ -118,12 +118,12 @@ def prepare_values_for_reduction(
             nsamp=nsamp,
             dtype=target.dtype,
             recast=recast,
-            move_axis_to_end=move_axis_to_end,
+            move_axes_to_end=move_axes_to_end,
         )
         for x in args
     )
 
-    return -1 if move_axis_to_end else axis_neg, (target, *others)
+    return -1 if move_axes_to_end else axis_neg, (target, *others)
 
 
 def prepare_secondary_value_for_reduction(
@@ -133,7 +133,7 @@ def prepare_secondary_value_for_reduction(
     dtype: DTypeLike,
     recast: bool,
     *,
-    move_axis_to_end: bool = True,
+    move_axes_to_end: bool = True,
 ) -> NDArrayAny:
     """
     Prepare value array (x1, w) for reduction.
@@ -161,7 +161,7 @@ def prepare_secondary_value_for_reduction(
 
     if out.ndim == 1:
         axis_check = -1
-    elif move_axis_to_end and axis != -1:
+    elif move_axes_to_end and axis != -1:
         out = np.moveaxis(out, axis, -1)
         axis_check = -1
     else:
@@ -251,7 +251,7 @@ def xprepare_secondary_value_for_reduction(
         nsamp=nsamp,
         dtype=dtype,
         recast=recast,
-        move_axis_to_end=True,
+        move_axes_to_end=True,
     )
 
 
@@ -261,14 +261,14 @@ def xprepare_out_for_resample_vals(
     out: NDArray[ScalarT] | None,
     dim: DimsReduce,
     mom_ndim: MomNDim,
-    move_axis_to_end: bool,
+    move_axes_to_end: bool,
 ) -> NDArray[ScalarT] | None:
     """Prepare out for resampling"""
     # NOTE: silently ignore out of datasets.
     if out is None or is_dataset(target):
         return None
 
-    if move_axis_to_end:
+    if move_axes_to_end:
         # out should already be in correct order
         return out
 
@@ -285,14 +285,14 @@ def xprepare_out_for_resample_data(
     *,
     mom_ndim: MomNDim | None,
     axis: int,
-    move_axis_to_end: bool,
+    move_axes_to_end: bool,
     data: Any = None,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
     if out is None or is_dataset(data):
         return None
 
-    if move_axis_to_end:
+    if move_axes_to_end:
         # out should already be in correct order
         return out
 

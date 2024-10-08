@@ -524,7 +524,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     axis: AxisReduceWrap | MissingType = MISSING,
     mom_params: MomParamsInput = None,
     dim: DimsReduce | MissingType = MISSING,
-    move_axis_to_end: bool = True,
+    move_axes_to_end: bool = True,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -548,7 +548,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     {weight_genarray}
     {axis}
     {dim}
-    {move_axis_to_end}
+    {move_axes_to_end}
     {order}
     {out}
     {dtype}
@@ -600,7 +600,7 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         weight=weight,
         axis=axis,
         dim=dim,
-        move_axis_to_end=move_axis_to_end,
+        move_axes_to_end=move_axes_to_end,
         parallel=parallel,
         rep_dim=rep_dim,
         keep_attrs=keep_attrs,

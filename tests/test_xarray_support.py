@@ -366,8 +366,8 @@ def test_func_data_dataset(data_and_kwargs, func, kwargs_callback) -> None:
     # coordinates along sampled dimension
     out = func(data, **kws)
 
-    if "dim" in kws and "move_axis_to_end" in inspect.signature(func).parameters:
-        kws = {"move_axis_to_end": True, **kws}
+    if "dim" in kws and "move_axes_to_end" in inspect.signature(func).parameters:
+        kws = {"move_axes_to_end": True, **kws}
 
     for k in data:
         da = data[k]
@@ -604,7 +604,6 @@ def test_resample_data_dataset(data_and_kwargs, nrep, paired) -> None:
                 da,
                 **kwargs,
                 sampler={"freq": freq if is_dataarray(freq) else freq[name]},
-                move_axis_to_end=True,
             )
 
         xr.testing.assert_allclose(out[name], da)
