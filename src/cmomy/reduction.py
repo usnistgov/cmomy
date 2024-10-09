@@ -41,6 +41,7 @@ from .core.validate import (
     validate_axis_mult,
 )
 from .core.xr_utils import (
+    contains_dims,
     factory_apply_ufunc_kwargs,
     replace_coords_from_isel,
     transpose_like,
@@ -372,7 +373,7 @@ def reduce_data(
 
 # ** public
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_data(  # noqa: PLR0913
+def reduce_data(  # noqa: PLR0913, C901
     data: ArrayLike | DataT,
     *,
     axis: AxisReduceMultWrap | MissingType = MISSING,
@@ -389,6 +390,7 @@ def reduce_data(  # noqa: PLR0913
     parallel: bool | None = None,
     move_axes_to_end: bool = False,
     use_reduce: bool = True,
+    use_map: bool | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -411,14 +413,12 @@ def reduce_data(  # noqa: PLR0913
     {order}
     {keepdims}
     {parallel}
-    use_reduce : bool
-        If ``True``, use ``data.reduce(reduce_data, ....)`` for
-        :class:`~xarray.DataArray` or :class:`~xarray.Dataset` ``data``.
-        Otherwise, use :func:`~xarray.apply_ufunc` for reduction. The later
-        will preserve dask based arrays while the former will greedily convert
-        dask data to :class:`~numpy.ndarray` arrays. Also, not using reduce Can
-        be useful if reducing a dataset which contains arrays that do not
-        contain ``mom_dims`` that should be dropped.
+    use_map : bool, optional
+        If not ``False``, use ``data.map`` if ``data`` is a
+        :class:`~xarray.Dataset` and ``dim`` is not a single scalar. This will
+        properly handle cases where ``dim`` is ``None`` or has multiple
+        dimensions. Note that with this option, variables that do not contain
+        ``dim`` or ``mom_dims`` will be left in the result unchanged.
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -438,11 +438,57 @@ def reduce_data(  # noqa: PLR0913
             data=data,
             default_ndim=1,
         )
+
+        # Special case for dataset with multiple dimensions.
+        # Can't do this with xr.apply_ufunc if variables have different
+        # dimensions.  Use map in this case
+        if is_dataset(data):
+            _dims_check: tuple[Hashable, ...] = mom_params.dims
+            if dim is not None:
+                dim = mom_params.select_axis_dim_mult(data, axis=axis, dim=dim)[1]
+                _dims_check = (*dim, *_dims_check)  # type: ignore[misc, has-type]
+
+            if not contains_dims(data, *_dims_check):
+                msg = f"Dimensions {dim} and {mom_params.dims} not found in {tuple(data.dims)}"
+                raise ValueError(msg)
+
+            if (use_map is None or use_map) and (dim is None or len(dim) > 1):
+                return data.map(  # type: ignore[return-value]
+                    reduce_data,
+                    keep_attrs=keep_attrs if keep_attrs is None else bool(keep_attrs),
+                    mom_params=mom_params,
+                    dim=dim,
+                    dtype=dtype,
+                    casting=casting,
+                    order=order,
+                    keepdims=keepdims,
+                    parallel=parallel,
+                    move_axes_to_end=move_axes_to_end,
+                    use_map=True,
+                    use_reduce=False,
+                    apply_ufunc_kwargs=apply_ufunc_kwargs,
+                )
+
+        if use_map:
+            if not contains_dims(data, *mom_params.dims):
+                return data  # type: ignore[return-value]
+            # if specified dims, only keep those in current dataarray
+            if dim not in {None, MISSING}:
+                dim = (dim,) if isinstance(dim, str) else dim
+
+                def _filter_func(d: Hashable) -> bool:
+                    return contains_dims(data, d)
+
+                dim = tuple(filter(_filter_func, dim))  # type: ignore[arg-type]
+                if len(dim) == 0:
+                    return data  # type: ignore[return-value]
+
         axis, dim = mom_params.select_axis_dim_mult(
             data,
             axis=axis,
             dim=dim,
         )
+
         xout: DataT
         if use_reduce:
             xout = data.transpose(..., *mom_params.dims).reduce(  # type: ignore[assignment]
@@ -463,14 +509,16 @@ def reduce_data(  # noqa: PLR0913
                 casting=casting,
                 order=order,
                 move_axes_to_end=False,
+                fastpath=False,
             )
-
         else:
             xout = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 _reduce_data,
                 data,
                 input_core_dims=[mom_params.core_dims(*dim)],
-                output_core_dims=[mom_params.core_dims(*dim)],
+                output_core_dims=[
+                    mom_params.core_dims(*dim) if keepdims else mom_params.dims
+                ],
                 exclude_dims=set(dim),
                 kwargs={
                     "mom_params": mom_params.to_array(),
@@ -484,7 +532,7 @@ def reduce_data(  # noqa: PLR0913
                     ),
                     "dtype": dtype,
                     "parallel": parallel,
-                    "keepdims": True,
+                    "keepdims": keepdims,
                     "fastpath": is_dataarray(data),
                     "casting": casting,
                     "order": order,
@@ -495,12 +543,9 @@ def reduce_data(  # noqa: PLR0913
                     apply_ufunc_kwargs,
                     dask="parallelized",
                     output_dtypes=dtype or np.float64,
-                    output_sizes=dict.fromkeys(dim, 1),
+                    output_sizes=dict.fromkeys(dim, 1) if keepdims else None,
                 ),
             )
-
-            if not keepdims:
-                xout = xout.squeeze(dim)
 
         if not move_axes_to_end:
             xout = transpose_like(
@@ -565,7 +610,7 @@ def _reduce_data(
     if axis_tuple == ():
         return data
 
-    # move reduction dimensions to end and reshape
+    # move reduction dimensions to last positions and reshape
     _order = moveaxis_order(data.ndim, axis_tuple, range(-len(axis_tuple), 0))
     data = data.transpose(*_order)
     data = data.reshape(*data.shape[: -len(axis_tuple)], -1)

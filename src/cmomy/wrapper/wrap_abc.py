@@ -1072,11 +1072,11 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
 
         Parameters
         ----------
+        {axis_data_and_dim}
         {by}
         block : int, optional
             If specified, perform block average reduction with blocks
             of this size.  Negative values are transformed to all data.
-        {axis_data_and_dim}
         {move_axes_to_end}
         {out}
         {dtype}

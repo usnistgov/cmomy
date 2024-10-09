@@ -13,7 +13,6 @@ from .validate import (
 
 if TYPE_CHECKING:
     from collections.abc import (
-        Collection,
         Hashable,
         Sequence,
     )
@@ -143,13 +142,6 @@ def get_mom_shape(
     return cast("MomentsStrict", mom_shape)
 
 
-def contains_dims(
-    data: xr.DataArray | xr.Dataset, dims: str | Collection[Hashable]
-) -> bool:
-    """Wheater data contains `dims`."""
-    return all(d in data.dims for d in dims)
-
-
 def astype_dtype_dict(
     obj: xr.DataArray | xr.Dataset,
     dtype: DTypeLike | Mapping[Hashable, DTypeLike],
@@ -163,6 +155,11 @@ def astype_dtype_dict(
         raise ValueError(msg)
 
     return dtype
+
+
+def contains_dims(data: xr.DataArray | xr.Dataset, *dims: Hashable) -> bool:
+    """Check if xarray object contains dimensions"""
+    return all(d in data.dims for d in dims)
 
 
 # * Transpose like ------------------------------------------------------------

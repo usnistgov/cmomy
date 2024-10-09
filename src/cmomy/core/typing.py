@@ -352,6 +352,7 @@ class ReduceDataKwargs(
     """Extra parameters to :func:`.reduction.reduce_data`"""
 
     use_reduce: bool
+    use_map: bool | None
 
 
 class ReduceValsKwargs(

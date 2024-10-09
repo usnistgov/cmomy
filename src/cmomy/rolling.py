@@ -38,11 +38,13 @@ from .core.utils import (
 )
 from .core.validate import (
     is_dataarray,
+    is_dataset,
     is_xarray,
     validate_axis,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
+    transpose_like,
 )
 from .factory import (
     factory_rolling_data,
@@ -466,8 +468,14 @@ def rolling_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end and is_dataarray(xout):
-            xout = xout.transpose(*data.dims)
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=data,
+            )
+        elif is_dataset(data):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+
         return xout
 
     # Numpy
@@ -726,8 +734,15 @@ def rolling_vals(  # noqa: PLR0913
                 output_dtypes=dtype or np.float64,
             ),
         )
-        if not move_axes_to_end and is_dataarray(xout):
-            xout = xout.transpose(..., *x.dims, *mom_params.dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                prepend=...,
+                append=mom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
         return xout
 
     # Numpy
@@ -1011,8 +1026,14 @@ def rolling_exp_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end and is_dataarray(xout):
-            xout = xout.transpose(*data.dims)
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=data,
+            )
+        elif is_dataset(data):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+
         return xout
 
     # save the original axis for alpha_axis...
@@ -1307,8 +1328,16 @@ def rolling_exp_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end and is_dataarray(xout):
-            xout = xout.transpose(..., *x.dims, *mom_params.dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
+        if not move_axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                prepend=...,
+                append=mom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+
         return xout
 
     mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)

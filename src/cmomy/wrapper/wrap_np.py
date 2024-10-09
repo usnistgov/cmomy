@@ -23,11 +23,10 @@ from cmomy.core.validate import (
     raise_if_wrong_value,
     validate_axis,
     validate_floating_dtype,
-    validate_mom,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Sequence
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike
@@ -853,10 +852,10 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     @docfiller_inherit_abc()
     def reduce(
         self,
+        axis: AxisReduce | MissingType = MISSING,
         *,
         by: Groups | None = None,
         block: int | None = None,
-        axis: AxisReduce | MissingType = MISSING,
         move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
@@ -906,7 +905,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
+        val_shape: int | Sequence[int] | None = ...,
         dtype: None = ...,
         order: ArrayOrderCF = ...,
     ) -> CentralMomentsArray[np.float64]: ...
@@ -916,7 +915,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
+        val_shape: int | Sequence[int] | None = ...,
         dtype: DTypeLikeArg[FloatT_],
         order: ArrayOrderCF = ...,
     ) -> CentralMomentsArray[FloatT_]: ...
@@ -926,7 +925,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
+        val_shape: int | Sequence[int] | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrderCF = ...,
     ) -> Self: ...
@@ -937,7 +936,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = None,
+        val_shape: int | Sequence[int] | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
     ) -> CentralMomentsArrayAny | Self:
@@ -949,19 +948,15 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         {dtype}
         {order}
         """
-        mom = validate_mom(mom)
-        mom_params = MomParamsArray.factory(ndim=len(mom))
+        mom, mom_params = MomParamsArray.factory_mom(mom)
 
-        vshape: tuple[int, ...]
         if val_shape is None:
-            vshape = ()
+            val_shape = ()
         elif isinstance(val_shape, int):
-            vshape = (val_shape,)
-        else:
-            vshape = val_shape
+            val_shape = (val_shape,)
 
         # add in moments
-        shape: tuple[int, ...] = (*vshape, *mom_to_mom_shape(mom))
+        shape: tuple[int, ...] = (*val_shape, *mom_to_mom_shape(mom))  # type: ignore[misc]
 
         return cls(np.zeros(shape, dtype=dtype, order=order), mom_params=mom_params)
 

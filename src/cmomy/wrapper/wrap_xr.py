@@ -162,7 +162,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 fastpath=True,
             )
             for k, obj in self._obj.items()
-            if contains_dims(obj, self.mom_dims)
+            if contains_dims(obj, *self.mom_dims)
         }
 
     def items(
@@ -244,7 +244,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         The selection is wrapped with ``CentralMomentsData``.
         """
         obj: xr.DataArray | xr.Dataset = self._obj[key]  # pyright: ignore[reportUnknownVariableType]
-        if not contains_dims(obj, self.mom_dims):  # pyright: ignore[reportUnknownArgumentType]
+        if not contains_dims(obj, *self.mom_dims):  # pyright: ignore[reportUnknownArgumentType]
             msg = f"Cannot select object without {self.mom_dims}"
             raise ValueError(msg)
         self._raise_if_wrong_mom_shape(get_mom_shape(obj, self.mom_dims))  # pyright: ignore[reportUnknownArgumentType]
@@ -298,7 +298,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             obj_ = self._obj.copy(data=obj)  # type: ignore[arg-type]
 
         # minimal check on shape and that mom_dims are present....
-        if not contains_dims(obj_, self.mom_dims):
+        if not contains_dims(obj_, *self.mom_dims):
             msg = f"Cannot create new from object without {self.mom_dims}"
             raise ValueError(msg)
         self._raise_if_wrong_mom_shape(get_mom_shape(obj_, self.mom_dims))
@@ -364,7 +364,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             return
 
         for name, val in self._obj.items():
-            if contains_dims(val, self.mom_dims):
+            if contains_dims(val, *self.mom_dims):
                 _ = validate_floating_dtype(val, name=name)
 
     # ** Pushing --------------------------------------------------------------
@@ -621,23 +621,23 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     @docfiller_inherit_abc()
     def reduce(  # noqa: PLR0913
         self,
+        dim: DimsReduce | MissingType = MISSING,
         *,
         by: str | Groups | None = None,
         block: int | None = None,
+        use_reduce: bool = False,
+        group_dim: str | None = None,
+        groups: Groups | None = None,
         axis: AxisReduce | MissingType = MISSING,
-        move_axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
         order: ArrayOrderCF = None,
         keepdims: bool = False,
         parallel: bool | None = None,
+        move_axes_to_end: bool = False,
         # xarray specific
         coords_policy: CoordsPolicy = "first",
-        use_reduce: bool = False,
-        dim: DimsReduce | MissingType = MISSING,
-        group_dim: str | None = None,
-        groups: Groups | None = None,
         keep_attrs: KeepAttrs = None,
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
