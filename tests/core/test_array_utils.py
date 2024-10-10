@@ -7,7 +7,6 @@ import pytest
 import xarray as xr
 
 from cmomy.core import array_utils
-from cmomy.core.moment_params import MomParamsArray
 
 
 # * catch all args only test
@@ -98,48 +97,6 @@ def test_normalize_axis_tuple(args, expected):
 )
 def test_positive_to_negative_index(args, expected) -> None:
     _do_test(array_utils.positive_to_negative_index, *args, expected=expected)
-
-
-@pytest.mark.parametrize(
-    ("args", "kwargs", "expected"),
-    [
-        (
-            (),
-            {"mom_ndim": 1, "axis": -2},
-            [(-2, -1), (-1,)],
-        ),
-        (
-            (),
-            {"mom_ndim": 2, "axis": -3},
-            [(-3, -2, -1), (-2, -1)],
-        ),
-        (
-            ((), -2),
-            {"mom_ndim": 1, "axis": -3},
-            [(-3, -1), (), (-2,), (-1,)],
-        ),
-        (
-            (),
-            {"mom_ndim": 1, "axis": -2, "out_has_axis": True},
-            [(-2, -1), (-2, -1)],
-        ),
-        (
-            (),
-            {"mom_ndim": 2, "axis": -3, "out_has_axis": True},
-            [(-3, -2, -1), (-3, -2, -1)],
-        ),
-        (
-            ((), -2),
-            {"mom_ndim": 1, "axis": -3, "out_has_axis": True},
-            [(-3, -1), (), (-2,), (-3, -1)],
-        ),
-    ],
-)
-def test_axes_data_reduction(args, kwargs, expected) -> None:
-    kwargs = kwargs.copy()
-    mom_ndim = kwargs.pop("mom_ndim")
-    kwargs["mom_params"] = MomParamsArray.factory(ndim=mom_ndim)
-    _do_test(array_utils.axes_data_reduction, *args, expected=expected, **kwargs)
 
 
 def _e(dtype):

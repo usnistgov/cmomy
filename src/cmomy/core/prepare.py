@@ -30,7 +30,6 @@ if TYPE_CHECKING:
         Iterable,
         Sequence,
     )
-    from typing import Any
 
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -273,9 +272,8 @@ def xprepare_out_for_reduce_data(
 
     dims = [d for d in target.dims if d not in dim]
     axes0 = [dims.index(d) for d in mom_params.dims]
-    axes1 = range(-mom_params.ndim, 0)
 
-    return np.moveaxis(out, axes0, axes1)
+    return np.moveaxis(out, axes0, mom_params.axes_last)
 
 
 def xprepare_out_for_transform(
@@ -294,8 +292,8 @@ def xprepare_out_for_transform(
 
     return np.moveaxis(
         out,
-        target.get_axis_num(mom_params.dims),
-        mom_params.axes,
+        mom_params.axes(target),
+        mom_params.axes_last,
     )
 
 
@@ -326,10 +324,10 @@ def xprepare_out_for_resample_vals(
 def xprepare_out_for_resample_data(
     out: NDArray[ScalarT] | None,
     *,
-    mom_ndim: MomNDim | None,
+    mom_params: MomParamsXArray,
     axis: int,
     move_axes_to_end: bool,
-    data: Any = None,
+    data: xr.DataArray | xr.Dataset,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
     if out is None or is_dataset(data):
@@ -339,8 +337,9 @@ def xprepare_out_for_resample_data(
         # out should already be in correct order
         return out
 
-    shift = 0 if mom_ndim is None else mom_ndim
-    return np.moveaxis(out, axis, -(shift + 1))
+    axes0 = (axis, *mom_params.axes(data))
+    axes1 = (-(mom_params.ndim + 1), *mom_params.axes_last)
+    return np.moveaxis(out, axes0, axes1)
 
 
 def prepare_out_from_values(

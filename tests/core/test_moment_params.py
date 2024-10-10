@@ -305,3 +305,55 @@ def test_select_axis_dim_mult_dataset(data, kws, expected) -> None:
     _do_test(
         _wrap_select_method("select_axis_dim_mult"), data, expected=expected, **kws
     )
+
+
+@pytest.mark.parametrize(
+    ("args", "mom_params_kws", "kwargs", "expected"),
+    [
+        (
+            (),
+            {"ndim": 1},
+            {"axis": -2},
+            [(-2, -1), (-1,)],
+        ),
+        (
+            (),
+            {"ndim": 2},
+            {"axis": -3},
+            [(-3, -2, -1), (-2, -1)],
+        ),
+        (
+            ((), -2),
+            {"ndim": 1},
+            {"axis": -3},
+            [(-3, -1), (), (-2,), (-1,)],
+        ),
+        (
+            (),
+            {"ndim": 1},
+            {"axis": -2, "out_has_axis": True},
+            [(-2, -1), (-2, -1)],
+        ),
+        (
+            (),
+            {"ndim": 2},
+            {"axis": -3, "out_has_axis": True},
+            [(-3, -2, -1), (-3, -2, -1)],
+        ),
+        (
+            ((), -2),
+            {"ndim": 1},
+            {"axis": -3, "out_has_axis": True},
+            [(-3, -1), (), (-2,), (-3, -1)],
+        ),
+        (
+            (),
+            {"axes": (1, 2)},
+            {"axis": -1, "out_has_axis": True},
+            [(-1, 1, 2), (-1, 1, 2)],
+        ),
+    ],
+)
+def test_axes_data_reduction(args, mom_params_kws, kwargs, expected) -> None:
+    mom_params = MomParamsArray.factory(mom_params_kws)
+    _do_test(mom_params.axes_data_reduction, *args, expected=expected, **kwargs)

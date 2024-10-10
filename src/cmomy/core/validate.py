@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
         DataT,
@@ -54,8 +54,8 @@ def is_xarray(x: object) -> TypeIs[xr.Dataset | xr.DataArray]:
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
-def is_xarray_typevar(x: object | DataT) -> TypeIs[DataT]:
-    """Typeguard xarray object"""
+def is_xarray_typevar(x: ArrayLike | DataT) -> TypeIs[DataT]:
+    """Typeguard ``DataT`` typevar against array-like."""
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
 

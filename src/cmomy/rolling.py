@@ -12,7 +12,6 @@ import xarray as xr
 
 from .core.array_utils import (
     asarray_maybe_recast,
-    axes_data_reduction,
     get_axes_from_values,
     normalize_axis_index,
     positive_to_negative_index,
@@ -40,6 +39,7 @@ from .core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    is_xarray_typevar,
     validate_axis,
 )
 from .core.xr_utils import (
@@ -238,7 +238,7 @@ def construct_rolling_window_array(
     xarray.DataArray.rolling
     xarray.core.rolling.DataArrayRolling.construct
     """
-    if is_xarray(x):
+    if is_xarray_typevar(x):
         mom_params = MomParamsXArrayOptional.factory(
             mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
         )
@@ -423,7 +423,7 @@ def rolling_data(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -449,7 +449,7 @@ def rolling_data(  # noqa: PLR0913
                 "zero_missing_weights": zero_missing_weights,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_params.ndim,
+                    mom_params=mom_params,
                     axis=axis,
                     move_axes_to_end=move_axes_to_end,
                     data=data,
@@ -534,9 +534,8 @@ def _rolling_data(
         # add in window, count
         (),
         (),
-        *axes_data_reduction(
+        *mom_params.axes_data_reduction(
             axis=axis,
-            mom_params=mom_params,
             out_has_axis=True,
         ),
     ]
@@ -685,7 +684,7 @@ def rolling_vals(  # noqa: PLR0913
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    if is_xarray(x):
+    if is_xarray_typevar(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom, mom_params=mom_params, dims=mom_dims
         )
@@ -853,7 +852,7 @@ def _rolling_vals(
 @overload
 def rolling_exp_data(
     data: DataT,
-    alpha: ArrayLike,
+    alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
@@ -904,7 +903,7 @@ def rolling_exp_data(
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def rolling_exp_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
-    alpha: ArrayLike,
+    alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
@@ -968,7 +967,7 @@ def rolling_exp_data(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -1007,7 +1006,7 @@ def rolling_exp_data(  # noqa: PLR0913
                 "zero_missing_weights": zero_missing_weights,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_ndim,
+                    mom_params=mom_params,
                     axis=axis,
                     move_axes_to_end=move_axes_to_end,
                     data=data,
@@ -1126,8 +1125,7 @@ def _rolling_exp_data(
         (alpha_axis,),
         (),
         (),
-        *axes_data_reduction(
-            mom_params=mom_params,
+        *mom_params.axes_data_reduction(
             axis=axis,
             out_has_axis=True,
         ),
@@ -1278,7 +1276,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
-    if is_xarray(x):
+    if is_xarray_typevar(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims
         )

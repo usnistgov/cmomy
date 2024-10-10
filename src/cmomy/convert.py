@@ -36,6 +36,7 @@ from .core.validate import (
     is_dataset,
     is_ndarray,
     is_xarray,
+    is_xarray_typevar,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
@@ -209,7 +210,7 @@ def moments_type(
     """
     # TODO(wpk): add move_axes_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray(values_in):
+    if is_xarray_typevar(values_in):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -415,7 +416,7 @@ def cumulative(  # noqa: PLR0913
 
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray(values_in):
+    if is_xarray_typevar(values_in):
         xmom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -442,7 +443,7 @@ def cumulative(  # noqa: PLR0913
                 "axis": -(xmom_params.ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=xmom_params.ndim,
+                    mom_params=xmom_params,
                     axis=axis,
                     move_axes_to_end=move_axes_to_end,
                     data=values_in,
@@ -681,7 +682,7 @@ def moments_to_comoments(
 
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=1, dims=mom_dims, axes=mom_axes, data=data
         )
@@ -830,7 +831,7 @@ def comoments_to_moments(
     array([10.    ,  0.5505,  0.1014, -0.0178])
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=2, axes=mom_axes, dims=mom_dims, data=data
         )

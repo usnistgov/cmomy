@@ -351,7 +351,6 @@ class ReduceDataKwargs(
 ):
     """Extra parameters to :func:`.reduction.reduce_data`"""
 
-    use_reduce: bool
     use_map: bool | None
 
 
@@ -683,6 +682,7 @@ class FactoryIndexSamplerKwargs(
 
 #: IndexSampler or mapping which can be converted to IndexSampler
 Sampler: TypeAlias = Union[
+    int,
     NDArrayAny,
     xr.DataArray,
     xr.Dataset,

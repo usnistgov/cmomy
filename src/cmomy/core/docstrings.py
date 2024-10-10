@@ -124,11 +124,12 @@ def _dummy_docstrings() -> None:
         value dimensions (i.e., all dimensions excluding moment dimensions).
 
 
-    sampler : array-like or IndexSampler or mapping
+    sampler : int or array-like or IndexSampler or mapping
         Passed through :func:`.resample.factory_sampler` to create an
-        :class:`~.resample.IndexSampler`. Value can either be a frequency
-        array, an :class:`~.resample.IndexSampler`, or a mapping of
-        parameters. The mapping can have form of
+        :class:`~.resample.IndexSampler`. Value can either be ``nrep`` (the
+        number of replicates), ``freq`` (frequency array), a
+        :class:`~.resample.IndexSampler` object, or a mapping of parameters.
+        The mapping can have form of
         :class:`~.core.typing.FactoryIndexSamplerKwargs`. Allowable keys are
         ``freq``, ``indices``, ``ndat``, ``nrep``, ``nsamp``, ``paired``,
         ``rng``, ``replace``, ``shuffle``.

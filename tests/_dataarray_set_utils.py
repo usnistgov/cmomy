@@ -16,6 +16,12 @@ def remove_dim_from_kwargs(kwargs):
     return kwargs
 
 
+def remove_axis_from_kwargs(kwargs):
+    kwargs = kwargs.copy()
+    kwargs.pop("axis")
+    return kwargs
+
+
 def moments_to_comoments_kwargs(kwargs):
     kwargs = kwargs.copy()
     for k in ("dim", "mom_ndim"):

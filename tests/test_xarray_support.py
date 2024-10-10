@@ -89,8 +89,8 @@ def as_dataarray(request):
 # * functions
 # ** Data
 func_params_data_common = [
-    (partial(cmomy.reduce_data, use_reduce=True), None),
-    (partial(cmomy.reduce_data, use_reduce=False), None),
+    (partial(cmomy.reduce_data, use_map=True), None),
+    (partial(cmomy.reduce_data, use_map=False), None),
     (do_reduce_data_grouped, None),
     (do_reduce_data_indexed, None),  # default coords_policy="first"
     (
@@ -782,7 +782,7 @@ def test_func_vals_chunking(fixture_vals, func, kwargs_callback):
 @pytest.mark.parametrize(
     ("func", "kwargs_callback"),
     [
-        (partial(cmomy.reduce_data, use_reduce=False), None),
+        (cmomy.reduce_data, None),
         (do_reduce_data_grouped, None),
         (partial(do_reduce_data_indexed, coords_policy=None), None),
         (

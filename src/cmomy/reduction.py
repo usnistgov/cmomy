@@ -36,7 +36,7 @@ from .core.utils import mom_to_mom_shape
 from .core.validate import (
     is_dataarray,
     is_dataset,
-    is_xarray,
+    is_xarray_typevar,
     raise_if_wrong_value,
     validate_axis_mult,
 )
@@ -206,7 +206,7 @@ def reduce_vals(
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
-    if is_xarray(x):
+    if is_xarray_typevar(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom_params=mom_params, mom=mom, dims=mom_dims
         )
@@ -373,7 +373,7 @@ def reduce_data(
 
 # ** public
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_data(  # noqa: PLR0913, C901
+def reduce_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
     axis: AxisReduceMultWrap | MissingType = MISSING,
@@ -389,7 +389,6 @@ def reduce_data(  # noqa: PLR0913, C901
     keepdims: bool = False,
     parallel: bool | None = None,
     move_axes_to_end: bool = False,
-    use_reduce: bool = True,
     use_map: bool | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -429,7 +428,7 @@ def reduce_data(  # noqa: PLR0913, C901
         Same type as input ``data``.
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -446,14 +445,14 @@ def reduce_data(  # noqa: PLR0913, C901
             _dims_check: tuple[Hashable, ...] = mom_params.dims
             if dim is not None:
                 dim = mom_params.select_axis_dim_mult(data, axis=axis, dim=dim)[1]
-                _dims_check = (*dim, *_dims_check)  # type: ignore[misc, has-type]
+                _dims_check = (*dim, *_dims_check)  # type: ignore[misc]
 
             if not contains_dims(data, *_dims_check):
                 msg = f"Dimensions {dim} and {mom_params.dims} not found in {tuple(data.dims)}"
                 raise ValueError(msg)
 
             if (use_map is None or use_map) and (dim is None or len(dim) > 1):
-                return data.map(  # type: ignore[return-value]
+                return data.map(  # pyright: ignore[reportUnknownMemberType]
                     reduce_data,
                     keep_attrs=keep_attrs if keep_attrs is None else bool(keep_attrs),
                     mom_params=mom_params,
@@ -465,13 +464,12 @@ def reduce_data(  # noqa: PLR0913, C901
                     parallel=parallel,
                     move_axes_to_end=move_axes_to_end,
                     use_map=True,
-                    use_reduce=False,
                     apply_ufunc_kwargs=apply_ufunc_kwargs,
                 )
 
         if use_map:
             if not contains_dims(data, *mom_params.dims):
-                return data  # type: ignore[return-value]
+                return data
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
                 dim = (dim,) if isinstance(dim, str) else dim
@@ -481,7 +479,7 @@ def reduce_data(  # noqa: PLR0913, C901
 
                 dim = tuple(filter(_filter_func, dim))  # type: ignore[arg-type]
                 if len(dim) == 0:
-                    return data  # type: ignore[return-value]
+                    return data
 
         axis, dim = mom_params.select_axis_dim_mult(
             data,
@@ -489,63 +487,40 @@ def reduce_data(  # noqa: PLR0913, C901
             dim=dim,
         )
 
-        xout: DataT
-        if use_reduce:
-            xout = data.transpose(..., *mom_params.dims).reduce(  # type: ignore[assignment]
-                _reduce_data,
-                dim=dim,
-                keep_attrs=bool(keep_attrs),
-                keepdims=keepdims,
-                mom_params=mom_params.to_array(),
-                parallel=parallel,
-                out=xprepare_out_for_reduce_data(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _reduce_data,
+            data,
+            input_core_dims=[mom_params.core_dims(*dim)],
+            output_core_dims=[
+                mom_params.core_dims(*dim) if keepdims else mom_params.dims
+            ],
+            exclude_dims=set(dim),
+            kwargs={
+                "mom_params": mom_params.to_array(),
+                "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
+                "out": xprepare_out_for_reduce_data(
                     target=data,
                     out=out,
                     dim=dim,
                     mom_params=mom_params,
                     move_axes_to_end=move_axes_to_end,
                 ),
-                dtype=dtype,
-                casting=casting,
-                order=order,
-                move_axes_to_end=False,
-                fastpath=False,
-            )
-        else:
-            xout = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-                _reduce_data,
-                data,
-                input_core_dims=[mom_params.core_dims(*dim)],
-                output_core_dims=[
-                    mom_params.core_dims(*dim) if keepdims else mom_params.dims
-                ],
-                exclude_dims=set(dim),
-                kwargs={
-                    "mom_params": mom_params.to_array(),
-                    "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
-                    "out": xprepare_out_for_reduce_data(
-                        target=data,
-                        out=out,
-                        dim=dim,
-                        mom_params=mom_params,
-                        move_axes_to_end=move_axes_to_end,
-                    ),
-                    "dtype": dtype,
-                    "parallel": parallel,
-                    "keepdims": keepdims,
-                    "fastpath": is_dataarray(data),
-                    "casting": casting,
-                    "order": order,
-                    "move_axes_to_end": False,
-                },
-                keep_attrs=keep_attrs,
-                **factory_apply_ufunc_kwargs(
-                    apply_ufunc_kwargs,
-                    dask="parallelized",
-                    output_dtypes=dtype or np.float64,
-                    output_sizes=dict.fromkeys(dim, 1) if keepdims else None,
-                ),
-            )
+                "dtype": dtype,
+                "parallel": parallel,
+                "keepdims": keepdims,
+                "fastpath": is_dataarray(data),
+                "casting": casting,
+                "order": order,
+                "move_axes_to_end": False,
+            },
+            keep_attrs=keep_attrs,
+            **factory_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                dask="parallelized",
+                output_dtypes=dtype or np.float64,
+                output_sizes=dict.fromkeys(dim, 1) if keepdims else None,
+            ),
+        )
 
         if not move_axes_to_end:
             xout = transpose_like(
@@ -620,7 +595,7 @@ def _reduce_data(
 
     if move_axes_to_end and out is not None:
         # easier to move these in case have keepdims...
-        out = np.moveaxis(out, range(-mom_params.ndim, 0), _mom_axes)
+        out = np.moveaxis(out, mom_params.axes_last, _mom_axes)
 
     out = factory_reduce_data(
         mom_ndim=mom_params.ndim,
@@ -970,7 +945,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
     by = np.asarray(by, dtype=np.int64)
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -996,7 +971,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 "dtype": dtype,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_params.ndim,
+                    mom_params=mom_params,
                     axis=axis,
                     move_axes_to_end=move_axes_to_end,
                     data=data,
@@ -1378,7 +1353,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -1413,7 +1388,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "scale": scale,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_params.ndim,
+                    mom_params=mom_params,
                     axis=axis,
                     move_axes_to_end=move_axes_to_end,
                     data=data,

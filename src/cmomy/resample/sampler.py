@@ -20,6 +20,7 @@ from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    is_xarray_typevar,
     validate_axis,
 )
 from cmomy.factory import (
@@ -361,6 +362,7 @@ def factory_sampler(  # noqa: PLR0913
         - if specify ``ndat``: return ``IndexSampler.from_param(...)``
         - if specify ``data``: return ``IndexSampler.from_data(...)``
     #. ``sampler`` is array-like: return ``IndexSampler(freq=sampler, ...)``
+    #. ``sampler`` is an int, return ``IndexSampler.from_data(..., nrep=sampler)``
     #. ``sampler`` is a mapping: return ``factory_sampler(**sampler, data=data, axis=axis, dim=dims, mom_ndim=mom_ndim, mom_dims=mom_dims, rep_dim=rep_dim)``.
 
 
@@ -469,6 +471,9 @@ def factory_sampler(  # noqa: PLR0913
             rng=rng,
             fastpath=False,
         )
+
+    if isinstance(sampler, int):
+        sampler = {"nrep": sampler}
 
     return factory_sampler(
         sampler=None,
@@ -721,7 +726,7 @@ def freq_to_indices(
         Indices array of shape ``(nrep, nsamp)`` where ``nsamp = freq[k,
         :].sum()`` where `k` is any row.
     """
-    if is_xarray(freq):
+    if is_xarray_typevar(freq):
         rep_dim, dim = freq.dims
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             freq_to_indices,
@@ -781,7 +786,7 @@ def indices_to_freq(
     It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp ==
     ndat``. For cases that ``nsamp != ndat``, pass in ``ndat`` explicitl.
     """
-    if is_xarray(indices):
+    if is_xarray_typevar(indices):
         # assume dims are in order (rep, dim)
         rep_dim, dim = indices.dims
         ndat = ndat or indices.sizes[dim]

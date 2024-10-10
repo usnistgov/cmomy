@@ -407,6 +407,19 @@ def test_factory_sampler_freq_from_data(expected, kwargs) -> None:
     np.testing.assert_allclose(out, expected)
 
 
+def test_factory_sampler_freq_int() -> None:
+    data = np.zeros((10, 3))
+    freq = resample.random_freq(ndat=10, nrep=20, rng=0)
+    sampler = resample.factory_sampler(freq, data=data, axis=0)
+
+    assert sampler.freq is freq
+
+    cmomy.default_rng(0)
+    sampler = resample.factory_sampler(20, data=data, axis=0)
+
+    np.testing.assert_equal(freq, sampler.freq)
+
+
 def _check_r(r, indices, freq):
     np.testing.assert_equal(r.indices, indices)
     np.testing.assert_equal(r.freq, freq)

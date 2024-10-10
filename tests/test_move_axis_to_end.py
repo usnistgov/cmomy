@@ -9,6 +9,9 @@ import pytest
 import xarray as xr
 
 import cmomy
+from cmomy.core.moment_params import factory_mom_params
+
+from ._dataarray_set_utils import remove_axis_from_kwargs
 
 if TYPE_CHECKING:
     from cmomy.core.typing import MomNDim
@@ -104,29 +107,37 @@ def test_vals_move_axes_to_end(
         np.testing.assert_allclose(a, c)
 
 
-from cmomy.core.array_utils import normalize_axis_index
-
-
 @pytest.mark.parametrize(
-    ("shape", "axis", "mom_ndim"),
+    ("shape", "axis", "mom_ndim", "mom_axes"),
     [
-        ((10, 1, 2, 3), 0, 1),
-        ((1, 10, 2, 3), 1, 1),
-        ((1, 2, 10, 3), -1j, 1),
-        ((10, 1, 2, 3), 0, 2),
-        ((1, 10, 2, 3), -1j, 2),
+        ((10, 1, 2, 3), 0, 1, None),
+        ((1, 10, 2, 3), 1, 1, None),
+        ((1, 2, 10, 3), -1j, 1, None),
+        ((10, 1, 2, 3), 0, 2, None),
+        ((1, 10, 2, 3), -1j, 2, None),
+        # mom_axes
+        ((10, 3, 1, 2), 0, None, 1),
+        ((3, 10, 1, 1), 1, None, 0),
+        ((1, 3, 10, 2), -2, None, 1),
+        ((10, 2, 3, 1), 0, None, (1, 2)),
+        ((2, 3, 10, 1), -2, None, (0, 1)),
     ],
 )
 @pytest.mark.parametrize(
-    ("func", "kwargs", "style"),
+    ("func", "kwargs", "kwargs_callback"),
     [
-        (cmomy.resample.resample_data, {}, "resample"),
-        (cmomy.resample.jackknife_data, {}, "jack"),
-        (cmomy.reduction.reduce_data_grouped, {}, "group"),
-        (cmomy.reduction.reduce_data_indexed, {}, "index"),
-        (cmomy.rolling.rolling_data, {"window": 4, "center": False}, "roll"),
-        (cmomy.rolling.rolling_exp_data, {"alpha": 0.2}, "roll"),
-        (cmomy.convert.cumulative, {}, "convert"),
+        (cmomy.resample.resample_data, {"sampler": {"nrep": 20, "rng": 0}}, None),
+        (cmomy.resample.jackknife_data, {}, None),
+        (cmomy.reduction.reduce_data_grouped, {"by": [0] * 5 + [1] * 5}, None),
+        (
+            cmomy.reduction.reduce_data_indexed,
+            {"index": range(10), "group_start": [0, 5], "group_end": [5, 10]},
+            None,
+        ),
+        (cmomy.rolling.rolling_data, {"window": 4, "center": False}, None),
+        (cmomy.rolling.rolling_exp_data, {"alpha": 0.2}, None),
+        (cmomy.convert.cumulative, {}, None),
+        (cmomy.convert.moments_type, {}, remove_axis_from_kwargs),
     ],
 )
 def test_data_move_axes_to_end(
@@ -134,36 +145,49 @@ def test_data_move_axes_to_end(
     shape,
     axis,
     mom_ndim,
+    mom_axes,
     as_dataarray,
     func,
     kwargs,
-    style,
+    kwargs_callback,
 ) -> None:
     data = rng.random(shape)
     if as_dataarray:
         data = xr.DataArray(data)
 
-    kws = dict(axis=axis, mom_ndim=mom_ndim, **kwargs)
-    ndat = cmomy.resample.select_ndat(data, axis=axis, mom_ndim=mom_ndim)
-    if style == "resample":
-        kws["sampler"] = cmomy.resample.factory_sampler(ndat=ndat, nrep=20)
-    elif style == "group":
-        kws["by"] = rng.choice(4, size=ndat)
-    elif style == "index":
-        groups = rng.choice(4, size=ndat)
-        _, kws["index"], kws["group_start"], kws["group_end"] = (
-            cmomy.reduction.factor_by_to_index(groups)
-        )
+    kws = dict(axis=axis, mom_ndim=mom_ndim, **kwargs, mom_axes=mom_axes)
+    kws = kwargs_callback(kws) if kwargs_callback else kws
 
     outs = [func(data, **kws, move_axes_to_end=m) for m in (True, False)]
+
+    # axes movers
+    mom_params = factory_mom_params(None, ndim=mom_ndim, axes=mom_axes)
+    axes0 = mom_params.axes
+    axes1 = mom_params.axes_last
+    if "axis" in kws:
+        axes0 = (axis, *axes0)
+        axes1 = (-1j, *axes1)
+
     np.testing.assert_allclose(
         outs[0],
-        np.moveaxis(
-            np.asarray(outs[1]),
-            normalize_axis_index(axis, data.ndim, mom_ndim),
-            -(mom_ndim + 1),
+        cmomy.moveaxis(
+            outs[1], axes0, axes1, mom_params=mom_params, allow_select_mom_axes=True
         ),
     )
+
+    # check that moving axis to end on data gives same result
+    kws2 = kws.copy()
+    if "axis" in kws2:
+        kws2["axis"] = -1j
+    kws2["mom_axes"] = mom_params.axes_last
+    kws2["mom_ndim"] = mom_params.ndim
+    check = func(
+        cmomy.moveaxis(
+            data, axes0, axes1, mom_params=mom_params, allow_select_mom_axes=True
+        ),
+        **kws2,
+    )
+    np.testing.assert_allclose(outs[0], check)
 
     # using out parameter
     _outs = [np.zeros_like(o) for o in outs]

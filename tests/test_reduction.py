@@ -80,7 +80,8 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
 
     cls = cmomy.CentralMomentsData if as_dataarray else cmomy.CentralMomentsArray
     c = cls(x, mom_ndim=mom_ndim).reduce(
-        axis=axis, keepdims=True, **({"use_reduce": True} if as_dataarray else {})
+        axis=axis,
+        keepdims=True,
     )
     assert c.shape == new_shape
     np.testing.assert_allclose(c, out)
@@ -97,21 +98,6 @@ def test_reduce_data_axis_none(rng, mom_ndim) -> None:
     check = cmomy.reduce_data(data, axis=None, mom_ndim=mom_ndim)
 
     np.testing.assert_allclose(check, expected)
-
-
-@pytest.mark.parametrize(
-    ("shape", "kws"),
-    [
-        ((10, 3, 4), {"axis": 0, "mom_ndim": 1}),
-        ((10, 3, 4), {"axis": (0, 1), "mom_ndim": 1}),
-        ((10, 3, 4), {"axis": 0, "mom_ndim": 2}),
-    ],
-)
-def test_reduce_data_use_reduce(rng, shape, kws) -> None:
-    data = xr.DataArray(rng.random(shape))
-    a = cmomy.reduce_data(data, **kws, use_reduce=True)
-    b = cmomy.reduce_data(data, **kws, use_reduce=False)
-    xr.testing.assert_allclose(a, b)
 
 
 # * utils ---------------------------------------------------------------------

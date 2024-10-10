@@ -19,7 +19,7 @@ from .core.compat import copy_if_needed
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prob import ndtr, ndtri
-from .core.validate import is_xarray, validate_axis
+from .core.validate import is_xarray, is_xarray_typevar, validate_axis
 from .core.xr_utils import factory_apply_ufunc_kwargs
 
 if TYPE_CHECKING:
@@ -201,7 +201,7 @@ def bootstrap_confidence_interval(
     else:
         alphas = np.asarray([alpha * 0.5, 1.0 - alpha * 0.5])
 
-    if is_xarray(theta_boot):
+    if is_xarray_typevar(theta_boot):
         axis, dim = default_mom_params_xarray.select_axis_dim(
             theta_boot, axis=axis, dim=dim
         )

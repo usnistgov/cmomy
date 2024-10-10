@@ -36,6 +36,7 @@ from cmomy.core.validate import (
     is_dataset,
     is_ndarray,
     is_xarray,
+    is_xarray_typevar,
     raise_if_wrong_value,
 )
 from cmomy.core.xr_utils import (
@@ -212,7 +213,7 @@ def resample_data(  # noqa: PLR0913
         parallel=parallel,
     )
 
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -234,7 +235,7 @@ def resample_data(  # noqa: PLR0913
                 "axis": -(mom_params.ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_params.ndim,
+                    mom_params=mom_params,
                     axis=axis,
                     move_axes_to_end=move_axes_to_end,
                     data=data,
@@ -465,7 +466,7 @@ def resample_vals(  # noqa: PLR0913
         parallel=parallel,
     )
 
-    if is_xarray(x):
+    if is_xarray_typevar(x):
         mom, xmom_params = MomParamsXArray.factory_mom(
             mom, dims=mom_dims, mom_params=mom_params
         )
@@ -795,14 +796,13 @@ def jackknife_data(  # noqa: PLR0913
             order=order,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             move_axes_to_end=True,
-            use_reduce=False,
         )
         mom_axes_reduced = None
 
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = mom_params.core_dims(dim)
@@ -822,7 +822,7 @@ def jackknife_data(  # noqa: PLR0913
                 "mom_axes_reduced": mom_axes_reduced,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_params.ndim,
+                    mom_params=mom_params,
                     axis=axis,
                     move_axes_to_end=move_axes_to_end,
                     data=data,
@@ -1067,7 +1067,7 @@ def jackknife_vals(  # noqa: PLR0913
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if is_xarray(x):
+    if is_xarray_typevar(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom_params=mom_params, mom=mom, dims=mom_dims
         )
@@ -1190,7 +1190,7 @@ def _jackknife_vals(
 
     axes: AxesGUFunc = [
         # data_reduced
-        tuple(range(-mom_params.ndim, 0)),
+        mom_params.axes_last,
         # x, w, *y
         *get_axes_from_values(*args, axis_neg=axis_neg),
         # out

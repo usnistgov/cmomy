@@ -25,7 +25,6 @@ if TYPE_CHECKING:
     from typing import Any
 
     import xarray as xr
-    from numpy.typing import ArrayLike
 
     from .typing import (
         AxesGUFunc,
@@ -105,8 +104,10 @@ class MomParams(_MixinAsDict):
     dims: Hashable | Sequence[Hashable] | None = None
 
 
-def _mom_axes_last(mom_ndim: MomNDim) -> MomAxesStrict:
-    return cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
+_MOM_AXES_LAST: dict[MomNDim, MomAxesStrict] = {
+    1: (-1,),
+    2: (-2, -1),
+}
 
 
 @dataclass
@@ -153,7 +154,7 @@ class MomParamsBase(_MixinAsDict):
 
     @property
     def axes_last(self) -> MomAxesStrict:
-        return _mom_axes_last(self.ndim)
+        return _MOM_AXES_LAST[self.ndim]
 
 
 @dataclass
@@ -182,7 +183,7 @@ class MomParamsArray(MomParamsBase):
         """Create object from parameters."""
         if axes is None:
             ndim = validate_mom_ndim(ndim, default_ndim)
-            axes = _mom_axes_last(ndim)
+            axes = _MOM_AXES_LAST[ndim]
             return cls(ndim=ndim, axes=axes)
 
         axes = validate_mom_axes(axes)
@@ -286,29 +287,6 @@ class MomParamsArray(MomParamsBase):
         """
         data_axes = (axis, *self.axes)
         out_axes = data_axes if out_has_axis else self.axes
-
-        return [
-            data_axes,
-            *((x,) if isinstance(x, int) else x for x in inner),
-            out_axes,
-        ]
-
-    def axes_data_reduction2(
-        self,
-        *inner: int | tuple[int, ...],
-        axis: int,
-        axis_out: int | None = None,
-        move_axes_to_end: bool = False,
-    ) -> AxesGUFunc:
-        """
-        axes for reducing data along axis
-
-        if ``axis_out``, include this axis in out_axes.
-        """
-        data_axes = (axis, *self.axes)
-
-        _axes = range(-self.ndim, 0) if move_axes_to_end else self.axes
-        out_axes = tuple(_axes) if axis_out is None else (axis_out, *_axes)
 
         return [
             data_axes,
@@ -434,18 +412,23 @@ class MomParamsXArray(MomParamsBase):
             default_ndim=default_ndim,
         )
 
-    @property
-    def axes(self) -> MomAxesStrict:
+    def axes(self, data: xr.DataArray | None = None) -> MomAxesStrict:
         """
         Moment axes.
 
-        Because this is intended to be used with apply_gufunc, the moment axes are moved to the end.
+        If pass data, return ``data.get_axis_num(self.dims)``.  Otherwise, return ``self.axes_last``.
         """
-        return self.axes_last
+        if data is None:
+            return self.axes_last
+        return cast("MomAxesStrict", data.get_axis_num(self.dims))
 
-    def to_array(self) -> MomParamsArray:
-        """Convert to MomParamsArray object."""
-        return MomParamsArray(ndim=self.ndim, axes=self.axes)
+    def to_array(self, data: xr.DataArray | None = None) -> MomParamsArray:
+        """
+        Convert to MomParamsArray object.
+
+        Axes is ``self.axes(data)``.
+        """
+        return MomParamsArray(ndim=self.ndim, axes=self.axes(data))
 
     def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
         """Core dimensions (*dims, *self.dims)"""
@@ -493,6 +476,7 @@ class MomParamsXArray(MomParamsBase):
         *,
         default_axis: AxisReduceWrap | MissingType = MISSING,
         default_dim: DimsReduce | MissingType = MISSING,
+        allow_select_mom_axes: bool = False,
     ) -> tuple[int, Hashable]:
         axis = validate_not_none(axis, "axis")
         dim = validate_not_none(dim, "dim")
@@ -503,7 +487,8 @@ class MomParamsXArray(MomParamsBase):
                     "For Dataset, must specify ``dim`` value other than ``None`` only."
                 )
                 raise ValueError(msg)
-            self._raise_if_dim_in_mom_dims(dim=dim)
+            if not allow_select_mom_axes:
+                self._raise_if_dim_in_mom_dims(dim=dim)
             return 0, dim
 
         default_axis = validate_not_none(default_axis, "default_axis")
@@ -524,10 +509,11 @@ class MomParamsXArray(MomParamsBase):
             msg = f"Unknown dim {dim} and axis {axis}"
             raise TypeError(msg)
 
-        self._raise_if_dim_in_mom_dims(dim=dim, axis=axis)
+        if not allow_select_mom_axes:
+            self._raise_if_dim_in_mom_dims(dim=dim, axis=axis)
         return axis, dim
 
-    def select_axis_dim_mult(
+    def select_axis_dim_mult(  # noqa: C901
         self,
         data: xr.DataArray | xr.Dataset,
         axis: AxisReduceMultWrap | MissingType = MISSING,
@@ -535,6 +521,7 @@ class MomParamsXArray(MomParamsBase):
         *,
         default_axis: AxisReduceMultWrap | MissingType = MISSING,
         default_dim: DimsReduceMult | MissingType = MISSING,
+        allow_select_mom_axes: bool = False,
     ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
         def _get_dim_none() -> tuple[Hashable, ...]:
             dim_ = tuple(data.dims)
@@ -543,6 +530,8 @@ class MomParamsXArray(MomParamsBase):
             return dim_
 
         def _check_dim(dim_: tuple[Hashable, ...]) -> None:
+            if allow_select_mom_axes:
+                return
             if self.dims is not None:  # pyright: ignore[reportUnnecessaryComparison]
                 for d in dim_:
                     self._raise_if_dim_in_mom_dims(dim=d)
@@ -608,7 +597,7 @@ default_mom_params_xarray = MomParamsXArrayOptional()
 
 
 @overload
-def factory_mom_params(
+def factory_mom_params(  # type: ignore[overload-overlap]
     target: xr.DataArray | xr.Dataset,
     *,
     mom_params: MomParamsInput = ...,
@@ -620,7 +609,7 @@ def factory_mom_params(
 ) -> MomParamsXArray: ...
 @overload
 def factory_mom_params(
-    target: ArrayLike,
+    target: object,
     *,
     mom_params: MomParamsInput = ...,
     ndim: int | None = ...,
@@ -633,7 +622,7 @@ def factory_mom_params(
 
 @docfiller.decorate
 def factory_mom_params(
-    target: ArrayLike | xr.DataArray | xr.Dataset,
+    target: object | xr.DataArray | xr.Dataset,
     *,
     mom_params: MomParamsInput = None,
     ndim: int | None = None,

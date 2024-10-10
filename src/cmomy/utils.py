@@ -26,6 +26,7 @@ from .core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    is_xarray_typevar,
     raise_if_wrong_value,
     validate_axis_mult,
 )
@@ -81,6 +82,7 @@ def moveaxis(
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
+    allow_select_mom_axes: bool = ...,
 ) -> NDArray[ScalarT]: ...
 @overload
 def moveaxis(
@@ -94,6 +96,7 @@ def moveaxis(
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
+    allow_select_mom_axes: bool = ...,
 ) -> xr.DataArray: ...
 
 
@@ -109,6 +112,7 @@ def moveaxis(
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
+    allow_select_mom_axes: bool = False,
 ) -> NDArray[ScalarT] | xr.DataArray:
     """
     Generalized moveaxis for moments arrays.
@@ -129,6 +133,8 @@ def moveaxis(
     {mom_axes}
     {mom_dims_data}
     {mom_params}
+    allow_select_mom_axes : bool, default=False
+        If True, allow moving moment axes.  Otherwise, raise ``ValueError`` if try to move ``mom_axes``.
 
     Returns
     -------
@@ -181,11 +187,13 @@ def moveaxis(
             x,
             axis=axis,
             dim=dim,
+            allow_select_mom_axes=allow_select_mom_axes,
         )
         axes1, _ = mom_params.select_axis_dim_mult(
             x,
             axis=dest,
             dim=dest_dim,
+            allow_select_mom_axes=allow_select_mom_axes,
         )
 
         order = moveaxis_order(x.ndim, axes0, axes1, normalize=False)
@@ -198,7 +206,8 @@ def moveaxis(
         mom_params.normalize_axis_tuple(validate_axis_mult(a), x.ndim)
         for a in (axis, dest)
     )
-    mom_params.raise_if_in_mom_axes(*axes0, *axes1)
+    if not allow_select_mom_axes:
+        mom_params.raise_if_in_mom_axes(*axes0, *axes1)
 
     return np.moveaxis(x, axes0, axes1)
 
@@ -353,7 +362,7 @@ def select_moment(
     array([1, 4])
 
     """
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         if name == "all":
             return data
 
@@ -586,7 +595,7 @@ def assign_moment(
         "assign_moment",
     )
 
-    if is_xarray(data):
+    if is_xarray_typevar(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -830,7 +839,7 @@ def vals_to_data(
     weight = 1.0 if weight is None else weight
     args: list[Any] = [x, weight, *y]
 
-    if is_xarray(x):
+    if is_xarray_typevar(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom_params=mom_params, mom=mom, dims=mom_dims, data=out
         )

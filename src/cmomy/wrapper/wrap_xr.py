@@ -625,7 +625,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         *,
         by: str | Groups | None = None,
         block: int | None = None,
-        use_reduce: bool = False,
+        use_map: bool | None = None,
         group_dim: str | None = None,
         groups: Groups | None = None,
         axis: AxisReduce | MissingType = MISSING,
@@ -650,8 +650,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             :class:`~xarray.DataArray`, use unique values and rename dimension
             ``by.name``. If str or Iterable of str, Create grouper from these
             named coordinates.
-        use_reduce : bool
-            If ``True``, use ``self.obj.reduce(...)``.
+        use_map : bool, optional
+            See :func:`.reduction.reduce_data`
         {coords_policy}
         {group_dim}
         {groups}
@@ -788,7 +788,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 order=order,
                 keepdims=keepdims,
                 parallel=parallel,
-                use_reduce=use_reduce,
+                use_map=use_map,
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
