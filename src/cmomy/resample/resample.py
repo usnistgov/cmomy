@@ -524,7 +524,6 @@ def resample_vals(  # noqa: PLR0913
             xout = transpose_like(
                 xout,
                 template=x,
-                prepend=...,
                 replace={dim: rep_dim},
                 append=xmom_params.dims,
             )
@@ -808,7 +807,9 @@ def jackknife_data(  # noqa: PLR0913
         core_dims = mom_params.core_dims(dim)
 
         if not is_xarray(data_reduced) and mom_axes_reduced is not None:
-            np.moveaxis(data_reduced, mom_axes_reduced, mom_params.axes)
+            data_reduced = np.moveaxis(
+                data_reduced, mom_axes_reduced, mom_params.axes_last
+            )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_data,
@@ -819,7 +820,7 @@ def jackknife_data(  # noqa: PLR0913
             kwargs={
                 "axis": -(mom_params.ndim + 1),
                 "mom_params": mom_params.to_array(),
-                "mom_axes_reduced": mom_axes_reduced,
+                "mom_axes_reduced": None,
                 "out": xprepare_out_for_resample_data(
                     out,
                     mom_params=mom_params,
@@ -1122,7 +1123,6 @@ def jackknife_vals(  # noqa: PLR0913
             xout = transpose_like(
                 xout,
                 template=x,
-                prepend=...,
                 append=mom_params.dims,
             )
         elif is_dataset(x):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, replace
 from typing import TYPE_CHECKING, TypedDict, cast, overload
 
@@ -38,6 +39,7 @@ if TYPE_CHECKING:
         MomentsStrict,
         MomNDim,
         MomParamsInput,
+        NDArrayAny,
     )
     from .typing_compat import Self, TypeVar
 
@@ -112,7 +114,7 @@ _MOM_AXES_LAST: dict[MomNDim, MomAxesStrict] = {
 
 @dataclass
 @docfiller.decorate
-class MomParamsBase(_MixinAsDict):
+class MomParamsBase(ABC, _MixinAsDict):
     """
     Base class for moment parameters.
 
@@ -155,6 +157,14 @@ class MomParamsBase(_MixinAsDict):
     @property
     def axes_last(self) -> MomAxesStrict:
         return _MOM_AXES_LAST[self.ndim]
+
+    @abstractmethod
+    def get_mom_shape(self, data: Any) -> MomentsStrict:
+        pass
+
+    @abstractmethod
+    def get_mom(self, data: Any) -> MomentsStrict:
+        pass
 
 
 @dataclass
@@ -300,6 +310,15 @@ class MomParamsArray(MomParamsBase):
             msg = f"provided axis/axes cannot overlap mom_axes={self.axes}."
             raise ValueError(msg)
 
+    def get_mom_shape(self, data: NDArrayAny) -> MomentsStrict:
+        """Calculate moment shape from data shape"""
+        return cast("MomentsStrict", tuple(data.shape[a] for a in self.axes))
+
+    def get_mom(self, data: NDArrayAny) -> MomentsStrict:
+        from .utils import mom_shape_to_mom
+
+        return mom_shape_to_mom(data.shape[a] for a in self.axes)
+
 
 @dataclass
 class MomParamsArrayOptional(MomParamsArray):  # noqa: D101
@@ -412,7 +431,7 @@ class MomParamsXArray(MomParamsBase):
             default_ndim=default_ndim,
         )
 
-    def axes(self, data: xr.DataArray | None = None) -> MomAxesStrict:
+    def get_axes(self, data: xr.DataArray | None = None) -> MomAxesStrict:
         """
         Moment axes.
 
@@ -422,13 +441,22 @@ class MomParamsXArray(MomParamsBase):
             return self.axes_last
         return cast("MomAxesStrict", data.get_axis_num(self.dims))
 
+    def get_mom_shape(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
+        """Calculate moment shape from data shape"""
+        return cast("MomentsStrict", tuple(data.sizes[d] for d in self.dims))
+
+    def get_mom(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
+        from .utils import mom_shape_to_mom
+
+        return mom_shape_to_mom(data.sizes[d] for d in self.dims)
+
     def to_array(self, data: xr.DataArray | None = None) -> MomParamsArray:
         """
         Convert to MomParamsArray object.
 
-        Axes is ``self.axes(data)``.
+        Axes is ``self.get_axes(data)``.
         """
-        return MomParamsArray(ndim=self.ndim, axes=self.axes(data))
+        return MomParamsArray(ndim=self.ndim, axes=self.get_axes(data))
 
     def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
         """Core dimensions (*dims, *self.dims)"""

@@ -163,6 +163,22 @@ def test_jackknife_data_0(data_and_kwargs, pass_reduced, as_dataarray):
         expected,
     )
 
+    if pass_reduced:
+        mom_axes = tuple(range(mom_ndim))
+        data_reduced = cmomy.moveaxis(
+            kws["data_reduced"], range(-mom_ndim, 0), mom_axes
+        )
+        np.testing.assert_allclose(
+            cmomy.resample.jackknife_data(
+                data,
+                axis=axis,
+                mom_ndim=mom_ndim,
+                data_reduced=np.asarray(data_reduced),
+                mom_axes_reduced=mom_axes,
+            ),
+            expected,
+        )
+
     if as_dataarray and pass_reduced:
         # also pass in array value for data_reduced
         kws["data_reduced"] = kws["data_reduced"].to_numpy()

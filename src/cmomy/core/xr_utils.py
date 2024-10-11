@@ -169,7 +169,7 @@ def transpose_like(
     replace: Mapping[Hashable, Hashable] | None = None,
     remove: str | Sequence[Hashable] | None = None,
     keep_attrs: bool | None = True,
-    prepend: Sequence[Hashable] | EllipsisType | None = None,
+    prepend: Sequence[Hashable] | EllipsisType | None = ...,
     append: Sequence[Hashable] | EllipsisType | None = None,
 ) -> DataT:
     """Transpose ``data_out`` like ``template``."""
@@ -227,6 +227,6 @@ def _transpose_like(
 
     order = [*prepend, *order, *append]  # type: ignore[has-type]
 
-    if order != list(data_out.dims):
+    if order != list(data_out.dims):  # pragma: no cover
         data_out = data_out.transpose(*order, missing_dims="ignore")
     return data_out

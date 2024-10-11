@@ -15,7 +15,6 @@ from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import MomParamsBase, factory_mom_params
 from cmomy.core.typing import GenArrayT
-from cmomy.core.utils import mom_shape_to_mom
 from cmomy.core.validate import (
     is_dataset,
     raise_if_wrong_value,
@@ -140,14 +139,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return self._mom_params.ndim
 
     @property
-    @abstractmethod
     def mom_shape(self) -> MomentsStrict:
         """Shape of moments dimensions."""
+        return self._mom_params.get_mom_shape(self._obj)
 
     @property
     def mom(self) -> MomentsStrict:
         """Moments tuple."""
-        return mom_shape_to_mom(self.mom_shape)
+        return self._mom_params.get_mom(self._obj)
 
     @property
     def dtype(self) -> np.dtype[Any]:

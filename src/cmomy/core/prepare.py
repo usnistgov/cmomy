@@ -292,7 +292,7 @@ def xprepare_out_for_transform(
 
     return np.moveaxis(
         out,
-        mom_params.axes(target),
+        mom_params.get_axes(target),
         mom_params.axes_last,
     )
 
@@ -337,7 +337,7 @@ def xprepare_out_for_resample_data(
         # out should already be in correct order
         return out
 
-    axes0 = (axis, *mom_params.axes(data))
+    axes0 = (axis, *mom_params.get_axes(data))
     axes1 = (-(mom_params.ndim + 1), *mom_params.axes_last)
     return np.moveaxis(out, axes0, axes1)
 

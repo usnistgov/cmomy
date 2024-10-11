@@ -198,6 +198,7 @@ def _wrap_select_method(method):
         ),
         ({"axis": 2, "mom_dims": ("mom",)}, ValueError),
         ({"dim": "a", "mom_dims": ("a",)}, ValueError),
+        ({"axis": 2, "mom_dims": ("mom",), "allow_select_mom_axes": True}, (2, "mom")),
         ({"dim": "mom", "mom_dims": ("a",)}, (2, "mom")),
         ({"dim": "hello"}, ValueError),
     ],
@@ -224,6 +225,11 @@ def test_select_axis_dim(data, kws, expected) -> None:
         ({}, ValueError),
         ({"axis": 0}, ValueError),
         ({"dim": "a"}, (0, "a")),
+        ({"dim": "mom", "mom_dims": ("mom",)}, ValueError),
+        (
+            {"dim": "mom", "mom_dims": ("mom",), "allow_select_mom_axes": True},
+            (0, "mom"),
+        ),
     ],
 )
 def test_select_axis_dim_dataset(data, kws, expected) -> None:
@@ -245,6 +251,10 @@ def test_select_axis_dim_dataset(data, kws, expected) -> None:
         ({"axis": (0, 2), "mom_dims": ("mom",)}, ValueError),
         ({"dim": ("a", "mom"), "mom_dims": ("mom",)}, ValueError),
         ({"dim": "a", "mom_dims": ("a",)}, ValueError),
+        (
+            {"dim": "a", "mom_dims": ("a",), "allow_select_mom_axes": True},
+            ((0,), ("a",)),
+        ),
         # other
         ({"axis": 0}, ((0,), ("a",))),
         ({"axis": 1}, ((1,), ("b",))),
@@ -293,6 +303,11 @@ def test_select_axis_dim_mult(data, kws, expected) -> None:
         ({"axis": 0}, ValueError),
         ({"dim": None}, ((), ("a", "b", "mom"))),
         ({"dim": None, "mom_dims": ("mom",)}, ((), ("a", "b"))),
+        ({"dim": "mom", "mom_dims": ("mom",)}, ValueError),
+        (
+            {"dim": "mom", "mom_dims": ("mom",), "allow_select_mom_axes": True},
+            ((), ("mom",)),
+        ),
         # This is exactly what select does.  It calculates mom_dims from dimensions of "first"
         # array.
         ({"dim": None, "mom_dims": ("b", "mom")}, ((), ("a",))),

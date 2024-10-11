@@ -50,7 +50,6 @@ if TYPE_CHECKING:
         MomAxes,
         MomDims,
         Moments,
-        MomentsStrict,
         MomNDim,
         MomParamsInput,
         NameType,
@@ -66,7 +65,7 @@ if TYPE_CHECKING:
 from numpy.typing import NDArray
 
 from cmomy.core.docstrings import docfiller_central as docfiller
-from cmomy.core.typing import AxisReduceWrap, FloatT
+from cmomy.core.typing import AxisReduceWrap, FloatT, MomAxesStrict
 
 from .wrap_abc import CentralMomentsABC
 
@@ -177,9 +176,8 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         return self._mom_params
 
     @property
-    @docfiller_abc()
-    def mom_shape(self) -> MomentsStrict:
-        return self._obj.shape[-self.mom_ndim :]  # type: ignore[return-value]
+    def mom_axes(self) -> MomAxesStrict:
+        return self._mom_params.axes
 
     # Reimplement to get dtype correct
     @property

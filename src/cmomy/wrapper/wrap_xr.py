@@ -67,7 +67,6 @@ if TYPE_CHECKING:
         MomDims,
         MomDimsStrict,
         Moments,
-        MomentsStrict,
         MomNDim,
         MomParamsInput,
         NameType,
@@ -133,11 +132,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     @property
     def mom_params(self) -> MomParamsXArray:
         return self._mom_params
-
-    @property
-    @docfiller_abc()
-    def mom_shape(self) -> MomentsStrict:
-        return get_mom_shape(self._obj, self.mom_dims)
 
     @property
     def mom_dims(self) -> MomDimsStrict:

@@ -126,6 +126,7 @@ def test_vals_move_axes_to_end(
 @pytest.mark.parametrize(
     ("func", "kwargs", "kwargs_callback"),
     [
+        (cmomy.reduce_data, {"keepdims": True}, None),
         (cmomy.resample.resample_data, {"sampler": {"nrep": 20, "rng": 0}}, None),
         (cmomy.resample.jackknife_data, {}, None),
         (cmomy.reduction.reduce_data_grouped, {"by": [0] * 5 + [1] * 5}, None),
@@ -190,7 +191,14 @@ def test_data_move_axes_to_end(
     np.testing.assert_allclose(outs[0], check)
 
     # using out parameter
-    _outs = [np.zeros_like(o) for o in outs]
+    if "keepdims" not in kws:
+        _outs = [np.zeros_like(o) for o in outs]
+    else:
+        _kws = kws.copy()
+        _kws.pop("keepdims")
+        _outs = [
+            np.zeros_like(func(data, **_kws, move_axes_to_end=m)) for m in (True, False)
+        ]
     outs2 = [
         func(data, **kws, out=o, move_axes_to_end=m)
         for m, o in zip((True, False), _outs)

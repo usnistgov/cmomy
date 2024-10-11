@@ -100,6 +100,59 @@ def test_reduce_data_axis_none(rng, mom_ndim) -> None:
     np.testing.assert_allclose(check, expected)
 
 
+def test_reduce_data_dim_none(rng) -> None:
+    ds = xr.Dataset(
+        {
+            "data0": xr.DataArray(
+                rng.random((2, 3, 4, 5)), dims=["a", "b", "c", "mom"]
+            ),
+            "data1": xr.DataArray(rng.random((2, 3, 5)), dims=["a", "b", "mom"]),
+            "data2": xr.DataArray(rng.random((4, 5)), dims=["c", "mom"]),
+            "data3": xr.DataArray(rng.random((4,)), dims=["c"]),
+        }
+    )
+
+    with pytest.raises(ValueError):
+        cmomy.reduce_data(ds["data0"], mom_ndim=1, dim="d")
+
+    with pytest.raises(ValueError, match="Dimensions .*"):
+        cmomy.reduce_data(ds, mom_ndim=1, dim="d")
+
+    # not using map with dim=None picks dim from first array
+    out = cmomy.reduce_data(ds, dim=None, mom_dims="mom", use_map=False)
+    for k in ["data0"]:
+        xr.testing.assert_equal(
+            out[k], cmomy.reduce_data(ds[k], dim=None, mom_dims="mom")
+        )
+    for k in ["data1", "data2", "data3"]:
+        xr.testing.assert_equal(out[k], ds[k])
+
+    out = cmomy.reduce_data(ds, dim=None, mom_dims="mom", use_map=True)
+    for k in ["data0", "data1", "data2"]:
+        xr.testing.assert_equal(
+            out[k], cmomy.reduce_data(ds[k], dim=None, mom_dims="mom")
+        )
+    for k in ["data3"]:
+        xr.testing.assert_equal(out[k], ds[k])
+
+    out2 = cmomy.reduce_data(ds, dim=("a", "b", "c"), mom_dims="mom", use_map=True)
+    xr.testing.assert_equal(out, out2)
+
+    # specify a and b
+    out = cmomy.reduce_data(ds, dim=("a", "b"), mom_dims="mom", use_map=True)
+    for k in ["data0", "data1"]:
+        xr.testing.assert_equal(
+            out[k], cmomy.reduce_data(ds[k], dim=("a", "b"), mom_dims="mom")
+        )
+    for k in ["data2", "data3"]:
+        xr.testing.assert_equal(out[k], ds[k])
+
+    for use_map in [True, False]:
+        xr.testing.assert_allclose(
+            cmomy.reduce_data(ds, dim=(), mom_dims="mom", use_map=use_map), ds
+        )
+
+
 # * utils ---------------------------------------------------------------------
 @pytest.mark.parametrize(
     ("kwargs", "expected"),

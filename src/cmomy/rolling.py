@@ -737,7 +737,6 @@ def rolling_vals(  # noqa: PLR0913
             xout = transpose_like(
                 xout,
                 template=x,
-                prepend=...,
                 append=mom_params.dims,
             )
         elif is_dataset(x):
@@ -1330,7 +1329,6 @@ def rolling_exp_vals(  # noqa: PLR0913
             xout = transpose_like(
                 xout,
                 template=x,
-                prepend=...,
                 append=mom_params.dims,
             )
         elif is_dataset(x):
