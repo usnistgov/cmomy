@@ -87,6 +87,79 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
     np.testing.assert_allclose(c, out)
 
 
+@pytest.mark.parametrize(
+    "shape",
+    [(2, 3, 4, 5)],
+)
+@pytest.mark.parametrize(
+    ("kwargs", "out_shape"),
+    [
+        (
+            {"axis": 0, "mom_ndim": 1},
+            (3, 4, 5),
+        ),
+        (
+            {"axis": 0, "mom_ndim": 1, "keepdims": True},
+            (1, 3, 4, 5),
+        ),
+        (
+            {"axis": 0, "mom_ndim": 1, "keepdims": True, "axes_to_end": True},
+            (3, 4, 1, 5),
+        ),
+        (
+            {"axis": -1, "mom_axes": 1},
+            (2, 3, 4),
+        ),
+        (
+            {"axis": -1, "mom_axes": 0, "axes_to_end": True},
+            (3, 4, 2),
+        ),
+        (
+            {"axis": -1, "mom_axes": 1, "keepdims": True},
+            (2, 3, 4, 1),
+        ),
+        (
+            {"axis": -1, "mom_axes": 1, "keepdims": True, "axes_to_end": True},
+            (2, 4, 1, 3),
+        ),
+        (
+            {"axis": (0, -1), "mom_axes": (1, 2)},
+            (3, 4),
+        ),
+        (
+            {"axis": -1, "mom_axes": (0, 1), "axes_to_end": True},
+            (4, 2, 3),
+        ),
+        (
+            {"axis": (0, -1), "mom_axes": (1, 2), "keepdims": True},
+            (1, 3, 4, 1),
+        ),
+        (
+            {
+                "axis": (0, -1),
+                "mom_axes": (1, 2),
+                "keepdims": True,
+                "axes_to_end": True,
+            },
+            (1, 1, 3, 4),
+        ),
+    ],
+)
+def test_reduce_data_out(
+    rng,
+    shape,
+    kwargs,
+    out_shape,
+) -> None:
+    data = rng.random(shape)
+    out = np.empty(out_shape, dtype=data.dtype)
+
+    checks = [cmomy.reduce_data(data, **kwargs, out=o) for o in [out, None]]
+
+    assert np.shares_memory(out, checks[0])
+    np.testing.assert_allclose(*checks)
+
+
 @pytest.mark.parametrize("mom_ndim", [1, 2])
 def test_reduce_data_axis_none(rng, mom_ndim) -> None:
     data = rng.random((10, 2, 3, 4))

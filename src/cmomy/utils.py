@@ -216,6 +216,7 @@ def moveaxis(
             if mom_params.dims is not None:
                 axis = (*axis, *mom_params.get_axes(x))
                 dest = (*dest, *mom_params.axes_last)
+
             return moveaxis(
                 x,
                 axis=axis,
@@ -225,17 +226,14 @@ def moveaxis(
                 axes_to_end=False,
             )
 
-        axes0, _ = mom_params.select_axis_dim_mult(
-            x,
-            axis=axis,
-            dim=dim,
-            allow_select_mom_axes=allow_select_mom_axes,
-        )
-        axes1, _ = mom_params.select_axis_dim_mult(
-            x,
-            axis=dest,
-            dim=dest_dim,
-            allow_select_mom_axes=allow_select_mom_axes,
+        axes0, axes1 = (
+            mom_params.select_axis_dim_mult(
+                x,
+                axis=a,  # pyright: ignore[reportArgumentType]
+                dim=d,
+                allow_select_mom_axes=allow_select_mom_axes,
+            )[0]
+            for a, d in zip((axis, dest), (dim, dest_dim))
         )
 
         order = moveaxis_order(x.ndim, axes0, axes1, normalize=False)

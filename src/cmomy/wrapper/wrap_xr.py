@@ -125,6 +125,8 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 default_ndim=1,
             )
 
+            mom_params.check_data(obj)
+
         # NOTE: Why this ignore?
         super().__init__(obj=obj, mom_params=mom_params, fastpath=fastpath)  # type: ignore[arg-type]
 

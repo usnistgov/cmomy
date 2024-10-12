@@ -109,11 +109,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         if fastpath:
             return
 
-        # catchall to test ndim < mom_ndim
-        if len(self.mom) < self.mom_ndim:
-            msg = f"{len(self.mom)=} != {self.mom_ndim=}.  Possibly more mom_ndim than ndim."
-            raise ValueError(msg)
-
         # must have positive moments
         if any(m <= 0 for m in self.mom):
             msg = "Moments must be positive"

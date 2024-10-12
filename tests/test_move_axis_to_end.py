@@ -10,26 +10,12 @@ import xarray as xr
 
 import cmomy
 from cmomy.core.moment_params import factory_mom_params
+from cmomy.wrapper.wrap_np import CentralMomentsArray
 
 from ._dataarray_set_utils import remove_axis_from_kwargs
 
 if TYPE_CHECKING:
     from cmomy.core.typing import MomNDim
-
-
-shapes_mark = pytest.mark.parametrize(
-    ("xshape", "yshape", "wshape", "axis", "mom"),
-    [
-        ((10, 2, 3), None, None, 0, (3,)),
-        ((10, 2, 3), None, (10, 2, 3), 0, (3,)),
-        ((2, 10, 3), None, (10,), 1, (3,)),
-        ((2, 3, 10), None, (3, 10), 2, (3,)),
-        ((10, 2, 3), (10,), None, 0, (3, 3)),
-        ((10, 2, 3), (10, 1, 1), (10, 2, 3), 0, (3, 3)),
-        ((2, 10, 3), (10, 3), (10,), 1, (3, 3)),
-        ((2, 3, 10), (10,), (3, 10), 2, (3, 3)),
-    ],
-)
 
 
 def get_params(
@@ -53,12 +39,11 @@ def get_params(
     return xy, w
 
 
-@shapes_mark
-@pytest.mark.parametrize(
-    ("func", "kwargs", "style"),
+mark_vals_funcs = pytest.mark.parametrize(
+    ("func", "kwargs", "kwargs_callback"),
     [
-        (cmomy.resample.resample_vals, {}, "resample"),
-        (cmomy.wrap_resample_vals, {}, "resample"),
+        (cmomy.resample.resample_vals, {"sampler": {"nrep": 20, "rng": 0}}, None),
+        (cmomy.wrap_resample_vals, {"sampler": {"nrep": 20, "rng": 0}}, None),
         (cmomy.resample.jackknife_vals, {}, None),
         (
             cmomy.rolling.rolling_vals,
@@ -68,6 +53,22 @@ def get_params(
         (cmomy.rolling.rolling_exp_vals, {"alpha": 0.2}, None),
     ],
 )
+
+
+@pytest.mark.parametrize(
+    ("xshape", "yshape", "wshape", "axis", "mom"),
+    [
+        ((10, 2, 3), None, None, 0, (3,)),
+        ((10, 2, 3), None, (10, 2, 3), 0, (3,)),
+        ((2, 10, 3), None, (10,), 1, (3,)),
+        ((2, 3, 10), None, (3, 10), 2, (3,)),
+        ((10, 2, 3), (10,), None, 0, (3, 3)),
+        ((10, 2, 3), (10, 1, 1), (10, 2, 3), 0, (3, 3)),
+        ((2, 10, 3), (10, 3), (10,), 1, (3, 3)),
+        ((2, 3, 10), (10,), (3, 10), 2, (3, 3)),
+    ],
+)
+@mark_vals_funcs
 def test_vals_axes_to_end(
     rng,
     xshape,
@@ -78,15 +79,14 @@ def test_vals_axes_to_end(
     as_dataarray,
     func,
     kwargs,
-    style,
+    kwargs_callback,
 ) -> None:
     mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray)
 
     kws = {"weight": w, "mom": mom, "axis": axis, **kwargs}
-    if style == "resample":
-        kws["sampler"] = cmomy.resample.factory_sampler(ndat=xshape[axis], nrep=20)
+    kws = kwargs_callback(kws) if kwargs_callback else kws
 
     outs = [func(*xy, **kws, axes_to_end=m) for m in (True, False)]
 
@@ -106,23 +106,7 @@ def test_vals_axes_to_end(
         np.testing.assert_allclose(a, c)
 
 
-@pytest.mark.parametrize(
-    ("shape", "axis", "mom_ndim", "mom_axes"),
-    [
-        ((10, 1, 2, 3), 0, 1, None),
-        ((1, 10, 2, 3), 1, 1, None),
-        ((1, 2, 10, 3), -1j, 1, None),
-        ((10, 1, 2, 3), 0, 2, None),
-        ((1, 10, 2, 3), -1j, 2, None),
-        # mom_axes
-        ((10, 3, 1, 2), 0, None, 1),
-        ((3, 10, 1, 1), 1, None, 0),
-        ((1, 3, 10, 2), -2, None, 1),
-        ((10, 2, 3, 1), 0, None, (1, 2)),
-        ((2, 3, 10, 1), -2, None, (0, 1)),
-    ],
-)
-@pytest.mark.parametrize(
+mark_data_funcs = pytest.mark.parametrize(
     ("func", "kwargs", "kwargs_callback"),
     [
         (cmomy.reduce_data, {"keepdims": True}, None),
@@ -140,6 +124,25 @@ def test_vals_axes_to_end(
         (cmomy.convert.moments_type, {}, remove_axis_from_kwargs),
     ],
 )
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis", "mom_ndim", "mom_axes"),
+    [
+        ((10, 1, 2, 3), 0, 1, None),
+        ((1, 10, 2, 3), 1, 1, None),
+        ((1, 2, 10, 3), -1j, 1, None),
+        ((10, 1, 2, 3), 0, 2, None),
+        ((1, 10, 2, 3), -1j, 2, None),
+        # mom_axes
+        ((10, 3, 1, 2), 0, None, 1),
+        ((3, 10, 1, 1), 1, None, 0),
+        ((1, 3, 10, 2), -2, None, 1),
+        ((10, 2, 3, 1), 0, None, (1, 2)),
+        ((2, 3, 10, 1), -2, None, (0, 1)),
+    ],
+)
+@mark_data_funcs
 def test_data_axes_to_end(
     rng,
     shape,
@@ -162,16 +165,15 @@ def test_data_axes_to_end(
 
     # axes movers
     mom_params = factory_mom_params(None, ndim=mom_ndim, axes=mom_axes)
-    axes0 = mom_params.axes
-    axes1 = mom_params.axes_last
-    if "axis" in kws:
-        axes0 = (axis, *axes0)
-        axes1 = (-1j, *axes1)
+    kws_axis = {k: kws[k] for k in ["axis"] if k in kws}
 
     np.testing.assert_allclose(
         outs[0],
         cmomy.moveaxis(
-            outs[1], axes0, axes1, mom_params=mom_params, allow_select_mom_axes=True
+            outs[1],
+            **kws_axis,
+            mom_params=mom_params,
+            axes_to_end=True,
         ),
     )
 
@@ -183,7 +185,10 @@ def test_data_axes_to_end(
     kws2["mom_ndim"] = mom_params.ndim
     check = func(
         cmomy.moveaxis(
-            data, axes0, axes1, mom_params=mom_params, allow_select_mom_axes=True
+            data,
+            **kws_axis,
+            mom_params=mom_params,
+            axes_to_end=True,
         ),
         **kws2,
     )
@@ -201,30 +206,61 @@ def test_data_axes_to_end(
 
 
 @pytest.mark.parametrize(
+    ("xshape", "yshape", "wshape", "axis", "mom"),
+    [
+        ((10, 2, 3), None, None, 0, (3,)),
+        ((10, 2, 3), None, (10, 2, 3), 0, (3,)),
+        ((2, 10, 3), None, (10,), 1, (3,)),
+        ((10, 2, 3), (10,), None, 0, (3, 3)),
+        ((2, 10, 3), (10, 3), (10,), 1, (3, 3)),
+    ],
+)
+@mark_vals_funcs
+def test_vals_order(
+    rng,
+    xshape,
+    yshape,
+    wshape,
+    axis,
+    mom,
+    func,
+    kwargs,
+    kwargs_callback,
+) -> None:
+    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]
+
+    xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray=False)
+
+    kws = {"weight": w, "mom": mom, "axis": axis, **kwargs}
+    kws = kwargs_callback(kws) if kwargs_callback else kws
+
+    out, out_ordered, out_last = [
+        func(*xy, **kws, **other)
+        for other in (
+            {"order": None, "axes_to_end": False},
+            {"order": "c", "axes_to_end": False},
+            {"axes_to_end": True},
+        )
+    ]
+
+    if isinstance(out, CentralMomentsArray):
+        out, out_ordered, out_last = [o.obj for o in (out, out_ordered, out_last)]
+
+    assert not out.flags.c_contiguous
+    assert out_ordered.flags.c_contiguous
+    assert out_last.flags.c_contiguous
+
+    np.testing.assert_equal(out, out_ordered)
+
+
+@pytest.mark.parametrize(
     ("shape", "axis", "mom_axes"),
     [
         ((10, 3, 2, 4), 0, 1),
         ((10, 2, 3, 4), 0, (1, 2)),
     ],
 )
-@pytest.mark.parametrize(
-    ("func", "kwargs", "kwargs_callback"),
-    [
-        (cmomy.reduce_data, {"keepdims": True}, None),
-        (cmomy.resample.resample_data, {"sampler": {"nrep": 20, "rng": 0}}, None),
-        (cmomy.resample.jackknife_data, {}, None),
-        (cmomy.reduction.reduce_data_grouped, {"by": [0] * 5 + [1] * 5}, None),
-        (
-            cmomy.reduction.reduce_data_indexed,
-            {"index": range(10), "group_start": [0, 5], "group_end": [5, 10]},
-            None,
-        ),
-        (cmomy.rolling.rolling_data, {"window": 4, "center": False}, None),
-        (cmomy.rolling.rolling_exp_data, {"alpha": 0.2}, None),
-        (cmomy.convert.cumulative, {}, None),
-        (cmomy.convert.moments_type, {}, remove_axis_from_kwargs),
-    ],
-)
+@mark_data_funcs
 def test_data_order(
     rng,
     shape,

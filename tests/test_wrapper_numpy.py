@@ -43,7 +43,7 @@ def wrapped(rng, request) -> CentralMomentsArray[np.float64]:
             ValueError,
             "Moments must be positive",
         ),
-        ({"obj": [1, 2, 3], "mom_ndim": 2}, IndexError, None),
+        ({"obj": [1, 2, 3], "mom_ndim": 2}, ValueError, None),
         ({"obj": [1, 2, 3], "mom_ndim": 1, "fastpath": True}, TypeError, "Must pass.*"),
         ({"obj": np.zeros(3, dtype=np.float16), "mom_ndim": 1}, ValueError, None),
     ],
@@ -64,6 +64,7 @@ def test_mom(wrapped) -> None:
 def test_mom_params(wrapped) -> None:
     assert wrapped.mom_params.ndim == wrapped.mom_ndim
     assert isinstance(wrapped.mom_params, MomParamsArray)
+    assert wrapped.mom_params.axes == wrapped.mom_axes
 
 
 def test_properties(wrapped) -> None:

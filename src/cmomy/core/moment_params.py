@@ -160,11 +160,20 @@ class MomParamsBase(ABC, _MixinAsDict):
 
     @abstractmethod
     def get_mom_shape(self, data: Any) -> MomentsStrict:
-        pass
+        pass  # pragma: no cover
 
     @abstractmethod
     def get_mom(self, data: Any) -> MomentsStrict:
-        pass
+        pass  # pragma: no cover
+
+    def check_data(self, data: Any) -> None:
+        # NOTE: Not an ideal solution, but get a bunch
+        # of possible errors if don't do this.
+        try:
+            self.get_mom(data)
+        except Exception as e:
+            msg = f"{self} inconsistent with wrapped object"
+            raise ValueError(msg) from e
 
 
 @dataclass

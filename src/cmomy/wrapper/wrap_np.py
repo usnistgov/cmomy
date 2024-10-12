@@ -162,6 +162,7 @@ class CentralMomentsArray(
             mom_params = MomParamsArray.factory(
                 mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
             )
+            mom_params.check_data(obj)
             mom_params_end = mom_params.axes_to_end()
             if mom_params.axes != mom_params_end.axes:
                 obj = np.moveaxis(obj, mom_params.axes, mom_params_end.axes)
