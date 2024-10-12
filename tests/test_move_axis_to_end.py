@@ -68,7 +68,7 @@ def get_params(
         (cmomy.rolling.rolling_exp_vals, {"alpha": 0.2}, None),
     ],
 )
-def test_vals_move_axes_to_end(
+def test_vals_axes_to_end(
     rng,
     xshape,
     yshape,
@@ -88,7 +88,7 @@ def test_vals_move_axes_to_end(
     if style == "resample":
         kws["sampler"] = cmomy.resample.factory_sampler(ndat=xshape[axis], nrep=20)
 
-    outs = [func(*xy, **kws, move_axes_to_end=m) for m in (True, False)]
+    outs = [func(*xy, **kws, axes_to_end=m) for m in (True, False)]
 
     np.testing.assert_allclose(
         outs[0],
@@ -98,8 +98,7 @@ def test_vals_move_axes_to_end(
     # using out parameter
     _outs = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(*xy, **kws, out=o, move_axes_to_end=m)
-        for m, o in zip((True, False), _outs)
+        func(*xy, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), _outs)
     ]
 
     for a, b, c in zip(outs2, _outs, outs):
@@ -141,7 +140,7 @@ def test_vals_move_axes_to_end(
         (cmomy.convert.moments_type, {}, remove_axis_from_kwargs),
     ],
 )
-def test_data_move_axes_to_end(
+def test_data_axes_to_end(
     rng,
     shape,
     axis,
@@ -159,7 +158,7 @@ def test_data_move_axes_to_end(
     kws = dict(axis=axis, mom_ndim=mom_ndim, **kwargs, mom_axes=mom_axes)
     kws = kwargs_callback(kws) if kwargs_callback else kws
 
-    outs = [func(data, **kws, move_axes_to_end=m) for m in (True, False)]
+    outs = [func(data, **kws, axes_to_end=m) for m in (True, False)]
 
     # axes movers
     mom_params = factory_mom_params(None, ndim=mom_ndim, axes=mom_axes)
@@ -191,19 +190,62 @@ def test_data_move_axes_to_end(
     np.testing.assert_allclose(outs[0], check)
 
     # using out parameter
-    if "keepdims" not in kws:
-        _outs = [np.zeros_like(o) for o in outs]
-    else:
-        _kws = kws.copy()
-        _kws.pop("keepdims")
-        _outs = [
-            np.zeros_like(func(data, **_kws, move_axes_to_end=m)) for m in (True, False)
-        ]
+    _outs = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(data, **kws, out=o, move_axes_to_end=m)
-        for m, o in zip((True, False), _outs)
+        func(data, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), _outs)
     ]
 
     for a, b, c in zip(outs2, _outs, outs):
         np.shares_memory(a, b)
         np.testing.assert_allclose(a, c)
+
+
+@pytest.mark.parametrize(
+    ("shape", "axis", "mom_axes"),
+    [
+        ((10, 3, 2, 4), 0, 1),
+        ((10, 2, 3, 4), 0, (1, 2)),
+    ],
+)
+@pytest.mark.parametrize(
+    ("func", "kwargs", "kwargs_callback"),
+    [
+        (cmomy.reduce_data, {"keepdims": True}, None),
+        (cmomy.resample.resample_data, {"sampler": {"nrep": 20, "rng": 0}}, None),
+        (cmomy.resample.jackknife_data, {}, None),
+        (cmomy.reduction.reduce_data_grouped, {"by": [0] * 5 + [1] * 5}, None),
+        (
+            cmomy.reduction.reduce_data_indexed,
+            {"index": range(10), "group_start": [0, 5], "group_end": [5, 10]},
+            None,
+        ),
+        (cmomy.rolling.rolling_data, {"window": 4, "center": False}, None),
+        (cmomy.rolling.rolling_exp_data, {"alpha": 0.2}, None),
+        (cmomy.convert.cumulative, {}, None),
+        (cmomy.convert.moments_type, {}, remove_axis_from_kwargs),
+    ],
+)
+def test_data_order(
+    rng,
+    shape,
+    axis,
+    mom_axes,
+    func,
+    kwargs,
+    kwargs_callback,
+) -> None:
+    data = rng.random(shape)
+
+    kws = dict(axis=axis, **kwargs, mom_axes=mom_axes)
+    kws = kwargs_callback(kws) if kwargs_callback else kws
+
+    out, out_ordered, out_last = [
+        func(data, **kws, **other)
+        for other in [{"order": None}, {"order": "c"}, {"axes_to_end": True}]
+    ]
+
+    assert not out.flags.c_contiguous
+    assert out_ordered.flags.c_contiguous
+    assert out_last.flags.c_contiguous
+
+    np.testing.assert_equal(out, out_ordered)

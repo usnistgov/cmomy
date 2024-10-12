@@ -34,7 +34,13 @@ if TYPE_CHECKING:
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
-    from .moment_params import MomParams, MomParamsBase, MomParamsDict
+    from .moment_params import (
+        MomParams,
+        MomParamsArray,  # noqa: F401
+        MomParamsBase,
+        MomParamsDict,
+        MomParamsXArray,  # noqa: F401
+    )
     from .typing_compat import Required, TypeAlias
     from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
@@ -52,7 +58,7 @@ CentralMomentsDataAny: TypeAlias = "CentralMomentsData[Any]"
 CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
 
-CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any]")
+CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any, Any]")
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
 CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
 
@@ -60,6 +66,7 @@ CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[A
 # * MomParams
 
 MomParamsInput = Union["MomParams", "MomParamsBase", "MomParamsDict", None]
+MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
 
 
 # * TypeVars ------------------------------------------------------------------
@@ -300,7 +307,7 @@ class _AxisMultKwargs(TypedDict, total=False):
 
 
 class _MoveAxisToEndKwargs(TypedDict, total=False):
-    move_axes_to_end: bool
+    axes_to_end: bool
 
 
 class _OrderKwargs(TypedDict, total=False):
@@ -434,7 +441,7 @@ class JackknifeDataKwargs(
 class JackknifeValsKwargs(
     _ValsKwargs,
     _MoveAxisToEndKwargs,
-    _OrderKwargs,
+    _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
 ):

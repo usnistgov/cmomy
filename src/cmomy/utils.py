@@ -82,6 +82,7 @@ def moveaxis(
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
+    axes_to_end: bool = ...,
     allow_select_mom_axes: bool = ...,
 ) -> NDArray[ScalarT]: ...
 @overload
@@ -96,6 +97,7 @@ def moveaxis(
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
     mom_params: MomParamsInput = ...,
+    axes_to_end: bool = ...,
     allow_select_mom_axes: bool = ...,
 ) -> xr.DataArray: ...
 
@@ -112,6 +114,7 @@ def moveaxis(
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
+    axes_to_end: bool = False,
     allow_select_mom_axes: bool = False,
 ) -> NDArray[ScalarT] | xr.DataArray:
     """
@@ -133,6 +136,7 @@ def moveaxis(
     {mom_axes}
     {mom_dims_data}
     {mom_params}
+    {axes_to_end}
     allow_select_mom_axes : bool, default=False
         If True, allow moving moment axes.  Otherwise, raise ``ValueError`` if try to move ``mom_axes``.
 
@@ -178,11 +182,49 @@ def moveaxis(
     >>> dx = xr.DataArray(x, dims=["a", "b", "c", "mom_0"])
     >>> moveaxis(dx, dim="a", dest=-1j, mom_ndim=1).dims
     ('b', 'c', 'a', 'mom_0')
+
+    All the routines in ``cmomy`` accept `moment dimensions` in arbitrary locations.  However, it is often easiest
+    to work with these dimensions as the last dimensions in an array.  You can easily achieve this with ``moveaxis`` with the parameter ``axes_to_end=True``.
+    For example:
+
+    >>> moveaxis(x, mom_axes=(0, 1), axes_to_end=True).shape
+    (4, 5, 2, 3)
+
+    >>> moveaxis(x, axis=-1, mom_axes=(1, 2), axes_to_end=True).shape
+    (2, 5, 3, 4)
+
+    >>> moveaxis(x, axis=-2j, mom_ndim=2, axes_to_end=True).shape
+    (3, 2, 4, 5)
     """
     if is_dataarray(x):
         mom_params = MomParamsXArrayOptional.factory(
             mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
         )
+
+        if axes_to_end:
+            if axis is not MISSING or dim is not MISSING:
+                axis, _ = mom_params.select_axis_dim_mult(
+                    x,
+                    axis=axis,
+                    dim=dim,
+                    allow_select_mom_axes=False,
+                )
+                dest = tuple(a * 1j for a in range(-len(axis), 0))
+            else:
+                axis = dest = ()
+
+            if mom_params.dims is not None:
+                axis = (*axis, *mom_params.get_axes(x))
+                dest = (*dest, *mom_params.axes_last)
+            return moveaxis(
+                x,
+                axis=axis,
+                dest=dest,
+                mom_params=mom_params,
+                allow_select_mom_axes=True,
+                axes_to_end=False,
+            )
+
         axes0, _ = mom_params.select_axis_dim_mult(
             x,
             axis=axis,
@@ -199,9 +241,30 @@ def moveaxis(
         order = moveaxis_order(x.ndim, axes0, axes1, normalize=False)
         return x.transpose(*(x.dims[o] for o in order))
 
+    # numpy
     mom_params = MomParamsArrayOptional.factory(
         mom_params=mom_params, ndim=mom_ndim, axes=mom_axes
     ).normalize_axes(x.ndim)
+
+    if axes_to_end:
+        if axis is not MISSING:
+            axis = mom_params.normalize_axis_tuple(validate_axis_mult(axis), x.ndim)
+            dest = tuple(a * 1j for a in range(-len(axis), 0))
+        else:
+            axis = dest = ()
+
+        if mom_params.axes is not None:
+            axis = (*axis, *mom_params.axes)
+            dest = (*dest, *mom_params.axes_last)
+        return moveaxis(
+            x,
+            axis=axis,
+            dest=dest,
+            mom_params=mom_params,
+            allow_select_mom_axes=True,
+            axes_to_end=False,
+        )
+
     axes0, axes1 = (
         mom_params.normalize_axis_tuple(validate_axis_mult(a), x.ndim)
         for a in (axis, dest)
@@ -431,7 +494,7 @@ def select_moment(
     mom_params = MomParamsArray.factory(
         mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
     )
-    mom_params_end = mom_params.move_axes_to_end()
+    mom_params_end = mom_params.axes_to_end()
     if mom_params.axes != mom_params_end.axes:
         data = np.moveaxis(data, mom_params.axes, mom_params_end.axes)
         mom_params = mom_params_end
@@ -670,7 +733,7 @@ def _assign_moment(
 ) -> NDArray[ScalarT]:
     out = data.copy() if copy else data
 
-    mom_params_end = mom_params.move_axes_to_end()
+    mom_params_end = mom_params.axes_to_end()
     moved = mom_params.axes != mom_params_end.axes
     if moved:
         out = np.moveaxis(out, mom_params.axes, mom_params_end.axes)

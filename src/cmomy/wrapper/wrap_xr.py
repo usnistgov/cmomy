@@ -86,7 +86,7 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
-class CentralMomentsData(CentralMomentsABC[DataT]):
+class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     """
     Central moments wrapper of {DataArray} or {Dataset} objects.
 
@@ -129,10 +129,6 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         super().__init__(obj=obj, mom_params=mom_params, fastpath=fastpath)  # type: ignore[arg-type]
 
     # ** Properties ------------------------------------------------------------
-    @property
-    def mom_params(self) -> MomParamsXArray:
-        return self._mom_params
-
     @property
     def mom_dims(self) -> MomDimsStrict:
         """Moments dimension names."""
@@ -465,7 +461,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 axis=axis,
                 mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
                 dtype=self._dtype,
-                move_axes_to_end=True,
+                axes_to_end=True,
                 recast=False,
             )
             dim = "_dummy123"
@@ -577,7 +573,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 dtype=self._dtype,
                 recast=False,
                 narrays=self.mom_ndim + 1,
-                move_axes_to_end=True,
+                axes_to_end=True,
             )
             dim = "_dummy123"
             input_core_dims = [[dim]] * len(xargs)
@@ -629,7 +625,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         order: ArrayOrderCF = None,
         keepdims: bool = False,
         parallel: bool | None = None,
-        move_axes_to_end: bool = False,
+        axes_to_end: bool = False,
         # xarray specific
         coords_policy: CoordsPolicy = "first",
         keep_attrs: KeepAttrs = None,
@@ -806,7 +802,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 group_end=group_end,
                 axis=axis,
                 dim=dim,
-                move_axes_to_end=move_axes_to_end,
+                axes_to_end=axes_to_end,
                 parallel=parallel,
                 dtype=dtype,
                 out=out,
@@ -835,7 +831,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 by=codes,
                 axis=axis,
                 dim=dim,
-                move_axes_to_end=move_axes_to_end,
+                axes_to_end=axes_to_end,
                 parallel=parallel,
                 dtype=dtype,
                 out=out,

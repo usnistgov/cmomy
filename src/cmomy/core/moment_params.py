@@ -262,7 +262,7 @@ class MomParamsArray(MomParamsBase):
             ndim=len(mom), mom_params=mom_params, axes=axes, default_ndim=default_ndim
         )
 
-    def move_axes_to_end(self) -> Self:
+    def axes_to_end(self) -> Self:
         """Create new object with ``self.axes`` at end."""
         return replace(self, axes=self.axes_last)
 

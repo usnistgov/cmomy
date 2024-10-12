@@ -47,14 +47,12 @@ def _get_axis_size(data, **kwargs):
     return data.shape[kwargs["axis"]]
 
 
-def do_reduce_data_grouped(data, move_axes_to_end=False, **kwargs):
+def do_reduce_data_grouped(data, axes_to_end=False, **kwargs):
     by = get_by(_get_axis_size(data, **kwargs))
-    return cmomy.reduce_data_grouped(
-        data, by=by, move_axes_to_end=move_axes_to_end, **kwargs
-    )
+    return cmomy.reduce_data_grouped(data, by=by, axes_to_end=axes_to_end, **kwargs)
 
 
-def do_reduce_data_indexed(data, move_axes_to_end=False, **kwargs):
+def do_reduce_data_indexed(data, axes_to_end=False, **kwargs):
     by = get_by(_get_axis_size(data, **kwargs))
     _, index, start, end = cmomy.reduction.factor_by_to_index(by)
 
@@ -68,14 +66,14 @@ def do_reduce_data_indexed(data, move_axes_to_end=False, **kwargs):
         group_start=start,
         group_end=end,
         coords_policy=coords_policy,
-        move_axes_to_end=move_axes_to_end,
+        axes_to_end=axes_to_end,
         **kwargs,
     )
 
 
 def do_bootstrap_data(data, sampler, method, **kwargs):
     kwargs = kwargs.copy()
-    kwargs.pop("move_axes_to_end", None)
+    kwargs.pop("axes_to_end", None)
 
     args = [cmomy.resample_data(data, sampler=sampler, **kwargs)]
     if method in {"basic", "bca"}:

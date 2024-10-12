@@ -78,7 +78,7 @@ def _dummy_docstrings() -> None:
 
     out : ndarray
         Optional output array. If specified, output will be a reference to this
-        array.  Note that if the output if method returns a :class:`~xarray.Dataset`, then this
+        array. Note that if the output if method returns a :class:`~xarray.Dataset`, then this
         option is ignored.
     dtype : dtype
         Optional :class:`~numpy.dtype` for output data.
@@ -101,7 +101,7 @@ def _dummy_docstrings() -> None:
         If this is set to True, the axes which are reduced are left in the
         result as dimensions with size one. With this option, the result will
         broadcast correctly against the input array.
-    move_axes_to_end : bool
+    axes_to_end : bool
         If ``True``, place sampled dimension (if exists in output) and moment dimensions at end of
         output. Otherwise, place sampled dimension (if exists in output) at same position as input
         ``axis`` and moment dimensions at same position as input (if input does

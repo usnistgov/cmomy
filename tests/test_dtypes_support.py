@@ -92,14 +92,14 @@ def _do_test(func, *args, expected, **kwargs):
         ),
         (
             cmomy.resample_vals,
-            {"mom": 2, "move_axes_to_end": False, "axis": 0, "sampler": {"nrep": 10}},
+            {"mom": 2, "axes_to_end": False, "axis": 0, "sampler": {"nrep": 10}},
             (10, 1, 2, 3),
         ),
         (
             cmomy.resample_data,
             {
                 "mom_ndim": 1,
-                "move_axes_to_end": False,
+                "axes_to_end": False,
                 "axis": 0,
                 "sampler": {"nrep": 10},
             },
@@ -112,33 +112,33 @@ def _do_test(func, *args, expected, **kwargs):
         ),
         (
             cmomy.resample.jackknife_vals,
-            {"mom": 2, "move_axes_to_end": False, "axis": 0},
+            {"mom": 2, "axes_to_end": False, "axis": 0},
             (5, 1, 2, 3),
         ),
         (
             cmomy.resample.jackknife_data,
-            {"mom_ndim": 1, "move_axes_to_end": False, "axis": 0},
+            {"mom_ndim": 1, "axes_to_end": False, "axis": 0},
             (5, 1, 2),
         ),
         (do_wrap_method("jackknife_and_reduce"), {"mom_ndim": 1, "axis": 0}, (5, 1, 2)),
         (
             cmomy.rolling.rolling_vals,
-            {"mom": 2, "move_axes_to_end": False, "window": 2, "axis": 0},
+            {"mom": 2, "axes_to_end": False, "window": 2, "axis": 0},
             (5, 1, 2, 3),
         ),
         (
             cmomy.rolling.rolling_data,
-            {"mom_ndim": 1, "move_axes_to_end": False, "window": 2, "axis": 0},
+            {"mom_ndim": 1, "axes_to_end": False, "window": 2, "axis": 0},
             (5, 1, 2),
         ),
         (
             cmomy.rolling.rolling_exp_vals,
-            {"mom": 2, "move_axes_to_end": False, "alpha": 0.1, "axis": 0},
+            {"mom": 2, "axes_to_end": False, "alpha": 0.1, "axis": 0},
             (5, 1, 2, 3),
         ),
         (
             cmomy.rolling.rolling_exp_data,
-            {"mom_ndim": 1, "move_axes_to_end": False, "alpha": 0.1, "axis": 0},
+            {"mom_ndim": 1, "axes_to_end": False, "alpha": 0.1, "axis": 0},
             (5, 1, 2),
         ),
         (cmomy.convert.moments_type, {"mom_ndim": 1}, (5, 1, 2)),
@@ -149,7 +149,7 @@ def _do_test(func, *args, expected, **kwargs):
         (do_wrap_reduce_vals, {"mom": 2, "axis": 0}, (1, 2, 3)),
         (
             do_wrap_resample_vals,
-            {"mom": 2, "move_axes_to_end": False, "sampler": {"nrep": 10}, "axis": 0},
+            {"mom": 2, "axes_to_end": False, "sampler": {"nrep": 10}, "axis": 0},
             (10, 1, 2, 3),
         ),
         (select_dtype, {"out": None}, (5, 1, 2)),

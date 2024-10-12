@@ -80,8 +80,8 @@ def get_reshaped_val(val, reshape):
     return val
 
 
-def has_move_axes_to_end(func):
-    return "move_axes_to_end" in inspect.signature(func).parameters
+def has_axes_to_end(func):
+    return "axes_to_end" in inspect.signature(func).parameters
 
 
 @pytest.fixture
@@ -209,7 +209,7 @@ data_params = [
 
 
 @pytest.fixture(params=[True, False])
-def move_axes_to_end(request):
+def axes_to_end(request):
     return request.param
 
 
@@ -347,15 +347,15 @@ def test_func_data_dataarray(
     data_and_kwargs,
     func,
     kwargs_callback,
-    move_axes_to_end,
+    axes_to_end,
 ) -> None:
     data, kwargs = data_and_kwargs
     if kwargs_callback:
         kwargs = kwargs_callback(kwargs)
 
-    if has_move_axes_to_end(func):
-        kwargs = {"move_axes_to_end": move_axes_to_end, **kwargs}
-    elif not move_axes_to_end:
+    if has_axes_to_end(func):
+        kwargs = {"axes_to_end": axes_to_end, **kwargs}
+    elif not axes_to_end:
         return
 
     assert is_dataarray(data)
@@ -374,13 +374,11 @@ def test_func_data_dataarray(
 )
 @pytest.mark.parametrize("data_and_kwargs", data_params, indirect=True)
 @pytest.mark.parametrize("as_dataarray", [False], indirect=True)
-def test_func_data_dataset(
-    data_and_kwargs, func, kwargs_callback, move_axes_to_end
-) -> None:
+def test_func_data_dataset(data_and_kwargs, func, kwargs_callback, axes_to_end) -> None:
     data, kwargs = data_and_kwargs
-    if has_move_axes_to_end(func):
-        kwargs = {"move_axes_to_end": move_axes_to_end, **kwargs}
-    elif not move_axes_to_end:
+    if has_axes_to_end(func):
+        kwargs = {"axes_to_end": axes_to_end, **kwargs}
+    elif not axes_to_end:
         return
 
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
@@ -434,16 +432,16 @@ def test_func_dataarray_and_dataset_push_data(data_and_kwargs, as_dataarray) -> 
 )
 @pytest.mark.parametrize("as_dataarray", [True], indirect=True)
 @pytest.mark.parametrize("fixture_vals", vals_params_dataarray, indirect=True)
-def test_func_vals_dataarray(fixture_vals, func, kwargs_callback, move_axes_to_end):
+def test_func_vals_dataarray(fixture_vals, func, kwargs_callback, axes_to_end):
     kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
     assert is_dataarray(x)
 
     if kwargs_callback:
         kwargs = kwargs_callback(kwargs.copy())
 
-    if has_move_axes_to_end(func):
-        kwargs = {"move_axes_to_end": move_axes_to_end, **kwargs}
-    elif not move_axes_to_end:
+    if has_axes_to_end(func):
+        kwargs = {"axes_to_end": axes_to_end, **kwargs}
+    elif not axes_to_end:
         return
 
     args = (x,) if y is None else (x, y)
@@ -466,15 +464,15 @@ def test_func_vals_dataarray(fixture_vals, func, kwargs_callback, move_axes_to_e
 )
 @pytest.mark.parametrize("as_dataarray", [False], indirect=True)
 @pytest.mark.parametrize("fixture_vals", vals_params, indirect=True)
-def test_func_vals_dataset(fixture_vals, func, kwargs_callback, move_axes_to_end):
+def test_func_vals_dataset(fixture_vals, func, kwargs_callback, axes_to_end):
     kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
 
     if kwargs_callback:
         kwargs = kwargs_callback(kwargs.copy())
 
-    if has_move_axes_to_end(func):
-        kwargs = {"move_axes_to_end": move_axes_to_end, **kwargs}
-    elif not move_axes_to_end:
+    if has_axes_to_end(func):
+        kwargs = {"axes_to_end": axes_to_end, **kwargs}
+    elif not axes_to_end:
         return
 
     out = func(*((x,) if y is None else (x, y)), weight=weight, **kwargs)
@@ -612,14 +610,14 @@ def test_factory_sampler_dataset(
 @pytest.mark.parametrize("as_dataarray", [False], indirect=True)
 @pytest.mark.parametrize("nrep", [20])
 @pytest.mark.parametrize("paired", [False])
-def test_resample_data_dataset(data_and_kwargs, nrep, paired, move_axes_to_end) -> None:
+def test_resample_data_dataset(data_and_kwargs, nrep, paired, axes_to_end) -> None:
     ds, kwargs = data_and_kwargs
     assert not is_dataarray(ds)
     sampler = cmomy.resample.factory_sampler(
         data=ds, **kwargs, nrep=nrep, rng=0, paired=paired
     )
 
-    kwargs = {"move_axes_to_end": move_axes_to_end, **kwargs}
+    kwargs = {"axes_to_end": axes_to_end, **kwargs}
 
     out = cmomy.resample_data(ds, **kwargs, sampler=sampler)
     dim = kwargs["dim"]
@@ -657,10 +655,10 @@ def test_resample_data_dataset(data_and_kwargs, nrep, paired, move_axes_to_end) 
 @pytest.mark.parametrize("paired", [False])
 @pytest.mark.parametrize("as_dataarray", [False], indirect=True)
 @pytest.mark.parametrize("fixture_vals", vals_params, indirect=True)
-def test_resample_vals_dataset(fixture_vals, paired, nrep, move_axes_to_end) -> None:
+def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
     kwargs, x, y, weight = (fixture_vals[k] for k in ("kwargs", "x", "y", "weight"))
 
-    kwargs = {"move_axes_to_end": move_axes_to_end, **kwargs}
+    kwargs = {"axes_to_end": axes_to_end, **kwargs}
 
     dim = kwargs["dim"]
     sampler = cmomy.resample.factory_sampler(

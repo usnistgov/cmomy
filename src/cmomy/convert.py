@@ -12,6 +12,7 @@ import numpy as np
 import xarray as xr
 
 from .core.array_utils import (
+    arrayorder_to_arrayorder_cf,
     asarray_maybe_recast,
     select_dtype,
 )
@@ -23,6 +24,7 @@ from .core.moment_params import (
     default_mom_params_xarray,
 )
 from .core.prepare import (
+    optional_prepare_out_for_resample_data,
     prepare_data_for_reduction,
     xprepare_out_for_resample_data,
     xprepare_out_for_transform,
@@ -148,7 +150,7 @@ def moments_type(
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
-    move_axes_to_end: bool = False,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -170,7 +172,7 @@ def moments_type(
     {dtype}
     {casting}
     {order}
-    {move_axes_to_end}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -208,7 +210,7 @@ def moments_type(
     * ``values_in[..., i, j]`` : :math:`\langle a^i b^j \rangle`,
 
     """
-    # TODO(wpk): add move_axes_to_end like parameter...
+    # TODO(wpk): add axes_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray_typevar(values_in):
         mom_params = MomParamsXArray.factory(
@@ -232,13 +234,13 @@ def moments_type(
                     target=values_in,
                     out=out,
                     mom_params=mom_params,
-                    move_axes_to_end=move_axes_to_end,
+                    axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
                 "fastpath": is_dataarray(values_in),
-                "move_axes_to_end": False,
+                "axes_to_end": False,
             },
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
@@ -247,7 +249,7 @@ def moments_type(
                 output_dtypes=dtype or np.float64,
             ),
         )
-        if not move_axes_to_end:
+        if not axes_to_end:
             xout = transpose_like(xout, template=values_in)
         return xout
 
@@ -261,7 +263,7 @@ def moments_type(
         dtype=dtype,
         casting=casting,
         order=order,
-        move_axes_to_end=move_axes_to_end,
+        axes_to_end=axes_to_end,
         fastpath=True,
     )
 
@@ -274,15 +276,17 @@ def _moments_type(
     dtype: DTypeLike,
     casting: Casting,
     order: ArrayOrder,
-    move_axes_to_end: bool,
+    axes_to_end: bool,
     fastpath: bool,
 ) -> NDArrayAny:
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
-    _axes_out = (
-        mom_params.move_axes_to_end().axes if move_axes_to_end else mom_params.axes
-    )
+    _axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
+
+    if out is None and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+        values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
+        out = np.zeros(values_in.shape, dtype=dtype, order=_order_cf)
 
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
         values_in,  # type: ignore[arg-type]
@@ -357,7 +361,7 @@ def cumulative(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    move_axes_to_end: bool = False,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -381,7 +385,7 @@ def cumulative(  # noqa: PLR0913
     {casting}
     {order}
     {parallel}
-    {move_axes_to_end}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -445,7 +449,7 @@ def cumulative(  # noqa: PLR0913
                     out,
                     mom_params=xmom_params,
                     axis=axis,
-                    move_axes_to_end=move_axes_to_end,
+                    axes_to_end=axes_to_end,
                     data=values_in,
                 ),
                 "parallel": parallel,
@@ -462,7 +466,7 @@ def cumulative(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end:
+        if not axes_to_end:
             xout = transpose_like(
                 xout,
                 template=values_in,
@@ -481,7 +485,7 @@ def cumulative(  # noqa: PLR0913
         ),
         dtype=None,
         recast=False,
-        move_axes_to_end=move_axes_to_end,
+        axes_to_end=axes_to_end,
     )
     return _cumulative(
         values_in,
@@ -516,6 +520,16 @@ def _cumulative(
         axis=axis,
         out_has_axis=True,
     )
+
+    out = optional_prepare_out_for_resample_data(
+        data=values_in,
+        out=out,
+        axis=axis,
+        axis_new_size=values_in.shape[axis],
+        order=order,
+        dtype=dtype,
+    )
+
     return factory_cumulative(
         mom_ndim=mom_params.ndim,
         inverse=inverse,

@@ -114,7 +114,7 @@ def test_resample_vals_0(data_and_kwargs, nrep):
     freq = cmomy.resample.indices_to_freq(indices)
     np.testing.assert_allclose(
         cmomy.resample_vals(
-            *xy, sampler={"freq": freq}, weight=weight, **kwargs, move_axes_to_end=False
+            *xy, sampler={"freq": freq}, weight=weight, **kwargs, axes_to_end=False
         ),
         expected,
     )
@@ -125,7 +125,7 @@ def test_resample_vals_0(data_and_kwargs, nrep):
             weight=weight,
             sampler={"nrep": nrep, "rng": 123},
             **kwargs,
-            move_axes_to_end=False,
+            axes_to_end=False,
         ),
         expected,
     )
@@ -211,7 +211,7 @@ def test_jackknife_vals_0(data_and_kwargs, pass_reduced, as_dataarray):
     # using jackknife freq
     np.testing.assert_allclose(
         cmomy.resample_vals(
-            *xy, sampler={"freq": freq}, weight=weight, **kwargs, move_axes_to_end=False
+            *xy, sampler={"freq": freq}, weight=weight, **kwargs, axes_to_end=False
         ),
         expected,
     )
@@ -224,7 +224,7 @@ def test_jackknife_vals_0(data_and_kwargs, pass_reduced, as_dataarray):
     )
     np.testing.assert_allclose(
         cmomy.resample.jackknife_vals(
-            *xy, weight=weight, **kwargs, **kws, move_axes_to_end=False
+            *xy, weight=weight, **kwargs, **kws, axes_to_end=False
         ),
         expected,
     )
@@ -232,7 +232,7 @@ def test_jackknife_vals_0(data_and_kwargs, pass_reduced, as_dataarray):
         kws["data_reduced"] = kws["data_reduced"].to_numpy()
         np.testing.assert_allclose(
             cmomy.resample.jackknife_vals(
-                *xy, weight=weight, **kwargs, **kws, move_axes_to_end=False
+                *xy, weight=weight, **kwargs, **kws, axes_to_end=False
             ),
             expected,
         )
@@ -245,7 +245,7 @@ def test_jackknife_data_rep_dim() -> None:
         == data.dims
     )
     assert cmomy.resample.jackknife_vals(
-        data, mom=(3,), axis=0, rep_dim=None, mom_dims="mom", move_axes_to_end=False
+        data, mom=(3,), axis=0, rep_dim=None, mom_dims="mom", axes_to_end=False
     ).dims == (*data.dims, "mom")
 
 

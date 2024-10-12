@@ -25,6 +25,7 @@ from .core.moment_params import (
     MomParamsXArrayOptional,
 )
 from .core.prepare import (
+    optional_prepare_out_for_resample_data,
     prepare_data_for_reduction,
     prepare_out_from_values,
     prepare_values_for_reduction,
@@ -386,7 +387,7 @@ def rolling_data(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    move_axes_to_end: bool = False,
+    axes_to_end: bool = False,
     # xarray specific
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -412,7 +413,7 @@ def rolling_data(  # noqa: PLR0913
     {casting}
     {order}
     {parallel}
-    {move_axes_to_end}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -451,7 +452,7 @@ def rolling_data(  # noqa: PLR0913
                     out,
                     mom_params=mom_params,
                     axis=axis,
-                    move_axes_to_end=move_axes_to_end,
+                    axes_to_end=axes_to_end,
                     data=data,
                 ),
                 "dtype": dtype,
@@ -468,7 +469,7 @@ def rolling_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end:
+        if not axes_to_end:
             xout = transpose_like(
                 xout,
                 template=data,
@@ -487,7 +488,7 @@ def rolling_data(  # noqa: PLR0913
         ),
         dtype=dtype,
         recast=False,
-        move_axes_to_end=move_axes_to_end,
+        axes_to_end=axes_to_end,
     )
 
     return _rolling_data(
@@ -529,6 +530,15 @@ def _rolling_data(
     shift = (-window // 2) + 1 if center else None
     if shift is not None:
         data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
+
+    out = optional_prepare_out_for_resample_data(
+        data=data,
+        out=out,
+        axis=axis,
+        axis_new_size=data.shape[axis],
+        order=order,
+        dtype=dtype,
+    )
 
     axes = [
         # add in window, count
@@ -635,7 +645,7 @@ def rolling_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    move_axes_to_end: bool = True,
+    axes_to_end: bool = True,
     # xarray specific
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -662,7 +672,7 @@ def rolling_vals(  # noqa: PLR0913
     {casting}
     {order_cf}
     {parallel}
-    {move_axes_to_end}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -717,7 +727,7 @@ def rolling_vals(  # noqa: PLR0913
                     out=out,
                     dim=dim,
                     mom_ndim=mom_params.ndim,
-                    move_axes_to_end=move_axes_to_end,
+                    axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -733,7 +743,7 @@ def rolling_vals(  # noqa: PLR0913
                 output_dtypes=dtype or np.float64,
             ),
         )
-        if not move_axes_to_end:
+        if not axes_to_end:
             xout = transpose_like(
                 xout,
                 template=x,
@@ -753,7 +763,7 @@ def rolling_vals(  # noqa: PLR0913
         narrays=mom_params.ndim + 1,
         dtype=dtype,
         recast=False,
-        move_axes_to_end=move_axes_to_end,
+        axes_to_end=axes_to_end,
     )
 
     return _rolling_vals(
@@ -919,7 +929,7 @@ def rolling_exp_data(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
-    move_axes_to_end: bool = False,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -948,7 +958,7 @@ def rolling_exp_data(  # noqa: PLR0913
     {casting}
     {order}
     {parallel}
-    {move_axes_to_end}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -985,7 +995,7 @@ def rolling_exp_data(  # noqa: PLR0913
                 alpha_axis,
                 ndat=data.sizes[dim],
                 dtype=dtype,
-                move_axes_to_end=True,
+                axes_to_end=True,
             )
         else:
             alpha_axis = -1
@@ -1007,7 +1017,7 @@ def rolling_exp_data(  # noqa: PLR0913
                     out,
                     mom_params=mom_params,
                     axis=axis,
-                    move_axes_to_end=move_axes_to_end,
+                    axes_to_end=axes_to_end,
                     data=data,
                 ),
                 "dtype": dtype,
@@ -1024,7 +1034,7 @@ def rolling_exp_data(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end:
+        if not axes_to_end:
             xout = transpose_like(
                 xout,
                 template=data,
@@ -1043,7 +1053,7 @@ def rolling_exp_data(  # noqa: PLR0913
         ),
         dtype=dtype,
         recast=False,
-        move_axes_to_end=move_axes_to_end,
+        axes_to_end=axes_to_end,
     )
 
     # prepare alpha
@@ -1053,7 +1063,7 @@ def rolling_exp_data(  # noqa: PLR0913
         alpha_axis,
         ndat=data.shape[axis],
         dtype=dtype,
-        move_axes_to_end=False,
+        axes_to_end=False,
     )
 
     return _rolling_exp_data(
@@ -1079,7 +1089,7 @@ def _prepare_alpha_array(
     alpha_axis: AxisReduceWrap | MissingType,
     ndat: int,
     dtype: DTypeLike,
-    move_axes_to_end: bool,
+    axes_to_end: bool,
 ) -> tuple[int, NDArrayAny]:
     """Should only be called with array-like alpha"""
     alpha = asarray_maybe_recast(alpha, dtype, recast=False)
@@ -1091,7 +1101,7 @@ def _prepare_alpha_array(
     else:
         alpha_axis = normalize_axis_index(validate_axis(alpha_axis), alpha.ndim)
         alpha_axis = positive_to_negative_index(alpha_axis, alpha.ndim)
-        if move_axes_to_end and alpha_axis != -1:
+        if axes_to_end and alpha_axis != -1:
             alpha = np.moveaxis(alpha, alpha_axis, -1)
             alpha_axis = -1
 
@@ -1117,6 +1127,15 @@ def _rolling_exp_data(
 ) -> NDArrayAny:
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
+
+    out = optional_prepare_out_for_resample_data(
+        data=data,
+        out=out,
+        axis=axis,
+        axis_new_size=data.shape[axis],
+        order=order,
+        dtype=dtype,
+    )
 
     # axes for reduction
     axes = [
@@ -1225,7 +1244,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    move_axes_to_end: bool = True,
+    axes_to_end: bool = True,
     # xarray specific
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -1254,7 +1273,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     {casting}
     {order_cf}
     {parallel}
-    {move_axes_to_end}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -1308,7 +1327,7 @@ def rolling_exp_vals(  # noqa: PLR0913
                     out=out,
                     dim=dim,
                     mom_ndim=mom_params.ndim,
-                    move_axes_to_end=move_axes_to_end,
+                    axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -1325,7 +1344,7 @@ def rolling_exp_vals(  # noqa: PLR0913
             ),
         )
 
-        if not move_axes_to_end:
+        if not axes_to_end:
             xout = transpose_like(
                 xout,
                 template=x,
@@ -1346,7 +1365,7 @@ def rolling_exp_vals(  # noqa: PLR0913
         narrays=mom_params.ndim + 2,
         dtype=dtype,
         recast=False,
-        move_axes_to_end=move_axes_to_end,
+        axes_to_end=axes_to_end,
     )
 
     return _rolling_exp_vals(

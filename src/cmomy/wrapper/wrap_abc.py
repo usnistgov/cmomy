@@ -13,8 +13,8 @@ import numpy as np
 
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
-from cmomy.core.moment_params import MomParamsBase, factory_mom_params
-from cmomy.core.typing import GenArrayT
+from cmomy.core.moment_params import factory_mom_params
+from cmomy.core.typing import GenArrayT, MomParamsT
 from cmomy.core.validate import (
     is_dataset,
     raise_if_wrong_value,
@@ -32,7 +32,6 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike
 
-    from cmomy.core.moment_params import MomParamsBase
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayOrder,
@@ -58,7 +57,7 @@ if TYPE_CHECKING:
 
 
 @docfiller.decorate  # noqa: PLR0904
-class CentralMomentsABC(ABC, Generic[GenArrayT]):
+class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     r"""
     Wrapper to calculate central moments.
 
@@ -95,13 +94,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     __slots__ = ("_mom_params", "_obj")
 
     _obj: GenArrayT
-    _mom_params: MomParamsBase
+    _mom_params: MomParamsT
 
     def __init__(
         self,
         obj: GenArrayT,
         *,
-        mom_params: MomParamsBase,
+        mom_params: MomParamsT,
         fastpath: bool = False,
     ) -> None:
         self._mom_params = mom_params
@@ -129,7 +128,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         return self._obj
 
     @property
-    def mom_params(self) -> MomParamsBase:
+    def mom_params(self) -> MomParamsT:
         """Moments parameters object."""
         return self._mom_params
 
@@ -141,12 +140,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
     @property
     def mom_shape(self) -> MomentsStrict:
         """Shape of moments dimensions."""
-        return self._mom_params.get_mom_shape(self._obj)
+        return self._mom_params.get_mom_shape(self._obj)  # type: ignore[arg-type]
 
     @property
     def mom(self) -> MomentsStrict:
         """Moments tuple."""
-        return self._mom_params.get_mom(self._obj)
+        return self._mom_params.get_mom(self._obj)  # type: ignore[arg-type]
 
     @property
     def dtype(self) -> np.dtype[Any]:
@@ -766,7 +765,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         casting: Casting = "same_kind",
         order: ArrayOrder = None,
         parallel: bool | None = None,
-        move_axes_to_end: bool = False,
+        axes_to_end: bool = False,
         keep_attrs: KeepAttrs = None,
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> GenArrayT:
@@ -776,7 +775,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         Parameters
         ----------
         {axis_data_and_dim}
-        {move_axes_to_end}
+        {axes_to_end}
         {out}
         {dtype}
         {casting}
@@ -803,7 +802,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             dim=dim,
             mom_params=self._mom_params,
             inverse=False,
-            move_axes_to_end=move_axes_to_end,
+            axes_to_end=axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -862,7 +861,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
-            mom_params=mom_params_out,
+            mom_params=mom_params_out,  # type: ignore[arg-type]
         )
 
     # *** .resample -----------------------------------------------------------
@@ -874,7 +873,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         rep_dim: str = "rep",
-        move_axes_to_end: bool = False,
+        axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -892,7 +891,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         {sampler}
         {axis_data_and_dim}
         {rep_dim}
-        {move_axes_to_end}
+        {axes_to_end}
         {out}
         {dtype}
         {casting}
@@ -957,7 +956,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
                 axis=axis,
                 dim=dim,
                 rep_dim=rep_dim,
-                move_axes_to_end=move_axes_to_end,
+                axes_to_end=axes_to_end,
                 dtype=dtype,
                 out=out,
                 casting=casting,
@@ -976,7 +975,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         dim: DimsReduce | MissingType = MISSING,
         data_reduced: Self | GenArrayT | None = None,
         rep_dim: str | None = "rep",
-        move_axes_to_end: bool = False,
+        axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -997,7 +996,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             Data reduced along ``axis``. Array of same type as ``self.obj`` or
             same type as ``self``.
         {rep_dim}
-        {move_axes_to_end}
+        {axes_to_end}
         {out}
         {dtype}
         {casting}
@@ -1028,7 +1027,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
             dim=dim,
             data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
             rep_dim=rep_dim,
-            move_axes_to_end=move_axes_to_end,
+            axes_to_end=axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -1076,7 +1075,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT]):
         block : int, optional
             If specified, perform block average reduction with blocks
             of this size.  Negative values are transformed to all data.
-        {move_axes_to_end}
+        {axes_to_end}
         {out}
         {dtype}
         {casting}

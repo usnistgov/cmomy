@@ -182,7 +182,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "out": None,
                 "axis": 0,
-                "move_axes_to_end": False,
+                "axes_to_end": False,
             },
             {
                 "ndim": 1,
@@ -193,7 +193,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "out": np.zeros((2, 3, 4, 5)),
                 "axis": 0,
-                "move_axes_to_end": False,
+                "axes_to_end": False,
             },
             {
                 "ndim": 1,
@@ -204,7 +204,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "out": np.zeros((2, 3, 4, 5)),
                 "axis": 1,
-                "move_axes_to_end": False,
+                "axes_to_end": False,
             },
             {
                 "axes": (0, 2),
@@ -215,7 +215,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "out": np.zeros((2, 3, 4)),
                 "axis": 0,
-                "move_axes_to_end": True,
+                "axes_to_end": True,
             },
             {
                 "ndim": 1,
@@ -227,7 +227,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "out": np.zeros((2, 3, 4)),
                 "axis": 0,
-                "move_axes_to_end": False,
+                "axes_to_end": False,
                 "data": xr.Dataset({"data0": xr.DataArray(np.zeros((2, 3, 4)))}),
             },
             {

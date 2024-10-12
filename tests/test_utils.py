@@ -42,6 +42,11 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
         ({"axis": 0, "dest": -1j, "mom_ndim": 2}, (2, 1, 3, 4)),
         ({"axis": (1, 0), "dest": (-2j, -1j), "mom_ndim": 1}, (3, 2, 1, 4)),
         ({"axis": (1, 0), "dest": (-2j,), "mom_ndim": 1}, ValueError),
+        # move axes
+        ({"axes_to_end": True}, (1, 2, 3, 4)),
+        ({"mom_axes": (1, 2), "axes_to_end": True}, (1, 4, 2, 3)),
+        ({"axis": 0, "mom_ndim": 1, "axes_to_end": True}, (2, 3, 1, 4)),
+        ({"axis": -1, "mom_axes": (2, 0), "axes_to_end": True}, (2, 4, 3, 1)),
     ],
 )
 def test_moveaxis(x, kws, expected, func):
@@ -65,6 +70,12 @@ def test_moveaxis(x, kws, expected, func):
             (3, 2, 1, 4),
         ),
         ({"dim": ("dim_1", "dim_0"), "dest_dim": "dim_2", "mom_ndim": 1}, ValueError),
+        # move axes to ends
+        ({"mom_dims": ("dim_3", "dim_0"), "axes_to_end": True}, (2, 3, 4, 1)),
+        (
+            {"mom_dims": "dim_2", "dim": ("dim_1", "dim_0"), "axes_to_end": True},
+            (4, 2, 1, 3),
+        ),
     ],
 )
 @pytest.mark.parametrize(
