@@ -86,7 +86,7 @@ sphinxcontrib-serializinghtml==2.0.0  # via sphinx
 sphinxcontrib-spelling==8.0.0  # via -r requirements/docs.txt
 sqlalchemy==2.0.35        # via jupyter-cache
 stack-data==0.6.3         # via ipython
-starlette==0.39.1         # via sphinx-autobuild
+starlette==0.40.0         # via sphinx-autobuild
 tabulate==0.9.0           # via jupyter-cache
 tornado==6.4.1            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
