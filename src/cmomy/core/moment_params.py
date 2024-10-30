@@ -166,6 +166,10 @@ class MomParamsBase(ABC, _MixinAsDict):
     def get_mom(self, data: Any) -> MomentsStrict:
         pass  # pragma: no cover
 
+    @abstractmethod
+    def get_val_shape(self, data: Any) -> tuple[int, ...]:
+        pass
+
     def check_data(self, data: Any) -> None:
         # NOTE: Not an ideal solution, but get a bunch
         # of possible errors if don't do this.
@@ -328,6 +332,10 @@ class MomParamsArray(MomParamsBase):
 
         return mom_shape_to_mom(data.shape[a] for a in self.axes)
 
+    def get_val_shape(self, data: NDArrayAny) -> tuple[int, ...]:
+        axes = self.normalize_axis_tuple(self.axes, data.ndim)
+        return tuple(s for i, s in enumerate(data.shape) if i not in axes)
+
 
 @dataclass
 class MomParamsArrayOptional(MomParamsArray):  # noqa: D101
@@ -458,6 +466,9 @@ class MomParamsXArray(MomParamsBase):
         from .utils import mom_shape_to_mom
 
         return mom_shape_to_mom(data.sizes[d] for d in self.dims)
+
+    def get_val_shape(self, data: xr.DataArray) -> tuple[int, ...]:
+        return tuple(data.sizes[d] for d in data.dims if d not in self.dims)
 
     def to_array(self, data: xr.DataArray | None = None) -> MomParamsArray:
         """

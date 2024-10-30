@@ -161,7 +161,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Shape of values dimensions."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self.shape[: -self.mom_ndim]
+        return self._mom_params.get_val_shape(self._obj)  # type: ignore[arg-type]
 
     @property
     def ndim(self) -> int:
@@ -600,6 +600,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         *,
         dim: str | Sequence[Hashable] | MissingType = MISSING,
         dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
+        axes_to_end: bool = False,
     ) -> Self:
         """
         Generalized moveaxis
@@ -635,6 +636,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             dim=dim,
             dest_dim=dest_dim,
             mom_params=self._mom_params,
+            axes_to_end=axes_to_end,
         )
 
         return self.new_like(

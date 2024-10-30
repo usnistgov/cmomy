@@ -11,6 +11,7 @@ from cmomy.core.moment_params import (
     MomParamsXArray,
     MomParamsXArrayOptional,
     default_mom_params_xarray,
+    factory_mom_params,
 )
 
 
@@ -372,3 +373,34 @@ def test_select_axis_dim_mult_dataset(data, kws, expected) -> None:
 def test_axes_data_reduction(args, mom_params_kws, kwargs, expected) -> None:
     mom_params = MomParamsArray.factory(mom_params_kws)
     _do_test(mom_params.axes_data_reduction, *args, expected=expected, **kwargs)
+
+
+@pytest.mark.parametrize(
+    ("data", "mom_params_kwargs"),
+    [
+        (
+            np.zeros((1, 2, 3, 4)),
+            {"ndim": 2},
+        ),
+        (
+            np.zeros((1, 3, 4, 2)),
+            {"axes": (1, 2)},
+        ),
+        (
+            xr.DataArray(np.zeros((3, 4, 1, 2)), dims=["mom0", "mom1", "a", "b"]),
+            {"dims": ("mom0", "mom1")},
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    ("mom", "mom_shape", "val_shape"),
+    [
+        ((2, 3), (3, 4), (1, 2)),
+    ],
+)
+def test_getters(data, mom_params_kwargs, mom, mom_shape, val_shape) -> None:
+    mom_params = factory_mom_params(data, **mom_params_kwargs)
+
+    assert mom_params.get_mom(data) == mom
+    assert mom_params.get_mom_shape(data) == mom_shape
+    assert mom_params.get_val_shape(data) == val_shape
