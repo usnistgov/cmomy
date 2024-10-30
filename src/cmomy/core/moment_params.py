@@ -325,7 +325,11 @@ class MomParamsArray(MomParamsBase):
 
     def get_mom_shape(self, data: NDArrayAny) -> MomentsStrict:
         """Calculate moment shape from data shape"""
-        return cast("MomentsStrict", tuple(data.shape[a] for a in self.axes))
+        try:
+            return cast("MomentsStrict", tuple(data.shape[a] for a in self.axes))
+        except Exception as e:
+            msg = "Could not extract moment shape from data"
+            raise ValueError(msg) from e
 
     def get_mom(self, data: NDArrayAny) -> MomentsStrict:
         from .utils import mom_shape_to_mom
@@ -460,7 +464,11 @@ class MomParamsXArray(MomParamsBase):
 
     def get_mom_shape(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
         """Calculate moment shape from data shape"""
-        return cast("MomentsStrict", tuple(data.sizes[d] for d in self.dims))
+        try:
+            return cast("MomentsStrict", tuple(data.sizes[d] for d in self.dims))
+        except Exception as e:
+            msg = "Could not extract moment shape from data"
+            raise ValueError(msg) from e
 
     def get_mom(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
         from .utils import mom_shape_to_mom

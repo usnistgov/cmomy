@@ -163,6 +163,9 @@ class CentralMomentsArray(
                 mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
             )
             mom_params.check_data(obj)
+
+            # NOTE: too much of a pain to allow arbitrary mom_axes right now.
+            # Would have to add special checks to moveaxis, reshape, reduce, etc
             mom_params_end = mom_params.axes_to_end()
             if mom_params.axes != mom_params_end.axes:
                 obj = np.moveaxis(obj, mom_params.axes, mom_params_end.axes)
@@ -194,7 +197,9 @@ class CentralMomentsArray(
         If you want to extract data in general, use `self.to_values()[....]`.
         """
         obj = self.obj[key]
-        self._raise_if_wrong_mom_shape(obj.shape[-self.mom_ndim :])
+        self._raise_if_wrong_mom_shape(
+            self._mom_params.get_mom_shape(obj),
+        )
         return self._new_like(obj)
 
     def to_numpy(self) -> NDArray[FloatT]:
@@ -288,7 +293,7 @@ class CentralMomentsArray(
             obj = np.zeros_like(self.obj, dtype=dtype)
         else:
             obj = np.asarray(obj, dtype=dtype)
-            self._raise_if_wrong_mom_shape(obj.shape[-self.mom_ndim :])
+            self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))
             if verify:
                 raise_if_wrong_value(
                     obj.shape,

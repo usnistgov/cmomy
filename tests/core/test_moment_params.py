@@ -13,6 +13,7 @@ from cmomy.core.moment_params import (
     default_mom_params_xarray,
     factory_mom_params,
 )
+from cmomy.core.validate import is_xarray
 
 
 # * catch all args only test
@@ -404,3 +405,9 @@ def test_getters(data, mom_params_kwargs, mom, mom_shape, val_shape) -> None:
     assert mom_params.get_mom(data) == mom
     assert mom_params.get_mom_shape(data) == mom_shape
     assert mom_params.get_val_shape(data) == val_shape
+
+    other = np.zeros(10)
+    if is_xarray(data):
+        other = xr.DataArray(other, dims="mom0")  # type: ignore[assignment]
+        with pytest.raises(ValueError):
+            mom_params.get_mom_shape(other)

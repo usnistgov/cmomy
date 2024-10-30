@@ -25,7 +25,6 @@ from cmomy.core.xr_utils import (
     astype_dtype_dict,
     contains_dims,
     factory_apply_ufunc_kwargs,
-    get_mom_shape,
 )
 
 if TYPE_CHECKING:
@@ -239,7 +238,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         if not contains_dims(obj, *self.mom_dims):  # pyright: ignore[reportUnknownArgumentType]
             msg = f"Cannot select object without {self.mom_dims}"
             raise ValueError(msg)
-        self._raise_if_wrong_mom_shape(get_mom_shape(obj, self.mom_dims))  # pyright: ignore[reportUnknownArgumentType]
+        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))  # pyright: ignore[reportUnknownArgumentType]
 
         return type(self)(
             obj=obj,  # type: ignore[arg-type]
@@ -293,7 +292,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         if not contains_dims(obj_, *self.mom_dims):
             msg = f"Cannot create new from object without {self.mom_dims}"
             raise ValueError(msg)
-        self._raise_if_wrong_mom_shape(get_mom_shape(obj_, self.mom_dims))
+        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj_))
 
         if verify:
             raise_if_wrong_value(obj_.sizes, self._obj.sizes, "Wrong `obj.sizes`.")

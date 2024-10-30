@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 from xarray.namedarray.utils import either_dict_or_kwargs
 
-from .core.array_utils import moveaxis_order, select_dtype
+from .core.array_utils import select_dtype
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.moment_params import (
@@ -70,6 +70,98 @@ if TYPE_CHECKING:
 
 
 # * moveaxis ------------------------------------------------------------------
+def moveaxis_order(
+    x: NDArray[ScalarT] | xr.DataArray,
+    axis: AxesWrap | MissingType = MISSING,
+    dest: AxesWrap | MissingType = MISSING,
+    *,
+    dim: str | Sequence[Hashable] | MissingType = MISSING,
+    dest_dim: str | Sequence[Hashable] | MissingType = MISSING,
+    mom_ndim: MomNDim | None = None,
+    mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    axes_to_end: bool = False,
+    allow_select_mom_axes: bool = False,
+) -> list[int]:
+    """Get new integer order for transpose corresponding to `moveaxis` parameters."""
+    from .core.array_utils import moveaxis_order as _moveaxis_order
+
+    if is_dataarray(x):
+        mom_params = MomParamsXArrayOptional.factory(
+            mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
+        )
+
+        if axes_to_end:
+            if axis is not MISSING or dim is not MISSING:
+                axis, _ = mom_params.select_axis_dim_mult(
+                    x,
+                    axis=axis,
+                    dim=dim,
+                    allow_select_mom_axes=False,
+                )
+                dest = tuple(a * 1j for a in range(-len(axis), 0))
+            else:
+                axis = dest = ()
+
+            if mom_params.dims is not None:
+                axis = (*axis, *mom_params.get_axes(x))
+                dest = (*dest, *mom_params.axes_last)
+
+            return moveaxis_order(
+                x,
+                axis=axis,
+                dest=dest,
+                mom_params=mom_params,
+                allow_select_mom_axes=True,
+                axes_to_end=False,
+            )
+
+        axes0, axes1 = (
+            mom_params.select_axis_dim_mult(
+                x,
+                axis=a,  # pyright: ignore[reportArgumentType]
+                dim=d,
+                allow_select_mom_axes=allow_select_mom_axes,
+            )[0]
+            for a, d in zip((axis, dest), (dim, dest_dim))
+        )
+        return _moveaxis_order(x.ndim, axes0, axes1, normalize=False)
+
+    # numpy
+    mom_params = MomParamsArrayOptional.factory(
+        mom_params=mom_params, ndim=mom_ndim, axes=mom_axes
+    ).normalize_axes(x.ndim)
+
+    if axes_to_end:
+        if axis is not MISSING:
+            axis = mom_params.normalize_axis_tuple(validate_axis_mult(axis), x.ndim)
+            dest = tuple(a * 1j for a in range(-len(axis), 0))
+        else:
+            axis = dest = ()
+
+        if mom_params.axes is not None:
+            axis = (*axis, *mom_params.axes)
+            dest = (*dest, *mom_params.axes_last)
+        return moveaxis_order(
+            x,
+            axis=axis,
+            dest=dest,
+            mom_params=mom_params,
+            allow_select_mom_axes=True,
+            axes_to_end=False,
+        )
+
+    axes0, axes1 = (
+        mom_params.normalize_axis_tuple(validate_axis_mult(a), x.ndim)
+        for a in (axis, dest)
+    )
+    if not allow_select_mom_axes:
+        mom_params.raise_if_in_mom_axes(*axes0, *axes1)
+
+    return _moveaxis_order(x.ndim, axes0, axes1, normalize=False)
+
+
 @overload
 def moveaxis(
     x: NDArray[ScalarT],
@@ -196,81 +288,23 @@ def moveaxis(
     >>> moveaxis(x, axis=-2j, mom_ndim=2, axes_to_end=True).shape
     (3, 2, 4, 5)
     """
-    if is_dataarray(x):
-        mom_params = MomParamsXArrayOptional.factory(
-            mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
-        )
-
-        if axes_to_end:
-            if axis is not MISSING or dim is not MISSING:
-                axis, _ = mom_params.select_axis_dim_mult(
-                    x,
-                    axis=axis,
-                    dim=dim,
-                    allow_select_mom_axes=False,
-                )
-                dest = tuple(a * 1j for a in range(-len(axis), 0))
-            else:
-                axis = dest = ()
-
-            if mom_params.dims is not None:
-                axis = (*axis, *mom_params.get_axes(x))
-                dest = (*dest, *mom_params.axes_last)
-
-            return moveaxis(
-                x,
-                axis=axis,
-                dest=dest,
-                mom_params=mom_params,
-                allow_select_mom_axes=True,
-                axes_to_end=False,
-            )
-
-        axes0, axes1 = (
-            mom_params.select_axis_dim_mult(
-                x,
-                axis=a,  # pyright: ignore[reportArgumentType]
-                dim=d,
-                allow_select_mom_axes=allow_select_mom_axes,
-            )[0]
-            for a, d in zip((axis, dest), (dim, dest_dim))
-        )
-
-        order = moveaxis_order(x.ndim, axes0, axes1, normalize=False)
-        return x.transpose(*(x.dims[o] for o in order))
-
-    # numpy
-    mom_params = MomParamsArrayOptional.factory(
-        mom_params=mom_params, ndim=mom_ndim, axes=mom_axes
-    ).normalize_axes(x.ndim)
-
-    if axes_to_end:
-        if axis is not MISSING:
-            axis = mom_params.normalize_axis_tuple(validate_axis_mult(axis), x.ndim)
-            dest = tuple(a * 1j for a in range(-len(axis), 0))
-        else:
-            axis = dest = ()
-
-        if mom_params.axes is not None:
-            axis = (*axis, *mom_params.axes)
-            dest = (*dest, *mom_params.axes_last)
-        return moveaxis(
-            x,
-            axis=axis,
-            dest=dest,
-            mom_params=mom_params,
-            allow_select_mom_axes=True,
-            axes_to_end=False,
-        )
-
-    axes0, axes1 = (
-        mom_params.normalize_axis_tuple(validate_axis_mult(a), x.ndim)
-        for a in (axis, dest)
+    order = moveaxis_order(
+        x,
+        axis=axis,
+        dest=dest,
+        dim=dim,
+        dest_dim=dest_dim,
+        mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
+        mom_dims=mom_dims,
+        mom_params=mom_params,
+        axes_to_end=axes_to_end,
+        allow_select_mom_axes=allow_select_mom_axes,
     )
-    if not allow_select_mom_axes:
-        mom_params.raise_if_in_mom_axes(*axes0, *axes1)
 
-    return np.moveaxis(x, axes0, axes1)
+    if is_dataarray(x):
+        return x.transpose(*(x.dims[o] for o in order))
+    return x.transpose(order)
 
 
 # * Selecting subsets of data -------------------------------------------------
