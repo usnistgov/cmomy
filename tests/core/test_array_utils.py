@@ -40,19 +40,27 @@ def test_arrayorder_to_arrayorder_cf(arg, expected) -> None:
         ((2, 3), 2),
         ((3, 3), ValueError),
         ((-1, 3), 2),
+        ((-1j, 3), 2),
         ((-2, 3), 1),
         ((-3, 3), 0),
         ((-4, 3), ValueError),
         ((0, 3, 1), 0),
         ((1, 3, 1), 1),
-        ((2, 3, 1), ValueError),
-        ((-1, 3, 1), 1),
-        ((-2, 3, 1), 0),
-        ((-3, 3, 1), ValueError),
+        ((2, 3, 1), 2),
+        ((2j, 3, 1), ValueError),
+        ((-1, 3, 1), 2),
+        ((-2, 3, 1), 1),
+        ((-3, 3, 1), 0),
+        ((-4, 3, 1), ValueError),
+        ((-1j, 3, 1), 1),
+        ((-2j, 3, 1), 0),
+        ((-3j, 3, 1), ValueError),
         ((0, 3, 2), 0),
-        ((1, 3, 2), ValueError),
-        ((-1, 3, 2), 0),
-        ((-2, 3, 2), ValueError),
+        ((-1j, 3, 2), 0),
+        ((-2j, 3, 2), ValueError),
+        ((1, 3, 2), 1),
+        ((1j, 3, 2), ValueError),
+        ((-1, 3, 2), 2),
     ],
 )
 def test_normalize_axis_index(args, expected):
@@ -67,12 +75,17 @@ def test_normalize_axis_index(args, expected):
         (((-1, -2, -3), 3), (2, 1, 0)),
         ((-4, 3), ValueError),
         (((0, 1), 3, 1), (0, 1)),
-        ((2, 3, 1), ValueError),
-        (((-1, -2), 3, 1), (1, 0)),
-        ((-3, 3, 1), ValueError),
+        (((0, -2), 3, 1), (0, 1)),
+        (((0, -1j), 3, 1), (0, 1)),
+        (((-1, -2), 3, 1), (2, 1)),
+        (((-1j, -2j), 3, 1), (1, 0)),
+        ((-3, 3, 1), (0,)),
+        ((-3j, 3, 1), ValueError),
         ((0, 3, 2), (0,)),
-        ((1, 3, 2), ValueError),
-        ((-1, 3, 2), (0,)),
+        ((-1j, 3, 2), (0,)),
+        ((1, 3, 2), (1,)),
+        ((1j, 3, 2), ValueError),
+        (((0, 0), 2), ValueError),
     ],
 )
 def test_normalize_axis_tuple(args, expected):
@@ -84,45 +97,6 @@ def test_normalize_axis_tuple(args, expected):
 )
 def test_positive_to_negative_index(args, expected) -> None:
     _do_test(array_utils.positive_to_negative_index, *args, expected=expected)
-
-
-@pytest.mark.parametrize(
-    ("args", "kwargs", "expected"),
-    [
-        (
-            (),
-            {"mom_ndim": 1, "axis": -2},
-            [(-2, -1), (-1,)],
-        ),
-        (
-            (),
-            {"mom_ndim": 2, "axis": -3},
-            [(-3, -2, -1), (-2, -1)],
-        ),
-        (
-            ((), -2),
-            {"mom_ndim": 1, "axis": -3},
-            [(-3, -1), (), (-2,), (-1,)],
-        ),
-        (
-            (),
-            {"mom_ndim": 1, "axis": -2, "out_has_axis": True},
-            [(-2, -1), (-2, -1)],
-        ),
-        (
-            (),
-            {"mom_ndim": 2, "axis": -3, "out_has_axis": True},
-            [(-3, -2, -1), (-3, -2, -1)],
-        ),
-        (
-            ((), -2),
-            {"mom_ndim": 1, "axis": -3, "out_has_axis": True},
-            [(-3, -1), (), (-2,), (-3, -1)],
-        ),
-    ],
-)
-def test_axes_data_reduction(args, kwargs, expected) -> None:
-    _do_test(array_utils.axes_data_reduction, *args, expected=expected, **kwargs)
 
 
 def _e(dtype):
@@ -185,14 +159,3 @@ def test_optional_keepdims(shape, axis, out) -> None:
         assert array_utils.optional_keepdims(x, axis=axis, keepdims=keepdims).shape == (
             out if keepdims else shape
         )
-
-
-@pytest.mark.parametrize("shape", [(10,), (2, 2)])
-@pytest.mark.parametrize("dtype", [np.float32, None])
-@pytest.mark.parametrize("broadcast", [True, False])
-def test_dummy_array(shape, dtype, broadcast) -> None:
-    out = array_utils.dummy_array(shape, dtype, broadcast)
-
-    assert out.shape == shape
-    assert out.dtype.type is (dtype or np.float64)
-    assert out.flags["OWNDATA"] is not broadcast

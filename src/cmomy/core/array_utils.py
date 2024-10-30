@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from functools import lru_cache
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
@@ -10,7 +9,6 @@ import numpy as np
 from .validate import (
     is_dataset,
     is_ndarray,
-    validate_mom_ndim,
 )
 
 if TYPE_CHECKING:
@@ -26,7 +24,7 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         AxesGUFunc,
-        Mom_NDim,
+        MomNDim,
         NDArrayAny,
         ScalarT,
     )
@@ -46,20 +44,10 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
 
 
 # * Axis normalizer -----------------------------------------------------------
-def _validate_ndim(ndim: int, mom_ndim: int | None) -> int:
-    ndim = ndim if mom_ndim is None else ndim - validate_mom_ndim(mom_ndim)
-    if ndim <= 0:
-        msg = "No dimension to reduce/sample over."
-        if mom_ndim:
-            msg += " Trying to select moment dimensions."
-        raise ValueError(msg)
-    return ndim
-
-
 def normalize_axis_index(
-    axis: int,
+    axis: complex,
     ndim: int,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     msg_prefix: str | None = None,
 ) -> int:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
@@ -67,26 +55,71 @@ def normalize_axis_index(
         np_normalize_axis_index,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
     )
 
-    ndim = _validate_ndim(ndim, mom_ndim)
+    if isinstance(axis, complex):
+        axis = int(axis.imag)
+        if mom_ndim is not None:
+            ndim -= mom_ndim
+
+    # normalize will catch if try to pass a float
     return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]
 
 
 def normalize_axis_tuple(
-    axis: int | Iterable[int] | None,
+    axis: complex | Iterable[complex] | None,
     ndim: int,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
     msg_prefix: str | None = None,
     allow_duplicate: bool = False,
 ) -> tuple[int, ...]:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
-    from .compat import (
-        np_normalize_axis_tuple,  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType]
+    if axis is None:
+        return tuple(range(ndim - (0 if mom_ndim is None else mom_ndim)))
+
+    if isinstance(axis, (int, float, complex)):
+        axis = (axis,)
+
+    out = tuple(
+        normalize_axis_index(a, ndim=ndim, mom_ndim=mom_ndim, msg_prefix=msg_prefix)
+        for a in axis
     )
 
-    ndim = _validate_ndim(ndim, mom_ndim)
-    if axis is None:
-        return tuple(range(ndim))
-    return np_normalize_axis_tuple(axis, ndim, msg_prefix, allow_duplicate)  # type: ignore[no-any-return,unused-ignore]
+    if not allow_duplicate and len(set(out)) != len(out):
+        msg = f"Repeat axis in {out}"
+        raise ValueError(msg)
+    return out
+
+
+def moveaxis_order(
+    ndim: int,
+    source: int | Iterable[int],
+    destination: int | Iterable[int],
+    normalize: bool = True,
+) -> list[int]:
+    """
+    Get new order of array for moveaxis
+
+    Using ``x.transpose(*moveaxis_order(x.ndim, source, destination))``
+    is equivalent to ``np.moveaxis(x, source, destination)``.
+
+    Useful for keeping track of where indices end up.
+    To extract to new position for an axis, use ``order.index(axis)``.
+    """
+    if normalize:
+        source = normalize_axis_tuple(source, ndim, msg_prefix="source")
+        destination = normalize_axis_tuple(destination, ndim, msg_prefix="destination")
+    else:
+        source = cast("Sequence[int]", source)
+        destination = cast("Sequence[int]", destination)
+
+    if len(source) != len(destination):
+        msg = "source and destination must have same length"
+        raise ValueError(msg)
+
+    order = [n for n in range(ndim) if n not in source]
+    for dest, src in sorted(zip(destination, source)):
+        order.insert(dest, src)
+
+    return order
 
 
 def positive_to_negative_index(index: int, ndim: int) -> int:
@@ -112,38 +145,6 @@ def positive_to_negative_index(index: int, ndim: int) -> int:
 def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
     """Get reduction axes for arrays..."""
     return [(-1,) if a.ndim == 1 else (axis_neg,) for a in args]
-
-
-# new style preparation for reduction....
-_MOM_AXES_TUPLE = {1: (-1,), 2: (-2, -1)}
-
-
-def axes_data_reduction(
-    *inner: int | tuple[int, ...],
-    mom_ndim: Mom_NDim,
-    axis: int,
-    out_has_axis: bool = False,
-) -> AxesGUFunc:
-    """
-    axes for reducing data along axis
-
-    if ``out_has_axis == True``, then treat like resample,
-    so output will still have ``axis`` with new size in output.
-
-    It is assumed that `axis` is validated against a moments array,
-    (i.e., negative values should be ``< -mom_ndim``)
-
-    Can also pass in "inner" dimensions (elements 1:-1 of output)
-    """
-    mom_axes = _MOM_AXES_TUPLE[mom_ndim]
-    data_axes = (axis, *mom_axes)
-    out_axes = data_axes if out_has_axis else mom_axes
-
-    return [
-        data_axes,
-        *((x,) if isinstance(x, int) else x for x in inner),
-        out_axes,
-    ]
 
 
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
@@ -208,7 +209,7 @@ def asarray_maybe_recast(
     if is_ndarray(data):
         if recast and dtype is not None:
             return np.asarray(data, dtype=dtype)
-        return data  # pyright: ignore[reportUnknownVariableType]
+        return data
     return np.asarray(data, dtype=dtype)
 
 
@@ -222,32 +223,3 @@ def optional_keepdims(
     if keepdims:
         return np.expand_dims(x, axis)
     return x
-
-
-# * Dummy arrays --------------------------------------------------------------
-def dummy_array(
-    shape: int | tuple[int, ...],
-    dtype: DTypeLike = None,
-    broadcast: bool = True,
-) -> NDArrayAny:
-    """
-    Create a dummy array.
-
-    Intended for cases where array is passed to guvectorized function to
-    set a shape.
-    """
-    # lru_cache doesn't play nice with dtype typing.
-    return _dummy_array(shape, dtype, broadcast)  # type: ignore[arg-type]
-
-
-@lru_cache
-def _dummy_array(
-    shape: int | tuple[int, ...],
-    dtype: DTypeLike = None,
-    broadcast: bool = True,
-) -> NDArrayAny:
-    if broadcast:
-        if dtype is None:
-            dtype = np.float64
-        return np.broadcast_to(np.dtype(dtype).type(0), shape)
-    return np.empty(shape, dtype=dtype)

@@ -12,6 +12,7 @@ import xarray as xr
 
 import cmomy
 from cmomy import CentralMomentsArray
+from cmomy.core.moment_params import MomParamsArray
 from cmomy.core.typing import SelectMoment
 
 if TYPE_CHECKING:
@@ -42,7 +43,7 @@ def wrapped(rng, request) -> CentralMomentsArray[np.float64]:
             ValueError,
             "Moments must be positive",
         ),
-        ({"obj": [1, 2, 3], "mom_ndim": 2}, ValueError, ".*Possibly more mom_ndim.*"),
+        ({"obj": [1, 2, 3], "mom_ndim": 2}, ValueError, None),
         ({"obj": [1, 2, 3], "mom_ndim": 1, "fastpath": True}, TypeError, "Must pass.*"),
         ({"obj": np.zeros(3, dtype=np.float16), "mom_ndim": 1}, ValueError, None),
     ],
@@ -58,6 +59,12 @@ def test_check_dtype(wrapped) -> None:
 
 def test_mom(wrapped) -> None:
     assert wrapped.mom_shape == wrapped.obj.shape[-wrapped.mom_ndim :]
+
+
+def test_mom_params(wrapped) -> None:
+    assert wrapped.mom_params.ndim == wrapped.mom_ndim
+    assert isinstance(wrapped.mom_params, MomParamsArray)
+    assert wrapped.mom_params.axes == wrapped.mom_axes
 
 
 def test_properties(wrapped) -> None:
@@ -214,8 +221,8 @@ def test_resample(wrapped) -> None:
             expected,
         )
         np.testing.assert_allclose(
-            wrapped.resample(indices, axis=0, last=True).reduce(axis=-1),
-            expected.moveaxis(0, -1),
+            wrapped.resample(indices, axis=0, last=True).reduce(axis=-1j),
+            expected.moveaxis(0, -1j),
         )
 
 
@@ -251,12 +258,12 @@ def test_vals(rng, val_shape, mom, use_weight):
             c.push_val(*args)
     np.testing.assert_allclose(expected, c)
 
-    # from_vals
-    c = CentralMomentsArray.from_vals(*xy, weight=weight, axis=0, mom=mom)
+    # from vals
+    c = cmomy.wrap_reduce_vals(*xy, weight=weight, axis=0, mom=mom)
     np.testing.assert_allclose(c, expected)
 
     # resample...
-    c = CentralMomentsArray.from_resample_vals(
+    c = cmomy.wrap_resample_vals(
         *xy,
         weight=weight,
         axis=0,
@@ -451,9 +458,9 @@ def test_operator_raises() -> None:
     ("shape", "mom_ndim", "axis", "dest"),
     [
         ((2, 3, 4), 1, 1, 0),
-        ((1, 2, 3, 4), 1, (0, -1), (1, 0)),
-        ((1, 2, 3, 4), 2, 0, -1),
-        ((1, 2, 3, 4, 5), 2, (1, 2), (0, -1)),
+        ((1, 2, 3, 4), 1, (0, -1j), (1, 0)),
+        ((1, 2, 3, 4), 2, 0, -1j),
+        ((1, 2, 3, 4, 5), 2, (1, 2), (0, -1j)),
     ],
 )
 def test_moveaxis(rng, shape, mom_ndim, axis, dest) -> None:
@@ -507,7 +514,7 @@ def test_reduce(wrapped, attr, func, fkws) -> None:
         np.testing.assert_allclose(r, check)
 
     else:
-        with pytest.raises(ValueError, match="No dimension to reduce.*"):
+        with pytest.raises(ValueError):
             meth(axis=0, **fkws())
 
 
@@ -515,7 +522,7 @@ def test_from_raw(wrapped) -> None:
     data, mom_ndim = wrapped.obj, wrapped.mom_ndim
 
     raw = wrapped.to_raw()
-    new = CentralMomentsArray.from_raw(raw, mom_ndim=wrapped.mom_ndim)
+    new = cmomy.wrap_raw(raw, mom_ndim=wrapped.mom_ndim)
 
     np.testing.assert_allclose(
         raw, cmomy.convert.moments_type(data, mom_ndim=mom_ndim, to="raw")
@@ -534,3 +541,13 @@ def test_jackknife_and_reduce(rng) -> None:
     b = c.jackknife_and_reduce(axis=0, data_reduced=c.reduce(axis=0))
 
     np.testing.assert_allclose(a, b)
+
+
+def test_wrap_mom_axes(rng) -> None:
+    data = rng.random((10, 2, 3, 4))
+    data_moved = np.moveaxis(data, (-2, -1), (0, 1))
+
+    a = cmomy.wrap(data, mom_ndim=2)
+    b = cmomy.wrap(data_moved, mom_axes=(0, 1))
+
+    np.testing.assert_array_equal(a, b)

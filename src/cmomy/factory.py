@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from cmomy.core.typing import (
         ConvertStyle,
         FloatT,
-        Mom_NDim,
+        MomNDim,
         NDArrayInt,
     )
 
@@ -243,7 +243,7 @@ class Pusher(NamedTuple):
 
 @lru_cache
 def factory_pusher(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> Pusher:
     """Factory method to get pusher functions."""
@@ -291,7 +291,7 @@ def factory_indices_to_freq(parallel: bool = True) -> IndicesToFreq:
 
 @lru_cache
 def factory_resample_vals(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ResampleVals:
     """Resample values."""
@@ -313,7 +313,7 @@ def factory_resample_vals(
 
 @lru_cache
 def factory_resample_data(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ResampleData:
     """Resample data."""
@@ -332,7 +332,7 @@ def factory_resample_data(
 # * Jackknife
 @lru_cache
 def factory_jackknife_vals(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> JackknifeVals:
     parallel = parallel and supports_parallel()
@@ -355,7 +355,7 @@ def factory_jackknife_vals(
 
 @lru_cache
 def factory_jackknife_data(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> JackknifeData:
     parallel = parallel and supports_parallel()
@@ -373,7 +373,7 @@ def factory_jackknife_data(
 # * Reduce
 @lru_cache
 def factory_reduce_vals(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceVals:
     parallel = parallel and supports_parallel()
@@ -393,7 +393,7 @@ def factory_reduce_vals(
 
 @lru_cache
 def factory_reduce_data(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceData:
     parallel = parallel and supports_parallel()
@@ -412,7 +412,7 @@ def factory_reduce_data(
 
 @lru_cache
 def factory_reduce_data_grouped(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceDataGrouped:
     parallel = parallel and supports_parallel()
@@ -430,7 +430,7 @@ def factory_reduce_data_grouped(
 
 @lru_cache
 def factory_reduce_data_indexed(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceDataIndexed:
     parallel = parallel and supports_parallel()
@@ -450,7 +450,7 @@ def factory_reduce_data_indexed(
 
 # * Convert
 @lru_cache
-def factory_convert(mom_ndim: Mom_NDim = 1, to: ConvertStyle = "central") -> Convert:
+def factory_convert(mom_ndim: MomNDim = 1, to: ConvertStyle = "central") -> Convert:
     if to == "central":
         # raw to central
         if mom_ndim == 1:
@@ -470,7 +470,7 @@ def factory_convert(mom_ndim: Mom_NDim = 1, to: ConvertStyle = "central") -> Con
 # * CumReduce
 @lru_cache
 def factory_cumulative(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
     inverse: bool = False,
 ) -> Convert:
@@ -500,7 +500,7 @@ def factory_cumulative(
 # * Rolling
 @lru_cache
 def factory_rolling_vals(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingVals:
     parallel = parallel and supports_parallel()
@@ -521,7 +521,7 @@ def factory_rolling_vals(
 
 @lru_cache
 def factory_rolling_data(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingData:
     parallel = parallel and supports_parallel()
@@ -540,7 +540,7 @@ def factory_rolling_data(
 
 @lru_cache
 def factory_rolling_exp_vals(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingExpVals:
     parallel = parallel and supports_parallel()
@@ -561,7 +561,7 @@ def factory_rolling_exp_vals(
 
 @lru_cache
 def factory_rolling_exp_data(
-    mom_ndim: Mom_NDim = 1,
+    mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingExpData:
     parallel = parallel and supports_parallel()

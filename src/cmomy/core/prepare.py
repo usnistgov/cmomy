@@ -6,9 +6,11 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from cmomy.core.moment_params import MomParamsXArray, default_mom_params_xarray
 from cmomy.core.utils import mom_to_mom_shape
 
 from .array_utils import (
+    arrayorder_to_arrayorder_cf,
     asarray_maybe_recast,
     normalize_axis_index,
     positive_to_negative_index,
@@ -21,7 +23,6 @@ from .validate import (
 )
 from .xr_utils import (
     raise_if_dataset,
-    select_axis_dim,
 )
 
 if TYPE_CHECKING:
@@ -30,18 +31,20 @@ if TYPE_CHECKING:
         Iterable,
         Sequence,
     )
-    from typing import Any
 
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core.moment_params import MomParamsArray
+    from cmomy.core.typing import AxisReduceWrap
+
     from .typing import (
+        ArrayOrder,
         ArrayOrderCF,
-        AxisReduce,
         DimsReduce,
         MissingType,
-        Mom_NDim,
         MomentsStrict,
+        MomNDim,
         NDArrayAny,
         ScalarT,
     )
@@ -50,24 +53,30 @@ if TYPE_CHECKING:
 # * Data
 def prepare_data_for_reduction(
     data: ArrayLike,
-    axis: AxisReduce | MissingType,
-    mom_ndim: Mom_NDim,
+    axis: AxisReduceWrap | MissingType,
+    mom_params: MomParamsArray,
     dtype: DTypeLike,
     recast: bool = True,
-    move_axis_to_end: bool = False,
-) -> tuple[int, NDArrayAny]:
+    axes_to_end: bool = False,
+) -> tuple[int, MomParamsArray, NDArrayAny]:
     """Convert central moments array to correct form for reduction."""
     data = asarray_maybe_recast(data, dtype=dtype, recast=recast)
-    axis = normalize_axis_index(validate_axis(axis), data.ndim, mom_ndim)
+    axis = normalize_axis_index(
+        validate_axis(axis),
+        data.ndim,
+        mom_ndim=mom_params.ndim,
+    )
 
-    if move_axis_to_end:
-        # make sure this axis is positive in case we want to use it again...
-        axis_out = data.ndim - (mom_ndim + 1)
-        data = np.moveaxis(data, axis, axis_out)
+    if axes_to_end:
+        axis_out = data.ndim - (mom_params.ndim + 1)
+        mom_params_orig, mom_params = mom_params, mom_params.axes_to_end()
+        data = np.moveaxis(
+            data, (axis, *mom_params_orig.axes), (axis_out, *mom_params.axes)
+        )
     else:
         axis_out = axis
 
-    return axis_out, data
+    return axis_out, mom_params, data
 
 
 # * Vals
@@ -75,10 +84,10 @@ def prepare_values_for_reduction(
     target: ArrayLike,
     *args: ArrayLike | xr.Dataset,
     narrays: int,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dtype: DTypeLike,
     recast: bool = True,
-    move_axis_to_end: bool = True,
+    axes_to_end: bool = True,
 ) -> tuple[int, tuple[NDArrayAny, ...]]:
     """
     Convert input value arrays to correct form for reduction.
@@ -100,7 +109,7 @@ def prepare_values_for_reduction(
     nsamp = target.shape[axis]
 
     axis_neg = positive_to_negative_index(axis, target.ndim)
-    if move_axis_to_end and axis_neg != -1:
+    if axes_to_end and axis_neg != -1:
         target = np.moveaxis(target, axis_neg, -1)
 
     others: Iterable[NDArrayAny] = (
@@ -110,12 +119,12 @@ def prepare_values_for_reduction(
             nsamp=nsamp,
             dtype=target.dtype,
             recast=recast,
-            move_axis_to_end=move_axis_to_end,
+            axes_to_end=axes_to_end,
         )
         for x in args
     )
 
-    return -1 if move_axis_to_end else axis_neg, (target, *others)
+    return -1 if axes_to_end else axis_neg, (target, *others)
 
 
 def prepare_secondary_value_for_reduction(
@@ -125,7 +134,7 @@ def prepare_secondary_value_for_reduction(
     dtype: DTypeLike,
     recast: bool,
     *,
-    move_axis_to_end: bool = True,
+    axes_to_end: bool = True,
 ) -> NDArrayAny:
     """
     Prepare value array (x1, w) for reduction.
@@ -153,7 +162,7 @@ def prepare_secondary_value_for_reduction(
 
     if out.ndim == 1:
         axis_check = -1
-    elif move_axis_to_end and axis != -1:
+    elif axes_to_end and axis != -1:
         out = np.moveaxis(out, axis, -1)
         axis_check = -1
     else:
@@ -171,7 +180,7 @@ def xprepare_values_for_reduction(
     *args: ArrayLike | xr.DataArray | xr.Dataset,
     narrays: int,
     dim: DimsReduce | MissingType,
-    axis: AxisReduce | MissingType,
+    axis: AxisReduceWrap | MissingType,
     dtype: DTypeLike,
     recast: bool = True,
 ) -> tuple[
@@ -196,7 +205,7 @@ def xprepare_values_for_reduction(
         msg = f"Number of arrays {len(args) + 1} != {narrays}"
         raise ValueError(msg)
 
-    axis, dim = select_axis_dim(
+    axis, dim = default_mom_params_xarray.select_axis_dim(
         target,
         axis=axis,
         dim=dim,
@@ -243,24 +252,75 @@ def xprepare_secondary_value_for_reduction(
         nsamp=nsamp,
         dtype=dtype,
         recast=recast,
-        move_axis_to_end=True,
+        axes_to_end=True,
     )
 
 
 # * Out
+def xprepare_out_for_reduce_data(
+    target: xr.DataArray | xr.Dataset,
+    out: NDArray[ScalarT] | None,
+    *,
+    dim: tuple[Hashable, ...],
+    mom_params: MomParamsXArray,
+    keepdims: bool,
+    axes_to_end: bool,
+) -> NDArray[ScalarT] | None:
+    """Prepare out for reduce_data"""
+    if out is None or is_dataset(target):
+        return None
+
+    if axes_to_end:
+        return out
+
+    if keepdims:
+        return np.moveaxis(
+            out,
+            (*target.get_axis_num(dim), *mom_params.get_axes(target)),
+            range(-(len(dim) + mom_params.ndim), 0),
+        )
+
+    # otherwise need to remove reduction dimensions before move.
+    dims = [d for d in target.dims if d not in dim]
+    axes0 = [dims.index(d) for d in mom_params.dims]
+
+    return np.moveaxis(out, axes0, mom_params.axes_last)
+
+
+def xprepare_out_for_transform(
+    target: xr.DataArray | xr.Dataset,
+    out: NDArray[ScalarT] | None,
+    *,
+    mom_params: MomParamsXArray,
+    axes_to_end: bool,
+) -> NDArray[ScalarT] | None:
+    """Prepare out for transform."""
+    if out is None or is_dataset(target):
+        return None
+
+    if axes_to_end:
+        return out
+
+    return np.moveaxis(
+        out,
+        mom_params.get_axes(target),
+        mom_params.axes_last,
+    )
+
+
 def xprepare_out_for_resample_vals(
     target: xr.DataArray | xr.Dataset,
     out: NDArray[ScalarT] | None,
     dim: DimsReduce,
-    mom_ndim: Mom_NDim,
-    move_axis_to_end: bool,
+    mom_ndim: MomNDim,
+    axes_to_end: bool,
 ) -> NDArray[ScalarT] | None:
     """Prepare out for resampling"""
     # NOTE: silently ignore out of datasets.
     if out is None or is_dataset(target):
         return None
 
-    if move_axis_to_end:
+    if axes_to_end:
         # out should already be in correct order
         return out
 
@@ -275,47 +335,115 @@ def xprepare_out_for_resample_vals(
 def xprepare_out_for_resample_data(
     out: NDArray[ScalarT] | None,
     *,
-    mom_ndim: Mom_NDim | None,
+    mom_params: MomParamsXArray,
     axis: int,
-    move_axis_to_end: bool,
-    data: Any = None,
+    axes_to_end: bool,
+    data: xr.DataArray | xr.Dataset,
 ) -> NDArray[ScalarT] | None:
     """Move axis to last dimensions before moment dimensions."""
     if out is None or is_dataset(data):
         return None
 
-    if move_axis_to_end:
+    if axes_to_end:
         # out should already be in correct order
         return out
 
-    shift = 0 if mom_ndim is None else mom_ndim
-    return np.moveaxis(out, axis, -(shift + 1))
+    axes0 = (axis, *mom_params.get_axes(data))
+    axes1 = (-(mom_params.ndim + 1), *mom_params.axes_last)
+    return np.moveaxis(out, axes0, axes1)
 
 
 def prepare_out_from_values(
-    out: NDArray[ScalarT] | None,
-    *args: NDArray[ScalarT],
+    out: NDArrayAny | None,
+    *args: NDArrayAny,
     mom: MomentsStrict,
     axis_neg: int,
     axis_new_size: int | None = None,
     dtype: DTypeLike,
-    order: ArrayOrderCF = "C",
-) -> NDArray[ScalarT]:
+    order: ArrayOrderCF,
+) -> NDArrayAny:
     """Pass in axis if this is a reduction and will be removing axis_neg"""
     if out is not None:
-        out.fill(0.0)
         return out
 
     val_shape: tuple[int, ...] = np.broadcast_shapes(
         args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
     )
+    mom_shape = mom_to_mom_shape(mom)
 
-    # need to normalize
     axis = normalize_axis_index(axis_neg, len(val_shape))
     if axis_new_size is None:
-        val_shape = (*val_shape[:axis], *val_shape[axis + 1 :])
-    else:
-        val_shape = (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :])
+        return np.empty(
+            (*val_shape[:axis], *val_shape[axis + 1 :], *mom_shape),
+            dtype=dtype,
+            order=order,
+        )
 
-    out_shape = (*val_shape, *mom_to_mom_shape(mom))
-    return np.zeros(out_shape, dtype=dtype, order=order)
+    if axis_neg == -1 or order is not None:
+        # special case, axis is already at the end
+        return np.empty(
+            (*val_shape[:axis], axis_new_size, *val_shape[axis + 1 :], *mom_shape),
+            dtype=dtype,
+            order=order,
+        )
+
+    # otherwise, make array in calculation order
+    out = np.empty(
+        (*val_shape[:axis], *val_shape[axis + 1 :], axis_new_size, *mom_shape),
+        dtype=dtype,
+        order=order,
+    )
+    return np.moveaxis(out, -(len(mom) + 1), axis)
+
+
+def prepare_out_for_reduce_data_grouped(
+    data: NDArrayAny,
+    *,
+    mom_params: MomParamsArray,
+    axis: int,
+    axis_new_size: int,
+    order: ArrayOrderCF,
+    dtype: DTypeLike,
+) -> NDArrayAny:
+    """Prepare out with ordering."""
+    shape = (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :])
+    if order is None:
+        # otherwise, make array in calculation order
+        axes0 = (axis, *mom_params.axes)
+        axes1 = (data.ndim - (mom_params.ndim + 1), *mom_params.axes_last)
+        if axes0 != axes1:
+            axes0 = mom_params.normalize_axis_tuple(axes0, data.ndim)
+            new_shape = [s for i, s in enumerate(data.shape) if i not in axes0]
+
+            out = np.empty(
+                (*new_shape, axis_new_size, *mom_params.get_mom_shape(data)),
+                dtype=dtype,
+                order=None,
+            )
+            return np.moveaxis(out, axes1, axes0)
+
+    return np.empty(shape, dtype=dtype, order=order)
+
+
+def optional_prepare_out_for_resample_data(
+    *,
+    out: NDArrayAny | None,
+    data: NDArrayAny,
+    axis: int,
+    axis_new_size: int,
+    order: ArrayOrder,
+    dtype: DTypeLike,
+) -> NDArrayAny | None:
+    """Prepare out with ordering."""
+    if out is not None:
+        return out
+
+    order = arrayorder_to_arrayorder_cf(order)
+    if order is None:
+        return None
+
+    return np.empty(
+        (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :]),
+        dtype=dtype,
+        order=order,
+    )

@@ -16,6 +16,12 @@ def remove_dim_from_kwargs(kwargs):
     return kwargs
 
 
+def remove_axis_from_kwargs(kwargs):
+    kwargs = kwargs.copy()
+    kwargs.pop("axis")
+    return kwargs
+
+
 def moments_to_comoments_kwargs(kwargs):
     kwargs = kwargs.copy()
     for k in ("dim", "mom_ndim"):
@@ -41,12 +47,12 @@ def _get_axis_size(data, **kwargs):
     return data.shape[kwargs["axis"]]
 
 
-def do_reduce_data_grouped(data, **kwargs):
+def do_reduce_data_grouped(data, axes_to_end=False, **kwargs):
     by = get_by(_get_axis_size(data, **kwargs))
-    return cmomy.reduce_data_grouped(data, by=by, **kwargs)
+    return cmomy.reduce_data_grouped(data, by=by, axes_to_end=axes_to_end, **kwargs)
 
 
-def do_reduce_data_indexed(data, **kwargs):
+def do_reduce_data_indexed(data, axes_to_end=False, **kwargs):
     by = get_by(_get_axis_size(data, **kwargs))
     _, index, start, end = cmomy.reduction.factor_by_to_index(by)
 
@@ -60,13 +66,14 @@ def do_reduce_data_indexed(data, **kwargs):
         group_start=start,
         group_end=end,
         coords_policy=coords_policy,
+        axes_to_end=axes_to_end,
         **kwargs,
     )
 
 
 def do_bootstrap_data(data, sampler, method, **kwargs):
     kwargs = kwargs.copy()
-    kwargs.pop("move_axis_to_end", None)
+    kwargs.pop("axes_to_end", None)
 
     args = [cmomy.resample_data(data, sampler=sampler, **kwargs)]
     if method in {"basic", "bca"}:

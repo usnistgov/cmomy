@@ -12,15 +12,22 @@ import numpy as np
 import xarray as xr
 
 from .core.array_utils import (
+    arrayorder_to_arrayorder_cf,
     asarray_maybe_recast,
-    axes_data_reduction,
     select_dtype,
 )
 from .core.docstrings import docfiller
 from .core.missing import MISSING
+from .core.moment_params import (
+    MomParamsArray,
+    MomParamsXArray,
+    default_mom_params_xarray,
+)
 from .core.prepare import (
+    optional_prepare_out_for_resample_data,
     prepare_data_for_reduction,
     xprepare_out_for_resample_data,
+    xprepare_out_for_transform,
 )
 from .core.utils import (
     mom_to_mom_shape,
@@ -31,13 +38,11 @@ from .core.validate import (
     is_dataset,
     is_ndarray,
     is_xarray,
-    validate_mom_dims,
-    validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim,
+    is_xarray_typevar,
 )
 from .core.xr_utils import (
     factory_apply_ufunc_kwargs,
-    select_axis_dim,
+    transpose_like,
 )
 from .factory import (
     factory_convert,
@@ -55,6 +60,8 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core.typing import AxisReduceWrap
+
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
@@ -71,10 +78,12 @@ if TYPE_CHECKING:
         FloatT,
         KeepAttrs,
         MissingType,
-        Mom_NDim,
+        MomAxes,
         MomDims,
         MomentsToComomentsKwargs,
         MomentsTypeKwargs,
+        MomNDim,
+        MomParamsInput,
         NDArrayAny,
         NDArrayT,
     )
@@ -132,14 +141,17 @@ def moments_type(
 def moments_type(
     values_in: ArrayLike | DataT,
     *,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
+    mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     r"""
@@ -150,6 +162,9 @@ def moments_type(
     values_in : array-like, DataArray, or Dataset
         The moments array to convert from.
     {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     to : {{"raw", "central"}}
         The style of the ``values_in`` to convert to. If ``"raw"``, convert from central to raw.
         If ``"central"`` convert from raw to central moments.
@@ -157,9 +172,8 @@ def moments_type(
     {dtype}
     {casting}
     {order}
-    {move_axis_to_end}
+    {axes_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -196,24 +210,37 @@ def moments_type(
     * ``values_in[..., i, j]`` : :math:`\langle a^i b^j \rangle`,
 
     """
+    # TODO(wpk): add axes_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray(values_in):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, values_in, mom_ndim_default=1
+    if is_xarray_typevar(values_in):
+        mom_params = MomParamsXArray.factory(
+            mom_params=mom_params,
+            ndim=mom_ndim,
+            dims=mom_dims,
+            axes=mom_axes,
+            data=values_in,
+            default_ndim=1,
         )
+
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
             values_in,
-            input_core_dims=[mom_dims],
-            output_core_dims=[mom_dims],
+            input_core_dims=[mom_params.dims],
+            output_core_dims=[mom_params.dims],
             kwargs={
-                "mom_ndim": mom_ndim,
+                "mom_params": mom_params.to_array(),
                 "to": to,
-                "out": None if is_dataset(values_in) else out,
+                "out": xprepare_out_for_transform(
+                    target=values_in,
+                    out=out,
+                    mom_params=mom_params,
+                    axes_to_end=axes_to_end,
+                ),
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
                 "fastpath": is_dataarray(values_in),
+                "axes_to_end": False,
             },
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
@@ -222,16 +249,21 @@ def moments_type(
                 output_dtypes=dtype or np.float64,
             ),
         )
+        if not axes_to_end:
+            xout = transpose_like(xout, template=values_in)
         return xout
 
     return _moments_type(
         values_in,
         out=out,
-        mom_ndim=validate_mom_ndim(mom_ndim, mom_ndim_default=1),
+        mom_params=MomParamsArray.factory(
+            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+        ),
         to=to,
         dtype=dtype,
         casting=casting,
         order=order,
+        axes_to_end=axes_to_end,
         fastpath=True,
     )
 
@@ -239,19 +271,27 @@ def moments_type(
 def _moments_type(
     values_in: ArrayLike,
     out: NDArrayAny | None,
-    mom_ndim: Mom_NDim,
+    mom_params: MomParamsArray,
     to: ConvertStyle,
     dtype: DTypeLike,
     casting: Casting,
     order: ArrayOrder,
+    axes_to_end: bool,
     fastpath: bool,
 ) -> NDArrayAny:
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
-    return factory_convert(mom_ndim=mom_ndim, to=to)(
+    _axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
+
+    if out is None and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+        values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
+        out = np.zeros(values_in.shape, dtype=dtype, order=_order_cf)
+
+    return factory_convert(mom_ndim=mom_params.ndim, to=to)(
         values_in,  # type: ignore[arg-type]
         out=out,
+        axes=[mom_params.axes, _axes_out],
         dtype=dtype,
         casting=casting,
         order=order,
@@ -306,21 +346,23 @@ def cumulative(
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def cumulative(
+def cumulative(  # noqa: PLR0913
     values_in: ArrayLike | DataT,
     *,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
-    mom_ndim: Mom_NDim | None = None,
+    mom_ndim: MomNDim | None = None,
+    mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     inverse: bool = False,
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -332,17 +374,19 @@ def cumulative(
     {axis}
     {dim}
     {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     inverse : bool, optional
         Default is to create a cumulative moments array.  Pass ``inverse=True`` to convert from
         cumulative moments array back to normal moments.
-    {move_axis_to_end}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
+    {axes_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -376,12 +420,21 @@ def cumulative(
 
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray(values_in):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, values_in, mom_ndim_default=1
+    if is_xarray_typevar(values_in):
+        xmom_params = MomParamsXArray.factory(
+            mom_params=mom_params,
+            ndim=mom_ndim,
+            axes=mom_axes,
+            dims=mom_dims,
+            data=values_in,
+            default_ndim=1,
         )
-        axis, dim = select_axis_dim(values_in, axis=axis, dim=dim, mom_dims=mom_dims)
-        core_dims = [[dim, *mom_dims]]  # type: ignore[misc]
+        axis, dim = xmom_params.select_axis_dim(
+            values_in,
+            axis=axis,
+            dim=dim,
+        )
+        core_dims = [xmom_params.core_dims(dim)]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _cumulative,
@@ -389,14 +442,14 @@ def cumulative(
             input_core_dims=core_dims,
             output_core_dims=core_dims,
             kwargs={
-                "mom_ndim": mom_ndim,
+                "mom_params": xmom_params.to_array(),
                 "inverse": inverse,
-                "axis": -(mom_ndim + 1),
+                "axis": -(xmom_params.ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_ndim,
+                    mom_params=xmom_params,
                     axis=axis,
-                    move_axis_to_end=move_axis_to_end,
+                    axes_to_end=axes_to_end,
                     data=values_in,
                 ),
                 "parallel": parallel,
@@ -413,25 +466,32 @@ def cumulative(
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(xout):
-            xout = xout.transpose(*values_in.dims)
+        if not axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=values_in,
+            )
+        elif is_dataset(xout):
+            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")
+
         return xout
 
     # Numpy
-    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
-    axis, values_in = prepare_data_for_reduction(
+    axis, mom_params, values_in = prepare_data_for_reduction(
         values_in,
         axis=axis,
-        mom_ndim=mom_ndim,
+        mom_params=MomParamsArray.factory(
+            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+        ),
         dtype=None,
         recast=False,
-        move_axis_to_end=move_axis_to_end,
+        axes_to_end=axes_to_end,
     )
     return _cumulative(
         values_in,
         out=out,
         axis=axis,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
         inverse=inverse,
         parallel=parallel,
         dtype=dtype,
@@ -445,7 +505,7 @@ def _cumulative(
     values_in: NDArrayAny,
     out: NDArrayAny | None,
     axis: int,
-    mom_ndim: Mom_NDim,
+    mom_params: MomParamsArray,
     inverse: bool,
     parallel: bool | None,
     dtype: DTypeLike,
@@ -456,9 +516,22 @@ def _cumulative(
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
-    axes = axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True)
+    axes = mom_params.axes_data_reduction(
+        axis=axis,
+        out_has_axis=True,
+    )
+
+    out = optional_prepare_out_for_resample_data(
+        data=values_in,
+        out=out,
+        axis=axis,
+        axis_new_size=values_in.shape[axis],
+        order=order,
+        dtype=dtype,
+    )
+
     return factory_cumulative(
-        mom_ndim=mom_ndim,
+        mom_ndim=mom_params.ndim,
         inverse=inverse,
         parallel=parallel_heuristic(parallel, values_in.size),
     )(
@@ -536,10 +609,12 @@ def moments_to_comoments(
     data: ArrayLike | DataT,
     *,
     mom: tuple[int, int],
+    mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    mom_dims_out: MomDims | None = None,
     dtype: DTypeLike = None,
     order: ArrayOrderCF = None,
-    mom_dims: MomDims | None = None,
-    mom_dims_out: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -552,19 +627,21 @@ def moments_to_comoments(
         Moments array with ``mom_ndim==1``. It is assumed that the last
         dimension is the moments dimension.
     {mom_moments_to_comoments}
-    {dtype}
-    {order_cf}
+    {mom_axes}
     {mom_dims_data}
+    {mom_params}
     mom_dims_out : tuple of str
         Moments dimensions for output (``mom_ndim=2``) data.  Defaults to ``("mom_0", "mom_1")``.
+    {dtype}
+    {order_cf}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
     Returns
     -------
     output : ndarray or DataArray
-        Co-moments array.  Same type as ``data``.
-
+        Co-moments array.  Same type as ``data``.  Note that new moment dimensions are
+        always the last dimensions.
 
     Examples
     --------
@@ -578,6 +655,16 @@ def moments_to_comoments(
     array([[10.    ,  0.5505,  0.1014],
            [ 0.5505,  0.1014, -0.0178],
            [ 0.1014, -0.0178,  0.02  ]])
+
+    Note that new moment dimensions are always last.
+
+    >>> data = cmomy.default_rng(0).random((6, 1, 2))
+    >>> a = moments_to_comoments(data, mom_axes=0, mom=(2, -1))
+    >>> a.shape
+    (1, 2, 3, 4)
+    >>> b = moments_to_comoments(np.moveaxis(data, 0, -1), mom=(2, -1))
+    >>> np.testing.assert_equal(a, b)
+
 
 
     Which is identical to
@@ -609,11 +696,14 @@ def moments_to_comoments(
 
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray(data):
-        mom_dim_in, *_ = validate_mom_dims(mom_dims, mom_ndim=1, out=data)
-        mom_dims_out = validate_mom_dims(mom_dims_out, mom_ndim=2)
+    if is_xarray_typevar(data):
+        mom_params = MomParamsXArray.factory(
+            mom_params=mom_params, ndim=1, dims=mom_dims, axes=mom_axes, data=data
+        )
+        mom_params_out = MomParamsXArray.factory(ndim=2, dims=mom_dims_out)
+        mom_dim_in = mom_params.dims[0]
 
-        if mom_dim_in in mom_dims_out:
+        if mom_dim_in in mom_params_out.dims:
             # give this a temporary name for simplicity:
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             data = data.rename({old_name: mom_dim_in})
@@ -622,7 +712,7 @@ def moments_to_comoments(
             moments_to_comoments,
             data,
             input_core_dims=[[mom_dim_in]],
-            output_core_dims=[mom_dims_out],
+            output_core_dims=[mom_params_out.dims],
             kwargs={"mom": mom, "dtype": dtype},
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
@@ -630,7 +720,7 @@ def moments_to_comoments(
                 dask="parallelized",
                 output_sizes=dict(
                     zip(
-                        mom_dims_out,
+                        mom_params_out.dims,
                         mom_to_mom_shape(
                             _validate_mom_moments_to_comoments(
                                 mom, data.sizes[mom_dim_in] - 1
@@ -646,6 +736,10 @@ def moments_to_comoments(
 
     # numpy
     data = asarray_maybe_recast(data, dtype=dtype, recast=False)
+    # make sure mom_axes are at the end...
+    mom_params = MomParamsArray.factory(mom_params=mom_params, ndim=1, axes=mom_axes)
+    data = np.moveaxis(data, mom_params.axes, -1)
+
     mom = _validate_mom_moments_to_comoments(mom, data.shape[-1] - 1)
     out = np.empty(
         (*data.shape[:-1], *mom_to_mom_shape(mom)),  # type: ignore[union-attr]
@@ -694,10 +788,12 @@ def comoments_to_moments(
 def comoments_to_moments(
     data: ArrayLike | DataT,
     *,
+    mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    mom_dims_out: MomDims | None = None,
     dtype: DTypeLike = None,
     order: ArrayOrderCF = None,
-    mom_dims: MomDims | None = None,
-    mom_dims_out: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -714,18 +810,21 @@ def comoments_to_moments(
     data : array-like or DataArray or Dataset
         Moments array with ``mom_ndim==1``. It is assumed that the last
         dimension is the moments dimension.
-    {dtype}
-    {order_cf}
+    {mom_axes}
+    {mom_params}
     {mom_dims_data}
     mom_dims_out : tuple of str
         Moments dimensions for output (``mom_ndim=1``) data.  Defaults to ``("mom_0",)``.
+    {dtype}
+    {order_cf}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
     Returns
     -------
     output : ndarray or DataArray
-        Co-moments array.  Same type as ``data``.
+        Co-moments array. Same type as ``data``. Note that the output moments
+        are in the last dimension.
 
 
     Examples
@@ -746,32 +845,43 @@ def comoments_to_moments(
     array([10.    ,  0.5505,  0.1014, -0.0178])
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray(data):
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim=2, out=data)
-        mom_dim_out, *_ = validate_mom_dims(mom_dims_out, mom_ndim=1)
-        if mom_dim_out in mom_dims:
+    if is_xarray_typevar(data):
+        mom_params = MomParamsXArray.factory(
+            mom_params=mom_params, ndim=2, axes=mom_axes, dims=mom_dims, data=data
+        )
+        mom_params_out = MomParamsXArray.factory(ndim=1, dims=mom_dims_out)
+        mom_dim_out = mom_params_out.dims[0]
+
+        if mom_dim_out in mom_params.dims:
             # give this a temporary name for simplicity:
             new_name = f"_tmp_{mom_dim_out}"
             data = data.rename({mom_dim_out: new_name})
-            mom_dims = tuple(new_name if d == mom_dim_out else d for d in mom_dims)
+            mom_params = mom_params.new_like(
+                dims=tuple(new_name if d == mom_dim_out else d for d in mom_params.dims)
+            )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             comoments_to_moments,
             data,
-            input_core_dims=[mom_dims],
+            input_core_dims=[mom_params.dims],
             output_core_dims=[[mom_dim_out]],
             kwargs={"dtype": dtype},
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes={mom_dim_out: sum(data.sizes[k] for k in mom_dims) - 1},
+                output_sizes={
+                    mom_dim_out: sum(data.sizes[k] for k in mom_params.dims) - 1
+                },
                 output_dtypes=dtype or np.float64,
             ),
         )
         return xout
 
     data = asarray_maybe_recast(data, dtype, recast=False)
+    # make sure mom_axes at end
+    mom_params = MomParamsArray.factory(mom_params=mom_params, ndim=2, axes=mom_axes)
+    data = np.moveaxis(data, mom_params.axes, (-2, -1))
 
     new_mom_len = sum(data.shape[-2:]) - 1
     val_shape: tuple[int, ...] = data.shape[:-2]
@@ -930,7 +1040,9 @@ def concat(
 
     if is_xarray(first):
         if dim is MISSING or dim is None or dim in first.dims:
-            axis, dim = select_axis_dim(first, axis=axis, dim=dim, default_axis=0)
+            axis, dim = default_mom_params_xarray.select_axis_dim(
+                first, axis=axis, dim=dim, default_axis=0
+            )
         # otherwise, assume adding a new dimension...
         return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
 

@@ -11,6 +11,10 @@ if TYPE_CHECKING:
     from . import convert, random, reduction, resample, rolling, utils  # noqa: TCH004
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TCH004
     from .convert import concat  # noqa: TCH004
+    from .core import (  # noqa: TCH004
+        MomParams,
+        MomParamsDict,
+    )
     from .random import default_rng  # noqa: TCH004
     from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TCH004
     from .resample import (  # noqa: TCH004
@@ -54,6 +58,7 @@ else:
             "utils",
         ],
         submod_attrs={
+            "core": ["MomParams", "MomParamsDict"],
             "convert": ["concat"],
             "confidence_interval": ["bootstrap_confidence_interval"],
             "random": ["default_rng"],
@@ -102,6 +107,8 @@ __all__ = [
     "CentralMomentsArray",
     "CentralMomentsData",
     "IndexSampler",
+    "MomParams",
+    "MomParamsDict",
     "__version__",
     "assign_moment",
     "bootstrap_confidence_interval",

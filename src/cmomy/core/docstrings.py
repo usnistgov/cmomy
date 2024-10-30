@@ -78,7 +78,7 @@ def _dummy_docstrings() -> None:
 
     out : ndarray
         Optional output array. If specified, output will be a reference to this
-        array.  Note that if the output if method returns a :class:`~xarray.Dataset`, then this
+        array. Note that if the output if method returns a :class:`~xarray.Dataset`, then this
         option is ignored.
     dtype : dtype
         Optional :class:`~numpy.dtype` for output data.
@@ -101,14 +101,11 @@ def _dummy_docstrings() -> None:
         If this is set to True, the axes which are reduced are left in the
         result as dimensions with size one. With this option, the result will
         broadcast correctly against the input array.
-    move_axis_to_end : bool
-        If ``True``, place sampled dimension at end (just before moments
-        dimensions) in output. Otherwise, place sampled dimension at same
-        position as input ``axis``. Note that if the result is a
-        :class:`xarray.Dataset` object, then ``move_axis_to_end = True``
-        always.
-
-
+    axes_to_end : bool
+        If ``True``, place sampled dimension (if exists in output) and moment dimensions at end of
+        output. Otherwise, place sampled dimension (if exists in output) at same position as input
+        ``axis`` and moment dimensions at same position as input (if input does
+        not contain moment dimensions, place them at end of array).
     axis : int
         Axis to reduce/sample along.
     axis_data | axis : int, optional
@@ -127,21 +124,20 @@ def _dummy_docstrings() -> None:
         value dimensions (i.e., all dimensions excluding moment dimensions).
 
 
-    sampler : array-like or IndexSampler or mapping
+    sampler : int or array-like or IndexSampler or mapping
         Passed through :func:`.resample.factory_sampler` to create an
-        :class:`~.resample.IndexSampler`. Value can either be a frequency
-        array, an :class:`~.resample.IndexSampler`, or a mapping of
-        parameters. The mapping can have form of
+        :class:`~.resample.IndexSampler`. Value can either be ``nrep`` (the
+        number of replicates), ``freq`` (frequency array), a
+        :class:`~.resample.IndexSampler` object, or a mapping of parameters.
+        The mapping can have form of
         :class:`~.core.typing.FactoryIndexSamplerKwargs`. Allowable keys are
         ``freq``, ``indices``, ``ndat``, ``nrep``, ``nsamp``, ``paired``,
         ``rng``, ``replace``, ``shuffle``.
     freq_xarray | freq : array-like, DataArray, or Dataset of int
         Array of shape ``(nrep, size)`` where `nrep` is the number of
         replicates and ``size = self.shape[axis]``. `freq` is the weight that
-        each sample contributes to resamples values. If ``freq`` is an
-        :mod:`xarray` object, it is assumed that the dimensions are in order of
-        ``(rep_dim, dim)`` where ``rep_dim`` and ``dim`` are the name of the
-        replicated and sampled dimension, respectively.
+        each sample contributes to a replicate. If ``freq`` is an
+        :mod:`xarray` object, it should have dimensions ``rep_dim`` and ``dim``.
     indices : array of int
         Array of shape ``(nrep, size)``.  If passed, create `freq` from indices.
     nrep : int
@@ -191,6 +187,18 @@ def _dummy_docstrings() -> None:
         (``mom_ndim=2``). If not specified and data is an :mod:`xarray` object
         attempt to infer ``mom_ndim`` from ``mom_dims``.
         Otherwise, default to ``mom_ndim = 1``.
+    mom_axes : int or tuple of int, optional
+        Location of the moment dimensions. Default to ``(-mom_ndim,
+        -mom_ndim+1, ...)``. If specified and ``mom_ndim`` is None, set
+        ``mom_ndim`` to ``len(mom_axes)``. Note that if ``mom_axes`` is
+        specified, negative values are relative to the end of the array. This
+        is also the case for ``axes`` if ``mom_axes`` is specified.
+    mom_params : :class:`cmomy.MomParams` or :class:`cmomy.MomParamsDict` or dict, optional
+        Moment parameters. You can set moment parameters ``axes`` and ``dims``
+        using this option. For example, passing ``mom_params={"dim": ("a",
+        "b")}`` is equivalent to passing ``mom_dims=("a", "b")``. You can also
+        pass as a :class:`cmomy.MomParams` object with
+        ``mom_params=cmomy.MomParams(dims=("a", "b"))``.
     apply_ufunc_kwargs : dict-like
         Extra parameters to :func:`xarray.apply_ufunc`. One useful option is
         ``on_missing_core_dim``, which can take the value ``"copy"`` (the

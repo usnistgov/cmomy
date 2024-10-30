@@ -87,14 +87,14 @@ conda install -c conda-forge cmomy
 >>> x = rng.random(100)
 >>> m = x.mean()
 >>> mom = np.array([((x - m) ** i).mean() for i in range(4)])
->>> c = cmomy.CentralMomentsArray.from_vals(x, mom=3, axis=0)
+>>> c = cmomy.wrap_reduce_vals(x, mom=3, axis=0)
 
 >>> np.testing.assert_allclose(c.cmom(), mom, atol=1e-8)
 >>> c.cmom()
 array([ 1.    ,  0.    ,  0.0919, -0.0061])
 
 # break up into chunks
->>> c = cmomy.CentralMomentsArray.from_vals(x.reshape(-1, 2), mom=3, axis=0)
+>>> c = cmomy.wrap_reduce_vals(x.reshape(-1, 2), mom=3, axis=0)
 
 >>> c
 <CentralMomentsArray(mom_ndim=1)>
@@ -108,7 +108,7 @@ array([ 1.    ,  0.    ,  0.0919, -0.0061])
 # unequal chunks
 >>> x0, x1, x2 = x[:20], x[20:60], x[60:]
 
->>> cs = [cmomy.CentralMomentsArray.from_vals(_, mom=3, axis=0) for _ in (x0, x1, x2)]
+>>> cs = [cmomy.wrap_reduce_vals(_, mom=3, axis=0) for _ in (x0, x1, x2)]
 
 >>> c = cs[0] + cs[1] + cs[2]
 

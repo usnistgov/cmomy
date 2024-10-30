@@ -114,7 +114,7 @@ def test_resample_vals_0(data_and_kwargs, nrep):
     freq = cmomy.resample.indices_to_freq(indices)
     np.testing.assert_allclose(
         cmomy.resample_vals(
-            *xy, sampler={"freq": freq}, weight=weight, **kwargs, move_axis_to_end=False
+            *xy, sampler={"freq": freq}, weight=weight, **kwargs, axes_to_end=False
         ),
         expected,
     )
@@ -125,7 +125,7 @@ def test_resample_vals_0(data_and_kwargs, nrep):
             weight=weight,
             sampler={"nrep": nrep, "rng": 123},
             **kwargs,
-            move_axis_to_end=False,
+            axes_to_end=False,
         ),
         expected,
     )
@@ -163,6 +163,22 @@ def test_jackknife_data_0(data_and_kwargs, pass_reduced, as_dataarray):
         expected,
     )
 
+    if pass_reduced:
+        mom_axes = tuple(range(mom_ndim))
+        data_reduced = cmomy.moveaxis(
+            kws["data_reduced"], range(-mom_ndim, 0), mom_axes
+        )
+        np.testing.assert_allclose(
+            cmomy.resample.jackknife_data(
+                data,
+                axis=axis,
+                mom_ndim=mom_ndim,
+                data_reduced=np.asarray(data_reduced),
+                mom_axes_reduced=mom_axes,
+            ),
+            expected,
+        )
+
     if as_dataarray and pass_reduced:
         # also pass in array value for data_reduced
         kws["data_reduced"] = kws["data_reduced"].to_numpy()
@@ -195,7 +211,7 @@ def test_jackknife_vals_0(data_and_kwargs, pass_reduced, as_dataarray):
     # using jackknife freq
     np.testing.assert_allclose(
         cmomy.resample_vals(
-            *xy, sampler={"freq": freq}, weight=weight, **kwargs, move_axis_to_end=False
+            *xy, sampler={"freq": freq}, weight=weight, **kwargs, axes_to_end=False
         ),
         expected,
     )
@@ -208,7 +224,7 @@ def test_jackknife_vals_0(data_and_kwargs, pass_reduced, as_dataarray):
     )
     np.testing.assert_allclose(
         cmomy.resample.jackknife_vals(
-            *xy, weight=weight, **kwargs, **kws, move_axis_to_end=False
+            *xy, weight=weight, **kwargs, **kws, axes_to_end=False
         ),
         expected,
     )
@@ -216,7 +232,7 @@ def test_jackknife_vals_0(data_and_kwargs, pass_reduced, as_dataarray):
         kws["data_reduced"] = kws["data_reduced"].to_numpy()
         np.testing.assert_allclose(
             cmomy.resample.jackknife_vals(
-                *xy, weight=weight, **kwargs, **kws, move_axis_to_end=False
+                *xy, weight=weight, **kwargs, **kws, axes_to_end=False
             ),
             expected,
         )
@@ -229,7 +245,7 @@ def test_jackknife_data_rep_dim() -> None:
         == data.dims
     )
     assert cmomy.resample.jackknife_vals(
-        data, mom=(3,), axis=0, rep_dim=None, mom_dims="mom", move_axis_to_end=False
+        data, mom=(3,), axis=0, rep_dim=None, mom_dims="mom", axes_to_end=False
     ).dims == (*data.dims, "mom")
 
 
@@ -337,8 +353,8 @@ def test_select_ndat() -> None:
     assert resample.select_ndat(data, axis=0) == 2
     assert resample.select_ndat(data, axis=-1) == 5
 
-    assert resample.select_ndat(data, axis=-1, mom_ndim=1) == 4
-    assert resample.select_ndat(data, axis=-1, mom_ndim=2) == 3
+    assert resample.select_ndat(data, axis=-1j, mom_ndim=1) == 4
+    assert resample.select_ndat(data, axis=-1j, mom_ndim=2) == 3
 
     with pytest.raises(TypeError, match="Must specify .*"):
         resample.select_ndat(data)
@@ -405,6 +421,19 @@ def test_factory_sampler() -> None:
 def test_factory_sampler_freq_from_data(expected, kwargs) -> None:
     out = resample.factory_sampler(**kwargs, nrep=10, rng=0).freq
     np.testing.assert_allclose(out, expected)
+
+
+def test_factory_sampler_freq_int() -> None:
+    data = np.zeros((10, 3))
+    freq = resample.random_freq(ndat=10, nrep=20, rng=0)
+    sampler = resample.factory_sampler(freq, data=data, axis=0)
+
+    assert sampler.freq is freq
+
+    cmomy.default_rng(0)
+    sampler = resample.factory_sampler(20, data=data, axis=0)
+
+    np.testing.assert_equal(freq, sampler.freq)
 
 
 def _check_r(r, indices, freq):

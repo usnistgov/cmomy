@@ -48,8 +48,8 @@ def test_prepare_values_for_reduction(
     with pytest.raises(ValueError, match=r"Number of arrays .*"):
         prepare.prepare_values_for_reduction(
             target,
-            y,  # type: ignore[arg-type]
-            w,  # type: ignore[arg-type]
+            y,
+            w,
             narrays=2,
             axis=axis,
             dtype=dtype,
@@ -61,8 +61,8 @@ def test_prepare_values_for_reduction(
         with pytest.raises(error):
             prepare.prepare_values_for_reduction(
                 target,
-                y,  # type: ignore[arg-type]
-                w,  # type: ignore[arg-type]
+                y,
+                w,
                 narrays=3,
                 axis=axis,
                 dtype=dtype,
@@ -71,8 +71,8 @@ def test_prepare_values_for_reduction(
     else:
         _axis, (x, y, w) = prepare.prepare_values_for_reduction(
             target,
-            y,  # type: ignore[arg-type]
-            w,  # type: ignore[arg-type]
+            y,
+            w,
             narrays=3,
             axis=axis,
             dtype=dtype,
@@ -172,59 +172,80 @@ def test_xprepare_values_for_reduction_1(
 
 
 @pytest.mark.parametrize(
-    ("kws", "expected"),
+    "data",
+    [xr.DataArray(np.zeros((2, 3, 4, 5)))],
+)
+@pytest.mark.parametrize(
+    ("kws", "mom_params_kws", "expected"),
     [
         (
             {
                 "out": None,
-                "mom_ndim": 1,
                 "axis": 0,
-                "move_axis_to_end": False,
+                "axes_to_end": False,
+            },
+            {
+                "ndim": 1,
             },
             None,
         ),
         (
             {
-                "out": np.zeros((2, 3, 4)),
-                "mom_ndim": 1,
+                "out": np.zeros((2, 3, 4, 5)),
                 "axis": 0,
-                "move_axis_to_end": False,
+                "axes_to_end": False,
             },
-            np.zeros((3, 2, 4)),
+            {
+                "ndim": 1,
+            },
+            np.zeros((3, 4, 2, 5)),
+        ),
+        (
+            {
+                "out": np.zeros((2, 3, 4, 5)),
+                "axis": 1,
+                "axes_to_end": False,
+            },
+            {
+                "axes": (0, 2),
+            },
+            np.zeros((5, 3, 2, 4)),
         ),
         (
             {
                 "out": np.zeros((2, 3, 4)),
-                "mom_ndim": 1,
                 "axis": 0,
-                "move_axis_to_end": True,
+                "axes_to_end": True,
+            },
+            {
+                "ndim": 1,
             },
             np.zeros((2, 3, 4)),
-        ),
-        (
-            {
-                "out": np.zeros((2, 3, 4)),
-                "mom_ndim": 1,
-                "axis": 0,
-                "move_axis_to_end": False,
-                "data": np.zeros((2, 3, 4)),
-            },
-            np.zeros((3, 2, 4)),
         ),
         # Silently ignore passing out value for dataset output...
         (
             {
                 "out": np.zeros((2, 3, 4)),
-                "mom_ndim": 1,
                 "axis": 0,
-                "move_axis_to_end": False,
+                "axes_to_end": False,
                 "data": xr.Dataset({"data0": xr.DataArray(np.zeros((2, 3, 4)))}),
+            },
+            {
+                "ndim": 1,
             },
             None,
         ),
     ],
 )
-def test_xprepare_out_for_resample_data(kws, expected) -> None:
+def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> None:
+    from cmomy.core.moment_params import factory_mom_params
+
+    kws = kws.copy()
+    kws.setdefault("data", data)
+    kws["mom_params"] = factory_mom_params(
+        kws["data"], mom_params=mom_params_kws, data=data
+    )
+
     func = prepare.xprepare_out_for_resample_data
     if expected is None:
         assert func(**kws) is None

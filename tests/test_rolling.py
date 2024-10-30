@@ -17,7 +17,7 @@ from cmomy.core.validate import is_dataarray
 if TYPE_CHECKING:
     from typing import TypedDict
 
-    from cmomy.core.typing import Mom_NDim, MomentsStrict, NDArrayAny, SelectMoment
+    from cmomy.core.typing import MomentsStrict, MomNDim, NDArrayAny, SelectMoment
 
     class RollingDict(TypedDict):
         window: int
@@ -37,13 +37,13 @@ def test__optional_zero_missing_weights(mom_ndim) -> None:
     data[(..., *(0,) * mom_ndim)] = np.nan
 
     # no change
-    out = rolling._optional_zero_missing_weight(data.copy(), mom_ndim, False)
+    out = rolling._optional_zero_missing_weight(data.copy(), range(-mom_ndim, 0), False)
     np.testing.assert_equal(out, data)
 
     # change
     check = data.copy()
     check[(..., *(0,) * mom_ndim)] = 0.0
-    out = rolling._optional_zero_missing_weight(data.copy(), mom_ndim, True)
+    out = rolling._optional_zero_missing_weight(data.copy(), range(-mom_ndim, 0), True)
     np.testing.assert_allclose(out, check)
 
 
@@ -175,7 +175,7 @@ def test_rolling_data(
         _do_test_select(out, name, 1, expected)
 
     # vals
-    out2 = rolling.rolling_vals(x, axis=axis, mom=3, move_axis_to_end=False, **kws)
+    out2 = rolling.rolling_vals(x, axis=axis, mom=3, axes_to_end=False, **kws)
 
     np.testing.assert_allclose(
         out,
@@ -195,7 +195,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     min_periods: int | None,
     center: bool,
     missing: bool,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
     mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # type: ignore[assignment]
@@ -345,7 +345,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     w2 = select(outc, "weight")
     w2[np.isnan(w2)] = 0.0
 
-    outc = cmomy.moveaxis(outc, 0, -1, mom_ndim=mom_ndim)
+    outc = cmomy.moveaxis(outc, 0, -1j, mom_ndim=mom_ndim)
     np.testing.assert_allclose(out, outc, atol=1e-10)
 
 
@@ -411,7 +411,7 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     adjust: bool,
     missing: bool,
     min_periods: int | None,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
     mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
@@ -546,6 +546,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         alpha=alphas.to_numpy(),
         mom_ndim=1,
         axis=axis,
+        alpha_axis=axis,
         adjust=adjust,
     )
 
@@ -560,7 +561,7 @@ def test_rolling_exp_weight(
     rng: np.random.Generator,
     adjust: bool,
     alpha: float | None,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     axis = 0
     shape = (50, 2, 3)
@@ -616,7 +617,7 @@ def test_rolling_exp_weight(
 def test_rolling_exp_multiple_alpha(
     rng: np.random.Generator,
     adjust: bool,
-    mom_ndim: Mom_NDim,
+    mom_ndim: MomNDim,
 ) -> None:
     axis = 0
     shape = (50, 2)
@@ -632,7 +633,7 @@ def test_rolling_exp_multiple_alpha(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
     )
     c = rolling.rolling_exp_data(
-        data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust
+        data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust, alpha_axis=axis
     )
     np.testing.assert_allclose(
         a,

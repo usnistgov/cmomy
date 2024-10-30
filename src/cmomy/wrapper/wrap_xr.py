@@ -8,6 +8,7 @@ import numpy as np
 import xarray as xr
 
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -19,14 +20,11 @@ from cmomy.core.validate import (
     is_xarray,
     raise_if_wrong_value,
     validate_floating_dtype,
-    validate_mom_dims_and_mom_ndim,
 )
 from cmomy.core.xr_utils import (
     astype_dtype_dict,
     contains_dims,
     factory_apply_ufunc_kwargs,
-    get_mom_shape,
-    select_axis_dim,
 )
 
 if TYPE_CHECKING:
@@ -64,11 +62,12 @@ if TYPE_CHECKING:
         Groups,
         KeepAttrs,
         MissingType,
-        Mom_NDim,
+        MomAxes,
         MomDims,
         MomDimsStrict,
         Moments,
-        MomentsStrict,
+        MomNDim,
+        MomParamsInput,
         NameType,
         NDArrayAny,
     )
@@ -86,26 +85,27 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
-class CentralMomentsData(CentralMomentsABC[DataT]):
+class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     """
     Central moments wrapper of {DataArray} or {Dataset} objects.
 
     Parameters
     ----------
     {mom_ndim_data}
+    {mom_axes}
     {mom_dims_data}
     """
 
-    __slots__ = ("_mom_dims",)
-
-    _mom_dims: MomDimsStrict
+    _mom_params: MomParamsXArray  # pyright: ignore[reportIncompatibleVariableOverride]
 
     def __init__(
         self,
         obj: DataT,
         *,
-        mom_ndim: Mom_NDim | None = None,
+        mom_ndim: MomNDim | None = None,
+        mom_axes: MomAxes | None = None,
         mom_dims: MomDims | None = None,
+        mom_params: MomParamsInput = None,
         fastpath: bool = False,
     ) -> None:
         if not is_xarray(obj):
@@ -113,26 +113,27 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             raise TypeError(msg)
 
         if fastpath:
-            self._mom_dims = cast("MomDimsStrict", mom_dims)
+            assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
         else:
-            mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-                mom_dims, mom_ndim, obj, mom_ndim_default=1
+            mom_params = MomParamsXArray.factory(
+                mom_params=mom_params,
+                ndim=mom_ndim,
+                dims=mom_dims,
+                axes=mom_axes,
+                data=obj,
+                default_ndim=1,
             )
-            self._mom_dims = mom_dims
+
+            mom_params.check_data(obj)
 
         # NOTE: Why this ignore?
-        super().__init__(obj=obj, mom_ndim=mom_ndim, fastpath=fastpath)  # type: ignore[arg-type]
+        super().__init__(obj=obj, mom_params=mom_params, fastpath=fastpath)  # type: ignore[arg-type]
 
     # ** Properties ------------------------------------------------------------
     @property
-    @docfiller_abc()
-    def mom_shape(self) -> MomentsStrict:
-        return get_mom_shape(self._obj, self._mom_dims)
-
-    @property
     def mom_dims(self) -> MomDimsStrict:
         """Moments dimension names."""
-        return self._mom_dims
+        return self._mom_params.dims
 
     # Dataset specific dict-view-like
     def as_dict(self: CentralMomentsDataset) -> dict[Hashable, CentralMomentsDataArray]:
@@ -148,12 +149,11 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         return {
             k: type(self)(  # type: ignore[misc]
                 obj,  # type: ignore[arg-type]
-                mom_ndim=self._mom_ndim,
-                mom_dims=self._mom_dims,
+                mom_params=self._mom_params,
                 fastpath=True,
             )
             for k, obj in self._obj.items()
-            if contains_dims(obj, self._mom_dims)
+            if contains_dims(obj, *self.mom_dims)
         }
 
     def items(
@@ -189,7 +189,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     def iter(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
         """Need this for proper typing with mypy..."""
         if is_dataarray(self._obj):
-            if self.ndim <= self._mom_ndim:
+            if self.ndim <= self.mom_ndim:
                 msg = "Can only iterate over wrapped DataArray with extra dimension."
                 raise ValueError(msg)
             for obj in self._obj:
@@ -235,26 +235,18 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         The selection is wrapped with ``CentralMomentsData``.
         """
         obj: xr.DataArray | xr.Dataset = self._obj[key]  # pyright: ignore[reportUnknownVariableType]
-        if not contains_dims(obj, self._mom_dims):  # pyright: ignore[reportUnknownArgumentType]
-            msg = f"Cannot select object without {self._mom_dims}"
+        if not contains_dims(obj, *self.mom_dims):  # pyright: ignore[reportUnknownArgumentType]
+            msg = f"Cannot select object without {self.mom_dims}"
             raise ValueError(msg)
-        self._raise_if_wrong_mom_shape(get_mom_shape(obj, self._mom_dims))  # pyright: ignore[reportUnknownArgumentType]
+        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))  # pyright: ignore[reportUnknownArgumentType]
+
         return type(self)(
-            obj,  # type: ignore[arg-type]
-            mom_ndim=self._mom_ndim,
-            mom_dims=self._mom_dims,
+            obj=obj,  # type: ignore[arg-type]
+            mom_params=self._mom_params,
             fastpath=True,
         )
 
     # ** Create/copy/new ------------------------------------------------------
-    def _new_like(self, obj: DataT) -> Self:
-        return type(self)(
-            obj=obj,
-            mom_ndim=self._mom_ndim,
-            mom_dims=self._mom_dims,
-            fastpath=True,
-        )
-
     @docfiller_inherit_abc()
     def new_like(  # type: ignore[override]
         self,
@@ -284,8 +276,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             # Also can probably speed this up by validating dtype here...
             return type(self)(
                 obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]
-                mom_ndim=self._mom_ndim,
-                mom_dims=self._mom_dims,
+                mom_params=self._mom_params,
                 fastpath=fastpath,
             )
 
@@ -298,10 +289,10 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             obj_ = self._obj.copy(data=obj)  # type: ignore[arg-type]
 
         # minimal check on shape and that mom_dims are present....
-        if not contains_dims(obj_, self._mom_dims):
-            msg = f"Cannot create new from object without {self._mom_dims}"
+        if not contains_dims(obj_, *self.mom_dims):
+            msg = f"Cannot create new from object without {self.mom_dims}"
             raise ValueError(msg)
-        self._raise_if_wrong_mom_shape(get_mom_shape(obj_, self._mom_dims))
+        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj_))
 
         if verify:
             raise_if_wrong_value(obj_.sizes, self._obj.sizes, "Wrong `obj.sizes`.")
@@ -315,8 +306,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
         return type(self)(
             obj=obj_,
-            mom_ndim=self._mom_ndim,
-            mom_dims=self._mom_dims,
+            mom_params=self._mom_params,
             fastpath=fastpath,
         )
 
@@ -330,8 +320,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         """
         return type(self)(
             obj=self._obj.copy(deep=deep),
-            mom_ndim=self._mom_ndim,
-            mom_dims=self._mom_dims,
+            mom_params=self._mom_params,
             fastpath=True,
         )
 
@@ -366,7 +355,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             return
 
         for name, val in self._obj.items():
-            if contains_dims(val, self._mom_dims):
+            if contains_dims(val, *self.mom_dims):
                 _ = validate_floating_dtype(val, name=name)
 
     # ** Pushing --------------------------------------------------------------
@@ -419,8 +408,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             func,
             self._obj,
             data,
-            input_core_dims=[self._mom_dims, self._mom_dims],
-            output_core_dims=[self._mom_dims],
+            input_core_dims=[self.mom_dims, self.mom_dims],
+            output_core_dims=[self.mom_dims],
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
@@ -438,6 +427,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         *,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
+        mom_axes: MomAxes | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = True,
@@ -460,19 +450,19 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             return out
 
         if is_xarray(datas):
-            axis, dim = select_axis_dim(
-                datas, axis=axis, dim=dim, mom_dims=self._mom_dims
+            axis, dim = self._mom_params.select_axis_dim(
+                datas,
+                axis=axis,
+                dim=dim,
             )
 
         else:
-            # Removed restriction that you could only pass array with wrapped DataArray.
-            # Trust the user to do what they want....
-            axis, datas = prepare_data_for_reduction(
+            axis, _, datas = prepare_data_for_reduction(
                 datas,
                 axis=axis,
-                mom_ndim=self._mom_ndim,
+                mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
                 dtype=self._dtype,
-                move_axis_to_end=True,
+                axes_to_end=True,
                 recast=False,
             )
             dim = "_dummy123"
@@ -481,8 +471,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             func,
             self._obj,
             datas,
-            input_core_dims=[self._mom_dims, [dim, *self._mom_dims]],
-            output_core_dims=[self._mom_dims],
+            input_core_dims=[self.mom_dims, [dim, *self.mom_dims]],
+            output_core_dims=[self.mom_dims],
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
@@ -510,7 +500,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         {keep_attrs}
         {apply_ufunc_kwargs}
         """
-        self._check_y(y, self._mom_ndim)
+        self._check_y(y, self.mom_ndim)
 
         def func(
             out: NDArrayAny,
@@ -573,7 +563,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 dim=dim,
                 dtype=self._dtype,
                 recast=False,
-                narrays=self._mom_ndim + 1,
+                narrays=self.mom_ndim + 1,
             )
         else:
             axis, xargs = prepare_values_for_reduction(
@@ -583,8 +573,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 axis=axis,
                 dtype=self._dtype,
                 recast=False,
-                narrays=self._mom_ndim + 1,
-                move_axis_to_end=True,
+                narrays=self.mom_ndim + 1,
+                axes_to_end=True,
             )
             dim = "_dummy123"
             input_core_dims = [[dim]] * len(xargs)
@@ -605,8 +595,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             func,
             self._obj,
             *xargs,
-            input_core_dims=[self._mom_dims, *input_core_dims],  # type: ignore[has-type]
-            output_core_dims=[self._mom_dims],
+            input_core_dims=[self.mom_dims, *input_core_dims],  # type: ignore[has-type]
+            output_core_dims=[self.mom_dims],
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
@@ -622,23 +612,23 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
     @docfiller_inherit_abc()
     def reduce(  # noqa: PLR0913
         self,
+        dim: DimsReduce | MissingType = MISSING,
         *,
         by: str | Groups | None = None,
         block: int | None = None,
+        use_map: bool | None = None,
+        group_dim: str | None = None,
+        groups: Groups | None = None,
         axis: AxisReduce | MissingType = MISSING,
-        move_axis_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
         order: ArrayOrderCF = None,
         keepdims: bool = False,
         parallel: bool | None = None,
+        axes_to_end: bool = False,
         # xarray specific
         coords_policy: CoordsPolicy = "first",
-        use_reduce: bool = False,
-        dim: DimsReduce | MissingType = MISSING,
-        group_dim: str | None = None,
-        groups: Groups | None = None,
         keep_attrs: KeepAttrs = None,
         apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     ) -> Self:
@@ -651,8 +641,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
             :class:`~xarray.DataArray`, use unique values and rename dimension
             ``by.name``. If str or Iterable of str, Create grouper from these
             named coordinates.
-        use_reduce : bool
-            If ``True``, use ``self.obj.reduce(...)``.
+        use_map : bool, optional
+            See :func:`.reduction.reduce_data`
         {coords_policy}
         {group_dim}
         {groups}
@@ -779,8 +769,8 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
             data = reduce_data(
                 self._obj,
-                mom_ndim=self._mom_ndim,
-                mom_dims=self._mom_dims,
+                mom_ndim=self.mom_ndim,
+                mom_dims=self.mom_dims,
                 axis=axis,
                 dim=dim,
                 out=out,
@@ -789,7 +779,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
                 order=order,
                 keepdims=keepdims,
                 parallel=parallel,
-                use_reduce=use_reduce,
+                use_map=use_map,
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
@@ -806,14 +796,14 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
             data = reduce_data_indexed(
                 self._obj,
-                mom_ndim=self._mom_ndim,
-                mom_dims=self._mom_dims,
+                mom_ndim=self.mom_ndim,
+                mom_dims=self.mom_dims,
                 index=index,
                 group_start=group_start,
                 group_end=group_end,
                 axis=axis,
                 dim=dim,
-                move_axis_to_end=move_axis_to_end,
+                axes_to_end=axes_to_end,
                 parallel=parallel,
                 dtype=dtype,
                 out=out,
@@ -837,12 +827,12 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
             data = reduce_data_grouped(
                 self._obj,
-                mom_ndim=self._mom_ndim,
-                mom_dims=self._mom_dims,
+                mom_ndim=self.mom_ndim,
+                mom_dims=self.mom_dims,
                 by=codes,
                 axis=axis,
                 dim=dim,
-                move_axis_to_end=move_axis_to_end,
+                axes_to_end=axes_to_end,
                 parallel=parallel,
                 dtype=dtype,
                 out=out,
@@ -951,12 +941,11 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
-        ).transpose(..., *self._mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        ).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
 
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
-            mom_ndim=self._mom_ndim,
-            mom_dims=self._mom_dims,
+            mom_params=self._mom_params,
             fastpath=True,
         )
 
@@ -993,11 +982,10 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         if is_dataarray(self._obj):
             return self  # pyright: ignore[reportReturnType]
 
-        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self._mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
         return type(self)(  # type: ignore[return-value]
             obj=obj,  # type: ignore[arg-type]
-            mom_ndim=self._mom_ndim,
-            mom_dims=self._mom_dims,
+            mom_params=self._mom_params,
             fastpath=True,
         )
 
@@ -1113,7 +1101,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         >>> import cmomy
         >>> rng = cmomy.default_rng(0)
         >>> vals = xr.DataArray(rng.random((10, 2, 3)), dims=["rec", "dim_0", "dim_1"])
-        >>> da = CentralMomentsData.from_vals(vals, mom=2, dim="rec")
+        >>> da = cmomy.wrap_reduce_vals(vals, mom=2, dim="rec")
         >>> da
         <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (dim_0: 2, dim_1: 3, mom_0: 3)> Size: 144B
@@ -1331,9 +1319,9 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         --------
         >>> import cmomy
         >>> rng = cmomy.default_rng(0)
-        >>> da = cmomy.CentralMomentsArray.from_vals(
-        ...     rng.random((10, 3)), axis=0, mom=2
-        ... ).to_x(dims="x", coords=dict(x=list("abc")))
+        >>> da = cmomy.wrap_reduce_vals(rng.random((10, 3)), axis=0, mom=2).to_x(
+        ...     dims="x", coords=dict(x=list("abc"))
+        ... )
         >>> da
         <CentralMomentsData(mom_ndim=1)>
         <xarray.DataArray (x: 3, mom_0: 3)> Size: 72B
@@ -1483,7 +1471,7 @@ class CentralMomentsData(CentralMomentsABC[DataT]):
         obj = self._obj.to_numpy()  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
         return CentralMomentsArray(
             obj.copy() if copy else obj,  # pyright: ignore[reportUnknownArgumentType]
-            mom_ndim=self._mom_ndim,
+            mom_params=self._mom_params.to_array(),
             fastpath=True,
         )
 

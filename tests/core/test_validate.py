@@ -70,6 +70,71 @@ def test_validate_mom_ndim(arg, expected, match) -> None:
 
 
 @pytest.mark.parametrize(
+    ("arg", "expected"),
+    [
+        (1, (1,)),
+        ((1,), (1,)),
+        ((1, 2), (1, 2)),
+        ([1, 2], (1, 2)),
+        (0, ValueError),
+        ([0, 1], ValueError),
+        ((_ for _ in (1, 2)), (1, 2)),
+    ],
+)
+def test_validate_mom(arg, expected) -> None:
+    _do_test(validate.validate_mom, arg, expected=expected)
+
+
+@pytest.mark.parametrize(
+    ("arg", "expected"),
+    [(0, (0,)), ((1, 2), (1, 2)), ((1, 2, 3), ValueError), ([0], (0,))],
+)
+def test_validate_mom_axes(arg, expected) -> None:
+    _do_test(validate.validate_mom_axes, arg, expected=expected)
+
+
+@pytest.mark.parametrize(
+    ("args", "expected"),
+    [
+        (
+            (1,),
+            (1, (-1,)),
+        ),
+        (
+            (2,),
+            (2, (-2, -1)),
+        ),
+        (
+            (None, 0),
+            (1, (0,)),
+        ),
+        (
+            (None, [1, 2]),
+            (2, (1, 2)),
+        ),
+        (
+            (1, [1, 2]),
+            ValueError,
+        ),
+        (
+            (2, [1, 2]),
+            (2, (1, 2)),
+        ),
+        (
+            (None, None, 1),
+            (1, (-1,)),
+        ),
+        (
+            (2, 1),
+            ValueError,
+        ),
+    ],
+)
+def test_validate_mom_ndim_and_mom_axes(args, expected) -> None:
+    _do_test(validate.validate_mom_ndim_and_mom_axes, *args, expected=expected)
+
+
+@pytest.mark.parametrize(
     ("arg", "expected", "match"),
     [
         (3, (3,), None),
@@ -85,34 +150,6 @@ def test_validate_mom_ndim(arg, expected, match) -> None:
 )
 def test_is_mom_tuple(arg, expected, match) -> None:
     _do_test(validate.validate_mom, arg, expected=expected, match=match)
-
-
-@pytest.mark.parametrize(
-    ("kws", "expected"),
-    [
-        ({"mom": 3, "mom_ndim": 1}, ((3,), 1)),
-        ({"mom": (3,), "mom_ndim": 1}, ((3,), 1)),
-        ({"mom_ndim": 1, "shape": (1, 2, 3)}, ((2,), 1)),
-        ({"mom_ndim": 2, "shape": (1, 2, 3)}, ((1, 2), 2)),
-        ({"mom_ndim": 2, "shape": (2, 3)}, ((1, 2), 2)),
-        ({"mom": (2, 2)}, ((2, 2), 2)),
-        ({"mom_ndim": 1, "shape": (2, 1)}, ValueError),
-        ({"mom_ndim": 2, "shape": (2, 1, 1)}, ValueError),
-        ({"mom_ndim": 2, "shape": (3,)}, ValueError),
-        ({"mom": 0, "mom_ndim": 1}, ValueError),
-        ({"mom": 3, "mom_ndim": 2}, ValueError),
-        ({"mom": (3, 0), "mom_ndim": 2}, ValueError),
-        ({"mom": (3, 3), "mom_ndim": 1}, ValueError),
-        ({"mom": None, "mom_ndim": None}, ValueError),
-        ({"mom": None, "mom_ndim": 1}, ValueError),
-        ({"mom": None, "mom_ndim": 2, "shape": (2,)}, ValueError),
-        ({"mom": None, "mom_ndim": 3, "shape": (2, 3, 4)}, ValueError),
-        ({"mom": (2, 2, 2), "mom_ndim": None}, ValueError),
-        ({"mom": (2, 2), "mom_ndim": 1}, ValueError),
-    ],
-)
-def test_validate_mom_and_mom_ndim(kws, expected) -> None:
-    _do_test(validate.validate_mom_and_mom_ndim, expected=expected, **kws)
 
 
 @pytest.mark.parametrize(
@@ -132,26 +169,6 @@ def test_validate_mom_and_mom_ndim(kws, expected) -> None:
 )
 def test_validate_mom_dims(args, expected):
     _do_test(validate.validate_mom_dims, *args, expected=expected)
-
-
-@pytest.mark.parametrize(
-    ("args", "expected"),
-    [
-        ((None, 1), (("mom_0",), 1)),
-        ((None, 2), (("mom_0", "mom_1"), 2)),
-        (("a", None), (("a",), 1)),
-        ((("a", "b"), None), (("a", "b"), 2)),
-        ((["a"], None), (("a",), 1)),
-        ((["a", "b"], None), (("a", "b"), 2)),
-        ((["a", "b"], 1), ValueError),
-        (("a", 2), ValueError),
-        ((("a,"), 2), ValueError),
-        ((None, None), (None, None)),
-        ((None, None, None, 1), (("mom_0",), 1)),
-    ],
-)
-def test_validate_optional_mom_dims_mom_ndim(args, expected):
-    _do_test(validate.validate_optional_mom_dims_and_mom_ndim, *args, expected=expected)
 
 
 @pytest.mark.parametrize(

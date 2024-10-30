@@ -18,6 +18,34 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.23.0 — 2024-10-30
+
+### Changed
+
+- Routines now accept `mom_axes` parameter. This allows for moment axes to be in
+  arbitrary location
+- Routines now accept `mom_params` parameter. This object contains all the logic
+  for working with moment arrays. This Also simplifies calling routines from
+  other classes/routines.
+- Update requirements, typing, and linting
+- Routines now correctly respect the `order` parameter. Passing in `None` will
+  lead to arrays that are `c` ordered when "normalized" (i.e., which have `axis`
+  and `mom_axes` at the end), which is the default behavior of
+  `numb.guvectorize`. Passing order `c` will lead to outputs that are `c`
+  ordered regardless of `mom_axes` location.
+
+- Negative axis/axes are now treated relative to the end of the array (just like
+  python lists and numpy ndarrays). To get the old behavior of counting relative
+  to the `mom_ndim`, pass in imaginary axis. For example, passing `axis=-1j`
+  with `mom_ndim=1` is equivalent to passing `axis=-2`.
+
+- renamed parameter `move_axes_to_end` to `axes_to_end`. This will lead to axes
+  being in the form `(..., *mom_axes)` if `axes` are reduced or
+  `(..., *axes, *mom_axes)` if `axes` are kept.
+
+- Applying routines to `dataset` objects now keeps correct order if
+  `axes_to_end` is `False`.
+
 ## v0.22.0 — 2024-09-28
 
 ### Changed
@@ -121,7 +149,7 @@ See the fragment files in [changelog.d]
 - Added `vals_to_data` to simplify using `_data` methods for raw values.
 - Added `jackknife_` an routines to perform jackknife analysis.
 - Update `_vals` routines to properly place the `axis` parameter in result.
-- Added `move_axis_to_end` option to most routines.
+- Added `axes_to_end` option to most routines.
 - Added `keepdims` option from `reduce_data` and `reduce_vals`
 
 ## v0.15.0 — 2024-06-21

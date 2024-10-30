@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-# if TYPE_CHECKING:
 from typing import TYPE_CHECKING, overload
 
 import numpy as np
@@ -11,13 +10,18 @@ from numpy.typing import NDArray
 
 from cmomy.core.array_utils import (
     asarray_maybe_recast,
-    axes_data_reduction,
     get_axes_from_values,
     select_dtype,
 )
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import (
+    MomParamsArray,
+    MomParamsXArray,
+    factory_mom_params,
+)
 from cmomy.core.prepare import (
+    optional_prepare_out_for_resample_data,
     prepare_data_for_reduction,
     prepare_out_from_values,
     prepare_values_for_reduction,
@@ -30,18 +34,16 @@ from cmomy.core.utils import (
 )
 from cmomy.core.validate import (
     is_dataarray,
+    is_dataset,
     is_ndarray,
     is_xarray,
+    is_xarray_typevar,
     raise_if_wrong_value,
-    validate_mom_and_mom_ndim,
-    validate_mom_dims,
-    validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim,
 )
 from cmomy.core.xr_utils import (
     factory_apply_ufunc_kwargs,
     raise_if_dataset,
-    select_axis_dim,
+    transpose_like,
 )
 from cmomy.factory import (
     factory_jackknife_data,
@@ -64,7 +66,7 @@ if TYPE_CHECKING:
         ArrayOrder,
         ArrayOrderCF,
         AxesGUFunc,
-        AxisReduce,
+        AxisReduceWrap,
         Casting,
         DataT,
         DimsReduce,
@@ -74,10 +76,12 @@ if TYPE_CHECKING:
         JackknifeValsKwargs,
         KeepAttrs,
         MissingType,
-        Mom_NDim,
+        MomAxes,
         MomDims,
         Moments,
         MomentsStrict,
+        MomNDim,
+        MomParamsInput,
         NDArrayAny,
         ResampleDataKwargs,
         ResampleValsKwargs,
@@ -141,23 +145,24 @@ def resample_data(
 
 # ** Public api
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def resample_data(
+def resample_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
     sampler: Sampler,
-    mom_ndim: Mom_NDim | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: MomNDim | None = None,
+    mom_axes: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     rep_dim: str = "rep",
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    # dask specific...
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -167,18 +172,20 @@ def resample_data(
     ----------
     {data_numpy_or_dataarray_or_dataset}
     {sampler}
-    {mom_ndim_data}
     {axis}
     {dim}
+    {mom_ndim_data}
+    {mom_axes}
+    {mom_dims_data}
+    {mom_params}
     {rep_dim}
-    {move_axis_to_end}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
+    {axes_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -200,31 +207,38 @@ def resample_data(
         axis=axis,
         dim=dim,
         mom_ndim=mom_ndim,
+        mom_axes=mom_axes,
         mom_dims=mom_dims,
+        mom_params=mom_params,
         rep_dim=rep_dim,
         parallel=parallel,
     )
 
-    if is_xarray(data):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_ndim_default=1
+    if is_xarray_typevar(data):
+        mom_params = MomParamsXArray.factory(
+            mom_params=mom_params,
+            ndim=mom_ndim,
+            axes=mom_axes,
+            dims=mom_dims,
+            data=data,
+            default_ndim=1,
         )
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
+        axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_data,
             data,
             sampler.freq,
-            input_core_dims=[[dim, *mom_dims], [rep_dim, dim]],  # type: ignore[misc]
-            output_core_dims=[[rep_dim, *mom_dims]],  # type: ignore[misc]
+            input_core_dims=[mom_params.core_dims(dim), [rep_dim, dim]],
+            output_core_dims=[mom_params.core_dims(rep_dim)],
             kwargs={
-                "mom_ndim": mom_ndim,
-                "axis": -(mom_ndim + 1),
+                "mom_params": mom_params.to_array(),
+                "axis": -(mom_params.ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_ndim,
+                    mom_params=mom_params,
                     axis=axis,
-                    move_axis_to_end=move_axis_to_end,
+                    axes_to_end=axes_to_end,
                     data=data,
                 ),
                 "dtype": dtype,
@@ -242,20 +256,30 @@ def resample_data(
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(data):
+        if not axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=data,
+                replace={dim: rep_dim},
+            )
+        elif is_dataset(xout):
+            xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")
+
+        if not axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr, misc,index,operator]
             xout = xout.transpose(*dims_order)
         return xout
 
     # Numpy
-    mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default=1)
-    axis, data = prepare_data_for_reduction(
+    axis, mom_params, data = prepare_data_for_reduction(
         data,
         axis=axis,
-        mom_ndim=mom_ndim,
+        mom_params=MomParamsArray.factory(
+            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+        ),
         dtype=None,
         recast=False,
-        move_axis_to_end=move_axis_to_end,
+        axes_to_end=axes_to_end,
     )
     freq = sampler.freq
     assert is_ndarray(freq)  # noqa: S101
@@ -263,7 +287,7 @@ def resample_data(
     return _resample_data(
         data,
         freq,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
         axis=axis,
         out=out,
         dtype=dtype,
@@ -278,7 +302,7 @@ def _resample_data(
     data: NDArrayAny,
     freq: NDArrayAny,
     *,
-    mom_ndim: Mom_NDim,
+    mom_params: MomParamsArray,
     axis: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
@@ -293,11 +317,23 @@ def _resample_data(
     # include inner core dimensions for freq
     axes = [
         (-2, -1),
-        *axes_data_reduction(mom_ndim=mom_ndim, axis=axis, out_has_axis=True),
+        *mom_params.axes_data_reduction(
+            axis=axis,
+            out_has_axis=True,
+        ),
     ]
 
+    out = optional_prepare_out_for_resample_data(
+        data=data,
+        out=out,
+        axis=axis,
+        axis_new_size=freq.shape[-2],
+        order=order,
+        dtype=dtype,
+    )
+
     return factory_resample_data(
-        mom_ndim=mom_ndim,
+        mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
         freq,
@@ -327,8 +363,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: None = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -338,8 +374,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -349,8 +385,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[ResampleValsKwargs],
@@ -360,8 +396,8 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    weight: ArrayLike | None = ...,
     sampler: Sampler,
+    weight: ArrayLike | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -373,20 +409,20 @@ def resample_vals(
 def resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    mom: Moments,
     sampler: Sampler,
+    mom: Moments,
+    axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
-    axis: AxisReduce | MissingType = MISSING,
-    move_axis_to_end: bool = True,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    rep_dim: str = "rep",
-    mom_dims: MomDims | None = None,
+    axes_to_end: bool = True,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -397,19 +433,20 @@ def resample_vals(  # noqa: PLR0913
     ----------
     {x_genarray}
     {y_genarray}
-    {mom}
     {sampler}
-    {weight_genarray}
+    {mom}
     {axis}
-    {move_axis_to_end}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
+    {rep_dim}
     {out}
     {dtype}
     {casting}
     {order_cf}
     {parallel}
-    {dim}
-    {rep_dim}
-    {mom_dims}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -417,7 +454,7 @@ def resample_vals(  # noqa: PLR0913
     -------
     out : ndarray or DataArray
         Resampled Central moments array. ``out.shape = (...,shape[axis-1], nrep, shape[axis+1], ...)``
-        where ``shape = x.shape``. and ``nrep = sampler.nrep``.  This can be overridden by setting `move_axis_to_end`.
+        where ``shape = x.shape``. and ``nrep = sampler.nrep``.  This can be overridden by setting `axes_to_end`.
 
     Notes
     -----
@@ -427,7 +464,6 @@ def resample_vals(  # noqa: PLR0913
     --------
     .resample.factory_sampler
     """
-    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
@@ -440,7 +476,10 @@ def resample_vals(  # noqa: PLR0913
         parallel=parallel,
     )
 
-    if is_xarray(x):
+    if is_xarray_typevar(x):
+        mom, xmom_params = MomParamsXArray.factory_mom(
+            mom, dims=mom_dims, mom_params=mom_params
+        )
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -449,12 +488,7 @@ def resample_vals(  # noqa: PLR0913
             dim=dim,
             dtype=dtype,
             recast=False,
-            narrays=mom_ndim + 1,
-        )
-
-        mom_dims = validate_mom_dims(
-            mom_dims=mom_dims,
-            mom_ndim=mom_ndim,
+            narrays=xmom_params.ndim + 1,
         )
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
@@ -466,17 +500,17 @@ def resample_vals(  # noqa: PLR0913
             *xargs,
             sampler.freq,
             input_core_dims=[*input_core_dims, [rep_dim, dim]],  # type: ignore[has-type]
-            output_core_dims=[[rep_dim, *mom_dims]],  # type: ignore[misc]
+            output_core_dims=[xmom_params.core_dims(rep_dim)],
             kwargs={
                 "mom": mom,
-                "mom_ndim": mom_ndim,
+                "mom_params": xmom_params.to_array(),
                 "axis_neg": -1,
                 "out": xprepare_out_for_resample_vals(
                     target=x,
                     out=out,
                     dim=dim,
-                    mom_ndim=mom_ndim,
-                    move_axis_to_end=move_axis_to_end,
+                    mom_ndim=xmom_params.ndim,
+                    axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -490,22 +524,28 @@ def resample_vals(  # noqa: PLR0913
                 dask="parallelized",
                 output_sizes={
                     rep_dim: sampler.nrep,
-                    **dict(zip(mom_dims, mom_to_mom_shape(mom))),
+                    **dict(zip(xmom_params.dims, mom_to_mom_shape(mom))),
                 },
                 output_dtypes=dtype or np.float64,
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(x):
-            dims_order = [  # type: ignore[misc]
-                *(d if d != dim else rep_dim for d in x.dims),  # type: ignore[union-attr]
-                *mom_dims,
-            ]
-            xout = xout.transpose(..., *dims_order)  # pyright: ignore[reportUnknownArgumentType]
+        if not axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                replace={dim: rep_dim},
+                append=xmom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(
+                ..., rep_dim, *xmom_params.dims, missing_dims="ignore"
+            )
 
         return xout
 
     # numpy
+    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
     axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
@@ -513,15 +553,15 @@ def resample_vals(  # noqa: PLR0913
         axis=axis,
         dtype=dtype,
         recast=False,
-        narrays=mom_ndim + 1,
-        move_axis_to_end=move_axis_to_end,
+        narrays=mom_params.ndim + 1,
+        axes_to_end=axes_to_end,
     )
 
     return _resample_vals(
         *args,
         freq=sampler.freq,
         mom=mom,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
         axis_neg=axis_neg,
         out=out,
         dtype=dtype,
@@ -537,7 +577,7 @@ def _resample_vals(
     *args: NDArrayAny,
     freq: NDArrayAny,
     mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
+    mom_params: MomParamsArray,
     axis_neg: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
@@ -558,10 +598,11 @@ def _resample_vals(
         dtype=dtype,
         order=order,
     )
+    out.fill(0.0)
 
     axes: AxesGUFunc = [
         # out
-        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
+        (axis_neg - mom_params.ndim, *mom_params.axes),
         # freq
         (-2, -1),
         # x, weight, *y
@@ -569,8 +610,8 @@ def _resample_vals(
     ]
 
     factory_resample_vals(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, size=args[0].size * mom_ndim),
+        mom_ndim=mom_params.ndim,
+        parallel=parallel_heuristic(parallel, size=args[0].size * mom_params.ndim),
     )(
         out,
         freq,
@@ -638,23 +679,25 @@ def jackknife_data(
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def jackknife_data(
+def jackknife_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     data_reduced: ArrayLike | DataT | None = None,
     *,
-    mom_ndim: Mom_NDim | None = None,
-    axis: AxisReduce | MissingType = MISSING,
+    axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
+    mom_ndim: MomNDim | None = None,
+    mom_axes: MomAxes | None = None,
+    mom_axes_reduced: MomAxes | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
     rep_dim: str | None = "rep",
-    move_axis_to_end: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrder = None,
     parallel: bool | None = None,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
-    # dask specific...
-    mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
     """
@@ -665,22 +708,27 @@ def jackknife_data(
     Parameters
     ----------
     {data_numpy_or_dataarray_or_dataset}
-    {mom_ndim_data}
-    {axis}
-    {dim}
     data_reduced : array-like or DataArray, optional
         ``data`` reduced along ``axis`` or ``dim``.  This will be calculated using
         :func:`.reduce_data` if not passed.
-    rep_dim : str, optional
-        Optionally output ``dim`` to ``rep_dim``.
-    {move_axis_to_end}
+    {axis}
+    {dim}
+    {mom_ndim_data}
+    {mom_axes}
+    mom_axes_reduced : int or sequence of int
+        Location(s) of moment dimensions in ``data_reduced``.  This option is only needed
+        if ``data_reduced`` is passed in and is an array.  Defaults to ``mom_axes``, or last dimensions
+        of ``data_reduced``.
+    {mom_dims_data}
+    {mom_params}
+    {rep_dim}
     {out}
     {dtype}
     {casting}
     {order}
     {parallel}
+    {axes_to_end}
     {keep_attrs}
-    {mom_dims_data}
     {apply_ufunc_kwargs}
 
     Returns
@@ -734,13 +782,21 @@ def jackknife_data(
 
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
-
+    mom_params = factory_mom_params(
+        data,
+        mom_params=mom_params,
+        ndim=mom_ndim,
+        axes=mom_axes,
+        dims=mom_dims,
+        data=data,
+        default_ndim=1,
+    )
     if data_reduced is None:
         from cmomy.reduction import reduce_data
 
         data_reduced = reduce_data(
             data=data,
-            mom_ndim=mom_ndim,
+            mom_params=mom_params,
             dim=dim,
             axis=axis,
             parallel=parallel,
@@ -748,19 +804,23 @@ def jackknife_data(
             dtype=dtype,
             casting=casting,
             order=order,
-            mom_dims=mom_dims,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
-            use_reduce=False,
+            axes_to_end=True,
         )
+        mom_axes_reduced = None
+
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if is_xarray(data):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, data, mom_ndim_default=1
-        )
-        axis, dim = select_axis_dim(data, axis=axis, dim=dim, mom_dims=mom_dims)
-        core_dims = [dim, *mom_dims]  # type: ignore[misc]
+    if is_xarray_typevar(data):
+        assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
+        axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
+        core_dims = mom_params.core_dims(dim)
+
+        if not is_xarray(data_reduced) and mom_axes_reduced is not None:
+            data_reduced = np.moveaxis(
+                data_reduced, mom_axes_reduced, mom_params.axes_last
+            )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_data,
@@ -769,13 +829,14 @@ def jackknife_data(
             input_core_dims=[core_dims, core_dims[1:]],
             output_core_dims=[core_dims],
             kwargs={
-                "mom_ndim": mom_ndim,
-                "axis": -(mom_ndim + 1),
+                "axis": -(mom_params.ndim + 1),
+                "mom_params": mom_params.to_array(),
+                "mom_axes_reduced": None,
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_ndim=mom_ndim,
+                    mom_params=mom_params,
                     axis=axis,
-                    move_axis_to_end=move_axis_to_end,
+                    axes_to_end=axes_to_end,
                     data=data,
                 ),
                 "dtype": dtype,
@@ -792,21 +853,27 @@ def jackknife_data(
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(data):
-            xout = xout.transpose(*data.dims)
+        if not axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=data,
+            )
+        elif is_dataset(xout):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
         return xout
 
     # numpy
-    mom_ndim = validate_mom_ndim(mom_ndim)
-    axis, data = prepare_data_for_reduction(
+    assert isinstance(mom_params, MomParamsArray)  # noqa: S101
+    axis, mom_params, data = prepare_data_for_reduction(
         data,
         axis=axis,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
         dtype=dtype,
         recast=False,
-        move_axis_to_end=move_axis_to_end,
+        axes_to_end=axes_to_end,
     )
 
     assert is_ndarray(data_reduced)  # noqa: S101
@@ -814,7 +881,8 @@ def jackknife_data(
     return _jackknife_data(
         data,
         data_reduced,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
+        mom_axes_reduced=mom_axes_reduced,
         axis=axis,
         out=out,
         dtype=dtype,
@@ -829,7 +897,8 @@ def _jackknife_data(
     data: NDArrayAny,
     data_reduced: NDArrayAny,
     *,
-    mom_ndim: Mom_NDim,
+    mom_params: MomParamsArray,
+    mom_axes_reduced: MomAxes | None,
     axis: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
@@ -841,14 +910,31 @@ def _jackknife_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    axes_data, axes_mom = axes_data_reduction(
-        mom_ndim=mom_ndim, axis=axis, out_has_axis=True
+    if mom_axes_reduced is None:
+        mom_axes_reduced = mom_params.axes_to_end().axes
+    else:
+        mom_axes_reduced = MomParamsArray.factory(
+            ndim=mom_params.ndim, axes=mom_axes_reduced
+        ).axes
+
+    axes = [
+        # data_reduce
+        mom_axes_reduced,
+        # data, out
+        *mom_params.axes_data_reduction(axis=axis, out_has_axis=True),
+    ]
+
+    out = optional_prepare_out_for_resample_data(
+        data=data,
+        out=out,
+        axis=axis,
+        axis_new_size=data.shape[axis],
+        order=order,
+        dtype=dtype,
     )
-    # add axes for data_reduced
-    axes = [axes_data[1:], axes_data, axes_mom]
 
     return factory_jackknife_data(
-        mom_ndim=mom_ndim,
+        mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
         data_reduced,
@@ -924,20 +1010,21 @@ def jackknife_vals(
 def jackknife_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    mom: Moments,
     data_reduced: ArrayLike | DataT | None = None,
+    mom: Moments,
+    axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
-    axis: AxisReduce | MissingType = MISSING,
-    move_axis_to_end: bool = True,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    rep_dim: str | None = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderCF = None,
     parallel: bool | None = None,
+    axes_to_end: bool = True,
     # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    rep_dim: str | None = "rep",
-    mom_dims: MomDims | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> xr.Dataset | xr.DataArray | NDArrayAny:
@@ -948,20 +1035,22 @@ def jackknife_vals(  # noqa: PLR0913
     ----------
     {x_genarray}
     {y_genarray}
-    {mom}
     data_reduced : array-like or DataArray, optional
         ``data`` reduced along ``axis`` or ``dim``.  This will be calculated using
         :func:`.reduce_vals` if not passed.  Same type restrictions as ``weight``.
-    {weight_genarray}
+    {mom}
     {axis}
-    {move_axis_to_end}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
+    {rep_dim}
+    {out}
+    {dtype}
+    {casting}
     {order}
     {parallel}
-    {dtype}
-    {out}
-    {dim}
-    {rep_dim}
-    {mom_dims}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -977,7 +1066,6 @@ def jackknife_vals(  # noqa: PLR0913
     -----
     {vals_resample_note}
     """
-    mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
     if data_reduced is None:
@@ -987,6 +1075,7 @@ def jackknife_vals(  # noqa: PLR0913
             x,  # pyright: ignore[reportArgumentType]
             *y,
             mom=mom,
+            mom_params=mom_params,
             weight=weight,
             axis=axis,
             parallel=parallel,
@@ -999,7 +1088,10 @@ def jackknife_vals(  # noqa: PLR0913
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if is_xarray(x):
+    if is_xarray_typevar(x):
+        mom, mom_params = MomParamsXArray.factory_mom(
+            mom_params=mom_params, mom=mom, dims=mom_dims
+        )
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
             x,
             weight,
@@ -1008,17 +1100,8 @@ def jackknife_vals(  # noqa: PLR0913
             dim=dim,
             dtype=dtype,
             recast=False,
-            narrays=mom_ndim + 1,
+            narrays=mom_params.ndim + 1,
         )
-        mom_dims = validate_mom_dims(
-            mom_dims=mom_dims, mom_ndim=mom_ndim, out=data_reduced
-        )
-        input_core_dims = [
-            # x, weight, *y,
-            *input_core_dims,  # type: ignore[has-type]
-            # data_reduced
-            mom_dims,
-        ]
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
             x, weight, *y, data_reduced = args
@@ -1028,18 +1111,18 @@ def jackknife_vals(  # noqa: PLR0913
             _func,
             *xargs,
             data_reduced,
-            input_core_dims=input_core_dims,
-            output_core_dims=[(dim, *mom_dims)],  # type: ignore[misc]
+            input_core_dims=[*input_core_dims, mom_params.dims],  # type: ignore[has-type]
+            output_core_dims=[mom_params.core_dims(dim)],
             kwargs={
                 "mom": mom,
-                "mom_ndim": mom_ndim,
+                "mom_params": mom_params.to_array(),
                 "axis_neg": -1,
                 "out": xprepare_out_for_resample_vals(
                     target=x,
                     out=out,
                     dim=dim,
-                    mom_ndim=mom_ndim,
-                    move_axis_to_end=move_axis_to_end,
+                    mom_ndim=mom_params.ndim,
+                    axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -1051,18 +1134,26 @@ def jackknife_vals(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes=dict(zip(mom_dims, mom_to_mom_shape(mom))),
+                output_sizes=dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
                 output_dtypes=dtype or np.float64,
             ),
         )
 
-        if not move_axis_to_end and is_dataarray(x):
-            xout = xout.transpose(..., *x.dims, *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        if not axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                append=mom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
         return xout
 
     # Numpy
+    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
     axis_neg, args = prepare_values_for_reduction(
         x,
         weight,
@@ -1070,17 +1161,17 @@ def jackknife_vals(  # noqa: PLR0913
         axis=axis,
         dtype=dtype,
         recast=False,
-        narrays=mom_ndim + 1,
-        move_axis_to_end=move_axis_to_end,
+        narrays=mom_params.ndim + 1,
+        axes_to_end=axes_to_end,
     )
 
     assert is_ndarray(data_reduced)  # noqa: S101
 
     return _jackknife_vals(
         *args,
-        data_reduced=data_reduced,  # pyright: ignore[reportUnknownArgumentType]
+        data_reduced=data_reduced,
         mom=mom,
-        mom_ndim=mom_ndim,
+        mom_params=mom_params,
         axis_neg=axis_neg,
         out=out,
         dtype=dtype,
@@ -1097,12 +1188,12 @@ def _jackknife_vals(
     *y: NDArrayAny,
     data_reduced: NDArrayAny,
     mom: MomentsStrict,
-    mom_ndim: Mom_NDim,
+    mom_params: MomParamsArray,
     axis_neg: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderCF,
     parallel: bool | None,
     fastpath: bool,
 ) -> NDArrayAny:
@@ -1112,23 +1203,34 @@ def _jackknife_vals(
 
     raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
     raise_if_wrong_value(
-        data_reduced.shape[-mom_ndim:],
+        data_reduced.shape[-mom_params.ndim :],
         mom_to_mom_shape(mom),
         "Wrong moment shape of data_reduced.",
     )
 
     axes: AxesGUFunc = [
         # data_reduced
-        tuple(range(-mom_ndim, 0)),
+        mom_params.axes_last,
         # x, w, *y
         *get_axes_from_values(*args, axis_neg=axis_neg),
         # out
-        (axis_neg - mom_ndim, *range(-mom_ndim, 0)),
+        (axis_neg - mom_params.ndim, *mom_params.axes),
     ]
 
+    if out is None and order is not None:
+        out = prepare_out_from_values(
+            out,
+            *args,
+            mom=mom,
+            axis_neg=axis_neg,
+            axis_new_size=x.shape[axis_neg],
+            dtype=dtype,
+            order=order,
+        )
+
     return factory_jackknife_vals(
-        mom_ndim=mom_ndim,
-        parallel=parallel_heuristic(parallel, size=args[0].size * mom_ndim),
+        mom_ndim=mom_params.ndim,
+        parallel=parallel_heuristic(parallel, size=args[0].size * mom_params.ndim),
     )(
         data_reduced,
         *args,

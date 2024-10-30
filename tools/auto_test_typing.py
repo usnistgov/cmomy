@@ -433,27 +433,6 @@ funcs_arraylike_to_class = [
 ]
 out.extend(get_list(funcs_arraylike_to_class, params_arraylike_to_class))
 
-# Because of the way these classmethods are coded, Input Any -> Any
-params_arraylike_to_class_out = [
-    ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
-    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
-    ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("arrayany", "float64", "float32", "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("any", None, "float64", "Any", "float64", "CentralMomentsArray"),
-]
-funcs_arraylike_to_class_out = [
-    ("cmomy.CentralMomentsArray.from_vals", "vals_", "group_out_", "{axis_dim}, mom=2"),
-    ("cmomy.CentralMomentsArray.from_resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, sampler=sampler"),
-    ("cmomy.CentralMomentsArray.from_raw", "data_", "transform_out_", "mom_ndim=1"),
-]
-out.extend(get_list(funcs_arraylike_to_class_out, params_arraylike_to_class_out))
-
 
 # * XArray to CentralMomentsData
 params_xarray_to_class = [
@@ -725,10 +704,10 @@ def _check_typing_sampler(
     )
 
     d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)
-    assert_type(d, IndexSampler[xr.DataArray | xr.Dataset])
+    assert_type(d, IndexSampler["xr.DataArray | xr.Dataset"])
 
-    assert_type(d.indices, xr.DataArray | xr.Dataset)
-    assert_type(d.indices, xr.DataArray | xr.Dataset)
+    assert_type(d.indices, "xr.DataArray | xr.Dataset")
+    assert_type(d.indices, "xr.DataArray | xr.Dataset")
 """)
 
 

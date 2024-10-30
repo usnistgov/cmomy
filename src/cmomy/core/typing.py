@@ -34,6 +34,13 @@ if TYPE_CHECKING:
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
+    from .moment_params import (
+        MomParams,
+        MomParamsArray,  # noqa: F401
+        MomParamsBase,
+        MomParamsDict,
+        MomParamsXArray,  # noqa: F401
+    )
     from .typing_compat import Required, TypeAlias
     from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
@@ -51,9 +58,16 @@ CentralMomentsDataAny: TypeAlias = "CentralMomentsData[Any]"
 CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
 
-CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any]")
+CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any, Any]")
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
 CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
+
+
+# * MomParams
+
+MomParamsInput = Union["MomParams", "MomParamsBase", "MomParamsDict", None]
+MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
+
 
 # * TypeVars ------------------------------------------------------------------
 #: General data set/array
@@ -110,9 +124,17 @@ NDArrayFloatingT = TypeVar("NDArrayFloatingT", bound="NDArray[np.floating[Any]]"
 # * Numpy ---------------------------------------------------------------------
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
-AxisReduce: TypeAlias = Union[int, None]
+Axes = Union[int, "tuple[int, ...]"]
+AxesWrap = Union[complex, "tuple[complex, ...]"]
+
+
+AxisReduce: TypeAlias = Optional[int]
+AxisReduceWrap: TypeAlias = Optional[complex]
+
 AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
+
 AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
+AxisReduceMultWrap: TypeAlias = Union[complex, "tuple[complex, ...]", None]
 
 # Rng
 RngTypes: TypeAlias = Union[
@@ -167,6 +189,7 @@ ArrayLikeArg = Union[
 # The above isn't working for pyright.  Just using any for now...
 NumbaType = Any
 
+
 # * Moments -------------------------------------------------------------------
 # NOTE: using the strict form for Moments
 # Passing in integer or Sequence[int] will work in almost all cases,
@@ -174,11 +197,15 @@ NumbaType = Any
 #: Moments type
 Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
-Mom_NDim = Literal[1, 2]
+MomNDim = Literal[1, 2]
+
+
+MomAxes = Moments
+MomAxesStrict = MomentsStrict
 
 # * Xarray specific stuff -----------------------------------------------------
 # fix if using autodoc typehints...
-DimsReduce: TypeAlias = Union[Hashable, None]
+DimsReduce: TypeAlias = Optional[Hashable]
 DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
 # This is what xarray uses for reduction/sampling dimensions
 Dims = Union[str, Collection[Hashable], EllipsisType, None]
@@ -253,26 +280,34 @@ class _ParallelKwargs(TypedDict, total=False):
     parallel: bool | None
 
 
-class _MomNDimOptionalKwargs(TypedDict, total=False):
-    mom_ndim: Mom_NDim | None
+class _MomNDimKwargs(TypedDict, total=False):
+    mom_ndim: MomNDim | None
+
+
+class _MomAxesKwargs(TypedDict, total=False):
+    mom_axes: MomAxes | None
 
 
 class _MomKwargs(TypedDict, total=False):
     mom: Required[Moments]
 
 
+class _MomParamsKwargs(TypedDict, total=False):
+    mom_params: MomParamsInput
+
+
 class _AxisKwargs(TypedDict, total=False):
-    axis: AxisReduce | MissingType
+    axis: AxisReduceWrap | MissingType
     dim: DimsReduce | MissingType
 
 
 class _AxisMultKwargs(TypedDict, total=False):
-    axis: AxisReduceMult | MissingType
+    axis: AxisReduceMultWrap | MissingType
     dim: DimsReduceMult | MissingType
 
 
 class _MoveAxisToEndKwargs(TypedDict, total=False):
-    move_axis_to_end: bool
+    axes_to_end: bool
 
 
 class _OrderKwargs(TypedDict, total=False):
@@ -291,8 +326,13 @@ class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
 
 
-class _DataOptionalKwargs(
-    _MomNDimOptionalKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
+class _DataKwargs(
+    _MomNDimKwargs,
+    _AxisKwargs,
+    _ReductionKwargs,
+    _ParallelKwargs,
+    _MomAxesKwargs,
+    total=False,
 ):
     pass
 
@@ -305,32 +345,36 @@ class _ValsKwargs(
 
 # ** Reduction
 class ReduceDataKwargs(
-    _MomNDimOptionalKwargs,
+    _MomNDimKwargs,
     _AxisMultKwargs,
     _ReductionKwargs,
-    _OrderKwargs,
     _ParallelKwargs,
+    _OrderKwargs,
     _KeepDimsKwargs,
+    _MomAxesKwargs,
+    _MomParamsKwargs,
+    _MoveAxisToEndKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data`"""
 
-    use_reduce: bool
+    use_map: bool | None
 
 
 class ReduceValsKwargs(
     _ValsKwargs,
     _OrderCFKwargs,
-    _KeepDimsKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""
 
 
 class ReduceDataGroupedKwargs(
-    _DataOptionalKwargs,
+    _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data_grouped`"""
@@ -340,9 +384,10 @@ class ReduceDataGroupedKwargs(
 
 
 class ReduceDataIndexedKwargs(
-    _DataOptionalKwargs,
+    _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.reduction.reduce_data_indexed`"""
@@ -359,10 +404,11 @@ class ReduceDataIndexedKwargs(
 
 # ** Resample
 class ResampleDataKwargs(
-    _DataOptionalKwargs,
+    _DataKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.resample.resample_data`"""
@@ -373,26 +419,30 @@ class ResampleValsKwargs(
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.resample.resample_vals`"""
 
 
 class JackknifeDataKwargs(
-    _DataOptionalKwargs,
+    _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
     rep_dim: str | None
+    mom_axes_reduced: MomAxes | None
 
 
 class JackknifeValsKwargs(
     _ValsKwargs,
     _MoveAxisToEndKwargs,
-    _OrderKwargs,
+    _OrderCFKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
@@ -402,9 +452,11 @@ class JackknifeValsKwargs(
 
 # ** Convert
 class WrapRawKwargs(
-    _MomNDimOptionalKwargs,
+    _MomNDimKwargs,
     _ReductionKwargs,
     _OrderKwargs,
+    _MomAxesKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.wrap_raw`"""
@@ -412,6 +464,7 @@ class WrapRawKwargs(
 
 class MomentsTypeKwargs(
     WrapRawKwargs,
+    _MoveAxisToEndKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.moments_type`"""
@@ -420,9 +473,10 @@ class MomentsTypeKwargs(
 
 
 class CumulativeKwargs(
-    _DataOptionalKwargs,
+    _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.cumulative`"""
@@ -433,6 +487,8 @@ class CumulativeKwargs(
 class MomentsToComomentsKwargs(
     _MomDimsAndApplyUFuncKwargs,
     _OrderCFKwargs,
+    _MomAxesKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters for :func:`.convert.moments_to_comoments`"""
@@ -442,8 +498,10 @@ class MomentsToComomentsKwargs(
 
 # ** Utils
 class SelectMomentKwargs(
-    _MomNDimOptionalKwargs,
+    _MomNDimKwargs,
     _MomDimsAndApplyUFuncKwargs,
+    _MomAxesKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.utils.select_moment`"""
@@ -456,6 +514,7 @@ class SelectMomentKwargs(
 class ValsToDataKwargs(
     _MomKwargs,
     _MomDimsAndApplyUFuncKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.utils.vals_to_data`"""
@@ -477,7 +536,12 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
 
 
 class RollingDataKwargs(
-    _DataOptionalKwargs, _RollingKwargs, _MoveAxisToEndKwargs, _OrderKwargs, total=False
+    _DataKwargs,
+    _RollingKwargs,
+    _MoveAxisToEndKwargs,
+    _OrderKwargs,
+    _MomParamsKwargs,
+    total=False,
 ):
     """Extra parameters to :func:`.rolling.rolling_data`"""
 
@@ -487,18 +551,22 @@ class RollingValsKwargs(
     _RollingKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
+    _MomParamsKwargs,
 ):
     """Extra parameters to :func:`.rolling.rolling_vals`"""
 
 
 class RollingExpDataKwargs(
-    _DataOptionalKwargs,
+    _DataKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.rolling.rolling_exp_data`"""
+
+    alpha_axis: AxisReduceWrap | MissingType
 
 
 class RollingExpValsKwargs(
@@ -506,6 +574,7 @@ class RollingExpValsKwargs(
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`.rolling.rolling_exp_vals`"""
@@ -513,7 +582,9 @@ class RollingExpValsKwargs(
 
 # ** Wrap
 class WrapKwargs(
-    _MomNDimOptionalKwargs,
+    _MomNDimKwargs,
+    _MomAxesKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :func:`cmomy.wrap`"""
@@ -568,13 +639,15 @@ class WrapNPReduceKwargs(
 
 class IndexSamplerFromDataKwargs(
     _AxisKwargs,
+    _MomAxesKwargs,
+    _MomParamsKwargs,
     total=False,
 ):
     """Extra parameters to :meth:`.resample.IndexSampler.from_data`"""
 
     nrep: Required[int]
     nsamp: int | None
-    mom_ndim: Mom_NDim | None
+    mom_ndim: MomNDim | None
     mom_dims: MomDims | None
     rep_dim: str
     rng: RngTypes | None
@@ -603,8 +676,8 @@ class FactoryIndexSamplerKwargs(
     {shuffle}
     """
 
-    indices: NDArrayAny | xr.DataArray | xr.Dataset | None
     freq: NDArrayAny | xr.DataArray | xr.Dataset | None
+    indices: NDArrayAny | xr.DataArray | xr.Dataset | None
     ndat: int | None
     nrep: int | None
     nsamp: int | None
@@ -616,6 +689,7 @@ class FactoryIndexSamplerKwargs(
 
 #: IndexSampler or mapping which can be converted to IndexSampler
 Sampler: TypeAlias = Union[
+    int,
     NDArrayAny,
     xr.DataArray,
     xr.Dataset,

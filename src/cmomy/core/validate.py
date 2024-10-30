@@ -18,16 +18,15 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
-    from numpy.typing import DTypeLike, NDArray
+    from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
-        AxisReduce,
-        AxisReduceMult,
+        DataT,
         MissingType,
-        Mom_NDim,
+        MomAxesStrict,
         MomDimsStrict,
-        Moments,
         MomentsStrict,
+        MomNDim,
     )
     from .typing_compat import TypeIs, TypeVar
 
@@ -40,18 +39,23 @@ def is_ndarray(x: Any) -> TypeIs[NDArray[Any]]:
     return isinstance(x, np.ndarray)
 
 
-def is_dataarray(x: Any) -> TypeIs[xr.DataArray]:
+def is_dataarray(x: object) -> TypeIs[xr.DataArray]:
     """Typeguard dataarray."""
     return isinstance(x, xr.DataArray)
 
 
-def is_dataset(x: Any) -> TypeIs[xr.Dataset]:
+def is_dataset(x: object) -> TypeIs[xr.Dataset]:
     """Typeguard dataset"""
     return isinstance(x, xr.Dataset)
 
 
-def is_xarray(x: Any) -> TypeIs[xr.Dataset | xr.DataArray]:
+def is_xarray(x: object) -> TypeIs[xr.Dataset | xr.DataArray]:
     """Typeguard xarray object"""
+    return isinstance(x, (xr.DataArray, xr.Dataset))
+
+
+def is_xarray_typevar(x: ArrayLike | DataT) -> TypeIs[DataT]:
+    """Typeguard ``DataT`` typevar against array-like."""
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
@@ -65,7 +69,7 @@ def raise_if_wrong_value(value: T, expected: T, message: str | None = None) -> N
 
 
 # * Moment validation ---------------------------------------------------------
-def is_mom_ndim(mom_ndim: int | None) -> TypeIs[Mom_NDim]:
+def is_mom_ndim(mom_ndim: int | None) -> TypeIs[MomNDim]:
     """Validate mom_ndim."""
     return mom_ndim in {1, 2}
 
@@ -76,8 +80,8 @@ def is_mom_tuple(mom: tuple[int, ...]) -> TypeIs[MomentsStrict]:
 
 
 def validate_mom_ndim(
-    mom_ndim: int | None, mom_ndim_default: Mom_NDim | None = None
-) -> Mom_NDim:
+    mom_ndim: int | None, mom_ndim_default: MomNDim | None = None
+) -> MomNDim:
     """Raise error if mom_ndim invalid."""
     if is_mom_ndim(mom_ndim):
         return mom_ndim
@@ -109,60 +113,18 @@ def validate_mom(mom: int | Iterable[int]) -> MomentsStrict:
     raise ValueError(msg)
 
 
-@docfiller.decorate
-def validate_mom_and_mom_ndim(
-    *,
-    mom: Moments | None = None,
-    mom_ndim: int | None = None,
-    shape: tuple[int, ...] | None = None,
-) -> tuple[MomentsStrict, Mom_NDim]:
-    """
-    Validate mom and mom_ndim to optional shape.
+def validate_mom_axes(mom_axes: int | Iterable[int]) -> MomAxesStrict:
+    """Validate mom_axes"""
+    if isinstance(mom_axes, int):
+        return (mom_axes,)
 
-    Parameters
-    ----------
-    {mom}
-    {mom_ndim}
-    shape: target shape, optional
-        This can be used to infer the ``mom`` from ``shape[-mom_ndim:]``
+    if not isinstance(mom_axes, tuple):
+        mom_axes = tuple(mom_axes)
 
-    Returns
-    -------
-    mom : tuple of int
-        Moments tuple.
-    mom_ndim: int
-        moment ndim.
+    if len(mom_axes) in {1, 2}:
+        return cast("MomAxesStrict", mom_axes)
 
-    Examples
-    --------
-    >>> validate_mom_and_mom_ndim(mom=1)
-    ((1,), 1)
-    >>> validate_mom_and_mom_ndim(mom=(2, 2))
-    ((2, 2), 2)
-    >>> validate_mom_and_mom_ndim(mom_ndim=1, shape=(3, 3))
-    ((2,), 1)
-    """
-    if mom is not None and mom_ndim is not None:
-        mom_ndim = validate_mom_ndim(mom_ndim)
-        mom = validate_mom(mom)
-        if len(mom) != mom_ndim:
-            msg = f"{len(mom)=} != {mom_ndim=}"
-            raise ValueError(msg)
-        return mom, mom_ndim
-
-    if mom is None and mom_ndim is not None and shape is not None:
-        mom_ndim = validate_mom_ndim(mom_ndim)
-        if len(shape) < mom_ndim:
-            raise ValueError
-        mom = validate_mom(tuple(x - 1 for x in shape[-mom_ndim:]))
-        return mom, mom_ndim
-
-    if mom is not None and mom_ndim is None:
-        mom = validate_mom(mom)
-        mom_ndim = validate_mom_ndim(len(mom))
-        return mom, mom_ndim
-
-    msg = "Must specify either mom, mom and mom_ndim, or shape and mom_ndim"
+    msg = f"{mom_axes=} must be an integer, or tuple of integers of length 1 or 2."
     raise ValueError(msg)
 
 
@@ -213,10 +175,30 @@ def validate_not_none(x: T | None, name: str = "value") -> T:
     return x
 
 
+def validate_mom_ndim_and_mom_axes(
+    mom_ndim: int | None,
+    mom_axes: int | Sequence[int] | None = None,
+    mom_ndim_default: MomNDim | None = None,
+) -> tuple[MomNDim, MomAxesStrict]:
+    """Validate ``mom_ndim`` and ``mom_axes``."""
+    if mom_axes is None:
+        mom_ndim = validate_mom_ndim(mom_ndim, mom_ndim_default)
+        mom_axes = cast("MomAxesStrict", tuple(range(-mom_ndim, 0)))
+        return mom_ndim, mom_axes
+
+    mom_axes = validate_mom_axes(mom_axes)
+    if mom_ndim is None:
+        mom_ndim = cast("MomNDim", len(mom_axes))
+    elif len(mom_axes) != mom_ndim:
+        msg = f"{len(mom_axes)=} != {mom_ndim=}"
+        raise ValueError(msg)
+    return cast("MomNDim", mom_ndim), mom_axes
+
+
 # * Validate Axis -------------------------------------------------------------
-def validate_axis(axis: AxisReduce | MissingType) -> int:
+def validate_axis(axis: T | None | MissingType) -> T:
     """
-    Validate that axis is an integer.
+    Validate that axis is an integer
 
     In the future, will allow axis to be None also.
     """
@@ -226,7 +208,9 @@ def validate_axis(axis: AxisReduce | MissingType) -> int:
     return axis
 
 
-def validate_axis_mult(axis: AxisReduceMult | MissingType) -> AxisReduceMult:
+def validate_axis_mult(
+    axis: T | tuple[T, ...] | None | MissingType,
+) -> T | tuple[T, ...] | None:
     """Validate that axis is specified."""
     if axis is MISSING:
         msg = f"Must specify axis. Received {axis=}."
@@ -237,8 +221,9 @@ def validate_axis_mult(axis: AxisReduceMult | MissingType) -> AxisReduceMult:
 # * DataArray -----------------------------------------------------------------
 def validate_mom_dims(
     mom_dims: Hashable | Sequence[Hashable] | None,
-    mom_ndim: Mom_NDim,
-    out: Any = None,
+    mom_ndim: MomNDim,
+    out: object = None,
+    mom_axes: MomAxesStrict | None = None,
 ) -> MomDimsStrict:
     """Validate mom_dims to correct form."""
     if mom_dims is None:
@@ -247,7 +232,8 @@ def validate_mom_dims(
             out = out[next(iter(out))]
 
         if is_dataarray(out):
-            return cast("MomDimsStrict", out.dims[-mom_ndim:])
+            _axes = range(-mom_ndim, 0) if mom_axes is None else mom_axes
+            return cast("MomDimsStrict", tuple(out.dims[a] for a in _axes))
 
         if mom_ndim == 1:
             return ("mom_0",)
@@ -271,13 +257,14 @@ def validate_mom_dims(
 def validate_mom_dims_and_mom_ndim(
     mom_dims: Hashable | Sequence[Hashable] | None,
     mom_ndim: int | None,
-    out: Any = None,
+    out: object = None,
     mom_ndim_default: int | None = None,
-) -> tuple[MomDimsStrict, Mom_NDim]:
+    mom_axes: int | Sequence[int] | None = None,
+) -> tuple[MomDimsStrict, MomNDim]:
     """Validate mom_dims and mom_ndim."""
-    if mom_ndim is not None:
-        mom_ndim = validate_mom_ndim(mom_ndim)
-        mom_dims = validate_mom_dims(mom_dims, mom_ndim, out)
+    if mom_ndim is not None or mom_axes is not None:
+        mom_ndim, mom_axes = validate_mom_ndim_and_mom_axes(mom_ndim, mom_axes)
+        mom_dims = validate_mom_dims(mom_dims, mom_ndim, out, mom_axes=mom_axes)
         return mom_dims, mom_ndim
 
     if mom_dims is not None:
@@ -285,7 +272,7 @@ def validate_mom_dims_and_mom_ndim(
             "MomDimsStrict",
             (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]
         )
-        mom_ndim = validate_mom_ndim(len(mom_dims))
+        mom_ndim = validate_mom_ndim(len(mom_dims), mom_axes)
         return mom_dims, mom_ndim
 
     if mom_ndim_default is not None:
@@ -293,15 +280,3 @@ def validate_mom_dims_and_mom_ndim(
 
     msg = "Must specify at least one of mom_dims or mom_ndim"
     raise ValueError(msg)
-
-
-def validate_optional_mom_dims_and_mom_ndim(
-    mom_dims: Hashable | Sequence[Hashable] | None,
-    mom_ndim: int | None,
-    out: Any = None,
-    mom_ndim_default: int | None = None,
-) -> tuple[MomDimsStrict | None, Mom_NDim | None]:
-    """Validate optional mom_dims and mom_ndim"""
-    if mom_dims is None and mom_ndim is None and mom_ndim_default is None:
-        return None, None
-    return validate_mom_dims_and_mom_ndim(mom_dims, mom_ndim, out, mom_ndim_default)
