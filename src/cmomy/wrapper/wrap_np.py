@@ -9,10 +9,10 @@ import xarray as xr
 
 from cmomy.core.array_utils import (
     arrayorder_to_arrayorder_cf,
-    axes_data_reduction,
 )
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.missing import MISSING
+from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -23,11 +23,10 @@ from cmomy.core.validate import (
     raise_if_wrong_value,
     validate_axis,
     validate_floating_dtype,
-    validate_mom_and_mom_ndim,
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
+    from collections.abc import Iterator, Sequence
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike
@@ -48,10 +47,11 @@ if TYPE_CHECKING:
         FloatT_,
         Groups,
         MissingType,
-        Mom_NDim,
+        MomAxes,
         MomDims,
         Moments,
-        MomentsStrict,
+        MomNDim,
+        MomParamsInput,
         NameType,
         NDArrayAny,
         Sampler,
@@ -65,7 +65,7 @@ if TYPE_CHECKING:
 from numpy.typing import NDArray
 
 from cmomy.core.docstrings import docfiller_central as docfiller
-from cmomy.core.typing import FloatT
+from cmomy.core.typing import AxisReduceWrap, FloatT, MomAxesStrict
 
 from .wrap_abc import CentralMomentsABC
 
@@ -74,27 +74,36 @@ docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
 @docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
-class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]):  # type: ignore[type-var]
+class CentralMomentsArray(
+    CentralMomentsABC[NDArray[FloatT], MomParamsArray],  # type: ignore[type-var]
+    Generic[FloatT],
+):
     r"""
     Central moments wrapper of {ndarray} arrays.
 
     Parameters
     ----------
+    {mom_ndim_data}
+    {mom_axes}
     {copy}
     {order}
     {dtype}
 
     """
 
+    _mom_params: MomParamsArray  # pyright: ignore[reportIncompatibleVariableOverride]
+
     @overload
     def __init__(
         self,
         obj: ArrayLikeArg[FloatT],
         *,
-        mom_ndim: Mom_NDim | None = ...,
+        mom_ndim: MomNDim | None = ...,
+        mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: None = ...,
         order: ArrayOrder = ...,
+        mom_params: MomParamsInput = ...,
         fastpath: bool = ...,
     ) -> None: ...
     @overload
@@ -102,10 +111,12 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         obj: ArrayLike,
         *,
-        mom_ndim: Mom_NDim | None = ...,
+        mom_ndim: MomNDim | None = ...,
+        mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: DTypeLikeArg[FloatT],
         order: ArrayOrder = ...,
+        mom_params: MomParamsInput = ...,
         fastpath: bool = ...,
     ) -> None: ...
     @overload
@@ -113,10 +124,12 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         obj: ArrayLike,
         *,
-        mom_ndim: Mom_NDim | None = ...,
+        mom_ndim: MomNDim | None = ...,
+        mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrder = ...,
+        mom_params: MomParamsInput = ...,
         fastpath: bool = ...,
     ) -> None: ...
 
@@ -124,34 +137,50 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         obj: ArrayLike,
         *,
-        mom_ndim: Mom_NDim | None = None,
+        mom_ndim: MomNDim | None = None,
+        mom_axes: MomAxes | None = None,
         copy: bool | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrder = None,
+        mom_params: MomParamsInput = None,
         fastpath: bool = False,
     ) -> None:
-        if not fastpath:
+        if fastpath:
+            if not is_ndarray(obj):
+                msg = f"Must pass ndarray as data.  Not {type(obj)=}"
+                raise TypeError(msg)
+            assert isinstance(mom_params, MomParamsArray)  # noqa: S101
+
+        else:
             obj = np.array(
                 obj,
                 dtype=dtype,
                 copy=copy_if_needed(copy),
                 order=order,
             )
-        elif not is_ndarray(obj):
-            msg = f"Must pass ndarray as data.  Not {type(obj)=}"
-            raise TypeError(msg)
+
+            mom_params = MomParamsArray.factory(
+                mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+            )
+            mom_params.check_data(obj)
+
+            # NOTE: too much of a pain to allow arbitrary mom_axes right now.
+            # Would have to add special checks to moveaxis, reshape, reduce, etc
+            mom_params_end = mom_params.axes_to_end()
+            if mom_params.axes != mom_params_end.axes:
+                obj = np.moveaxis(obj, mom_params.axes, mom_params_end.axes)
+                mom_params = mom_params_end
 
         super().__init__(
             obj,
-            mom_ndim=mom_ndim,
+            mom_params=mom_params,
             fastpath=fastpath,
         )
 
     # ** Properties ------------------------------------------------------------
     @property
-    @docfiller_abc()
-    def mom_shape(self) -> MomentsStrict:
-        return self._obj.shape[-self._mom_ndim :]  # type: ignore[return-value]
+    def mom_axes(self) -> MomAxesStrict:
+        return self._mom_params.axes
 
     # Reimplement to get dtype correct
     @property
@@ -168,7 +197,9 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         If you want to extract data in general, use `self.to_values()[....]`.
         """
         obj = self.obj[key]
-        self._raise_if_wrong_mom_shape(obj.shape[-self._mom_ndim :])
+        self._raise_if_wrong_mom_shape(
+            self._mom_params.get_mom_shape(obj),
+        )
         return self._new_like(obj)
 
     def to_numpy(self) -> NDArray[FloatT]:
@@ -179,13 +210,6 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             yield self[k]
 
     # ** Create/copy/new ------------------------------------------------------
-    def _new_like(self, obj: NDArray[FloatT]) -> Self:
-        return type(self)(
-            obj=obj,
-            mom_ndim=self._mom_ndim,
-            fastpath=True,
-        )
-
     @overload
     def new_like(
         self,
@@ -249,27 +273,27 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMomentsArray.from_vals(rng.random(10), mom=3, axis=0)
+        >>> import cmomy
+        >>> rng = cmomy.default_rng(0)
+        >>> da = CentralMomentsArray(rng.random(4))
         >>> da
         <CentralMomentsArray(mom_ndim=1)>
-        array([10.    ,  0.5505,  0.1014, -0.0178])
+        array([0.637 , 0.2698, 0.041 , 0.0165])
 
-        >>> da2 = da.new_like().zero()
+        >>> da2 = da.new_like()
         >>> da2
         <CentralMomentsArray(mom_ndim=1)>
         array([0., 0., 0., 0.])
 
-        >>> da
+        >>> da.new_like([1, 2, 3, 4], dtype=np.float32)
         <CentralMomentsArray(mom_ndim=1)>
-        array([10.    ,  0.5505,  0.1014, -0.0178])
+        array([1., 2., 3., 4.], dtype=float32)
         """
         if obj is None:
             obj = np.zeros_like(self.obj, dtype=dtype)
         else:
             obj = np.asarray(obj, dtype=dtype)
-            self._raise_if_wrong_mom_shape(obj.shape[-self.mom_ndim :])
+            self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))
             if verify:
                 raise_if_wrong_value(
                     obj.shape,
@@ -280,9 +304,9 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         return type(self)(
             obj=obj,
             copy=copy,
-            mom_ndim=self.mom_ndim,
             dtype=dtype,
             order=order,
+            mom_params=self._mom_params,
             fastpath=fastpath,
         )
 
@@ -365,7 +389,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is equivalent to
 
-        >>> CentralMomentsArray.from_vals(xs.reshape(-1), mom=2, axis=0)
+        >>> cmomy.wrap_reduce_vals(xs.reshape(-1), mom=2, axis=0)
         <CentralMomentsArray(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
 
@@ -393,6 +417,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         datas: ArrayLike,
         *,
         axis: AxisReduce = -1,
+        mom_axes: MomAxes | None = None,
         casting: Casting = "same_kind",
         parallel: bool | None = None,
     ) -> Self:
@@ -411,23 +436,23 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is equivalent to
 
-        >>> CentralMomentsArray.from_vals(xs.reshape(-1), mom=2, axis=0)
+        >>> cmomy.wrap_reduce_vals(xs.reshape(-1), mom=2, axis=0)
         <CentralMomentsArray(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
-        axis, datas = prepare_data_for_reduction(
+        axis, _, datas = prepare_data_for_reduction(
             data=datas,
             axis=axis,
-            mom_ndim=self._mom_ndim,
+            mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
             dtype=self.dtype,
             recast=False,
+            axes_to_end=True,
         )
-        axes = axes_data_reduction(mom_ndim=self._mom_ndim, axis=axis)
 
         self._pusher(parallel, size=datas.size).datas(
             datas,
             self._obj,
-            axes=axes,
+            axes=self._mom_params.axes_data_reduction(axis=axis),
             casting=casting,
             signature=(self.dtype, self.dtype),
         )
@@ -469,7 +494,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is the same as
 
-        >>> CentralMomentsArray.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        >>> cmomy.wrap_reduce_vals(x, y, weight=w, mom=(2, 2), axis=0)
         <CentralMomentsArray(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
@@ -480,7 +505,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        self._check_y(y, self._mom_ndim)
+        self._check_y(y, self.mom_ndim)
         self._pusher(parallel, size=self._obj.size).val(
             self._obj,
             x,
@@ -524,7 +549,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Which is the same as
 
-        >>> CentralMomentsArray.from_vals(x, y, weight=w, mom=(2, 2), axis=0)
+        >>> cmomy.wrap_reduce_vals(x, y, weight=w, mom=(2, 2), axis=0)
         <CentralMomentsArray(mom_ndim=2)>
         array([[[ 5.4367e+00,  6.0656e-01,  9.9896e-02],
                 [ 6.4741e-01,  3.3791e-02, -5.1117e-03],
@@ -542,7 +567,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
             axis=axis,
             dtype=self.dtype,
             recast=False,
-            narrays=self._mom_ndim + 1,
+            narrays=self.mom_ndim + 1,
         )
 
         self._pusher(parallel, size=self._obj.size).vals(
@@ -590,7 +615,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         *,
         axis: AxisReduce | MissingType = MISSING,
-        move_axis_to_end: bool = False,
+        axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -599,7 +624,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     ) -> NDArrayAny:
         return super().cumulative(
             axis=axis,
-            move_axis_to_end=move_axis_to_end,
+            axes_to_end=axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -690,7 +715,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         axis: AxisReduce | MissingType = -1,
         sampler: Sampler,
-        move_axis_to_end: bool = False,
+        axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -724,7 +749,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         return super().resample_and_reduce(
             axis=axis,
             sampler=sampler,
-            move_axis_to_end=move_axis_to_end,
+            axes_to_end=axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -775,7 +800,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         *,
         data_reduced: ArrayLike | None = None,
         axis: AxisReduce | MissingType = -1,
-        move_axis_to_end: bool = False,
+        axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -785,7 +810,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         return super().jackknife_and_reduce(
             data_reduced=data_reduced,  # type: ignore[arg-type]
             axis=axis,
-            move_axis_to_end=move_axis_to_end,
+            axes_to_end=axes_to_end,
             out=out,
             dtype=dtype,
             casting=casting,
@@ -830,11 +855,11 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
     @docfiller_inherit_abc()
     def reduce(
         self,
+        axis: AxisReduce | MissingType = MISSING,
         *,
         by: Groups | None = None,
         block: int | None = None,
-        axis: AxisReduce | MissingType = MISSING,
-        move_axis_to_end: bool = False,
+        axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
@@ -850,7 +875,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
             obj = reduce_data(
                 self._obj,
-                mom_ndim=self._mom_ndim,
+                mom_params=self._mom_params,
                 axis=axis,
                 out=out,
                 dtype=dtype,
@@ -864,10 +889,10 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
             obj = reduce_data_grouped(
                 self._obj,
-                mom_ndim=self._mom_ndim,
+                mom_params=self._mom_params,
                 by=by,
                 axis=axis,
-                move_axis_to_end=move_axis_to_end,
+                axes_to_end=axes_to_end,
                 out=out,
                 dtype=dtype,
                 casting=casting,
@@ -883,7 +908,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
+        val_shape: int | Sequence[int] | None = ...,
         dtype: None = ...,
         order: ArrayOrderCF = ...,
     ) -> CentralMomentsArray[np.float64]: ...
@@ -893,7 +918,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
+        val_shape: int | Sequence[int] | None = ...,
         dtype: DTypeLikeArg[FloatT_],
         order: ArrayOrderCF = ...,
     ) -> CentralMomentsArray[FloatT_]: ...
@@ -903,7 +928,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = ...,
+        val_shape: int | Sequence[int] | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrderCF = ...,
     ) -> Self: ...
@@ -914,7 +939,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         cls,
         *,
         mom: Moments,
-        val_shape: tuple[int, ...] | int | None = None,
+        val_shape: int | Sequence[int] | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
     ) -> CentralMomentsArrayAny | Self:
@@ -926,20 +951,17 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         {dtype}
         {order}
         """
-        mom, mom_ndim = validate_mom_and_mom_ndim(mom=mom, mom_ndim=None)
+        mom, mom_params = MomParamsArray.factory_mom(mom)
 
-        vshape: tuple[int, ...]
         if val_shape is None:
-            vshape = ()
+            val_shape = ()
         elif isinstance(val_shape, int):
-            vshape = (val_shape,)
-        else:
-            vshape = val_shape
+            val_shape = (val_shape,)
 
         # add in moments
-        shape: tuple[int, ...] = (*vshape, *mom_to_mom_shape(mom))
+        shape: tuple[int, ...] = (*val_shape, *mom_to_mom_shape(mom))  # type: ignore[misc]
 
-        return cls(np.zeros(shape, dtype=dtype, order=order), mom_ndim=mom_ndim)
+        return cls(np.zeros(shape, dtype=dtype, order=order), mom_params=mom_params)
 
     # ** Custom for this class -------------------------------------------------
     def _raise_if_scalar(self, message: str | None = None) -> None:
@@ -980,9 +1002,9 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         Examples
         --------
-        >>> from cmomy.random import default_rng
-        >>> rng = default_rng(0)
-        >>> da = CentralMomentsArray.from_vals(rng.random((10, 2, 3)), mom=2, axis=0)
+        >>> import cmomy
+        >>> rng = cmomy.default_rng(0)
+        >>> da = cmomy.wrap_reduce_vals(rng.random((10, 2, 3)), mom=2, axis=0)
         >>> da
         <CentralMomentsArray(mom_ndim=1)>
         array([[[10.    ,  0.5205,  0.0452],
@@ -1013,7 +1035,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
         self,
         indices: ArrayLike,
         *,
-        axis: AxisReduce = -1,
+        axis: AxisReduceWrap = -1,
         last: bool = False,
     ) -> Self:
         """
@@ -1041,7 +1063,10 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         """
         self._raise_if_scalar()
-        axis = validate_axis(axis)
+
+        axis = self._mom_params.normalize_axis_index(
+            validate_axis(axis), self._obj.ndim
+        )
 
         obj = self.obj
         last_dim = obj.ndim - self.mom_ndim - 1
@@ -1201,8 +1226,7 @@ class CentralMomentsArray(CentralMomentsABC[NDArray[FloatT]], Generic[FloatT]): 
 
         return CentralMomentsData(
             obj=out,
-            mom_ndim=self._mom_ndim,
-            mom_dims=out.dims[-self._mom_ndim :],
+            mom_params=MomParamsXArray.factory(ndim=self.mom_ndim, data=out),
             fastpath=True,
         )
 

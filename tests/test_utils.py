@@ -16,7 +16,7 @@ from cmomy.core.validate import is_dataarray, is_ndarray
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
 
-    from cmomy.core.typing import Mom_NDim, NDArrayAny
+    from cmomy.core.typing import MomNDim, NDArrayAny
 
 
 def _do_test(func, *args, expected=None, match=None, **kwargs):
@@ -37,10 +37,16 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
     ("kws", "expected"),
     [
         ({"axis": 0, "dest": -1, "mom_ndim": None}, (2, 3, 4, 1)),
-        ({"axis": 0, "dest": -1, "mom_ndim": 1}, (2, 3, 1, 4)),
-        ({"axis": 0, "dest": -1, "mom_ndim": 2}, (2, 1, 3, 4)),
-        ({"axis": (1, 0), "dest": (-2, -1), "mom_ndim": 1}, (3, 2, 1, 4)),
-        ({"axis": (1, 0), "dest": (-2,), "mom_ndim": 1}, ValueError),
+        ({"axis": 0, "dest": -1, "mom_ndim": 1}, ValueError),
+        ({"axis": 0, "dest": -1j, "mom_ndim": 1}, (2, 3, 1, 4)),
+        ({"axis": 0, "dest": -1j, "mom_ndim": 2}, (2, 1, 3, 4)),
+        ({"axis": (1, 0), "dest": (-2j, -1j), "mom_ndim": 1}, (3, 2, 1, 4)),
+        ({"axis": (1, 0), "dest": (-2j,), "mom_ndim": 1}, ValueError),
+        # move axes
+        ({"axes_to_end": True}, (1, 2, 3, 4)),
+        ({"mom_axes": (1, 2), "axes_to_end": True}, (1, 4, 2, 3)),
+        ({"axis": 0, "mom_ndim": 1, "axes_to_end": True}, (2, 3, 1, 4)),
+        ({"axis": -1, "mom_axes": (2, 0), "axes_to_end": True}, (2, 4, 3, 1)),
     ],
 )
 def test_moveaxis(x, kws, expected, func):
@@ -51,11 +57,11 @@ def test_moveaxis(x, kws, expected, func):
 @pytest.mark.parametrize(
     ("kws", "expected"),
     [
-        ({"dim": "dim_0", "dest": -1, "mom_ndim": None}, (2, 3, 4, 1)),
-        ({"dim": "dim_0", "dest": -1, "mom_ndim": 1}, (2, 3, 1, 4)),
-        ({"dim": "dim_0", "dest": -1, "mom_ndim": 2}, (2, 1, 3, 4)),
-        ({"dim": ("dim_1", "dim_0"), "dest": (-2, -1), "mom_ndim": 1}, (3, 2, 1, 4)),
-        ({"dim": ("dim_1", "dim_0"), "dest": (-2,), "mom_ndim": 1}, ValueError),
+        ({"dim": "dim_0", "dest": -1j, "mom_ndim": None}, (2, 3, 4, 1)),
+        ({"dim": "dim_0", "dest": -1j, "mom_ndim": 1}, (2, 3, 1, 4)),
+        ({"dim": "dim_0", "dest": -1j, "mom_ndim": 2}, (2, 1, 3, 4)),
+        ({"dim": ("dim_1", "dim_0"), "dest": (-2j, -1j), "mom_ndim": 1}, (3, 2, 1, 4)),
+        ({"dim": ("dim_1", "dim_0"), "dest": (-2j,), "mom_ndim": 1}, ValueError),
         ({"dim": "dim_0", "dest_dim": "dim_3", "mom_ndim": None}, (2, 3, 4, 1)),
         ({"dim": "dim_0", "dest_dim": "dim_2", "mom_ndim": 1}, (2, 3, 1, 4)),
         ({"dim": "dim_0", "dest_dim": "dim_1", "mom_ndim": 2}, (2, 1, 3, 4)),
@@ -64,6 +70,12 @@ def test_moveaxis(x, kws, expected, func):
             (3, 2, 1, 4),
         ),
         ({"dim": ("dim_1", "dim_0"), "dest_dim": "dim_2", "mom_ndim": 1}, ValueError),
+        # move axes to ends
+        ({"mom_dims": ("dim_3", "dim_0"), "axes_to_end": True}, (2, 3, 4, 1)),
+        (
+            {"mom_dims": "dim_2", "dim": ("dim_1", "dim_0"), "axes_to_end": True},
+            (4, 2, 1, 3),
+        ),
     ],
 )
 @pytest.mark.parametrize(
@@ -414,6 +426,28 @@ def test_assign_moment_multiple(data, mom_ndim, wrapper, moment) -> None:
         xr.testing.assert_allclose(expected, out)
 
 
+def test_select_moment_mom_axes(rng) -> None:
+    data = rng.random((10, 2, 3, 4))
+
+    data_move = cmomy.moveaxis(data, (-2, -1), (1, 2))
+
+    a = cmomy.select_moment(data, "ave", mom_ndim=2)
+    b = cmomy.select_moment(data_move, "ave", mom_axes=(1, 2))
+
+    np.testing.assert_equal(a, b)
+
+
+def test_assign_moment_mom_axes(rng) -> None:
+    data = rng.random((10, 2, 3, 4))
+
+    data_move = cmomy.moveaxis(data, (-2, -1), (1, 2))
+
+    a = cmomy.assign_moment(data, ave=0, mom_ndim=2)
+    b = cmomy.assign_moment(data_move, ave=0, mom_axes=(1, 2))
+
+    np.testing.assert_equal(a, cmomy.moveaxis(b, (1, 2), (-2, -1)))
+
+
 # * Vals -> Data
 @pytest.mark.parametrize(
     ("xshape", "yshape", "wshape", "mom", "out_shape"),
@@ -488,7 +522,7 @@ def test_vals_to_data_xarray() -> None:
     assert check.data is out.data
 
     xr.testing.assert_allclose(out0, out.transpose(*out0.dims))
-    mom_ndim: Mom_NDim = 2
+    mom_ndim: MomNDim = 2
     np.testing.assert_allclose(
         utils.select_moment(out, "weight", mom_ndim=mom_ndim), 0.1
     )

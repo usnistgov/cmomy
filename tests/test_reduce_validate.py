@@ -5,12 +5,17 @@ Hammer out that reduce_vals gives same results as our "dumb" equations...
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pytest
 
 import cmomy
 
 from ._simple_cmom import get_cmom, get_comom
+
+if TYPE_CHECKING:
+    from cmomy.core.typing import AxisReduceWrap
 
 rng = np.random.default_rng(14)
 
@@ -24,15 +29,16 @@ rng = np.random.default_rng(14)
         (rng.random((20, 2)), rng.random((20, 1)), 0),
         (rng.random((2, 20)), np.asarray(2.0), 1),
         (rng.random((2, 20)), rng.random(20), 1),
-        (rng.random((1, 2, 20)), None, -1),
+        (rng.random((1, 2, 20)), None, -1j),
         (rng.random((1, 2, 20)), rng.random(20), 2),
         (rng.random((1, 2, 20)), rng.random((2, 20)), 2),
         (rng.random((1, 2, 20)), rng.random((1, 2, 20)), 2),
     ],
 )
 @pytest.mark.parametrize("mom", [5])
-def test_reduce_1(x, weight, mom, axis) -> None:
-    expected = get_cmom(weight, x, mom, axis=axis)
+def test_reduce_1(x, weight, mom, axis: AxisReduceWrap) -> None:
+    _axis = int(axis.imag) if isinstance(axis, complex) else axis
+    expected = get_cmom(weight, x, mom, axis=_axis)  # pyright: ignore[reportArgumentType]
 
     check = cmomy.reduce_vals(x, weight=weight, mom=mom, axis=axis)
     np.testing.assert_allclose(check, expected, atol=1e-16)
@@ -51,15 +57,16 @@ def test_reduce_1(x, weight, mom, axis) -> None:
         (rng.random((20, 2)), rng.random((20, 1)), rng.random((20, 1)), 0),
         (rng.random((2, 20)), rng.random(20), np.asarray(2.0), 1),
         (rng.random((2, 20)), rng.random((2, 20)), rng.random(20), 1),
-        (rng.random((1, 2, 20)), rng.random(20), None, -1),
+        (rng.random((1, 2, 20)), rng.random(20), None, -1j),
         (rng.random((1, 2, 20)), rng.random((2, 20)), rng.random(20), 2),
         (rng.random((1, 2, 20)), rng.random((1, 2, 20)), rng.random((2, 20)), 2),
         (rng.random((1, 2, 20)), rng.random(20), rng.random((1, 2, 20)), 2),
     ],
 )
 @pytest.mark.parametrize("mom", [(5, 5)])
-def test_reduce_2(x, y, weight, mom, axis) -> None:
-    expected = get_comom(weight, x, y, mom, axis=axis)
+def test_reduce_2(x, y, weight, mom, axis: AxisReduceWrap) -> None:
+    _axis = int(axis.imag) if isinstance(axis, complex) else axis
+    expected = get_comom(weight, x, y, mom, axis=_axis)  # pyright: ignore[reportArgumentType]
 
     check = cmomy.reduce_vals(x, y, weight=weight, mom=mom, axis=axis)
     np.testing.assert_allclose(check, expected, atol=1e-16)

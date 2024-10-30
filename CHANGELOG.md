@@ -121,7 +121,7 @@ See the fragment files in [changelog.d]
 - Added `vals_to_data` to simplify using `_data` methods for raw values.
 - Added `jackknife_` an routines to perform jackknife analysis.
 - Update `_vals` routines to properly place the `axis` parameter in result.
-- Added `move_axis_to_end` option to most routines.
+- Added `axes_to_end` option to most routines.
 - Added `keepdims` option from `reduce_data` and `reduce_vals`
 
 ## v0.15.0 — 2024-06-21

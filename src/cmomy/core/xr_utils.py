@@ -7,41 +7,30 @@ from collections.abc import (
 )
 from typing import TYPE_CHECKING, cast
 
-from cmomy.core.typing import MomentsStrict
-
-from .array_utils import normalize_axis_index, normalize_axis_tuple
-from .missing import MISSING
 from .validate import (
     is_dataset,
-    is_xarray,
-    validate_mom_dims_and_mom_ndim,
-    validate_mom_ndim,
-    validate_not_none,
 )
 
 if TYPE_CHECKING:
     from collections.abc import (
-        Collection,
         Hashable,
+        Sequence,
     )
     from typing import Any
 
     import xarray as xr
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import DTypeLike
 
     from .typing import (
         ApplyUFuncKwargs,
-        AxisReduce,
-        AxisReduceMult,
-        DimsReduce,
-        DimsReduceMult,
+        DataT,
         MissingCoreDimOptions,
-        MissingType,
-        Mom_NDim,
         MomDims,
         MomDimsStrict,
         MomentsStrict,
+        MomNDim,
     )
+    from .typing_compat import EllipsisType
 
 
 # * apply_ufunc_kws
@@ -75,149 +64,8 @@ def factory_apply_ufunc_kwargs(
 
 
 # * Select axis/dim -----------------------------------------------------------
-def _check_dim_in_mom_dims(
-    *,
-    axis: int | None = None,
-    dim: Hashable,
-    mom_dims: MomDimsStrict | None,
-) -> None:
-    if mom_dims is not None and dim in mom_dims:
-        axis_msg = f", {axis=}" if axis is not None else ""
-        msg = f"Cannot select moment dimension. {dim=}{axis_msg}."
-        raise ValueError(msg)
-
-
-def select_axis_dim(
-    data: xr.DataArray | xr.Dataset,
-    axis: AxisReduce | MissingType = MISSING,
-    dim: DimsReduce | MissingType = MISSING,
-    *,
-    default_axis: AxisReduce | MissingType = MISSING,
-    default_dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDimsStrict | None = None,
-) -> tuple[int, Hashable]:
-    """Produce axis/dim from input."""
-    # for now, disallow None values
-    axis = validate_not_none(axis, "axis")
-    dim = validate_not_none(dim, "dim")
-
-    if is_dataset(data):
-        if axis is not MISSING or dim is MISSING:
-            msg = "For Dataset, must specify ``dim`` value other than ``None`` only."
-            raise ValueError(msg)
-
-        _check_dim_in_mom_dims(dim=dim, mom_dims=mom_dims)
-        return 0, dim
-
-    default_axis = validate_not_none(default_axis, "default_axis")
-    default_dim = validate_not_none(default_dim, "default_dim")
-
-    if axis is MISSING and dim is MISSING:
-        if default_axis is not MISSING and default_dim is MISSING:
-            axis = default_axis
-        elif default_axis is MISSING and default_dim is not MISSING:
-            dim = default_dim
-        else:
-            msg = "Must specify axis or dim, or one of default_axis or default_dim"
-            raise ValueError(msg)
-
-    elif axis is not MISSING and dim is not MISSING:
-        msg = "Can only specify one of axis or dim"
-        raise ValueError(msg)
-
-    if dim is not MISSING:
-        axis = data.get_axis_num(dim)
-
-    elif axis is not MISSING:
-        axis = normalize_axis_index(
-            axis=axis,  # type: ignore[arg-type]
-            ndim=data.ndim - (0 if mom_dims is None else len(mom_dims)),
-        )
-        dim = data.dims[axis]
-    else:  # pragma: no cover
-        msg = f"Unknown dim {dim} and axis {axis}"
-        raise TypeError(msg)
-
-    _check_dim_in_mom_dims(dim=dim, axis=axis, mom_dims=mom_dims)
-    return axis, dim
-
-
-def select_axis_dim_mult(  # noqa: C901
-    data: xr.DataArray | xr.Dataset,
-    axis: AxisReduceMult | MissingType = MISSING,
-    dim: DimsReduceMult | MissingType = MISSING,
-    *,
-    default_axis: AxisReduceMult | MissingType = MISSING,
-    default_dim: DimsReduceMult | MissingType = MISSING,
-    mom_dims: MomDimsStrict | None = None,
-) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
-    """
-    Produce axis/dim tuples from input.
-
-    This is like `select_axis_dim`, but allows multiple values in axis/dim.
-    """
-
-    def _get_dim_none() -> tuple[Hashable, ...]:
-        dim_ = tuple(data.dims)
-        if mom_dims:
-            dim_ = tuple(d for d in dim_ if d not in mom_dims)
-        return dim_
-
-    def _check_dim(dim_: tuple[Hashable, ...]) -> None:
-        if mom_dims is not None:
-            for d in dim_:
-                _check_dim_in_mom_dims(dim=d, mom_dims=mom_dims)
-
-    dim_: tuple[Hashable, ...]
-    axis_: tuple[int, ...]
-    if is_dataset(data):
-        if axis is not MISSING or dim is MISSING:
-            msg = "For Dataset, must specify ``dim`` value only."
-            raise ValueError(msg)
-
-        if dim is None:
-            dim_ = _get_dim_none()
-        else:
-            dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
-            _check_dim(dim_)
-        return (), dim_
-
-    # Allow None, which implies choosing all dimensions...
-    if axis is MISSING and dim is MISSING:
-        if default_axis is not MISSING and default_dim is MISSING:
-            axis = default_axis
-        elif default_axis is MISSING and default_dim is not MISSING:
-            dim = default_dim
-        else:
-            msg = "Must specify axis or dim, or one of default_axis or default_dim"
-            raise ValueError(msg)
-
-    elif axis is not MISSING and dim is not MISSING:
-        msg = "Can only specify one of axis or dim"
-        raise ValueError(msg)
-
-    if dim is not MISSING:
-        if dim is None:
-            dim_ = _get_dim_none()
-        else:
-            dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
-
-        axis_ = data.get_axis_num(dim_)
-    elif axis is not MISSING:
-        ndim = data.ndim - (0 if mom_dims is None else len(mom_dims))
-        axis_ = normalize_axis_tuple(axis, ndim)
-        dim_ = tuple(data.dims[a] for a in axis_)
-
-    else:  # pragma: no cover
-        msg = f"Unknown dim {dim} and axis {axis}"
-        raise TypeError(msg)
-
-    _check_dim(dim_)
-    return axis_, dim_
-
-
 def move_mom_dims_to_end(
-    x: xr.DataArray, mom_dims: MomDims, mom_ndim: Mom_NDim | None = None
+    x: xr.DataArray, mom_dims: MomDims, mom_ndim: MomNDim | None = None
 ) -> xr.DataArray:
     """Move moment dimensions to end"""
     if mom_dims is not None:
@@ -227,7 +75,7 @@ def move_mom_dims_to_end(
             msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
             raise ValueError(msg)
 
-        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]
+        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
 
     return x
 
@@ -294,13 +142,6 @@ def get_mom_shape(
     return cast("MomentsStrict", mom_shape)
 
 
-def contains_dims(
-    data: xr.DataArray | xr.Dataset, dims: str | Collection[Hashable]
-) -> bool:
-    """Wheater data contains `dims`."""
-    return all(d in data.dims for d in dims)
-
-
 def astype_dtype_dict(
     obj: xr.DataArray | xr.Dataset,
     dtype: DTypeLike | Mapping[Hashable, DTypeLike],
@@ -316,27 +157,76 @@ def astype_dtype_dict(
     return dtype
 
 
-def get_mom_dims_kws(
-    target: ArrayLike | xr.DataArray | xr.Dataset,
-    mom_dims: MomDims | None,
-    mom_ndim: Mom_NDim | None,
-    out: Any = None,
-    mom_ndim_default: Mom_NDim | None = None,
-    include_mom_ndim: bool = False,
-) -> dict[str, Any]:
-    """Get kwargs for mom_dims and mom_ndim"""
-    if is_xarray(target):
-        mom_dims, mom_ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims, mom_ndim, out, mom_ndim_default=mom_ndim_default
-        )
-        return (
-            {"mom_dims": mom_dims, "mom_ndim": mom_ndim}
-            if include_mom_ndim
-            else {"mom_dims": mom_dims}
-        )
+def contains_dims(data: xr.DataArray | xr.Dataset, *dims: Hashable) -> bool:
+    """Check if xarray object contains dimensions"""
+    return all(d in data.dims for d in dims)
 
-    if include_mom_ndim:
-        return {
-            "mom_ndim": validate_mom_ndim(mom_ndim, mom_ndim_default=mom_ndim_default)
-        }
-    return {}
+
+# * Transpose like ------------------------------------------------------------
+def transpose_like(
+    data_out: DataT,
+    template: xr.DataArray | xr.Dataset,
+    replace: Mapping[Hashable, Hashable] | None = None,
+    remove: str | Sequence[Hashable] | None = None,
+    keep_attrs: bool | None = True,
+    prepend: Sequence[Hashable] | EllipsisType | None = ...,
+    append: Sequence[Hashable] | EllipsisType | None = None,
+) -> DataT:
+    """Transpose ``data_out`` like ``template``."""
+    replace = {} if replace is None else dict(replace)
+    _remove: set[Hashable] = (
+        set()
+        if remove is None
+        else set([remove])  # noqa: C405
+        if isinstance(remove, str)
+        else set(remove)
+    )
+
+    prepend = [] if prepend is None else [prepend] if prepend is ... else prepend
+    append = [] if append is None else [append] if append is ... else append
+
+    if is_dataset(data_out):
+        return data_out.map(  # pyright: ignore[reportUnknownMemberType]
+            _transpose_like,
+            keep_attrs=keep_attrs,
+            template=template,
+            replace=replace,
+            remove=_remove,
+            prepend=prepend,
+            append=append,
+        )
+    return _transpose_like(
+        data_out,
+        template=template,
+        replace=replace,
+        remove=_remove,
+        prepend=prepend,
+        append=append,
+    )
+
+
+def _transpose_like(
+    data_out: DataT,
+    template: xr.DataArray | xr.Dataset,
+    replace: dict[Hashable, Hashable],
+    remove: set[Hashable],
+    prepend: Sequence[Hashable],
+    append: Sequence[Hashable],
+) -> DataT:
+    if is_dataset(template):
+        template = template[data_out.name]
+
+    order = list(template.dims)
+    if remove:
+        for r in remove:
+            if r in order:
+                order.remove(r)
+
+    if replace:
+        order = [replace.get(o, o) for o in order]
+
+    order = [*prepend, *order, *append]  # type: ignore[has-type]
+
+    if order != list(data_out.dims):  # pragma: no cover
+        data_out = data_out.transpose(*order, missing_dims="ignore")
+    return data_out

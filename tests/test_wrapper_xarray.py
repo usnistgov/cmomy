@@ -40,6 +40,9 @@ def get_first(c) -> cmomy.CentralMomentsData[xr.DataArray]:
 
 
 def test_init_error() -> None:
+    with pytest.raises(ValueError):
+        cmomy.xCentralMoments(xr.DataArray([1, 2, 3]), mom_dims=("a", "b"))
+
     with pytest.raises(TypeError):
         cmomy.CentralMomentsData(np.zeros(3))  # type: ignore[type-var]
 

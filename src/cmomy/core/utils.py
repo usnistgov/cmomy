@@ -18,9 +18,9 @@ if TYPE_CHECKING:
     )
 
     from .typing import (
-        Mom_NDim,
         Moments,
         MomentsStrict,
+        MomNDim,
     )
     from .typing_compat import TypeVar
 
@@ -38,7 +38,7 @@ def peek_at(iterable: Iterable[T]) -> tuple[T, Iterator[T]]:
 
 
 @docfiller.decorate
-def mom_to_mom_ndim(mom: Moments) -> Mom_NDim:
+def mom_to_mom_ndim(mom: Moments) -> MomNDim:
     """
     Calculate mom_ndim from mom.
 
@@ -55,7 +55,7 @@ def mom_to_mom_ndim(mom: Moments) -> Mom_NDim:
 
 
 @docfiller.decorate
-def select_mom_ndim(*, mom: Moments | None, mom_ndim: int | None) -> Mom_NDim:
+def select_mom_ndim(*, mom: Moments | None, mom_ndim: int | None) -> MomNDim:
     """
     Select a mom_ndim from mom or mom_ndim
 

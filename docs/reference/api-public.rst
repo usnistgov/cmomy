@@ -44,6 +44,17 @@ Factory methods to create wrapper objects
     zeros_like
 
 
+Moment parameters
+-----------------
+
+.. autosummary::
+   :toctree: generated/
+   :template: autodocsumm/class-noinherit.rst
+
+   MomParams
+   MomParamsDict
+
+
 Reduction routines available at top level (:mod:`.reduction`)
 -------------------------------------------------------------
 
