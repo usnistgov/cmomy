@@ -489,6 +489,7 @@ def select_moment(
             )
         return xout
 
+    assert isinstance(data, np.ndarray)  # noqa: S101
     mom_params = MomParamsArray.factory(
         mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
     )
@@ -709,6 +710,7 @@ def assign_moment(
         )
         return xout
 
+    assert isinstance(data, np.ndarray)  # noqa: S101
     return _assign_moment(
         data,
         *moment_kwargs.values(),

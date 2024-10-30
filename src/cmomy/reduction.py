@@ -449,7 +449,7 @@ def reduce_data(  # noqa: PLR0913
             _dims_check: tuple[Hashable, ...] = mom_params.dims
             if dim is not None:
                 dim = mom_params.select_axis_dim_mult(data, axis=axis, dim=dim)[1]
-                _dims_check = (*dim, *_dims_check)  # type: ignore[misc]
+                _dims_check = (*dim, *_dims_check)  # type: ignore[misc, unused-ignore]  # unused in python3.12
 
             if not contains_dims(data, *_dims_check):
                 msg = f"Dimensions {dim} and {mom_params.dims} not found in {tuple(data.dims)}"
@@ -473,7 +473,7 @@ def reduce_data(  # noqa: PLR0913
 
         if use_map:
             if not contains_dims(data, *mom_params.dims):
-                return data
+                return data  # type: ignore[return-value, unused-ignore]  # used error in python3.12
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
                 dim = (dim,) if isinstance(dim, str) else dim
@@ -483,7 +483,7 @@ def reduce_data(  # noqa: PLR0913
 
                 dim = tuple(filter(_filter_func, dim))  # type: ignore[arg-type]
                 if len(dim) == 0:
-                    return data
+                    return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
 
         axis, dim = mom_params.select_axis_dim_mult(
             data,
@@ -1449,9 +1449,9 @@ def reduce_data_indexed(  # noqa: PLR0913
                 group_end - 1 if coords_policy == "last" else group_start
             ]
 
-            xout = replace_coords_from_isel(  # type: ignore[assignment]
+            xout = replace_coords_from_isel(  # type: ignore[assignment, unused-ignore]  # error with python3.12
                 da_original=data,
-                da_selected=xout,  # type: ignore[arg-type]
+                da_selected=xout,  # type: ignore[arg-type, unused-ignore]  # error python3.12 and pyright
                 indexers={dim: dim_select},
                 drop=False,
             )

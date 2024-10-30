@@ -73,7 +73,7 @@ def wrap(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap(  # type: ignore[misc]
+def wrap(  # type: ignore[overload-cannot-match]
     obj: xr.DataArray | xr.Dataset,
     *,
     dtype: DTypeLike | Mapping[str, DTypeLike] = ...,
@@ -311,7 +311,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap_reduce_vals(  # type: ignore[misc]
+def wrap_reduce_vals(  # type: ignore[overload-cannot-match]
     x: xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
     weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
@@ -459,7 +459,7 @@ def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap_resample_vals(  # type: ignore[misc]
+def wrap_resample_vals(  # type: ignore[overload-cannot-match]
     x: xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -623,7 +623,7 @@ def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap_raw(  # type: ignore[misc]
+def wrap_raw(  # type: ignore[overload-cannot-match]
     raw: xr.DataArray | xr.Dataset,
     *,
     out: NDArrayAny | None = ...,

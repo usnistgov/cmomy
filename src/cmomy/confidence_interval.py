@@ -258,6 +258,7 @@ def bootstrap_confidence_interval(
     # Numpy
     assert not is_xarray(theta_hat)  # noqa: S101
     assert not is_xarray(theta_jack)  # noqa: S101
+    assert not is_xarray(theta_boot)  # noqa: S101
 
     return _bootstrap_confidence_interval(
         theta_boot=theta_boot,

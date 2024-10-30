@@ -48,8 +48,8 @@ def test_prepare_values_for_reduction(
     with pytest.raises(ValueError, match=r"Number of arrays .*"):
         prepare.prepare_values_for_reduction(
             target,
-            y,  # type: ignore[arg-type]
-            w,  # type: ignore[arg-type]
+            y,
+            w,
             narrays=2,
             axis=axis,
             dtype=dtype,
@@ -61,8 +61,8 @@ def test_prepare_values_for_reduction(
         with pytest.raises(error):
             prepare.prepare_values_for_reduction(
                 target,
-                y,  # type: ignore[arg-type]
-                w,  # type: ignore[arg-type]
+                y,
+                w,
                 narrays=3,
                 axis=axis,
                 dtype=dtype,
@@ -71,8 +71,8 @@ def test_prepare_values_for_reduction(
     else:
         _axis, (x, y, w) = prepare.prepare_values_for_reduction(
             target,
-            y,  # type: ignore[arg-type]
-            w,  # type: ignore[arg-type]
+            y,
+            w,
             narrays=3,
             axis=axis,
             dtype=dtype,

@@ -168,7 +168,7 @@ class MomParamsBase(ABC, _MixinAsDict):
 
     @abstractmethod
     def get_val_shape(self, data: Any) -> tuple[int, ...]:
-        pass
+        pass  # pragma: no cover
 
     def check_data(self, data: Any) -> None:
         # NOTE: Not an ideal solution, but get a bunch

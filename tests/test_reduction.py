@@ -83,7 +83,7 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
         axis=axis,
         keepdims=True,
     )
-    assert c.shape == new_shape
+    assert c.shape == new_shape  # type: ignore[comparison-overlap]
     np.testing.assert_allclose(c, out)
 
 
