@@ -33,9 +33,6 @@
       ~CentralMomentsData.cov
       ~CentralMomentsData.cumulative
       ~CentralMomentsData.drop_vars
-      ~CentralMomentsData.from_raw
-      ~CentralMomentsData.from_resample_vals
-      ~CentralMomentsData.from_vals
       ~CentralMomentsData.isel
       ~CentralMomentsData.items
       ~CentralMomentsData.iter
@@ -92,6 +89,7 @@
       ~CentralMomentsData.mom
       ~CentralMomentsData.mom_dims
       ~CentralMomentsData.mom_ndim
+      ~CentralMomentsData.mom_params
       ~CentralMomentsData.mom_shape
       ~CentralMomentsData.name
       ~CentralMomentsData.ndim

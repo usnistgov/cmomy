@@ -33,9 +33,6 @@
       ~xCentralMoments.cov
       ~xCentralMoments.cumulative
       ~xCentralMoments.drop_vars
-      ~xCentralMoments.from_raw
-      ~xCentralMoments.from_resample_vals
-      ~xCentralMoments.from_vals
       ~xCentralMoments.isel
       ~xCentralMoments.items
       ~xCentralMoments.iter
@@ -92,6 +89,7 @@
       ~xCentralMoments.mom
       ~xCentralMoments.mom_dims
       ~xCentralMoments.mom_ndim
+      ~xCentralMoments.mom_params
       ~xCentralMoments.mom_shape
       ~xCentralMoments.name
       ~xCentralMoments.ndim

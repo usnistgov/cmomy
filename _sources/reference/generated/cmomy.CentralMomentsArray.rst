@@ -26,9 +26,6 @@
       ~CentralMomentsArray.cov
       ~CentralMomentsArray.cumulative
       ~CentralMomentsArray.fill
-      ~CentralMomentsArray.from_raw
-      ~CentralMomentsArray.from_resample_vals
-      ~CentralMomentsArray.from_vals
       ~CentralMomentsArray.jackknife_and_reduce
       ~CentralMomentsArray.mean
       ~CentralMomentsArray.moments_to_comoments
@@ -68,7 +65,9 @@
    
       ~CentralMomentsArray.dtype
       ~CentralMomentsArray.mom
+      ~CentralMomentsArray.mom_axes
       ~CentralMomentsArray.mom_ndim
+      ~CentralMomentsArray.mom_params
       ~CentralMomentsArray.mom_shape
       ~CentralMomentsArray.ndim
       ~CentralMomentsArray.obj
