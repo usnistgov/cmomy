@@ -200,8 +200,8 @@ def transpose_like(
         template=template,
         replace=replace,
         remove=_remove,
-        prepend=prepend,
-        append=append,
+        prepend=prepend,  # pyright: ignore[reportArgumentType]
+        append=append,  # pyright: ignore[reportArgumentType]
     )
 
 

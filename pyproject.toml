@@ -108,7 +108,7 @@ uvxrun-tools = [
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
     "pyproject2conda>=0.13.0",
-    "pyright>=1.1.387",
+    "pyright>=1.1.388",
     "twine>=5.0.0",
     { include-group = "mypy" },
 ]
@@ -516,6 +516,7 @@ groups = [
 
 [tool.pyproject2conda.envs.test-extras]
 groups = [ "test" ]
+skip_package = true
 
 [tool.pyproject2conda.envs.test-numpy1]
 groups = "test"
@@ -533,7 +534,6 @@ groups = [
 envs = [
     "build",
     "uvxrun-tools",
-    "test-extras",
 ]
 skip_package = true
 style = "requirements"

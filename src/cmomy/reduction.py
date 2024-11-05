@@ -537,7 +537,7 @@ def reduce_data(  # noqa: PLR0913
             _order: tuple[Hashable, ...] = (
                 mom_params.core_dims(*dim) if keepdims else mom_params.dims
             )
-            xout = xout.transpose(..., *_order, missing_dims="ignore")
+            xout = xout.transpose(..., *_order, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 
@@ -1014,7 +1014,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         if groups is not None:
             xout = xout.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
@@ -1436,7 +1436,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         if coords_policy in {"first", "last"} and is_dataarray(data):
             # in case we passed in index, group_start, group_end as non-arrays

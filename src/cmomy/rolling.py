@@ -475,7 +475,7 @@ def rolling_data(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(data):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 
@@ -750,7 +750,7 @@ def rolling_vals(  # noqa: PLR0913
                 append=mom_params.dims,
             )
         elif is_dataset(x):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
         return xout
 
     # Numpy
@@ -1040,7 +1040,7 @@ def rolling_exp_data(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(data):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 
@@ -1351,7 +1351,7 @@ def rolling_exp_vals(  # noqa: PLR0913
                 append=mom_params.dims,
             )
         elif is_dataset(x):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 

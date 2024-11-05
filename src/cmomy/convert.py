@@ -472,7 +472,7 @@ def cumulative(  # noqa: PLR0913
                 template=values_in,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 

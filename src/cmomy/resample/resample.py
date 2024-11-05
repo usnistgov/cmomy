@@ -263,7 +263,7 @@ def resample_data(  # noqa: PLR0913
                 replace={dim: rep_dim},
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         if not axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr, misc,index,operator]
@@ -539,7 +539,10 @@ def resample_vals(  # noqa: PLR0913
             )
         elif is_dataset(x):
             xout = xout.transpose(
-                ..., rep_dim, *xmom_params.dims, missing_dims="ignore"
+                ...,
+                rep_dim,
+                *xmom_params.dims,
+                missing_dims="ignore",  # pyright: ignore[reportUnknownArgumentType]
             )
 
         return xout
@@ -859,7 +862,7 @@ def jackknife_data(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
@@ -1146,7 +1149,7 @@ def jackknife_vals(  # noqa: PLR0913
                 append=mom_params.dims,
             )
         elif is_dataset(x):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
