@@ -78,7 +78,7 @@ pyyaml==6.0.2             # via dask, pre-commit
 pyzmq==26.2.0             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
 requests==2.32.3          # via scriv
-rpds-py==0.20.0           # via jsonschema, referencing
+rpds-py==0.20.1           # via jsonschema, referencing
 scipy==1.14.1             # via -r requirements/dev-complete.txt
 scriv==1.5.1              # via -r requirements/dev-complete.txt
 six==1.16.0               # via asttokens, python-dateutil
@@ -92,7 +92,6 @@ types-pytz==2024.2.0.20241003  # via pandas-stubs
 typing-extensions==4.12.2  # via ipython, module-utilities, mypy, -r requirements/dev-complete.txt
 tzdata==2024.2            # via pandas
 urllib3==2.2.3            # via requests
-uv==0.4.28                # via -r requirements/dev-complete.txt
 virtualenv==20.27.1       # via nox, pre-commit
 wcwidth==0.2.13           # via prompt-toolkit
 xarray==2024.10.0         # via -r requirements/dev-complete.txt

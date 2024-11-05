@@ -13,9 +13,7 @@ keywords = [
     "cmomy",
 ]
 license = { text = "NIST-PD" }
-license-files = { paths = [
-    "LICENSE",
-] }
+license-files = { paths = [ "LICENSE" ] }
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
@@ -46,20 +44,26 @@ dependencies = [
     "typing-extensions",
     "xarray>=2023.9.0",
 ]
-optional-dependencies.dev = [
-    "cmomy[dev-extras,test,typing,uvxrun,nbval,test-scipy,mypy]",
+urls.Documentation = "https://pages.nist.gov/cmomy/"
+urls.Homepage = "https://github.com/usnistgov/cmomy"
+
+[dependency-groups]
+dev = [
+    { include-group = "dev-extras" },
+    { include-group = "mypy" },
+    { include-group = "nbval" },
+    { include-group = "test" },
+    { include-group = "test-scipy" },
+    { include-group = "typing" },
+    { include-group = "uvxrun" },
 ]
-optional-dependencies.dev-complete = [
-    "cmomy[dev,tools]",
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-sugar",
+    "pytest-xdist",
 ]
-optional-dependencies.dev-extras = [
-    "ipykernel",
-    "ipython",
-    "nbclient>=0.10.0",
-    "nox>=2024.4.15",
-    "pytest-accept",
-]
-optional-dependencies.docs = [
+docs = [
     "autodocsumm",
     "myst-nb",
     "pyenchant",
@@ -70,50 +74,43 @@ optional-dependencies.docs = [
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
 ]
-optional-dependencies.mypy = [
-    "mypy>=1.11.2",
+dev-complete = [
+    { include-group = "dev" },
+    { include-group = "tools" },
 ]
-optional-dependencies.nbval = [
-    "nbval",
+dev-extras = [
+    "ipykernel",
+    "ipython",
+    "nbclient>=0.10.0",
+    "nox>=2024.4.15",
+    "pytest-accept",
 ]
-optional-dependencies.test = [
-    "pytest",
-    "pytest-cov",
-    "pytest-sugar",
-    "pytest-xdist",
-]
-optional-dependencies.test-scipy = [
+mypy = [ "mypy>=1.13.0" ]
+nbval = [ "nbval" ]
+test-scipy = [
     "dask; python_version=='3.11'",
     "scipy; python_version=='3.11'",
 ]
-optional-dependencies.tools = [
+tools = [
     "pre-commit",
     "scriv",
-    "uv",
 ]
-optional-dependencies.typing = [
-    "cmomy[uvxrun]",
+typing = [
     "pandas-stubs",
     "pytest",
+    { include-group = "uvxrun" },
 ]
-optional-dependencies.uvxrun = [
-    # Anything needed to run tools/uvxrun.py
-    "packaging",
-]
-optional-dependencies.uvxrun-tools = [
+# Anything needed to run tools/uvxrun.py
+uvxrun = [ "packaging" ]
+uvxrun-tools = [
     # these used solely for specking tools to be used with tools/uvxrun.py
-    "cmomy[mypy]",
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyright>=1.1.383",
+    "pyproject2conda>=0.13.0",
+    "pyright>=1.1.387",
     "twine>=5.0.0",
-]
-urls.Documentation = "https://pages.nist.gov/cmomy/"
-urls.Homepage = "https://github.com/usnistgov/cmomy"
-
-optional-depedencies.dev = [
-    "cmomy[dev-extras,test,typing,uvxrun,nbval]",
+    { include-group = "mypy" },
 ]
 
 [tool.hatch.version]
@@ -408,8 +405,7 @@ module = [
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = [
-]
+module = [  ]
 
 [tool.pyright]
 # Enable this option to pick out unused `# pyright: ignore[...]`
@@ -501,6 +497,7 @@ default_envs = [
     "docs",
     "dev",
     "dev-complete",
+    "uvxrun-tools",
 ]
 
 [tool.pyproject2conda.dependencies]
@@ -509,43 +506,37 @@ scriv = { pip = true }
 lazy-loader = { skip = true, packages = "lazy_loader" }
 
 [tool.pyproject2conda.envs.build]
-extras = "build-system.requires"
-reqs = [
-    "build",
-]
-base = false
-style = "requirements"
-
-[tool.pyproject2conda.envs.uvxrun-tools]
-extras = "uvxrun-tools"
-base = false
-style = "requirements"
+groups = "build-system.requires"
 
 [tool.pyproject2conda.envs.test]
-extras = [
+groups = [
     "test",
     "test-scipy",
 ]
 
 [tool.pyproject2conda.envs.test-extras]
-extras = [
-    "test",
-]
-base = false
+groups = [ "test" ]
 
 [tool.pyproject2conda.envs.test-numpy1]
-extras = "test"
-reqs = [
-    "numpy<2.0",
-]
+groups = "test"
+reqs = [ "numpy<2.0" ]
 style = "requirements"
 
 [tool.pyproject2conda.envs.test-notebook]
 reqs = [ "dask[diagnostics]" ]
-extras = [
+groups = [
     "test",
     "nbval",
 ]
+
+[[tool.pyproject2conda.overrides]]
+envs = [
+    "build",
+    "uvxrun-tools",
+    "test-extras",
+]
+skip_package = true
+style = "requirements"
 
 [[tool.pyproject2conda.overrides]]
 # Ensure these have pip in yaml file
@@ -555,9 +546,7 @@ envs = [
     "dev",
     "dev-complete",
 ]
-deps = [
-    "pip",
-]
+deps = [ "pip" ]
 
 [[tool.pyproject2conda.overrides]]
 envs = [
