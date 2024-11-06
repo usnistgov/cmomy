@@ -17,7 +17,7 @@ dependencies:
   - ipython
   - lazy_loader
   - module-utilities>=0.6
-  - mypy>=1.11.2
+  - mypy>=1.13.0
   - nbclient>=0.10.0
   - nbval
   - nox>=2024.4.15
@@ -30,7 +30,7 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - scipy
-  - typing-extensions
+  - typing-extensions>=4.10.0
   - xarray>=2023.9.0
   - pip
   - pip:

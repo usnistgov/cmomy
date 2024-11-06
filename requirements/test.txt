@@ -18,5 +18,5 @@ pytest-cov
 pytest-sugar
 pytest-xdist
 scipy;python_version=="3.11"
-typing-extensions
+typing-extensions>=4.10.0
 xarray>=2023.9.0

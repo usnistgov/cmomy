@@ -65,7 +65,7 @@ pytz==2024.2              # via pandas
 pyyaml==6.0.2             # via dask
 pyzmq==26.2.0             # via ipykernel, jupyter-client
 referencing==0.35.1       # via jsonschema, jsonschema-specifications
-rpds-py==0.20.0           # via jsonschema, referencing
+rpds-py==0.21.0           # via jsonschema, referencing
 scipy==1.14.1             # via -r requirements/dev.txt
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
