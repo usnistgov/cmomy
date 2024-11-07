@@ -211,9 +211,9 @@ def test_reduce_data_grouped(rng, policy) -> None:
             data, **kws, index=index, group_start=start, group_end=end
         )
     else:
-        expected = cmomy.reduce_data_grouped(data, dim=dim, by=by)
+        expected = cmomy.reduce_data_grouped(data, dim=dim, by=by, groups=[0, 1])
 
-    a = cmomy.wrap(data).reduce(by=by, **kws)
+    a = cmomy.wrap(data).reduce(by=by, **kws, groups=[0, 1])
     b = cmomy.wrap(data).reduce(by="by", **kws)
 
     xr.testing.assert_allclose(a.obj, expected)
