@@ -813,6 +813,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 group_dim=group_dim,
                 groups=groups,
                 keep_attrs=keep_attrs,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
         else:
             from cmomy.reduction import reduce_data_grouped
