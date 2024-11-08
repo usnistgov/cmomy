@@ -219,6 +219,10 @@ def test_reduce_data_grouped(rng, policy) -> None:
     xr.testing.assert_allclose(a.obj, expected)
     xr.testing.assert_allclose(b.obj, expected)
 
+    if policy == "group":
+        c = cmomy.wrap(data).reduce(by="by", **kws, groups=[0, 1])
+        xr.testing.assert_allclose(c.obj, expected)
+
 
 def test_to_dataarray_to_dataset(c_dataset) -> None:
     assert c_dataset is c_dataset.to_dataset()
