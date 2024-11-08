@@ -1102,6 +1102,7 @@ def _reduce_data_grouped(
 @docfiller.decorate
 def factor_by_to_index(
     by: Groups,
+    **kwargs: Any,
 ) -> tuple[list[Any] | IndexAny | pd.MultiIndex, NDArrayInt, NDArrayInt, NDArrayInt]:
     """
     Transform group_idx to quantities to be used with :func:`reduce_data_indexed`.
@@ -1112,6 +1113,9 @@ def factor_by_to_index(
         Values to factor.
     exclude_missing : bool, default=True
         If ``True`` (default), filter Negative and ``None`` values from ``group_idx``.
+
+    **kwargs
+        Extra arguments to :func:`numpy.argsort`
 
     Returns
     -------
@@ -1161,7 +1165,7 @@ def factor_by_to_index(
     else:
         index = None
 
-    indexes_sorted = np.argsort(codes)
+    indexes_sorted = np.argsort(codes, **kwargs)
     group_idx_sorted = codes[indexes_sorted]
     _groups, n_start, count = np.unique(
         group_idx_sorted, return_index=True, return_counts=True
