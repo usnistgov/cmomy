@@ -86,7 +86,7 @@ stack-data==0.6.3         # via ipython
 termcolor==2.5.0          # via pytest-sugar
 tomli==2.0.2              # via coverage
 toolz==1.0.0              # via dask, partd
-tornado==6.4.1            # via ipykernel, jupyter-client
+tornado==6.4.2            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 types-pytz==2024.2.0.20241003  # via pandas-stubs
 typing-extensions==4.12.2  # via ipython, module-utilities, mypy, -r requirements/dev-complete.txt
