@@ -66,7 +66,7 @@ stack-data==0.6.3         # via ipython
 termcolor==2.5.0          # via pytest-sugar
 tomli==2.0.2              # via coverage
 toolz==1.0.0              # via dask, partd
-tornado==6.4.1            # via bokeh, ipykernel, jupyter-client
+tornado==6.4.2            # via bokeh, ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbformat
 typing-extensions==4.12.2  # via ipython, module-utilities, -r requirements/test-notebook.txt
 tzdata==2024.2            # via pandas
