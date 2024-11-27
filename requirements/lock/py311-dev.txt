@@ -8,9 +8,9 @@ click==8.1.7              # via dask
 cloudpickle==3.1.0        # via dask
 colorlog==6.9.0           # via nox
 comm==0.2.2               # via ipykernel
-coverage==7.6.4           # via nbval, pytest-cov
-dask==2024.10.0           # via -r requirements/dev.txt
-debugpy==1.8.7            # via ipykernel
+coverage==7.6.8           # via nbval, pytest-cov
+dask==2024.11.2           # via -r requirements/dev.txt
+debugpy==1.8.9            # via ipykernel
 decorator==5.1.1          # via ipython
 distlib==0.3.9            # via virtualenv
 docstring-inheritance==2.2.1  # via -r requirements/dev.txt
@@ -23,7 +23,7 @@ importlib-metadata==8.5.0  # via dask
 iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev.txt
 ipython==8.29.0           # via ipykernel, -r requirements/dev.txt
-jedi==0.19.1              # via ipython
+jedi==0.19.2              # via ipython
 jsonschema==4.23.0        # via nbformat
 jsonschema-specifications==2024.10.1  # via jsonschema
 jupyter-client==8.6.3     # via ipykernel, nbclient, nbval
@@ -42,9 +42,9 @@ nest-asyncio==1.6.0       # via ipykernel
 nox==2024.10.9            # via -r requirements/dev.txt
 numba==0.60.0             # via -r requirements/dev.txt
 numpy==2.0.2              # via numba, pandas, pandas-stubs, scipy, xarray, -r requirements/dev.txt
-packaging==24.1           # via dask, ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray, -r requirements/dev.txt
+packaging==24.2           # via dask, ipykernel, lazy-loader, nox, pytest, pytest-sugar, xarray, -r requirements/dev.txt
 pandas==2.2.3             # via xarray
-pandas-stubs==2.2.3.241009  # via -r requirements/dev.txt
+pandas-stubs==2.2.3.241126  # via -r requirements/dev.txt
 parso==0.8.4              # via jedi
 partd==1.4.2              # via dask
 pexpect==4.9.0            # via ipython
@@ -70,14 +70,14 @@ scipy==1.14.1             # via -r requirements/dev.txt
 six==1.16.0               # via asttokens, python-dateutil
 stack-data==0.6.3         # via ipython
 termcolor==2.5.0          # via pytest-sugar
-tomli==2.0.2              # via coverage
+tomli==2.1.0              # via coverage
 toolz==1.0.0              # via dask, partd
-tornado==6.4.1            # via ipykernel, jupyter-client
+tornado==6.4.2            # via ipykernel, jupyter-client
 traitlets==5.14.3         # via comm, ipykernel, ipython, jupyter-client, jupyter-core, matplotlib-inline, nbclient, nbformat
 types-pytz==2024.2.0.20241003  # via pandas-stubs
 typing-extensions==4.12.2  # via ipython, module-utilities, mypy, -r requirements/dev.txt
 tzdata==2024.2            # via pandas
-virtualenv==20.27.1       # via nox
+virtualenv==20.28.0       # via nox
 wcwidth==0.2.13           # via prompt-toolkit
-xarray==2024.10.0         # via -r requirements/dev.txt
-zipp==3.20.2              # via importlib-metadata
+xarray==2024.11.0         # via -r requirements/dev.txt
+zipp==3.21.0              # via importlib-metadata

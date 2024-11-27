@@ -230,9 +230,9 @@ KeepAttrs: TypeAlias = Union[
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 
 # * Literals ------------------------------------------------------------------
-ArrayOrderCF = Literal["C", "F", None]
-ArrayOrderCFA = Literal["C", "F", "A", None]
-ArrayOrder = Literal["C", "F", "A", "K", None]
+ArrayOrderCF = Optional[Literal["C", "F"]]
+ArrayOrderCFA = Optional[Literal["C", "F", "A"]]
+ArrayOrder = Optional[Literal["C", "F", "A", "K"]]
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
 MissingCoreDimOptions = Literal["raise", "copy", "drop"]
@@ -254,7 +254,7 @@ SelectMoment = Literal[
 ]
 ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
-CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
+CoordsPolicy: TypeAlias = Optional[Literal["first", "last", "group"]]
 BootStrapMethod: TypeAlias = Literal["percentile", "basic", "bca"]
 BlockByModes: TypeAlias = Literal[
     "drop_first", "drop_last", "expand_first", "expand_last"

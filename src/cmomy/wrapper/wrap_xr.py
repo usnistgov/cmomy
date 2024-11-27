@@ -187,13 +187,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     def iter(self) -> Any: ...
 
     def iter(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
-        """Need this for proper typing with mypy..."""
+        """Need this for proper typing with mypy..."""  # noqa: DOC402
         if is_dataarray(self._obj):
             if self.ndim <= self.mom_ndim:
                 msg = "Can only iterate over wrapped DataArray with extra dimension."
                 raise ValueError(msg)
             for obj in self._obj:
-                yield self.new_like(obj)  # noqa: DOC402
+                yield self.new_like(obj)
         else:
             yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 

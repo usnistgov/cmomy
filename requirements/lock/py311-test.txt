@@ -2,8 +2,8 @@
 #    uv pip compile --python-version=3.11 -o requirements/lock/py311-test.txt requirements/test.txt
 click==8.1.7              # via dask
 cloudpickle==3.1.0        # via dask
-coverage==7.6.4           # via pytest-cov
-dask==2024.10.0           # via -r requirements/test.txt
+coverage==7.6.8           # via pytest-cov
+dask==2024.11.2           # via -r requirements/test.txt
 docstring-inheritance==2.2.1  # via -r requirements/test.txt
 execnet==2.1.1            # via pytest-xdist
 fsspec==2024.10.0         # via dask
@@ -15,7 +15,7 @@ locket==1.0.0             # via partd
 module-utilities==0.9.0   # via -r requirements/test.txt
 numba==0.60.0             # via -r requirements/test.txt
 numpy==2.0.2              # via numba, pandas, scipy, xarray, -r requirements/test.txt
-packaging==24.1           # via dask, lazy-loader, pytest, pytest-sugar, xarray
+packaging==24.2           # via dask, lazy-loader, pytest, pytest-sugar, xarray
 pandas==2.2.3             # via xarray
 partd==1.4.2              # via dask
 pluggy==1.5.0             # via pytest
@@ -29,9 +29,9 @@ pyyaml==6.0.2             # via dask
 scipy==1.14.1             # via -r requirements/test.txt
 six==1.16.0               # via python-dateutil
 termcolor==2.5.0          # via pytest-sugar
-tomli==2.0.2              # via coverage
+tomli==2.1.0              # via coverage
 toolz==1.0.0              # via dask, partd
 typing-extensions==4.12.2  # via module-utilities, -r requirements/test.txt
 tzdata==2024.2            # via pandas
-xarray==2024.10.0         # via -r requirements/test.txt
-zipp==3.20.2              # via importlib-metadata
+xarray==2024.11.0         # via -r requirements/test.txt
+zipp==3.21.0              # via importlib-metadata
