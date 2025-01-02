@@ -885,7 +885,7 @@ class CentralMomentsArray(
                 parallel=parallel,
             )
         else:
-            from cmomy.reduction import reduce_data_grouped
+            from cmomy.grouped import reduce_data_grouped
 
             obj = reduce_data_grouped(
                 self._obj,

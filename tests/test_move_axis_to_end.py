@@ -112,9 +112,9 @@ mark_data_funcs = pytest.mark.parametrize(
         (cmomy.reduce_data, {"keepdims": True}, None),
         (cmomy.resample.resample_data, {"sampler": {"nrep": 20, "rng": 0}}, None),
         (cmomy.resample.jackknife_data, {}, None),
-        (cmomy.reduction.reduce_data_grouped, {"by": [0] * 5 + [1] * 5}, None),
+        (cmomy.grouped.reduce_data_grouped, {"by": [0] * 5 + [1] * 5}, None),
         (
-            cmomy.reduction.reduce_data_indexed,
+            cmomy.grouped.reduce_data_indexed,
             {"index": range(10), "group_start": [0, 5], "group_end": [5, 10]},
             None,
         ),

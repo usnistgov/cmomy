@@ -1043,7 +1043,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         dim: DimsReduce | MissingType = MISSING,
         mode: BlockByModes = "drop_last",
     ) -> NDArrayInt:
-        from cmomy.reduction import block_by
+        from cmomy.grouped import block_by
         from cmomy.resample import select_ndat
 
         return block_by(
@@ -1093,9 +1093,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         See Also
         --------
         ~.reduction.reduce_data
-        ~.reduction.reduce_data_grouped
-        ~.reduction.reduce_data_indexed
-        ~.reduction.block_by
+        ~.grouped.reduce_data_grouped
+        ~.grouped.reduce_data_indexed
+        ~.grouped.block_by
         """
 
     # ** Access to underlying statistics --------------------------------------

@@ -61,8 +61,8 @@ Reduction routines available at top level (:mod:`.reduction`)
 .. autosummary::
 
    ~reduction.reduce_data
-   ~reduction.reduce_data_grouped
-   ~reduction.reduce_data_indexed
+   ~grouped.reduce_data_grouped
+   ~grouped.reduce_data_indexed
 
 Resampling routines available at top level (:mod:`.resample`)
 -------------------------------------------------------------

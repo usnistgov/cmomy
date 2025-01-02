@@ -8,7 +8,15 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     # Need this to play nice with IDE/pyright
     # submodules
-    from . import convert, random, reduction, resample, rolling, utils  # noqa: TC004
+    from . import (  # noqa: TC004
+        convert,
+        grouped,
+        random,
+        reduction,
+        resample,
+        rolling,
+        utils,
+    )
     from .confidence_interval import bootstrap_confidence_interval  # noqa: TC004
     from .convert import concat  # noqa: TC004
     from .core import (  # noqa: TC004
@@ -16,7 +24,7 @@ if TYPE_CHECKING:
         MomParamsDict,
     )
     from .random import default_rng  # noqa: TC004
-    from .reduction import reduce_data, reduce_data_grouped, reduce_vals  # noqa: TC004
+    from .reduction import reduce_data, reduce_vals  # noqa: TC004
     from .resample import (  # noqa: TC004
         IndexSampler,
         factory_sampler,
@@ -50,10 +58,11 @@ else:
     __getattr__, __dir__, _ = lazy.attach(
         __name__,
         submodules=[
+            "convert",
+            "grouped",
             "random",
             "reduction",
             "resample",
-            "convert",
             "rolling",
             "utils",
         ],
@@ -61,8 +70,9 @@ else:
             "core": ["MomParams", "MomParamsDict"],
             "convert": ["concat"],
             "confidence_interval": ["bootstrap_confidence_interval"],
+            "grouped": ["reduce_data_grouped", "reduce_data_indexed"],
             "random": ["default_rng"],
-            "reduction": ["reduce_data", "reduce_data_grouped", "reduce_vals"],
+            "reduction": ["reduce_data", "reduce_vals"],
             "resample": [
                 "IndexSampler",
                 "factory_sampler",
@@ -94,6 +104,8 @@ else:
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
 
+from .grouped import reduce_data_grouped, reduce_data_indexed
+
 try:
     __version__ = _version("cmomy")
 except PackageNotFoundError:  # pragma: no cover
@@ -116,12 +128,14 @@ __all__ = [
     "convert",
     "default_rng",
     "factory_sampler",
+    "grouped",
     "moveaxis",
     "random",
     "random_freq",
     "random_indices",
     "reduce_data",
     "reduce_data_grouped",
+    "reduce_data_indexed",
     "reduce_vals",
     "reduction",
     "resample",

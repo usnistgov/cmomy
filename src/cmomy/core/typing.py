@@ -377,7 +377,7 @@ class ReduceDataGroupedKwargs(
     _MomParamsKwargs,
     total=False,
 ):
-    """Extra parameters to :func:`.reduction.reduce_data_grouped`"""
+    """Extra parameters to :func:`.grouped.reduce_data_grouped`"""
 
     group_dim: str | None
     groups: Groups | None
@@ -390,7 +390,7 @@ class ReduceDataIndexedKwargs(
     _MomParamsKwargs,
     total=False,
 ):
-    """Extra parameters to :func:`.reduction.reduce_data_indexed`"""
+    """Extra parameters to :func:`.grouped.reduce_data_indexed`"""
 
     index: Required[ArrayLike]
     group_start: Required[ArrayLike]
