@@ -405,6 +405,11 @@ module = [
 ignore_errors = true
 module = [  ]
 
+# [[tool.mypy.overrides]]
+# # mypy doesn't like how we handle default values of TypeVars
+# disable_error_code = ["misc"]
+# module = ["cmomy.*"]
+
 [tool.pyright]
 # Enable this option to pick out unused `# pyright: ignore[...]`
 # reportUnnecessaryTypeIgnoreComment = true

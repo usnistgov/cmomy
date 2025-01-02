@@ -653,7 +653,7 @@ default_mom_params_xarray = MomParamsXArrayOptional()
 
 
 @overload
-def factory_mom_params(  # type: ignore[overload-overlap]
+def factory_mom_params(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     target: xr.DataArray | xr.Dataset,
     *,
     mom_params: MomParamsInput = ...,

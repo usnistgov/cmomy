@@ -79,32 +79,31 @@ DataT_ = TypeVar("DataT_", xr.DataArray, xr.Dataset)
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
 
 #: TypeVar of array types with restriction
-ArrayT = TypeVar(  # type: ignore[misc]
+ArrayT = TypeVar(
     "ArrayT",
-    NDArray[np.float32],
     NDArray[np.float64],
+    NDArray[np.float32],
     xr.DataArray,
-    default=NDArray[np.float64],
 )
 
 #: TypeVar of types wrapped by IndexSampler
-SamplerArrayT = TypeVar(  # type: ignore[misc]
+SamplerArrayT = TypeVar(
     "SamplerArrayT",
     NDArray[Any],
     xr.DataArray,
     xr.Dataset,
     Union[xr.DataArray, xr.Dataset],
-    default=NDArray[Any],
 )
 
 FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
-FloatT = TypeVar(  # type: ignore[misc]
+FloatT = TypeVar(
     "FloatT",
+    Any,
     np.float32,
     np.float64,
-    default=Any,  # pyright: ignore[reportGeneralTypeIssues]
+    default=Any,
 )
 FloatT_ = TypeVar("FloatT_", np.float32, np.float64)
 

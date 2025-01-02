@@ -17,9 +17,9 @@ else:
     from typing_extensions import Required, Self, Unpack
 
 
-if sys.version_info >= (3, 13):
+if sys.version_info >= (3, 13):  # pragma: no cover
     from typing import TypeIs, TypeVar
-else:  # pragma: no cover
+else:
     from typing_extensions import TypeIs, TypeVar
 
 

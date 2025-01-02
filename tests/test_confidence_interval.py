@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pytest
@@ -94,7 +94,7 @@ def mom() -> Moments:
 
 
 @pytest.fixture
-def sampler(data, axis, nrep) -> cmomy.resample.IndexSampler:
+def sampler(data, axis, nrep) -> cmomy.resample.IndexSampler[Any]:
     return cmomy.resample.factory_sampler(
         data=data,
         axis=axis,
@@ -140,7 +140,7 @@ def xtheta_hat(xdata: xr.DataArray, mom, axis) -> xr.DataArray:
 
 @pytest.fixture
 def xtheta_boot(
-    xdata: xr.DataArray, mom: Moments, sampler: cmomy.IndexSampler, axis
+    xdata: xr.DataArray, mom: Moments, sampler: cmomy.IndexSampler[Any], axis
 ) -> xr.DataArray:
     out = cmomy.resample_vals(xdata, mom=mom, axis=axis, sampler=sampler)
     dims_out = list(out.dims)
