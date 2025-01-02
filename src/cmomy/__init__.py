@@ -23,6 +23,7 @@ if TYPE_CHECKING:
         MomParams,
         MomParamsDict,
     )
+    from .grouped import reduce_data_grouped, reduce_data_indexed  # noqa: TC004
     from .random import default_rng  # noqa: TC004
     from .reduction import reduce_data, reduce_vals  # noqa: TC004
     from .resample import (  # noqa: TC004
@@ -103,8 +104,6 @@ else:
 
 from importlib.metadata import PackageNotFoundError
 from importlib.metadata import version as _version
-
-from .grouped import reduce_data_grouped, reduce_data_indexed
 
 try:
     __version__ = _version("cmomy")

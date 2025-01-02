@@ -18,10 +18,12 @@ api-baseclasses
     cmomy
     cmomy.reduction
     cmomy.resample
+    cmomy.grouped
+    cmomy.rolling
+    cmomy.convert
+    cmomy.utils
     cmomy.random
+    cmomy.confidence_interval
     cmomy.compile
     cmomy.core.typing
-    cmomy.confidence_interval
-    cmomy.rolling
-    cmomy.utils
 ```

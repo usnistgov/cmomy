@@ -236,7 +236,7 @@ ArrayOrder = Optional[Literal["C", "F", "A", "K"]]
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
 MissingCoreDimOptions = Literal["raise", "copy", "drop"]
-#: Selectable moment names.
+#: Moment names.
 SelectMoment = Literal[
     "weight",
     "ave",

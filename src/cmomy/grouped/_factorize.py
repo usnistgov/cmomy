@@ -55,7 +55,7 @@ def factor_by(
     >>> codes
     array([ 1,  1,  0, -1,  0,  2,  2])
 
-    This also works for sequences of non-intengers.
+    This also works for sequences of non-integers.
 
     >>> by = ["a", "a", None, "c", "c", -1]
     >>> groups, codes = factor_by(by)
@@ -107,7 +107,7 @@ def block_by(
     mode: BlockByModes = "drop_last",
 ) -> NDArrayInt:
     """
-    Get groupby array for block reduction.
+    Get group by array for block reduction.
 
     Parameters
     ----------
@@ -115,7 +115,7 @@ def block_by(
         Size of ``by``.
     block : int
         Block size. Negative values is a single block.
-    mode : {drop_first, drop_last, expand_first, expand_last}
+    mode : {"drop_first", "drop_last", "expand_first", "expand_last"}
         What to do if ndat does not divide equally by ``block``.
 
         - "drop_first" : drop first samples

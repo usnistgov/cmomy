@@ -237,7 +237,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         Returns
         -------
         {klass}
-            New {klass} object with zerod out data.
+            New {klass} object with data set to zero.
         """
 
     @docfiller.decorate
@@ -256,8 +256,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         Parameters
         ----------
         dtype : str or dtype
-            Typecode of data-type to cast the array data.  Note that a value of None will
-            upcast to ``np.float64``.  This is the same behaviour as :func:`~numpy.asarray`.
+            Type code of data-type to cast the array data.  Note that a value of None will
+            cast to ``np.float64``.  This is the same behavior as :func:`~numpy.asarray`.
         {order}
         {casting}
 
@@ -267,12 +267,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         copy : bool, optional
             By default, astype always returns a newly allocated array. If this
             is set to False and the `dtype` requirement is satisfied, the input
-            array is returned insteadof a copy.
+            array is returned instead of a copy.
 
 
         Notes
         -----
-        Only ``numpy.float32`` and ``numpy.float64`` dtypes are supported.
+        Only ``numpy.float32`` and ``numpy.float64`` dtype are supported.
 
 
         See Also

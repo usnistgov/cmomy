@@ -992,7 +992,7 @@ class CentralMomentsArray(
         Returns
         -------
         output : CentralMomentsArray
-            Output object with reshaped data.  This will be a view if possilble;
+            Output object with reshaped data.  This will be a view if possible;
             otherwise, it will be copy.
 
         See Also

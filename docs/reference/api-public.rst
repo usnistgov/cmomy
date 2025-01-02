@@ -61,8 +61,8 @@ Reduction routines available at top level (:mod:`.reduction`)
 .. autosummary::
 
    ~reduction.reduce_data
-   ~grouped.reduce_data_grouped
-   ~grouped.reduce_data_indexed
+   ~reduction.reduce_vals
+
 
 Resampling routines available at top level (:mod:`.resample`)
 -------------------------------------------------------------
@@ -74,6 +74,15 @@ Resampling routines available at top level (:mod:`.resample`)
    ~resample.factory_sampler
    ~resample.random_freq
    ~resample.random_indices
+
+
+Grouped reduction routines available at top level (:mod:`.grouped`)
+-------------------------------------------------------------------
+
+.. autosummary::
+
+   ~grouped.reduce_data_grouped
+   ~grouped.reduce_data_indexed
 
 
 Default random number generator (:mod:`cmomy.random`)

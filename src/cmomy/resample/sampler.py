@@ -784,7 +784,7 @@ def indices_to_freq(
     Convert indices to frequency array.
 
     It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp ==
-    ndat``. For cases that ``nsamp != ndat``, pass in ``ndat`` explicitl.
+    ndat``. For cases that ``nsamp != ndat``, pass in ``ndat`` explicitly.
     """
     if is_xarray_typevar(indices):
         # assume dims are in order (rep, dim)

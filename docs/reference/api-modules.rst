@@ -8,12 +8,13 @@ Modules
 
    cmomy.reduction
    cmomy.resample
-   cmomy.random
-   cmomy.convert
-   cmomy.compile
-   cmomy.confidence_interval
+   cmomy.grouped
    cmomy.rolling
+   cmomy.convert
    cmomy.utils
+   cmomy.random
+   cmomy.confidence_interval
+   cmomy.compile
 
 
 
