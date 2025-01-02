@@ -54,13 +54,13 @@ def do_reduce_data_grouped(data, axes_to_end=False, **kwargs):
 
 def do_reduce_data_indexed(data, axes_to_end=False, **kwargs):
     by = get_by(_get_axis_size(data, **kwargs))
-    _, index, start, end = cmomy.reduction.factor_by_to_index(by)
+    _, index, start, end = cmomy.grouped.factor_by_to_index(by)
 
     coords_policy = kwargs.pop("coords_policy", "first")
     if is_dataarray(data) and coords_policy in {"first", "last"}:
         coords_policy = None
 
-    return cmomy.reduction.reduce_data_indexed(
+    return cmomy.grouped.reduce_data_indexed(
         data,
         index=index,
         group_start=start,

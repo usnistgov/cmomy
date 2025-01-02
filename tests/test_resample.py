@@ -90,7 +90,7 @@ def test_resample_data_0(data_and_kwargs, nrep):
 
     # against using reduce_data_indexed....
     np.testing.assert_allclose(
-        cmomy.reduction.resample_data_indexed(
+        cmomy.grouped.resample_data_indexed(
             data, sampler={"freq": freq}, axis=axis, mom_ndim=mom_ndim
         ),
         expected,

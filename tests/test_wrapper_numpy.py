@@ -488,7 +488,7 @@ def test_assign_moment(rng, wrapped, name) -> None:
 
 
 def _reduce_block(data, axis, block, **kwargs):
-    groups = cmomy.reduction.block_by(data.shape[axis], block)
+    groups = cmomy.grouped.block_by(data.shape[axis], block)
     return cmomy.reduce_data_grouped(data, by=groups, axis=axis, **kwargs)
 
 

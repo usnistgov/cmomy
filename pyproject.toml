@@ -108,7 +108,7 @@ uvxrun-tools = [
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
     "pyproject2conda>=0.13.0",
-    "pyright>=1.1.388",
+    "pyright>=1.1.389",
     "twine>=5.0.0",
     { include-group = "mypy" },
 ]
@@ -154,8 +154,6 @@ lint.select = [
 ]
 lint.ignore = [
     # * Annotations
-    "ANN101", # - Leads to issues with methods and self
-    "ANN102", # - Leads to issues with classmethods and cls
     "ANN401", # - Any ok sometimes
     # * These conflict with formatter
     "COM", # - flake8-commas, formatter should take care of this?
@@ -406,6 +404,11 @@ module = [
 [[tool.mypy.overrides]]
 ignore_errors = true
 module = [  ]
+
+# [[tool.mypy.overrides]]
+# # mypy doesn't like how we handle default values of TypeVars
+# disable_error_code = ["misc"]
+# module = ["cmomy.*"]
 
 [tool.pyright]
 # Enable this option to pick out unused `# pyright: ignore[...]`

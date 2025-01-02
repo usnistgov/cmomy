@@ -248,7 +248,7 @@ def test_reduce_data_dim_none(rng) -> None:
 )
 def test_block_by(kwargs, expected) -> None:
     with expected as e:
-        by = cmomy.reduction.block_by(**kwargs)
+        by = cmomy.grouped.block_by(**kwargs)
         np.testing.assert_allclose(by, e)
 
 
@@ -267,9 +267,9 @@ def get_reduce_data_grouped_indexed(rng, shape, mom_ndim, by):
     check = cmomy.reduce_data_grouped(data, by=by, axis=0, mom_ndim=mom_ndim)
     np.testing.assert_allclose(check, expected)
 
-    _group, index, start, end = cmomy.reduction.factor_by_to_index(by)
+    _group, index, start, end = cmomy.grouped.factor_by_to_index(by)
 
-    check = cmomy.reduction.reduce_data_indexed(
+    check = cmomy.grouped.reduce_data_indexed(
         data, index=index, group_start=start, group_end=end, axis=0, mom_ndim=mom_ndim
     )
     np.testing.assert_allclose(check, expected)
@@ -278,10 +278,10 @@ def get_reduce_data_grouped_indexed(rng, shape, mom_ndim, by):
 def test_indexed_bad_scale(rng: np.random.Generator) -> None:
     data = rng.random((10, 2, 3))
     by = [0] * 5 + [1] * 5
-    _group, index, start, end = cmomy.reduction.factor_by_to_index(by)
+    _group, index, start, end = cmomy.grouped.factor_by_to_index(by)
     # bad scale
     with pytest.raises(ValueError, match=".*`scale` and `index`.*"):
-        _ = cmomy.reduction.reduce_data_indexed(
+        _ = cmomy.grouped.reduce_data_indexed(
             data,
             mom_ndim=1,
             index=index,
@@ -311,9 +311,9 @@ def test__validate_index() -> None:
     group_start = [0, 2]
     group_end = [2, 4]
 
-    index_, start_, end_ = cmomy.reduction._validate_index(
-        4, index, group_start, group_end
-    )
+    from cmomy.grouped._reduction import _validate_index
+
+    index_, start_, end_ = _validate_index(4, index, group_start, group_end)
 
     np.testing.assert_allclose(index, index_)
     np.testing.assert_allclose(group_start, start_)
@@ -321,27 +321,25 @@ def test__validate_index() -> None:
 
     # index outside bounds
     with pytest.raises(ValueError, match=".*min.*< 0.*"):
-        _ = cmomy.reduction._validate_index(4, [-1, 0, 1, 2], group_start, group_end)
+        _ = _validate_index(4, [-1, 0, 1, 2], group_start, group_end)
 
     # index outside max
     with pytest.raises(ValueError, match=".*max.*>.*"):
-        _ = cmomy.reduction._validate_index(4, [0, 1, 2, 3, 4], group_start, group_end)
+        _ = _validate_index(4, [0, 1, 2, 3, 4], group_start, group_end)
 
     # mismatch group start/end
     with pytest.raises(ValueError, match=r".*`group_start` and `group_end`.*"):
-        _ = cmomy.reduction._validate_index(4, index, [0, 1], [1, 2, 3])
+        _ = _validate_index(4, index, [0, 1], [1, 2, 3])
 
     # end < start
     with pytest.raises(ValueError, match=".*end < start.*"):
-        _ = cmomy.reduction._validate_index(4, index, [0, 2], [2, 1])
+        _ = _validate_index(4, index, [0, 2], [2, 1])
     # zero length index
     index = []
     group_start = [0]
     group_end = [0]
 
-    index_, start_, end_ = cmomy.reduction._validate_index(
-        4, index, group_start, group_end
-    )
+    index_, start_, end_ = _validate_index(4, index, group_start, group_end)
 
     assert len(index_) == 0
     np.testing.assert_allclose(group_start, start_)
@@ -349,4 +347,4 @@ def test__validate_index() -> None:
 
     # bad end
     with pytest.raises(ValueError, match=".*With zero length.*"):
-        _ = cmomy.reduction._validate_index(4, index, group_start, [10])
+        _ = _validate_index(4, index, group_start, [10])

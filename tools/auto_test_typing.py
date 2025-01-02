@@ -269,7 +269,7 @@ central_dataset_any: CentralMomentsDataAny = CentralMomentsData(data_dataset_any
 freq = cmomy.random_freq(ndat=10, nrep=2)
 sampler = cmomy.resample.IndexSampler(freq=freq)
 by = [0] * 5 + [1] * 5
-_, index, group_start, group_end = cmomy.reduction.factor_by_to_index(by)
+_, index, group_start, group_end = cmomy.grouped.factor_by_to_index(by)
 """
 
 
@@ -283,7 +283,7 @@ funcs_genarraylike_to_genarray_dtype_out = [
     ("cmomy.reduce_data", "data_", "reduce_out_", "{axis_dim}, mom_ndim=1"),
     ("cmomy.reduce_vals", "vals_", "reduce_out_", "{axis_dim}, mom=2"),
     ("cmomy.reduce_data_grouped", "data_", "group_out_", "{axis_dim}, mom_ndim=1, by=by"),
-    ("cmomy.reduction.reduce_data_indexed", "data_", "group_out_", "{axis_dim}, mom_ndim=1, index=index, group_start=group_start, group_end=group_end"),
+    ("cmomy.reduce_data_indexed", "data_", "group_out_", "{axis_dim}, mom_ndim=1, index=index, group_start=group_start, group_end=group_end"),
     ("cmomy.resample_data", "data_", "group_out_", "{axis_dim}, mom_ndim=1, sampler=sampler"),
     ("cmomy.resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, sampler=sampler"),
     ("cmomy.resample.jackknife_data", "data_", "transform_out_", "{axis_dim}, mom_ndim=1"),

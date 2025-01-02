@@ -885,7 +885,7 @@ class CentralMomentsArray(
                 parallel=parallel,
             )
         else:
-            from cmomy.reduction import reduce_data_grouped
+            from cmomy.grouped import reduce_data_grouped
 
             obj = reduce_data_grouped(
                 self._obj,
@@ -992,7 +992,7 @@ class CentralMomentsArray(
         Returns
         -------
         output : CentralMomentsArray
-            Output object with reshaped data.  This will be a view if possilble;
+            Output object with reshaped data.  This will be a view if possible;
             otherwise, it will be copy.
 
         See Also

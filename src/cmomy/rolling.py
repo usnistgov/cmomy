@@ -133,7 +133,7 @@ def construct_rolling_window_array(
     **kwargs: Any,
 ) -> NDArray[FloatT]: ...
 @overload
-def construct_rolling_window_array(
+def construct_rolling_window_array(  # type: ignore[overload-cannot-match]
     x: NDArrayAny,
     window: int | Sequence[int],
     *,
@@ -906,7 +906,7 @@ def rolling_exp_data(
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpDataKwargs],
-) -> NDArray[FloatT]: ...
+) -> NDArrayAny: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -1222,7 +1222,7 @@ def rolling_exp_vals(
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpValsKwargs],
-) -> NDArray[FloatT]: ...
+) -> NDArrayAny: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]

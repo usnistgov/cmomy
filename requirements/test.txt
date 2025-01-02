@@ -7,7 +7,7 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
-dask;python_version=="3.11"
+dask; python_version == "3.11"
 docstring-inheritance
 lazy-loader
 module-utilities>=0.6
@@ -17,6 +17,6 @@ pytest
 pytest-cov
 pytest-sugar
 pytest-xdist
-scipy;python_version=="3.11"
+scipy; python_version == "3.11"
 typing-extensions>=4.10.0
 xarray>=2023.9.0

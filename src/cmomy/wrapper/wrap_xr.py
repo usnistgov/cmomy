@@ -187,13 +187,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     def iter(self) -> Any: ...
 
     def iter(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
-        """Need this for proper typing with mypy..."""
+        """Need this for proper typing with mypy..."""  # noqa: DOC402
         if is_dataarray(self._obj):
             if self.ndim <= self.mom_ndim:
                 msg = "Can only iterate over wrapped DataArray with extra dimension."
                 raise ValueError(msg)
             for obj in self._obj:
-                yield self.new_like(obj)  # noqa: DOC402
+                yield self.new_like(obj)
         else:
             yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
@@ -660,8 +660,8 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         See Also
         --------
         reduction.reduce_data
-        reduction.reduce_data_grouped
-        reduction.reduce_data_indexed
+        grouped.reduce_data_grouped
+        grouped.reduce_data_indexed
 
         Examples
         --------
@@ -758,7 +758,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         Note that this is the same as the group reduction above. For finer
         control of how ``block`` is transformed to ``by``, see
-        :func:`~.reduction.block_by`.
+        :func:`~.grouped.block_by`.
         """
         if by is None and block is not None:
             by = self._block_by(block, axis=axis, dim=dim)
@@ -785,7 +785,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             )
 
         elif coords_policy in {"first", "last"}:
-            from cmomy.reduction import factor_by_to_index, reduce_data_indexed
+            from cmomy.grouped import factor_by_to_index, reduce_data_indexed
 
             if isinstance(by, str):
                 _groups, index, group_start, group_end = factor_by_to_index(
@@ -819,11 +819,11 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
         else:
-            from cmomy.reduction import reduce_data_grouped
+            from cmomy.grouped import reduce_data_grouped
 
             codes: ArrayLike
             if isinstance(by, str):
-                from cmomy.reduction import factor_by
+                from cmomy.grouped import factor_by
 
                 _groups, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                 if groups is None:

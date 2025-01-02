@@ -70,7 +70,7 @@ def _do_test(func, *args, expected, **kwargs):
         (cmomy.reduction.reduce_data, {"mom_ndim": 1, "axis": 0}, (1, 2)),
         (do_wrap_method("reduce"), {"mom_ndim": 1, "axis": 0}, (1, 2)),
         (
-            cmomy.reduction.reduce_data_grouped,
+            cmomy.grouped.reduce_data_grouped,
             {"mom_ndim": 1, "by": [0, 0, 1, 1, 1], "axis": 0},
             (2, 1, 2),
         ),
@@ -80,7 +80,7 @@ def _do_test(func, *args, expected, **kwargs):
             (2, 1, 2),
         ),
         (
-            cmomy.reduction.reduce_data_indexed,
+            cmomy.grouped.reduce_data_indexed,
             {
                 "mom_ndim": 1,
                 "index": range(5),
