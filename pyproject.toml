@@ -53,19 +53,16 @@ dev = [
     { include-group = "mypy" },
     { include-group = "nbval" },
     { include-group = "test" },
-    { include-group = "test-scipy" },
     { include-group = "typing" },
     { include-group = "uvxrun" },
 ]
 test = [
-    "pytest",
-    "pytest-cov",
-    "pytest-sugar",
-    "pytest-xdist",
+    { include-group = "test-extras" },
+    { include-group = "test-scipy" },
 ]
 docs = [
     "autodocsumm",
-    "myst-nb",
+    "myst-nb; python_version>'3.9'",
     "pyenchant",
     "sphinx>=5.3.0",
     "sphinx-autobuild",
@@ -74,10 +71,7 @@ docs = [
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
 ]
-dev-complete = [
-    { include-group = "dev" },
-    { include-group = "tools" },
-]
+cog = [ "cogapp" ]
 dev-extras = [
     "ipykernel",
     "ipython",
@@ -85,15 +79,28 @@ dev-extras = [
     "nox>=2024.4.15",
     "pytest-accept",
 ]
-mypy = [ "mypy>=1.13.0" ]
+numpy1 = [ "numpy<2.0" ]
+numpy2 = [ "numpy>2.0" ]
+mypy = [ "mypy>=1.14.1" ]
 nbval = [ "nbval" ]
+test-extras = [
+    "pytest",
+    "pytest-cov",
+    "pytest-sugar",
+    "pytest-xdist",
+]
+test-notebook = [
+    "dask[diagnostics]",
+    { include-group = "nbval" },
+    { include-group = "test-extras" },
+]
+test-numpy1 = [
+    { include-group = "numpy1" },
+    { include-group = "test-extras" },
+]
 test-scipy = [
     "dask; python_version=='3.11'",
     "scipy; python_version=='3.11'",
-]
-tools = [
-    "pre-commit",
-    "scriv",
 ]
 typing = [
     "pandas-stubs",
@@ -107,14 +114,17 @@ uvxrun-tools = [
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pyproject2conda>=0.13.0",
-    "pyright>=1.1.389",
+    "pre-commit",
+    "pyproject2conda>=0.16.0",
+    "pyright>=1.1.391",
+    "scriv",
     "twine>=5.0.0",
     { include-group = "mypy" },
 ]
 
 [tool.hatch.version]
 source = "vcs"
+raw-options = { local_scheme = "no-local-version" }
 
 [tool.hatch.build]
 exclude = [
@@ -485,9 +495,7 @@ inputs = [
 user_config = "config/userconfig.toml"
 template_python = "requirements/py{py}-{env}"
 template = "requirements/{env}"
-python = [
-    "3.11",
-]
+python = "default"
 channels = [
     "conda-forge",
 ]
@@ -499,7 +507,8 @@ default_envs = [
     "typing",
     "docs",
     "dev",
-    "dev-complete",
+    "test",
+    "test-notebook",
     "uvxrun-tools",
 ]
 
@@ -511,27 +520,13 @@ lazy-loader = { skip = true, packages = "lazy_loader" }
 [tool.pyproject2conda.envs.build]
 groups = "build-system.requires"
 
-[tool.pyproject2conda.envs.test]
-groups = [
-    "test",
-    "test-scipy",
-]
-
 [tool.pyproject2conda.envs.test-extras]
-groups = [ "test" ]
+groups = [ "test-extras" ]
 skip_package = true
 
 [tool.pyproject2conda.envs.test-numpy1]
-groups = "test"
-reqs = [ "numpy<2.0" ]
+groups = [ "test-numpy1" ]
 style = "requirements"
-
-[tool.pyproject2conda.envs.test-notebook]
-reqs = [ "dask[diagnostics]" ]
-groups = [
-    "test",
-    "nbval",
-]
 
 [[tool.pyproject2conda.overrides]]
 envs = [
@@ -547,7 +542,6 @@ envs = [
     "test",
     "docs",
     "dev",
-    "dev-complete",
 ]
 deps = [ "pip" ]
 
@@ -557,18 +551,7 @@ envs = [
     "typing",
     "test-extras",
 ]
-python = [
-    "3.9",
-    "3.10",
-    "3.11",
-    "3.12",
-]
-
-# * pip-tools (keeping for legacy) ---------------------------------------------
-
-[tool.pip-tools]
-allow-unsafe = true
-strip-extras = true
+python = "all"
 
 # * uv -------------------------------------------------------------------------
 

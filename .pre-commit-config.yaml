@@ -11,6 +11,7 @@ repos:
     rev: v5.0.0
     hooks:
       - id: check-added-large-files
+        exclude: ^uv[.]lock
       - id: check-case-conflict
       - id: check-merge-conflict
       - id: check-symlinks
@@ -22,7 +23,7 @@ repos:
       - id: mixed-line-ending
   # * Sync dependencies
   - repo: https://github.com/mxr/sync-pre-commit-deps
-    rev: v0.0.1
+    rev: v0.0.2
     hooks:
       - id: sync-pre-commit-deps
 
@@ -46,11 +47,12 @@ repos:
 
   # * Markdown
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.15.0
+    rev: v0.17.1
     hooks:
       - id: markdownlint-cli2
         alias: markdownlint
         args: [--style, prettier]
+        # language_version: 10.9.0
 
   # * Linting
   # To be replace by ruff analog when I find one ...
@@ -61,7 +63,7 @@ repos:
         additional_dependencies:
           - black==24.3.0
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0
+    rev: v0.8.5
     hooks:
       - id: ruff
         alias: ruff-all
@@ -116,14 +118,14 @@ repos:
 
   # * Commit message
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.0.0
+    rev: v4.1.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
   # * Manual Linting ------------------------------------------------------------
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.0
+    rev: v3.19.1
     hooks:
       - id: pyupgrade
         stages: [manual]
@@ -135,11 +137,17 @@ repos:
         additional_dependencies: [pyupgrade]
         stages: [manual]
         args: [--py38-plus]
+  - repo: https://github.com/mrtazz/checkmake.git
+    # Or another commit hash or version
+    rev: 0.2.2
+    hooks:
+      - id: checkmake
+        stages: [manual]
 
   # ** typos
   # Probably stick with codespell, but this might also be nice...
   - repo: https://github.com/crate-ci/typos
-    rev: v1.28.1
+    rev: v1.28.4
     hooks:
       - id: typos
         stages: [manual]
@@ -150,7 +158,7 @@ repos:
       - id: nbqa
         alias: nbqa-typos
         name: nbqa-typos
-        additional_dependencies: &typos-deps [typos==1.28.1] # make sure save version as above.
+        additional_dependencies: &typos-deps [typos==1.28.4] # make sure save version as above.
         stages: [manual]
         args: [typos, --nbqa-shell]
         exclude: &nbqa-typos-exclude "^examples/archived/"
