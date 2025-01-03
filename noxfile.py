@@ -69,7 +69,7 @@ nox.options.default_venv_backend = "uv"
 # * Options ---------------------------------------------------------------------------
 
 # if True, use uv lock/sync.  If False, use uv pip compile/sync...
-UV_LOCK = False
+UV_LOCK = True
 
 PYTHON_ALL_VERSIONS = [
     c.split()[-1]
@@ -580,11 +580,14 @@ def test_notebook(session: nox.Session, opts: SessionParams) -> None:
     --nbval-current-env
     --nbval-sanitize-with=config/nbval.ini
     --dist loadscope
-     examples/usage
    """,
     )
 
-    test_opts = (opts.test_opts or []) + test_nbval_opts
+    test_opts = (
+        (opts.test_opts or [])
+        + test_nbval_opts
+        + list(map(str, Path("examples/usage").glob("*.ipynb")))
+    )
 
     session.log(f"{test_opts = }")
 
@@ -605,7 +608,12 @@ def test_numpy1(
 ) -> None:
     """Test environments with numpy<2.0."""
     install_dependencies(
-        session, name="test-numpy1", opts=opts, include_editable_package=True
+        session,
+        "--no-group=numpy2",
+        "--group=numpy1",
+        name="test",
+        opts=opts,
+        include_editable_package=True,
     )
     # install_package(session, editable=False, update=True)  # noqa: ERA001
 

@@ -266,7 +266,7 @@ def resample_data(  # noqa: PLR0913
             xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         if not axes_to_end and is_dataarray(data):
-            dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr, misc,index,operator]
+            dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr, misc,operator]
             xout = xout.transpose(*dims_order)
         return xout
 
@@ -492,8 +492,8 @@ def resample_vals(  # noqa: PLR0913
         )
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-            x, w, *y, _freq = args
-            return _resample_vals(x, w, *y, freq=_freq, **kwargs)  # type: ignore[has-type]
+            x, w, *y, freq = args
+            return _resample_vals(x, w, *y, freq=freq, **kwargs)  # type: ignore[has-type]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
