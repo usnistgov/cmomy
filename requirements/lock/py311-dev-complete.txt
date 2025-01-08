@@ -30,7 +30,7 @@ iniconfig==2.0.0          # via pytest
 ipykernel==6.29.5         # via nbval, -r requirements/dev-complete.txt
 ipython==8.29.0           # via ipykernel, -r requirements/dev-complete.txt
 jedi==0.19.1              # via ipython
-jinja2==3.1.4             # via scriv
+jinja2==3.1.5             # via scriv
 jsonschema==4.23.0        # via nbformat
 jsonschema-specifications==2024.10.1  # via jsonschema
 jupyter-client==8.6.3     # via ipykernel, nbclient, nbval
