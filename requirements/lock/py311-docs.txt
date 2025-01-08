@@ -28,7 +28,7 @@ importlib-metadata==8.5.0  # via jupyter-cache, myst-nb
 ipykernel==6.29.5         # via myst-nb
 ipython==8.29.0           # via ipykernel, myst-nb
 jedi==0.19.1              # via ipython
-jinja2==3.1.4             # via myst-parser, sphinx
+jinja2==3.1.5             # via myst-parser, sphinx
 jsonschema==4.23.0        # via nbformat
 jsonschema-specifications==2024.10.1  # via jsonschema
 jupyter-cache==1.0.0      # via myst-nb
