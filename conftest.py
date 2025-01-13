@@ -59,8 +59,11 @@ def pytest_runtest_setup(item):
 
 def pytest_ignore_collect(collection_path) -> None:
     import sys
+    from pathlib import Path
 
-    if sys.version_info[:2] != (3, 11):
+    if sys.version_info[:2] != tuple(
+        map(int, Path(".python-version").read_text(encoding="utf-8").strip().split("."))
+    ):
         return "cmomy/tests" not in str(collection_path)
 
     return False

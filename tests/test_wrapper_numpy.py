@@ -13,11 +13,12 @@ import xarray as xr
 import cmomy
 from cmomy import CentralMomentsArray
 from cmomy.core.moment_params import MomParamsArray
-from cmomy.core.typing import SelectMoment
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
+
+    from cmomy.core.typing import SelectMoment
 
 
 @pytest.fixture(
@@ -387,7 +388,7 @@ def test_select_moment(
     val = getattr(wrapped, attr)()
     data, mom_ndim = wrapped.obj, wrapped.mom_ndim
     if isinstance(name, str):
-        check = cmomy.select_moment(data, cast(SelectMoment, name), mom_ndim=mom_ndim)
+        check = cmomy.select_moment(data, cast("SelectMoment", name), mom_ndim=mom_ndim)
     elif callable(name):
         check = name(data, mom_ndim)
     np.testing.assert_allclose(val, check)

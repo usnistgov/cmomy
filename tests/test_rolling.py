@@ -64,14 +64,14 @@ def test_construct_rolling_window_array(shape, axis, window, center, as_dataarra
     data = np.arange(np.prod(shape)).reshape(shape).astype(np.float64)
 
     xdata = xr.DataArray(data)
-    _axis = (axis,) if isinstance(axis, int) else axis
-    _window = (window,) * len(_axis) if isinstance(window, int) else window
+    axis_ = (axis,) if isinstance(axis, int) else axis
+    window_ = (window,) * len(axis_) if isinstance(window, int) else window
     r = xdata.rolling(
-        {xdata.dims[a]: win for a, win in zip(_axis, _window)}, center=center
+        {xdata.dims[a]: win for a, win in zip(axis_, window_)}, center=center
     )
 
-    window_dims = [f"_rolling_{a}" for a in _axis]
-    c = r.construct({xdata.dims[a]: w for a, w in zip(_axis, window_dims)}).transpose(
+    window_dims = [f"_rolling_{a}" for a in axis_]
+    c = r.construct({xdata.dims[a]: w for a, w in zip(axis_, window_dims)}).transpose(
         *window_dims, ...
     )
 
@@ -261,7 +261,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     rx = pd.DataFrame(x).rolling(**kws)
     rw = pd.DataFrame(w).replace(0.0, np.nan).rolling(**kws)
 
-    _tests = [
+    tests = [
         ("weight", rw.sum().fillna(0.0)),
         ("xave", rx.mean()),
         ("xvar", rx.var(ddof=0)),
@@ -270,14 +270,14 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     if mom_ndim == 2:
         dfy = pd.DataFrame(y)
         ry = dfy.rolling(**kws)
-        _tests = [
-            *_tests,
+        tests = [
+            *tests,
             ("yave", ry.mean()),
             ("yvar", ry.var(ddof=0)),
             ("cov", rx.cov(dfy, ddof=0)),
         ]
 
-    for name, expected in _tests:
+    for name, expected in tests:
         _do_test_select(out, name, mom_ndim, expected)
 
 
@@ -448,19 +448,19 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     rx = pd.DataFrame(x).ewm(**kws)
     rw = pd.DataFrame(w).replace(0.0, np.nan).ewm(**kws)
 
-    _tests = [("weight", rw.sum().fillna(0.0))] if adjust else []
-    _tests += [("xave", rx.mean()), ("xvar", rx.var(bias=True))]
+    tests = [("weight", rw.sum().fillna(0.0))] if adjust else []
+    tests += [("xave", rx.mean()), ("xvar", rx.var(bias=True))]
 
     if mom_ndim == 2:
         dfy = pd.DataFrame(y)
         ry = dfy.ewm(**kws)
-        _tests += [
+        tests += [
             ("yave", ry.mean()),
             ("yvar", ry.var(bias=True)),
             ("cov", rx.cov(dfy, bias=True)),
         ]
 
-    for name, expected in _tests:
+    for name, expected in tests:
         _do_test_select(out, name, mom_ndim, expected)
 
 
@@ -583,17 +583,17 @@ def test_rolling_exp_weight(
     )
 
     freq = np.zeros((shape[axis],) * 2)
-    _w = np.array([], dtype=np.float64)
+    w = np.array([], dtype=np.float64)
     old_weight = 0.0
     for k in range(shape[axis]):
-        _w *= 1 - alphas[k]
-        _w = np.append(_w, 1.0 if adjust else alphas[k])
+        w *= 1 - alphas[k]
+        w = np.append(w, 1.0 if adjust else alphas[k])
         if not adjust:
             old_weight = old_weight * (1 - alphas[k]) + alphas[k]
-            _w /= old_weight
+            w /= old_weight
             old_weight = 1.0
 
-        freq[k, : k + 1] = _w
+        freq[k, : k + 1] = w
 
     a = rolling.rolling_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust

@@ -22,10 +22,10 @@ logger = logging.getLogger("make_parallel_files")
 
 
 def _write_file(path_in: Path, path_out: Path) -> None:
-    _parallel_line = re.compile(r"^_PARALLEL.*?=.*?False(.*)")
+    parallel_line = re.compile(r"^_PARALLEL.*?=.*?False(.*)")
     with path_in.open() as f_in, path_out.open("w") as f_out:
         for line in f_in:
-            match = _parallel_line.match(line)
+            match = parallel_line.match(line)
             if match:
                 f_out.write(f"_PARALLEL = True  # Auto generated from {path_in.name}\n")
             else:

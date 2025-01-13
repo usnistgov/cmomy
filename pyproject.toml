@@ -95,8 +95,8 @@ test-notebook = [
     { include-group = "test-extras" },
 ]
 test-scipy = [
-    "dask; python_version=='3.11'",
-    "scipy; python_version=='3.11'",
+    "dask; python_version=='3.12'",
+    "scipy; python_version=='3.12'",
 ]
 typing = [
     "pandas-stubs",

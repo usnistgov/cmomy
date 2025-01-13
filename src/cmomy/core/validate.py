@@ -232,8 +232,8 @@ def validate_mom_dims(
             out = out[next(iter(out))]
 
         if is_dataarray(out):
-            _axes = range(-mom_ndim, 0) if mom_axes is None else mom_axes
-            return cast("MomDimsStrict", tuple(out.dims[a] for a in _axes))
+            axes = range(-mom_ndim, 0) if mom_axes is None else mom_axes
+            return cast("MomDimsStrict", tuple(out.dims[a] for a in axes))
 
         if mom_ndim == 1:
             return ("mom_0",)

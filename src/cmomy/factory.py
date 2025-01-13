@@ -8,8 +8,9 @@ from typing import TYPE_CHECKING, NamedTuple, cast
 from cmomy.options import OPTIONS
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from types import ModuleType
-    from typing import Any, Callable, Protocol
+    from typing import Any, Protocol
 
     from numpy.typing import NDArray
 

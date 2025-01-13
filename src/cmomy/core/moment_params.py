@@ -298,7 +298,7 @@ class MomParamsArray(MomParamsBase):
         out_has_axis: bool = False,
     ) -> AxesGUFunc:
         """
-        axes for reducing data along axis
+        Axes for reducing data along axis
 
         if ``out_has_axis == True``, then treat like resample,
         so output will still have ``axis`` with new size in output.

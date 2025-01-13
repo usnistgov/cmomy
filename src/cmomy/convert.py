@@ -282,7 +282,7 @@ def _moments_type(
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
-    _axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
+    axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
 
     if out is None and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
         values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
@@ -291,7 +291,7 @@ def _moments_type(
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
         values_in,  # type: ignore[arg-type]
         out=out,
-        axes=[mom_params.axes, _axes_out],
+        axes=[mom_params.axes, axes_out],
         dtype=dtype,
         casting=casting,
         order=order,

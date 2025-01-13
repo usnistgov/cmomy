@@ -105,7 +105,7 @@ def test_iter(c_dataset) -> None:
         xr.testing.assert_allclose(c.obj, expected)
 
     c = cmomy.wrap(xr.DataArray(np.zeros(3)))
-    with pytest.raises(ValueError, match=".*Can only iterate.*"):
+    with pytest.raises(ValueError, match=r".*Can only iterate.*"):
         list(c)
 
 
@@ -120,11 +120,11 @@ def test_new_like_errors() -> None:
     c = cmomy.wrap(np.zeros((2, 3))).to_x()
 
     # missing mom_dims
-    with pytest.raises(ValueError, match=".*Cannot create.*"):
+    with pytest.raises(ValueError, match=r".*Cannot create.*"):
         c.new_like(xr.DataArray(np.zeros((2, 3))))
 
     # with strict verify
-    with pytest.raises(ValueError, match=".*Wrong `obj.sizes`"):
+    with pytest.raises(ValueError, match=r".*Wrong `obj.sizes`"):
         c.new_like(xr.DataArray(np.zeros((3,)), dims=c.dims[-1]), verify=True)  # type: ignore[arg-type]
 
     new = c.new_like(copy=True)

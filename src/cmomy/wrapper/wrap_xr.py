@@ -788,14 +788,14 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             from cmomy.grouped import factor_by_to_index, reduce_data_indexed
 
             if isinstance(by, str):
-                _groups, index, group_start, group_end = factor_by_to_index(
+                groups_, index, group_start, group_end = factor_by_to_index(
                     self._obj[by].to_numpy()  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
                 )
             else:
-                _groups, index, group_start, group_end = factor_by_to_index(by)
+                groups_, index, group_start, group_end = factor_by_to_index(by)
 
             if groups is None:
-                groups = _groups
+                groups = groups_
 
             data = reduce_data_indexed(
                 self._obj,
@@ -825,9 +825,9 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             if isinstance(by, str):
                 from cmomy.grouped import factor_by
 
-                _groups, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                groups_, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                 if groups is None:
-                    groups = _groups
+                    groups = groups_
             else:
                 codes = by
 

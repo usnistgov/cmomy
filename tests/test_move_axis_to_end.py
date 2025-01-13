@@ -96,12 +96,12 @@ def test_vals_axes_to_end(
     )
 
     # using out parameter
-    _outs = [np.zeros_like(o) for o in outs]
+    outs_ = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(*xy, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), _outs)
+        func(*xy, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), outs_)
     ]
 
-    for a, b, c in zip(outs2, _outs, outs):
+    for a, b, c in zip(outs2, outs_, outs):
         np.shares_memory(a, b)
         np.testing.assert_allclose(a, c)
 
@@ -195,12 +195,12 @@ def test_data_axes_to_end(
     np.testing.assert_allclose(outs[0], check)
 
     # using out parameter
-    _outs = [np.zeros_like(o) for o in outs]
+    outs_ = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(data, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), _outs)
+        func(data, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), outs_)
     ]
 
-    for a, b, c in zip(outs2, _outs, outs):
+    for a, b, c in zip(outs2, outs_, outs):
         np.shares_memory(a, b)
         np.testing.assert_allclose(a, c)
 

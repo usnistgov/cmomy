@@ -174,7 +174,7 @@ def transpose_like(
 ) -> DataT:
     """Transpose ``data_out`` like ``template``."""
     replace = {} if replace is None else dict(replace)
-    _remove: set[Hashable] = (
+    remove_: set[Hashable] = (
         set()
         if remove is None
         else set([remove])  # noqa: C405
@@ -191,7 +191,7 @@ def transpose_like(
             keep_attrs=keep_attrs,
             template=template,
             replace=replace,
-            remove=_remove,
+            remove=remove_,
             prepend=prepend,
             append=append,
         )
@@ -199,7 +199,7 @@ def transpose_like(
         data_out,
         template=template,
         replace=replace,
-        remove=_remove,
+        remove=remove_,
         prepend=prepend,  # pyright: ignore[reportArgumentType]
         append=append,  # pyright: ignore[reportArgumentType]
     )

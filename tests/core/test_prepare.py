@@ -13,7 +13,7 @@ from cmomy.core.missing import MISSING
 dtype_mark = pytest.mark.parametrize("dtype", [np.float32, np.float64, None])
 order_mark = pytest.mark.parametrize("order", ["C", None])
 prepare_values_mark = pytest.mark.parametrize(
-    "axis, xshape, xshape2, yshape, yshape2, wshape, wshape2",
+    ("axis", "xshape", "xshape2", "yshape", "yshape2", "wshape", "wshape2"),
     [
         (0, (10, 2, 3), (2, 3, 10), (), (10,), (), (10,)),
         (0, (10, 2, 3), (2, 3, 10), (10, 2, 1), (2, 1, 10), (10, 1, 1), (1, 1, 10)),

@@ -78,7 +78,7 @@ def test_raw(data_and_kwargs) -> None:
 # * Moments to comoments
 @pytest.mark.parametrize("mom", [(1,), (1, 2, 3), 1])
 def test__validate_mom_moments_to_comoments_mom(mom):
-    with pytest.raises(ValueError, match="Must supply length 2.*"):
+    with pytest.raises(ValueError, match=r"Must supply length 2.*"):
         convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=4)
 
 
@@ -97,7 +97,9 @@ def test__validate_mom_moments_to_comoments_mom(mom):
 )
 def test__validate_mom_moments_to_comoments(mom_orig, mom, expected) -> None:
     if expected == "error":
-        with pytest.raises(ValueError, match=".* inconsistent with original moments.*"):
+        with pytest.raises(
+            ValueError, match=r".* inconsistent with original moments.*"
+        ):
             convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=mom_orig)
 
     else:
@@ -151,7 +153,7 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
 
     # raise error for mom_ndim=2
     for _c in [c2, c2x]:
-        with pytest.raises(ValueError, match="Only implemented for.*"):
+        with pytest.raises(ValueError, match=r"Only implemented for.*"):
             c2.moments_to_comoments(mom=(1, -1))
 
     # keep attrs

@@ -674,9 +674,9 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
         if kwargs["dim"] in da.dims:
             if y is not None:
                 dy = y if is_dataarray(y) else y[name]
-                _xy = (da, dy)
+                xy_ = (da, dy)
             else:
-                _xy = (da,)
+                xy_ = (da,)
 
             if weight is not None:
                 w = weight if is_dataarray(weight) else weight[name]
@@ -684,7 +684,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
                 w = weight
 
             da = cmomy.resample_vals(
-                *_xy,
+                *xy_,
                 weight=w,
                 **kwargs,
                 sampler={"freq": freq if is_dataarray(freq) else freq[name]},

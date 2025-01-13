@@ -79,23 +79,23 @@ def factor_by(
     from pandas import factorize  # pyright: ignore[reportUnknownVariableType]
 
     # filter None and negative -> None
-    _by: Groups
+    by_: Groups
     if isinstance(by, pd.Index):
-        _by = by
+        by_ = by
     else:
-        _by = np.fromiter(
+        by_ = np.fromiter(
             (None if isinstance(x, (int, np.integer)) and x < 0 else x for x in by),  # pyright: ignore[reportUnknownArgumentType]
             dtype=object,
         )
 
-    codes, groups = factorize(_by, sort=sort)  # pyright: ignore[reportUnknownVariableType]
+    codes, groups = factorize(by_, sort=sort)  # pyright: ignore[reportUnknownVariableType]
 
     codes = codes.astype(np.int64)
-    if isinstance(_by, (pd.Index, pd.MultiIndex)):
+    if isinstance(by_, (pd.Index, pd.MultiIndex)):
         if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # pragma: no cover
             msg = f"{type(groups)=} should be instance of pd.Index"  # pyright: ignore[reportUnknownArgumentType]
             raise TypeError(msg)
-        groups.names = _by.names
+        groups.names = by_.names
         return groups, codes  # pyright: ignore[reportUnknownVariableType]
 
     return list(groups), codes  # pyright: ignore[reportUnknownArgumentType]

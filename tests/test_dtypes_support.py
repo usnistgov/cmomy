@@ -53,7 +53,7 @@ dtype_out_marks = pytest.mark.parametrize(
 
 def _do_test(func, *args, expected, **kwargs):
     if expected == "error":
-        with pytest.raises(ValueError, match=".*not supported.*"):
+        with pytest.raises(ValueError, match=r".*not supported.*"):
             func(*args, **kwargs)
     else:
         out = func(*args, **kwargs)
@@ -290,7 +290,7 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
     assert c.dtype.type == dtype_base
 
     if expected == "error":
-        with pytest.raises(ValueError, match=".*not supported.*"):
+        with pytest.raises(ValueError, match=r".*not supported.*"):
             c.new_like(data, dtype=dtype)
     elif dtype is None:
         assert c.new_like().dtype.type == dtype_base

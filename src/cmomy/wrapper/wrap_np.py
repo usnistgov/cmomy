@@ -73,7 +73,7 @@ docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
-@docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
+@docfiller.inherit(CentralMomentsABC)
 class CentralMomentsArray(
     CentralMomentsABC[NDArray[FloatT], MomParamsArray],  # type: ignore[type-var]
     Generic[FloatT],

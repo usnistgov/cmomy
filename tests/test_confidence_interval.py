@@ -297,7 +297,7 @@ def test_xmean_2a(
 ) -> None:
     from cmomy.confidence_interval import bootstrap_confidence_interval
 
-    with pytest.raises(TypeError, match=".*`theta_hat`.*"):
+    with pytest.raises(TypeError, match=r".*`theta_hat`.*"):
         _ = bootstrap_confidence_interval(
             theta_hat=theta_hat[..., 1],
             theta_boot=xtheta_boot[..., 1],
@@ -318,7 +318,7 @@ def test_xmean_2b(
 ) -> None:
     from cmomy.confidence_interval import bootstrap_confidence_interval
 
-    with pytest.raises(TypeError, match=".*`theta_jack`.*"):
+    with pytest.raises(TypeError, match=r".*`theta_jack`.*"):
         _ = bootstrap_confidence_interval(
             theta_hat=xtheta_hat[..., 1],
             theta_boot=xtheta_boot[..., 1],

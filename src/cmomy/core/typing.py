@@ -5,11 +5,10 @@ Typing aliases (:mod:`cmomy.core.typing`)
 
 from __future__ import annotations
 
-from collections.abc import Collection, Hashable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Collection, Hashable, Iterable, Mapping, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Literal,
     Optional,
     Protocol,

@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any
 
 # TODO(wpk): Add in environment variables for these things...
 # CMOMY_FASTMATH ->

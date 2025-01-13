@@ -11,8 +11,8 @@ from numba import guvectorize, njit
 from ..options import OPTIONS
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
-    from typing import Any, Callable
+    from collections.abc import Callable, Iterable, Sequence
+    from typing import Any
 
     from cmomy.core.typing import FuncT, NumbaType
 
