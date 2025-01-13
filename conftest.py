@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import pytest
 
 
@@ -57,13 +59,18 @@ def pytest_runtest_setup(item):
         pytest.skip("need --typing option to run")
 
 
-def pytest_ignore_collect(collection_path) -> None:
+@lru_cache
+def _is_default_version() -> bool:
     import sys
     from pathlib import Path
 
-    if sys.version_info[:2] != tuple(
+    return sys.version_info[:2] == tuple(
         map(int, Path(".python-version").read_text(encoding="utf-8").strip().split("."))
-    ):
+    )
+
+
+def pytest_ignore_collect(collection_path) -> bool:
+    if not _is_default_version():
         return "cmomy/tests" not in str(collection_path)
 
     return False
