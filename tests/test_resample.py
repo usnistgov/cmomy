@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, assignment, arg-type, call-overload"
 # pyright: reportCallIssue=false, reportArgumentType=false
+# pylint: disable=protected-access
 """
 Test basics of resampling.
 
@@ -302,6 +303,8 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
                 ),
             }
         )
+    else:
+        raise ValueError
 
     assert_allclose = (
         xr.testing.assert_allclose if is_xarray(idx) else np.testing.assert_allclose

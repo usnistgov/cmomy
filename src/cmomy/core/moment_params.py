@@ -1,5 +1,6 @@
 """Helper class to work with moment parameters."""
 
+# pylint: disable=missing-class-docstring
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

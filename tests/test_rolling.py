@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type, index, assignment, call-overload"
 # pyright:  reportArgumentType=false, reportAssignmentType=false
+# pylint: disable=missing-class-docstring,protected-access
 from __future__ import annotations
 
 from functools import partial

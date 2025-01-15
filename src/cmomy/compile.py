@@ -11,6 +11,7 @@ the command line with
 
 """
 
+# pylint: disable=missing-class-docstring
 from __future__ import annotations
 
 import itertools
@@ -33,6 +34,7 @@ logger = logging.getLogger("cmomy.compile")
 
 
 class _Catchtime:
+    # pylint: disable=attribute-defined-outside-init
     def __enter__(self) -> Self:
         self.start = perf_counter()
         return self

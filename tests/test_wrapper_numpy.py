@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 # pyright: reportCallIssue=false, reportArgumentType=false
+# pylint: disable=protected-access
 from __future__ import annotations
 
 import functools
@@ -81,13 +82,13 @@ def test_getitem(wrapped) -> None:
 
     if wrapped.ndim == 1:
         with pytest.raises(ValueError):
-            wrapped[0, ...]
+            _ = wrapped[0, ...]
 
     else:
         _ = wrapped[0, ...]
 
         with pytest.raises(ValueError):
-            wrapped[..., 0]
+            _ = wrapped[..., 0]
 
 
 def test_new_like(wrapped) -> None:
@@ -391,6 +392,8 @@ def test_select_moment(
         check = cmomy.select_moment(data, cast("SelectMoment", name), mom_ndim=mom_ndim)
     elif callable(name):
         check = name(data, mom_ndim)
+    else:
+        raise TypeError
     np.testing.assert_allclose(val, check)
 
 

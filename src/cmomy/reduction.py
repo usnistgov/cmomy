@@ -597,6 +597,7 @@ def _reduce_data(
         # make the output have correct order if passed ``order`` flag.
         out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
 
+    # pylint: disable=unexpected-keyword-arg
     out = factory_reduce_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),

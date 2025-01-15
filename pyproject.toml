@@ -100,6 +100,7 @@ test-scipy = [
 ]
 typing = [
     "pandas-stubs",
+    "pylint",
     "pytest",
     { include-group = "uvxrun" },
 ]
@@ -480,17 +481,12 @@ user_config = "config/userconfig.toml"
 template_python = "requirements/py{py}-{env}"
 template = "requirements/{env}"
 python = "default"
-channels = [
-    "conda-forge",
-]
-style = [
-    "yaml",
-]
-deps = [ "pip" ]
+channels = "conda-forge"
+style = "yaml"
+deps = "pip"
 
 [tool.pyproject2conda.dependencies]
 pytest-accept = { pip = true }
-scriv = { pip = true }
 lazy-loader = { skip = true, packages = "lazy_loader" }
 
 [tool.pyproject2conda.envs.dev]

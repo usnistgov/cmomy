@@ -391,7 +391,7 @@ def test_func_data_dataset(data_and_kwargs, func, kwargs_callback, axes_to_end) 
             "mom_dims" not in kws or kws["mom_dims"] in da.dims
         ):
             da = func(da, **kws)
-    xr.testing.assert_allclose(out[k], da)
+        xr.testing.assert_allclose(out[k], da)
 
 
 @pytest.mark.parametrize(
@@ -710,7 +710,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
 
 # * Chunking
 try:
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
 
     HAS_DASK = True
 except ImportError:

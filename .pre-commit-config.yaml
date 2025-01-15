@@ -33,17 +33,16 @@ repos:
     hooks:
       - id: pyproject-fmt
         args: [--indent=4, --keep-full-version]
-        files: ^pyproject.toml$
+        files: ""
+        types: [toml]
 
   # * Prettier
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
+  - repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.4.2
     hooks:
       - id: prettier
         alias: markdownlint
         stages: [pre-commit]
-        additional_dependencies:
-          - prettier-plugin-toml
 
   # * Markdown
   - repo: https://github.com/DavidAnson/markdownlint-cli2
@@ -63,7 +62,7 @@ repos:
         additional_dependencies:
           - black==24.3.0
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.5
+    rev: v0.9.1
     hooks:
       - id: ruff
         alias: ruff-all
@@ -81,6 +80,7 @@ repos:
         additional_dependencies: [tomli]
         args: [-I, docs/spelling_wordlist.txt]
         exclude_types: [jupyter]
+        exclude: ^uv[.]lock$|^requirements
 
   # * Notebook spelling
   - repo: https://github.com/nbQA-dev/nbQA
@@ -147,18 +147,19 @@ repos:
   # ** typos
   # Probably stick with codespell, but this might also be nice...
   - repo: https://github.com/crate-ci/typos
-    rev: v1.28.4
+    rev: v1.29.4
     hooks:
       - id: typos
         stages: [manual]
-        exclude: "[.]ipynb$"
+        exclude: "[.]ipynb$|^uv[.]lock$|^requirements"
+
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.9.1
     hooks:
       - id: nbqa
         alias: nbqa-typos
         name: nbqa-typos
-        additional_dependencies: &typos-deps [typos==1.28.4] # make sure save version as above.
+        additional_dependencies: &typos-deps [typos==1.29.4] # make sure save version as above.
         stages: [manual]
         args: [typos, --nbqa-shell]
         exclude: &nbqa-typos-exclude "^examples/archived/"

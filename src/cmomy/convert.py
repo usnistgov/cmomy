@@ -530,6 +530,7 @@ def _cumulative(
         dtype=dtype,
     )
 
+    # pylint: disable=unexpected-keyword-arg
     return factory_cumulative(
         mom_ndim=mom_params.ndim,
         inverse=inverse,
@@ -553,7 +554,6 @@ def _validate_mom_moments_to_comoments(
         raise ValueError(msg)
 
     if mom[0] < 0:
-        mom[1]
         out = (mom_orig - mom[1], mom[1])
     elif mom[1] < 0:
         out = (mom[0], mom_orig - mom[0])
@@ -1031,7 +1031,7 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(  # type: ignore[return-value]
+        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg
             tuple(arrays_iter),  # type: ignore[arg-type]
             axis=axis,
             dtype=first.dtype,

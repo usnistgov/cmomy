@@ -1,4 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
+# pylint: disable=protected-access
 """pretty formatting for notebook."""
 
 from typing import TYPE_CHECKING
@@ -74,7 +75,7 @@ def repr_html_wrapper(x):
             v = getattr(x, k)
             if len(v) > 0:  # pragma: no cover
                 attrs[k] = tuple_to_str(v)
-        except Exception:  # noqa: BLE001, S110, PERF203
+        except Exception:  # noqa: BLE001, S110, PERF203  # pylint: disable=broad-exception-caught
             pass
 
     dims = {}

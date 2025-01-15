@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 import numba as nb
 import numpy as np
 
+from . import _push_cov as _push
 from .decorators import myjit
 
 if TYPE_CHECKING:
@@ -14,7 +15,6 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import FloatT
 
-from . import _push_cov as _push
 
 _INLINE: bool | None = None
 

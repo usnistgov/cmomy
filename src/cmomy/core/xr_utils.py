@@ -111,7 +111,7 @@ def replace_coords_from_isel(
     indexes, index_variables = isel_indexes(da_original.xindexes, indexers)
 
     coords = {}
-    for coord_name, coord_value in da_original._coords.items():  # noqa: SLF001  # pyright: ignore[reportPrivateUsage]
+    for coord_name, coord_value in da_original._coords.items():  # noqa: SLF001  # pyright: ignore[reportPrivateUsage]  # pylint: disable=protected-access
         if coord_name in index_variables:
             coord_value = index_variables[coord_name]  # noqa: PLW2901
         else:

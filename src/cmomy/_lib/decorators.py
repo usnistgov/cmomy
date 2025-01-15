@@ -33,7 +33,7 @@ def is_in_unsafe_thread_pool() -> bool:
 def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
-        from numba.np.ufunc import (
+        from numba.np.ufunc import (  # pylint: disable=unused-import
             tbbpool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
         )
     except ImportError:
@@ -42,7 +42,7 @@ def _thread_backend() -> str | None:
         return "tbb"
 
     try:
-        from numba.np.ufunc import (
+        from numba.np.ufunc import (  # pylint: disable=unused-import
             omppool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
         )
     except ImportError:

@@ -20,8 +20,12 @@ from .core.moment_params import (
     MomParamsXArray,
     MomParamsXArrayOptional,
 )
-from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
-from .core.utils import mom_to_mom_shape as mom_to_mom_shape  # noqa: PLC0414
+from .core.utils import (  # pylint: disable=useless-import-alias,unused-import
+    mom_shape_to_mom as mom_shape_to_mom,  # noqa: PLC0414
+)
+from .core.utils import (  # pylint: disable=useless-import-alias
+    mom_to_mom_shape as mom_to_mom_shape,  # noqa: PLC0414
+)
 from .core.validate import (
     is_dataarray,
     is_dataset,

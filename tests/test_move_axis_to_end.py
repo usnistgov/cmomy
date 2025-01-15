@@ -158,7 +158,7 @@ def test_data_axes_to_end(
     if as_dataarray:
         data = xr.DataArray(data)
 
-    kws = dict(axis=axis, mom_ndim=mom_ndim, **kwargs, mom_axes=mom_axes)
+    kws = {"axis": axis, "mom_ndim": mom_ndim, "mom_axes": mom_axes, **kwargs}
     kws = kwargs_callback(kws) if kwargs_callback else kws
 
     outs = [func(data, **kws, axes_to_end=m) for m in (True, False)]
@@ -272,7 +272,7 @@ def test_data_order(
 ) -> None:
     data = rng.random(shape)
 
-    kws = dict(axis=axis, **kwargs, mom_axes=mom_axes)
+    kws = {"axis": axis, "mom_axes": mom_axes, **kwargs}
     kws = kwargs_callback(kws) if kwargs_callback else kws
 
     out, out_ordered, out_last = [

@@ -1,4 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
+# pylint: disable=protected-access
 from __future__ import annotations
 
 from functools import partial
@@ -112,8 +113,6 @@ def test__validate_mom_moments_to_comoments(mom_orig, mom, expected) -> None:
 @pytest.mark.parametrize("shape", [(10,), (10, 3)])
 @pytest.mark.parametrize("dtype", [None, np.float32])
 def test_moments_to_comoments(rng, shape, dtype) -> None:
-    import cmomy
-
     x = rng.random(shape)
 
     data1 = cmomy.reduce_vals(x, axis=0, mom=3)
@@ -184,8 +183,6 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     ],
 )
 def test_cumulative(rng, shape, axis, mom_ndim) -> None:
-    import cmomy
-
     data = rng.random(shape)
     cout = cmomy.convert.cumulative(data, axis=axis, mom_ndim=mom_ndim)
 
@@ -206,8 +203,6 @@ def test_cumulative(rng, shape, axis, mom_ndim) -> None:
 
 @pytest.mark.parametrize("parallel", [True, False])
 def test_cumulative_options(rng, parallel) -> None:
-    import cmomy
-
     func = partial(cmomy.convert.cumulative, mom_ndim=1, axis=0, parallel=parallel)
     ifunc = partial(
         cmomy.convert.cumulative, mom_ndim=1, axis=0, inverse=True, parallel=parallel

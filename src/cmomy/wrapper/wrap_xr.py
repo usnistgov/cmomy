@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
+from cmomy.core.docstrings import docfiller_xcentral as docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
 from cmomy.core.prepare import (
@@ -14,6 +15,7 @@ from cmomy.core.prepare import (
     prepare_values_for_reduction,
     xprepare_values_for_reduction,
 )
+from cmomy.core.typing import DataT
 from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
@@ -26,6 +28,8 @@ from cmomy.core.xr_utils import (
     contains_dims,
     factory_apply_ufunc_kwargs,
 )
+
+from .wrap_abc import CentralMomentsABC
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -74,11 +78,6 @@ if TYPE_CHECKING:
     from cmomy.core.typing_compat import Self
     from cmomy.wrapper.wrap_np import CentralMomentsArray
 
-
-from cmomy.core.docstrings import docfiller_xcentral as docfiller
-from cmomy.core.typing import DataT
-
-from .wrap_abc import CentralMomentsABC
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
@@ -248,7 +247,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
     # ** Create/copy/new ------------------------------------------------------
     @docfiller_inherit_abc()
-    def new_like(  # type: ignore[override]
+    def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ
         self,
         obj: ArrayLike | DataT | Mapping[Any, Any] | None = None,
         *,

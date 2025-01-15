@@ -581,7 +581,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             values = func_or_method(self._obj, *args, **kwargs)
 
         if _reorder and hasattr(self, "mom_dims"):
-            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
+            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]  # pylint: disable=no-member
 
         return self.new_like(
             obj=values,

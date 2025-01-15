@@ -9,6 +9,13 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from cmomy.core.typing import Moments
+
 try:
     from scipy import stats as st  # pyright: ignore[reportMissingImports]
     from scipy.special import ndtr, ndtri  # pyright: ignore[reportMissingImports]
@@ -21,13 +28,6 @@ pytestmark = [
     pytest.mark.scipy,
     pytest.mark.skipif(not HAS_SCIPY, reason="scipy not installed"),
 ]
-
-import cmomy
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
-    from cmomy.core.typing import Moments
 
 
 def test_ndtr(rng: np.random.Generator) -> None:

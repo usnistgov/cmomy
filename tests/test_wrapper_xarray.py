@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 # pyright: reportCallIssue=false, reportArgumentType=false
+# pylint: disable=protected-access
 from __future__ import annotations
 
 from functools import partial
@@ -11,7 +12,7 @@ import xarray as xr
 import cmomy
 
 try:
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
 
     HAS_DASK = True
 except ImportError:
@@ -86,7 +87,7 @@ def test_as_dict(c_dataset) -> None:
 
 def test_getitem(c_dataset) -> None:
     with pytest.raises(KeyError):
-        c_dataset["_hello"]
+        _ = c_dataset["_hello"]
 
     for k, v in c_dataset.obj.items():
         d = c_dataset[k]

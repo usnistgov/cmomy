@@ -1,4 +1,5 @@
 """Interface to routines in this submodule."""
+# pylint: disable=missing-class-docstring
 
 from __future__ import annotations
 

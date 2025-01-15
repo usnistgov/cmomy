@@ -552,6 +552,7 @@ def _rolling_data(
 
     min_periods = window if min_periods is None else min_periods
 
+    # pylint: disable=unexpected-keyword-arg
     out = factory_rolling_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -569,7 +570,7 @@ def _rolling_data(
     if shift is not None:
         valid = [slice(None)] * data.ndim
         valid[axis] = slice(-shift, None)
-        out = out[tuple(valid)]
+        out = out[tuple(valid)]  # pylint: disable=unsubscriptable-object
 
     return _optional_zero_missing_weight(out, mom_params.axes, zero_missing_weights)
 
@@ -1150,6 +1151,8 @@ def _rolling_exp_data(
     ]
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
+
+    # pylint: disable=unexpected-keyword-arg
     out = factory_rolling_exp_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, data.size),

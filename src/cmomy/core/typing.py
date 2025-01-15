@@ -2,6 +2,7 @@
 Typing aliases (:mod:`cmomy.core.typing`)
 =========================================
 """
+# pylint: disable=missing-class-docstring
 
 from __future__ import annotations
 
