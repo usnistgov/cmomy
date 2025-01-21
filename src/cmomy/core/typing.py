@@ -461,7 +461,7 @@ class WrapRawKwargs(
     """Extra parameters for :func:`.wrap_raw`"""
 
 
-class MomentsTypeKwargs(
+class MomentsTypeKwargs(  # pylint: disable=duplicate-bases
     WrapRawKwargs,
     _MoveAxisToEndKwargs,
     total=False,

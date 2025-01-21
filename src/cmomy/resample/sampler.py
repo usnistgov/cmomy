@@ -47,6 +47,7 @@ if TYPE_CHECKING:
         MomNDim,
         MomParamsInput,
         NDArrayAny,
+        NDArrayInt,
         RngTypes,
         Sampler,
     )
@@ -149,7 +150,7 @@ class IndexSampler(Generic[SamplerArrayT]):
     @property
     def ndat(self) -> int:
         if self._ndat is None:
-            self._ndat = self._first.shape[-1]
+            return self._first.shape[-1]
         return self._ndat
 
     @property
@@ -675,7 +676,7 @@ def select_ndat(
     axis = mom_params.normalize_axis_index(validate_axis(axis), data.ndim)
     mom_params.raise_if_in_mom_axes(axis)
 
-    return data.shape[axis]
+    return data.shape[axis]  # type: ignore[no-any-return,unused-ignore]
 
 
 # * Convert -------------------------------------------------------------------
@@ -802,13 +803,14 @@ def indices_to_freq(
         return xout
 
     indices = np.asarray(indices, np.int64)
-    ndat = indices.shape[1] if ndat is None else ndat
+    ndat_: int = indices.shape[1] if ndat is None else ndat
 
-    if indices.max() >= ndat:
-        msg = f"Cannot have values >= {ndat=}"
+    if indices.max() >= ndat_:
+        msg = f"Cannot have values >= {ndat_=}"
         raise ValueError(msg)
 
-    freq = np.zeros((indices.shape[0], ndat), dtype=indices.dtype)
+    shape: tuple[int, ...] = (indices.shape[0], ndat_)
+    freq: NDArrayInt = np.zeros(shape, dtype=np.int64)
 
     factory_indices_to_freq(parallel=parallel_heuristic(parallel, size=freq.size))(
         indices, freq

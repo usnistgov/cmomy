@@ -154,7 +154,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Shape of wrapped object."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self._obj.shape
+        return self._obj.shape  # type: ignore[no-any-return,unused-ignore]
 
     @property
     def val_shape(self) -> tuple[int, ...]:

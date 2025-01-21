@@ -17,7 +17,7 @@ license-files = { paths = [ "LICENSE" ] }
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9,<3.14"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
@@ -29,6 +29,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
 ]
 dynamic = [
@@ -65,7 +66,6 @@ docs = [
     "myst-nb; python_version>'3.9'",
     "pyenchant",
     "sphinx>=5.3.0",
-    "sphinx-autobuild",
     "sphinx-autodoc-typehints",
     "sphinx-book-theme",
     "sphinx-copybutton",
@@ -78,6 +78,10 @@ dev-extras = [
     "nbclient>=0.10.0",
     "nox>=2024.4.15",
     "pytest-accept",
+]
+docs-live = [
+    "sphinx-autobuild",
+    { include-group = "docs" },
 ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
@@ -536,6 +540,7 @@ conflicts = [
         { group = "numpy2" },
     ],
 ]
+required-version = ">=0.5.21"
 
 [tool.uv.pip]
 annotation-style = "line"
