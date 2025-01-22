@@ -914,12 +914,11 @@ def _jackknife_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if mom_axes_reduced is None:
-        mom_axes_reduced = mom_params.axes_to_end().axes
-    else:
-        mom_axes_reduced = MomParamsArray.factory(
-            ndim=mom_params.ndim, axes=mom_axes_reduced
-        ).axes
+    mom_axes_reduced = (
+        mom_params.axes_to_end()
+        if mom_axes_reduced is None
+        else MomParamsArray.factory(ndim=mom_params.ndim, axes=mom_axes_reduced)
+    ).axes
 
     axes = [
         # data_reduce

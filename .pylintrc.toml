@@ -61,7 +61,12 @@ disable = [
     # "cyclic-import",
     # project specific
     "consider-using-enumerate",
+    "consider-using-assignment-expr",
+    "use-implicit-booleaness-not-comparison-to-zero",
 ]
 
 [tool.pylint.reports]
 output-format = "colorized"
+
+[tool.pylint.dunder]
+good-dunder-names = [ "_repr_html_", "__array__" ]

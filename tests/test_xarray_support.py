@@ -709,7 +709,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
 
 
 # * Chunking
-try:
+try:  # pylint: disable=too-many-try-statements
     import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
 
     HAS_DASK = True

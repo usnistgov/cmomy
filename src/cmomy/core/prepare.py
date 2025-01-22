@@ -146,18 +146,11 @@ def prepare_secondary_value_for_reduction(
     If ndim == 1, make sure length == target.shape[axis]
     If ndim == target.ndim, move axis to last and verify
     Otherwise, make sure x.shape == target.shape[-x.ndim:]
-
-    Parameters
-    ----------
-    target : ndarray
-        Target array (e.g. ``x0``).  This should already have been
-        passed through `_prepare_target_value_for_reduction`
-
     """
     raise_if_dataset(x, "Passed Dataset as secondary value with array primary value.")
 
     out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=recast)  # type: ignore[arg-type, unused-ignore]
-    if out.ndim == 0:
+    if not out.ndim:
         return np.broadcast_to(out, nsamp)
 
     if out.ndim == 1:
@@ -438,8 +431,7 @@ def optional_prepare_out_for_resample_data(
     if out is not None:
         return out
 
-    order = arrayorder_to_arrayorder_cf(order)
-    if order is None:
+    if (order := arrayorder_to_arrayorder_cf(order)) is None:
         return None
 
     return np.empty(

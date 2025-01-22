@@ -152,7 +152,7 @@ def test_xprepare_values_for_reduction_1(
 
     if xshape == yshape:
         # also do xr test
-        other = xr.DataArray(other)  # type: ignore[assignment]
+        other = xr.DataArray(other)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
         dim_out, core_dims, (x, y) = prepare.xprepare_values_for_reduction(
             target,
             other,

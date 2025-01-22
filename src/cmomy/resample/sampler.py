@@ -105,11 +105,13 @@ class IndexSampler(Generic[SamplerArrayT]):
             msg = "Must specify indices or freq"
             raise ValueError(msg)
 
-        if self._ndat is not None and self._freq is not None:
-            freq_ndat = self._first_freq.shape[-1]
-            if freq_ndat != self._ndat:
-                msg = f"ndat={self._ndat} != freq.shape[-1]={freq_ndat}"
-                raise ValueError(msg)
+        if (
+            self._ndat is not None
+            and self._freq is not None
+            and (freq_ndat := self._first_freq.shape[-1]) != self._ndat
+        ):
+            msg = f"ndat={self._ndat} != freq.shape[-1]={freq_ndat}"
+            raise ValueError(msg)
         # check indices?
 
     @property
@@ -296,9 +298,8 @@ class IndexSampler(Generic[SamplerArrayT]):
             mom_params=mom_params,
         )
 
-        indices: NDArrayAny | xr.DataArray | xr.Dataset
-        if is_xarray(data):
-            indices = _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]
+        indices: NDArrayAny | xr.DataArray | xr.Dataset = (
+            _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]
                 data=data,  # pyright: ignore[reportArgumentType]
                 nrep=nrep,
                 axis=axis,
@@ -313,14 +314,15 @@ class IndexSampler(Generic[SamplerArrayT]):
                 mom_params=mom_params,
                 rng=rng,
             )
-        else:
-            indices = random_indices(
+            if is_xarray(data)
+            else random_indices(
                 nrep=nrep,
                 ndat=ndat,
                 nsamp=nsamp,
                 rng=rng,
                 replace=replace,
             )
+        )
 
         return cls(indices=indices, ndat=ndat, parallel=parallel, fastpath=True)
 

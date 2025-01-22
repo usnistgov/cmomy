@@ -70,7 +70,7 @@ def test_mom_params(wrapped) -> None:
 
 
 def test_properties(wrapped) -> None:
-    for attr in ["shape", "dtype", "ndim"]:
+    for attr in ("shape", "dtype", "ndim"):
         assert getattr(wrapped, attr) == getattr(wrapped.obj, attr)
 
     assert wrapped.val_shape == wrapped.shape[: -wrapped.mom_ndim]

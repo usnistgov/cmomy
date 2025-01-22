@@ -44,10 +44,11 @@ vals_params = [
 @pytest.fixture(params=data_params)
 def data_and_kwargs(rng, request):
     shapes, kwargs = request.param
-    if isinstance(shapes, list):
-        data = [rng.random(s) for s in shapes]
-    else:
-        data = rng.random(shapes)
+    data = (
+        [rng.random(s) for s in shapes]
+        if isinstance(shapes, list)
+        else rng.random(shapes)
+    )
     return data, kwargs
 
 

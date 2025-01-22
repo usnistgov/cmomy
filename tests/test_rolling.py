@@ -169,10 +169,10 @@ def test_rolling_data(
         **kws,
     )
 
-    for name, expected in [
+    for name, expected in (
         ("ave", r.mean()),
         ("var", r.var(ddof=0)),
-    ]:
+    ):
         _do_test_select(out, name, 1, expected)
 
     # vals
@@ -248,7 +248,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    outc = np.where(
+    outc = np.where(  # pylint: disable=redefined-variable-type
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
@@ -311,7 +311,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
 
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    outc = np.where(
+    outc = np.where(  # pylint: disable=redefined-variable-type
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
@@ -385,7 +385,7 @@ def test_rolling_data_from_constructed_windows(
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    out2 = np.where(
+    out2 = np.where(  # pylint: disable=redefined-variable-type
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         out2,
@@ -506,7 +506,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
     np.testing.assert_allclose(out, outd)
 
     # if have numbagg, do this.
-    try:
+    try:  # pylint: disable=too-many-try-statements
         np.testing.assert_allclose(out[..., 1], dx.rolling_exp(**rolling_kws).mean())
         x_count = (~np.isnan(x)).astype(x.dtype)
         np.testing.assert_allclose(

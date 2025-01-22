@@ -281,11 +281,11 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
-        obj_: DataT
-        if type(self._obj) is type(obj):
-            obj_ = cast("DataT", obj)
-        else:
-            obj_ = self._obj.copy(data=obj)  # type: ignore[arg-type]
+        obj_: DataT = (
+            cast("DataT", obj)
+            if type(self._obj) is type(obj)
+            else self._obj.copy(data=obj)  # type: ignore[arg-type]
+        )
 
         # minimal check on shape and that mom_dims are present....
         if not contains_dims(obj_, *self.mom_dims):

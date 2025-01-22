@@ -242,7 +242,7 @@ class MomParamsArray(MomParamsBase):
                 assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
 
-        if isinstance(mom_params, (MomParams, MomParamsBase)):
+        if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
             mom_params = mom_params.asdict()
         else:
             mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
@@ -422,7 +422,7 @@ class MomParamsXArray(MomParamsBase):
                 assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
 
-        if isinstance(mom_params, (MomParams, MomParamsBase)):
+        if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
             mom_params = mom_params.asdict()
         else:
             mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
@@ -693,7 +693,7 @@ def factory_mom_params(
 
     Parameters
     ----------
-    targert : array-like or DataArray or Dataset
+    target : array-like or DataArray or Dataset
         Return object corresponding to data type of ``target``.
     {mom_params}
     {ndim}

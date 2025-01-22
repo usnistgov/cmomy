@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import Moments
 
-try:
+try:  # pylint: disable=too-many-try-statements
     from scipy import stats as st  # pyright: ignore[reportMissingImports]
     from scipy.special import ndtr, ndtri  # pyright: ignore[reportMissingImports]
 

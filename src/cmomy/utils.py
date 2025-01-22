@@ -312,6 +312,7 @@ def moveaxis(
 
 
 # * Selecting subsets of data -------------------------------------------------
+# pylint: disable=consider-using-namedtuple-or-dataclass
 _MOMENT_INDEXER_1: dict[str, tuple[int | slice, ...]] = {
     "weight": (0,),
     "cov": (2,),
@@ -772,8 +773,7 @@ def _assign_moment(
     out = data.copy() if copy else data
 
     mom_params_end = mom_params.axes_to_end()
-    moved = mom_params.axes != mom_params_end.axes
-    if moved:
+    if moved := mom_params.axes != mom_params_end.axes:
         out = np.moveaxis(out, mom_params.axes, mom_params_end.axes)
 
     for name, value in zip(names, values):

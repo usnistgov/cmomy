@@ -113,16 +113,19 @@ def replace_coords_from_isel(
     coords = {}
     for coord_name, coord_value in da_original._coords.items():  # noqa: SLF001  # pyright: ignore[reportPrivateUsage]  # pylint: disable=protected-access
         if coord_name in index_variables:
-            coord_value = index_variables[coord_name]  # noqa: PLW2901
+            value = index_variables[coord_name]
         else:
             coord_indexers = {
                 k: v for k, v in indexers.items() if k in coord_value.dims
             }
             if coord_indexers:
-                coord_value = coord_value.isel(coord_indexers)  # noqa: PLW2901
-                if drop and coord_value.ndim == 0:
+                value = coord_value.isel(coord_indexers)
+                if drop and not value.ndim:
                     continue
-        coords[coord_name] = coord_value
+            else:
+                value = coord_value
+
+        coords[coord_name] = value
 
     return da_selected._replace(coords=coords, indexes=indexes)  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
 
@@ -216,7 +219,7 @@ def _transpose_like(
     if is_dataset(template):
         template = template[data_out.name]
 
-    order = list(template.dims)
+    order: list[Hashable] = list(template.dims)
     if remove:
         for r in remove:
             if r in order:
@@ -225,8 +228,8 @@ def _transpose_like(
     if replace:
         order = [replace.get(o, o) for o in order]
 
-    order = [*prepend, *order, *append]  # type: ignore[has-type]
-
-    if order != list(data_out.dims):  # pragma: no cover
+    if (order := [*prepend, *order, *append]) != list(
+        data_out.dims
+    ):  # pragma: no cover
         data_out = data_out.transpose(*order, missing_dims="ignore")
     return data_out

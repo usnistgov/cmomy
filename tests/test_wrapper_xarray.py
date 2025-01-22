@@ -11,7 +11,7 @@ import xarray as xr
 
 import cmomy
 
-try:
+try:  # pylint: disable=too-many-try-statements
     import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
 
     HAS_DASK = True

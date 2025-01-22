@@ -458,18 +458,13 @@ def reduce_data(  # noqa: PLR0913
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
                 dim = (dim,) if isinstance(dim, str) else dim
-
-                def _filter_func(d: Hashable) -> bool:
-                    return contains_dims(data, d)
-
-                dim = tuple(filter(_filter_func, dim))  # type: ignore[arg-type]
-                if len(dim) == 0:
+                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]
                     return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
 
         axis, dim = mom_params.select_axis_dim_mult(
             data,
             axis=axis,
-            dim=dim,
+            dim=dim,  # pyright: ignore[reportUnknownArgumentType]
         )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -561,7 +556,7 @@ def _reduce_data(
     mom_params = mom_params.normalize_axes(data.ndim)
 
     axis_tuple: tuple[int, ...]
-    if axis is None:
+    if axis is None:  # pylint: disable=consider-ternary-expression
         axis_tuple = tuple(a for a in range(data.ndim) if a not in mom_params.axes)
     else:
         axis_tuple = mom_params.normalize_axis_tuple(
@@ -593,7 +588,7 @@ def _reduce_data(
         elif keepdims:
             out = np.squeeze(out, axis=axis_tuple)
 
-    elif (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+    elif (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:  # pylint: disable=confusing-consecutive-elif
         # make the output have correct order if passed ``order`` flag.
         out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
 

@@ -36,8 +36,7 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
     if order is None:
         return order
 
-    order_ = order.upper()
-    if order_ in {"C", "F"}:
+    if (order_ := order.upper()) in {"C", "F"}:
         return cast("ArrayOrderCF", order_)
 
     return None

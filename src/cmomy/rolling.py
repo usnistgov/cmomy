@@ -527,8 +527,7 @@ def _rolling_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    shift = (-window // 2) + 1 if center else None
-    if shift is not None:
+    if (shift := (-window // 2) + 1 if center else None) is not None:
         data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
 
     out = optional_prepare_out_for_resample_data(
@@ -808,8 +807,7 @@ def _rolling_vals(
 
     axes_args: AxesGUFunc = get_axes_from_values(*args, axis_neg=axis_neg)
 
-    shift = (-window // 2) + 1 if center else None
-    if shift is not None:
+    if (shift := (-window // 2) + 1 if center else None) is not None:
         args = tuple(
             _pad_along_axis(arg, axis=axes[0], shift=shift, fill_value=0.0)
             for arg, axes in zip(args, axes_args)
@@ -1094,7 +1092,7 @@ def _prepare_alpha_array(
 ) -> tuple[int, NDArrayAny]:
     """Should only be called with array-like alpha"""
     alpha = asarray_maybe_recast(alpha, dtype, recast=False)
-    if alpha.ndim == 0:
+    if not alpha.ndim:
         alpha = np.broadcast_to(alpha, ndat)
         alpha_axis = -1
     elif alpha.ndim == 1 or alpha_axis is MISSING:

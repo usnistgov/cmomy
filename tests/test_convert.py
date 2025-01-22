@@ -37,10 +37,11 @@ def get_raw_moments(*xy, weight, mom, axis):
 @pytest.fixture
 def data_and_kwargs(rng, request):
     shapes, kwargs = request.param
-    if isinstance(shapes, list):
-        data = [rng.random(s) for s in shapes]
-    else:
-        data = rng.random(shapes)
+    data = (
+        [rng.random(s) for s in shapes]
+        if isinstance(shapes, list)
+        else rng.random(shapes)
+    )
     return data, kwargs
 
 
@@ -151,7 +152,7 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     )
 
     # raise error for mom_ndim=2
-    for _c in [c2, c2x]:
+    for _c in (c2, c2x):
         with pytest.raises(ValueError, match=r"Only implemented for.*"):
             c2.moments_to_comoments(mom=(1, -1))
 
@@ -215,7 +216,7 @@ def test_cumulative_options(rng, parallel) -> None:
     np.testing.assert_allclose(ifunc(func(data)), data)
     xr.testing.assert_allclose(ifunc(func(xdata)), xdata)
 
-    for d in [data, xdata]:
+    for d in (data, xdata):
         assert func(d.astype(np.float32)).dtype.type == np.float32
         assert func(d, dtype=np.float32).dtype.type == np.float32
         assert (

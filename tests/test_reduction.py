@@ -71,7 +71,7 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
 
     new_shape = list(shape)
     new_shape[axis] = 1
-    new_shape = tuple(new_shape)  # type: ignore[assignment]
+    new_shape = tuple(new_shape)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
 
     out = cmomy.reduce_data(x, **kws, keepdims=True)
     assert out.shape == new_shape
@@ -154,7 +154,7 @@ def test_reduce_data_out(
     data = rng.random(shape)
     out = np.empty(out_shape, dtype=data.dtype)
 
-    checks = [cmomy.reduce_data(data, **kwargs, out=o) for o in [out, None]]
+    checks = [cmomy.reduce_data(data, **kwargs, out=o) for o in (out, None)]
 
     assert np.shares_memory(out, checks[0])
     np.testing.assert_allclose(*checks)
@@ -193,19 +193,19 @@ def test_reduce_data_dim_none(rng) -> None:
 
     # not using map with dim=None picks dim from first array
     out = cmomy.reduce_data(ds, dim=None, mom_dims="mom", use_map=False)
-    for k in ["data0"]:
+    for k in ("data0",):
         xr.testing.assert_equal(
             out[k], cmomy.reduce_data(ds[k], dim=None, mom_dims="mom")
         )
-    for k in ["data1", "data2", "data3"]:
+    for k in ("data1", "data2", "data3"):
         xr.testing.assert_equal(out[k], ds[k])
 
     out = cmomy.reduce_data(ds, dim=None, mom_dims="mom", use_map=True)
-    for k in ["data0", "data1", "data2"]:
+    for k in ("data0", "data1", "data2"):
         xr.testing.assert_equal(
             out[k], cmomy.reduce_data(ds[k], dim=None, mom_dims="mom")
         )
-    for k in ["data3"]:
+    for k in ("data3",):
         xr.testing.assert_equal(out[k], ds[k])
 
     out2 = cmomy.reduce_data(ds, dim=("a", "b", "c"), mom_dims="mom", use_map=True)
@@ -213,14 +213,14 @@ def test_reduce_data_dim_none(rng) -> None:
 
     # specify a and b
     out = cmomy.reduce_data(ds, dim=("a", "b"), mom_dims="mom", use_map=True)
-    for k in ["data0", "data1"]:
+    for k in ("data0", "data1"):
         xr.testing.assert_equal(
             out[k], cmomy.reduce_data(ds[k], dim=("a", "b"), mom_dims="mom")
         )
-    for k in ["data2", "data3"]:
+    for k in ("data2", "data3"):
         xr.testing.assert_equal(out[k], ds[k])
 
-    for use_map in [True, False]:
+    for use_map in (True, False):
         xr.testing.assert_allclose(
             cmomy.reduce_data(ds, dim=(), mom_dims="mom", use_map=use_map), ds
         )

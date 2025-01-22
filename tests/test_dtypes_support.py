@@ -159,11 +159,11 @@ def test_functions_with_out(
     dtype_array, dtype_out, dtype, expected, func, kws, out_shape, as_dataarray
 ) -> None:
     shape = (5, 1, 2)
-    x: NDArrayAny | xr.DataArray
-    if as_dataarray:
-        x = xr.DataArray(np.zeros(shape, dtype=dtype_array))
-    else:
-        x = np.zeros(shape, dtype=dtype_array)
+    x: NDArrayAny | xr.DataArray = (
+        xr.DataArray(np.zeros(shape, dtype=dtype_array))
+        if as_dataarray
+        else np.zeros(shape, dtype=dtype_array)
+    )
 
     if isinstance(func, str):
         cls = CentralMomentsData if as_dataarray else CentralMomentsArray
@@ -211,11 +211,11 @@ def test_functions_without_out(
     dtype_array, dtype, expected, func, kws, as_dataarray
 ) -> None:
     shape = (5, 1, 3)
-    x: NDArrayAny | xr.DataArray
-    if as_dataarray:
-        x = xr.DataArray(np.zeros(shape, dtype=dtype_array))
-    else:
-        x = np.zeros(shape, dtype=dtype_array)
+    x: NDArrayAny | xr.DataArray = (
+        xr.DataArray(np.zeros(shape, dtype=dtype_array))
+        if as_dataarray
+        else np.zeros(shape, dtype=dtype_array)
+    )
 
     kwargs = {"dtype": dtype, **kws}
     _do_test(func, x, expected=expected, **kwargs)
@@ -268,7 +268,7 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
 def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2,), dtype=dtype_base)
     if cls == CentralMomentsData:
-        data = xr.DataArray(data)  # type: ignore[assignment]
+        data = xr.DataArray(data)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
 
     func = partial(cls, data, mom_ndim=1, dtype=dtype)
     if dtype is None:

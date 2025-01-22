@@ -52,8 +52,8 @@ urls.Homepage = "https://github.com/usnistgov/cmomy"
 dev = [
     { include-group = "dev-extras" },
     { include-group = "mypy" },
-    { include-group = "nbval" },
     { include-group = "test" },
+    { include-group = "test-notebook" },
     { include-group = "typing" },
     { include-group = "uvxrun" },
 ]

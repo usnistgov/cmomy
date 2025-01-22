@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pylint: disable=protected-access
+# pylint: disable=file-ignored
+# pylint: skip-file
 """pretty formatting for notebook."""
 
 from typing import TYPE_CHECKING

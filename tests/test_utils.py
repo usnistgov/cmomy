@@ -512,7 +512,7 @@ def test_vals_to_data_xarray() -> None:
     assert out0.dims == ("a", "b", "c", "d", "x", "y")
     assert out0.shape == (1, 2, 3, 4, 3, 3)
 
-    out = xr.DataArray(
+    out = xr.DataArray(  # pylint: disable=redefined-variable-type
         np.zeros((1, 2, 3, 4, 3, 3), dtype=np.float32),
         dims=["a", "b", "c", "d", "x", "y"],
     )

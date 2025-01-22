@@ -127,7 +127,7 @@ def load_numba_modules(
     def _filter(name: str) -> bool:
         return (root / "_lib" / name).with_suffix(".py").exists()
 
-    _time_modules(*filter(_filter, mods), prefix="cmomy._lib")
+    _time_modules(*(m for m in mods if _filter(m)), prefix="cmomy._lib")
 
 
 def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:

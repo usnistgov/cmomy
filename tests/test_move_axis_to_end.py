@@ -165,7 +165,7 @@ def test_data_axes_to_end(
 
     # axes movers
     mom_params = factory_mom_params(None, ndim=mom_ndim, axes=mom_axes)
-    kws_axis = {k: kws[k] for k in ["axis"] if k in kws}
+    kws_axis = {k: kws[k] for k in ("axis",) if k in kws}
 
     np.testing.assert_allclose(
         outs[0],
@@ -277,7 +277,7 @@ def test_data_order(
 
     out, out_ordered, out_last = [
         func(data, **kws, **other)
-        for other in [{"order": None}, {"order": "c"}, {"axes_to_end": True}]
+        for other in ({"order": None}, {"order": "c"}, {"axes_to_end": True})
     ]
 
     assert not out.flags.c_contiguous

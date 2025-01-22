@@ -701,9 +701,7 @@ def moments_to_comoments(
             mom_params=mom_params, ndim=1, dims=mom_dims, axes=mom_axes, data=data
         )
         mom_params_out = MomParamsXArray.factory(ndim=2, dims=mom_dims_out)
-        mom_dim_in = mom_params.dims[0]
-
-        if mom_dim_in in mom_params_out.dims:
+        if (mom_dim_in := mom_params.dims[0]) in mom_params_out.dims:
             # give this a temporary name for simplicity:
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             data = data.rename({old_name: mom_dim_in})
@@ -850,9 +848,7 @@ def comoments_to_moments(
             mom_params=mom_params, ndim=2, axes=mom_axes, dims=mom_dims, data=data
         )
         mom_params_out = MomParamsXArray.factory(ndim=1, dims=mom_dims_out)
-        mom_dim_out = mom_params_out.dims[0]
-
-        if mom_dim_out in mom_params.dims:
+        if (mom_dim_out := mom_params_out.dims[0]) in mom_params.dims:
             # give this a temporary name for simplicity:
             new_name = f"_tmp_{mom_dim_out}"
             data = data.rename({mom_dim_out: new_name})

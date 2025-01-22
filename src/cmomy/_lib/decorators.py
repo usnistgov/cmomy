@@ -161,4 +161,4 @@ def _get_signatures(
         x = sig[0]
         return (x == nb.float64) or (hasattr(x, "dtype") and x.dtype == nb.float64)
 
-    return list(filter(_filter_float32, signatures))
+    return [s for s in signatures if _filter_float32(s)]
