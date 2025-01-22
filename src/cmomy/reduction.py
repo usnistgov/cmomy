@@ -427,12 +427,12 @@ def reduce_data(  # noqa: PLR0913
         # Can't do this with xr.apply_ufunc if variables have different
         # dimensions.  Use map in this case
         if is_dataset(data):
-            _dims_check: tuple[Hashable, ...] = mom_params.dims
+            dims_check: tuple[Hashable, ...] = mom_params.dims
             if dim is not None:
                 dim = mom_params.select_axis_dim_mult(data, axis=axis, dim=dim)[1]
-                _dims_check = (*dim, *_dims_check)  # type: ignore[misc, unused-ignore]  # unused in python3.12
+                dims_check = (*dim, *dims_check)  # type: ignore[misc, unused-ignore]  # unused in python3.12
 
-            if not contains_dims(data, *_dims_check):
+            if not contains_dims(data, *dims_check):
                 msg = f"Dimensions {dim} and {mom_params.dims} not found in {tuple(data.dims)}"
                 raise ValueError(msg)
 
@@ -458,18 +458,13 @@ def reduce_data(  # noqa: PLR0913
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
                 dim = (dim,) if isinstance(dim, str) else dim
-
-                def _filter_func(d: Hashable) -> bool:
-                    return contains_dims(data, d)
-
-                dim = tuple(filter(_filter_func, dim))  # type: ignore[arg-type]
-                if len(dim) == 0:
+                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]
                     return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
 
         axis, dim = mom_params.select_axis_dim_mult(
             data,
             axis=axis,
-            dim=dim,
+            dim=dim,  # pyright: ignore[reportUnknownArgumentType]
         )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -515,10 +510,10 @@ def reduce_data(  # noqa: PLR0913
                 remove=None if keepdims else dim,
             )
         else:
-            _order: tuple[Hashable, ...] = (
+            order_: tuple[Hashable, ...] = (
                 mom_params.core_dims(*dim) if keepdims else mom_params.dims
             )
-            xout = xout.transpose(..., *_order, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., *order_, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         return xout
 
@@ -561,7 +556,7 @@ def _reduce_data(
     mom_params = mom_params.normalize_axes(data.ndim)
 
     axis_tuple: tuple[int, ...]
-    if axis is None:
+    if axis is None:  # pylint: disable=consider-ternary-expression
         axis_tuple = tuple(a for a in range(data.ndim) if a not in mom_params.axes)
     else:
         axis_tuple = mom_params.normalize_axis_tuple(
@@ -572,11 +567,11 @@ def _reduce_data(
         return data
 
     # move reduction dimensions to last positions and reshape
-    _order = moveaxis_order(data.ndim, axis_tuple, range(-len(axis_tuple), 0))
-    data = data.transpose(*_order)
+    order_ = moveaxis_order(data.ndim, axis_tuple, range(-len(axis_tuple), 0))
+    data = data.transpose(*order_)
     data = data.reshape(*data.shape[: -len(axis_tuple)], -1)
     # transform _mom_axes to new positions
-    _mom_axes = tuple(_order.index(a) for a in mom_params.axes)
+    mom_axes = tuple(order_.index(a) for a in mom_params.axes)
 
     if out is not None:
         if axes_to_end:
@@ -589,14 +584,15 @@ def _reduce_data(
                         range(-(len(axis_tuple) + mom_params.ndim), -mom_params.ndim)
                     ),
                 )
-            out = np.moveaxis(out, mom_params.axes_last, _mom_axes)
+            out = np.moveaxis(out, mom_params.axes_last, mom_axes)
         elif keepdims:
             out = np.squeeze(out, axis=axis_tuple)
 
-    elif (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+    elif (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:  # pylint: disable=confusing-consecutive-elif
         # make the output have correct order if passed ``order`` flag.
         out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
 
+    # pylint: disable=unexpected-keyword-arg
     out = factory_reduce_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -604,7 +600,7 @@ def _reduce_data(
         data,
         out=out,
         # data, out
-        axes=[(-1, *_mom_axes), _mom_axes],
+        axes=[(-1, *mom_axes), mom_axes],
         dtype=dtype,
         casting=casting,
         order=order,
@@ -620,7 +616,7 @@ def _reduce_data(
             order0 = (*axis_tuple, *mom_params.axes)
             order1 = tuple(range(-mom_params.ndim - len(axis_tuple), 0))
         else:
-            order0 = _mom_axes
+            order0 = mom_axes
             order1 = mom_params.axes_to_end().axes
 
         out = np.moveaxis(out, order0, order1)

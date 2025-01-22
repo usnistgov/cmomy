@@ -3,6 +3,8 @@
 # ============================
 # """
 
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as _version
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -102,8 +104,6 @@ else:
         },
     )
 
-from importlib.metadata import PackageNotFoundError
-from importlib.metadata import version as _version
 
 try:
     __version__ = _version("cmomy")

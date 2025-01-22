@@ -7,6 +7,7 @@ from textwrap import dedent
 from module_utilities.docfiller import DocFiller
 
 
+# pylint: disable=differing-param-doc,differing-type-doc
 def _dummy_docstrings() -> None:
     """
     Parameters

@@ -71,7 +71,7 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
 
     new_shape = list(shape)
     new_shape[axis] = 1
-    new_shape = tuple(new_shape)  # type: ignore[assignment]
+    new_shape = tuple(new_shape)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
 
     out = cmomy.reduce_data(x, **kws, keepdims=True)
     assert out.shape == new_shape
@@ -154,7 +154,7 @@ def test_reduce_data_out(
     data = rng.random(shape)
     out = np.empty(out_shape, dtype=data.dtype)
 
-    checks = [cmomy.reduce_data(data, **kwargs, out=o) for o in [out, None]]
+    checks = [cmomy.reduce_data(data, **kwargs, out=o) for o in (out, None)]
 
     assert np.shares_memory(out, checks[0])
     np.testing.assert_allclose(*checks)
@@ -188,24 +188,24 @@ def test_reduce_data_dim_none(rng) -> None:
     with pytest.raises(ValueError):
         cmomy.reduce_data(ds["data0"], mom_ndim=1, dim="d")
 
-    with pytest.raises(ValueError, match="Dimensions .*"):
+    with pytest.raises(ValueError, match=r"Dimensions .*"):
         cmomy.reduce_data(ds, mom_ndim=1, dim="d")
 
     # not using map with dim=None picks dim from first array
     out = cmomy.reduce_data(ds, dim=None, mom_dims="mom", use_map=False)
-    for k in ["data0"]:
+    for k in ("data0",):
         xr.testing.assert_equal(
             out[k], cmomy.reduce_data(ds[k], dim=None, mom_dims="mom")
         )
-    for k in ["data1", "data2", "data3"]:
+    for k in ("data1", "data2", "data3"):
         xr.testing.assert_equal(out[k], ds[k])
 
     out = cmomy.reduce_data(ds, dim=None, mom_dims="mom", use_map=True)
-    for k in ["data0", "data1", "data2"]:
+    for k in ("data0", "data1", "data2"):
         xr.testing.assert_equal(
             out[k], cmomy.reduce_data(ds[k], dim=None, mom_dims="mom")
         )
-    for k in ["data3"]:
+    for k in ("data3",):
         xr.testing.assert_equal(out[k], ds[k])
 
     out2 = cmomy.reduce_data(ds, dim=("a", "b", "c"), mom_dims="mom", use_map=True)
@@ -213,14 +213,14 @@ def test_reduce_data_dim_none(rng) -> None:
 
     # specify a and b
     out = cmomy.reduce_data(ds, dim=("a", "b"), mom_dims="mom", use_map=True)
-    for k in ["data0", "data1"]:
+    for k in ("data0", "data1"):
         xr.testing.assert_equal(
             out[k], cmomy.reduce_data(ds[k], dim=("a", "b"), mom_dims="mom")
         )
-    for k in ["data2", "data3"]:
+    for k in ("data2", "data3"):
         xr.testing.assert_equal(out[k], ds[k])
 
-    for use_map in [True, False]:
+    for use_map in (True, False):
         xr.testing.assert_allclose(
             cmomy.reduce_data(ds, dim=(), mom_dims="mom", use_map=use_map), ds
         )
@@ -242,7 +242,7 @@ def test_reduce_data_dim_none(rng) -> None:
         ({"ndat": 5, "block": 2, "mode": "expand_first"}, nullcontext([0, 0, 0, 1, 1])),
         (
             {"ndat": 5, "block": 2, "mode": "hello"},
-            pytest.raises(ValueError, match="Unknown .*"),
+            pytest.raises(ValueError, match=r"Unknown .*"),
         ),
     ],
 )
@@ -280,7 +280,7 @@ def test_indexed_bad_scale(rng: np.random.Generator) -> None:
     by = [0] * 5 + [1] * 5
     _group, index, start, end = cmomy.grouped.factor_by_to_index(by)
     # bad scale
-    with pytest.raises(ValueError, match=".*`scale` and `index`.*"):
+    with pytest.raises(ValueError, match=r".*`scale` and `index`.*"):
         _ = cmomy.grouped.reduce_data_indexed(
             data,
             mom_ndim=1,
@@ -301,7 +301,7 @@ def test_indexed_bad_scale(rng: np.random.Generator) -> None:
 )
 def test_grouped_bad_by(by: list[int]) -> None:
     data = np.zeros((10, 2, 4))
-    with pytest.raises(ValueError, match=".*Wrong length of `by`.*"):
+    with pytest.raises(ValueError, match=r".*Wrong length of `by`.*"):
         cmomy.reduce_data_grouped(data, mom_ndim=1, by=by, axis=0)
 
 
@@ -320,11 +320,11 @@ def test__validate_index() -> None:
     np.testing.assert_allclose(group_end, end_)
 
     # index outside bounds
-    with pytest.raises(ValueError, match=".*min.*< 0.*"):
+    with pytest.raises(ValueError, match=r".*min.*< 0.*"):
         _ = _validate_index(4, [-1, 0, 1, 2], group_start, group_end)
 
     # index outside max
-    with pytest.raises(ValueError, match=".*max.*>.*"):
+    with pytest.raises(ValueError, match=r".*max.*>.*"):
         _ = _validate_index(4, [0, 1, 2, 3, 4], group_start, group_end)
 
     # mismatch group start/end
@@ -332,7 +332,7 @@ def test__validate_index() -> None:
         _ = _validate_index(4, index, [0, 1], [1, 2, 3])
 
     # end < start
-    with pytest.raises(ValueError, match=".*end < start.*"):
+    with pytest.raises(ValueError, match=r".*end < start.*"):
         _ = _validate_index(4, index, [0, 2], [2, 1])
     # zero length index
     index = []
@@ -346,5 +346,5 @@ def test__validate_index() -> None:
     np.testing.assert_allclose(group_end, end_)
 
     # bad end
-    with pytest.raises(ValueError, match=".*With zero length.*"):
+    with pytest.raises(ValueError, match=r".*With zero length.*"):
         _ = _validate_index(4, index, group_start, [10])

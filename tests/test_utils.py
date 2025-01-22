@@ -92,21 +92,21 @@ def test_moveaxis_dataarray(x, kws, expected, func):
             (2,),
             {"name": "weight", "mom_ndim": 2},
             ValueError,
-            ".*must be.*",
+            r".*must be.*",
         ),
         (
             (3, 3),
             {"name": "yave", "mom_ndim": 1},
             ValueError,
-            ".*Unknown option.*",
+            r".*Unknown option.*",
         ),
         (
             (3, 3),
             {"name": "yvar", "mom_ndim": 1},
             ValueError,
-            ".*Unknown option.*",
+            r".*Unknown option.*",
         ),
-        ((2,), {"name": "thing", "mom_ndim": 1}, ValueError, ".*Unknown option.*"),
+        ((2,), {"name": "thing", "mom_ndim": 1}, ValueError, r".*Unknown option.*"),
     ],
 )
 def test_select_moment_errors(shape, kwargs, expected, match) -> None:
@@ -116,7 +116,7 @@ def test_select_moment_errors(shape, kwargs, expected, match) -> None:
 
 def test_select_moment_errors_coords() -> None:
     data = xr.DataArray(np.empty((3, 3)))
-    with pytest.raises(ValueError, match=".*must equal.*"):
+    with pytest.raises(ValueError, match=r".*must equal.*"):
         utils.select_moment(data, "ave", mom_ndim=2, coords_combined="hello")
 
 
@@ -512,7 +512,7 @@ def test_vals_to_data_xarray() -> None:
     assert out0.dims == ("a", "b", "c", "d", "x", "y")
     assert out0.shape == (1, 2, 3, 4, 3, 3)
 
-    out = xr.DataArray(
+    out = xr.DataArray(  # pylint: disable=redefined-variable-type
         np.zeros((1, 2, 3, 4, 3, 3), dtype=np.float32),
         dims=["a", "b", "c", "d", "x", "y"],
     )

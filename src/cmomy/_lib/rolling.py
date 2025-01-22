@@ -176,7 +176,6 @@ if not _PARALLEL:
 
         # V1 -> sum(fweight * aweight)
         # V2 -> sum(fweight * aweight * aweight)
-        #
         # Here, we treat:
         # * weight -> fweight (i.e., frequency weight)
         # * calculated weight -> aweight (non frequency weight)

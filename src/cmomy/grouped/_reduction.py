@@ -349,6 +349,7 @@ def _reduce_data_grouped(
         )
     out.fill(0.0)
 
+    # pylint: disable=unexpected-keyword-arg
     factory_reduce_data_grouped(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -732,6 +733,7 @@ def _reduce_data_indexed(
         dtype=dtype,
     )
 
+    # pylint: disable=unexpected-keyword-arg
     return factory_reduce_data_indexed(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),

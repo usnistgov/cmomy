@@ -13,7 +13,7 @@ def test_set_rng() -> None:
 
     assert random.get_internal_rng() is rng
 
-    random._DATA = {}
+    random._DATA = {}  # pylint: disable=protected-access
 
     with pytest.raises(ValueError):
         random.get_internal_rng()
@@ -31,7 +31,7 @@ def test_default_rng() -> None:
 
 
 def test_validate_rng() -> None:
-    rs = np.random.RandomState()
+    rs = np.random.RandomState()  # pylint: disable=no-member
 
     with pytest.raises(TypeError):
         random.validate_rng(rs)  # type: ignore[arg-type]

@@ -96,12 +96,12 @@ def test_vals_axes_to_end(
     )
 
     # using out parameter
-    _outs = [np.zeros_like(o) for o in outs]
+    outs_ = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(*xy, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), _outs)
+        func(*xy, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), outs_)
     ]
 
-    for a, b, c in zip(outs2, _outs, outs):
+    for a, b, c in zip(outs2, outs_, outs):
         np.shares_memory(a, b)
         np.testing.assert_allclose(a, c)
 
@@ -158,14 +158,14 @@ def test_data_axes_to_end(
     if as_dataarray:
         data = xr.DataArray(data)
 
-    kws = dict(axis=axis, mom_ndim=mom_ndim, **kwargs, mom_axes=mom_axes)
+    kws = {"axis": axis, "mom_ndim": mom_ndim, "mom_axes": mom_axes, **kwargs}
     kws = kwargs_callback(kws) if kwargs_callback else kws
 
     outs = [func(data, **kws, axes_to_end=m) for m in (True, False)]
 
     # axes movers
     mom_params = factory_mom_params(None, ndim=mom_ndim, axes=mom_axes)
-    kws_axis = {k: kws[k] for k in ["axis"] if k in kws}
+    kws_axis = {k: kws[k] for k in ("axis",) if k in kws}
 
     np.testing.assert_allclose(
         outs[0],
@@ -195,12 +195,12 @@ def test_data_axes_to_end(
     np.testing.assert_allclose(outs[0], check)
 
     # using out parameter
-    _outs = [np.zeros_like(o) for o in outs]
+    outs_ = [np.zeros_like(o) for o in outs]
     outs2 = [
-        func(data, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), _outs)
+        func(data, **kws, out=o, axes_to_end=m) for m, o in zip((True, False), outs_)
     ]
 
-    for a, b, c in zip(outs2, _outs, outs):
+    for a, b, c in zip(outs2, outs_, outs):
         np.shares_memory(a, b)
         np.testing.assert_allclose(a, c)
 
@@ -272,12 +272,12 @@ def test_data_order(
 ) -> None:
     data = rng.random(shape)
 
-    kws = dict(axis=axis, **kwargs, mom_axes=mom_axes)
+    kws = {"axis": axis, "mom_axes": mom_axes, **kwargs}
     kws = kwargs_callback(kws) if kwargs_callback else kws
 
     out, out_ordered, out_last = [
         func(data, **kws, **other)
-        for other in [{"order": None}, {"order": "c"}, {"axes_to_end": True}]
+        for other in ({"order": None}, {"order": "c"}, {"axes_to_end": True})
     ]
 
     assert not out.flags.c_contiguous

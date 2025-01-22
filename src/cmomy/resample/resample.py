@@ -1,4 +1,5 @@
 """resample and reduce"""
+# pylint: disable=duplicate-code
 
 from __future__ import annotations
 
@@ -6,7 +7,6 @@ from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
-from numpy.typing import NDArray
 
 from cmomy.core.array_utils import (
     asarray_maybe_recast,
@@ -266,7 +266,7 @@ def resample_data(  # noqa: PLR0913
             xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
 
         if not axes_to_end and is_dataarray(data):
-            dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr, misc,index,operator]
+            dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index,unused-ignore]
             xout = xout.transpose(*dims_order)
         return xout
 
@@ -332,6 +332,7 @@ def _resample_data(
         dtype=dtype,
     )
 
+    # pylint: disable=unexpected-keyword-arg
     return factory_resample_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -492,8 +493,8 @@ def resample_vals(  # noqa: PLR0913
         )
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-            x, w, *y, _freq = args
-            return _resample_vals(x, w, *y, freq=_freq, **kwargs)  # type: ignore[has-type]
+            x, w, *y, freq = args
+            return _resample_vals(x, w, *y, freq=freq, **kwargs)  # type: ignore[has-type]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
@@ -539,7 +540,7 @@ def resample_vals(  # noqa: PLR0913
             )
         elif is_dataset(x):
             xout = xout.transpose(
-                ...,
+                ...,  # pyright: ignore[reportUnknownArgumentType]
                 rep_dim,
                 *xmom_params.dims,
                 missing_dims="ignore",  # pyright: ignore[reportUnknownArgumentType]
@@ -913,12 +914,11 @@ def _jackknife_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if mom_axes_reduced is None:
-        mom_axes_reduced = mom_params.axes_to_end().axes
-    else:
-        mom_axes_reduced = MomParamsArray.factory(
-            ndim=mom_params.ndim, axes=mom_axes_reduced
-        ).axes
+    mom_axes_reduced = (
+        mom_params.axes_to_end()
+        if mom_axes_reduced is None
+        else MomParamsArray.factory(ndim=mom_params.ndim, axes=mom_axes_reduced)
+    ).axes
 
     axes = [
         # data_reduce
@@ -936,6 +936,7 @@ def _jackknife_data(
         dtype=dtype,
     )
 
+    # pylint: disable=unexpected-keyword-arg
     return factory_jackknife_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),

@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type, index, assignment, call-overload"
 # pyright:  reportArgumentType=false, reportAssignmentType=false
+# pylint: disable=missing-class-docstring,protected-access
 from __future__ import annotations
 
 from functools import partial
@@ -64,14 +65,14 @@ def test_construct_rolling_window_array(shape, axis, window, center, as_dataarra
     data = np.arange(np.prod(shape)).reshape(shape).astype(np.float64)
 
     xdata = xr.DataArray(data)
-    _axis = (axis,) if isinstance(axis, int) else axis
-    _window = (window,) * len(_axis) if isinstance(window, int) else window
+    axis_ = (axis,) if isinstance(axis, int) else axis
+    window_ = (window,) * len(axis_) if isinstance(window, int) else window
     r = xdata.rolling(
-        {xdata.dims[a]: win for a, win in zip(_axis, _window)}, center=center
+        {xdata.dims[a]: win for a, win in zip(axis_, window_)}, center=center
     )
 
-    window_dims = [f"_rolling_{a}" for a in _axis]
-    c = r.construct({xdata.dims[a]: w for a, w in zip(_axis, window_dims)}).transpose(
+    window_dims = [f"_rolling_{a}" for a in axis_]
+    c = r.construct({xdata.dims[a]: w for a, w in zip(axis_, window_dims)}).transpose(
         *window_dims, ...
     )
 
@@ -168,10 +169,10 @@ def test_rolling_data(
         **kws,
     )
 
-    for name, expected in [
+    for name, expected in (
         ("ave", r.mean()),
         ("var", r.var(ddof=0)),
-    ]:
+    ):
         _do_test_select(out, name, 1, expected)
 
     # vals
@@ -247,7 +248,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    outc = np.where(
+    outc = np.where(  # pylint: disable=redefined-variable-type
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
@@ -261,7 +262,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     rx = pd.DataFrame(x).rolling(**kws)
     rw = pd.DataFrame(w).replace(0.0, np.nan).rolling(**kws)
 
-    _tests = [
+    tests = [
         ("weight", rw.sum().fillna(0.0)),
         ("xave", rx.mean()),
         ("xvar", rx.var(ddof=0)),
@@ -270,14 +271,14 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     if mom_ndim == 2:
         dfy = pd.DataFrame(y)
         ry = dfy.rolling(**kws)
-        _tests = [
-            *_tests,
+        tests = [
+            *tests,
             ("yave", ry.mean()),
             ("yvar", ry.var(ddof=0)),
             ("cov", rx.cov(dfy, ddof=0)),
         ]
 
-    for name, expected in _tests:
+    for name, expected in tests:
         _do_test_select(out, name, mom_ndim, expected)
 
 
@@ -310,7 +311,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
 
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    outc = np.where(
+    outc = np.where(  # pylint: disable=redefined-variable-type
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
@@ -384,7 +385,7 @@ def test_rolling_data_from_constructed_windows(
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    out2 = np.where(
+    out2 = np.where(  # pylint: disable=redefined-variable-type
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         out2,
@@ -448,19 +449,19 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     rx = pd.DataFrame(x).ewm(**kws)
     rw = pd.DataFrame(w).replace(0.0, np.nan).ewm(**kws)
 
-    _tests = [("weight", rw.sum().fillna(0.0))] if adjust else []
-    _tests += [("xave", rx.mean()), ("xvar", rx.var(bias=True))]
+    tests = [("weight", rw.sum().fillna(0.0))] if adjust else []
+    tests += [("xave", rx.mean()), ("xvar", rx.var(bias=True))]
 
     if mom_ndim == 2:
         dfy = pd.DataFrame(y)
         ry = dfy.ewm(**kws)
-        _tests += [
+        tests += [
             ("yave", ry.mean()),
             ("yvar", ry.var(bias=True)),
             ("cov", rx.cov(dfy, bias=True)),
         ]
 
-    for name, expected in _tests:
+    for name, expected in tests:
         _do_test_select(out, name, mom_ndim, expected)
 
 
@@ -505,7 +506,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
     np.testing.assert_allclose(out, outd)
 
     # if have numbagg, do this.
-    try:
+    try:  # pylint: disable=too-many-try-statements
         np.testing.assert_allclose(out[..., 1], dx.rolling_exp(**rolling_kws).mean())
         x_count = (~np.isnan(x)).astype(x.dtype)
         np.testing.assert_allclose(
@@ -583,17 +584,17 @@ def test_rolling_exp_weight(
     )
 
     freq = np.zeros((shape[axis],) * 2)
-    _w = np.array([], dtype=np.float64)
+    w = np.array([], dtype=np.float64)
     old_weight = 0.0
     for k in range(shape[axis]):
-        _w *= 1 - alphas[k]
-        _w = np.append(_w, 1.0 if adjust else alphas[k])
+        w *= 1 - alphas[k]
+        w = np.append(w, 1.0 if adjust else alphas[k])
         if not adjust:
             old_weight = old_weight * (1 - alphas[k]) + alphas[k]
-            _w /= old_weight
+            w /= old_weight
             old_weight = 1.0
 
-        freq[k, : k + 1] = _w
+        freq[k, : k + 1] = w
 
     a = rolling.rolling_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust

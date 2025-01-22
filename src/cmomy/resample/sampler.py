@@ -47,6 +47,7 @@ if TYPE_CHECKING:
         MomNDim,
         MomParamsInput,
         NDArrayAny,
+        NDArrayInt,
         RngTypes,
         Sampler,
     )
@@ -104,11 +105,13 @@ class IndexSampler(Generic[SamplerArrayT]):
             msg = "Must specify indices or freq"
             raise ValueError(msg)
 
-        if self._ndat is not None and self._freq is not None:
-            freq_ndat = self._first_freq.shape[-1]
-            if freq_ndat != self._ndat:
-                msg = f"ndat={self._ndat} != freq.shape[-1]={freq_ndat}"
-                raise ValueError(msg)
+        if (
+            self._ndat is not None
+            and self._freq is not None
+            and (freq_ndat := self._first_freq.shape[-1]) != self._ndat
+        ):
+            msg = f"ndat={self._ndat} != freq.shape[-1]={freq_ndat}"
+            raise ValueError(msg)
         # check indices?
 
     @property
@@ -149,7 +152,7 @@ class IndexSampler(Generic[SamplerArrayT]):
     @property
     def ndat(self) -> int:
         if self._ndat is None:
-            self._ndat = self._first.shape[-1]
+            return self._first.shape[-1]
         return self._ndat
 
     @property
@@ -295,9 +298,8 @@ class IndexSampler(Generic[SamplerArrayT]):
             mom_params=mom_params,
         )
 
-        indices: NDArrayAny | xr.DataArray | xr.Dataset
-        if is_xarray(data):
-            indices = _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]
+        indices: NDArrayAny | xr.DataArray | xr.Dataset = (
+            _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]
                 data=data,  # pyright: ignore[reportArgumentType]
                 nrep=nrep,
                 axis=axis,
@@ -312,14 +314,15 @@ class IndexSampler(Generic[SamplerArrayT]):
                 mom_params=mom_params,
                 rng=rng,
             )
-        else:
-            indices = random_indices(
+            if is_xarray(data)
+            else random_indices(
                 nrep=nrep,
                 ndat=ndat,
                 nsamp=nsamp,
                 rng=rng,
                 replace=replace,
             )
+        )
 
         return cls(indices=indices, ndat=ndat, parallel=parallel, fastpath=True)
 
@@ -675,7 +678,7 @@ def select_ndat(
     axis = mom_params.normalize_axis_index(validate_axis(axis), data.ndim)
     mom_params.raise_if_in_mom_axes(axis)
 
-    return data.shape[axis]
+    return data.shape[axis]  # type: ignore[no-any-return,unused-ignore]
 
 
 # * Convert -------------------------------------------------------------------
@@ -802,13 +805,14 @@ def indices_to_freq(
         return xout
 
     indices = np.asarray(indices, np.int64)
-    ndat = indices.shape[1] if ndat is None else ndat
+    ndat_: int = indices.shape[1] if ndat is None else ndat
 
-    if indices.max() >= ndat:
-        msg = f"Cannot have values >= {ndat=}"
+    if indices.max() >= ndat_:
+        msg = f"Cannot have values >= {ndat_=}"
         raise ValueError(msg)
 
-    freq = np.zeros((indices.shape[0], ndat), dtype=indices.dtype)
+    shape: tuple[int, ...] = (indices.shape[0], ndat_)
+    freq: NDArrayInt = np.zeros(shape, dtype=np.int64)
 
     factory_indices_to_freq(parallel=parallel_heuristic(parallel, size=freq.size))(
         indices, freq

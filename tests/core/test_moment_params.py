@@ -408,6 +408,6 @@ def test_getters(data, mom_params_kwargs, mom, mom_shape, val_shape) -> None:
 
     other = np.zeros(10)
     if is_xarray(data):
-        other = xr.DataArray(other, dims="mom0")  # type: ignore[assignment]
+        other = xr.DataArray(other, dims="mom0")  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
         with pytest.raises(ValueError):
             mom_params.get_mom_shape(other)

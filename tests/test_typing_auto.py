@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, cast, Iterator, Hashable
+from collections.abc import Hashable, Iterator
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 from numpy import float32, float64
+from numpy.typing import NDArray
 
 import xarray as xr
 import pytest
@@ -28,7 +30,6 @@ if TYPE_CHECKING:
 
     T = TypeVar("T")
 
-from numpy.typing import NDArray
 
 # So can exclude from coverage
 pytestmark = pytest.mark.typing
@@ -6878,6 +6879,7 @@ def test_iterators() -> None:
     assert_type(iter(central_dataarray), Iterator[CentralMomentsData[xr.DataArray]])
     # TODO(wpk): problem with mypy and __iter__ overload....
     # assert_type(iter(central_dataset), Iterator[Hashable])  # noqa: ERA001
+    # pylint: disable=unnecessary-dunder-call
     assert_type(central_dataarray.__iter__(), Iterator[CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.__iter__(), Iterator[Hashable])
     assert_type(central_dataarray.iter(), Iterator[CentralMomentsData[xr.DataArray]])

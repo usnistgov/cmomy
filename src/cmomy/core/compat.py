@@ -6,6 +6,7 @@ Mostly used for numpy2.0 compatibility...
 
 """
 
+# pylint: disable=no-name-in-module,useless-suppression
 from __future__ import annotations
 
 import numpy as np

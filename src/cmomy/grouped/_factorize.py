@@ -79,23 +79,23 @@ def factor_by(
     from pandas import factorize  # pyright: ignore[reportUnknownVariableType]
 
     # filter None and negative -> None
-    _by: Groups
-    if isinstance(by, pd.Index):
-        _by = by
-    else:
-        _by = np.fromiter(
+    by_: Groups = (
+        by
+        if isinstance(by, pd.Index)
+        else np.fromiter(
             (None if isinstance(x, (int, np.integer)) and x < 0 else x for x in by),  # pyright: ignore[reportUnknownArgumentType]
             dtype=object,
         )
+    )
 
-    codes, groups = factorize(_by, sort=sort)  # pyright: ignore[reportUnknownVariableType]
+    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]
 
     codes = codes.astype(np.int64)
-    if isinstance(_by, (pd.Index, pd.MultiIndex)):
+    if isinstance(by_, (pd.Index, pd.MultiIndex)):
         if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # pragma: no cover
             msg = f"{type(groups)=} should be instance of pd.Index"  # pyright: ignore[reportUnknownArgumentType]
             raise TypeError(msg)
-        groups.names = _by.names
+        groups.names = by_.names
         return groups, codes  # pyright: ignore[reportUnknownVariableType]
 
     return list(groups), codes  # pyright: ignore[reportUnknownArgumentType]
@@ -182,9 +182,6 @@ def factor_by_to_index(
     ----------
     by: array-like
         Values to factor.
-    exclude_missing : bool, default=True
-        If ``True`` (default), filter Negative and ``None`` values from ``group_idx``.
-
     **kwargs
         Extra arguments to :func:`numpy.argsort`
 

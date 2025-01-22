@@ -245,8 +245,6 @@ def zeros_like(
     ----------
     c : CentralMomentsArray or CentralMomentsData
         Wrapped instance to create new object like.
-    fill_value : scalar or dict-like
-        Value to fill new object with.
     {dtype}
     {order}
     subok : bool, optional

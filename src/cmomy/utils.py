@@ -20,8 +20,12 @@ from .core.moment_params import (
     MomParamsXArray,
     MomParamsXArrayOptional,
 )
-from .core.utils import mom_shape_to_mom as mom_shape_to_mom  # noqa: PLC0414
-from .core.utils import mom_to_mom_shape as mom_to_mom_shape  # noqa: PLC0414
+from .core.utils import (  # pylint: disable=useless-import-alias,unused-import
+    mom_shape_to_mom as mom_shape_to_mom,  # noqa: PLC0414
+)
+from .core.utils import (  # pylint: disable=useless-import-alias
+    mom_to_mom_shape as mom_to_mom_shape,  # noqa: PLC0414
+)
 from .core.validate import (
     is_dataarray,
     is_dataset,
@@ -308,6 +312,7 @@ def moveaxis(
 
 
 # * Selecting subsets of data -------------------------------------------------
+# pylint: disable=consider-using-namedtuple-or-dataclass
 _MOMENT_INDEXER_1: dict[str, tuple[int | slice, ...]] = {
     "weight": (0,),
     "cov": (2,),
@@ -768,8 +773,7 @@ def _assign_moment(
     out = data.copy() if copy else data
 
     mom_params_end = mom_params.axes_to_end()
-    moved = mom_params.axes != mom_params_end.axes
-    if moved:
+    if moved := mom_params.axes != mom_params_end.axes:
         out = np.moveaxis(out, mom_params.axes, mom_params_end.axes)
 
     for name, value in zip(names, values):
@@ -956,8 +960,8 @@ def vals_to_data(
             input_core_dims = [mom_params.dims, *input_core_dims]
 
             def _func(*args: Any, **kwargs: Any) -> Any:
-                _out, *_args = args
-                return _vals_to_data(*_args, out=_out, **kwargs)  # type: ignore[has-type]
+                out_, *args_ = args
+                return _vals_to_data(*args_, out=out_, **kwargs)  # type: ignore[has-type]
 
         return xr.apply_ufunc(  # type: ignore[no-any-return]
             _func,
@@ -1006,21 +1010,21 @@ def _vals_to_data(
     if not fastpath:
         dtype = select_dtype(x, out=out, dtype=dtype)
 
-    _x, _w, *_y = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))
+    x_, w, *y_ = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))
     if out is None:
         val_shape: tuple[int, ...] = np.broadcast_shapes(
-            *(_.shape for _ in (_x, *_y, _w))
+            *(_.shape for _ in (x_, *y_, w))
         )
         out = np.zeros((*val_shape, *mom_to_mom_shape(mom)), dtype=dtype)
     else:
         out[...] = 0.0
 
     moment_kwargs: dict[SelectMoment, NDArrayAny | xr.DataArray] = {
-        "weight": _w,
-        "xave": _x,
+        "weight": w,
+        "xave": x_,
     }
     if mom_params.ndim == 2:
-        moment_kwargs["yave"] = _y[0]
+        moment_kwargs["yave"] = y_[0]
     return assign_moment(
         out, moment_kwargs, mom_ndim=mom_params.ndim, mom_params=mom_params, copy=False
     )
