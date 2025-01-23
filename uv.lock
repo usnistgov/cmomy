@@ -471,10 +471,12 @@ test = [
     { name = "scipy", marker = "python_full_version == '3.12.*' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
 test-extras = [
+    { name = "dask", version = "2025.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.12.*' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "scipy", marker = "python_full_version == '3.12.*' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
 test-notebook = [
     { name = "dask", version = "2024.8.0", source = { registry = "https://pypi.org/simple" }, extra = ["diagnostics"], marker = "python_full_version < '3.10' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
@@ -484,6 +486,7 @@ test-notebook = [
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "scipy", marker = "python_full_version == '3.12.*' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
 test-scipy = [
     { name = "dask", version = "2025.1.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.12.*' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
@@ -573,18 +576,22 @@ test = [
     { name = "scipy", marker = "python_full_version == '3.12.*'" },
 ]
 test-extras = [
+    { name = "dask", marker = "python_full_version == '3.12.*'" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "scipy", marker = "python_full_version == '3.12.*'" },
 ]
 test-notebook = [
+    { name = "dask", marker = "python_full_version == '3.12.*'" },
     { name = "dask", extras = ["diagnostics"] },
     { name = "nbval" },
     { name = "pytest" },
     { name = "pytest-cov" },
     { name = "pytest-sugar" },
     { name = "pytest-xdist" },
+    { name = "scipy", marker = "python_full_version == '3.12.*'" },
 ]
 test-scipy = [
     { name = "dask", marker = "python_full_version == '3.12.*'" },

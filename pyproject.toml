@@ -59,7 +59,6 @@ dev = [
 ]
 test = [
     { include-group = "test-extras" },
-    { include-group = "test-scipy" },
 ]
 docs = [
     "autodocsumm",
@@ -92,6 +91,7 @@ test-extras = [
     "pytest-cov",
     "pytest-sugar",
     "pytest-xdist",
+    { include-group = "test-scipy" },
 ]
 test-notebook = [
     "dask[diagnostics]",

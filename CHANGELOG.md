@@ -18,6 +18,18 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.24.0 — 2025-01-23
+
+### Added
+
+- Python version 3.13 now supported.
+
+### Changed
+
+- Moved grouped/indexed routines (e.g., `reduce_data_indexed`, `factor_by`, etc)
+  to `cmomy.grouped` submodule. Main functions are still available at top level
+  (`cmomy.reduce_data_grouped` is `cmomy.grouped.reduce_data_grouped`).
+
 ## v0.23.0 — 2024-10-30
 
 ### Changed

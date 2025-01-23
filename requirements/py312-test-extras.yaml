@@ -11,8 +11,10 @@ channels:
   - conda-forge
 dependencies:
   - python=3.12
+  - dask
   - pytest
   - pytest-cov
   - pytest-sugar
   - pytest-xdist
+  - scipy
   - pip
