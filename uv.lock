@@ -504,7 +504,7 @@ uvxrun = [
 requires-dist = [
     { name = "docstring-inheritance" },
     { name = "lazy-loader" },
-    { name = "module-utilities", specifier = ">=0.6" },
+    { name = "module-utilities", specifier = ">=0.10.1" },
     { name = "numba", specifier = ">=0.58" },
     { name = "numpy", specifier = ">1.24" },
     { name = "typing-extensions", specifier = ">=4.10.0" },
@@ -1016,11 +1016,11 @@ wheels = [
 
 [[package]]
 name = "executing"
-version = "2.1.0"
+version = "2.2.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/8c/e3/7d45f492c2c4a0e8e0fad57d081a7c8a0286cdd86372b070cca1ec0caa1e/executing-2.1.0.tar.gz", hash = "sha256:8ea27ddd260da8150fa5a708269c4a10e76161e2496ec3e587da9e3c0fe4b9ab", size = 977485 }
+sdist = { url = "https://files.pythonhosted.org/packages/91/50/a9d80c47ff289c611ff12e63f7c5d13942c65d68125160cefd768c73e6e4/executing-2.2.0.tar.gz", hash = "sha256:5d108c028108fe2551d1a7b2e8b713341e2cb4fc0aa7dcf966fa4327a5226755", size = 978693 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/fd/afcd0496feca3276f509df3dbd5dae726fcc756f1a08d9e25abe1733f962/executing-2.1.0-py2.py3-none-any.whl", hash = "sha256:8d63781349375b5ebccc3142f4b30350c0cd9c79f921cde38be2be4637e98eaf", size = 25805 },
+    { url = "https://files.pythonhosted.org/packages/7b/8f/c4d9bafc34ad7ad5d8dc16dd1347ee0e507a52c3adb6bfa8887e1c6a26ba/executing-2.2.0-py2.py3-none-any.whl", hash = "sha256:11387150cad388d62750327a53d3339fad4888b39a6fe233c3afbb54ecffd3aa", size = 26702 },
 ]
 
 [[package]]
@@ -1557,14 +1557,14 @@ wheels = [
 
 [[package]]
 name = "module-utilities"
-version = "0.9.0"
+version = "0.10.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/71/91/b1e9e6d772a86c60bffbbb16abef231074748a6db2cbd977f9248b8b6651/module-utilities-0.9.0.tar.gz", hash = "sha256:5b8888cd15900259142b2e6c81fd83256fbe5e9dbebe357b982fc434d5b7a44a", size = 133404 }
+sdist = { url = "https://files.pythonhosted.org/packages/33/8d/d892561bddeb6c2c46080f3c573e201bf4fb6eba83f9680931cea45e8272/module_utilities-0.10.1.tar.gz", hash = "sha256:600cddc4175d4943a298ad123ff50afe06aab61ab6a0ac8858f7497c74f19662", size = 266065 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/33/93/3d0a87a33b1f1d2a6f420b1c6bbe21e7cc76850315a718bfc44484f6f593/module_utilities-0.9.0-py3-none-any.whl", hash = "sha256:fea8cc024d4769c5acc023b6d20565d8a26578fe2568aed9faede430b0143d0e", size = 32526 },
+    { url = "https://files.pythonhosted.org/packages/7f/c1/fe7fa57b2c9f41ebd1f2be0e54404bb325a455d6b3ad9260d5fd34dd122b/module_utilities-0.10.1-py3-none-any.whl", hash = "sha256:6c58a0da39bcbcf0897ea21d811c24bfcd2ee87a355d1bd224d1573bc48a166a", size = 31361 },
 ]
 
 [[package]]
