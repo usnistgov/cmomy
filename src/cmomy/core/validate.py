@@ -133,7 +133,7 @@ def validate_mom_axes(mom_axes: int | Iterable[int]) -> MomAxesStrict:
 def validate_floating_dtype(
     dtype: DTypeLike,
     name: Hashable = "array",
-) -> None | np.dtype[np.float32] | np.dtype[np.float64]:
+) -> np.dtype[np.float32] | np.dtype[np.float64] | None:
     """
     Validate that dtype is conformable float32 or float64.
 
@@ -196,7 +196,7 @@ def validate_mom_ndim_and_mom_axes(
 
 
 # * Validate Axis -------------------------------------------------------------
-def validate_axis(axis: T | None | MissingType) -> T:
+def validate_axis(axis: T | MissingType | None) -> T:
     """
     Validate that axis is an integer
 
@@ -209,7 +209,7 @@ def validate_axis(axis: T | None | MissingType) -> T:
 
 
 def validate_axis_mult(
-    axis: T | tuple[T, ...] | None | MissingType,
+    axis: T | tuple[T, ...] | MissingType | None,
 ) -> T | tuple[T, ...] | None:
     """Validate that axis is specified."""
     if axis is MISSING:
@@ -232,8 +232,8 @@ def validate_mom_dims(
             out = out[next(iter(out))]
 
         if is_dataarray(out):
-            _axes = range(-mom_ndim, 0) if mom_axes is None else mom_axes
-            return cast("MomDimsStrict", tuple(out.dims[a] for a in _axes))
+            axes = range(-mom_ndim, 0) if mom_axes is None else mom_axes
+            return cast("MomDimsStrict", tuple(out.dims[a] for a in axes))
 
         if mom_ndim == 1:
             return ("mom_0",)

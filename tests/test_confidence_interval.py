@@ -3,13 +3,20 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pytest
 import xarray as xr
 
-try:
+import cmomy
+
+if TYPE_CHECKING:
+    from numpy.typing import NDArray
+
+    from cmomy.core.typing import Moments
+
+try:  # pylint: disable=too-many-try-statements
     from scipy import stats as st  # pyright: ignore[reportMissingImports]
     from scipy.special import ndtr, ndtri  # pyright: ignore[reportMissingImports]
 
@@ -21,13 +28,6 @@ pytestmark = [
     pytest.mark.scipy,
     pytest.mark.skipif(not HAS_SCIPY, reason="scipy not installed"),
 ]
-
-import cmomy
-
-if TYPE_CHECKING:
-    from numpy.typing import NDArray
-
-    from cmomy.core.typing import Moments
 
 
 def test_ndtr(rng: np.random.Generator) -> None:
@@ -94,7 +94,7 @@ def mom() -> Moments:
 
 
 @pytest.fixture
-def sampler(data, axis, nrep) -> cmomy.resample.IndexSampler:
+def sampler(data, axis, nrep) -> cmomy.resample.IndexSampler[Any]:
     return cmomy.resample.factory_sampler(
         data=data,
         axis=axis,
@@ -140,7 +140,7 @@ def xtheta_hat(xdata: xr.DataArray, mom, axis) -> xr.DataArray:
 
 @pytest.fixture
 def xtheta_boot(
-    xdata: xr.DataArray, mom: Moments, sampler: cmomy.IndexSampler, axis
+    xdata: xr.DataArray, mom: Moments, sampler: cmomy.IndexSampler[Any], axis
 ) -> xr.DataArray:
     out = cmomy.resample_vals(xdata, mom=mom, axis=axis, sampler=sampler)
     dims_out = list(out.dims)
@@ -297,7 +297,7 @@ def test_xmean_2a(
 ) -> None:
     from cmomy.confidence_interval import bootstrap_confidence_interval
 
-    with pytest.raises(TypeError, match=".*`theta_hat`.*"):
+    with pytest.raises(TypeError, match=r".*`theta_hat`.*"):
         _ = bootstrap_confidence_interval(
             theta_hat=theta_hat[..., 1],
             theta_boot=xtheta_boot[..., 1],
@@ -318,7 +318,7 @@ def test_xmean_2b(
 ) -> None:
     from cmomy.confidence_interval import bootstrap_confidence_interval
 
-    with pytest.raises(TypeError, match=".*`theta_jack`.*"):
+    with pytest.raises(TypeError, match=r".*`theta_jack`.*"):
         _ = bootstrap_confidence_interval(
             theta_hat=xtheta_hat[..., 1],
             theta_boot=xtheta_boot[..., 1],

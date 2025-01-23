@@ -133,7 +133,7 @@ def construct_rolling_window_array(
     **kwargs: Any,
 ) -> NDArray[FloatT]: ...
 @overload
-def construct_rolling_window_array(
+def construct_rolling_window_array(  # type: ignore[overload-cannot-match]
     x: NDArrayAny,
     window: int | Sequence[int],
     *,
@@ -527,8 +527,7 @@ def _rolling_data(
     if not fastpath:
         dtype = select_dtype(data, out=out, dtype=dtype)
 
-    shift = (-window // 2) + 1 if center else None
-    if shift is not None:
+    if (shift := (-window // 2) + 1 if center else None) is not None:
         data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
 
     out = optional_prepare_out_for_resample_data(
@@ -552,6 +551,7 @@ def _rolling_data(
 
     min_periods = window if min_periods is None else min_periods
 
+    # pylint: disable=unexpected-keyword-arg
     out = factory_rolling_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -569,7 +569,7 @@ def _rolling_data(
     if shift is not None:
         valid = [slice(None)] * data.ndim
         valid[axis] = slice(-shift, None)
-        out = out[tuple(valid)]
+        out = out[tuple(valid)]  # pylint: disable=unsubscriptable-object
 
     return _optional_zero_missing_weight(out, mom_params.axes, zero_missing_weights)
 
@@ -807,8 +807,7 @@ def _rolling_vals(
 
     axes_args: AxesGUFunc = get_axes_from_values(*args, axis_neg=axis_neg)
 
-    shift = (-window // 2) + 1 if center else None
-    if shift is not None:
+    if (shift := (-window // 2) + 1 if center else None) is not None:
         args = tuple(
             _pad_along_axis(arg, axis=axes[0], shift=shift, fill_value=0.0)
             for arg, axes in zip(args, axes_args)
@@ -906,7 +905,7 @@ def rolling_exp_data(
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpDataKwargs],
-) -> NDArray[FloatT]: ...
+) -> NDArrayAny: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -1093,7 +1092,7 @@ def _prepare_alpha_array(
 ) -> tuple[int, NDArrayAny]:
     """Should only be called with array-like alpha"""
     alpha = asarray_maybe_recast(alpha, dtype, recast=False)
-    if alpha.ndim == 0:
+    if not alpha.ndim:
         alpha = np.broadcast_to(alpha, ndat)
         alpha_axis = -1
     elif alpha.ndim == 1 or alpha_axis is MISSING:
@@ -1150,6 +1149,8 @@ def _rolling_exp_data(
     ]
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
+
+    # pylint: disable=unexpected-keyword-arg
     out = factory_rolling_exp_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, data.size),
@@ -1222,7 +1223,7 @@ def rolling_exp_vals(
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpValsKwargs],
-) -> NDArray[FloatT]: ...
+) -> NDArrayAny: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]

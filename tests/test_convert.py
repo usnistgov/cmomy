@@ -1,4 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
+# pylint: disable=protected-access
 from __future__ import annotations
 
 from functools import partial
@@ -36,10 +37,11 @@ def get_raw_moments(*xy, weight, mom, axis):
 @pytest.fixture
 def data_and_kwargs(rng, request):
     shapes, kwargs = request.param
-    if isinstance(shapes, list):
-        data = [rng.random(s) for s in shapes]
-    else:
-        data = rng.random(shapes)
+    data = (
+        [rng.random(s) for s in shapes]
+        if isinstance(shapes, list)
+        else rng.random(shapes)
+    )
     return data, kwargs
 
 
@@ -78,7 +80,7 @@ def test_raw(data_and_kwargs) -> None:
 # * Moments to comoments
 @pytest.mark.parametrize("mom", [(1,), (1, 2, 3), 1])
 def test__validate_mom_moments_to_comoments_mom(mom):
-    with pytest.raises(ValueError, match="Must supply length 2.*"):
+    with pytest.raises(ValueError, match=r"Must supply length 2.*"):
         convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=4)
 
 
@@ -97,7 +99,9 @@ def test__validate_mom_moments_to_comoments_mom(mom):
 )
 def test__validate_mom_moments_to_comoments(mom_orig, mom, expected) -> None:
     if expected == "error":
-        with pytest.raises(ValueError, match=".* inconsistent with original moments.*"):
+        with pytest.raises(
+            ValueError, match=r".* inconsistent with original moments.*"
+        ):
             convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=mom_orig)
 
     else:
@@ -110,8 +114,6 @@ def test__validate_mom_moments_to_comoments(mom_orig, mom, expected) -> None:
 @pytest.mark.parametrize("shape", [(10,), (10, 3)])
 @pytest.mark.parametrize("dtype", [None, np.float32])
 def test_moments_to_comoments(rng, shape, dtype) -> None:
-    import cmomy
-
     x = rng.random(shape)
 
     data1 = cmomy.reduce_vals(x, axis=0, mom=3)
@@ -150,8 +152,8 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     )
 
     # raise error for mom_ndim=2
-    for _c in [c2, c2x]:
-        with pytest.raises(ValueError, match="Only implemented for.*"):
+    for _c in (c2, c2x):
+        with pytest.raises(ValueError, match=r"Only implemented for.*"):
             c2.moments_to_comoments(mom=(1, -1))
 
     # keep attrs
@@ -182,8 +184,6 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     ],
 )
 def test_cumulative(rng, shape, axis, mom_ndim) -> None:
-    import cmomy
-
     data = rng.random(shape)
     cout = cmomy.convert.cumulative(data, axis=axis, mom_ndim=mom_ndim)
 
@@ -204,8 +204,6 @@ def test_cumulative(rng, shape, axis, mom_ndim) -> None:
 
 @pytest.mark.parametrize("parallel", [True, False])
 def test_cumulative_options(rng, parallel) -> None:
-    import cmomy
-
     func = partial(cmomy.convert.cumulative, mom_ndim=1, axis=0, parallel=parallel)
     ifunc = partial(
         cmomy.convert.cumulative, mom_ndim=1, axis=0, inverse=True, parallel=parallel
@@ -218,7 +216,7 @@ def test_cumulative_options(rng, parallel) -> None:
     np.testing.assert_allclose(ifunc(func(data)), data)
     xr.testing.assert_allclose(ifunc(func(xdata)), xdata)
 
-    for d in [data, xdata]:
+    for d in (data, xdata):
         assert func(d.astype(np.float32)).dtype.type == np.float32
         assert func(d, dtype=np.float32).dtype.type == np.float32
         assert (

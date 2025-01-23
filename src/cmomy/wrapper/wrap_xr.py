@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, cast, overload
 import numpy as np
 import xarray as xr
 
+from cmomy.core.docstrings import docfiller_xcentral as docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
 from cmomy.core.prepare import (
@@ -14,6 +15,7 @@ from cmomy.core.prepare import (
     prepare_values_for_reduction,
     xprepare_values_for_reduction,
 )
+from cmomy.core.typing import DataT
 from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
@@ -26,6 +28,8 @@ from cmomy.core.xr_utils import (
     contains_dims,
     factory_apply_ufunc_kwargs,
 )
+
+from .wrap_abc import CentralMomentsABC
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -74,11 +78,6 @@ if TYPE_CHECKING:
     from cmomy.core.typing_compat import Self
     from cmomy.wrapper.wrap_np import CentralMomentsArray
 
-
-from cmomy.core.docstrings import docfiller_xcentral as docfiller
-from cmomy.core.typing import DataT
-
-from .wrap_abc import CentralMomentsABC
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
@@ -187,13 +186,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     def iter(self) -> Any: ...
 
     def iter(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
-        """Need this for proper typing with mypy..."""
+        """Need this for proper typing with mypy..."""  # noqa: DOC402
         if is_dataarray(self._obj):
             if self.ndim <= self.mom_ndim:
                 msg = "Can only iterate over wrapped DataArray with extra dimension."
                 raise ValueError(msg)
             for obj in self._obj:
-                yield self.new_like(obj)  # noqa: DOC402
+                yield self.new_like(obj)
         else:
             yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
 
@@ -248,7 +247,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
     # ** Create/copy/new ------------------------------------------------------
     @docfiller_inherit_abc()
-    def new_like(  # type: ignore[override]
+    def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ
         self,
         obj: ArrayLike | DataT | Mapping[Any, Any] | None = None,
         *,
@@ -282,11 +281,11 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
-        obj_: DataT
-        if type(self._obj) is type(obj):
-            obj_ = cast("DataT", obj)
-        else:
-            obj_ = self._obj.copy(data=obj)  # type: ignore[arg-type]
+        obj_: DataT = (
+            cast("DataT", obj)
+            if type(self._obj) is type(obj)
+            else self._obj.copy(data=obj)  # type: ignore[arg-type]
+        )
 
         # minimal check on shape and that mom_dims are present....
         if not contains_dims(obj_, *self.mom_dims):
@@ -660,8 +659,8 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         See Also
         --------
         reduction.reduce_data
-        reduction.reduce_data_grouped
-        reduction.reduce_data_indexed
+        grouped.reduce_data_grouped
+        grouped.reduce_data_indexed
 
         Examples
         --------
@@ -758,7 +757,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         Note that this is the same as the group reduction above. For finer
         control of how ``block`` is transformed to ``by``, see
-        :func:`~.reduction.block_by`.
+        :func:`~.grouped.block_by`.
         """
         if by is None and block is not None:
             by = self._block_by(block, axis=axis, dim=dim)
@@ -785,17 +784,17 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             )
 
         elif coords_policy in {"first", "last"}:
-            from cmomy.reduction import factor_by_to_index, reduce_data_indexed
+            from cmomy.grouped import factor_by_to_index, reduce_data_indexed
 
             if isinstance(by, str):
-                _groups, index, group_start, group_end = factor_by_to_index(
+                groups_, index, group_start, group_end = factor_by_to_index(
                     self._obj[by].to_numpy()  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
                 )
             else:
-                _groups, index, group_start, group_end = factor_by_to_index(by)
+                groups_, index, group_start, group_end = factor_by_to_index(by)
 
             if groups is None:
-                groups = _groups
+                groups = groups_
 
             data = reduce_data_indexed(
                 self._obj,
@@ -819,15 +818,15 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
         else:
-            from cmomy.reduction import reduce_data_grouped
+            from cmomy.grouped import reduce_data_grouped
 
             codes: ArrayLike
             if isinstance(by, str):
-                from cmomy.reduction import factor_by
+                from cmomy.grouped import factor_by
 
-                _groups, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                groups_, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
                 if groups is None:
-                    groups = _groups
+                    groups = groups_
             else:
                 codes = by
 

@@ -36,8 +36,7 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
     if order is None:
         return order
 
-    order_ = order.upper()
-    if order_ in {"C", "F"}:
+    if (order_ := order.upper()) in {"C", "F"}:
         return cast("ArrayOrderCF", order_)
 
     return None
@@ -156,7 +155,7 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
-) -> None | np.dtype[np.float32] | np.dtype[np.float64]: ...
+) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 @overload
 def select_dtype(
     x: xr.DataArray | ArrayLike,
@@ -170,7 +169,7 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
-) -> None | np.dtype[np.float32] | np.dtype[np.float64]: ...
+) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 
 
 def select_dtype(
@@ -178,7 +177,7 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
-) -> None | np.dtype[np.float32] | np.dtype[np.float64]:  # DTypeLikeArg[Any]:
+) -> np.dtype[np.float32] | np.dtype[np.float64] | None:  # DTypeLikeArg[Any]:
     """
     Select a dtype from, in order, out, dtype, or passed array.
 

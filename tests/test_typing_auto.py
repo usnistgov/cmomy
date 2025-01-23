@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING, Any, cast, Iterator, Hashable
+from collections.abc import Hashable, Iterator
+from typing import TYPE_CHECKING, Any, cast
 
 import numpy as np
 from numpy import float32, float64
+from numpy.typing import NDArray
 
 import xarray as xr
 import pytest
@@ -28,7 +30,6 @@ if TYPE_CHECKING:
 
     T = TypeVar("T")
 
-from numpy.typing import NDArray
 
 # So can exclude from coverage
 pytestmark = pytest.mark.typing
@@ -111,7 +112,7 @@ central_dataset_any: CentralMomentsDataAny = CentralMomentsData(data_dataset_any
 freq = cmomy.random_freq(ndat=10, nrep=2)
 sampler = cmomy.resample.IndexSampler(freq=freq)
 by = [0] * 5 + [1] * 5
-_, index, group_start, group_end = cmomy.reduction.factor_by_to_index(by)
+_, index, group_start, group_end = cmomy.grouped.factor_by_to_index(by)
 
 
 
@@ -1462,10 +1463,10 @@ def test_cmomy_reduce_data_grouped() -> None:
     )
 
 
-def test_cmomy_reduction_reduce_data_indexed() -> None:
+def test_cmomy_reduce_data_indexed() -> None:
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1474,7 +1475,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float64, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_float64, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1483,7 +1484,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_arrayany, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_arrayany, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1492,7 +1493,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             Any,
         ),
         np.ndarray,
@@ -1501,7 +1502,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -1510,7 +1511,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataset, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_dataset, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             xr.Dataset,
         ),
         xr.Dataset,
@@ -1519,7 +1520,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataarray_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_dataarray_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             Any,
         ),
         xr.DataArray,
@@ -1528,7 +1529,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataset_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_dataset_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             Any,
         ),
         xr.Dataset,
@@ -1537,7 +1538,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
+            cmomy.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1546,7 +1547,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float64),
+            cmomy.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1555,7 +1556,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float64, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            cmomy.reduce_data_indexed(data_float64, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1564,7 +1565,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_arrayany, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            cmomy.reduce_data_indexed(data_arrayany, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1573,7 +1574,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            cmomy.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
             NDArray[float32],
         ),
         np.ndarray,
@@ -1582,7 +1583,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            cmomy.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
             Any,
         ),
         np.ndarray,
@@ -1591,7 +1592,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype="f8"),
+            cmomy.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype="f8"),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1600,7 +1601,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            cmomy.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -1609,7 +1610,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataset, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            cmomy.reduce_data_indexed(data_dataset, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
             xr.Dataset,
         ),
         xr.Dataset,
@@ -1618,7 +1619,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataarray_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            cmomy.reduce_data_indexed(data_dataarray_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32),
             Any,
         ),
         xr.DataArray,
@@ -1627,7 +1628,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float64),
+            cmomy.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1636,7 +1637,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float64),
+            cmomy.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1645,7 +1646,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
+            cmomy.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
             Any,
         ),
         np.ndarray,
@@ -1654,7 +1655,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_arrayany),
+            cmomy.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_arrayany),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1663,7 +1664,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
+            cmomy.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -1672,7 +1673,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataarray_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
+            cmomy.reduce_data_indexed(data_dataarray_any, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
             Any,
         ),
         xr.DataArray,
@@ -1681,7 +1682,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32, out=group_out_float64),
+            cmomy.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1690,7 +1691,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32, out=group_out_float64),
+            cmomy.reduce_data_indexed(data_arraylike, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float32, out=group_out_float64),
             NDArray[float64],
         ),
         np.ndarray,
@@ -1699,7 +1700,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float64, out=group_out_float32),
+            cmomy.reduce_data_indexed(data_any, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float64, out=group_out_float32),
             Any,
         ),
         np.ndarray,
@@ -1708,7 +1709,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float64, out=group_out_arrayany),
+            cmomy.reduce_data_indexed(data_float32, axis=0, mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype=float64, out=group_out_arrayany),
             NDArray[Any],
         ),
         np.ndarray,
@@ -1717,7 +1718,7 @@ def test_cmomy_reduction_reduce_data_indexed() -> None:
     )
     check(
         assert_type(
-            cmomy.reduction.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype="f8", out=group_out_float32),
+            cmomy.reduce_data_indexed(data_dataarray, dim="dim_0", mom_ndim=1, index=index, group_start=group_start, group_end=group_end, dtype="f8", out=group_out_float32),
             xr.DataArray,
         ),
         xr.DataArray,
@@ -6878,6 +6879,7 @@ def test_iterators() -> None:
     assert_type(iter(central_dataarray), Iterator[CentralMomentsData[xr.DataArray]])
     # TODO(wpk): problem with mypy and __iter__ overload....
     # assert_type(iter(central_dataset), Iterator[Hashable])  # noqa: ERA001
+    # pylint: disable=unnecessary-dunder-call
     assert_type(central_dataarray.__iter__(), Iterator[CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.__iter__(), Iterator[Hashable])
     assert_type(central_dataarray.iter(), Iterator[CentralMomentsData[xr.DataArray]])

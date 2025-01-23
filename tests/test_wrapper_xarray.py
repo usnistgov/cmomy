@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 # pyright: reportCallIssue=false, reportArgumentType=false
+# pylint: disable=protected-access
 from __future__ import annotations
 
 from functools import partial
@@ -10,8 +11,8 @@ import xarray as xr
 
 import cmomy
 
-try:
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]
+try:  # pylint: disable=too-many-try-statements
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
 
     HAS_DASK = True
 except ImportError:
@@ -86,7 +87,7 @@ def test_as_dict(c_dataset) -> None:
 
 def test_getitem(c_dataset) -> None:
     with pytest.raises(KeyError):
-        c_dataset["_hello"]
+        _ = c_dataset["_hello"]
 
     for k, v in c_dataset.obj.items():
         d = c_dataset[k]
@@ -105,7 +106,7 @@ def test_iter(c_dataset) -> None:
         xr.testing.assert_allclose(c.obj, expected)
 
     c = cmomy.wrap(xr.DataArray(np.zeros(3)))
-    with pytest.raises(ValueError, match=".*Can only iterate.*"):
+    with pytest.raises(ValueError, match=r".*Can only iterate.*"):
         list(c)
 
 
@@ -120,11 +121,11 @@ def test_new_like_errors() -> None:
     c = cmomy.wrap(np.zeros((2, 3))).to_x()
 
     # missing mom_dims
-    with pytest.raises(ValueError, match=".*Cannot create.*"):
+    with pytest.raises(ValueError, match=r".*Cannot create.*"):
         c.new_like(xr.DataArray(np.zeros((2, 3))))
 
     # with strict verify
-    with pytest.raises(ValueError, match=".*Wrong `obj.sizes`"):
+    with pytest.raises(ValueError, match=r".*Wrong `obj.sizes`"):
         c.new_like(xr.DataArray(np.zeros((3,)), dims=c.dims[-1]), verify=True)  # type: ignore[arg-type]
 
     new = c.new_like(copy=True)
@@ -206,8 +207,8 @@ def test_reduce_data_grouped(rng, policy) -> None:
     kws = {"dim": dim, "coords_policy": policy}
 
     if policy in {"first", "last"}:
-        _, index, start, end = cmomy.reduction.factor_by_to_index(by)
-        expected = cmomy.reduction.reduce_data_indexed(
+        _, index, start, end = cmomy.grouped.factor_by_to_index(by)
+        expected = cmomy.grouped.reduce_data_indexed(
             data, **kws, index=index, group_start=start, group_end=end
         )
     else:

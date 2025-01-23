@@ -11,17 +11,15 @@ channels:
   - conda-forge
 dependencies:
   - python=3.11
-  - dask
   - docstring-inheritance
   - lazy_loader
-  - module-utilities>=0.6
+  - module-utilities>=0.10.1
   - numba>=0.58
   - numpy>1.24
   - pytest
   - pytest-cov
   - pytest-sugar
   - pytest-xdist
-  - scipy
   - typing-extensions>=4.10.0
   - xarray>=2023.9.0
   - pip

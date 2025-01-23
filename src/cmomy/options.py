@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+    from typing import Any
 
 # TODO(wpk): Add in environment variables for these things...
 # CMOMY_FASTMATH ->
@@ -83,5 +87,5 @@ class set_options:  # noqa: N801
     def __enter__(self) -> None:
         return
 
-    def __exit__(self, type: object, value: object, traceback: object) -> None:  # noqa: A002
+    def __exit__(self, type: object, value: object, traceback: object) -> None:  # noqa: A002 # pylint: disable=redefined-builtin)
         self._apply_update(self.old)

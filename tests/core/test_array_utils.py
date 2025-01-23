@@ -155,7 +155,7 @@ def test_select_dtype(x, out, dtype, expected) -> None:
 def test_optional_keepdims(shape, axis, out) -> None:
     x = np.empty(shape)
 
-    for keepdims in [True, False]:
+    for keepdims in (True, False):
         assert array_utils.optional_keepdims(x, axis=axis, keepdims=keepdims).shape == (
             out if keepdims else shape
         )

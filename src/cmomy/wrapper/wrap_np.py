@@ -6,17 +6,20 @@ from typing import TYPE_CHECKING, Generic, overload
 
 import numpy as np
 import xarray as xr
+from numpy.typing import NDArray
 
 from cmomy.core.array_utils import (
     arrayorder_to_arrayorder_cf,
 )
 from cmomy.core.compat import copy_if_needed
+from cmomy.core.docstrings import docfiller_central as docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
 )
+from cmomy.core.typing import AxisReduceWrap, FloatT, MomAxesStrict
 from cmomy.core.utils import mom_to_mom_shape
 from cmomy.core.validate import (
     is_ndarray,
@@ -24,6 +27,8 @@ from cmomy.core.validate import (
     validate_axis,
     validate_floating_dtype,
 )
+
+from .wrap_abc import CentralMomentsABC
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Sequence
@@ -62,18 +67,11 @@ if TYPE_CHECKING:
     from cmomy.core.typing_compat import Self, Unpack
 
 
-from numpy.typing import NDArray
-
-from cmomy.core.docstrings import docfiller_central as docfiller
-from cmomy.core.typing import AxisReduceWrap, FloatT, MomAxesStrict
-
-from .wrap_abc import CentralMomentsABC
-
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
 docfiller_inherit_abc = docfiller.factory_inherit_from_parent(CentralMomentsABC)
 
 
-@docfiller.inherit(CentralMomentsABC)  # noqa: PLR0904
+@docfiller.inherit(CentralMomentsABC)
 class CentralMomentsArray(
     CentralMomentsABC[NDArray[FloatT], MomParamsArray],  # type: ignore[type-var]
     Generic[FloatT],
@@ -91,6 +89,7 @@ class CentralMomentsArray(
 
     """
 
+    # pylint: disable=arguments-differ
     _mom_params: MomParamsArray  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @overload
@@ -211,7 +210,7 @@ class CentralMomentsArray(
 
     # ** Create/copy/new ------------------------------------------------------
     @overload
-    def new_like(
+    def new_like(  # pylint: disable=signature-differs
         self,
         obj: ArrayLikeArg[FloatT_],
         *,
@@ -611,7 +610,7 @@ class CentralMomentsArray(
     ) -> NDArrayAny: ...
 
     @docfiller_inherit_abc()
-    def cumulative(  # pyright: ignore[reportIncompatibleMethodOverride]
+    def cumulative(  # pyright: ignore[reportIncompatibleMethodOverride]  # pylint: disable=arguments-differ
         self,
         *,
         axis: AxisReduce | MissingType = MISSING,
@@ -885,7 +884,7 @@ class CentralMomentsArray(
                 parallel=parallel,
             )
         else:
-            from cmomy.reduction import reduce_data_grouped
+            from cmomy.grouped import reduce_data_grouped
 
             obj = reduce_data_grouped(
                 self._obj,
@@ -992,7 +991,7 @@ class CentralMomentsArray(
         Returns
         -------
         output : CentralMomentsArray
-            Output object with reshaped data.  This will be a view if possilble;
+            Output object with reshaped data.  This will be a view if possible;
             otherwise, it will be copy.
 
         See Also

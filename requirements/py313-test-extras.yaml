@@ -7,15 +7,12 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
-docstring-inheritance
-lazy-loader
-module-utilities>=0.6
-numba>=0.58
-numpy<2.0
-numpy>1.24
-pytest
-pytest-cov
-pytest-sugar
-pytest-xdist
-typing-extensions>=4.10.0
-xarray>=2023.9.0
+channels:
+  - conda-forge
+dependencies:
+  - python=3.13
+  - pytest
+  - pytest-cov
+  - pytest-sugar
+  - pytest-xdist
+  - pip

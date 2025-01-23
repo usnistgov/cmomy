@@ -154,7 +154,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Shape of wrapped object."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self._obj.shape
+        return self._obj.shape  # type: ignore[no-any-return,unused-ignore]
 
     @property
     def val_shape(self) -> tuple[int, ...]:
@@ -237,7 +237,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         Returns
         -------
         {klass}
-            New {klass} object with zerod out data.
+            New {klass} object with data set to zero.
         """
 
     @docfiller.decorate
@@ -256,8 +256,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         Parameters
         ----------
         dtype : str or dtype
-            Typecode of data-type to cast the array data.  Note that a value of None will
-            upcast to ``np.float64``.  This is the same behaviour as :func:`~numpy.asarray`.
+            Type code of data-type to cast the array data.  Note that a value of None will
+            cast to ``np.float64``.  This is the same behavior as :func:`~numpy.asarray`.
         {order}
         {casting}
 
@@ -267,12 +267,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         copy : bool, optional
             By default, astype always returns a newly allocated array. If this
             is set to False and the `dtype` requirement is satisfied, the input
-            array is returned insteadof a copy.
+            array is returned instead of a copy.
 
 
         Notes
         -----
-        Only ``numpy.float32`` and ``numpy.float64`` dtypes are supported.
+        Only ``numpy.float32`` and ``numpy.float64`` dtype are supported.
 
 
         See Also
@@ -522,7 +522,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         return self
 
     # ** Pipe -----------------------------------------------------------------
-    def pipe(
+    def pipe(  # pylint: disable=useless-type-doc,useless-param-doc
         self,
         func_or_method: Callable[..., Any] | str,
         *args: Any,
@@ -555,8 +555,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             applicable for ``DataArray`` like underlying data.
         _copy : bool, default=False
             If True, copy the resulting data.  Otherwise, try to use a view.
-        _order : str, optional
-            Array order to apply to output.
         _verify : bool, default=False
         **kwargs
             Extra keyword arguments to `func_or_method`
@@ -570,18 +568,19 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
 
         Notes
         -----
-        Use leading underscore for `_order`, `_copy`, etc to avoid possible name
+        Use leading underscore for (`_copy`, etc) to avoid possible name
         clashes with ``func_or_method``.
 
 
         """
-        if isinstance(func_or_method, str):
-            values = getattr(self._obj, func_or_method)(*args, **kwargs)
-        else:
-            values = func_or_method(self._obj, *args, **kwargs)
+        values = (
+            getattr(self._obj, func_or_method)(*args, **kwargs)
+            if isinstance(func_or_method, str)
+            else func_or_method(self._obj, *args, **kwargs)
+        )
 
         if _reorder and hasattr(self, "mom_dims"):
-            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]
+            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]  # pylint: disable=no-member
 
         return self.new_like(
             obj=values,
@@ -611,8 +610,10 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             Original positions of axes to move.
         dest : int or sequence of int
             Destination positions for each original axes.
-        **kwargs
-            Extra arguments to :func:`.utils.moveaxis`
+        dim: str or sequence of str
+            Original dimensions.
+        dest_dim: str or sequence of str
+            Destination position of dimensions.
 
         Returns
         -------
@@ -1043,7 +1044,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         dim: DimsReduce | MissingType = MISSING,
         mode: BlockByModes = "drop_last",
     ) -> NDArrayInt:
-        from cmomy.reduction import block_by
+        from cmomy.grouped import block_by
         from cmomy.resample import select_ndat
 
         return block_by(
@@ -1059,7 +1060,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
 
     @abstractmethod
     @docfiller.decorate
-    def reduce(
+    def reduce(  # pylint: disable=differing-param-doc,differing-type-doc
         self,
     ) -> Self:
         """
@@ -1093,9 +1094,9 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         See Also
         --------
         ~.reduction.reduce_data
-        ~.reduction.reduce_data_grouped
-        ~.reduction.reduce_data_indexed
-        ~.reduction.block_by
+        ~.grouped.reduce_data_grouped
+        ~.grouped.reduce_data_indexed
+        ~.grouped.block_by
         """
 
     # ** Access to underlying statistics --------------------------------------

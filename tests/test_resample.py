@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, assignment, arg-type, call-overload"
 # pyright: reportCallIssue=false, reportArgumentType=false
+# pylint: disable=protected-access
 """
 Test basics of resampling.
 
@@ -43,10 +44,11 @@ vals_params = [
 @pytest.fixture(params=data_params)
 def data_and_kwargs(rng, request):
     shapes, kwargs = request.param
-    if isinstance(shapes, list):
-        data = [rng.random(s) for s in shapes]
-    else:
-        data = rng.random(shapes)
+    data = (
+        [rng.random(s) for s in shapes]
+        if isinstance(shapes, list)
+        else rng.random(shapes)
+    )
     return data, kwargs
 
 
@@ -90,7 +92,7 @@ def test_resample_data_0(data_and_kwargs, nrep):
 
     # against using reduce_data_indexed....
     np.testing.assert_allclose(
-        cmomy.reduction.resample_data_indexed(
+        cmomy.grouped.resample_data_indexed(
             data, sampler={"freq": freq}, axis=axis, mom_ndim=mom_ndim
         ),
         expected,
@@ -272,7 +274,7 @@ def test_freq_indices_roundtrip(ndat, nrep, nsamp) -> None:
 
 def test_freq_to_indices_error() -> None:
     freq = np.array([[5, 0], [0, 4]])
-    with pytest.raises(ValueError, match="Inconsistent number of samples .*"):
+    with pytest.raises(ValueError, match=r"Inconsistent number of samples .*"):
         resample.freq_to_indices(freq)
 
 
@@ -302,6 +304,8 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
                 ),
             }
         )
+    else:
+        raise ValueError
 
     assert_allclose = (
         xr.testing.assert_allclose if is_xarray(idx) else np.testing.assert_allclose
@@ -343,7 +347,7 @@ def test_central_factory_sampler():
     np.testing.assert_allclose(freq0, freq2)
 
     # error if no ndat or data
-    with pytest.raises(ValueError, match="Must specify .*"):
+    with pytest.raises(ValueError, match=r"Must specify .*"):
         resample.factory_sampler()
 
 
@@ -356,7 +360,7 @@ def test_select_ndat() -> None:
     assert resample.select_ndat(data, axis=-1j, mom_ndim=1) == 4
     assert resample.select_ndat(data, axis=-1j, mom_ndim=2) == 3
 
-    with pytest.raises(TypeError, match="Must specify .*"):
+    with pytest.raises(TypeError, match=r"Must specify .*"):
         resample.select_ndat(data)
 
     with pytest.raises(ValueError):
@@ -471,12 +475,12 @@ def test_indexresampler(rng, nrep, ndat, nsamp) -> None:
 
 
 def test_indexresampler_raises() -> None:
-    with pytest.raises(ValueError, match="Must specify.*"):
+    with pytest.raises(ValueError, match=r"Must specify.*"):
         cmomy.IndexSampler()
 
     freq = cmomy.random_freq(10, 5)
 
-    with pytest.raises(ValueError, match="ndat.*"):
+    with pytest.raises(ValueError, match=r"ndat.*"):
         cmomy.IndexSampler(freq=freq, ndat=4)
 
 
@@ -507,7 +511,7 @@ def test_factory_sampler_raises() -> None:
     sampler = cmomy.factory_sampler(data=data, axis=0, nrep=10, rng=0)
     assert sampler.indices.shape == (10, 5)
 
-    with pytest.raises(ValueError, match="Must specify nrep.*"):
+    with pytest.raises(ValueError, match=r"Must specify nrep.*"):
         _ = cmomy.factory_sampler(nrep=10)
 
 

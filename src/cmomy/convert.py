@@ -282,7 +282,7 @@ def _moments_type(
     if not fastpath:
         dtype = select_dtype(values_in, out=out, dtype=dtype)
 
-    _axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
+    axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
 
     if out is None and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
         values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
@@ -291,7 +291,7 @@ def _moments_type(
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
         values_in,  # type: ignore[arg-type]
         out=out,
-        axes=[mom_params.axes, _axes_out],
+        axes=[mom_params.axes, axes_out],
         dtype=dtype,
         casting=casting,
         order=order,
@@ -530,6 +530,7 @@ def _cumulative(
         dtype=dtype,
     )
 
+    # pylint: disable=unexpected-keyword-arg
     return factory_cumulative(
         mom_ndim=mom_params.ndim,
         inverse=inverse,
@@ -553,7 +554,6 @@ def _validate_mom_moments_to_comoments(
         raise ValueError(msg)
 
     if mom[0] < 0:
-        mom[1]
         out = (mom_orig - mom[1], mom[1])
     elif mom[1] < 0:
         out = (mom[0], mom_orig - mom[0])
@@ -701,9 +701,7 @@ def moments_to_comoments(
             mom_params=mom_params, ndim=1, dims=mom_dims, axes=mom_axes, data=data
         )
         mom_params_out = MomParamsXArray.factory(ndim=2, dims=mom_dims_out)
-        mom_dim_in = mom_params.dims[0]
-
-        if mom_dim_in in mom_params_out.dims:
+        if (mom_dim_in := mom_params.dims[0]) in mom_params_out.dims:
             # give this a temporary name for simplicity:
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             data = data.rename({old_name: mom_dim_in})
@@ -850,9 +848,7 @@ def comoments_to_moments(
             mom_params=mom_params, ndim=2, axes=mom_axes, dims=mom_dims, data=data
         )
         mom_params_out = MomParamsXArray.factory(ndim=1, dims=mom_dims_out)
-        mom_dim_out = mom_params_out.dims[0]
-
-        if mom_dim_out in mom_params.dims:
+        if (mom_dim_out := mom_params_out.dims[0]) in mom_params.dims:
             # give this a temporary name for simplicity:
             new_name = f"_tmp_{mom_dim_out}"
             data = data.rename({mom_dim_out: new_name})
@@ -1031,7 +1027,7 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(  # type: ignore[return-value]
+        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg
             tuple(arrays_iter),  # type: ignore[arg-type]
             axis=axis,
             dtype=first.dtype,

@@ -1,5 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 # pyright: reportCallIssue=false, reportArgumentType=false
+# pylint: disable=protected-access
 from __future__ import annotations
 
 import functools
@@ -13,11 +14,12 @@ import xarray as xr
 import cmomy
 from cmomy import CentralMomentsArray
 from cmomy.core.moment_params import MomParamsArray
-from cmomy.core.typing import SelectMoment
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
+
+    from cmomy.core.typing import SelectMoment
 
 
 @pytest.fixture(
@@ -68,7 +70,7 @@ def test_mom_params(wrapped) -> None:
 
 
 def test_properties(wrapped) -> None:
-    for attr in ["shape", "dtype", "ndim"]:
+    for attr in ("shape", "dtype", "ndim"):
         assert getattr(wrapped, attr) == getattr(wrapped.obj, attr)
 
     assert wrapped.val_shape == wrapped.shape[: -wrapped.mom_ndim]
@@ -80,13 +82,13 @@ def test_getitem(wrapped) -> None:
 
     if wrapped.ndim == 1:
         with pytest.raises(ValueError):
-            wrapped[0, ...]
+            _ = wrapped[0, ...]
 
     else:
         _ = wrapped[0, ...]
 
         with pytest.raises(ValueError):
-            wrapped[..., 0]
+            _ = wrapped[..., 0]
 
 
 def test_new_like(wrapped) -> None:
@@ -387,9 +389,11 @@ def test_select_moment(
     val = getattr(wrapped, attr)()
     data, mom_ndim = wrapped.obj, wrapped.mom_ndim
     if isinstance(name, str):
-        check = cmomy.select_moment(data, cast(SelectMoment, name), mom_ndim=mom_ndim)
+        check = cmomy.select_moment(data, cast("SelectMoment", name), mom_ndim=mom_ndim)
     elif callable(name):
         check = name(data, mom_ndim)
+    else:
+        raise TypeError
     np.testing.assert_allclose(val, check)
 
 
@@ -488,7 +492,7 @@ def test_assign_moment(rng, wrapped, name) -> None:
 
 
 def _reduce_block(data, axis, block, **kwargs):
-    groups = cmomy.reduction.block_by(data.shape[axis], block)
+    groups = cmomy.grouped.block_by(data.shape[axis], block)
     return cmomy.reduce_data_grouped(data, by=groups, axis=axis, **kwargs)
 
 

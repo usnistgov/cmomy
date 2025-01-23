@@ -2,14 +2,14 @@
 Typing aliases (:mod:`cmomy.core.typing`)
 =========================================
 """
+# pylint: disable=missing-class-docstring,consider-alternative-union-syntax
 
 from __future__ import annotations
 
-from collections.abc import Collection, Hashable, Iterable, Mapping, Sequence
+from collections.abc import Callable, Collection, Hashable, Iterable, Mapping, Sequence
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Literal,
     Optional,
     Protocol,
@@ -79,32 +79,31 @@ DataT_ = TypeVar("DataT_", xr.DataArray, xr.Dataset)
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
 
 #: TypeVar of array types with restriction
-ArrayT = TypeVar(  # type: ignore[misc]
+ArrayT = TypeVar(
     "ArrayT",
-    NDArray[np.float32],
     NDArray[np.float64],
+    NDArray[np.float32],
     xr.DataArray,
-    default=NDArray[np.float64],
 )
 
 #: TypeVar of types wrapped by IndexSampler
-SamplerArrayT = TypeVar(  # type: ignore[misc]
+SamplerArrayT = TypeVar(
     "SamplerArrayT",
     NDArray[Any],
     xr.DataArray,
     xr.Dataset,
     Union[xr.DataArray, xr.Dataset],
-    default=NDArray[Any],
 )
 
 FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
-FloatT = TypeVar(  # type: ignore[misc]
+FloatT = TypeVar(
     "FloatT",
+    Any,
     np.float32,
     np.float64,
-    default=Any,  # pyright: ignore[reportGeneralTypeIssues]
+    default=Any,
 )
 FloatT_ = TypeVar("FloatT_", np.float32, np.float64)
 
@@ -230,13 +229,13 @@ KeepAttrs: TypeAlias = Union[
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 
 # * Literals ------------------------------------------------------------------
-ArrayOrderCF = Literal["C", "F", None]
-ArrayOrderCFA = Literal["C", "F", "A", None]
-ArrayOrder = Literal["C", "F", "A", "K", None]
+ArrayOrderCF = Optional[Literal["C", "F"]]
+ArrayOrderCFA = Optional[Literal["C", "F", "A"]]
+ArrayOrder = Optional[Literal["C", "F", "A", "K"]]
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
 MissingCoreDimOptions = Literal["raise", "copy", "drop"]
-#: Selectable moment names.
+#: Moment names.
 SelectMoment = Literal[
     "weight",
     "ave",
@@ -254,7 +253,7 @@ SelectMoment = Literal[
 ]
 ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
-CoordsPolicy: TypeAlias = Literal["first", "last", "group", None]
+CoordsPolicy: TypeAlias = Optional[Literal["first", "last", "group"]]
 BootStrapMethod: TypeAlias = Literal["percentile", "basic", "bca"]
 BlockByModes: TypeAlias = Literal[
     "drop_first", "drop_last", "expand_first", "expand_last"
@@ -377,7 +376,7 @@ class ReduceDataGroupedKwargs(
     _MomParamsKwargs,
     total=False,
 ):
-    """Extra parameters to :func:`.reduction.reduce_data_grouped`"""
+    """Extra parameters to :func:`.grouped.reduce_data_grouped`"""
 
     group_dim: str | None
     groups: Groups | None
@@ -390,7 +389,7 @@ class ReduceDataIndexedKwargs(
     _MomParamsKwargs,
     total=False,
 ):
-    """Extra parameters to :func:`.reduction.reduce_data_indexed`"""
+    """Extra parameters to :func:`.grouped.reduce_data_indexed`"""
 
     index: Required[ArrayLike]
     group_start: Required[ArrayLike]
@@ -462,7 +461,7 @@ class WrapRawKwargs(
     """Extra parameters for :func:`.wrap_raw`"""
 
 
-class MomentsTypeKwargs(
+class MomentsTypeKwargs(  # pylint: disable=duplicate-bases
     WrapRawKwargs,
     _MoveAxisToEndKwargs,
     total=False,

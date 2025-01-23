@@ -7,6 +7,7 @@ from textwrap import dedent
 from module_utilities.docfiller import DocFiller
 
 
+# pylint: disable=differing-param-doc,differing-type-doc
 def _dummy_docstrings() -> None:
     """
     Parameters
@@ -246,7 +247,7 @@ def _dummy_docstrings() -> None:
         Note that if ``coords_policy`` is one of ``first`` or ``last``, parameter ``groups``
         will be ignored.
     by : array-like of int
-        Groupby values of same length as ``data`` along sampled dimension.
+        Group by values of same length as ``data`` along sampled dimension.
         Negative values indicate no group (i.e., skip this index).
     group_dim : str, optional
         Name of the output group dimension.  Defaults to ``dim``.
@@ -272,11 +273,11 @@ def _dummy_docstrings() -> None:
         - ``"weight"`` : weights
         - ``"ave"`` : Averages.
         - ``"var"``: Variance.
-        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variace if ``mom_ndim == 1``.
+        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variance if ``mom_ndim == 1``.
         - ``"xave"``: Average of first variable.
         - ``"xvar"``: Variance of first variable.
         - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
-        - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+        - ``"yvar"``: Variance of second variable (if ``mom_ndim == 2``).
         - ``"all"``: All values.
 
         Names ``"weight", "xave", "yave", "xvar", "yvar", "cov"`` imply shape
@@ -289,11 +290,11 @@ def _dummy_docstrings() -> None:
         - ``"weight"`` : weights
         - ``"ave"`` : Averages.
         - ``"var"``: Variance.
-        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variace if ``mom_ndim == 1``.
+        - ``"cov"``: Covariance if ``mom_ndim == 2``, or variance if ``mom_ndim == 1``.
         - ``"xave"``: Average of first variable.
         - ``"xvar"``: Variance of first variable.
         - ``"yave"``: Average of second variable (if ``mom_ndim == 2``).
-        - ``"yvar"``: Variace of second variable (if ``mom_ndim == 2``).
+        - ``"yvar"``: Variance of second variable (if ``mom_ndim == 2``).
         - ``"xmom_n", "ymom_n"``: All values with first (second) variable moment == n.
         - ``"all"``: All values.
 
@@ -306,7 +307,7 @@ def _dummy_docstrings() -> None:
     select_dim_combined | dim_combined: str, optional
         Name of dimension for options that produce multiple values (e.g., ``name="ave"``).
     select_coords_combined | coords_combined: str or sequence of str, optional
-        Coordates to assign to ``dim_combined``.  Defaults to names of moments dimension(s)
+        Coordinates to assign to ``dim_combined``.  Defaults to names of moments dimension(s)
 
 
     mom_moments_to_comoments | mom : tuple of int

@@ -18,6 +18,18 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v0.24.0 — 2025-01-23
+
+### Added
+
+- Python version 3.13 now supported.
+
+### Changed
+
+- Moved grouped/indexed routines (e.g., `reduce_data_indexed`, `factor_by`, etc)
+  to `cmomy.grouped` submodule. Main functions are still available at top level
+  (`cmomy.reduce_data_grouped` is `cmomy.grouped.reduce_data_grouped`).
+
 ## v0.23.0 — 2024-10-30
 
 ### Changed
@@ -35,9 +47,9 @@ See the fragment files in [changelog.d]
   ordered regardless of `mom_axes` location.
 
 - Negative axis/axes are now treated relative to the end of the array (just like
-  python lists and numpy ndarrays). To get the old behavior of counting relative
-  to the `mom_ndim`, pass in imaginary axis. For example, passing `axis=-1j`
-  with `mom_ndim=1` is equivalent to passing `axis=-2`.
+  python lists and numpy ndarray objects). To get the old behavior of counting
+  relative to the `mom_ndim`, pass in imaginary axis. For example, passing
+  `axis=-1j` with `mom_ndim=1` is equivalent to passing `axis=-2`.
 
 - renamed parameter `move_axes_to_end` to `axes_to_end`. This will lead to axes
   being in the form `(..., *mom_axes)` if `axes` are reduced or
@@ -84,7 +96,7 @@ See the fragment files in [changelog.d]
   you can now pass `indices` with
   `cmomy.resample_data(data, axis=0, sampler={"indices": indices})`
 - Removed parameter `on_missing_core_dim` from routines that call
-  `xarray.apply_ufunc` behind the scenese. You can still pass this parameter
+  `xarray.apply_ufunc` behind the scenes. You can still pass this parameter
   using `apply_ufunc_kwargs`. For example,
   `cmomy.reduce_data(data, axis=0, apply_ufunc_kwargs={"on_missing_core_dim": "drop"})`.
 
@@ -108,7 +120,7 @@ See the fragment files in [changelog.d]
 
 - `cmomy.assign_moment` and `cmomy.select_moment` now accept options `xmom_0`,
   `xmom_1`, `ymom_0`, and `ymom_1`. These allow selecting/assigning to slices.
-  Useful when convertering values to central moments array.
+  Useful when converting values to central moments array.
 
 ## v0.17.0 — 2024-09-16
 
@@ -120,9 +132,9 @@ See the fragment files in [changelog.d]
   These automatically select from `CentralMomentsArray` and
   `CentralMomentsData`.
 - Renamed `CentralMoments` to `CentralMomentsArray` and `xCentralMoments` to
-  `CentralMomentsData`. The former is parametrized across numpy arrays. The
-  later is parametrized to work with either `xarray.DataArray` or
-  `xarray.Dataset` objects.
+  `CentralMomentsData`. The former is parameterized across numpy arrays. The
+  later is parameterized to work with either `xarray.DataArray` or
+  `xarray.Dataset` objects
 - Full support `dask` backed `xarray` objects. This will be lazily evaluated.
 - Removed `CentralMomentsArray/Data.block` method. Instead, there is a `block`
   keyword in `reduce` method.
@@ -224,15 +236,15 @@ See the fragment files in [changelog.d]
 
 ### Deprecated
 
-- Removed classmethods `(x)CentralMoments.from_raws`. Instead, use
+- Removed classmethod `(x)CentralMoments.from_raws`. Instead, use
   `(x)CentralMoments.from_raw(...).reduce(...)`.
-- Removed classmethods `(x)CentralMoments.from_datas`. Instead, use
+- Removed classmethod `(x)CentralMoments.from_datas`. Instead, use
   `(x)CentralMoments.from_data(...).reduce(...)`.
 - Removed classmethod `(x)CentralMoments.from_data`. Instead, use
   `(x)CentralMoments(....)`.
 - Removed ability to create `xCentralMoments` objects directly from
   `numpy.ndarray` objects. (e.g., passing in array-like to
-  `xCentralmoments.from_vals` doesn't work anymore). Instead use
+  `xCentralmoments.from_vals` does not work anymore). Instead use
   `CentralMoments.from_vals(....).to_xcentralmoments(...)`, etc.
 - Removed methods `push_stat`, `push_stats`, `from_stat`, `from_stats`. Instead
   use, for example, `numpy.concatenate`, to combine weights, average, and
@@ -250,12 +262,12 @@ See the fragment files in [changelog.d]
   `nrep` is the number of replicates and `ndat` is the shape of the data along
   the resampled axis. Now you can pass sample with shape `(nrep, nsamp)` where
   `nsamp` is the specified number of samples in a replicate (defaulting to
-  `ndat`). This allows users to do things like jacknife resampling, etc, with
+  `ndat`). This allows users to do things like jackknife resampling, etc, with
   `resample_and_reduce` methods.
 - Preliminary support for using type hints in generated documentation. The
-  standard sphinx autodoc support doesn't quite work for `cmomy`, as it requires
-  type hints to be accessible at run time, and not in `TYPE_CHECKING` blocks.
-  Instead, we use
+  standard sphinx autodoc support does not quite work for `cmomy`, as it
+  requires type hints to be accessible at run time, and not in `TYPE_CHECKING`
+  blocks. Instead, we use
   [`sphinx_autodoc_type`](https://github.com/tox-dev/sphinx-autodoc-typehints).
   This has the downside of expanding type aliases, but handles (most things)
   being in `TYPE_CHECKING` blocks. Over time, we'll replace some of the explicit
@@ -278,7 +290,7 @@ See the fragment files in [changelog.d]
 
 - Added submodule `cmomy.random` to handle random numbers generation. This uses
   `numpy.random.Generator` behind the scenes.
-- Updated `ruff` lintering rules
+- Updated `ruff` linting rules
 - Now using `hatchling` for package building
 - Update repo template
 
@@ -298,7 +310,7 @@ See the fragment files in [changelog.d]
 
 - Now using `module_utilities >=0.6`.
 - Changed from `custom-inherit` to `docstring-inheritance`
-- Now fully supports typing (passing mypy --stict and pyright)
+- Now fully supports typing (passing mypy --strict and pyright)
 - Relocated numba functions to submodule `cmomy._lib`.
 
 ### Changed

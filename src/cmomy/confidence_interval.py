@@ -105,7 +105,7 @@ def bootstrap_confidence_interval(
     theta_jack : ndarray
         Jackknife resampled data.  Needed for ``method`` ``'bca'``.
         Note that this array should have the same shape as ``theta_boot`` except along ``axis``.
-    alphas : float or iterable of float
+    alpha : float or iterable of float
         The quantiles to use for confidence interval. If ``alpha`` is a float,
         then Use (alpha/2, 1-alpha/2) for confidence intervals (e.g., pass
         `alpha=0.05` for the two-sided 95% confidence interval). If ``alpha``
@@ -196,10 +196,12 @@ def bootstrap_confidence_interval(
     Moreover, you can use pre-averaged data.
     """
     dtype = select_dtype(theta_boot, out=None, dtype=None)
-    if isinstance(alpha, Iterable):
-        alphas = np.array(list(alpha), dtype=dtype)
-    else:
-        alphas = np.asarray([alpha * 0.5, 1.0 - alpha * 0.5])
+    alphas = np.array(
+        list(alpha)
+        if isinstance(alpha, Iterable)
+        else [alpha * 0.5, 1.0 - alpha * 0.5],
+        dtype=dtype,
+    )
 
     if is_xarray_typevar(theta_boot):
         axis, dim = default_mom_params_xarray.select_axis_dim(
@@ -280,8 +282,7 @@ def _bootstrap_confidence_interval(
     axis: int,
 ) -> NDArray[FloatingT]:
     dtype = theta_boot.dtype
-    method_ = method.lower()
-    if method_ in {"basic", "bca"}:
+    if (method_ := method.lower()) in {"basic", "bca"}:
         if theta_hat is None:
             msg = f"Must specify theta_hat for {method=}"
             raise ValueError(msg)

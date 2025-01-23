@@ -1,5 +1,6 @@
 """Helper class to work with moment parameters."""
 
+# pylint: disable=missing-class-docstring
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -241,7 +242,7 @@ class MomParamsArray(MomParamsBase):
                 assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
 
-        if isinstance(mom_params, (MomParams, MomParamsBase)):
+        if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
             mom_params = mom_params.asdict()
         else:
             mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
@@ -298,7 +299,7 @@ class MomParamsArray(MomParamsBase):
         out_has_axis: bool = False,
     ) -> AxesGUFunc:
         """
-        axes for reducing data along axis
+        Axes for reducing data along axis
 
         if ``out_has_axis == True``, then treat like resample,
         so output will still have ``axis`` with new size in output.
@@ -421,7 +422,7 @@ class MomParamsXArray(MomParamsBase):
                 assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
 
-        if isinstance(mom_params, (MomParams, MomParamsBase)):
+        if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
             mom_params = mom_params.asdict()
         else:
             mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
@@ -653,7 +654,7 @@ default_mom_params_xarray = MomParamsXArrayOptional()
 
 
 @overload
-def factory_mom_params(  # type: ignore[overload-overlap]
+def factory_mom_params(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     target: xr.DataArray | xr.Dataset,
     *,
     mom_params: MomParamsInput = ...,
@@ -692,7 +693,7 @@ def factory_mom_params(
 
     Parameters
     ----------
-    targert : array-like or DataArray or Dataset
+    target : array-like or DataArray or Dataset
         Return object corresponding to data type of ``target``.
     {mom_params}
     {ndim}

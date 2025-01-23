@@ -53,7 +53,7 @@ dtype_out_marks = pytest.mark.parametrize(
 
 def _do_test(func, *args, expected, **kwargs):
     if expected == "error":
-        with pytest.raises(ValueError, match=".*not supported.*"):
+        with pytest.raises(ValueError, match=r".*not supported.*"):
             func(*args, **kwargs)
     else:
         out = func(*args, **kwargs)
@@ -70,7 +70,7 @@ def _do_test(func, *args, expected, **kwargs):
         (cmomy.reduction.reduce_data, {"mom_ndim": 1, "axis": 0}, (1, 2)),
         (do_wrap_method("reduce"), {"mom_ndim": 1, "axis": 0}, (1, 2)),
         (
-            cmomy.reduction.reduce_data_grouped,
+            cmomy.grouped.reduce_data_grouped,
             {"mom_ndim": 1, "by": [0, 0, 1, 1, 1], "axis": 0},
             (2, 1, 2),
         ),
@@ -80,7 +80,7 @@ def _do_test(func, *args, expected, **kwargs):
             (2, 1, 2),
         ),
         (
-            cmomy.reduction.reduce_data_indexed,
+            cmomy.grouped.reduce_data_indexed,
             {
                 "mom_ndim": 1,
                 "index": range(5),
@@ -159,11 +159,11 @@ def test_functions_with_out(
     dtype_array, dtype_out, dtype, expected, func, kws, out_shape, as_dataarray
 ) -> None:
     shape = (5, 1, 2)
-    x: NDArrayAny | xr.DataArray
-    if as_dataarray:
-        x = xr.DataArray(np.zeros(shape, dtype=dtype_array))
-    else:
-        x = np.zeros(shape, dtype=dtype_array)
+    x: NDArrayAny | xr.DataArray = (
+        xr.DataArray(np.zeros(shape, dtype=dtype_array))
+        if as_dataarray
+        else np.zeros(shape, dtype=dtype_array)
+    )
 
     if isinstance(func, str):
         cls = CentralMomentsData if as_dataarray else CentralMomentsArray
@@ -211,11 +211,11 @@ def test_functions_without_out(
     dtype_array, dtype, expected, func, kws, as_dataarray
 ) -> None:
     shape = (5, 1, 3)
-    x: NDArrayAny | xr.DataArray
-    if as_dataarray:
-        x = xr.DataArray(np.zeros(shape, dtype=dtype_array))
-    else:
-        x = np.zeros(shape, dtype=dtype_array)
+    x: NDArrayAny | xr.DataArray = (
+        xr.DataArray(np.zeros(shape, dtype=dtype_array))
+        if as_dataarray
+        else np.zeros(shape, dtype=dtype_array)
+    )
 
     kwargs = {"dtype": dtype, **kws}
     _do_test(func, x, expected=expected, **kwargs)
@@ -268,7 +268,7 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
 def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2,), dtype=dtype_base)
     if cls == CentralMomentsData:
-        data = xr.DataArray(data)  # type: ignore[assignment]
+        data = xr.DataArray(data)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
 
     func = partial(cls, data, mom_ndim=1, dtype=dtype)
     if dtype is None:
@@ -290,7 +290,7 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
     assert c.dtype.type == dtype_base
 
     if expected == "error":
-        with pytest.raises(ValueError, match=".*not supported.*"):
+        with pytest.raises(ValueError, match=r".*not supported.*"):
             c.new_like(data, dtype=dtype)
     elif dtype is None:
         assert c.new_like().dtype.type == dtype_base

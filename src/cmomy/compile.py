@@ -11,6 +11,7 @@ the command line with
 
 """
 
+# pylint: disable=missing-class-docstring
 from __future__ import annotations
 
 import itertools
@@ -33,6 +34,7 @@ logger = logging.getLogger("cmomy.compile")
 
 
 class _Catchtime:
+    # pylint: disable=attribute-defined-outside-init
     def __enter__(self) -> Self:
         self.start = perf_counter()
         return self
@@ -95,27 +97,27 @@ def load_numba_modules(
     include_convert = _set_default(include_convert)
     include_rolling = _set_default(include_rolling)
 
-    _covs = ["", "_cov"] if include_cov else [""]
-    _parallels = ["", "_parallel"] if include_parallel else [""]
+    covs = ["", "_cov"] if include_cov else [""]
+    parallels = ["", "_parallel"] if include_parallel else [""]
 
-    _modules = ["utils", "_push"]
+    modules = ["utils", "_push"]
     if include_vec:
-        _modules.append("push")
+        modules.append("push")
     if include_resample:
-        _modules.append("resample")
+        modules.append("resample")
     if include_indexed:
-        _modules.append("indexed")
+        modules.append("indexed")
     if include_rolling:
-        _modules.append("rolling")
+        modules.append("rolling")
     if include_convert:
-        _modules.append("convert")
+        modules.append("convert")
 
     mods = itertools.chain(
         (
             f"{mod}{cov}{parallel}"
-            for mod in _modules
-            for cov in _covs
-            for parallel in _parallels
+            for mod in modules
+            for cov in covs
+            for parallel in parallels
         ),
     )
 
@@ -125,7 +127,7 @@ def load_numba_modules(
     def _filter(name: str) -> bool:
         return (root / "_lib" / name).with_suffix(".py").exists()
 
-    _time_modules(*filter(_filter, mods), prefix="cmomy._lib")
+    _time_modules(*(m for m in mods if _filter(m)), prefix="cmomy._lib")
 
 
 def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:

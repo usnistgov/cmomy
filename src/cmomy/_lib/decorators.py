@@ -11,8 +11,8 @@ from numba import guvectorize, njit
 from ..options import OPTIONS
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
-    from typing import Any, Callable
+    from collections.abc import Callable, Iterable, Sequence
+    from typing import Any
 
     from cmomy.core.typing import FuncT, NumbaType
 
@@ -33,7 +33,7 @@ def is_in_unsafe_thread_pool() -> bool:
 def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
-        from numba.np.ufunc import (
+        from numba.np.ufunc import (  # pylint: disable=unused-import
             tbbpool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
         )
     except ImportError:
@@ -42,7 +42,7 @@ def _thread_backend() -> str | None:
         return "tbb"
 
     try:
-        from numba.np.ufunc import (
+        from numba.np.ufunc import (  # pylint: disable=unused-import
             omppool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
         )
     except ImportError:
@@ -161,4 +161,4 @@ def _get_signatures(
         x = sig[0]
         return (x == nb.float64) or (hasattr(x, "dtype") and x.dtype == nb.float64)
 
-    return list(filter(_filter_float32, signatures))
+    return [s for s in signatures if _filter_float32(s)]

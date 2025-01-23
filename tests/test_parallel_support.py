@@ -50,10 +50,11 @@ func_params_vals = [
 @pytest.fixture
 def data_and_kwargs(rng, request):
     shapes, kwargs = request.param
-    if isinstance(shapes, list):
-        data = [rng.random(s) for s in shapes]
-    else:
-        data = rng.random(shapes)
+    data = (
+        [rng.random(s) for s in shapes]
+        if isinstance(shapes, list)
+        else rng.random(shapes)
+    )
     return data, kwargs
 
 
@@ -76,7 +77,7 @@ def data_and_kwargs(rng, request):
 def test_parallel_data(func, kwargs_callback, data_and_kwargs):
     data, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
-    np.testing.assert_allclose(*(func(data, **kws, parallel=p) for p in [False, True]))
+    np.testing.assert_allclose(*(func(data, **kws, parallel=p) for p in (False, True)))
 
 
 @pytest.mark.parametrize(
@@ -91,11 +92,11 @@ def test_parallel_freq_to_indices(nrep, ndat, nsamp) -> None:
     indices = cmomy.resample.random_indices(nrep=nrep, ndat=ndat, nsamp=nsamp)
     freqs = [
         cmomy.resample.indices_to_freq(indices, ndat=ndat, parallel=p)
-        for p in [True, False]
+        for p in (True, False)
     ]
     np.testing.assert_equal(*freqs)
 
-    idxs = [cmomy.resample.freq_to_indices(freqs[0], parallel=p) for p in [True, False]]
+    idxs = [cmomy.resample.freq_to_indices(freqs[0], parallel=p) for p in (True, False)]
     np.testing.assert_equal(*idxs)
 
     # make sure round trip is ok
@@ -117,7 +118,7 @@ def test_parallel_freq_to_indices(nrep, ndat, nsamp) -> None:
 def test_parallel_data_rolling(func, kwargs_callback, data_and_kwargs, repeat):  # noqa: ARG001
     data, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
-    np.testing.assert_allclose(*(func(data, **kws, parallel=p) for p in [False, True]))
+    np.testing.assert_allclose(*(func(data, **kws, parallel=p) for p in (False, True)))
 
 
 # * vals
@@ -139,7 +140,7 @@ def test_parallel_vals(func, kwargs_callback, data_and_kwargs):
     xy, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
 
-    np.testing.assert_allclose(*(func(*xy, **kws, parallel=p) for p in [False, True]))
+    np.testing.assert_allclose(*(func(*xy, **kws, parallel=p) for p in (False, True)))
 
 
 @pytest.mark.slow
@@ -161,7 +162,7 @@ def test_parallel_vals_rolling(func, kwargs_callback, data_and_kwargs, repeat): 
     xy, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
 
-    np.testing.assert_allclose(*(func(*xy, **kws, parallel=p) for p in [False, True]))
+    np.testing.assert_allclose(*(func(*xy, **kws, parallel=p) for p in (False, True)))
 
 
 # * Pushers

@@ -1,4 +1,5 @@
 """Interface to routines in this submodule."""
+# pylint: disable=missing-class-docstring
 
 from __future__ import annotations
 
@@ -8,8 +9,9 @@ from typing import TYPE_CHECKING, NamedTuple, cast
 from cmomy.options import OPTIONS
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
     from types import ModuleType
-    from typing import Any, Callable, Protocol
+    from typing import Any, Protocol
 
     from numpy.typing import NDArray
 
@@ -271,8 +273,7 @@ def factory_pusher(
 # * Resample
 @lru_cache
 def factory_freq_to_indices(parallel: bool = True) -> FreqToIndices:
-    parallel = parallel and supports_parallel()
-    if parallel:
+    if parallel := parallel and supports_parallel():
         from ._lib.resample_parallel import freq_to_indices
     else:
         from ._lib.resample import freq_to_indices
@@ -281,8 +282,7 @@ def factory_freq_to_indices(parallel: bool = True) -> FreqToIndices:
 
 @lru_cache
 def factory_indices_to_freq(parallel: bool = True) -> IndicesToFreq:
-    parallel = parallel and supports_parallel()
-    if parallel:
+    if parallel := parallel and supports_parallel():
         from ._lib.resample_parallel import indices_to_freq
     else:
         from ._lib.resample import indices_to_freq
