@@ -12,8 +12,8 @@ description = "Central (co)moment calculation/manipulation"
 keywords = [
     "cmomy",
 ]
-license = { text = "NIST-PD" }
-license-files = { paths = [ "LICENSE" ] }
+license = "NIST-PD"
+license-files = [ "LICENSE" ]
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
@@ -400,9 +400,9 @@ module = [
     "dask.*",
 ]
 
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = [  ]
+# [[tool.mypy.overrides]]
+# ignore_errors = true
+# module = [  ]
 
 # [[tool.mypy.overrides]]
 # # mypy doesn't like how we handle default values of TypeVars
@@ -559,5 +559,8 @@ use_shortcuts = true
 [tool.typos.default.extend-words]
 datas = "datas"
 
+[tool.typos.default]
+extend-ignore-identifiers-re = [ "NDArray.*" ]
+
 [tool.typos.default.extend-identifiers]
-NDArrayAny = "NDArrayAny"
+NDGeneric = "NDGeneric"

@@ -406,7 +406,7 @@ def test_select_moment(
         ((10, 3, 4, 4), 2),
     ],
 )
-def test_opertors(rng, shape, mom_ndim) -> None:
+def test_operators(rng, shape, mom_ndim) -> None:
     data = rng.random(shape)
     c = CentralMomentsArray(data, mom_ndim=mom_ndim)
 

@@ -689,7 +689,7 @@ def assign_moment(
            [3, 1, 5]])
 
     """
-    # get names ands values
+    # get names and values
     moment_kwargs = either_dict_or_kwargs(  # type: ignore[assignment]
         moment if moment is None else dict(moment),
         moment_kwargs,

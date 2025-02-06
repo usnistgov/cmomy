@@ -7,7 +7,7 @@ _PARALLEL = False  # !!!PARALLEL_FALSE!!!
 
 and inserts
 
-_PARALLE = True  # !!!PARALLEL_TRUE!!!
+_PARALLEL = True  # !!!PARALLEL_TRUE!!!
 """
 
 from __future__ import annotations
