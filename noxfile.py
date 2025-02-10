@@ -439,8 +439,8 @@ def dev(
         "ipykernel",
         "install",
         "--user",
-        "--name=testpackage-book-nocli-dev",
-        "--display-name='Python [venv: testpackage-book-nocli-dev]'",
+        "--name=cmomy-dev",
+        "--display-name='Python [venv: cmomy-dev]'",
     )
 
 
