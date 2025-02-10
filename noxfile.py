@@ -99,7 +99,7 @@ def get_uvxrun_specs(requirements: str | None = None) -> uvxrun.Specifications:
 
 
 class SessionOptionsDict(TypedDict, total=False):
-    """Dict for options to nox.session"""
+    """Dict for options to nox.session."""
 
     python: str | list[str]
     venv_backend: str | Callable[..., CondaEnv]
@@ -134,7 +134,7 @@ OPT_ANNO = Annotated[OPT_TYPE, option(help="Options to command.")]
 
 @dataclass
 class SessionParams(DataclassParser):
-    """Holds all cli options"""
+    """Holds all cli options."""
 
     # common parameters
     lock: bool = False
@@ -285,7 +285,7 @@ def install_dependencies(
     include_editable_package: bool = False,
     lock: bool | None = None,
 ) -> None:
-    """General dependencies installer"""
+    """General dependencies installer."""
     if python_version is None:
         assert isinstance(session.python, str)  # noqa: S101
         python_version = session.python
@@ -375,7 +375,7 @@ def install_package(
     editable: bool = False,
     update: bool = True,
 ) -> None:
-    """Install current package"""
+    """Install current package."""
     if editable:
         run = session.run if update else session.run_install
         opts = [*args, "-e", "."]
@@ -398,7 +398,7 @@ def install_package(
 # ** test-all
 @nox.session(name="test-all", python=False)
 def test_all(session: Session) -> None:
-    """Run all tests and coverage"""
+    """Run all tests and coverage."""
     for py in PYTHON_ALL_VERSIONS:
         session.notify(f"test-{py}")
     session.notify("test-numpy1")
@@ -413,7 +413,7 @@ def dev(
     session: Session,
     opts: SessionParams,
 ) -> None:
-    """Create development environment"""
+    """Create development environment."""
     session.run("uv", "venv", ".venv", "--allow-existing")
 
     python_opt = "--python=.venv/bin/python"
@@ -954,7 +954,7 @@ def get_package_wheel(
     reuse: bool = True,
 ) -> str:
     """
-    Build the package in return the build location
+    Build the package in return the build location.
 
     This is similar to how tox does isolated builds.
 
@@ -996,7 +996,7 @@ def get_package_wheel(
 @nox.session(python=False)
 @add_opts
 def publish(session: nox.Session, opts: SessionParams) -> None:
-    """Publish the distribution"""
+    """Publish the distribution."""
     run = partial(uvxrun.run, specs=get_uvxrun_specs(), session=session, external=True)
 
     for cmd in opts.publish or []:
@@ -1015,7 +1015,7 @@ def conda_recipe(
     session: nox.Session,
     opts: SessionParams,
 ) -> None:
-    """Run grayskull to create recipe"""
+    """Run grayskull to create recipe."""
     commands = opts.conda_recipe or ["recipe"]
 
     run = partial(uvxrun.run, specs=get_uvxrun_specs(), session=session)
