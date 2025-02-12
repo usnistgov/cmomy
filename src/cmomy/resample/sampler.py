@@ -36,6 +36,11 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
+    from cmomy.core.moment_params import (
+        MomParams,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+        MomParamsBase,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+        MomParamsDict,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+    )
     from cmomy.core.typing import (
         AxisReduceWrap,
         DataT,

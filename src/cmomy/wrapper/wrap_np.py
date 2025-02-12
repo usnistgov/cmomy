@@ -14,7 +14,10 @@ from cmomy.core.array_utils import (
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.docstrings import docfiller_central as docfiller
 from cmomy.core.missing import MISSING
-from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
+from cmomy.core.moment_params import (
+    MomParamsArray,
+    MomParamsXArray,
+)
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -31,11 +34,21 @@ from cmomy.core.validate import (
 from .wrap_abc import CentralMomentsABC
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Sequence
+    from collections.abc import (
+        Hashable,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+        Iterator,
+        Sequence,
+    )
     from typing import Any
 
+    import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
     from numpy.typing import ArrayLike, DTypeLike
 
+    from cmomy.core.moment_params import (
+        MomParams,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+        MomParamsBase,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+        MomParamsDict,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+    )
     from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrder,
@@ -65,6 +78,13 @@ if TYPE_CHECKING:
         WrapNPTransform,
     )
     from cmomy.core.typing_compat import Self, Unpack
+    from cmomy.resample.sampler import (
+        IndexSampler,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+    )
+
+    from .wrap_xr import (
+        CentralMomentsData,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+    )
 
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
@@ -179,6 +199,7 @@ class CentralMomentsArray(
     # ** Properties ------------------------------------------------------------
     @property
     def mom_axes(self) -> MomAxesStrict:
+        """Axes index corresponding to moment(s)."""
         return self._mom_params.axes
 
     # Reimplement to get dtype correct

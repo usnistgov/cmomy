@@ -54,6 +54,9 @@ if TYPE_CHECKING:
     )
     from cmomy.core.typing_compat import Self
     from cmomy.factory import Pusher
+    from cmomy.resample.sampler import (
+        IndexSampler,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
+    )
 
 
 @docfiller.decorate  # noqa: PLR0904
