@@ -250,25 +250,25 @@ include = [
 strict = [
     "noxfile.py",
     "tools/*.py",
-    "src/cmomy/*.py",
-    "src/cmomy/wrapper/*.py",
-    "src/cmomy/resample/*.py",
-    "src/cmomy/_lib/_binomial.py",
-    "src/cmomy/core/__init__.py",
-    "src/cmomy/core/array_utils.py",
-    "src/cmomy/core/compat.py",
-    "src/cmomy/core/docstrings.py",
-    # "src/cmomy/core/formatting.py",
-    "src/cmomy/core/missing.py",
-    "src/cmomy/core/moment_params.py",
-    "src/cmomy/core/prepare.py",
-    "src/cmomy/core/prob.py",
-    "src/cmomy/core/typing.py",
-    "src/cmomy/core/typing_compat.py",
-    # "src/cmomy/core/typing_nested_sequence.py",
-    "src/cmomy/core/utils.py",
-    "src/cmomy/core/validate.py",
-    "src/cmomy/core/xr_utils.py",
+    "./src/cmomy/*.py",
+    "./src/cmomy/core/prob.py",
+    "./src/cmomy/core/typing_compat.py",
+    "./src/cmomy/core/missing.py",
+    "./src/cmomy/core/compat.py",
+    "./src/cmomy/core/array_utils.py",
+    # "./src/cmomy/core/typing_nested_sequence.py",
+    "./src/cmomy/core/moment_params.py",
+    "./src/cmomy/core/__init__.py",
+    # "./src/cmomy/core/formatting.py",
+    "./src/cmomy/core/docstrings.py",
+    "./src/cmomy/core/validate.py",
+    "./src/cmomy/core/xr_utils.py",
+    "./src/cmomy/core/utils.py",
+    "./src/cmomy/core/typing.py",
+    "./src/cmomy/core/prepare.py",
+    "./src/cmomy/resample/*.py",
+    "./src/cmomy/wrapper/*.py",
+    "./src/cmomy/grouped/*.py",
 ]
 exclude = [
     "**/__pycache__",
@@ -301,6 +301,8 @@ reportOptionalOperand = false
 reportOptionalSubscript = false
 reportPrivateImportUsage = false
 reportUnboundVariable = false
+# Needed for pep728 support for TypeDict(closed=...)
+enableExperimentalFeatures = true
 
 [tool.pytype]
 inputs = [
@@ -339,7 +341,7 @@ reqs = [
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
     "pre-commit",
-    "pyright>=1.1.392",
+    "pyright>=1.1.394",
     "scriv",
     "twine>=5.0.0",
 ]

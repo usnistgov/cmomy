@@ -59,6 +59,7 @@ nitpick_ignore = [
     ("py:class", "IndexSampler[Any]"),
     ("py:class", "Collection[Hashable]"),
     ("py:class", "ellipsis"),
+    ("py:class", "typing_extensions.TypedDict"),
 ]
 nitpick_ignore_regex = [
     (r"py:.*", r"numpy\._typing.*"),
@@ -160,6 +161,7 @@ autodoc_default_flags = [
 
 autodoc_typehints = "none"
 # autodoc_typehints = "signature"
+# autodoc_typehints = "description"
 # Attempted to get type hints working.  Pain points.
 # - Need to make type hint accessible at runtime (outside TYPE_CHECKING).
 # - Either expands type aliases (sphinx_autodoc_type), or lose links to type alias (regular autodoc.  Never got it to work).
@@ -197,11 +199,22 @@ autodoc_type_aliases = {
     ]
 }
 
+# typehints_fully_qualified = True
 typehints_document_rtype = False
 typehints_use_rtype = False
 typehints_defaults = "comma"
-# # always_document_param_types = True
+# always_document_param_types = True
 # typehints_use_signature = True
+
+# def _typehints_formatter(ann, config):
+#     if isinstance(ann, str):
+#         return ", ".join(ann.split("|"))
+
+#     # print(type(ann), ann)
+#     return None
+
+
+# typehints_formatter = _typehints_formatter
 
 
 # -- napoleon ------------------------------------------------------------------
@@ -271,6 +284,9 @@ napoleon_type_aliases = {
     "pd.Index": "~pandas.Index",
     "pd.NaT": "~pandas.NaT",
     # "pd.Index[Any]": "~pandas.Index"
+    # "ArrayLike": ":term:`array-like <array_like>`",
+    "ArrayLike": ":py:obj:`ArrayLike <numpy.typing.ArrayLike>`",
+    "DataT": "~cmomy.core.typing.DataT",
 }
 
 

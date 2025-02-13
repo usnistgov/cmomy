@@ -13,7 +13,6 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    TypedDict,
     Union,
     runtime_checkable,
 )
@@ -26,7 +25,7 @@ import xarray as xr
 from numpy.typing import ArrayLike, NDArray
 
 from .docstrings import docfiller
-from .typing_compat import EllipsisType, TypeVar
+from .typing_compat import EllipsisType, TypedDict, TypeVar
 
 if TYPE_CHECKING:
     from cmomy.resample.sampler import IndexSampler
@@ -377,7 +376,7 @@ class _ValsKwargs(
 
 
 # ** Reduction
-class ReduceDataKwargs(
+class ReduceDataKwargs(  # type: ignore[call-arg]
     _MomNDimKwargs,
     _AxisMultKwargs,
     _ReductionKwargs,
@@ -388,27 +387,30 @@ class ReduceDataKwargs(
     _MomParamsKwargs,
     _MoveAxisToEndKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.reduction.reduce_data`"""
 
     use_map: bool | None
 
 
-class ReduceValsKwargs(
+class ReduceValsKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
     _ValsKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""
 
 
-class ReduceDataGroupedKwargs(
+class ReduceDataGroupedKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_data_grouped`"""
 
@@ -416,12 +418,13 @@ class ReduceDataGroupedKwargs(
     groups: Groups | None
 
 
-class ReduceDataIndexedKwargs(
+class ReduceDataIndexedKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_data_indexed`"""
 
@@ -436,34 +439,37 @@ class ReduceDataIndexedKwargs(
 
 
 # ** Resample
-class ResampleDataKwargs(
+class ResampleDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.resample.resample_data`"""
 
 
-class ResampleValsKwargs(
+class ResampleValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.resample.resample_vals`"""
 
 
-class JackknifeDataKwargs(
+class JackknifeDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
@@ -471,12 +477,13 @@ class JackknifeDataKwargs(
     mom_axes_reduced: MomAxes | None
 
 
-class JackknifeValsKwargs(
+class JackknifeValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
@@ -484,7 +491,7 @@ class JackknifeValsKwargs(
 
 
 # ** Convert
-class WrapRawKwargs(
+class _WrapRawKwargs(
     _MomNDimKwargs,
     _ReductionKwargs,
     _OrderKwargs,
@@ -492,37 +499,48 @@ class WrapRawKwargs(
     _MomParamsKwargs,
     total=False,
 ):
+    pass
+
+
+class WrapRawKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
+    _WrapRawKwargs,
+    total=False,
+    closed=True,
+):
     """Extra parameters for :func:`.wrap_raw`"""
 
 
-class MomentsTypeKwargs(  # pylint: disable=duplicate-bases
-    WrapRawKwargs,
+class MomentsTypeKwargs(  # type: ignore[call-arg] # pylint: disable=duplicate-bases
+    _WrapRawKwargs,
     _MoveAxisToEndKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.convert.moments_type`"""
 
     to: ConvertStyle
 
 
-class CumulativeKwargs(
+class CumulativeKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.convert.cumulative`"""
 
     inverse: bool
 
 
-class MomentsToComomentsKwargs(
+class MomentsToComomentsKwargs(  # type: ignore[call-arg]
     _MomDimsAndApplyUFuncKwargs,
     _OrderCFKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.convert.moments_to_comoments`"""
 
@@ -530,12 +548,13 @@ class MomentsToComomentsKwargs(
 
 
 # ** Utils
-class SelectMomentKwargs(
+class SelectMomentKwargs(  # type: ignore[call-arg]
     _MomNDimKwargs,
     _MomDimsAndApplyUFuncKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.utils.select_moment`"""
 
@@ -544,11 +563,12 @@ class SelectMomentKwargs(
     coords_combined: str | Sequence[Hashable] | None
 
 
-class ValsToDataKwargs(
+class ValsToDataKwargs(  # type: ignore[call-arg]
     _MomKwargs,
     _MomDimsAndApplyUFuncKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.utils.vals_to_data`"""
 
@@ -568,57 +588,63 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
     adjust: bool
 
 
-class RollingDataKwargs(
+class RollingDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _RollingKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_data`"""
 
 
-class RollingValsKwargs(
+class RollingValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _RollingKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
+    total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_vals`"""
 
 
-class RollingExpDataKwargs(
+class RollingExpDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_exp_data`"""
 
     alpha_axis: AxisReduceWrap | MissingType
 
 
-class RollingExpValsKwargs(
+class RollingExpValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_exp_vals`"""
 
 
 # ** Wrap
-class WrapKwargs(
+class WrapKwargs(  # type: ignore[call-arg]
     _MomNDimKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`cmomy.wrap`"""
 
@@ -627,9 +653,10 @@ class WrapKwargs(
     fastpath: bool
 
 
-class ZerosLikeKwargs(
+class ZerosLikeKwargs(  # type: ignore[call-arg]
     _OrderKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`cmomy.zeros_like`"""
 
@@ -640,29 +667,37 @@ class ZerosLikeKwargs(
 
 
 # *** Wrap_np
-class WrapNPTransform(
+class _WrapNPTransform(
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _ParallelKwargs,
     total=False,
 ):
-    """Extra parameters to :meth:`.CentralMomentsArray.cumulative`"""
-
     axis: AxisReduce | MissingType
     casting: Casting
 
 
-class WrapNPResampleAndReduceKwargs(
-    WrapNPTransform,
+class WrapNPTransform(  # type: ignore[call-arg]
+    _WrapNPTransform,
     total=False,
+    closed=True,
+):
+    """Extra parameters to :meth:`.CentralMomentsArray.cumulative`"""
+
+
+class WrapNPResampleAndReduceKwargs(  # type: ignore[call-arg]
+    _WrapNPTransform,
+    total=False,
+    closed=True,
 ):
     """Extra parameters to :meth:`.CentralMomentsArray.resample_and_reduce`"""
 
 
-class WrapNPReduceKwargs(
-    WrapNPTransform,
+class WrapNPReduceKwargs(  # type: ignore[call-arg]
+    _WrapNPTransform,
     _KeepDimsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :meth:`.CentralMomentsArray.reduce`"""
 
@@ -670,11 +705,12 @@ class WrapNPReduceKwargs(
     block: int
 
 
-class IndexSamplerFromDataKwargs(
+class IndexSamplerFromDataKwargs(  # type: ignore[call-arg]
     _AxisKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :meth:`.resample.IndexSampler.from_data`"""
 
@@ -689,9 +725,10 @@ class IndexSamplerFromDataKwargs(
 
 
 @docfiller.decorate
-class FactoryIndexSamplerKwargs(
+class FactoryIndexSamplerKwargs(  # type: ignore[call-arg]
     TypedDict,
     total=False,
+    closed=True,
 ):
     """
     Extra parameters to :func:`.resample.factory_sampler`

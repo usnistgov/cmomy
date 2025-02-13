@@ -3,6 +3,8 @@
 import sys
 from typing import Any
 
+from typing_extensions import TypedDict
+
 if sys.version_info >= (3, 10):
     from types import EllipsisType
     from typing import TypeAlias, TypeGuard
@@ -31,5 +33,6 @@ __all__ = [
     "TypeGuard",
     "TypeIs",
     "TypeVar",
+    "TypedDict",
     "Unpack",
 ]
