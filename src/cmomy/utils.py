@@ -49,11 +49,6 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .core.moment_params import (
-        MomParams,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsBase,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsDict,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,

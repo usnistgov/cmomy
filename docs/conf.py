@@ -57,6 +57,8 @@ suppress_warnings = ["autosectionlabel.*", "sphinx_autodoc_typehints.*"]
 nitpick_ignore = [
     ("py:class", "np.floating[Any]"),
     ("py:class", "IndexSampler[Any]"),
+    ("py:class", "Collection[Hashable]"),
+    ("py:class", "ellipsis"),
 ]
 nitpick_ignore_regex = [
     (r"py:.*", r"numpy\._typing.*"),
@@ -65,6 +67,9 @@ nitpick_ignore_regex = [
     (r"py:.*", r"cmomy\.core\.moment_params.*"),
     (r"py:.*", r"scipy\.stats\.bootstrap"),
     (r"py:.*", r"dask\.array\.from_array"),
+    (r"py:.*", r"numpy.*"),
+    (r"py:.*", r"MomParam.*"),
+    (r"py:.*", r"CentralMoments.*"),
 ]
 
 # -- myst stuff ---------------------------------------------------------
@@ -154,6 +159,7 @@ autodoc_default_flags = [
 ]
 
 autodoc_typehints = "none"
+# autodoc_typehints = "signature"
 # Attempted to get type hints working.  Pain points.
 # - Need to make type hint accessible at runtime (outside TYPE_CHECKING).
 # - Either expands type aliases (sphinx_autodoc_type), or lose links to type alias (regular autodoc.  Never got it to work).
@@ -167,10 +173,34 @@ autodoc_typehints = "none"
 #     "NDArrayAny": "NDArrayAny",
 # }
 
+# These will not be expanded
+autodoc_type_aliases = {
+    k: k
+    for k in [
+        "ArrayT",
+        "MomAxes",
+        "NDArrayAnyMomParamsInput",
+        "MomParamsT",
+        "DimsReduce",
+        "DimsReduceMult",
+        "Dims",
+        "MomDims",
+        "MomAxesIndexAny",
+        "NameType",
+        "DimsType",
+        "KeepAttrs",
+        "Groups",
+        "Sampler",
+        "MomParams",
+        "MomParamsBase",
+        "MomParamsDict",
+    ]
+}
+
 typehints_document_rtype = False
 typehints_use_rtype = False
 typehints_defaults = "comma"
-# always_document_param_types = True
+# # always_document_param_types = True
 # typehints_use_signature = True
 
 

@@ -52,20 +52,27 @@ if TYPE_CHECKING:
 
 # * CentralMoments types ------------------------------------------------------
 
+#: DataArray wrapper
 CentralMomentsDataArray: TypeAlias = "CentralMomentsData[xr.DataArray]"
+#: Dataset wrapper
 CentralMomentsDataset: TypeAlias = "CentralMomentsData[xr.Dataset]"
+#: DataArray or Dataset wrapper
 CentralMomentsDataAny: TypeAlias = "CentralMomentsData[Any]"
+#: Array wrapper
 CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
-
+#: Generic wrapper TypeVar
 CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any, Any]")
+#: Array wrapper TypeVar
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
+#: xarray object wrapper TypeVar
 CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
 
 
 # * MomParams
-
+#: Moment parameters input
 MomParamsInput = Union["MomParams", "MomParamsBase", "MomParamsDict", None]
+#: Moment parameters TypeVar
 MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
 
 
@@ -123,19 +130,24 @@ NDArrayFloatingT = TypeVar("NDArrayFloatingT", bound="NDArray[np.floating[Any]]"
 # * Numpy ---------------------------------------------------------------------
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
+#: Axes type
 Axes = Union[int, "tuple[int, ...]"]
+#: Axes type (with wrapping)
 AxesWrap = Union[complex, "tuple[complex, ...]"]
 
-
+#: Reduction axes type
 AxisReduce: TypeAlias = Optional[int]
+#: Reduction axes type (with wrapping)
 AxisReduceWrap: TypeAlias = Optional[complex]
 
 AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
 
+#: Reduction axes type (multiple)
 AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
+#: Reduction axes type (multiple, with wrapping)
 AxisReduceMultWrap: TypeAlias = Union[complex, "tuple[complex, ...]", None]
 
-# Rng
+#: Random number generator types
 RngTypes: TypeAlias = Union[
     int,
     Sequence[int],
@@ -146,14 +158,23 @@ RngTypes: TypeAlias = Union[
 
 
 # Types
+#: Any dtype
 DTypeAny: TypeAlias = Any
+#: Floating dtype
 FloatDTypes = Union[np.float32, np.float64]
+#: Long integer dtype
 LongIntDType: TypeAlias = np.int64
+#: Array type (any dtype)
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
+#: Array type (int dtype)
 NDArrayInt = NDArray[np.int64]
+#: Array type (float dtype)
 NDArrayFloats = NDArray[FloatDTypes]
+#: Array type (bool dtype)
 NDArrayBool = NDArray[np.bool_]
+#: Integer dtype
 IntDTypeT: TypeAlias = np.int64
+#: Float or array of float
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 
 
@@ -195,25 +216,33 @@ NumbaType = Any
 # but will be flagged by typechecker...
 #: Moments type
 Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
+#: Strict moments type
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
+#: Number of moment dimensions
 MomNDim = Literal[1, 2]
 
-
+#: Axes containing moment(s).
 MomAxes = Moments
+#: Axes containing moment(s).
 MomAxesStrict = MomentsStrict
 
 # * Xarray specific stuff -----------------------------------------------------
 # fix if using autodoc typehints...
+#: Reduction dimension
 DimsReduce: TypeAlias = Optional[Hashable]
+#: Reduction dimension(s)
 DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
-# This is what xarray uses for reduction/sampling dimensions
+#: Dimensions
 Dims = Union[str, Collection[Hashable], EllipsisType, None]
 
-
+#: Dimensions containing moment(s)
 MomDims = Union[Hashable, "tuple[Hashable]", "tuple[Hashable, Hashable]"]
+#: Dimensions containing moment(s)
 MomDimsStrict = Union["tuple[Hashable]", "tuple[Hashable, Hashable]"]
 
+#: Index
 IndexAny: TypeAlias = "pd.Index[Any]"
+#: Coordinates
 CoordsType: TypeAlias = Union[
     Mapping[Any, Any],
     None,
@@ -229,9 +258,13 @@ KeepAttrs: TypeAlias = Union[
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 
 # * Literals ------------------------------------------------------------------
+#: Order parameters
 ArrayOrderCF = Optional[Literal["C", "F"]]
+#: Order parameters
 ArrayOrderCFA = Optional[Literal["C", "F", "A"]]
+#: Order parameters
 ArrayOrder = Optional[Literal["C", "F", "A", "K"]]
+#: Casting rules
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
 MissingCoreDimOptions = Literal["raise", "copy", "drop"]
@@ -251,6 +284,7 @@ SelectMoment = Literal[
     "ymom_0",
     "ymom_1",
 ]
+#: Style to convert to
 ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
 CoordsPolicy: TypeAlias = Optional[Literal["first", "last", "group"]]

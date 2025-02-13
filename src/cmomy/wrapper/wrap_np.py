@@ -35,20 +35,13 @@ from .wrap_abc import CentralMomentsABC
 
 if TYPE_CHECKING:
     from collections.abc import (
-        Hashable,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
         Iterator,
         Sequence,
     )
     from typing import Any
 
-    import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
     from numpy.typing import ArrayLike, DTypeLike
 
-    from cmomy.core.moment_params import (
-        MomParams,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsBase,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsDict,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
     from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrder,
@@ -78,13 +71,6 @@ if TYPE_CHECKING:
         WrapNPTransform,
     )
     from cmomy.core.typing_compat import Self, Unpack
-    from cmomy.resample.sampler import (
-        IndexSampler,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
-
-    from .wrap_xr import (
-        CentralMomentsData,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
 
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)

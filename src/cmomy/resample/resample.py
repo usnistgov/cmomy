@@ -58,18 +58,10 @@ from .sampler import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import (
-        Hashable,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.core.moment_params import (
-        MomParams,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsBase,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsDict,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
@@ -98,10 +90,6 @@ if TYPE_CHECKING:
         Sampler,
     )
     from cmomy.core.typing_compat import Unpack
-
-    from .sampler import (
-        IndexSampler,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
 
 
 # * Resample data

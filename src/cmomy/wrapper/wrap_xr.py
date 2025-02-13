@@ -48,16 +48,10 @@ if TYPE_CHECKING:
     )
     from typing import Any, Literal
 
-    import pandas as pd  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
     from numpy.typing import ArrayLike, DTypeLike
     from xarray.core import types as xr_types
     from xarray.core.coordinates import DataArrayCoordinates, DatasetCoordinates
 
-    from cmomy.core.moment_params import (
-        MomParams,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsBase,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsDict,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayOrder,

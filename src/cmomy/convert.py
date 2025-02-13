@@ -54,7 +54,6 @@ from .factory import (
 
 if TYPE_CHECKING:
     from collections.abc import (
-        Hashable,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
         Iterable,
     )
     from typing import (
@@ -65,11 +64,6 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import AxisReduceWrap
 
-    from .core.moment_params import (
-        MomParams,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsBase,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-        MomParamsDict,  # noqa: F401  # pyright: ignore[reportUnusedImport]  # needed for autodoc
-    )
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
