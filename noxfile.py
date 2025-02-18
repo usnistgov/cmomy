@@ -138,6 +138,7 @@ class SessionParams(DataclassParser):
 
     # common parameters
     lock: bool = False
+    no_lock: bool = False
     update: bool = add_option("--update", "-U", help="update dependencies/package")
     version: str | None = add_option(
         "--version", "-V", help="pretend version", default=None
@@ -180,9 +181,6 @@ class SessionParams(DataclassParser):
     # coverage
     coverage: list[Literal["erase", "combine", "report", "html", "open"]] | None = None
 
-    # testdist
-    testdist_run: RUN_ANNO = None
-
     # docs
     docs: (
         list[
@@ -202,7 +200,9 @@ class SessionParams(DataclassParser):
         | None
     ) = add_option("--docs", "-d", help="doc commands")
     docs_run: RUN_ANNO = None
-
+    docs_options: OPT_TYPE = add_option(
+        "--docs-options", help="Options to sphinx-build"
+    )
     # lint
     lint_options: OPT_TYPE = add_option(help="Options to pre-commit")
 
@@ -256,7 +256,12 @@ def parse_posargs(*posargs: str) -> SessionParams:
     without escaping.
     """
     opts = SessionParams.from_posargs(posargs=posargs, prefix_char="+")
-    opts.lock = opts.lock or UV_LOCK
+
+    if opts.no_lock:
+        opts.lock = False
+    else:
+        opts.lock = opts.lock or UV_LOCK
+
     return opts
 
 
@@ -439,8 +444,10 @@ def dev(
         "ipykernel",
         "install",
         "--user",
-        "--name=cmomy-dev",
-        "--display-name='Python [venv: cmomy-dev]'",
+        "--name",
+        "cmomy-dev",
+        "--display-name",
+        "Python [venv: cmomy-dev]",
     )
 
 
@@ -516,7 +523,7 @@ def lock(
                         "--universal",
                         f"--config-file={PIP_COMPILE_CONFIG}",
                         "-q",
-                        "-p",
+                        "--python-version",
                         python_version,
                         *options,
                         path,
@@ -703,7 +710,7 @@ def testdist(
 
     _test(
         session=session,
-        run=opts.testdist_run,
+        run=opts.test_run,
         test_no_pytest=opts.test_no_pytest,
         test_options=opts.test_options,
         no_cov=opts.no_cov,
@@ -750,7 +757,10 @@ def docs(  # noqa: C901
         cmd.remove("serve")
 
     if cmd:
-        common_opts = ["--doctree-dir=docs/_build/doctree"]
+        common_opts = [
+            "--doctree-dir=docs/_build/doctree",
+            *(opts.docs_options or ()),
+        ]
         for c in combine_list_str(cmd):
             if c == "clean":
                 for d in ("docs/_build", "generated", "reference/generated"):
