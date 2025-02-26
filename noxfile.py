@@ -44,6 +44,7 @@ sys.path.pop(0)
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator, Sequence
+    from typing import Any
 
     from nox import Session
 
@@ -541,6 +542,7 @@ def _test(
     test_no_pytest: bool,
     test_options: OPT_TYPE,
     no_cov: bool,
+    **kws: Any,
 ) -> None:
     import os
 
@@ -562,7 +564,7 @@ def _test(
         if tmpdir:
             session.env["TMPDIR"] = tmpdir
 
-        session.run("pytest", *opts)
+        session.run("pytest", *opts, **kws)
 
 
 # *** Basic tests
@@ -586,6 +588,21 @@ def test(
 
 nox.session(**ALL_KWS)(test)
 nox.session(name="test-conda", **CONDA_ALL_KWS)(test)
+
+
+@nox.session(name="test-serial", python=False)
+def test_serial(
+    session: Session,
+) -> None:
+    """Test environments with conda installs."""
+    session.run(
+        "nox",
+        "-s",
+        f"test-{PYTHON_DEFAULT_VERSION}",
+        "--",
+        *session.posargs,
+        env={"CMOMY_NUMBA_PARALLEL": "false"},
+    )
 
 
 @nox.session(name="test-notebook", **DEFAULT_KWS)

@@ -90,7 +90,7 @@ test-extras = [
     "pytest",
     "pytest-cov",
     "pytest-sugar",
-    "pytest-xdist",
+    # "pytest-xdist",
     { include-group = "test-scipy" },
 ]
 test-notebook = [

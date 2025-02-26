@@ -7,6 +7,8 @@ from unittest.mock import call, patch
 
 import pytest
 
+from cmomy.factory import supports_parallel
+
 
 def _add_parameter(param, flag, args, expected):
     if param is None:
@@ -77,6 +79,9 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
     cov = all_ if cov is None else cov
     others = all_ if others is None else others
     parallel = vec = resample = indexed = convert = rolling = others
+
+    if not supports_parallel():
+        parallel = False
 
     _main(args)
 

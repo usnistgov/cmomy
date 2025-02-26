@@ -19,7 +19,6 @@ dependencies:
   - pytest
   - pytest-cov
   - pytest-sugar
-  - pytest-xdist
   - typing-extensions>=4.10.0
   - xarray>=2023.9.0
   - pip

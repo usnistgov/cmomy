@@ -14,5 +14,4 @@ dependencies:
   - pytest
   - pytest-cov
   - pytest-sugar
-  - pytest-xdist
   - pip
