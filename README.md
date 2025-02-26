@@ -1,11 +1,14 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD013 -->
 
-[![Repo][repo-badge]][repo-link] [![Docs][docs-badge]][docs-link]
+<!-- prettier-ignore-start -->
+[![Repo][repo-badge]][repo-link]
+[![Docs][docs-badge]][docs-link]
 [![PyPI license][license-badge]][license-link]
 [![PyPI version][pypi-badge]][pypi-link]
 [![Conda (channel only)][conda-badge]][conda-link]
-[![Code style: black][black-badge]][black-link]
+[![Code style: ruff][ruff-badge]][ruff-link]
+[![uv][uv-badge]][uv-link]
 
 <!--
   For more badges, see
@@ -14,8 +17,10 @@
   [pypi-badge]: https://badge.fury.io/py/cmomy
 -->
 
-[black-badge]: https://img.shields.io/badge/code%20style-black-000000.svg
-[black-link]: https://github.com/psf/black
+[ruff-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+[ruff-link]: https://github.com/astral-sh/ruff
+[uv-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
+[uv-link]: https://github.com/astral-sh/uv
 [pypi-badge]: https://img.shields.io/pypi/v/cmomy
 [pypi-link]: https://pypi.org/project/cmomy
 [docs-badge]: https://img.shields.io/badge/docs-sphinx-informational
@@ -32,6 +37,8 @@
 [numpy]: https://numpy.org
 [Numba]: https://numba.pydata.org/
 [xarray]: https://docs.xarray.dev/en/stable/
+
+<!-- prettier-ignore-end -->
 
 # cmomy
 
