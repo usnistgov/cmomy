@@ -99,7 +99,7 @@ test-notebook = [
     { include-group = "test-extras" },
 ]
 test-scipy = [
-    "dask; python_version=='3.12'",
+    "dask; python_version=='3.12'",  # version 2025.2.0 causes issues with chunking_out_parameter
     "scipy; python_version=='3.12'",
 ]
 typing = [

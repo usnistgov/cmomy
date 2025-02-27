@@ -859,7 +859,8 @@ def test_func_data_chunking_out_parameter(
 
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
-    assert np.shares_memory(res_chunk.compute(), out)
+    # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
+    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001
 
 
 @pytest.mark.slow
@@ -906,4 +907,5 @@ def test_func_vals_chunking_out_parameter(rng, func, kwargs_callback, dim, mom, 
 
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
-    assert np.shares_memory(res_chunk.compute(), out)
+    # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
+    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001

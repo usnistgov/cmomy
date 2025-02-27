@@ -253,7 +253,8 @@ notebook-typecheck: _NBQA = -c mypy -c pyright
 notebook-typecheck: notebook-pylint ## run nbqa mypy/pyright
 	$(NBQA)
 notebook-test:  ## run pytest --nbval
-	$(UVRUN) pytest --nbval --nbval-current-env --nbval-sanitize-with=config/nbval.ini --dist loadscope -x $(NOTEBOOKS)
+	# $(UVRUN) pytest --nbval --nbval-current-env --nbval-sanitize-with=config/nbval.ini --dist loadscope -x $(NOTEBOOKS)
+	$(UVRUN) pytest --nbval --nbval-current-env --nbval-sanitize-with=config/nbval.ini -x $(NOTEBOOKS)
 
 .PHONY: clean-kernelspec
 clean-kernelspec: ## cleanup unused kernels (assuming notebooks handled by conda environment notebook)

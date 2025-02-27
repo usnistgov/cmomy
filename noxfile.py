@@ -405,10 +405,13 @@ def install_package(
 @nox.session(name="test-all", python=False)
 def test_all(session: Session) -> None:
     """Run all tests and coverage."""
+    session.run("nox", "-s", "coverage", "--", "++coverage", "erase")
     for py in PYTHON_ALL_VERSIONS:
         session.notify(f"test-{py}")
     session.notify("test-numpy1")
     session.notify("test-notebook")
+    session.notify("test-serial")
+    session.notify("test-typing")
     session.notify("coverage")
 
 
@@ -606,6 +609,23 @@ def test_serial(
     )
 
 
+@nox.session(name="test-typing", python=False)
+def test_typing(
+    session: Session,
+) -> None:
+    """Test typing"""
+    session.run(
+        "nox",
+        "-s",
+        f"test-{PYTHON_DEFAULT_VERSION}",
+        "--",
+        "++test-options",
+        "--typing",
+        "tests/test_typing_auto.py",
+        "++no-cov",
+    )
+
+
 @nox.session(name="test-notebook", **DEFAULT_KWS)
 @add_opts
 def test_notebook(session: nox.Session, opts: SessionParams) -> None:
@@ -620,8 +640,8 @@ def test_notebook(session: nox.Session, opts: SessionParams) -> None:
     --nbval
     --nbval-current-env
     --nbval-sanitize-with=config/nbval.ini
-    --dist loadscope
    """,
+        # --dist loadscope
     )
 
     test_options = (
