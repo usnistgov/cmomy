@@ -2,7 +2,7 @@
 Typing aliases (:mod:`cmomy.core.typing`)
 =========================================
 """
-# pylint: disable=missing-class-docstring,consider-alternative-union-syntax
+# pylint: disable=missing-class-docstring,consider-alternative-union-syntax,duplicate-bases
 
 from __future__ import annotations
 
@@ -394,7 +394,7 @@ class ReduceDataKwargs(  # type: ignore[call-arg]
     use_map: bool | None
 
 
-class ReduceValsKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
+class ReduceValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
@@ -404,7 +404,7 @@ class ReduceValsKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-b
     """Extra parameters to :func:`.reduction.reduce_vals`"""
 
 
-class ReduceDataGroupedKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
+class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
@@ -418,7 +418,7 @@ class ReduceDataGroupedKwargs(  # type: ignore[call-arg]  # pylint: disable=dupl
     groups: Groups | None
 
 
-class ReduceDataIndexedKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
+class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
@@ -502,7 +502,7 @@ class _WrapRawKwargs(
     pass
 
 
-class WrapRawKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
+class WrapRawKwargs(  # type: ignore[call-arg]
     _WrapRawKwargs,
     total=False,
     closed=True,
@@ -510,7 +510,7 @@ class WrapRawKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-base
     """Extra parameters for :func:`.wrap_raw`"""
 
 
-class MomentsTypeKwargs(  # type: ignore[call-arg] # pylint: disable=duplicate-bases
+class MomentsTypeKwargs(  # type: ignore[call-arg]
     _WrapRawKwargs,
     _MoveAxisToEndKwargs,
     total=False,

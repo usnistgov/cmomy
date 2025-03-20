@@ -9,9 +9,10 @@
 #
 conda-lock>=2.5.5
 grayskull>=2.5.3
-mypy>=1.14.1
+mypy>=1.15.0
 nbqa>=1.8.4
 pre-commit
+pre-commit-uv
 pyright>=1.1.394
 scriv
 twine>=5.0.0

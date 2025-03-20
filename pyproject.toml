@@ -55,7 +55,6 @@ dev = [
     { include-group = "test" },
     { include-group = "test-notebook" },
     { include-group = "typing" },
-    { include-group = "uvxrun" },
 ]
 test = [
     { include-group = "test-extras" },
@@ -75,7 +74,7 @@ dev-extras = [
     "ipykernel",
     "ipython",
     "nbclient>=0.10.0",
-    "nox>=2024.4.15",
+    "nox>=2024.10.9",
     "pytest-accept",
 ]
 docs-live = [
@@ -84,7 +83,7 @@ docs-live = [
 ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
-mypy = [ "mypy>=1.14.1" ]
+mypy = [ "mypy>=1.15.0" ]
 nbval = [ "nbval" ]
 test-extras = [
     "pytest",
@@ -106,10 +105,7 @@ typing = [
     "pandas-stubs",
     "pylint",
     "pytest",
-    { include-group = "uvxrun" },
 ]
-# Anything needed to run tools/uvxrun.py
-uvxrun = [ "packaging" ]
 
 [tool.hatch.version]
 source = "vcs"
@@ -333,14 +329,14 @@ python = "default"
 groups = [ "test" ]
 python = "all"
 
-[tool.pyproject2conda.envs.uvxrun-tools]
-# define these here so they don't override deps in uv.lock
+[tool.pyproject2conda.envs.uvx-tools]
 reqs = [
-    # these used solely for specking tools to be used with tools/uvxrun.py
+    # these used solely for specking tools to be used with uvx ...
     "conda-lock>=2.5.5",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
     "pre-commit",
+    "pre-commit-uv",
     "pyright>=1.1.394",
     "scriv",
     "twine>=5.0.0",
