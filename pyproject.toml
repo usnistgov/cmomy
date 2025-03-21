@@ -88,6 +88,7 @@ nbval = [ "nbval" ]
 test-extras = [
     "pytest",
     "pytest-cov",
+    "pytest-env",
     "pytest-sugar",
     # "pytest-xdist",
     { include-group = "test-scipy" },
@@ -166,6 +167,9 @@ testpaths = [
 markers = [
     "scipy: test scipy dependent code",
 ]
+
+[tool.pytest_env]
+NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
 
 [tool.coverage.run]
 branch = true

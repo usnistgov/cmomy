@@ -59,9 +59,6 @@ PACKAGE_NAME = "cmomy"
 IMPORT_NAME = "cmomy"
 KERNEL_BASE = "cmomy"
 
-# Set numba_cache directory for sharing
-os.environ["NUMBA_CACHE_DIR"] = str(Path(__file__).parent / ".numba_cache")
-
 # * nox options ------------------------------------------------------------------------
 
 ROOT = Path(__file__).parent
@@ -631,8 +628,6 @@ def _test(
     no_cov: bool,
     **kws: Any,
 ) -> None:
-    import os
-
     tmpdir = os.environ.get("TMPDIR", None)
 
     session_run_commands(session, run)
@@ -1205,7 +1200,6 @@ def cog(session: nox.Session, opts: SessionParams) -> None:
 # * Utilities -------------------------------------------------------------------------
 def _create_doc_examples_symlinks(session: nox.Session, clean: bool = True) -> None:  # noqa: C901
     """Create symlinks from docs/examples/*.md files to /examples/usage/..."""
-    import os
 
     def usage_paths(path: Path) -> Iterator[Path]:
         with path.open("r") as f:

@@ -14,6 +14,7 @@ dependencies:
   - dask
   - pytest
   - pytest-cov
+  - pytest-env
   - pytest-sugar
   - scipy
   - pip

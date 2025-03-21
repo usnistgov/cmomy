@@ -19,6 +19,7 @@ dependencies:
   - numpy>1.24
   - pytest
   - pytest-cov
+  - pytest-env
   - pytest-sugar
   - scipy
   - typing-extensions>=4.10.0

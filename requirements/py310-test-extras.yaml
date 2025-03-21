@@ -13,5 +13,6 @@ dependencies:
   - python=3.10
   - pytest
   - pytest-cov
+  - pytest-env
   - pytest-sugar
   - pip

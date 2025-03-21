@@ -27,6 +27,7 @@ dependencies:
   - pylint
   - pytest
   - pytest-cov
+  - pytest-env
   - pytest-sugar
   - scipy
   - typing-extensions>=4.10.0

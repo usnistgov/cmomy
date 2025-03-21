@@ -188,10 +188,9 @@ nox -s lint
 
 This project uses [numba] to accelerate calculations. For development, we
 specify the environment variable `NUMBA_CACHE_DIR={project_root}/.numba_cache`
-relative to the project root. If using [zsh-autoenv], there is a recipe in the
-`Makefile` to create this environment variable on entering the repo directory.
-Also, `noxfile.py` and the notebooks sets this environment variable. This should
-greatly speed up recompilation of [numba] compiled functions during development.
+relative to the project root using `pytest-env` (see `[tool.pytest_env]` section
+of `pyproject.toml`). This should greatly speed up recompilation of [numba]
+compiled functions during development.
 
 ## Using nox
 
