@@ -1,7 +1,6 @@
 Modules
 =======
 
-
 .. autosummary::
    :toctree: generated/
    :template: autodocsumm/module-inherit.rst
@@ -15,6 +14,7 @@ Modules
    cmomy.random
    cmomy.confidence_interval
    cmomy.compile
+   cmomy.options
 
 
 

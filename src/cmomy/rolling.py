@@ -240,7 +240,6 @@ def construct_rolling_window_array(
     See Also
     --------
     xarray.DataArray.rolling
-    xarray.core.rolling.DataArrayRolling.construct
     """
     if is_xarray_typevar(x):
         mom_params = MomParamsXArrayOptional.factory(
@@ -972,7 +971,6 @@ def rolling_exp_data(  # noqa: PLR0913
     See Also
     --------
     xarray.DataArray.rolling_exp
-    xarray.core.rolling_exp.RollingExp
     pandas.DataFrame.ewm
 
     """

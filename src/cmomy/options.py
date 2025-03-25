@@ -57,12 +57,31 @@ class set_options:  # noqa: N801
     """
     Set options for xarray in a controlled context.
 
-    Currently supported options:
+    Can be used as a context manager as well
 
-    - `NMAX` : max moment size
-    You can use ``set_options`` either as a context manager:
-    - CACHE : bool, default=True
-    - FASTMATH : bool, default=True
+    Parameters
+    ----------
+    nmax : int, default=20
+        Maximum number of moments.
+        [env var: CMOMY_NMAX]
+    cache: bool, default=True
+        If ``True``, cache numba functions.
+        [env var: CMOMY_NUMBA_CACHE]
+    fastmath: bool, default=True
+        If ``True``, use `fastmath` option to numba.
+        [env var: CMOMY_NUMBA_FASTMATH]
+    parallel : bool, default=True
+        If ``True``, allow parallel numba functions (can still be
+        overridden in function calls.)
+        [env var: CMOMY_NUMBA_PARALLEL]
+
+
+    Notes
+    -----
+    You can turn off options setrting the corresponding environment variable to
+    0. For example to turn off caching, you can set ``CMOMY_NUMBA_CACHE=0``.
+    These only take effect at load time, so make sure the variable is set
+    before importing ``cmomy``.
     """
 
     def __init__(self, **kwargs: Any) -> None:

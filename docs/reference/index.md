@@ -9,8 +9,6 @@ api-modules
 api-baseclasses
 ```
 
-## Modules
-
 ```{eval-rst}
 
 .. autosummary::
@@ -25,5 +23,6 @@ api-baseclasses
     cmomy.random
     cmomy.confidence_interval
     cmomy.compile
+    cmomy.options
     cmomy.core.typing
 ```
