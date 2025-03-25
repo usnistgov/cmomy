@@ -90,15 +90,15 @@ def factor_by(
 
     codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]
 
-    codes = codes.astype(np.int64)
+    codes = codes.astype(np.int64)  # pyright: ignore[reportUnknownVariableType]
     if isinstance(by_, (pd.Index, pd.MultiIndex)):
-        if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # pragma: no cover
+        if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # type: ignore[unreachable] # pragma: no cover
             msg = f"{type(groups)=} should be instance of pd.Index"  # pyright: ignore[reportUnknownArgumentType]
             raise TypeError(msg)
-        groups.names = by_.names
+        groups.names = by_.names  # type: ignore[unreachable]
         return groups, codes  # pyright: ignore[reportUnknownVariableType]
 
-    return list(groups), codes  # pyright: ignore[reportUnknownArgumentType]
+    return list(groups), codes  # pyright: ignore[reportUnknownArgumentType,reportUnknownVariableType]
 
 
 def block_by(

@@ -21,11 +21,18 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: mixed-line-ending
+  # * meta hooks
+  - repo: meta
+    hooks:
+      - id: check-hooks-apply
+        stages: [manual]
+      - id: check-useless-excludes
+        stages: [manual]
 
   # * pyproject.toml
   # ** format
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.5.1
+    rev: v2.6.0
     hooks:
       - id: pyproject-fmt
         args: [--indent=4, --keep-full-version]
@@ -38,15 +45,21 @@ repos:
       - id: validate-pyproject
   # ** validate (schema-store)
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: 2025.03.24
+    rev: 2025.06.23
     hooks:
       - id: validate-pyproject
-        alias: validate-pyproject-full
+        name: validate-pyproject-schema-store
+        stages: [manual]
+  # ** repo review
+  - repo: https://github.com/scientific-python/cookie
+    rev: 2025.05.02
+    hooks:
+      - id: sp-repo-review
         stages: [manual]
 
   # * Prettier
   - repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.5.3
+    rev: v3.6.1
     hooks:
       - id: prettier
         alias: markdownlint
@@ -54,7 +67,7 @@ repos:
 
   # * Markdown
   - repo: https://github.com/DavidAnson/markdownlint-cli2
-    rev: v0.17.2
+    rev: v0.18.1
     hooks:
       - id: markdownlint-cli2
         alias: markdownlint
@@ -63,14 +76,14 @@ repos:
 
   # * Linting
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.0
+    rev: v0.12.0
     hooks:
-      - id: ruff
-        alias: ruff-all
+      - id: ruff-check
+        alias: ruff
         types_or: &ruff-types-or [python, pyi, jupyter]
         args: [--fix, --show-fixes]
       - id: ruff-format
-        alias: ruff-all
+        alias: ruff
         types_or: *ruff-types-or
   # To be replace by ruff analog when I find one ...
   - repo: https://github.com/adamchainz/blacken-docs
@@ -83,10 +96,9 @@ repos:
   # * Spelling
   # ** typos (only with manual)
   - repo: https://github.com/crate-ci/typos
-    rev: v1.30.3
+    rev: v1.33.1
     hooks:
       - id: typos
-        stages: [manual]
         exclude_types: [jupyter]
         exclude: ^uv[.]lock$|^requirements
   # ** codespell
@@ -98,46 +110,53 @@ repos:
         args: [-I, docs/spelling_wordlist.txt]
         exclude_types: [jupyter]
         exclude: ^uv[.]lock$|^requirements
+        stages: [manual]
 
   # * Dependencies
-  # ** uv
-  - repo: https://github.com/astral-sh/uv-pre-commit
-    # uv version.
-    rev: 0.6.9
-    hooks:
-      - id: uv-lock
-        args: [--locked]
   # ** pyproject2conda
   - repo: https://github.com/usnistgov/pyproject2conda
-    rev: v0.19.1
+    rev: v0.22.1
     hooks:
       - id: pyproject2conda-project
         alias: requirements
-  # ** all lock files
-  - repo: local
+  # ** uv
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.7.15
     hooks:
-      - id: requirements-lock
-        name: requirements-lock
-        alias: lock
-        entry: nox -s lock -- # ++lock-force
-        language: python
-        files: ^requirements/.*\.txt$
-        pass_filenames: false
-        additional_dependencies: ["nox==2025.2.9"]
+      - id: uv-lock
+        alias: requirements
+        args: [--locked]
+      - id: pip-compile
+        alias: requirements
+        entry: python tools/requirements_lock.py
+        pass_filenames: true
+        files: ^requirements/[^/]*\.txt$
 
   # * Commit message
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v4.4.1
+    rev: v4.8.3
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
-  # * Makefile
-  - repo: https://github.com/mrtazz/checkmake.git
-    # Or another commit hash or version
-    rev: 0.2.2
+  # * Justfile
+  - repo: local
     hooks:
-      - id: checkmake
+      - id: just-fmt
+        name: just-fmt
+        entry:
+          bash -c 'for x in "$@"; do just --fmt --unstable --justfile "$x";
+          done' --
+        language: system
+        files: \.?[jJ]ustfile|.*\.just$
+        stages: [manual]
+
+  # * Cruft
+  - repo: https://github.com/cruft/cruft.git
+    rev: 2.16.0
+    hooks:
+      - id: cruft
+        args: [--checkout, develop]
         stages: [manual]
 
   # * Notebook specific --------------------------------------------------------
@@ -153,42 +172,38 @@ repos:
             "metadata.kernelspec metadata.kernel_spec",
           ]
 
-  # ** typos
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.9.1
     hooks:
+      # ** typos
       - id: nbqa
-        alias: nbqa-typos
         name: nbqa-typos
-        additional_dependencies: &typos-deps [typos==1.30.3] # make sure save version as above.
-        stages: [manual]
+        alias: typos
+        additional_dependencies: &typos-deps [typos==1.33.1] # make sure save version as above.
         args: [typos, --nbqa-shell]
         # this can lead to errors, so use with care
         # args: [typos, --write-changes, --nbqa-shell]
-        exclude: &nbqa-typos-exclude "^examples/archived/"
+        exclude: &nbqa-typos-exclude "^examples/archived"
       - id: nbqa
-        alias: nbqa-typos
         name: nbqa-typos-markdown
+        alias: typos
         additional_dependencies: *typos-deps
-        stages: [manual]
         args: [typos, --nbqa-shell, --nbqa-md]
         # this can lead to errors, so use with care
         # args: [typos, --write-changes, --nbqa-shell, --nbqa-md]
         exclude: *nbqa-typos-exclude
 
-  # ** codespell
-  - repo: https://github.com/nbQA-dev/nbQA
-    rev: 1.9.1
-    hooks:
+      # ** codespell
       - id: nbqa
-        alias: nbqa-codespell
         name: nbqa-codespell
+        alias: codespell
         additional_dependencies: &codespell-deps [codespell==2.4.1, tomli] # make sure same as above
         args:
           [codespell, --ignore-words=docs/spelling_wordlist.txt, --nbqa-shell]
+        stages: [manual]
       - id: nbqa
-        alias: nbqa-codespell
         name: nbqa-codespell-markdown
+        alias: codespell
         additional_dependencies: *codespell-deps
         args:
           [
@@ -197,3 +212,14 @@ repos:
             --nbqa-shell,
             --nbqa-md,
           ]
+        stages: [manual]
+
+  # ** symlink in notebooks from example/usage to docs/example/usage
+  - repo: local
+    hooks:
+      - id: symlink-docs-examples-notebooks
+        name: symlink-docs-examples-notebooks
+        entry: python tools/symlink_docs_examples_notebooks.py
+        language: python
+        files: ^docs/examples/.*\.md$
+        pass_filenames: false

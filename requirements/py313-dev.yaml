@@ -7,22 +7,23 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
+name: py313-dev
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
+  - python=3.13
   - dask
   - docstring-inheritance
   - ipykernel
-  - ipython
   - lazy_loader
   - module-utilities>=0.10.1
   - mypy>=1.15.0
-  - nbclient>=0.10.0
+  - nbclient
   - nbval
-  - nox>=2024.10.9
+  - nox>=2025.5.1
   - numba>=0.58
   - numpy>1.24
+  - orjson
   - pandas-stubs
   - pylint
   - pytest

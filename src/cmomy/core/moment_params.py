@@ -283,7 +283,7 @@ class MomParamsArray(MomParamsBase):
     def normalize_axes(self, data_ndim: int) -> Self:
         """Normalize self.axes in new object relative to ``data_ndim``."""
         if self.axes is None:  # pyright: ignore[reportUnnecessaryComparison]
-            return self
+            return self  # type: ignore[unreachable]
 
         return replace(
             self,
@@ -320,7 +320,8 @@ class MomParamsArray(MomParamsBase):
 
     def raise_if_in_mom_axes(self, *axes: int) -> None:
         """Raise ``ValueError`` if any ``axes`` in ``self.axes``."""
-        if self.axes is not None and any(a in self.axes for a in axes):  # pyright: ignore[reportUnnecessaryComparison]
+        # these ignores needed because inherit into optional classes below
+        if self.axes is not None and any(a in self.axes for a in axes):  # type: ignore[redundant-expr] # pyright: ignore[reportUnnecessaryComparison]
             msg = f"provided axis/axes cannot overlap mom_axes={self.axes}."
             raise ValueError(msg)
 
@@ -496,9 +497,10 @@ class MomParamsXArray(MomParamsBase):
         self,
         *,
         axis: int | None = None,
-        dim: Hashable,
+        dim: Hashable | None,
     ) -> None:
-        if self.dims is not None and dim in self.dims:  # pyright: ignore[reportUnnecessaryComparison]
+        # these ignores needed because inherit into optional classes below
+        if self.dims is not None and dim in self.dims:  # type: ignore[redundant-expr]  # pyright: ignore[reportUnnecessaryComparison]
             axis_msg = f", {axis=}" if axis is not None else ""
             msg = f"Cannot select moment dimension. {dim=}{axis_msg}."
             raise ValueError(msg)

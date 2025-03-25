@@ -72,6 +72,7 @@ nitpick_ignore_regex = [
     (r"py:.*", r"MomParam.*"),
     (r"py:.*", r"CentralMoments.*"),
     (r"py:.*", r"types\.EllipsisType.*"),
+    (r"py:.*", r"typing_extensions.*"),
 ]
 
 # -- myst stuff ---------------------------------------------------------

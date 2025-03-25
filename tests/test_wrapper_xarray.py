@@ -82,7 +82,7 @@ def test_as_dict(c_dataset) -> None:
 
     c = get_first(c_dataset)
     with pytest.raises(NotImplementedError):
-        c.as_dict()  # pyright: ignore[reportAttributeAccessIssue]
+        c.as_dict()  # type: ignore[misc]
 
 
 def test_getitem(c_dataset) -> None:

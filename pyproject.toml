@@ -21,7 +21,6 @@ requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
-    "License :: Public Domain",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
@@ -50,18 +49,24 @@ urls.Homepage = "https://github.com/usnistgov/cmomy"
 
 [dependency-groups]
 dev = [
-    { include-group = "dev-extras" },
     { include-group = "mypy" },
+    { include-group = "notebook" },
+    { include-group = "nox" },
+    { include-group = "pytest-accept" },
     { include-group = "test" },
     { include-group = "test-notebook" },
-    { include-group = "typing" },
+    { include-group = "typecheck" },
 ]
 test = [
-    { include-group = "test-extras" },
+    "pytest-cov",
+    "pytest-env",
+    "pytest-sugar",
+    { include-group = "pytest" },
+    { include-group = "test-scipy" },
 ]
 docs = [
     "autodocsumm",
-    "myst-nb; python_version>'3.9'",
+    "myst-nb",
     "pyenchant",
     "sphinx>=5.3.0",
     "sphinx-autodoc-typehints",
@@ -69,43 +74,42 @@ docs = [
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
 ]
-cog = [ "cogapp" ]
-dev-extras = [
-    "ipykernel",
-    "ipython",
-    "nbclient>=0.10.0",
-    "nox>=2024.10.9",
-    "pytest-accept",
-]
+# other packages/tools
+ipython = [ "ipython" ]
+mypy = [ "mypy>=1.15.0", "orjson" ]
+notebook = [ "ipykernel", "nbclient" ]
+nox = [ "nox>=2025.5.1" ]
+pylint = [ "pylint" ]
+pytest = [ "pytest" ]
+pytest-accept = [ "pytest-accept" ]
+# other environments
+numpy1 = [ "numpy<2.0" ]
+numpy2 = [ "numpy>2.0" ]
 docs-live = [
     "sphinx-autobuild",
     { include-group = "docs" },
 ]
-numpy1 = [ "numpy<2.0" ]
-numpy2 = [ "numpy>2.0" ]
-mypy = [ "mypy>=1.15.0" ]
-nbval = [ "nbval" ]
+docs-spelling = [
+    "pyenchant",
+    "sphinxcontrib-spelling",
+    { include-group = "docs" },
+]
 test-extras = [
-    "pytest",
-    "pytest-cov",
-    "pytest-env",
-    "pytest-sugar",
-    # "pytest-xdist",
-    { include-group = "test-scipy" },
+    { include-group = "test" },
 ]
 test-notebook = [
     "dask[diagnostics]",
-    { include-group = "nbval" },
-    { include-group = "test-extras" },
+    "nbval",
+    { include-group = "test" },
 ]
 test-scipy = [
-    "dask; python_version=='3.12'",  # version 2025.2.0 causes issues with chunking_out_parameter
-    "scipy; python_version=='3.12'",
+    "dask; python_version=='3.13'",
+    "scipy; python_version=='3.13'",
 ]
-typing = [
+typecheck = [
     "pandas-stubs",
-    "pylint",
-    "pytest",
+    { include-group = "pylint" },
+    { include-group = "pytest" },
 ]
 
 [tool.hatch.version]
@@ -127,6 +131,15 @@ fragments = [
 
 [tool.nbqa.exclude]
 codespell = "^examples/archived"
+
+[tool.repo-review]
+ignore = [
+    "GH",    # enable for actions
+    "PC140", # do this externally
+    "PC170", # pygrep
+    "PC901", # ci message
+    "RTD",
+]
 
 [tool.check-wheel-contents]
 toplevel = [
@@ -151,6 +164,9 @@ max_supported_python = "3.13"
 
 [tool.pytest.ini_options]
 addopts = [
+    "-ra",
+    "--strict-config",
+    "--strict-markers",
     "--doctest-modules",
     "--doctest-glob=*.md",
     "--pyargs",
@@ -166,6 +182,16 @@ testpaths = [
 ]
 markers = [
     "scipy: test scipy dependent code",
+]
+minversion = "8"
+log_cli_level = "INFO"
+xfail_strict = true
+filterwarnings = [
+    "error",
+    "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
+    "ignore: FNV hashing is not implemented in Numba:UserWarning",
+    "ignore: Module cmomy was never imported:coverage.exceptions.CoverageWarning",       # test-notebook issue
+    "ignore: No data was collected:coverage.exceptions.CoverageWarning",                 # test-notebook issue
 ]
 
 [tool.pytest_env]
@@ -197,17 +223,17 @@ source = [
     ".nox/**/site-packages/",
 ]
 
-# * Typing ---------------------------------------------------------------------
+# * typecheck ---------------------------------------------------------------------
 
 [tool.mypy]
 files = [
     "src",
     "tests",
 ]
-show_error_codes = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unused_configs = true
+warn_unreachable = true
 exclude = [
     ".eggs",
     ".tox",
@@ -218,6 +244,11 @@ exclude = [
 ]
 check_untyped_defs = true
 strict = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-expr",
+    "truthy-bool",
+]
 always_true = [ "MYPY_ONLY" ]
 
 [[tool.mypy.overrides]]
@@ -313,9 +344,10 @@ inputs = [
 # * Dependency creation --------------------------------------------------------
 
 [tool.pyproject2conda]
-user_config = "config/userconfig.toml"
-template_python = "requirements/py{py}-{env}"
+user-config = "config/userconfig.toml"
+template-python = "requirements/py{py}-{env}"
 template = "requirements/{env}"
+name = "py{py}-{env}"
 python = "default"
 channels = "conda-forge"
 style = "yaml"
@@ -337,26 +369,32 @@ python = "all"
 reqs = [
     # these used solely for specking tools to be used with uvx ...
     "conda-lock>=2.5.5",
+    "cruft",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pre-commit",
+    "pre-commit>=4.0.0",
     "pre-commit-uv",
-    "pyright>=1.1.394",
+    "pyrefly",
+    "pyright>=1.1.396",
     "scriv",
     "twine>=5.0.0",
+    "ty",
 ]
-groups = [ "mypy" ]
-skip_package = true
+groups = [
+    "mypy",
+    "nox",
+]
+skip-package = true
 style = "requirements"
 
 [tool.pyproject2conda.envs.build]
 groups = "build-system.requires"
-skip_package = true
+skip-package = true
 style = "requirements"
 
 [tool.pyproject2conda.envs.test-extras]
 groups = [ "test-extras" ]
-skip_package = true
+skip-package = true
 python = "all"
 
 # * uv -------------------------------------------------------------------------
@@ -371,10 +409,22 @@ conflicts = [
         { group = "numpy2" },
     ],
 ]
-required-version = ">=0.5.21"
+required-version = ">=0.7.15"
 
 [tool.uv.pip]
 annotation-style = "line"
+generate-hashes = true
+
+[tool.uv.dependency-groups]
+dev.requires-python = ">=3.12"
+docs.requires-python = ">=3.12"
+docs-live.requires-python = ">=3.12"
+docs-spelling.requires-python = ">=3.12"
+# other tools
+ipython.requires-python = ">=3.12"
+mypy.requires-python = ">=3.12"
+notebook.requires-python = ">=3.12"
+nox.requires-python = ">=3.12"
 
 # * Other tools ----------------------------------------------------------------
 

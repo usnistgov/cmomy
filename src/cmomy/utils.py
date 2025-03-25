@@ -518,7 +518,7 @@ def select_moment(
                 dask="parallelized",
                 output_sizes=output_sizes,
                 output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
-                if is_dataarray(data)
+                if is_dataarray(data)  # type: ignore[redundant-expr]
                 else np.float64,
             ),
         )
@@ -743,7 +743,7 @@ def assign_moment(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
-                if is_dataarray(data)
+                if is_dataarray(data)  # type: ignore[redundant-expr]
                 else np.float64,
             ),
         )
@@ -777,7 +777,7 @@ def _assign_moment(
         out = np.moveaxis(out, mom_params.axes, mom_params_end.axes)
 
     for name, value in zip(names, values):
-        out[moment_indexer(name, mom_params.ndim, squeeze)] = value
+        out[moment_indexer(name, mom_params.ndim, squeeze)] = value  # pyright: ignore[reportArgumentType]
 
     if moved:
         out = np.moveaxis(out, mom_params_end.axes, mom_params.axes)
@@ -949,7 +949,7 @@ def vals_to_data(
         # Explicitly select type depending o out
         # This is needed to make apply_ufunc work with dask data
         # can't pass None value in that case...
-        out = None if is_dataset(x) else out
+        out = None if is_dataset(x) else out  # type: ignore[redundant-expr]
         input_core_dims: list[Sequence[Hashable]] = [[]] * (mom_params.ndim + 1)
         if out is None:
 
@@ -961,7 +961,7 @@ def vals_to_data(
 
             def _func(*args: Any, **kwargs: Any) -> Any:
                 out_, *args_ = args
-                return _vals_to_data(*args_, out=out_, **kwargs)  # type: ignore[has-type]
+                return _vals_to_data(*args_, out=out_, **kwargs)
 
         return xr.apply_ufunc(  # type: ignore[no-any-return]
             _func,
@@ -979,9 +979,9 @@ def vals_to_data(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes=dict(zip(mom_params.dims, mom_to_mom_shape(mom)))
-                if out is None
+                if out is None  # type: ignore[redundant-expr,unused-ignore]
                 else None,
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 

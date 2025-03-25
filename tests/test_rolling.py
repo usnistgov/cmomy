@@ -199,7 +199,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # type: ignore[assignment]
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
 
     kws: RollingDict = {"window": window, "min_periods": min_periods, "center": center}
 
@@ -299,7 +299,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
         idx = [0, *range(5, 5 + window + 1), *list(idx)]
 
         data[idx, ...] = np.nan
-        data[(idx, ..., *(0,) * mom_ndim)] = 0.0
+        data[(idx, ..., *(0,) * mom_ndim)] = 0.0  # pyright: ignore[reportCallIssue]
 
     out = rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
     data_rolling = rolling.construct_rolling_window_array(

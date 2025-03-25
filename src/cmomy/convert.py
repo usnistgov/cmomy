@@ -5,9 +5,6 @@ Conversion routines (:mod:`~cmomy.convert`)
 
 from __future__ import annotations
 
-from collections.abc import (
-    Sequence,
-)
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
@@ -55,6 +52,7 @@ from .factory import (
 if TYPE_CHECKING:
     from collections.abc import (
         Iterable,
+        Sequence,
     )
     from typing import (
         Any,
@@ -248,7 +246,7 @@ def moments_type(
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
         if not axes_to_end:
@@ -464,7 +462,7 @@ def cumulative(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -551,7 +549,7 @@ def _cumulative(
 def _validate_mom_moments_to_comoments(
     mom: Sequence[int], mom_orig: int
 ) -> tuple[int, int]:
-    if not isinstance(mom, Sequence) or len(mom) != 2:  # pyright: ignore[reportUnnecessaryIsInstance]
+    if len(mom) != 2:
         msg = "Must supply length 2 sequence for `mom`."
         raise ValueError(msg)
 
@@ -728,7 +726,7 @@ def moments_to_comoments(
                         ),
                     )
                 ),
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -871,7 +869,7 @@ def comoments_to_moments(
                 output_sizes={
                     mom_dim_out: sum(data.sizes[k] for k in mom_params.dims) - 1
                 },
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
         return xout

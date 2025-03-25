@@ -55,8 +55,7 @@ features of `cmomy` are as follows:
 `cmomy` is an open source package to calculate central moments and co-moments in
 a numerical stable and direct way. Behind the scenes, `cmomy` makes use of
 [numba] to rapidly calculate moments. A good introduction to the type of
-formulas used can be found
-[here](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance).
+[formulas used can be found here](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance).
 
 ## Features
 
@@ -157,8 +156,8 @@ This is free software. See [LICENSE][license-link].
 
 ## Related work
 
-This package is used extensively in the newest version of `thermoextrap`. See
-[here](https://github.com/usnistgov/thermo-extrap).
+This package is used extensively in the newest version of `thermoextrap`.
+[See here](https://github.com/usnistgov/thermo-extrap).
 
 ## Contact
 

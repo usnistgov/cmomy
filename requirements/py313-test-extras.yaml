@@ -7,12 +7,15 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
+name: py313-test-extras
 channels:
   - conda-forge
 dependencies:
   - python=3.13
+  - dask
   - pytest
   - pytest-cov
   - pytest-env
   - pytest-sugar
+  - scipy
   - pip

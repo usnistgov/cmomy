@@ -71,7 +71,7 @@ def test_reduce_data_keepdims(shape, axis, mom_ndim, rng, as_dataarray: bool) ->
 
     new_shape = list(shape)
     new_shape[axis] = 1
-    new_shape = tuple(new_shape)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
+    new_shape = tuple(new_shape)  # pylint: disable=redefined-variable-type
 
     out = cmomy.reduce_data(x, **kws, keepdims=True)
     assert out.shape == new_shape

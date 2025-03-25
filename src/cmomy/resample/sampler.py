@@ -592,7 +592,7 @@ def _randsamp_indices_dataarray_or_dataset(
             dims=[rep_dim, dim],
         )
 
-    if is_dataarray(data) or paired:
+    if is_dataarray(data) or paired:  # type: ignore[redundant-expr]
         return _get_unique_indices()
 
     # generate non-paired dataset

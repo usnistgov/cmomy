@@ -248,7 +248,7 @@ def bootstrap_confidence_interval(
                 **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
                     dask="parallelized",
-                    output_dtypes=dtype or np.float64,
+                    output_dtypes=dtype if dtype is not None else np.float64,
                     output_sizes={ci_dim: len(alphas)},
                 ),
             )

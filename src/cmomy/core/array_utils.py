@@ -188,7 +188,7 @@ def select_dtype(
             return dtype
         dtype = np.dtype(dtype)
     elif out is not None:
-        dtype = out.dtype  # pyright: ignore[reportUnknownMemberType]
+        dtype = out.dtype  # pyright: ignore[reportUnknownMemberType,reportUnknownVariableType]
     elif dtype is not None:
         dtype = np.dtype(dtype)
     else:

@@ -22,7 +22,11 @@ from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
 )
-from cmomy.core.typing import AxisReduceWrap, FloatT, MomAxesStrict
+from cmomy.core.typing import (
+    AxisReduceWrap,
+    FloatT,
+    MomAxesStrict,
+)
 from cmomy.core.utils import mom_to_mom_shape
 from cmomy.core.validate import (
     is_ndarray,
@@ -51,7 +55,6 @@ if TYPE_CHECKING:
         AxisReduce,
         Casting,
         CentralMomentsArrayAny,
-        CentralMomentsDataArray,
         CoordsType,
         DimsType,
         DTypeLikeArg,
@@ -71,6 +74,8 @@ if TYPE_CHECKING:
         WrapNPTransform,
     )
     from cmomy.core.typing_compat import Self, Unpack
+
+    from .wrap_xr import CentralMomentsData
 
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
@@ -937,7 +942,7 @@ class CentralMomentsArray(
         val_shape: int | Sequence[int] | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrderCF = ...,
-    ) -> Self: ...
+    ) -> CentralMomentsArray[Any]: ...
 
     @classmethod
     @docfiller_abc()
@@ -979,7 +984,7 @@ class CentralMomentsArray(
     @docfiller.decorate
     def reshape(
         self,
-        shape: tuple[int, ...],
+        shape: int | Sequence[int],
         *,
         order: ArrayOrderCFA = None,
     ) -> Self:
@@ -1032,7 +1037,7 @@ class CentralMomentsArray(
         """
         self._raise_if_scalar()
         shape = (shape,) if isinstance(shape, int) else shape
-        new_shape = (*shape, *self.mom_shape)
+        new_shape = (*shape, *self.mom_shape)  # type: ignore[misc]
         obj = self._obj.reshape(new_shape, order=order)
         return self.new_like(obj)  # type: ignore[return-value]
 
@@ -1131,9 +1136,9 @@ class CentralMomentsArray(
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> CentralMomentsDataArray:
+    ) -> CentralMomentsData[xr.DataArray]:
         r"""
-        Create a  :class:`.CentralMomentsData` object from ``self``.
+        Create a  :class:`cmomy.CentralMomentsData` object from ``self``.
 
 
         Parameters
@@ -1144,6 +1149,10 @@ class CentralMomentsArray(
         Returns
         -------
         output : DataArray
+
+        See Also
+        --------
+        CentralMomentsData
 
 
         Examples
@@ -1246,7 +1255,7 @@ class CentralMomentsArray(
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> CentralMomentsDataArray:
+    ) -> CentralMomentsData[xr.DataArray]:
         """Alias to :meth:`to_dataarray`"""
         return self.to_dataarray(
             dims=dims,

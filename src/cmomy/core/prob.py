@@ -27,7 +27,7 @@ del _ndtr_py
 
 
 @overload
-def ndtri(p: ArrayLike, *, dtype: DTypeLikeArg[FloatingT]) -> NDArray[FloatingT]: ...
+def ndtri(p: ArrayLike, *, dtype: DTypeLikeArg[FloatingT]) -> NDArray[FloatingT]: ...  # pyright: ignore[reportOverlappingOverload]
 @overload
 def ndtri(p: ArrayLike, *, dtype: DTypeLike = ...) -> NDArray[np.float64]: ...
 

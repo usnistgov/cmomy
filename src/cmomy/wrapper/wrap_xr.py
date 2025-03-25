@@ -1454,7 +1454,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         dims = tuple(d for d in dims if d not in self.mom_dims) + self.mom_dims
         kws: dict[str, bool] = (
-            {"transpose_coords": transpose_coords} if is_dataarray(self._obj) else {}
+            {"transpose_coords": transpose_coords} if is_dataarray(self._obj) else {}  # type: ignore[redundant-expr]
         )
 
         return self.pipe(

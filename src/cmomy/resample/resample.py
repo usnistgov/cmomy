@@ -254,7 +254,7 @@ def resample_data(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={rep_dim: sampler.nrep},
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -496,7 +496,7 @@ def resample_vals(  # noqa: PLR0913
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
             x, w, *y, freq = args
-            return _resample_vals(x, w, *y, freq=freq, **kwargs)  # type: ignore[has-type]
+            return _resample_vals(x, w, *y, freq=freq, **kwargs)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
@@ -529,7 +529,7 @@ def resample_vals(  # noqa: PLR0913
                     rep_dim: sampler.nrep,
                     **dict(zip(xmom_params.dims, mom_to_mom_shape(mom))),
                 },
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -855,7 +855,7 @@ def jackknife_data(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,
             ),
         )
 
@@ -1111,7 +1111,7 @@ def jackknife_vals(  # noqa: PLR0913
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
             x, weight, *y, data_reduced = args
-            return _jackknife_vals(x, weight, *y, data_reduced=data_reduced, **kwargs)  # type: ignore[has-type]
+            return _jackknife_vals(x, weight, *y, data_reduced=data_reduced, **kwargs)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
@@ -1141,7 +1141,7 @@ def jackknife_vals(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes=dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
