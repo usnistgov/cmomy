@@ -159,6 +159,25 @@ repos:
         args: [--checkout, develop]
         stages: [manual]
 
+  # * auto-files
+  - repo: local
+    hooks:
+      - id: parallel-files
+        name: parallel-files
+        alias: auto-files
+        entry: python tools/auto_parallel_files.py
+        language: python
+        files: ^src/cmomy/_lib/.*\.py$
+        pass_filenames: false
+
+      - id: test-typing-files
+        name: test-typing-files
+        alias: auto-files
+        entry: python tools/auto_test_typing.py
+        language: python
+        files: ^tools/auto_test_typing.py$
+        pass_filenames: false
+
   # * Notebook specific --------------------------------------------------------
   # * Strip out metadata from notebooks
   - repo: https://github.com/kynan/nbstripout
