@@ -57,7 +57,7 @@ CentralMomentsDataArray: TypeAlias = "CentralMomentsData[xr.DataArray]"
 CentralMomentsDataset: TypeAlias = "CentralMomentsData[xr.Dataset]"
 #: DataArray or Dataset wrapper
 CentralMomentsDataAny: TypeAlias = "CentralMomentsData[Any]"
-#: Array wrapper
+#: Any Array wrapper
 CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
 #: Generic wrapper TypeVar
@@ -106,12 +106,10 @@ FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
 FloatT = TypeVar(
     "FloatT",
-    Any,
-    np.float32,
     np.float64,
-    default=Any,
+    np.float32,
 )
-FloatT_ = TypeVar("FloatT_", np.float32, np.float64)
+FloatT_ = TypeVar("FloatT_", np.float64, np.float32)
 
 #: TypeVar of for np.generic dtype.
 ScalarT = TypeVar("ScalarT", bound=np.generic)
@@ -402,6 +400,19 @@ class ReduceValsKwargs(  # type: ignore[call-arg]
     closed=True,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""
+
+
+class ReduceValsArrayKwargs(  # type: ignore[call-arg]
+    _MomKwargs,
+    _MomParamsKwargs,
+    _OrderCFKwargs,
+    _ParallelKwargs,
+    total=False,
+    closed=True,
+):
+    """Extra parameters to :meth:`.CentralMomentsArray.from_vals`"""
+
+    casting: Casting
 
 
 class ReduceDataGroupedKwargs(  # type: ignore[call-arg]

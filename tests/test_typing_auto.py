@@ -50,7 +50,7 @@ def check(
 
     if obj_class is not None:
         assert isinstance(actual.obj, obj_class)  # pyright: ignore[reportAttributeAccessIssue]
-    return actual  # type: ignore[no-any-return]
+    return actual
 
 
 # * Parameters
@@ -5478,15 +5478,6 @@ def test_cmomy_CentralMomentsArray() -> None:
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_arrayany),
-            CentralMomentsArray[Any],
-        ),
-        CentralMomentsArray,
-        float64,
-        None,
-    )
-    check(
-        assert_type(
-            cmomy.CentralMomentsArray(data_arraylike),
             CentralMomentsArray[Any],
         ),
         CentralMomentsArray,

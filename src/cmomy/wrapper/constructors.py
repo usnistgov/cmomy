@@ -117,7 +117,7 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
     dtype: DTypeLike | Mapping[str, DTypeLike] = None,
     copy: bool | None = False,
     fastpath: bool = False,
-) -> CentralMomentsArray[Any] | CentralMomentsData[DataT]:
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     """
     Wrap object with central moments class.
 

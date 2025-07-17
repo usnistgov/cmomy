@@ -257,7 +257,7 @@ class CentralMomentsArray(
     @overload
     def new_like(
         self,
-        obj: Any = ...,
+        obj: ArrayLike | None = ...,
         *,
         verify: bool = ...,
         copy: bool | None = ...,
@@ -942,7 +942,7 @@ class CentralMomentsArray(
         val_shape: int | Sequence[int] | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrderCF = ...,
-    ) -> CentralMomentsArray[Any]: ...
+    ) -> CentralMomentsArrayAny: ...
 
     @classmethod
     @docfiller_abc()

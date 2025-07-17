@@ -136,7 +136,7 @@ def construct_rolling_window_array(
     **kwargs: Any,
 ) -> NDArray[FloatT]: ...
 @overload
-def construct_rolling_window_array(  # type: ignore[overload-cannot-match]
+def construct_rolling_window_array(
     x: NDArrayAny,
     window: int | Sequence[int],
     *,
