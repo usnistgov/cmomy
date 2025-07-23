@@ -23,7 +23,10 @@ logger = logging.getLogger("make_parallel_files")
 
 def _write_file(path_in: Path, path_out: Path) -> None:
     parallel_line = re.compile(r"^_PARALLEL.*?=.*?False(.*)")
-    with path_in.open() as f_in, path_out.open("w") as f_out:
+    with (
+        path_in.open(encoding="utf-8") as f_in,
+        path_out.open("w", encoding="utf-8") as f_out,
+    ):
         for line in f_in:
             match = parallel_line.match(line)
             if match:
