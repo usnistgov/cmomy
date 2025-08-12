@@ -59,12 +59,12 @@ def shape_axis(request: pytest.FixtureRequest) -> tuple[tuple[int, ...], int]:
 
 
 @pytest.fixture
-def shape(shape_axis) -> tuple[int, ...]:  # noqa: FURB118
+def shape(shape_axis) -> tuple[int, ...]:
     return shape_axis[0]  # type: ignore[no-any-return]
 
 
 @pytest.fixture
-def axis(shape_axis) -> int:  # noqa: FURB118
+def axis(shape_axis) -> int:
     return shape_axis[1]  # type: ignore[no-any-return]
 
 

@@ -907,9 +907,8 @@ def typecheck(
                 f"--checker={c}",
                 "--",
                 *(
-                    opts.typecheck_options or ["src", "tests"]
-                    if c in {"ty", "pyrefly"}
-                    else []
+                    opts.typecheck_options
+                    or (["src", "tests"] if c in {"ty", "pyrefly"} else [])
                 ),
                 *(["--color-output"] if c == "mypy" else []),
             )
