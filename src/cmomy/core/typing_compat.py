@@ -1,4 +1,5 @@
 """Typing compatibility."""
+# pyright: reportUnreachable=false
 
 import sys
 from typing import Any

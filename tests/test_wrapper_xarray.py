@@ -1,5 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false
+# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
 # pylint: disable=protected-access
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ import xarray as xr
 import cmomy
 
 try:  # pylint: disable=too-many-try-statements
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]  # pylint: disable=unused-import
 
     HAS_DASK = True
 except ImportError:
@@ -82,7 +82,7 @@ def test_as_dict(c_dataset) -> None:
 
     c = get_first(c_dataset)
     with pytest.raises(NotImplementedError):
-        c.as_dict()  # type: ignore[misc]
+        c.as_dict()  # type: ignore[misc]  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_getitem(c_dataset) -> None:

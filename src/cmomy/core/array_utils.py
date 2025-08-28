@@ -60,7 +60,7 @@ def normalize_axis_index(
             ndim -= mom_ndim
 
     # normalize will catch if try to pass a float
-    return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]
+    return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]  # pyright: ignore[reportUnknownVariableType]
 
 
 def normalize_axis_tuple(
@@ -195,7 +195,7 @@ def select_dtype(
         dtype = getattr(x, "dtype", np.dtype(np.float64))
 
     if dtype in _ALLOWED_FLOAT_DTYPES:
-        return dtype  # type: ignore[return-value]
+        return dtype  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)

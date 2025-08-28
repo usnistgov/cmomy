@@ -88,7 +88,7 @@ def factor_by(
         )
     )
 
-    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]
+    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]  # pyright: ignore[reportUnknownVariableType]
 
     codes = codes.astype(np.int64)  # pyright: ignore[reportUnknownVariableType]
     if isinstance(by_, (pd.Index, pd.MultiIndex)):

@@ -1,4 +1,5 @@
 """A module containing the `_NestedSequence` protocol."""
+# pyright: standard
 
 from __future__ import annotations
 

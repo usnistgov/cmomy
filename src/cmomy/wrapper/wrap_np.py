@@ -101,7 +101,7 @@ class CentralMomentsArray(
     """
 
     # pylint: disable=arguments-differ
-    _mom_params: MomParamsArray  # pyright: ignore[reportIncompatibleVariableOverride]
+    _mom_params: MomParamsArray
 
     @overload
     def __init__(
@@ -819,7 +819,7 @@ class CentralMomentsArray(
         parallel: bool | None = None,
     ) -> Self | CentralMomentsArrayAny:
         return super().jackknife_and_reduce(
-            data_reduced=data_reduced,  # type: ignore[arg-type]
+            data_reduced=data_reduced,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis=axis,
             axes_to_end=axes_to_end,
             out=out,
@@ -1039,7 +1039,7 @@ class CentralMomentsArray(
         shape = (shape,) if isinstance(shape, int) else shape
         new_shape = (*shape, *self.mom_shape)  # type: ignore[misc]
         obj = self._obj.reshape(new_shape, order=order)
-        return self.new_like(obj)  # type: ignore[return-value]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
 
     @docfiller.decorate
     def resample(
@@ -1088,7 +1088,7 @@ class CentralMomentsArray(
         indices = np.asarray(indices, dtype=np.int64)
         obj = np.take(obj, indices, axis=axis)
 
-        return self.new_like(obj)  # type: ignore[return-value]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
 
     def fill(self, value: Any = 0) -> Self:
         """
@@ -1220,7 +1220,7 @@ class CentralMomentsArray(
                     mom_dims = (mom_dims,)
                 else:
                     # try to convert to tuple
-                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]
+                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
                 raise_if_wrong_value(
                     len(mom_dims),

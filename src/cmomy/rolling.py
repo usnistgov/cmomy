@@ -281,9 +281,9 @@ def construct_rolling_window_array(
 
         # for safety, move window_dim to front...
         # this avoids it being placed after any moment dimensions...
-        return xout.transpose(*window_dim, ...)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
+        return xout.transpose(*window_dim, ...)
 
-    return construct_rolling_window_array(  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+    return construct_rolling_window_array(
         x=xr.DataArray(x),
         window=window,
         axis=axis,
@@ -302,9 +302,9 @@ def _pad_along_axis(
 ) -> NDArray[ScalarT]:
     pads = [(0, 0)] * data.ndim
     pads[axis] = (0, -shift)
-    return np.pad(  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
+    return np.pad(
         data,
-        pads,  # pyright: ignore[reportArgumentType]
+        pads,
         mode="constant",
         constant_values=fill_value,
     )
@@ -438,7 +438,7 @@ def rolling_data(  # noqa: PLR0913
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = [mom_params.core_dims(dim)]
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _rolling_data,
             data,
             input_core_dims=core_dims,
@@ -477,7 +477,7 @@ def rolling_data(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(data):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         return xout
 
@@ -711,7 +711,7 @@ def rolling_vals(  # noqa: PLR0913
             recast=False,
         )
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _rolling_vals,
             *xargs,
             input_core_dims=input_core_dims,
@@ -752,7 +752,7 @@ def rolling_vals(  # noqa: PLR0913
                 append=mom_params.dims,
             )
         elif is_dataset(x):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
         return xout
 
     # Numpy
@@ -1000,7 +1000,7 @@ def rolling_exp_data(  # noqa: PLR0913
         else:
             alpha_axis = -1
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _rolling_exp_data,
             data,
             alpha,
@@ -1040,7 +1040,7 @@ def rolling_exp_data(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(data):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         return xout
 
@@ -1312,7 +1312,7 @@ def rolling_exp_vals(  # noqa: PLR0913
             recast=False,
         )
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _rolling_exp_vals,
             *xargs,
             input_core_dims=input_core_dims,
@@ -1353,7 +1353,7 @@ def rolling_exp_vals(  # noqa: PLR0913
                 append=mom_params.dims,
             )
         elif is_dataset(x):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         return xout
 

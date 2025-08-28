@@ -69,13 +69,13 @@ def move_mom_dims_to_end(
 ) -> xr.DataArray:
     """Move moment dimensions to end"""
     if mom_dims is not None:
-        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]
+        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
         if mom_ndim is not None and len(mom_dims) != mom_ndim:
             msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
             raise ValueError(msg)
 
-        x = x.transpose(..., *mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
+        x = x.transpose(..., *mom_dims)
 
     return x
 
@@ -101,7 +101,9 @@ def replace_coords_from_isel(
     from xarray.core.indexing import is_fancy_indexer
 
     # Would prefer to import from actual source by old xarray error.
-    from xarray.core.utils import either_dict_or_kwargs  # type: ignore[attr-defined]
+    from xarray.core.utils import (  # type: ignore[attr-defined]
+        either_dict_or_kwargs,  # pyright: ignore[reportPrivateImportUsage]
+    )
 
     indexers = either_dict_or_kwargs(indexers, indexers_kwargs, "isel")
     if any(is_fancy_indexer(idx) for idx in indexers.values()):  # pragma: no cover
@@ -152,7 +154,7 @@ def astype_dtype_dict(
     """Get a dtype dict for obj."""
     if isinstance(dtype, Mapping):
         if is_dataset(obj):
-            return dict(obj.dtypes, **dtype)  # type: ignore[arg-type, return-value]
+            return dict(obj.dtypes, **dtype)  # type: ignore[arg-type, return-value]  # pyright: ignore[reportCallIssue, reportUnknownVariableType, reportUnknownMemberType]
 
         msg = "Passing a mapping for `dtype` only allowed for Dataset."
         raise ValueError(msg)
@@ -203,8 +205,8 @@ def transpose_like(
         template=template,
         replace=replace,
         remove=remove_,
-        prepend=prepend,  # pyright: ignore[reportArgumentType]
-        append=append,  # pyright: ignore[reportArgumentType]
+        prepend=prepend,
+        append=append,
     )
 
 

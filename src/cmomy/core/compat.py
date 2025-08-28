@@ -36,7 +36,7 @@ def copy_if_needed(
 ) -> bool:  # Lie here so can support both versions...
     """Callable to return copy if needed convention..."""
     if not copy:
-        return _COPY_IF_NEEDED  # type: ignore[return-value]
+        return _COPY_IF_NEEDED  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
     return copy
 
 

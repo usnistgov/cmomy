@@ -140,7 +140,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
             dest: str,
             **kwargs: str | None,
         ) -> None:
-            super().__init__(option_strings, dest, nargs=0, **kwargs)  # type: ignore[arg-type]
+            super().__init__(option_strings, dest, nargs=0, **kwargs)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
         def __call__(
             self,

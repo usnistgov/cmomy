@@ -19,6 +19,10 @@ pyright-notebook *files=NOTEBOOKS: (_nbqa_typecheck "pyright" files)
 
 [group("notebook")]
 [group("typecheck")]
+basedpyright-notebook *files=NOTEBOOKS: (_nbqa_typecheck "basedpyright" files)
+
+[group("notebook")]
+[group("typecheck")]
 ty-notebook *files=NOTEBOOKS: (_nbqa_typecheck "ty" files)
 
 [group("notebook")]
@@ -34,7 +38,7 @@ pylint-notebook *files=NOTEBOOKS:
 
 [group("notebook")]
 [group("typecheck")]
-typecheck-notebook *files=NOTEBOOKS: (mypy-notebook files) (pyright-notebook files)
+typecheck-notebook *files=NOTEBOOKS: (mypy-notebook files) (basedpyright-notebook files)
 
 [group("notebook")]
 [group("test")]
