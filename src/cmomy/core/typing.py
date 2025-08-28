@@ -2,7 +2,7 @@
 Typing aliases (:mod:`cmomy.core.typing`)
 =========================================
 """
-# pylint: disable=missing-class-docstring,consider-alternative-union-syntax
+# pylint: disable=missing-class-docstring,consider-alternative-union-syntax,duplicate-bases
 
 from __future__ import annotations
 
@@ -13,7 +13,6 @@ from typing import (
     Literal,
     Optional,
     Protocol,
-    TypedDict,
     Union,
     runtime_checkable,
 )
@@ -26,7 +25,7 @@ import xarray as xr
 from numpy.typing import ArrayLike, NDArray
 
 from .docstrings import docfiller
-from .typing_compat import EllipsisType, TypeVar
+from .typing_compat import EllipsisType, TypedDict, TypeVar
 
 if TYPE_CHECKING:
     from cmomy.resample.sampler import IndexSampler
@@ -52,20 +51,27 @@ if TYPE_CHECKING:
 
 # * CentralMoments types ------------------------------------------------------
 
+#: DataArray wrapper
 CentralMomentsDataArray: TypeAlias = "CentralMomentsData[xr.DataArray]"
+#: Dataset wrapper
 CentralMomentsDataset: TypeAlias = "CentralMomentsData[xr.Dataset]"
+#: DataArray or Dataset wrapper
 CentralMomentsDataAny: TypeAlias = "CentralMomentsData[Any]"
+#: Any Array wrapper
 CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
-
+#: Generic wrapper TypeVar
 CentralMomentsT = TypeVar("CentralMomentsT", bound="CentralMomentsABC[Any, Any]")
+#: Array wrapper TypeVar
 CentralMomentsArrayT = TypeVar("CentralMomentsArrayT", bound="CentralMomentsArray[Any]")
+#: xarray object wrapper TypeVar
 CentralMomentsDataT = TypeVar("CentralMomentsDataT", bound="CentralMomentsData[Any]")
 
 
 # * MomParams
-
+#: Moment parameters input
 MomParamsInput = Union["MomParams", "MomParamsBase", "MomParamsDict", None]
+#: Moment parameters TypeVar
 MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
 
 
@@ -100,12 +106,10 @@ FuncT = TypeVar("FuncT", bound=Callable[..., Any])
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
 FloatT = TypeVar(
     "FloatT",
-    Any,
-    np.float32,
     np.float64,
-    default=Any,
+    np.float32,
 )
-FloatT_ = TypeVar("FloatT_", np.float32, np.float64)
+FloatT_ = TypeVar("FloatT_", np.float64, np.float32)
 
 #: TypeVar of for np.generic dtype.
 ScalarT = TypeVar("ScalarT", bound=np.generic)
@@ -123,19 +127,24 @@ NDArrayFloatingT = TypeVar("NDArrayFloatingT", bound="NDArray[np.floating[Any]]"
 # * Numpy ---------------------------------------------------------------------
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
+#: Axes type
 Axes = Union[int, "tuple[int, ...]"]
+#: Axes type (with wrapping)
 AxesWrap = Union[complex, "tuple[complex, ...]"]
 
-
+#: Reduction axes type
 AxisReduce: TypeAlias = Optional[int]
+#: Reduction axes type (with wrapping)
 AxisReduceWrap: TypeAlias = Optional[complex]
 
 AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
 
+#: Reduction axes type (multiple)
 AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
+#: Reduction axes type (multiple, with wrapping)
 AxisReduceMultWrap: TypeAlias = Union[complex, "tuple[complex, ...]", None]
 
-# Rng
+#: Random number generator types
 RngTypes: TypeAlias = Union[
     int,
     Sequence[int],
@@ -146,14 +155,23 @@ RngTypes: TypeAlias = Union[
 
 
 # Types
+#: Any dtype
 DTypeAny: TypeAlias = Any
+#: Floating dtype
 FloatDTypes = Union[np.float32, np.float64]
+#: Long integer dtype
 LongIntDType: TypeAlias = np.int64
+#: Array type (any dtype)
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
+#: Array type (int dtype)
 NDArrayInt = NDArray[np.int64]
+#: Array type (float dtype)
 NDArrayFloats = NDArray[FloatDTypes]
+#: Array type (bool dtype)
 NDArrayBool = NDArray[np.bool_]
+#: Integer dtype
 IntDTypeT: TypeAlias = np.int64
+#: Float or array of float
 NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
 
 
@@ -195,25 +213,33 @@ NumbaType = Any
 # but will be flagged by typechecker...
 #: Moments type
 Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
+#: Strict moments type
 MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
+#: Number of moment dimensions
 MomNDim = Literal[1, 2]
 
-
+#: Axes containing moment(s).
 MomAxes = Moments
+#: Axes containing moment(s).
 MomAxesStrict = MomentsStrict
 
 # * Xarray specific stuff -----------------------------------------------------
 # fix if using autodoc typehints...
+#: Reduction dimension
 DimsReduce: TypeAlias = Optional[Hashable]
+#: Reduction dimension(s)
 DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
-# This is what xarray uses for reduction/sampling dimensions
+#: Dimensions
 Dims = Union[str, Collection[Hashable], EllipsisType, None]
 
-
+#: Dimensions containing moment(s)
 MomDims = Union[Hashable, "tuple[Hashable]", "tuple[Hashable, Hashable]"]
+#: Dimensions containing moment(s)
 MomDimsStrict = Union["tuple[Hashable]", "tuple[Hashable, Hashable]"]
 
+#: Index
 IndexAny: TypeAlias = "pd.Index[Any]"
+#: Coordinates
 CoordsType: TypeAlias = Union[
     Mapping[Any, Any],
     None,
@@ -229,9 +255,13 @@ KeepAttrs: TypeAlias = Union[
 Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 
 # * Literals ------------------------------------------------------------------
+#: Order parameters
 ArrayOrderCF = Optional[Literal["C", "F"]]
+#: Order parameters
 ArrayOrderCFA = Optional[Literal["C", "F", "A"]]
+#: Order parameters
 ArrayOrder = Optional[Literal["C", "F", "A", "K"]]
+#: Casting rules
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
 MissingCoreDimOptions = Literal["raise", "copy", "drop"]
@@ -251,6 +281,7 @@ SelectMoment = Literal[
     "ymom_0",
     "ymom_1",
 ]
+#: Style to convert to
 ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
 CoordsPolicy: TypeAlias = Optional[Literal["first", "last", "group"]]
@@ -343,7 +374,7 @@ class _ValsKwargs(
 
 
 # ** Reduction
-class ReduceDataKwargs(
+class ReduceDataKwargs(  # type: ignore[call-arg]
     _MomNDimKwargs,
     _AxisMultKwargs,
     _ReductionKwargs,
@@ -354,27 +385,43 @@ class ReduceDataKwargs(
     _MomParamsKwargs,
     _MoveAxisToEndKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.reduction.reduce_data`"""
 
     use_map: bool | None
 
 
-class ReduceValsKwargs(
+class ReduceValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""
 
 
-class ReduceDataGroupedKwargs(
+class ReduceValsArrayKwargs(  # type: ignore[call-arg]
+    _MomKwargs,
+    _MomParamsKwargs,
+    _OrderCFKwargs,
+    _ParallelKwargs,
+    total=False,
+    closed=True,
+):
+    """Extra parameters to :meth:`.CentralMomentsArray.from_vals`"""
+
+    casting: Casting
+
+
+class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_data_grouped`"""
 
@@ -382,12 +429,13 @@ class ReduceDataGroupedKwargs(
     groups: Groups | None
 
 
-class ReduceDataIndexedKwargs(
+class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_data_indexed`"""
 
@@ -402,34 +450,37 @@ class ReduceDataIndexedKwargs(
 
 
 # ** Resample
-class ResampleDataKwargs(
+class ResampleDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.resample.resample_data`"""
 
 
-class ResampleValsKwargs(
+class ResampleValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _RepDimKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.resample.resample_vals`"""
 
 
-class JackknifeDataKwargs(
+class JackknifeDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
@@ -437,12 +488,13 @@ class JackknifeDataKwargs(
     mom_axes_reduced: MomAxes | None
 
 
-class JackknifeValsKwargs(
+class JackknifeValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
@@ -450,7 +502,7 @@ class JackknifeValsKwargs(
 
 
 # ** Convert
-class WrapRawKwargs(
+class _WrapRawKwargs(
     _MomNDimKwargs,
     _ReductionKwargs,
     _OrderKwargs,
@@ -458,37 +510,48 @@ class WrapRawKwargs(
     _MomParamsKwargs,
     total=False,
 ):
+    pass
+
+
+class WrapRawKwargs(  # type: ignore[call-arg]
+    _WrapRawKwargs,
+    total=False,
+    closed=True,
+):
     """Extra parameters for :func:`.wrap_raw`"""
 
 
-class MomentsTypeKwargs(  # pylint: disable=duplicate-bases
-    WrapRawKwargs,
+class MomentsTypeKwargs(  # type: ignore[call-arg]
+    _WrapRawKwargs,
     _MoveAxisToEndKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.convert.moments_type`"""
 
     to: ConvertStyle
 
 
-class CumulativeKwargs(
+class CumulativeKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.convert.cumulative`"""
 
     inverse: bool
 
 
-class MomentsToComomentsKwargs(
+class MomentsToComomentsKwargs(  # type: ignore[call-arg]
     _MomDimsAndApplyUFuncKwargs,
     _OrderCFKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters for :func:`.convert.moments_to_comoments`"""
 
@@ -496,12 +559,13 @@ class MomentsToComomentsKwargs(
 
 
 # ** Utils
-class SelectMomentKwargs(
+class SelectMomentKwargs(  # type: ignore[call-arg]
     _MomNDimKwargs,
     _MomDimsAndApplyUFuncKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.utils.select_moment`"""
 
@@ -510,11 +574,12 @@ class SelectMomentKwargs(
     coords_combined: str | Sequence[Hashable] | None
 
 
-class ValsToDataKwargs(
+class ValsToDataKwargs(  # type: ignore[call-arg]
     _MomKwargs,
     _MomDimsAndApplyUFuncKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.utils.vals_to_data`"""
 
@@ -534,57 +599,63 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
     adjust: bool
 
 
-class RollingDataKwargs(
+class RollingDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _RollingKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_data`"""
 
 
-class RollingValsKwargs(
+class RollingValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _RollingKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
+    total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_vals`"""
 
 
-class RollingExpDataKwargs(
+class RollingExpDataKwargs(  # type: ignore[call-arg]
     _DataKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_exp_data`"""
 
     alpha_axis: AxisReduceWrap | MissingType
 
 
-class RollingExpValsKwargs(
+class RollingExpValsKwargs(  # type: ignore[call-arg]
     _ValsKwargs,
     _RollingExpKwargs,
     _MoveAxisToEndKwargs,
     _OrderCFKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`.rolling.rolling_exp_vals`"""
 
 
 # ** Wrap
-class WrapKwargs(
+class WrapKwargs(  # type: ignore[call-arg]
     _MomNDimKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`cmomy.wrap`"""
 
@@ -593,9 +664,10 @@ class WrapKwargs(
     fastpath: bool
 
 
-class ZerosLikeKwargs(
+class ZerosLikeKwargs(  # type: ignore[call-arg]
     _OrderKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :func:`cmomy.zeros_like`"""
 
@@ -606,29 +678,37 @@ class ZerosLikeKwargs(
 
 
 # *** Wrap_np
-class WrapNPTransform(
+class _WrapNPTransform(
     _MoveAxisToEndKwargs,
     _OrderKwargs,
     _ParallelKwargs,
     total=False,
 ):
-    """Extra parameters to :meth:`.CentralMomentsArray.cumulative`"""
-
     axis: AxisReduce | MissingType
     casting: Casting
 
 
-class WrapNPResampleAndReduceKwargs(
-    WrapNPTransform,
+class WrapNPTransform(  # type: ignore[call-arg]
+    _WrapNPTransform,
     total=False,
+    closed=True,
+):
+    """Extra parameters to :meth:`.CentralMomentsArray.cumulative`"""
+
+
+class WrapNPResampleAndReduceKwargs(  # type: ignore[call-arg]
+    _WrapNPTransform,
+    total=False,
+    closed=True,
 ):
     """Extra parameters to :meth:`.CentralMomentsArray.resample_and_reduce`"""
 
 
-class WrapNPReduceKwargs(
-    WrapNPTransform,
+class WrapNPReduceKwargs(  # type: ignore[call-arg]
+    _WrapNPTransform,
     _KeepDimsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :meth:`.CentralMomentsArray.reduce`"""
 
@@ -636,11 +716,12 @@ class WrapNPReduceKwargs(
     block: int
 
 
-class IndexSamplerFromDataKwargs(
+class IndexSamplerFromDataKwargs(  # type: ignore[call-arg]
     _AxisKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
+    closed=True,
 ):
     """Extra parameters to :meth:`.resample.IndexSampler.from_data`"""
 
@@ -655,9 +736,10 @@ class IndexSamplerFromDataKwargs(
 
 
 @docfiller.decorate
-class FactoryIndexSamplerKwargs(
+class FactoryIndexSamplerKwargs(  # type: ignore[call-arg]
     TypedDict,
     total=False,
+    closed=True,
 ):
     """
     Extra parameters to :func:`.resample.factory_sampler`

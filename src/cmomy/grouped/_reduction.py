@@ -123,7 +123,7 @@ def reduce_data_grouped(
 
 
 # ** public
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]  # error with python3.13.  Flags passed != expected, but they're the same...
 def reduce_data_grouped(  # noqa: PLR0913
     data: ArrayLike | DataT,
     by: ArrayLike,
@@ -270,7 +270,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={dim: by.max() + 1},
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -280,7 +280,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         if groups is not None:
             xout = xout.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
@@ -617,7 +617,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={dim: len(group_start)},
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -627,7 +627,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         if coords_policy in {"first", "last"} and is_dataarray(data):
             # in case we passed in index, group_start, group_end as non-arrays
@@ -642,7 +642,7 @@ def reduce_data_indexed(  # noqa: PLR0913
 
             xout = replace_coords_from_isel(  # type: ignore[assignment, unused-ignore]  # error with python3.12
                 da_original=data,
-                da_selected=xout,  # type: ignore[arg-type, unused-ignore]  # error python3.12 and pyright
+                da_selected=xout,  # type: ignore[arg-type, unused-ignore]  # pyright: ignore[reportArgumentType]
                 indexers={dim: dim_select},
                 drop=False,
             )
@@ -814,3 +814,6 @@ def resample_data_indexed(  # noqa: PLR0913
         groups=groups,
         keep_attrs=keep_attrs,
     )
+
+
+# TODO(wpk): Add reduce_vals_grouped, reduce_vals_indexed

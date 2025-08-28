@@ -1,6 +1,9 @@
 Modules
 =======
 
+.. autosummary::
+
+   cmomy
 
 .. autosummary::
    :toctree: generated/
@@ -15,6 +18,7 @@ Modules
    cmomy.random
    cmomy.confidence_interval
    cmomy.compile
+   cmomy.options
 
 
 

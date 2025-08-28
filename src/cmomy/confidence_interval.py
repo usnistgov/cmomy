@@ -234,7 +234,7 @@ def bootstrap_confidence_interval(
             input_core_dims.append(["_rep_jack"])
 
         xout: DataT = (
-            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            xr.apply_ufunc(
                 _func,
                 *args,
                 input_core_dims=input_core_dims,
@@ -248,7 +248,7 @@ def bootstrap_confidence_interval(
                 **factory_apply_ufunc_kwargs(
                     apply_ufunc_kwargs,
                     dask="parallelized",
-                    output_dtypes=dtype or np.float64,
+                    output_dtypes=dtype if dtype is not None else np.float64,
                     output_sizes={ci_dim: len(alphas)},
                 ),
             )

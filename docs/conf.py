@@ -45,37 +45,35 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
     "sphinx.ext.autosectionlabel",
-    # "IPython.sphinxext.ipython_directive",
-    # "IPython.sphinxext.ipython_console_highlighting",
-    # "nbsphinx",
-    # - easier external links
-    # "sphinx.ext.extlinks",
-    # - view source code on created page
-    # "sphinx.ext.viewcode",
-    # - view source code on github
     "sphinx.ext.linkcode",
-    # - add copy button
     "sphinx_copybutton",
-    # - redirect stuff?
-    # "sphinxext.rediraffe",
-    # - pretty things up?
-    # "sphinx_design"
-    # - myst stuff
     "myst_nb",
-    # "myst_parser",
     "sphinx_autodoc_typehints",
 ]
 
-nitpicky = True
-nitpicky_ignore_regex = [
-    (r"py:.*", r".*\.ArrayT.*"),
-    (r"py:.*", r"numpy\._typing.*"),
-]
-# nitpicky_ignore = [
-#     ("py:obj", "cmomy.core.typing.ArrayT"),
-#     # ("py:class", "numpy._typing.*"),
-# ]
 autosectionlabel_prefix_document = True
+nitpicky = True
+suppress_warnings = ["autosectionlabel.*", "sphinx_autodoc_typehints.*"]
+nitpick_ignore = [
+    ("py:class", "np.floating[Any]"),
+    ("py:class", "IndexSampler[Any]"),
+    ("py:class", "Collection[Hashable]"),
+    ("py:class", "ellipsis"),
+    ("py:class", "typing_extensions.TypedDict"),
+]
+nitpick_ignore_regex = [
+    (r"py:.*", r"numpy\._typing.*"),
+    (r"py:.*", r"cmomy\.core\.typing.*"),
+    (r"py:.*", r"tuple.*"),
+    (r"py:.*", r"cmomy\.core\.moment_params.*"),
+    (r"py:.*", r"scipy\.stats\.bootstrap"),
+    (r"py:.*", r"dask\.array\.from_array"),
+    (r"py:.*", r"numpy.*"),
+    (r"py:.*", r"MomParam.*"),
+    (r"py:.*", r"CentralMoments.*"),
+    (r"py:.*", r"types\.EllipsisType.*"),
+    (r"py:.*", r"typing_extensions.*"),
+]
 
 # -- myst stuff ---------------------------------------------------------
 myst_enable_extensions = [
@@ -164,6 +162,8 @@ autodoc_default_flags = [
 ]
 
 autodoc_typehints = "none"
+# autodoc_typehints = "signature"
+# autodoc_typehints = "description"
 # Attempted to get type hints working.  Pain points.
 # - Need to make type hint accessible at runtime (outside TYPE_CHECKING).
 # - Either expands type aliases (sphinx_autodoc_type), or lose links to type alias (regular autodoc.  Never got it to work).
@@ -177,11 +177,46 @@ autodoc_typehints = "none"
 #     "NDArrayAny": "NDArrayAny",
 # }
 
+# These will not be expanded
+autodoc_type_aliases = {
+    k: k
+    for k in [
+        "ArrayT",
+        "MomAxes",
+        "NDArrayAnyMomParamsInput",
+        "MomParamsT",
+        "DimsReduce",
+        "DimsReduceMult",
+        "Dims",
+        "MomDims",
+        "MomAxesIndexAny",
+        "NameType",
+        "DimsType",
+        "KeepAttrs",
+        "Groups",
+        "Sampler",
+        "MomParams",
+        "MomParamsBase",
+        "MomParamsDict",
+    ]
+}
+
+# typehints_fully_qualified = True
 typehints_document_rtype = False
 typehints_use_rtype = False
 typehints_defaults = "comma"
 # always_document_param_types = True
 # typehints_use_signature = True
+
+# def _typehints_formatter(ann, config):
+#     if isinstance(ann, str):
+#         return ", ".join(ann.split("|"))
+
+#     # print(type(ann), ann)
+#     return None
+
+
+# typehints_formatter = _typehints_formatter
 
 
 # -- napoleon ------------------------------------------------------------------
@@ -251,6 +286,9 @@ napoleon_type_aliases = {
     "pd.Index": "~pandas.Index",
     "pd.NaT": "~pandas.NaT",
     # "pd.Index[Any]": "~pandas.Index"
+    # "ArrayLike": ":term:`array-like <array_like>`",
+    "ArrayLike": ":py:obj:`ArrayLike <numpy.typing.ArrayLike>`",
+    "DataT": "~cmomy.core.typing.DataT",
 }
 
 
@@ -299,7 +337,7 @@ release = version = _get_version()
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -454,12 +492,12 @@ intersphinx_mapping = {
     "python": ("https://docs.python.org/3/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable", None),
     "numpy": ("https://numpy.org/doc/stable", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
-    "numba": ("https://numba.readthedocs.io/en/stable/", None),
-    "matplotlib": ("https://matplotlib.org/stable/", None),
-    "dask": ("https://docs.dask.org/en/latest", None),
-    "cftime": ("https://unidata.github.io/cftime", None),
-    "sparse": ("https://sparse.pydata.org/en/latest/", None),
+    # "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    # "numba": ("https://numba.readthedocs.io/en/stable/", None),
+    # "matplotlib": ("https://matplotlib.org/stable/", None),
+    # "dask": ("https://docs.dask.org/en/latest", None),
+    # "cftime": ("https://unidata.github.io/cftime", None),
+    # "sparse": ("https://sparse.pydata.org/en/latest/", None),
     "xarray": ("https://docs.xarray.dev/en/stable/", None),
 }
 

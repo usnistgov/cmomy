@@ -49,7 +49,9 @@ from .factory import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Hashable
+    from collections.abc import (
+        Hashable,
+    )
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
@@ -205,7 +207,7 @@ def reduce_vals(
             recast=False,
         )
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
@@ -215,7 +217,7 @@ def reduce_vals(
                 "mom_params": mom_params.to_array(),
                 "parallel": parallel,
                 "axis_neg": -1,
-                "out": None if is_dataset(x) else out,
+                "out": None if is_dataset(x) else out,  # type: ignore[redundant-expr]
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
@@ -228,7 +230,7 @@ def reduce_vals(
                 output_sizes={
                     **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
                 },
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -437,7 +439,7 @@ def reduce_data(  # noqa: PLR0913
                 raise ValueError(msg)
 
             if (use_map is None or use_map) and (dim is None or len(dim) > 1):
-                return data.map(  # pyright: ignore[reportUnknownMemberType]
+                return data.map(
                     reduce_data,
                     keep_attrs=keep_attrs if keep_attrs is None else bool(keep_attrs),
                     mom_params=mom_params,
@@ -457,17 +459,17 @@ def reduce_data(  # noqa: PLR0913
                 return data  # type: ignore[return-value, unused-ignore]  # used error in python3.12
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
-                dim = (dim,) if isinstance(dim, str) else dim
-                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]
+                dim = (dim,) if isinstance(dim, str) else dim  # type: ignore[redundant-expr, unused-ignore]
+                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable]
                     return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
 
         axis, dim = mom_params.select_axis_dim_mult(
             data,
             axis=axis,
-            dim=dim,  # pyright: ignore[reportUnknownArgumentType]
+            dim=dim,
         )
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _reduce_data,
             data,
             input_core_dims=[mom_params.core_dims(*dim)],
@@ -498,7 +500,7 @@ def reduce_data(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
                 output_sizes=dict.fromkeys(dim, 1) if keepdims else None,
             ),
         )
@@ -513,7 +515,7 @@ def reduce_data(  # noqa: PLR0913
             order_: tuple[Hashable, ...] = (
                 mom_params.core_dims(*dim) if keepdims else mom_params.dims
             )
-            xout = xout.transpose(..., *order_, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., *order_, missing_dims="ignore")
 
         return xout
 

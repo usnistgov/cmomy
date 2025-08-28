@@ -5,7 +5,6 @@ Conversion routines (:mod:`~cmomy.convert`)
 
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
@@ -53,6 +52,7 @@ from .factory import (
 if TYPE_CHECKING:
     from collections.abc import (
         Iterable,
+        Sequence,
     )
     from typing import (
         Any,
@@ -222,7 +222,7 @@ def moments_type(
             default_ndim=1,
         )
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _moments_type,
             values_in,
             input_core_dims=[mom_params.dims],
@@ -246,7 +246,7 @@ def moments_type(
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
         if not axes_to_end:
@@ -289,7 +289,7 @@ def _moments_type(
         out = np.zeros(values_in.shape, dtype=dtype, order=_order_cf)
 
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
-        values_in,  # type: ignore[arg-type]
+        values_in,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         out=out,
         axes=[mom_params.axes, axes_out],
         dtype=dtype,
@@ -436,7 +436,7 @@ def cumulative(  # noqa: PLR0913
         )
         core_dims = [xmom_params.core_dims(dim)]
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             _cumulative,
             values_in,
             input_core_dims=core_dims,
@@ -462,7 +462,7 @@ def cumulative(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -472,7 +472,7 @@ def cumulative(  # noqa: PLR0913
                 template=values_in,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")
 
         return xout
 
@@ -549,7 +549,7 @@ def _cumulative(
 def _validate_mom_moments_to_comoments(
     mom: Sequence[int], mom_orig: int
 ) -> tuple[int, int]:
-    if not isinstance(mom, Sequence) or len(mom) != 2:  # pyright: ignore[reportUnnecessaryIsInstance]
+    if len(mom) != 2:
         msg = "Must supply length 2 sequence for `mom`."
         raise ValueError(msg)
 
@@ -706,7 +706,7 @@ def moments_to_comoments(
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             data = data.rename({old_name: mom_dim_in})
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             moments_to_comoments,
             data,
             input_core_dims=[[mom_dim_in]],
@@ -726,7 +726,7 @@ def moments_to_comoments(
                         ),
                     )
                 ),
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -856,7 +856,7 @@ def comoments_to_moments(
                 dims=tuple(new_name if d == mom_dim_out else d for d in mom_params.dims)
             )
 
-        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+        xout: DataT = xr.apply_ufunc(
             comoments_to_moments,
             data,
             input_core_dims=[mom_params.dims],
@@ -869,7 +869,7 @@ def comoments_to_moments(
                 output_sizes={
                     mom_dim_out: sum(data.sizes[k] for k in mom_params.dims) - 1
                 },
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
         return xout
@@ -1027,8 +1027,8 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg
-            tuple(arrays_iter),  # type: ignore[arg-type]
+        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue]
+            tuple(arrays_iter),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis=axis,
             dtype=first.dtype,
             **kwargs,
@@ -1040,14 +1040,14 @@ def concat(
                 first, axis=axis, dim=dim, default_axis=0
             )
         # otherwise, assume adding a new dimension...
-        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]
+        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]  # pyright: ignore[reportCallIssue,reportArgumentType]
 
-    return type(first)(  # type: ignore[call-arg, return-value]
+    return type(first)(  # type: ignore[call-arg, return-value]  # pyright: ignore[reportCallIssue]
         concat(
-            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]
+            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
             axis=axis,
             dim=dim,
             **kwargs,
         ),
-        mom_ndim=first.mom_ndim,  # type: ignore[attr-defined]
+        mom_ndim=first.mom_ndim,  # type: ignore[attr-defined]  # pyright: ignore[reportCallIssue]
     )

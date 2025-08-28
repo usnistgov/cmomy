@@ -10,6 +10,7 @@ import xarray as xr
 
 import cmomy
 from cmomy.core.moment_params import factory_mom_params
+from cmomy.core.validate import validate_mom_ndim
 from cmomy.wrapper.wrap_np import CentralMomentsArray
 
 from ._dataarray_set_utils import remove_axis_from_kwargs
@@ -81,7 +82,7 @@ def test_vals_axes_to_end(
     kwargs,
     kwargs_callback,
 ) -> None:
-    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]
+    mom_ndim: MomNDim = validate_mom_ndim(len(mom))
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray)
 
@@ -227,7 +228,7 @@ def test_vals_order(
     kwargs,
     kwargs_callback,
 ) -> None:
-    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]
+    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray=False)
 

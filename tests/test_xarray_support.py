@@ -1,5 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment, arg-type"
-# pyright: reportCallIssue=false, reportArgumentType=false
+# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
 """
 Test that basic operations on DataArrays give same results and on np.ndarrays
 and that operations on datasets give same results as on dataarrays.
@@ -710,7 +710,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
 
 # * Chunking
 try:  # pylint: disable=too-many-try-statements
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]  # pylint: disable=unused-import
 
     HAS_DASK = True
 except ImportError:
@@ -859,7 +859,8 @@ def test_func_data_chunking_out_parameter(
 
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
-    assert np.shares_memory(res_chunk.compute(), out)
+    # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
+    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001
 
 
 @pytest.mark.slow
@@ -906,4 +907,5 @@ def test_func_vals_chunking_out_parameter(rng, func, kwargs_callback, dim, mom, 
 
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
-    assert np.shares_memory(res_chunk.compute(), out)
+    # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
+    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001

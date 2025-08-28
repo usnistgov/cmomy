@@ -254,3 +254,12 @@ def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> 
             func(**kws)
     else:
         np.testing.assert_allclose(func(**kws), expected)  # type: ignore[arg-type]
+
+
+def test_prepare_secondary_value_for_reduction() -> None:
+    ds = xr.Dataset({"a": xr.DataArray([1, 2, 3], dims="x")})
+
+    with pytest.raises(TypeError, match=r"Passed Dataset.*"):
+        _ = prepare.prepare_secondary_value_for_reduction(
+            ds, axis=1, nsamp=10, dtype=np.float64, recast=False
+        )

@@ -135,12 +135,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     @property
     def mom_shape(self) -> MomentsStrict:
         """Shape of moments dimensions."""
-        return self._mom_params.get_mom_shape(self._obj)  # type: ignore[arg-type]
+        return self._mom_params.get_mom_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
     @property
     def mom(self) -> MomentsStrict:
         """Moments tuple."""
-        return self._mom_params.get_mom(self._obj)  # type: ignore[arg-type]
+        return self._mom_params.get_mom(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
     @property
     def dtype(self) -> np.dtype[Any]:
@@ -161,7 +161,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Shape of values dimensions."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self._mom_params.get_val_shape(self._obj)  # type: ignore[arg-type]
+        return self._mom_params.get_val_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
     @property
     def ndim(self) -> int:
@@ -188,7 +188,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             repr_html_wrapper,  # pyright: ignore[reportUnknownVariableType]
         )
 
-        return repr_html_wrapper(self)  # type: ignore[no-any-return,no-untyped-call]
+        return repr_html_wrapper(self)  # type: ignore[no-any-return,no-untyped-call]  # pyright: ignore[reportUnknownVariableType]
 
     def __array__(  # noqa: PLW3201
         self, dtype: DTypeLike = None, copy: bool | None = None
@@ -284,7 +284,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         return self._new_like(
-            obj=self._obj.astype(dtype, **kwargs),  # type: ignore[arg-type]
+            obj=self._obj.astype(dtype, **kwargs),  # type: ignore[arg-type]  # pyright: ignore[reportUnknownMemberType, reportCallIssue, reportArgumentType]
         )
 
     @docfiller.decorate
@@ -859,7 +859,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
-            mom_params=mom_params_out,  # type: ignore[arg-type]
+            mom_params=mom_params_out,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
 
     # *** .resample -----------------------------------------------------------

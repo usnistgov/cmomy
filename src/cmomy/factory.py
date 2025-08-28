@@ -256,7 +256,7 @@ def factory_pusher(
         from ._lib import push_parallel as _push_mod
     elif mom_ndim == 1:
         from ._lib import push as _push_mod
-    elif mom_ndim == 2 and parallel:
+    elif parallel:
         from ._lib import push_cov_parallel as _push_mod
     else:
         from ._lib import push_cov as _push_mod

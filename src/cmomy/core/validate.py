@@ -109,7 +109,7 @@ def validate_mom(mom: int | Iterable[int]) -> MomentsStrict:
     if is_mom_tuple(mom):
         return mom
 
-    msg = f"{mom=} must be an integer, or tuple of length 1 or 2, with positive values."
+    msg = f"{mom=} must be an integer, or tuple of length 1 or 2, with positive values."  # type: ignore[unreachable]
     raise ValueError(msg)
 
 
@@ -270,7 +270,7 @@ def validate_mom_dims_and_mom_ndim(
     if mom_dims is not None:
         mom_dims = cast(
             "MomDimsStrict",
-            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]
+            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
         mom_ndim = validate_mom_ndim(len(mom_dims), mom_axes)
         return mom_dims, mom_ndim

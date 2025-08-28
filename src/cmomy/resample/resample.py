@@ -53,7 +53,9 @@ from cmomy.factory import (
     parallel_heuristic,
 )
 
-from .sampler import factory_sampler
+from .sampler import (
+    factory_sampler,
+)
 
 if TYPE_CHECKING:
     from typing import Any
@@ -252,7 +254,7 @@ def resample_data(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={rep_dim: sampler.nrep},
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -263,7 +265,7 @@ def resample_data(  # noqa: PLR0913
                 replace={dim: rep_dim},
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")
 
         if not axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index,unused-ignore]
@@ -494,7 +496,7 @@ def resample_vals(  # noqa: PLR0913
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
             x, w, *y, freq = args
-            return _resample_vals(x, w, *y, freq=freq, **kwargs)  # type: ignore[has-type]
+            return _resample_vals(x, w, *y, freq=freq, **kwargs)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
@@ -527,7 +529,7 @@ def resample_vals(  # noqa: PLR0913
                     rep_dim: sampler.nrep,
                     **dict(zip(xmom_params.dims, mom_to_mom_shape(mom))),
                 },
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -540,10 +542,10 @@ def resample_vals(  # noqa: PLR0913
             )
         elif is_dataset(x):
             xout = xout.transpose(
-                ...,  # pyright: ignore[reportUnknownArgumentType]
+                ...,
                 rep_dim,
                 *xmom_params.dims,
-                missing_dims="ignore",  # pyright: ignore[reportUnknownArgumentType]
+                missing_dims="ignore",
             )
 
         return xout
@@ -853,7 +855,7 @@ def jackknife_data(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,
             ),
         )
 
@@ -863,7 +865,7 @@ def jackknife_data(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})
@@ -1075,7 +1077,7 @@ def jackknife_vals(  # noqa: PLR0913
     if data_reduced is None:
         from cmomy.reduction import reduce_vals
 
-        data_reduced = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]
+        data_reduced = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]  # pyright: ignore[reportCallIssue,reportUnknownVariableType]
             x,  # pyright: ignore[reportArgumentType]
             *y,
             mom=mom,
@@ -1109,7 +1111,7 @@ def jackknife_vals(  # noqa: PLR0913
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
             x, weight, *y, data_reduced = args
-            return _jackknife_vals(x, weight, *y, data_reduced=data_reduced, **kwargs)  # type: ignore[has-type]
+            return _jackknife_vals(x, weight, *y, data_reduced=data_reduced, **kwargs)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _func,
@@ -1139,7 +1141,7 @@ def jackknife_vals(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes=dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
-                output_dtypes=dtype or np.float64,
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
@@ -1150,7 +1152,7 @@ def jackknife_vals(  # noqa: PLR0913
                 append=mom_params.dims,
             )
         elif is_dataset(x):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")  # pyright: ignore[reportUnknownArgumentType]
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         if rep_dim is not None:
             xout = xout.rename({dim: rep_dim})

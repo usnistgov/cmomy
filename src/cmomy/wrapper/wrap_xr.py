@@ -9,7 +9,10 @@ import xarray as xr
 
 from cmomy.core.docstrings import docfiller_xcentral as docfiller
 from cmomy.core.missing import MISSING
-from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
+from cmomy.core.moment_params import (
+    MomParamsArray,
+    MomParamsXArray,
+)
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
@@ -95,7 +98,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     {mom_dims_data}
     """
 
-    _mom_params: MomParamsXArray  # pyright: ignore[reportIncompatibleVariableOverride]
+    _mom_params: MomParamsXArray
 
     def __init__(
         self,
@@ -108,7 +111,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         fastpath: bool = False,
     ) -> None:
         if not is_xarray(obj):
-            msg = "obj must be a DataArray or Dataset, not {type(obj)}"
+            msg = "obj must be a DataArray or Dataset, not {type(obj)}"  # pyright: ignore[reportUnreachable]
             raise TypeError(msg)
 
         if fastpath:
@@ -145,9 +148,9 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         """
         if is_dataarray(self._obj):
             self._raise_not_implemented("dict view")
-        return {
+        return {  # pyright: ignore[reportReturnType]
             k: type(self)(  # type: ignore[misc]
-                obj,  # type: ignore[arg-type]
+                obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
                 mom_params=self._mom_params,
                 fastpath=True,
             )
@@ -239,15 +242,15 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             raise ValueError(msg)
         self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))  # pyright: ignore[reportUnknownArgumentType]
 
-        return type(self)(
-            obj=obj,  # type: ignore[arg-type]
+        return type(self)(  # pyright: ignore[reportReturnType]
+            obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportUnknownArgumentType]
             mom_params=self._mom_params,
             fastpath=True,
         )
 
     # ** Create/copy/new ------------------------------------------------------
     @docfiller_inherit_abc()
-    def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ
+    def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         obj: ArrayLike | DataT | Mapping[Any, Any] | None = None,
         *,
@@ -274,7 +277,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             # TODO(wpk): different type for dtype in xarray (can be a mapping...)
             # Also can probably speed this up by validating dtype here...
             return type(self)(
-                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]
+                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue, reportUnknownArgumentType, reportArgumentType]
                 mom_params=self._mom_params,
                 fastpath=fastpath,
             )
@@ -284,7 +287,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         obj_: DataT = (
             cast("DataT", obj)
             if type(self._obj) is type(obj)
-            else self._obj.copy(data=obj)  # type: ignore[arg-type]
+            else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
 
         # minimal check on shape and that mom_dims are present....
@@ -854,7 +857,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     # ** Constructors ----------------------------------------------------------
     @classmethod
     @docfiller.decorate
-    def zeros(  # type: ignore[override]
+    def zeros(  # type: ignore[override]  # pyright: ignore[reportIncompatibleMethodOverride]
         cls,
         *,
         mom: Moments,
@@ -946,10 +949,10 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
-        ).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
+        ).transpose(..., *self.mom_dims)
 
-        return type(self)(  # type: ignore[return-value]
-            obj=obj,  # type: ignore[arg-type]
+        return type(self)(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
+            obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             mom_params=self._mom_params,
             fastpath=True,
         )
@@ -987,9 +990,9 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         if is_dataarray(self._obj):
             return self  # pyright: ignore[reportReturnType]
 
-        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownArgumentType]  # python3.9
-        return type(self)(  # type: ignore[return-value]
-            obj=obj,  # type: ignore[arg-type]
+        obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)
+        return type(self)(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
+            obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             mom_params=self._mom_params,
             fastpath=True,
         )
@@ -1075,7 +1078,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     ) -> Self:
         """Rename object."""
         return self._new_like(
-            self._obj.rename(new_name_or_name_dict, **names)  # type: ignore[arg-type]
+            self._obj.rename(new_name_or_name_dict, **names)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
 
     def stack(
@@ -1451,7 +1454,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         dims = tuple(d for d in dims if d not in self.mom_dims) + self.mom_dims
         kws: dict[str, bool] = (
-            {"transpose_coords": transpose_coords} if is_dataarray(self._obj) else {}
+            {"transpose_coords": transpose_coords} if is_dataarray(self._obj) else {}  # type: ignore[redundant-expr]
         )
 
         return self.pipe(

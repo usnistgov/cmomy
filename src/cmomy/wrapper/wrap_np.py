@@ -14,12 +14,19 @@ from cmomy.core.array_utils import (
 from cmomy.core.compat import copy_if_needed
 from cmomy.core.docstrings import docfiller_central as docfiller
 from cmomy.core.missing import MISSING
-from cmomy.core.moment_params import MomParamsArray, MomParamsXArray
+from cmomy.core.moment_params import (
+    MomParamsArray,
+    MomParamsXArray,
+)
 from cmomy.core.prepare import (
     prepare_data_for_reduction,
     prepare_values_for_reduction,
 )
-from cmomy.core.typing import AxisReduceWrap, FloatT, MomAxesStrict
+from cmomy.core.typing import (
+    AxisReduceWrap,
+    FloatT,
+    MomAxesStrict,
+)
 from cmomy.core.utils import mom_to_mom_shape
 from cmomy.core.validate import (
     is_ndarray,
@@ -31,7 +38,10 @@ from cmomy.core.validate import (
 from .wrap_abc import CentralMomentsABC
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator, Sequence
+    from collections.abc import (
+        Iterator,
+        Sequence,
+    )
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike
@@ -45,7 +55,6 @@ if TYPE_CHECKING:
         AxisReduce,
         Casting,
         CentralMomentsArrayAny,
-        CentralMomentsDataArray,
         CoordsType,
         DimsType,
         DTypeLikeArg,
@@ -65,6 +74,8 @@ if TYPE_CHECKING:
         WrapNPTransform,
     )
     from cmomy.core.typing_compat import Self, Unpack
+
+    from .wrap_xr import CentralMomentsData
 
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
@@ -90,7 +101,7 @@ class CentralMomentsArray(
     """
 
     # pylint: disable=arguments-differ
-    _mom_params: MomParamsArray  # pyright: ignore[reportIncompatibleVariableOverride]
+    _mom_params: MomParamsArray
 
     @overload
     def __init__(
@@ -179,6 +190,7 @@ class CentralMomentsArray(
     # ** Properties ------------------------------------------------------------
     @property
     def mom_axes(self) -> MomAxesStrict:
+        """Axes index corresponding to moment(s)."""
         return self._mom_params.axes
 
     # Reimplement to get dtype correct
@@ -245,7 +257,7 @@ class CentralMomentsArray(
     @overload
     def new_like(
         self,
-        obj: Any = ...,
+        obj: ArrayLike | None = ...,
         *,
         verify: bool = ...,
         copy: bool | None = ...,
@@ -807,7 +819,7 @@ class CentralMomentsArray(
         parallel: bool | None = None,
     ) -> Self | CentralMomentsArrayAny:
         return super().jackknife_and_reduce(
-            data_reduced=data_reduced,  # type: ignore[arg-type]
+            data_reduced=data_reduced,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis=axis,
             axes_to_end=axes_to_end,
             out=out,
@@ -930,7 +942,7 @@ class CentralMomentsArray(
         val_shape: int | Sequence[int] | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrderCF = ...,
-    ) -> Self: ...
+    ) -> CentralMomentsArrayAny: ...
 
     @classmethod
     @docfiller_abc()
@@ -972,7 +984,7 @@ class CentralMomentsArray(
     @docfiller.decorate
     def reshape(
         self,
-        shape: tuple[int, ...],
+        shape: int | Sequence[int],
         *,
         order: ArrayOrderCFA = None,
     ) -> Self:
@@ -1025,9 +1037,9 @@ class CentralMomentsArray(
         """
         self._raise_if_scalar()
         shape = (shape,) if isinstance(shape, int) else shape
-        new_shape = (*shape, *self.mom_shape)
+        new_shape = (*shape, *self.mom_shape)  # type: ignore[misc]
         obj = self._obj.reshape(new_shape, order=order)
-        return self.new_like(obj)  # type: ignore[return-value]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
 
     @docfiller.decorate
     def resample(
@@ -1076,7 +1088,7 @@ class CentralMomentsArray(
         indices = np.asarray(indices, dtype=np.int64)
         obj = np.take(obj, indices, axis=axis)
 
-        return self.new_like(obj)  # type: ignore[return-value]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
 
     def fill(self, value: Any = 0) -> Self:
         """
@@ -1124,9 +1136,9 @@ class CentralMomentsArray(
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> CentralMomentsDataArray:
+    ) -> CentralMomentsData[xr.DataArray]:
         r"""
-        Create a  :class:`.CentralMomentsData` object from ``self``.
+        Create a  :class:`cmomy.CentralMomentsData` object from ``self``.
 
 
         Parameters
@@ -1137,6 +1149,10 @@ class CentralMomentsArray(
         Returns
         -------
         output : DataArray
+
+        See Also
+        --------
+        CentralMomentsData
 
 
         Examples
@@ -1204,7 +1220,7 @@ class CentralMomentsArray(
                     mom_dims = (mom_dims,)
                 else:
                     # try to convert to tuple
-                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]
+                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
                 raise_if_wrong_value(
                     len(mom_dims),
@@ -1239,7 +1255,7 @@ class CentralMomentsArray(
         mom_dims: MomDims | None = None,
         template: xr.DataArray | None = None,
         copy: bool = False,
-    ) -> CentralMomentsDataArray:
+    ) -> CentralMomentsData[xr.DataArray]:
         """Alias to :meth:`to_dataarray`"""
         return self.to_dataarray(
             dims=dims,

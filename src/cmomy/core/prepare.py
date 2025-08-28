@@ -21,9 +21,6 @@ from .validate import (
     is_dataset,
     validate_axis,
 )
-from .xr_utils import (
-    raise_if_dataset,
-)
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -147,9 +144,11 @@ def prepare_secondary_value_for_reduction(
     If ndim == target.ndim, move axis to last and verify
     Otherwise, make sure x.shape == target.shape[-x.ndim:]
     """
-    raise_if_dataset(x, "Passed Dataset as secondary value with array primary value.")
+    if is_dataset(x):
+        msg = "Passed Dataset as secondary value with array primary value."
+        raise TypeError(msg)
 
-    out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=recast)  # type: ignore[arg-type, unused-ignore]
+    out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=recast)
     if not out.ndim:
         return np.broadcast_to(out, nsamp)
 

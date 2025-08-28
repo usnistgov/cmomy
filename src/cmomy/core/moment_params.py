@@ -283,7 +283,7 @@ class MomParamsArray(MomParamsBase):
     def normalize_axes(self, data_ndim: int) -> Self:
         """Normalize self.axes in new object relative to ``data_ndim``."""
         if self.axes is None:  # pyright: ignore[reportUnnecessaryComparison]
-            return self
+            return self  # type: ignore[unreachable]
 
         return replace(
             self,
@@ -320,7 +320,8 @@ class MomParamsArray(MomParamsBase):
 
     def raise_if_in_mom_axes(self, *axes: int) -> None:
         """Raise ``ValueError`` if any ``axes`` in ``self.axes``."""
-        if self.axes is not None and any(a in self.axes for a in axes):  # pyright: ignore[reportUnnecessaryComparison]
+        # these ignores needed because inherit into optional classes below
+        if self.axes is not None and any(a in self.axes for a in axes):  # type: ignore[redundant-expr] # pyright: ignore[reportUnnecessaryComparison]
             msg = f"provided axis/axes cannot overlap mom_axes={self.axes}."
             raise ValueError(msg)
 
@@ -344,8 +345,8 @@ class MomParamsArray(MomParamsBase):
 
 @dataclass
 class MomParamsArrayOptional(MomParamsArray):  # noqa: D101
-    ndim: MomNDim | None = None  # type: ignore[assignment]
-    axes: MomAxesStrict | None = None  # type: ignore[assignment]
+    ndim: MomNDim | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
+    axes: MomAxesStrict | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @classmethod
     def from_params(
@@ -496,9 +497,10 @@ class MomParamsXArray(MomParamsBase):
         self,
         *,
         axis: int | None = None,
-        dim: Hashable,
+        dim: Hashable | None,
     ) -> None:
-        if self.dims is not None and dim in self.dims:  # pyright: ignore[reportUnnecessaryComparison]
+        # these ignores needed because inherit into optional classes below
+        if self.dims is not None and dim in self.dims:  # type: ignore[redundant-expr]  # pyright: ignore[reportUnnecessaryComparison]
             axis_msg = f", {axis=}" if axis is not None else ""
             msg = f"Cannot select moment dimension. {dim=}{axis_msg}."
             raise ValueError(msg)
@@ -552,7 +554,7 @@ class MomParamsXArray(MomParamsBase):
         default_dim = validate_not_none(default_dim, "default_dim")
         axis, dim = self._axis_dim_defaults(
             axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
-        )  # pyright: ignore[reportAssignmentType]
+        )
 
         if dim is not MISSING:
             axis = data.get_axis_num(dim)
@@ -603,19 +605,19 @@ class MomParamsXArray(MomParamsBase):
             if dim is None:
                 dim_ = _get_dim_none()
             else:
-                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
+                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
                 _check_dim(dim_)
             return (), dim_
 
         axis, dim = self._axis_dim_defaults(
             axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
-        )  # pyright: ignore[reportAssignmentType]
+        )
 
         if dim is not MISSING:
             if dim is None:
                 dim_ = _get_dim_none()
             else:
-                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]
+                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis_ = data.get_axis_num(dim_)
         elif axis is not MISSING:
             axis_ = self.normalize_axis_tuple(
@@ -633,8 +635,8 @@ class MomParamsXArray(MomParamsBase):
 
 @dataclass
 class MomParamsXArrayOptional(MomParamsXArray):  # noqa: D101
-    ndim: MomNDim | None = None  # type: ignore[assignment]
-    dims: MomDimsStrict | None = None  # type: ignore[assignment]
+    ndim: MomNDim | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
+    dims: MomDimsStrict | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
 
     @classmethod
     def from_params(

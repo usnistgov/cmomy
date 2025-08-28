@@ -300,7 +300,7 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data_base).dtype.type == dtype_base
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == dtype_base
         if cls == CentralMomentsData:
-            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
 
     else:
         assert c.new_like().dtype.type == dtype_base
@@ -310,5 +310,5 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data_base).dtype.type == dtype_base
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == expected
         if cls == CentralMomentsData:
-            assert c.new_like(obj=xdata).dtype.type == expected
-            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected
+            assert c.new_like(obj=xdata).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
