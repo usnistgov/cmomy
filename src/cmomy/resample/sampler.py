@@ -575,10 +575,10 @@ def _randsamp_indices_dataarray_or_dataset(
     replace: bool = True,
 ) -> xr.DataArray | DataT:
     """Create a resampling DataArray or Dataset."""
-    xmom_params = MomParamsXArrayOptional.factory(
+    mom_params_: MomParamsXArrayOptional = MomParamsXArrayOptional.factory(
         mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, data=data, axes=mom_axes
     )
-    dim = xmom_params.select_axis_dim(
+    dim = mom_params_.select_axis_dim(
         data,
         axis=axis,
         dim=dim,
@@ -596,7 +596,7 @@ def _randsamp_indices_dataarray_or_dataset(
         return _get_unique_indices()
 
     # generate non-paired dataset
-    dims = {dim, *(() if xmom_params.dims is None else xmom_params.dims)}  # type: ignore[has-type]
+    dims = {dim, *(() if mom_params_.dims is None else mom_params_.dims)}
     out: dict[Hashable, xr.DataArray] = {}
     for name, da in data.items():
         if dims.issubset(da.dims):

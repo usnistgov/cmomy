@@ -14,6 +14,7 @@ import cmomy
 from ._dataarray_set_utils import (
     do_reduce_data_grouped,
     do_reduce_data_indexed,
+    do_reduce_vals_grouped,
 )
 
 func_params_data_rolling = [
@@ -41,6 +42,7 @@ func_params_vals_rolling = [
 func_params_vals = [
     (cmomy.reduce_vals, None),
     (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),
+    (do_reduce_vals_grouped, None),
     (cmomy.resample.jackknife_vals, None),
     *func_params_vals_rolling,
 ]

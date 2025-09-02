@@ -75,6 +75,7 @@ if TYPE_CHECKING:
         NDArrayInt,
         ReduceDataGroupedKwargs,
         ReduceDataIndexedKwargs,
+        ReduceValsGroupedKwargs,
         Sampler,
     )
     from cmomy.core.typing_compat import Unpack
@@ -830,6 +831,62 @@ def resample_data_indexed(  # noqa: PLR0913
 # TODO(wpk): Add reduce_vals_grouped, reduce_vals_indexed
 # * Vals
 # ** Grouped
+@overload
+def reduce_vals_grouped(
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    by: ArrayLike,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsGroupedKwargs],
+) -> DataT: ...
+# array
+@overload
+def reduce_vals_grouped(
+    x: ArrayLikeArg[FloatT],
+    *y: ArrayLike,
+    by: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: None = ...,
+    dtype: None = ...,
+    **kwargs: Unpack[ReduceValsGroupedKwargs],
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def reduce_vals_grouped(
+    x: ArrayLike,
+    *y: ArrayLike,
+    by: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsGroupedKwargs],
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def reduce_vals_grouped(
+    x: ArrayLike,
+    *y: ArrayLike,
+    by: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    **kwargs: Unpack[ReduceValsGroupedKwargs],
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def reduce_vals_grouped(
+    x: ArrayLike,
+    *y: ArrayLike,
+    by: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsGroupedKwargs],
+) -> NDArrayAny: ...
+
+
 def reduce_vals_grouped(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -904,8 +961,9 @@ def reduce_vals_grouped(  # noqa: PLR0913
             _reduce_vals_grouped,
             *xargs,
             by,
-            input_core_dims=[input_core_dims, [dim]],
+            input_core_dims=[*input_core_dims, [dim]],  # type: ignore[has-type]
             output_core_dims=[mom_params.core_dims(dim)],
+            exclude_dims={dim},
             kwargs={
                 "mom": mom,
                 "mom_params": mom_params.to_array(),
@@ -1007,6 +1065,7 @@ def _reduce_vals_grouped(
         *args,
         mom=mom,
         axis_neg=axis_neg,
+        axis_new_size=by.max() + 1,
         dtype=dtype,
         order=order,
     )
@@ -1031,7 +1090,7 @@ def _reduce_vals_grouped(
         axes=axes,
         casting=casting,
         order=order,
-        signature=(dtype,) * (len(args) + 2),
+        signature=(dtype, np.int64) + (dtype,) * len(args),
     )
 
     return out

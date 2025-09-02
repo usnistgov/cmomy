@@ -480,7 +480,7 @@ def resample_vals(  # noqa: PLR0913
     )
 
     if is_xarray_typevar(x):
-        mom, xmom_params = MomParamsXArray.factory_mom(
+        mom, mom_params = MomParamsXArray.factory_mom(
             mom, dims=mom_dims, mom_params=mom_params
         )
         dim, input_core_dims, xargs = xprepare_values_for_reduction(
@@ -489,7 +489,7 @@ def resample_vals(  # noqa: PLR0913
             *y,
             axis=axis,
             dim=dim,
-            narrays=xmom_params.ndim + 1,
+            narrays=mom_params.ndim + 1,
             dtype=dtype,
             recast=False,
         )
@@ -499,16 +499,16 @@ def resample_vals(  # noqa: PLR0913
             *xargs,
             sampler.freq,
             input_core_dims=[*input_core_dims, [rep_dim, dim]],  # type: ignore[has-type]
-            output_core_dims=[xmom_params.core_dims(rep_dim)],
+            output_core_dims=[mom_params.core_dims(rep_dim)],
             kwargs={
                 "mom": mom,
-                "mom_params": xmom_params.to_array(),
+                "mom_params": mom_params.to_array(),
                 "axis_neg": -1,
                 "out": xprepare_out_for_resample_vals(
                     target=x,
                     out=out,
                     dim=dim,
-                    mom_ndim=xmom_params.ndim,
+                    mom_ndim=mom_params.ndim,
                     axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
@@ -523,7 +523,7 @@ def resample_vals(  # noqa: PLR0913
                 dask="parallelized",
                 output_sizes={
                     rep_dim: sampler.nrep,
-                    **dict(zip(xmom_params.dims, mom_to_mom_shape(mom))),
+                    **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
@@ -534,13 +534,13 @@ def resample_vals(  # noqa: PLR0913
                 xout,
                 template=x,
                 replace={dim: rep_dim},
-                append=xmom_params.dims,
+                append=mom_params.dims,
             )
         elif is_dataset(x):
             xout = xout.transpose(
                 ...,
                 rep_dim,
-                *xmom_params.dims,
+                *mom_params.dims,
                 missing_dims="ignore",
             )
 

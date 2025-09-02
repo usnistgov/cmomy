@@ -421,7 +421,7 @@ def cumulative(  # noqa: PLR0913
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray_typevar(values_in):
-        xmom_params = MomParamsXArray.factory(
+        mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             axes=mom_axes,
@@ -429,12 +429,12 @@ def cumulative(  # noqa: PLR0913
             data=values_in,
             default_ndim=1,
         )
-        axis, dim = xmom_params.select_axis_dim(
+        axis, dim = mom_params.select_axis_dim(
             values_in,
             axis=axis,
             dim=dim,
         )
-        core_dims = [xmom_params.core_dims(dim)]
+        core_dims = [mom_params.core_dims(dim)]
 
         xout: DataT = xr.apply_ufunc(
             _cumulative,
@@ -442,12 +442,12 @@ def cumulative(  # noqa: PLR0913
             input_core_dims=core_dims,
             output_core_dims=core_dims,
             kwargs={
-                "mom_params": xmom_params.to_array(),
+                "mom_params": mom_params.to_array(),
                 "inverse": inverse,
-                "axis": -(xmom_params.ndim + 1),
+                "axis": -(mom_params.ndim + 1),
                 "out": xprepare_out_for_resample_data(
                     out,
-                    mom_params=xmom_params,
+                    mom_params=mom_params,
                     axis=axis,
                     axes_to_end=axes_to_end,
                     data=values_in,
@@ -472,7 +472,7 @@ def cumulative(  # noqa: PLR0913
                 template=values_in,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         return xout
 

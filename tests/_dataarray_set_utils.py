@@ -71,6 +71,11 @@ def do_reduce_data_indexed(data, axes_to_end=False, **kwargs):
     )
 
 
+def do_reduce_vals_grouped(x, *args, axes_to_end=False, **kwargs):
+    by = get_by(_get_axis_size(x, **kwargs))
+    return cmomy.reduce_vals_grouped(x, *args, by=by, axes_to_end=axes_to_end, **kwargs)
+
+
 def do_bootstrap_data(data, sampler, method, **kwargs):
     kwargs = kwargs.copy()
     kwargs.pop("axes_to_end", None)

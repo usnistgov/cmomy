@@ -25,7 +25,7 @@ if TYPE_CHECKING:
         MomParams,
         MomParamsDict,
     )
-    from .grouped import reduce_data_grouped, reduce_data_indexed
+    from .grouped import reduce_data_grouped, reduce_data_indexed, reduce_vals_grouped
     from .random import default_rng
     from .reduction import reduce_data, reduce_vals
     from .resample import (
@@ -73,7 +73,11 @@ else:
             "core": ["MomParams", "MomParamsDict"],
             "convert": ["concat"],
             "confidence_interval": ["bootstrap_confidence_interval"],
-            "grouped": ["reduce_data_grouped", "reduce_data_indexed"],
+            "grouped": [
+                "reduce_data_grouped",
+                "reduce_data_indexed",
+                "reduce_vals_grouped",
+            ],
             "random": ["default_rng"],
             "reduction": ["reduce_data", "reduce_vals"],
             "resample": [
@@ -136,6 +140,7 @@ __all__ = [
     "reduce_data_grouped",
     "reduce_data_indexed",
     "reduce_vals",
+    "reduce_vals_grouped",
     "reduction",
     "resample",
     "resample_data",

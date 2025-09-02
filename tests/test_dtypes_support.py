@@ -96,6 +96,11 @@ def _do_test(func, *args, expected, **kwargs):
             (10, 1, 2, 3),
         ),
         (
+            cmomy.reduce_vals_grouped,
+            {"mom": 2, "axes_to_end": False, "axis": 0, "by": [0, 0, 1, 1, 1]},
+            (2, 1, 2, 3),
+        ),
+        (
             cmomy.resample_data,
             {
                 "mom_ndim": 1,
