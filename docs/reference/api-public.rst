@@ -83,7 +83,7 @@ Grouped reduction routines available at top level (:mod:`.grouped`)
 
    ~grouped.reduce_data_grouped
    ~grouped.reduce_data_indexed
-   ~grouped.reduve_vals_grouped
+   ~grouped.reduce_vals_grouped
 
 
 Default random number generator (:mod:`cmomy.random`)

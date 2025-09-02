@@ -936,7 +936,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     See Also
     --------
     .reduce_vals
-    reduve_data_grouped
+    reduce_data_grouped
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)

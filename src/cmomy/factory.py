@@ -401,7 +401,7 @@ def factory_reduce_data_grouped(
     return cast(
         "ReduceDataGrouped",
         _import_library_module(
-            "indexed", parallel=parallel, mom_ndim=mom_ndim
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
         ).reduce_data_grouped,
     )
 
@@ -413,7 +413,7 @@ def factory_reduce_vals_grouped(
     return cast(
         "ReduceValsGrouped",
         _import_library_module(
-            "indexed", parallel=parallel, mom_ndim=mom_ndim
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
         ).reduce_vals_grouped,
     )
 
@@ -425,7 +425,7 @@ def factory_reduce_data_indexed(
     return cast(
         "ReduceDataIndexed",
         _import_library_module(
-            "indexed", parallel=parallel, mom_ndim=mom_ndim
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
         ).reduce_data_indexed_fromzero,
     )
 

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 import numba as nb
 
-from . import _push
+from . import _push_cov as _push
 from .decorators import myguvectorize
 
 if TYPE_CHECKING:
@@ -15,22 +15,23 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import FloatT, NDArrayInt
 
-_PARALLEL = True  # Auto generated from indexed.py
+
+_PARALLEL = True  # Auto generated from grouped_cov.py
 _vectorize = partial(myguvectorize, parallel=_PARALLEL)
 
 
 @_vectorize(
-    "(sample,mom),(sample),(group,mom)",
+    "(sample,mom0,mom1),(sample),(group,mom0,mom1)",
     [
         (
-            nb.float32[:, :],
+            nb.float32[:, :, :],
             nb.int64[:],
-            nb.float32[:, :],
+            nb.float32[:, :, :],
         ),
         (
-            nb.float64[:, :],
+            nb.float64[:, :, :],
             nb.int64[:],
-            nb.float64[:, :],
+            nb.float64[:, :, :],
         ),
     ],
 )
@@ -47,23 +48,23 @@ def reduce_data_grouped(
 
 
 @_vectorize(
-    "(sample,mom),(index),(group),(group),(index) -> (group,mom)",
+    "(sample,mom0,mom1),(index),(group),(group),(index) -> (group,mom0,mom1)",
     [
         (
-            nb.float32[:, :],
+            nb.float32[:, :, :],
             nb.int64[:],
             nb.int64[:],
             nb.int64[:],
             nb.float32[:],
-            nb.float32[:, :],
+            nb.float32[:, :, :],
         ),
         (
-            nb.float64[:, :],
+            nb.float64[:, :, :],
             nb.int64[:],
             nb.int64[:],
             nb.int64[:],
             nb.float64[:],
-            nb.float64[:, :],
+            nb.float64[:, :, :],
         ),
     ],
     writable=None,
@@ -86,8 +87,8 @@ def reduce_data_indexed_fromzero(
             # assume start from zero
             s = index[start]
             f = scale[start]
-            out[group, :] = data[s, :]
-            out[group, 0] *= f
+            out[group, :, :] = data[s, :, :]
+            out[group, 0, 0] *= f
 
             for i in range(start + 1, end):
                 s = index[i]
@@ -96,17 +97,19 @@ def reduce_data_indexed_fromzero(
 
 
 @_vectorize(
-    "(group,mom),(sample),(sample),(sample)",
+    "(group,mom0,mom1),(sample),(sample),(sample),(sample)",
     [
         (
-            nb.float32[:, :],
+            nb.float32[:, :, :],
             nb.int64[:],
+            nb.float32[:],
             nb.float32[:],
             nb.float32[:],
         ),
         (
-            nb.float64[:, :],
+            nb.float64[:, :, :],
             nb.int64[:],
+            nb.float64[:],
             nb.float64[:],
             nb.float64[:],
         ),
@@ -115,11 +118,12 @@ def reduce_data_indexed_fromzero(
 def reduce_vals_grouped(
     out: NDArray[FloatT],
     group_idx: NDArrayInt,
-    x: NDArray[FloatT],
+    x0: NDArray[FloatT],
     w: NDArray[FloatT],
+    x1: NDArray[FloatT],
 ) -> None:
     assert group_idx.max() < out.shape[0]
-    for s in range(x.shape[0]):
+    for s in range(x0.shape[0]):
         group = group_idx[s]
         if group >= 0:
-            _push.push_val(x[s], w[s], out[group, ...])
+            _push.push_val(x0[s], x1[s], w[s], out[group, ...])
