@@ -21,8 +21,8 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxesGUFunc,
         MomNDim,
         NDArrayAny,
@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 # * Array order ---------------------------------------------------------------
-def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
+def arrayorder_to_arrayorder_cf(order: ArrayOrderKACF) -> ArrayOrderCF:
     """Convert general array order to C/F/None"""
     if order is None:
         return order

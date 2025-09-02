@@ -119,6 +119,18 @@ if TYPE_CHECKING:
             **kwargs: Any,
         ) -> tuple[()]: ...
 
+    class ReduceValsGrouped(Protocol):
+        def __call__(
+            self,
+            out: NDArray[FloatT],
+            group_idx: NDArrayInt,
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            /,
+            *y: NDArray[FloatT],
+            **kwargs: Any,
+        ) -> tuple[()]: ...
+
     # Indexed
     class ReduceDataIndexed(Protocol):
         def __call__(
@@ -296,7 +308,6 @@ def factory_resample_vals(
 ) -> ResampleVals:
     """Resample values."""
     parallel = parallel and supports_parallel()
-
     if mom_ndim == 1:
         if parallel:
             from ._lib.resample_parallel import resample_vals as _resample
@@ -426,6 +437,25 @@ def factory_reduce_data_grouped(
         from ._lib.indexed_cov import reduce_data_grouped
 
     return cast("ReduceDataGrouped", reduce_data_grouped)
+
+
+@lru_cache
+def factory_reduce_vals_grouped(
+    mom_ndim: MomNDim = 1,
+    parallel: bool = True,
+) -> ReduceValsGrouped:
+    parallel = parallel and supports_parallel()
+    reduce_vals_grouped: Callable[..., Any]
+    if mom_ndim == 1 and parallel:
+        from ._lib.indexed_parallel import reduce_vals_grouped
+    elif mom_ndim == 1:
+        from ._lib.indexed import reduce_vals_grouped
+    elif parallel:
+        from ._lib.indexed_cov_parallel import reduce_vals_grouped
+    else:
+        from ._lib.indexed_cov import reduce_vals_grouped
+
+    return cast("ReduceValsGrouped", reduce_vals_grouped)
 
 
 @lru_cache

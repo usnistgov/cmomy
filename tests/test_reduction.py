@@ -261,9 +261,11 @@ def test_block_by(kwargs, expected) -> None:
     ],
 )
 @pytest.mark.parametrize("by", [[0] * 4 + [1] * 4 + [2] * 4 + [3] * 4])
-def get_reduce_data_grouped_indexed(rng, shape, mom_ndim, by):
+def test_reduce_data_grouped_indexed(rng, shape, mom_ndim, by):
     data = rng.random(shape)
-    expected = cmomy.reduce_data(data.reshape(4, 4, *shape[1:]), axis=1, mom_ndim=2)
+    expected = cmomy.reduce_data(
+        data.reshape(4, 4, *shape[1:]), axis=1, mom_ndim=mom_ndim
+    )
     check = cmomy.reduce_data_grouped(data, by=by, axis=0, mom_ndim=mom_ndim)
     np.testing.assert_allclose(check, expected)
 
@@ -273,6 +275,27 @@ def get_reduce_data_grouped_indexed(rng, shape, mom_ndim, by):
         data, index=index, group_start=start, group_end=end, axis=0, mom_ndim=mom_ndim
     )
     np.testing.assert_allclose(check, expected)
+
+
+@pytest.mark.parametrize(
+    ("shapex", "shapey", "shapew", "mom"),
+    [
+        (
+            10,
+            None,
+            None,
+            3,
+        ),
+        (
+            10,
+            None,
+            10,
+            3,
+        ),
+    ],
+)
+def test_reduce_vals_grouped(rng, shapex, shapey, shapew, mom) -> None:
+    pass
 
 
 def test_indexed_bad_scale(rng: np.random.Generator) -> None:

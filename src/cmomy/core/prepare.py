@@ -36,8 +36,8 @@ if TYPE_CHECKING:
     from cmomy.core.typing import AxisReduceWrap
 
     from .typing import (
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         DimsReduce,
         MissingType,
         MomentsStrict,
@@ -423,7 +423,7 @@ def optional_prepare_out_for_resample_data(
     data: NDArrayAny,
     axis: int,
     axis_new_size: int,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     dtype: DTypeLike,
 ) -> NDArrayAny | None:
     """Prepare out with ordering."""

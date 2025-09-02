@@ -16,6 +16,7 @@ from cmomy.factory import (
     factory_reduce_data_grouped,
     factory_reduce_data_indexed,
     factory_reduce_vals,
+    factory_reduce_vals_grouped,
     factory_resample_data,
     factory_resample_vals,
     factory_rolling_data,
@@ -132,6 +133,13 @@ def _get_factory_params() -> list[Any]:
             factory_reduce_data_grouped,
             (2, False),
             indexed_cov.reduce_data_grouped,
+        ),
+        # reduce_vals_grouped
+        (factory_reduce_vals_grouped, (1, False), indexed.reduce_vals_grouped),
+        (
+            factory_reduce_vals_grouped,
+            (2, False),
+            indexed_cov.reduce_vals_grouped,
         ),
         # reduce_data_indexed
         (
@@ -262,6 +270,17 @@ def _get_factory_params_parallel() -> list[Any]:
             factory_reduce_data_grouped,
             (2, True),
             indexed_cov_parallel.reduce_data_grouped,
+        ),
+        # reduce_vals_grouped
+        (
+            factory_reduce_vals_grouped,
+            (1, True),
+            indexed_parallel.reduce_vals_grouped,
+        ),
+        (
+            factory_reduce_vals_grouped,
+            (2, True),
+            indexed_cov_parallel.reduce_vals_grouped,
         ),
         # reduce_data_indexed
         (

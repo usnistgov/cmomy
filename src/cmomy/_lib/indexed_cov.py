@@ -34,7 +34,6 @@ _vectorize = partial(myguvectorize, parallel=_PARALLEL)
             nb.float64[:, :, :],
         ),
     ],
-    writable=None,
 )
 def reduce_data_grouped(
     data: NDArray[FloatT],
@@ -95,3 +94,36 @@ def reduce_data_indexed_fromzero(
                 s = index[i]
                 f = scale[i]
                 _push.push_data_scale(data[s, ...], f, out[group, ...])
+
+
+@_vectorize(
+    "(group,mom0,mom1),(sample),(sample),(sample),(sample)",
+    [
+        (
+            nb.float32[:, :, :],
+            nb.int64[:],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
+        ),
+        (
+            nb.float64[:, :, :],
+            nb.int64[:],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
+        ),
+    ],
+)
+def reduce_vals_grouped(
+    out: NDArray[FloatT],
+    group_idx: NDArrayInt,
+    x0: NDArray[FloatT],
+    w: NDArray[FloatT],
+    x1: NDArray[FloatT],
+) -> None:
+    assert group_idx.max() < out.shape[0]
+    for s in range(x0.shape[0]):
+        group = group_idx[s]
+        if group >= 0:
+            _push.push_val(x0[s], x1[s], w[s], out[group, ...])

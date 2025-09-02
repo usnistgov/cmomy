@@ -54,8 +54,8 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AttrsType,
         AxisReduce,
         Casting,
@@ -331,7 +331,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         self,
         dtype: DTypeLike | Mapping[Hashable, DTypeLike],
         *,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,

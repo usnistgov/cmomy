@@ -34,8 +34,8 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxisReduce,
         BlockByModes,
         Casting,
@@ -218,7 +218,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         verify: bool = False,
         copy: bool | None = None,
         dtype: DTypeLike = None,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         fastpath: bool = False,
     ) -> Self:
         """
@@ -245,7 +245,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         self,
         dtype: DTypeLike,
         *,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
@@ -761,7 +761,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
         axes_to_end: bool = False,
         keep_attrs: KeepAttrs = None,
@@ -875,7 +875,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...
@@ -977,7 +977,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...

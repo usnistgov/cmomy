@@ -65,8 +65,8 @@ if TYPE_CHECKING:
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxesGUFunc,
         AxisReduceWrap,
         Casting,
@@ -161,7 +161,7 @@ def resample_data(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     parallel: bool | None = None,
     axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
@@ -309,7 +309,7 @@ def _resample_data(
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     parallel: bool | None,
     fastpath: bool,
 ) -> NDArrayAny:
@@ -489,17 +489,13 @@ def resample_vals(  # noqa: PLR0913
             *y,
             axis=axis,
             dim=dim,
+            narrays=xmom_params.ndim + 1,
             dtype=dtype,
             recast=False,
-            narrays=xmom_params.ndim + 1,
         )
 
-        def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-            x, w, *y, freq = args
-            return _resample_vals(x, w, *y, freq=freq, **kwargs)
-
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            _func,
+            _resample_vals,
             *xargs,
             sampler.freq,
             input_core_dims=[*input_core_dims, [rep_dim, dim]],  # type: ignore[has-type]
@@ -565,7 +561,7 @@ def resample_vals(  # noqa: PLR0913
 
     return _resample_vals(
         *args,
-        freq=sampler.freq,
+        sampler.freq,
         mom=mom,
         mom_params=mom_params,
         axis_neg=axis_neg,
@@ -579,9 +575,8 @@ def resample_vals(  # noqa: PLR0913
 
 
 def _resample_vals(
-    # x, w, *y
+    # x, w, *y., freq
     *args: NDArrayAny,
-    freq: NDArrayAny,
     mom: MomentsStrict,
     mom_params: MomParamsArray,
     axis_neg: int,
@@ -594,6 +589,8 @@ def _resample_vals(
 ) -> NDArrayAny:
     if not fastpath:
         dtype = select_dtype(args[0], out=out, dtype=dtype)
+
+    args, freq = args[:-1], args[-1]
 
     out = prepare_out_from_values(
         out,
@@ -700,7 +697,7 @@ def jackknife_data(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     parallel: bool | None = None,
     axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
@@ -909,7 +906,7 @@ def _jackknife_data(
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     parallel: bool | None,
     fastpath: bool,
 ) -> NDArrayAny:

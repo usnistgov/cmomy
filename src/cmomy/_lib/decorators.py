@@ -75,6 +75,17 @@ def myguvectorize(
 
     args = (signatures, gufunc_sig) if signatures else (gufunc_sig,)
 
+    # Sanity check on gufunc_sig and writable
+    # If arrow = ("->" in signature), writable should be None
+    # other, writable should not be None.
+    arrow = "->" in gufunc_sig
+    if arrow and writable is not None:
+        msg = f"Should have no writable args for sig={gufunc_sig}"
+        raise ValueError(msg)
+    if not arrow and writable is None:
+        msg = f"Should have writable args for sig={gufunc_sig}"
+        raise ValueError(msg)
+
     if cache is None:
         cache = OPTIONS["cache"]
     if fastmath is None:

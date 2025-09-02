@@ -65,8 +65,8 @@ if TYPE_CHECKING:
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxisReduce,
         Casting,
         CentralMomentsT,
@@ -149,7 +149,7 @@ def moments_type(
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -275,7 +275,7 @@ def _moments_type(
     to: ConvertStyle,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     axes_to_end: bool,
     fastpath: bool,
 ) -> NDArrayAny:
@@ -359,7 +359,7 @@ def cumulative(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     parallel: bool | None = None,
     axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
@@ -510,7 +510,7 @@ def _cumulative(
     parallel: bool | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     fastpath: bool,
 ) -> NDArrayAny:
     if not fastpath:

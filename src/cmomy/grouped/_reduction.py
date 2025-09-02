@@ -7,6 +7,7 @@ import xarray as xr
 
 from cmomy.core.array_utils import (
     asarray_maybe_recast,
+    get_axes_from_values,
     select_dtype,
 )
 from cmomy.core.docstrings import docfiller
@@ -19,8 +20,13 @@ from cmomy.core.prepare import (
     optional_prepare_out_for_resample_data,
     prepare_data_for_reduction,
     prepare_out_for_reduce_data_grouped,
+    prepare_out_from_values,
+    prepare_values_for_reduction,
     xprepare_out_for_resample_data,
+    xprepare_out_for_resample_vals,
+    xprepare_values_for_reduction,
 )
+from cmomy.core.utils import mom_to_mom_shape
 from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
@@ -35,6 +41,7 @@ from cmomy.core.xr_utils import (
 from cmomy.factory import (
     factory_reduce_data_grouped,
     factory_reduce_data_indexed,
+    factory_reduce_vals_grouped,
     parallel_heuristic,
 )
 
@@ -44,9 +51,10 @@ if TYPE_CHECKING:
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         ArrayT,
+        AxesGUFunc,
         AxisReduceWrap,
         Casting,
         CoordsPolicy,
@@ -59,6 +67,8 @@ if TYPE_CHECKING:
         MissingType,
         MomAxes,
         MomDims,
+        Moments,
+        MomentsStrict,
         MomNDim,
         MomParamsInput,
         NDArrayAny,
@@ -70,7 +80,8 @@ if TYPE_CHECKING:
     from cmomy.core.typing_compat import Unpack
 
 
-# * Grouped
+# * Data ----------------------------------------------------------------------
+# ** Grouped
 @overload
 def reduce_data_grouped(
     data: DataT,
@@ -122,7 +133,7 @@ def reduce_data_grouped(
 ) -> NDArrayAny: ...
 
 
-# ** public
+# *** public
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]  # error with python3.13.  Flags passed != expected, but they're the same...
 def reduce_data_grouped(  # noqa: PLR0913
     data: ArrayLike | DataT,
@@ -364,7 +375,7 @@ def _reduce_data_grouped(
     return out
 
 
-# * Indexed
+# ** Indexed
 def _validate_index(
     ndat: int,
     index: ArrayLike,
@@ -455,7 +466,7 @@ def reduce_data_indexed(
 ) -> NDArrayAny: ...
 
 
-# ** public
+# *** public
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def reduce_data_indexed(  # noqa: PLR0913
     data: ArrayLike | DataT,
@@ -473,7 +484,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     parallel: bool | None = None,
     axes_to_end: bool = False,
     coords_policy: CoordsPolicy = "first",
@@ -701,7 +712,7 @@ def _reduce_data_indexed(
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     parallel: bool | None,
     fastpath: bool = False,
 ) -> NDArrayAny:
@@ -751,7 +762,7 @@ def _reduce_data_indexed(
     )
 
 
-# * For testing purposes
+# ** For testing purposes
 def resample_data_indexed(  # noqa: PLR0913
     data: ArrayT,
     sampler: Sampler,
@@ -762,7 +773,7 @@ def resample_data_indexed(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     parallel: bool = True,
     axes_to_end: bool = False,
     # xarray specific
@@ -817,3 +828,210 @@ def resample_data_indexed(  # noqa: PLR0913
 
 
 # TODO(wpk): Add reduce_vals_grouped, reduce_vals_indexed
+# * Vals
+# ** Grouped
+def reduce_vals_grouped(  # noqa: PLR0913
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    by: ArrayLike,
+    mom: Moments,
+    axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrderCF = None,
+    parallel: bool | None = None,
+    axes_to_end: bool = True,
+    group_dim: str | None = None,
+    groups: Groups | None = None,
+    keep_attrs: KeepAttrs = None,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | DataT:
+    """
+    Reduce value with grouping.
+
+    Parameters
+    ----------
+    {x_genarray}
+    {y_genarray}
+    {by}
+    {mom}
+    {axis}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
+    {out}
+    {dtype}
+    {casting}
+    {order_cf}
+    {parallel}
+    {axes_to_end}
+    {group_dim}
+    {groups}
+    {keep_attrs}
+    {apply_ufunc_kwargs}
+
+    See Also
+    --------
+    .reduce_vals
+    reduve_data_grouped
+    """
+    weight = 1.0 if weight is None else weight
+    dtype = select_dtype(x, out=out, dtype=dtype)
+    by = np.asarray(by, dtype=np.int64)
+
+    if is_xarray_typevar(x):
+        mom, mom_params = MomParamsXArray.factory_mom(
+            mom_params=mom_params, mom=mom, dims=mom_dims
+        )
+        dim, input_core_dims, xargs = xprepare_values_for_reduction(
+            x,
+            weight,
+            *y,
+            axis=axis,
+            dim=dim,
+            narrays=mom_params.ndim + 1,
+            dtype=dtype,
+            recast=False,
+        )
+
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _reduce_vals_grouped,
+            *xargs,
+            by,
+            input_core_dims=[input_core_dims, [dim]],
+            output_core_dims=[mom_params.core_dims(dim)],
+            kwargs={
+                "mom": mom,
+                "mom_params": mom_params.to_array(),
+                "axis_neg": -1,
+                "out": xprepare_out_for_resample_vals(
+                    target=x,
+                    out=out,
+                    dim=dim,
+                    mom_ndim=mom_params.ndim,
+                    axes_to_end=axes_to_end,
+                ),
+                "dtype": dtype,
+                "casting": casting,
+                "order": order,
+                "parallel": parallel,
+                "fastpath": is_dataarray(x),
+            },
+            keep_attrs=keep_attrs,
+            **factory_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                dask="parallelized",
+                output_sizes={
+                    dim: by.max() + 1,
+                    **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
+                },
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
+            ),
+        )
+
+        if not axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                append=mom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(
+                ...,
+                dim,
+                *mom_params.dims,
+                missing_dims="ignore",
+            )
+
+        if groups is not None:
+            xout = xout.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
+        if group_dim:
+            xout = xout.rename({dim: group_dim})
+
+        return xout
+
+    # Numpy
+    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
+    axis_neg, args = prepare_values_for_reduction(
+        x,
+        weight,
+        *y,
+        axis=axis,
+        dtype=dtype,
+        recast=False,
+        narrays=mom_params.ndim + 1,
+        axes_to_end=axes_to_end,
+    )
+
+    return _reduce_vals_grouped(
+        *args,
+        by,
+        mom=mom,
+        mom_params=mom_params,
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+        axis_neg=axis_neg,
+        parallel=parallel,
+        fastpath=True,
+    )
+
+
+def _reduce_vals_grouped(
+    # x, w, *y, by
+    *args: NDArrayAny,
+    mom: MomentsStrict,
+    mom_params: MomParamsArray,
+    axis_neg: int,
+    out: NDArrayAny | None,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrderCF,
+    parallel: bool | None,
+    fastpath: bool = False,
+) -> NDArrayAny:
+    if not fastpath:
+        dtype = select_dtype(args[0], out=out, dtype=dtype)
+
+    args, by = args[:-1], args[-1]
+
+    out = prepare_out_from_values(
+        out,
+        *args,
+        mom=mom,
+        axis_neg=axis_neg,
+        dtype=dtype,
+        order=order,
+    )
+    out.fill(0.0)
+
+    axes: AxesGUFunc = [
+        # out
+        (axis_neg - mom_params.ndim, *mom_params.axes),
+        # by
+        (-1,),
+        # x, weight, *y
+        *get_axes_from_values(*args, axis_neg=axis_neg),
+    ]
+
+    factory_reduce_vals_grouped(
+        mom_ndim=mom_params.ndim,
+        parallel=parallel_heuristic(parallel, size=args[0].size * mom_params.ndim),
+    )(
+        out,
+        by,
+        *args,
+        axes=axes,
+        casting=casting,
+        order=order,
+        signature=(dtype,) * (len(args) + 2),
+    )
+
+    return out
