@@ -56,7 +56,6 @@ if TYPE_CHECKING:
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
-        ArrayT,
         AxesGUFunc,
         AxisReduceWrap,
         Casting,
@@ -80,7 +79,6 @@ if TYPE_CHECKING:
         ReduceDataIndexedKwargs,
         ReduceValsGroupedKwargs,
         ReduceValsIndexedKwargs,
-        Sampler,
     )
     from cmomy.core.typing_compat import Unpack
 
@@ -814,72 +812,6 @@ def _reduce_data_indexed(
     )
 
 
-# ** For testing purposes
-def resample_data_indexed(  # noqa: PLR0913
-    data: ArrayT,
-    sampler: Sampler,
-    *,
-    mom_ndim: MomNDim | None = None,
-    axis: AxisReduceWrap | MissingType = MISSING,
-    mom_axes: MomAxes | None = None,
-    out: NDArrayAny | None = None,
-    dtype: DTypeLike = None,
-    casting: Casting = "same_kind",
-    order: ArrayOrderKACF = None,
-    parallel: bool = True,
-    axes_to_end: bool = False,
-    # xarray specific
-    dim: DimsReduce | MissingType = MISSING,
-    mom_dims: MomDims | None = None,
-    coords_policy: CoordsPolicy = "first",
-    rep_dim: str = "rep",
-    groups: Groups | None = None,
-    keep_attrs: KeepAttrs = None,
-) -> ArrayT:
-    """Resample using indexed reduction."""
-    from cmomy.resample import factory_sampler
-
-    sampler = factory_sampler(
-        sampler,
-        data=data,
-        axis=axis,
-        mom_axes=mom_axes,
-        dim=dim,
-        mom_ndim=mom_ndim,
-        mom_dims=mom_dims,
-        rep_dim=rep_dim,
-        parallel=parallel,
-    )
-
-    from cmomy._lib.utils import freq_to_index_start_end_scales
-
-    index, start, end, scales = freq_to_index_start_end_scales(sampler.freq)
-
-    return reduce_data_indexed(  # pyright: ignore[reportReturnType]
-        data=data,
-        mom_ndim=mom_ndim,
-        index=index,
-        group_start=start,
-        group_end=end,
-        scale=scales,
-        axis=axis,
-        mom_axes=mom_axes,
-        axes_to_end=axes_to_end,
-        parallel=parallel,
-        out=out,
-        dtype=dtype,
-        casting=casting,
-        order=order,
-        dim=dim,
-        mom_dims=mom_dims,
-        coords_policy=coords_policy,
-        group_dim=rep_dim,
-        groups=groups,
-        keep_attrs=keep_attrs,
-    )
-
-
-# TODO(wpk): Add reduce_vals_grouped, reduce_vals_indexed
 # * Vals
 # ** Grouped
 @overload
@@ -938,6 +870,7 @@ def reduce_vals_grouped(
 ) -> NDArrayAny: ...
 
 
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def reduce_vals_grouped(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -1205,6 +1138,7 @@ def reduce_vals_indexed(
 ) -> NDArrayAny: ...
 
 
+@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
 def reduce_vals_indexed(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,

@@ -91,9 +91,16 @@ def test_resample_data_0(data_and_kwargs, nrep):
     )
 
     # against using reduce_data_indexed....
+    index, start, end, scale = cmomy.resample.freq_to_index_start_end_scales(freq)
     np.testing.assert_allclose(
-        cmomy.grouped.resample_data_indexed(
-            data, sampler={"freq": freq}, axis=axis, mom_ndim=mom_ndim
+        cmomy.grouped.reduce_data_indexed(
+            data,
+            axis=axis,
+            mom_ndim=mom_ndim,
+            index=index,
+            group_start=start,
+            group_end=end,
+            scale=scale,
         ),
         expected,
     )
@@ -101,7 +108,7 @@ def test_resample_data_0(data_and_kwargs, nrep):
 
 @pytest.mark.parametrize("data_and_kwargs", vals_params, indirect=True)
 @pytest.mark.parametrize("nrep", [10])
-def test_resample_vals_0(data_and_kwargs, nrep):
+def test_resample_vals_0(data_and_kwargs, nrep):  # noqa: PLR0914
     data, kwargs = data_and_kwargs
     axis, mom = (kwargs[k] for k in ("axis", "mom"))
     ndat = cmomy.resample.select_ndat(data[0], axis=axis)
@@ -128,6 +135,23 @@ def test_resample_vals_0(data_and_kwargs, nrep):
             sampler={"nrep": nrep, "rng": 123},
             **kwargs,
             axes_to_end=False,
+        ),
+        expected,
+    )
+
+    # against using reduce_vals_indexed...
+    index, start, end, scale = cmomy.resample.freq_to_index_start_end_scales(freq)
+
+    np.testing.assert_allclose(
+        cmomy.grouped.reduce_vals_indexed(
+            *xy,
+            weight=weight,
+            index=index,
+            group_start=start,
+            group_end=end,
+            scale=scale,
+            axes_to_end=False,
+            **kwargs,
         ),
         expected,
     )

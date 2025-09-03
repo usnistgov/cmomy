@@ -3,6 +3,8 @@ Routine to perform resampling (:mod:`cmomy.resample`)
 =====================================================
 """
 
+from cmomy._lib.utils import freq_to_index_start_end_scales
+
 from .resample import (
     jackknife_data,
     jackknife_vals,
@@ -23,6 +25,7 @@ from .sampler import (
 __all__ = [
     "IndexSampler",
     "factory_sampler",
+    "freq_to_index_start_end_scales",
     "freq_to_indices",
     "indices_to_freq",
     "jackknife_data",

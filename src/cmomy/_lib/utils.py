@@ -24,6 +24,24 @@ def freq_to_index_start_end_scales(
 ) -> tuple[
     NDArray[IntDTypeT], NDArray[IntDTypeT], NDArray[IntDTypeT], NDArray[IntDTypeT]
 ]:
+    """
+    Convert frequency table to index, group_start, group_end, scale arrays.
+
+    Parameters
+    ----------
+    freq : ndarray
+        Frequency array
+
+    Returns
+    -------
+    index, start, end, scale : ndarray
+        Arrays to be used with ``indexed`` routines
+
+    See Also
+    --------
+    .reduce_data_indexed
+    .reduce_vals_indexed
+    """
     ngroup = freq.shape[0]
     ndat = freq.shape[1]
 
