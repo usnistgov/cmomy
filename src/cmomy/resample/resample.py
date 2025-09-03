@@ -455,7 +455,7 @@ def resample_vals(  # noqa: PLR0913
 
     Returns
     -------
-    out : ndarray or DataArray
+    out : ndarray or DataArray or Dataset
         Resampled Central moments array. ``out.shape = (...,shape[axis-1], nrep, shape[axis+1], ...)``
         where ``shape = x.shape``. and ``nrep = sampler.nrep``.  This can be overridden by setting `axes_to_end`.
 

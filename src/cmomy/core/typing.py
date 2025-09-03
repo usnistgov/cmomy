@@ -361,6 +361,15 @@ class _GroupsKwargs(TypedDict, total=False):
     groups: Groups | None
 
 
+class _IndexedKwargs(TypedDict, total=False):
+    index: Required[ArrayLike]
+    group_start: Required[ArrayLike]
+    group_end: Required[ArrayLike]
+    scale: ArrayLike | None
+
+    coords_policy: CoordsPolicy
+
+
 class _DataKwargs(
     _MomParamsKwargs,
     _MomNDimKwargs,
@@ -449,17 +458,11 @@ class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
     _MoveAxisToEndKwargs,
     _GroupsKwargs,
+    _IndexedKwargs,
     total=False,
     closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_data_indexed`"""
-
-    index: Required[ArrayLike]
-    group_start: Required[ArrayLike]
-    group_end: Required[ArrayLike]
-    scale: ArrayLike | None
-
-    coords_policy: CoordsPolicy
 
 
 class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
@@ -470,6 +473,17 @@ class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
     closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_vals_grouped`"""
+
+
+class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
+    _ValsCFKwargs,
+    _MoveAxisToEndKwargs,
+    _GroupsKwargs,
+    _IndexedKwargs,
+    total=False,
+    closed=True,
+):
+    """Extra parameters to :func:`.grouped.reduce_vals_indexed`"""
 
 
 # ** Resample

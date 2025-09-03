@@ -63,6 +63,7 @@ disable = [
     "consider-using-enumerate",
     "consider-using-assignment-expr",
     "use-implicit-booleaness-not-comparison-to-zero",
+    "protected-access",
 ]
 
 [tool.pylint.reports]

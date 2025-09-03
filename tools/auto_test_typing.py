@@ -287,6 +287,7 @@ funcs_genarraylike_to_genarray_dtype_out = [
     ("cmomy.reduce_data_grouped", "data_", "group_out_", "{axis_dim}, mom_ndim=1, by=by"),
     ("cmomy.reduce_data_indexed", "data_", "group_out_", "{axis_dim}, mom_ndim=1, index=index, group_start=group_start, group_end=group_end"),
     ("cmomy.reduce_vals_grouped", "vals_", "group_out_", "{axis_dim}, mom=2, by=by"),
+    ("cmomy.reduce_vals_indexed", "vals_", "group_out_", "{axis_dim}, mom=2, index=index, group_start=group_start, group_end=group_end"),
     ("cmomy.resample_data", "data_", "group_out_", "{axis_dim}, mom_ndim=1, sampler=sampler"),
     ("cmomy.resample_vals", "vals_", "group_out_", "{axis_dim}, mom=2, sampler=sampler"),
     ("cmomy.resample.jackknife_data", "data_", "transform_out_", "{axis_dim}, mom_ndim=1"),

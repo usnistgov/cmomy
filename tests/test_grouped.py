@@ -161,6 +161,22 @@ def test_reduce_vals_grouped(rng, shapex, shapey, shapew, mom, by) -> None:
     )
     np.testing.assert_allclose(expected, check)
 
+    _group, index, start, end = cmomy.grouped.factor_by_to_index(by)
+
+    check = cmomy.grouped.reduce_vals_indexed(
+        x,
+        *y,
+        weight=weight,
+        mom=mom,
+        axis=0,
+        axes_to_end=False,
+        index=index,
+        group_start=start,
+        group_end=end,
+    )
+
+    np.testing.assert_allclose(expected, check)
+
 
 def test_indexed_bad_scale(rng: np.random.Generator) -> None:
     data = rng.random((10, 2, 3))

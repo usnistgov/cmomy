@@ -146,6 +146,21 @@ if TYPE_CHECKING:
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
 
+    class ReduceValsIndexed(Protocol):
+        def __call__(
+            self,
+            out: NDArray[FloatT],
+            index: NDArrayInt,
+            group_start: NDArrayInt,
+            group_end: NDArrayInt,
+            scale: NDArray[FloatT],
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            /,
+            *y: NDArray[FloatT],
+            **kwargs: Any,
+        ) -> tuple[()]: ...
+
     # convert
     class Convert(Protocol):
         def __call__(
@@ -427,6 +442,18 @@ def factory_reduce_data_indexed(
         _import_library_module(
             "grouped", parallel=parallel, mom_ndim=mom_ndim
         ).reduce_data_indexed_fromzero,
+    )
+
+
+def factory_reduce_vals_indexed(
+    mom_ndim: MomNDim = 1,
+    parallel: bool = True,
+) -> ReduceValsIndexed:
+    return cast(
+        "ReduceValsIndexed",
+        _import_library_module(
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
+        ).reduce_vals_indexed_fromzero,
     )
 
 

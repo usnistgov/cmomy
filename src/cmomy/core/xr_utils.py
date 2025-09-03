@@ -1,3 +1,5 @@
+# ruff: noqa: SLF001
+# pyright: reportPrivateUsage=false
 """Utilities to work with xr.DataArray objects."""
 
 from __future__ import annotations
@@ -8,6 +10,7 @@ from collections.abc import (
 from typing import TYPE_CHECKING, cast
 
 from .validate import (
+    is_dataarray,
     is_dataset,
 )
 
@@ -78,58 +81,6 @@ def move_mom_dims_to_end(
         x = x.transpose(..., *mom_dims)
 
     return x
-
-
-def replace_coords_from_isel(
-    da_original: xr.DataArray,
-    da_selected: xr.DataArray,
-    indexers: Mapping[Any, Any] | None = None,
-    drop: bool = False,
-    **indexers_kwargs: Any,
-) -> xr.DataArray:
-    """
-    Replace coords in da_selected with coords from coords from da_original.isel(...).
-
-    This assumes that `da_selected` is the result of soe operation, and that indexeding
-    ``da_original`` will give the correct coordinates/indexed.
-
-    Useful for adding back coordinates to reduced object.
-    """
-    from xarray.core.indexes import (
-        isel_indexes,
-    )
-    from xarray.core.indexing import is_fancy_indexer
-
-    # Would prefer to import from actual source by old xarray error.
-    from xarray.core.utils import (  # type: ignore[attr-defined]
-        either_dict_or_kwargs,  # pyright: ignore[reportPrivateImportUsage]
-    )
-
-    indexers = either_dict_or_kwargs(indexers, indexers_kwargs, "isel")
-    if any(is_fancy_indexer(idx) for idx in indexers.values()):  # pragma: no cover
-        msg = "no fancy indexers for this"
-        raise ValueError(msg)
-
-    indexes, index_variables = isel_indexes(da_original.xindexes, indexers)
-
-    coords = {}
-    for coord_name, coord_value in da_original._coords.items():  # noqa: SLF001  # pyright: ignore[reportPrivateUsage]  # pylint: disable=protected-access
-        if coord_name in index_variables:
-            value = index_variables[coord_name]
-        else:
-            coord_indexers = {
-                k: v for k, v in indexers.items() if k in coord_value.dims
-            }
-            if coord_indexers:
-                value = coord_value.isel(coord_indexers)
-                if drop and not value.ndim:
-                    continue
-            else:
-                value = coord_value
-
-        coords[coord_name] = value
-
-    return da_selected._replace(coords=coords, indexes=indexes)  # pyright: ignore[reportUnknownMemberType, reportPrivateUsage]
 
 
 def raise_if_dataset(*args: Any, msg: str = "Dataset not allowed.") -> None:
@@ -235,3 +186,122 @@ def _transpose_like(
     ):  # pragma: no cover
         data_out = data_out.transpose(*order, missing_dims="ignore")
     return data_out
+
+
+# * Assign coords to selected -------------------------------------------------
+def _replace_coords_from_isel_dataarray(
+    template: xr.DataArray,
+    selected: xr.DataArray,
+    indexers: Mapping[Any, Any],
+    drop: bool,
+) -> xr.DataArray:
+    # Taken from xarray.DataArray.isel
+    from xarray.core.indexes import isel_indexes
+
+    indexes, index_variables = isel_indexes(template.xindexes, indexers)
+    coords = {}
+    for coord_name, coord_value in template._coords.items():
+        if coord_name in index_variables:
+            value = index_variables[coord_name]
+        else:
+            coord_indexers = {
+                k: v for k, v in indexers.items() if k in coord_value.dims
+            }
+            if coord_indexers:
+                value = coord_value.isel(coord_indexers)
+                if drop and not value.ndim:
+                    continue
+            else:
+                value = coord_value
+
+        coords[coord_name] = value
+
+    return selected._replace(coords=coords, indexes=indexes)  # pyright: ignore[reportUnknownMemberType]
+
+
+def _replace_coords_from_isel_dataset(
+    template: xr.Dataset,
+    selected: xr.Dataset,
+    indexers: Mapping[Any, Any],
+    drop: bool,
+) -> xr.Dataset:
+    # Taken from xarray.Dataset.isel
+    from xarray.core.indexes import isel_indexes
+    from xarray.core.utils import drop_dims_from_indexers
+
+    indexers = drop_dims_from_indexers(indexers, template.dims, "raise")
+    variables: dict[Any, xr.Variable] = {}
+    dims: dict[Hashable, int] = {}
+    coord_names = template._coord_names.copy()
+
+    indexes, index_variables = isel_indexes(template.xindexes, indexers)
+
+    for name, var in template._variables.items():
+        # preserve variable order
+        if name in selected._variables:
+            new_var = selected._variables[name]
+        elif name in index_variables:
+            new_var = index_variables[name]
+        else:
+            var_indexers = {k: v for k, v in indexers.items() if k in var.dims}
+            if var_indexers:
+                new_var = var.isel(var_indexers)
+                if drop and var.ndim == 0 and name in coord_names:
+                    coord_names.remove(name)
+                    continue
+            else:
+                new_var = var
+
+        variables[name] = new_var
+        dims.update(zip(new_var.dims, new_var.shape, strict=True))
+
+    return template._construct_direct(  # pyright: ignore[reportUnknownMemberType]
+        variables=variables,
+        coord_names=coord_names,
+        dims=dims,
+        attrs=template._attrs,
+        indexes=indexes,
+        encoding=template._encoding,
+        close=template._close,
+    )
+
+
+def replace_coords_from_isel(
+    template: DataT,
+    selected: DataT,
+    indexers: Mapping[Any, Any] | None = None,
+    drop: bool = False,
+    **indexers_kwargs: Any,
+) -> DataT:
+    """
+    Replace coords in selected with coords from coords from template.isel(...).
+
+    This assumes that `selected` is the result of soe operation, and that indexeding
+    ``template`` will give the correct coordinates/indexed.
+
+    Useful for adding back coordinates to reduced object.
+    """
+    from xarray.core.indexing import is_fancy_indexer
+
+    # Would prefer to import from actual source by old xarray error.
+    from xarray.core.utils import (  # type: ignore[attr-defined]
+        either_dict_or_kwargs,  # pyright: ignore[reportPrivateImportUsage]
+    )
+
+    indexers = either_dict_or_kwargs(
+        indexers, indexers_kwargs, "replace_coords_from_isel"
+    )
+    if any(is_fancy_indexer(idx) for idx in indexers.values()):  # pragma: no cover
+        msg = "no fancy indexers for this"
+        raise ValueError(msg)
+
+    if is_dataset(template) and is_dataset(selected):  # type: ignore[redundant-expr]
+        return _replace_coords_from_isel_dataset(
+            template=template, selected=selected, indexers=indexers, drop=drop
+        )
+    if is_dataarray(template) and is_dataarray(selected):  # type: ignore[redundant-expr]
+        return _replace_coords_from_isel_dataarray(
+            template=template, selected=selected, indexers=indexers, drop=drop
+        )
+    msg = "template and selected must have same type."
+    raise TypeError(msg)

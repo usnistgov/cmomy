@@ -123,3 +123,51 @@ def reduce_vals_grouped(
         group = group_idx[s]
         if group >= 0:
             _push.push_val(x[s], w[s], out[group, ...])
+
+
+@_vectorize(
+    "(group,mom),(index),(group),(group),(index),(sample),(sample)",
+    [
+        (
+            nb.float32[:, :],
+            nb.int64[:],
+            nb.int64[:],
+            nb.int64[:],
+            nb.float32[:],
+            nb.float32[:],
+            nb.float32[:],
+        ),
+        (
+            nb.float64[:, :],
+            nb.int64[:],
+            nb.int64[:],
+            nb.int64[:],
+            nb.float64[:],
+            nb.float64[:],
+            nb.float64[:],
+        ),
+    ],
+)
+def reduce_vals_indexed_fromzero(
+    out: NDArray[FloatT],
+    index: NDArrayInt,
+    group_start: NDArrayInt,
+    group_end: NDArrayInt,
+    scale: NDArray[FloatT],
+    x: NDArray[FloatT],
+    w: NDArray[FloatT],
+) -> None:
+    ngroup = len(group_start)
+    out[...] = 0.0
+
+    for group in range(ngroup):
+        start = group_start[group]
+        end = group_end[group]
+        if end > start:
+            # assume start from zero
+            s = index[start]
+            f = scale[start]
+            for i in range(start, end):
+                s = index[i]
+                f = scale[i]
+                _push.push_val(x[s], w[s] * f, out[group, ...])

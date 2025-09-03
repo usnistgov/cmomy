@@ -1992,6 +1992,270 @@ def test_cmomy_reduce_vals_grouped() -> None:
     )
 
 
+def test_cmomy_reduce_vals_indexed() -> None:
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float32, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float64, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_arrayany, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_any, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end),
+            Any,
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataarray, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end),
+            xr.DataArray,
+        ),
+        xr.DataArray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataset, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end),
+            xr.Dataset,
+        ),
+        xr.Dataset,
+        None,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataarray_any, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end),
+            Any,
+        ),
+        xr.DataArray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataset_any, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end),
+            Any,
+        ),
+        xr.Dataset,
+        None,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_arraylike, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float32, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float64),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float64, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_arrayany, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_arraylike, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            NDArray[float32],
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_any, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            Any,
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float32, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype="f8"),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataarray, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            xr.DataArray,
+        ),
+        xr.DataArray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataset, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            xr.Dataset,
+        ),
+        xr.Dataset,
+        None,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataarray_any, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32),
+            Any,
+        ),
+        xr.DataArray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float32, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, out=group_out_float64),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_arraylike, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, out=group_out_float64),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_any, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
+            Any,
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float32, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, out=group_out_arrayany),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataarray, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
+            xr.DataArray,
+        ),
+        xr.DataArray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataarray_any, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end, out=group_out_float32),
+            Any,
+        ),
+        xr.DataArray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float32, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32, out=group_out_float64),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_arraylike, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float32, out=group_out_float64),
+            NDArray[float64],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_any, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float64, out=group_out_float32),
+            Any,
+        ),
+        np.ndarray,
+        float32,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_float32, axis=0, mom=2, index=index, group_start=group_start, group_end=group_end, dtype=float64, out=group_out_arrayany),
+            NDArray[Any],
+        ),
+        np.ndarray,
+        float64,
+        None,
+    )
+    check(
+        assert_type(
+            cmomy.reduce_vals_indexed(vals_dataarray, dim="dim_0", mom=2, index=index, group_start=group_start, group_end=group_end, dtype="f8", out=group_out_float32),
+            xr.DataArray,
+        ),
+        xr.DataArray,
+        float32,
+        None,
+    )
+
+
 def test_cmomy_resample_data() -> None:
     check(
         assert_type(

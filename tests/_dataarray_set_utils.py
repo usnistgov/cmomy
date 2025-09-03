@@ -76,6 +76,26 @@ def do_reduce_vals_grouped(x, *args, axes_to_end=False, **kwargs):
     return cmomy.reduce_vals_grouped(x, *args, by=by, axes_to_end=axes_to_end, **kwargs)
 
 
+def do_reduce_vals_indexed(x, *args, axes_to_end=False, **kwargs):
+    by = get_by(_get_axis_size(x, **kwargs))
+    _, index, start, end = cmomy.grouped.factor_by_to_index(by)
+
+    coords_policy = kwargs.pop("coords_policy", "first")
+    if is_dataarray(x) and coords_policy in {"first", "last"}:
+        coords_policy = None
+
+    return cmomy.reduce_vals_indexed(
+        x,
+        *args,
+        index=index,
+        group_start=start,
+        group_end=end,
+        coords_policy=coords_policy,
+        axes_to_end=axes_to_end,
+        **kwargs,
+    )
+
+
 def do_bootstrap_data(data, sampler, method, **kwargs):
     kwargs = kwargs.copy()
     kwargs.pop("axes_to_end", None)

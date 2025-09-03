@@ -8,6 +8,7 @@ from ._reduction import (
     reduce_data_grouped,
     reduce_data_indexed,
     reduce_vals_grouped,
+    reduce_vals_indexed,
     resample_data_indexed,
 )
 
@@ -18,5 +19,6 @@ __all__ = [
     "reduce_data_grouped",
     "reduce_data_indexed",
     "reduce_vals_grouped",
+    "reduce_vals_indexed",
     "resample_data_indexed",
 ]

@@ -42,10 +42,13 @@ from cmomy.factory import (
     factory_reduce_data_grouped,
     factory_reduce_data_indexed,
     factory_reduce_vals_grouped,
+    factory_reduce_vals_indexed,
     parallel_heuristic,
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Hashable
+
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from cmomy.core.typing import (
@@ -76,9 +79,66 @@ if TYPE_CHECKING:
         ReduceDataGroupedKwargs,
         ReduceDataIndexedKwargs,
         ReduceValsGroupedKwargs,
+        ReduceValsIndexedKwargs,
         Sampler,
     )
     from cmomy.core.typing_compat import Unpack
+
+
+# * Utils
+def _apply_coords_policy_indexed(
+    *,
+    selected: DataT,
+    template: DataT,
+    dim: Hashable,
+    coords_policy: CoordsPolicy,
+    index: NDArrayInt,
+    group_start: NDArrayInt,
+    group_end: NDArrayInt,
+    groups: Groups | None,
+) -> DataT:
+    if coords_policy in {"first", "last"} and is_dataarray(selected):
+        # in case we passed in index, group_start, group_end as non-arrays
+        dim_select = index[group_end - 1 if coords_policy == "last" else group_start]
+
+        return replace_coords_from_isel(  # type: ignore[assignment, unused-ignore]  # error with python3.12
+            template=template,
+            selected=selected,
+            indexers={dim: dim_select},
+            drop=False,
+        )
+    if coords_policy == "group" and groups is not None:
+        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
+
+    return selected
+
+
+def _apply_coords_policy_grouped(
+    *,
+    selected: DataT,
+    template: DataT,
+    dim: Hashable,
+    coords_policy: CoordsPolicy,
+    by: NDArrayInt,
+    groups: Groups | None,
+) -> DataT:
+    if coords_policy == "group" and groups is not None:
+        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
+
+    from ._factorize import factor_by_to_index
+
+    _groups, index, start, end = factor_by_to_index(by)
+
+    return _apply_coords_policy_indexed(
+        selected=selected,
+        template=template,
+        dim=dim,
+        coords_policy=coords_policy,
+        index=index,
+        group_start=start,
+        group_end=end,
+        groups=None,
+    )
 
 
 # * Data ----------------------------------------------------------------------
@@ -590,7 +650,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = mom_params.core_dims(dim)
 
-        # Yes, doing this here and in nmpy section.
+        # Yes, doing this here and in numpy section.
         index, group_start, group_end = _validate_index(
             ndat=data.sizes[dim],
             index=index,
@@ -633,6 +693,17 @@ def reduce_data_indexed(  # noqa: PLR0913
             ),
         )
 
+        xout = _apply_coords_policy_indexed(  # type: ignore[type-var, assignment]
+            selected=xout,
+            template=data,
+            dim=dim,
+            coords_policy=coords_policy,
+            index=index,
+            group_start=group_start,
+            group_end=group_end,
+            groups=groups,
+        )
+
         if not axes_to_end:
             xout = transpose_like(
                 xout,
@@ -641,28 +712,8 @@ def reduce_data_indexed(  # noqa: PLR0913
         elif is_dataset(xout):
             xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
-        if coords_policy in {"first", "last"} and is_dataarray(data):
-            # in case we passed in index, group_start, group_end as non-arrays
-            # these will be processed correctly in the numpy call
-            # but just make sure here....
-            index, group_start, group_end = (
-                np.asarray(_, dtype=np.int64) for _ in (index, group_start, group_end)
-            )
-            dim_select = index[
-                group_end - 1 if coords_policy == "last" else group_start
-            ]
-
-            xout = replace_coords_from_isel(  # type: ignore[assignment, unused-ignore]  # error with python3.12
-                da_original=data,
-                da_selected=xout,  # type: ignore[arg-type, unused-ignore]  # pyright: ignore[reportArgumentType]
-                indexers={dim: dim_select},
-                drop=False,
-            )
-        elif coords_policy == "group" and groups is not None:
-            xout = xout.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
         if group_dim:
             xout = xout.rename({dim: group_dim})
-
         return xout
 
     # Numpy
@@ -933,6 +984,12 @@ def reduce_vals_grouped(  # noqa: PLR0913
     {keep_attrs}
     {apply_ufunc_kwargs}
 
+
+    Returns
+    -------
+    out : ndarray or DataArray or Dataset
+        Reduced data of same type as input arrays.
+
     See Also
     --------
     .reduce_vals
@@ -1091,6 +1148,312 @@ def _reduce_vals_grouped(
         casting=casting,
         order=order,
         signature=(dtype, np.int64) + (dtype,) * len(args),
+    )
+
+    return out
+
+
+# ** Indexed
+@overload
+def reduce_vals_indexed(
+    x: DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsIndexedKwargs],
+) -> DataT: ...
+# array
+@overload
+def reduce_vals_indexed(
+    x: ArrayLikeArg[FloatT],
+    *y: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: None = ...,
+    dtype: None = ...,
+    **kwargs: Unpack[ReduceValsIndexedKwargs],
+) -> NDArray[FloatT]: ...
+# out
+@overload
+def reduce_vals_indexed(
+    x: ArrayLike,
+    *y: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: NDArray[FloatT],
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsIndexedKwargs],
+) -> NDArray[FloatT]: ...
+# dtype
+@overload
+def reduce_vals_indexed(
+    x: ArrayLike,
+    *y: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: None = ...,
+    dtype: DTypeLikeArg[FloatT],
+    **kwargs: Unpack[ReduceValsIndexedKwargs],
+) -> NDArray[FloatT]: ...
+# fallback
+@overload
+def reduce_vals_indexed(
+    x: ArrayLike,
+    *y: ArrayLike,
+    weight: ArrayLike | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsIndexedKwargs],
+) -> NDArrayAny: ...
+
+
+def reduce_vals_indexed(  # noqa: PLR0913
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    index: ArrayLike,
+    group_start: ArrayLike,
+    group_end: ArrayLike,
+    scale: ArrayLike | None = None,
+    mom: Moments,
+    axis: AxisReduceWrap | MissingType = MISSING,
+    dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
+    mom_dims: MomDims | None = None,
+    mom_params: MomParamsInput = None,
+    out: NDArrayAny | None = None,
+    dtype: DTypeLike = None,
+    casting: Casting = "same_kind",
+    order: ArrayOrderCF = None,
+    parallel: bool | None = None,
+    axes_to_end: bool = True,
+    coords_policy: CoordsPolicy = "first",  # noqa: ARG001
+    group_dim: str | None = None,
+    groups: Groups | None = None,
+    keep_attrs: KeepAttrs = None,
+    apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
+) -> NDArrayAny | DataT:
+    """
+    Reduce value with grouping.
+
+    Parameters
+    ----------
+    {x_genarray}
+    {y_genarray}
+    index : ndarray
+        Index into `data.shape[axis]`.
+    group_start, group_end : ndarray
+        Start, end of index for a group.
+        ``index[group_start[group]:group_end[group]]`` are the indices for
+        group ``group``.
+    scale : ndarray, optional
+        Weights of same size as ``index``.
+    {mom}
+    {axis}
+    {dim}
+    {weight_genarray}
+    {mom_dims}
+    {mom_params}
+    {out}
+    {dtype}
+    {casting}
+    {order_cf}
+    {parallel}
+    {axes_to_end}
+    {coords_policy}
+    {group_dim}
+    {groups}
+    {keep_attrs}
+    {apply_ufunc_kwargs}
+
+    See Also
+    --------
+    .reduce_vals
+    reduce_data_indexed
+    reduce_vals_grouped
+    """
+    weight = 1.0 if weight is None else weight
+    dtype = select_dtype(x, out=out, dtype=dtype)
+
+    if is_xarray_typevar(x):
+        mom, mom_params = MomParamsXArray.factory_mom(
+            mom_params=mom_params, mom=mom, dims=mom_dims
+        )
+        dim, input_core_dims, xargs = xprepare_values_for_reduction(
+            x,
+            weight,
+            *y,
+            axis=axis,
+            dim=dim,
+            narrays=mom_params.ndim + 1,
+            dtype=dtype,
+            recast=False,
+        )
+
+        index, group_start, group_end = _validate_index(
+            ndat=x.sizes[dim],
+            index=index,
+            group_start=group_start,
+            group_end=group_end,
+        )
+
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+            _reduce_vals_indexed,
+            *xargs,
+            input_core_dims=input_core_dims,
+            output_core_dims=[mom_params.core_dims(dim)],
+            exclude_dims={dim},
+            kwargs={
+                "mom": mom,
+                "mom_params": mom_params.to_array(),
+                "index": index,
+                "group_start": group_start,
+                "group_end": group_end,
+                "scale": scale,
+                "axis_neg": -1,
+                "out": xprepare_out_for_resample_vals(
+                    target=x,
+                    out=out,
+                    dim=dim,
+                    mom_ndim=mom_params.ndim,
+                    axes_to_end=axes_to_end,
+                ),
+                "dtype": dtype,
+                "casting": casting,
+                "order": order,
+                "parallel": parallel,
+                "fastpath": is_dataarray(x),
+            },
+            keep_attrs=keep_attrs,
+            **factory_apply_ufunc_kwargs(
+                apply_ufunc_kwargs,
+                dask="parallelized",
+                output_sizes={
+                    dim: len(group_start),
+                    **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
+                },
+                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
+            ),
+        )
+
+        if not axes_to_end:
+            xout = transpose_like(
+                xout,
+                template=x,
+                append=mom_params.dims,
+            )
+        elif is_dataset(x):
+            xout = xout.transpose(
+                ...,
+                dim,
+                *mom_params.dims,
+                missing_dims="ignore",
+            )
+
+        if groups is not None:
+            xout = xout.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
+        if group_dim:
+            xout = xout.rename({dim: group_dim})
+
+        return xout
+
+    # Numpy
+    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
+    axis_neg, args = prepare_values_for_reduction(
+        x,
+        weight,
+        *y,
+        axis=axis,
+        dtype=dtype,
+        recast=False,
+        narrays=mom_params.ndim + 1,
+        axes_to_end=axes_to_end,
+    )
+
+    index, group_start, group_end = _validate_index(
+        ndat=args[0].shape[axis_neg],
+        index=index,
+        group_start=group_start,
+        group_end=group_end,
+    )
+
+    return _reduce_vals_indexed(
+        *args,
+        index=index,
+        group_start=group_start,
+        group_end=group_end,
+        scale=scale,
+        mom=mom,
+        mom_params=mom_params,
+        out=out,
+        dtype=dtype,
+        casting=casting,
+        order=order,
+        axis_neg=axis_neg,
+        parallel=parallel,
+        fastpath=True,
+    )
+
+
+def _reduce_vals_indexed(
+    # x, w, *y
+    *args: NDArrayAny,
+    index: NDArrayAny,
+    group_start: NDArrayAny,
+    group_end: NDArrayAny,
+    scale: ArrayLike | None,
+    mom: MomentsStrict,
+    mom_params: MomParamsArray,
+    axis_neg: int,
+    out: NDArrayAny | None,
+    dtype: DTypeLike,
+    casting: Casting,
+    order: ArrayOrderCF,
+    parallel: bool | None,
+    fastpath: bool = False,
+) -> NDArrayAny:
+    if not fastpath:
+        dtype = select_dtype(args[0], out=out, dtype=dtype)
+
+    if scale is None:
+        scale = np.broadcast_to(np.dtype(dtype).type(1), index.shape)
+    else:
+        scale = asarray_maybe_recast(scale, dtype=dtype, recast=False)
+        raise_if_wrong_value(
+            len(scale), len(index), "`scale` and `index` must have same length."
+        )
+
+    out = prepare_out_from_values(
+        out,
+        *args,
+        mom=mom,
+        axis_neg=axis_neg,
+        axis_new_size=len(group_start),
+        dtype=dtype,
+        order=order,
+    )
+    out.fill(0.0)
+
+    axes: AxesGUFunc = [
+        # out
+        (axis_neg - mom_params.ndim, *mom_params.axes),
+        # index,start,end,scale,
+        *((-1,),) * 4,
+        # x, weight, *y
+        *get_axes_from_values(*args, axis_neg=axis_neg),
+    ]
+
+    factory_reduce_vals_indexed(
+        mom_ndim=mom_params.ndim,
+        parallel=parallel_heuristic(parallel, size=args[0].size * mom_params.ndim),
+    )(
+        out,
+        index,
+        group_start,
+        group_end,
+        scale,  # pyright: ignore[reportArgumentType]
+        *args,
+        axes=axes,
+        casting=casting,
+        order=order,
+        signature=(dtype, np.int64, np.int64, np.int64) + (dtype,) * (len(args) + 1),
     )
 
     return out
