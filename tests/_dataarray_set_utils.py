@@ -54,7 +54,7 @@ def do_reduce_data_grouped(data, axes_to_end=False, **kwargs):
 
 def do_reduce_data_indexed(data, axes_to_end=False, **kwargs):
     by = get_by(_get_axis_size(data, **kwargs))
-    _, index, start, end = cmomy.grouped.factor_by_to_index(by)
+    index, start, end, _ = cmomy.grouped.factor_by_to_index(by)
 
     coords_policy = kwargs.pop("coords_policy", "first")
     if is_dataarray(data) and coords_policy in {"first", "last"}:
@@ -78,7 +78,7 @@ def do_reduce_vals_grouped(x, *args, axes_to_end=False, **kwargs):
 
 def do_reduce_vals_indexed(x, *args, axes_to_end=False, **kwargs):
     by = get_by(_get_axis_size(x, **kwargs))
-    _, index, start, end = cmomy.grouped.factor_by_to_index(by)
+    index, start, end, _ = cmomy.grouped.factor_by_to_index(by)
 
     coords_policy = kwargs.pop("coords_policy", "first")
     if is_dataarray(x) and coords_policy in {"first", "last"}:

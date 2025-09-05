@@ -207,7 +207,7 @@ def test_reduce_data_grouped(rng, policy) -> None:
     kws = {"dim": dim, "coords_policy": policy}
 
     if policy in {"first", "last"}:
-        _, index, start, end = cmomy.grouped.factor_by_to_index(by)
+        index, start, end, _ = cmomy.grouped.factor_by_to_index(by)
         expected = cmomy.grouped.reduce_data_indexed(
             data, **kws, index=index, group_start=start, group_end=end
         )

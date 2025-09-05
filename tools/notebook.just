@@ -46,7 +46,6 @@ test-notebook *files=NOTEBOOKS:
     {{ UVRUN }} --group="test-notebook" --no-dev \
     pytest --nbval --nbval-current-env \
     --nbval-sanitize-with=config/nbval.ini \
-    --dist loadscope \
     -x {{ files }}
 
 [group("notebook")]

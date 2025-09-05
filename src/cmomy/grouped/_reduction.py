@@ -125,7 +125,7 @@ def _apply_coords_policy_grouped(
 
     from ._factorize import factor_by_to_index
 
-    _groups, index, start, end = factor_by_to_index(by)
+    index, start, end, _ = factor_by_to_index(by)
 
     return _apply_coords_policy_indexed(
         selected=selected,
@@ -288,7 +288,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     This has the added benefit of working with non integer groups as well
 
     >>> by = ["a", "a", None, "b", "b"]
-    >>> groups, codes = cmomy.grouped.factor_by(by)
+    >>> codes, groups = cmomy.grouped.factor_by(by)
     >>> reduce_data_grouped(xout, mom_ndim=1, dim="rec", by=codes, groups=groups)
     <xarray.DataArray (rec: 2, mom: 3)> Size: 48B
     array([[2., 1., 1.],
@@ -613,7 +613,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     >>> import cmomy
     >>> data = np.ones((5, 3))
     >>> by = ["a", "a", "b", "b", "c"]
-    >>> groups, index, start, end = cmomy.grouped.factor_by_to_index(by)
+    >>> index, start, end, groups = cmomy.grouped.factor_by_to_index(by)
     >>> reduce_data_indexed(
     ...     data, mom_ndim=1, axis=0, index=index, group_start=start, group_end=end
     ... )
@@ -1026,8 +1026,8 @@ def reduce_vals_grouped(  # noqa: PLR0913
     mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
     axis_neg, args = prepare_values_for_reduction(
         x,
-        y,
-        *weight,
+        weight,
+        *y,
         axis=axis,
         dtype=dtype,
         recast=False,

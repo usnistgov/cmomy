@@ -99,7 +99,7 @@ def test_reduce_data_grouped_indexed(rng, shape, mom_ndim, by):
     check = cmomy.reduce_data_grouped(data, by=by, axis=0, mom_ndim=mom_ndim)
     np.testing.assert_allclose(check, expected)
 
-    _group, index, start, end = cmomy.grouped.factor_by_to_index(by)
+    index, start, end, _group = cmomy.grouped.factor_by_to_index(by)
 
     check = cmomy.grouped.reduce_data_indexed(
         data, index=index, group_start=start, group_end=end, axis=0, mom_ndim=mom_ndim
@@ -162,7 +162,7 @@ def test_reduce_vals_grouped(rng, shapex, shapey, shapew, mom, by) -> None:
     )
     np.testing.assert_allclose(expected, check)
 
-    _group, index, start, end = cmomy.grouped.factor_by_to_index(by)
+    index, start, end, _group = cmomy.grouped.factor_by_to_index(by)
 
     check = cmomy.grouped.reduce_vals_indexed(
         x,
@@ -181,7 +181,7 @@ def test_reduce_vals_grouped(rng, shapex, shapey, shapew, mom, by) -> None:
 def test_indexed_bad_scale(rng: np.random.Generator) -> None:
     data = rng.random((10, 2, 3))
     by = [0] * 5 + [1] * 5
-    _group, index, start, end = cmomy.grouped.factor_by_to_index(by)
+    index, start, end, _group = cmomy.grouped.factor_by_to_index(by)
     # bad scale
     with pytest.raises(ValueError, match=r".*`scale` and `index`.*"):
         _ = cmomy.grouped.reduce_data_indexed(

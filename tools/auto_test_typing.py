@@ -271,7 +271,7 @@ central_dataset_any: CentralMomentsDataAny = CentralMomentsData(data_dataset_any
 freq = cmomy.random_freq(ndat=10, nrep=2)
 sampler = cmomy.resample.IndexSampler(freq=freq)
 by = [0] * 5 + [1] * 5
-_, index, group_start, group_end = cmomy.grouped.factor_by_to_index(by)
+index, group_start, group_end, _ = cmomy.grouped.factor_by_to_index(by)
 """
 
 
