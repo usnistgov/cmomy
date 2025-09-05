@@ -234,7 +234,7 @@ def bootstrap_confidence_interval(
             input_core_dims.append(["_rep_jack"])
 
         xout: DataT = (
-            xr.apply_ufunc(
+            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 _func,
                 *args,
                 input_core_dims=input_core_dims,

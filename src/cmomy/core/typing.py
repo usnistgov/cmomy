@@ -28,7 +28,7 @@ from .docstrings import docfiller
 from .typing_compat import EllipsisType, TypedDict, TypeVar
 
 if TYPE_CHECKING:
-    from cmomy.resample.sampler import IndexSampler
+    from cmomy.resample import IndexSampler
     from cmomy.wrapper import CentralMomentsArray, CentralMomentsData  # noqa: F401
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
@@ -356,6 +356,10 @@ class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
 
 
+class _CoordsPolicyKwargs(TypedDict, total=False):
+    coords_policy: CoordsPolicy
+
+
 class _GroupsKwargs(TypedDict, total=False):
     group_dim: str | None
     groups: Groups | None
@@ -366,8 +370,6 @@ class _IndexedKwargs(TypedDict, total=False):
     group_start: Required[ArrayLike]
     group_end: Required[ArrayLike]
     scale: ArrayLike | None
-
-    coords_policy: CoordsPolicy
 
 
 class _DataKwargs(
@@ -448,6 +450,7 @@ class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
     _DataCFKwargs,
     _MoveAxisToEndKwargs,
     _GroupsKwargs,
+    _CoordsPolicyKwargs,
     total=False,
     closed=True,
 ):
@@ -459,6 +462,7 @@ class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
     _MoveAxisToEndKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
+    _CoordsPolicyKwargs,
     total=False,
     closed=True,
 ):
@@ -469,6 +473,7 @@ class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _MoveAxisToEndKwargs,
     _GroupsKwargs,
+    _CoordsPolicyKwargs,
     total=False,
     closed=True,
 ):
@@ -480,6 +485,7 @@ class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
     _MoveAxisToEndKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
+    _CoordsPolicyKwargs,
     total=False,
     closed=True,
 ):

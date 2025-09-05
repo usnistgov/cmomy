@@ -207,7 +207,7 @@ def reduce_vals(
             recast=False,
         )
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
@@ -439,7 +439,7 @@ def reduce_data(  # noqa: PLR0913
                 raise ValueError(msg)
 
             if (use_map is None or use_map) and (dim is None or len(dim) > 1):
-                return data.map(
+                return data.map(  # pyright: ignore[reportUnknownMemberType]
                     reduce_data,
                     keep_attrs=keep_attrs if keep_attrs is None else bool(keep_attrs),
                     mom_params=mom_params,
@@ -460,16 +460,16 @@ def reduce_data(  # noqa: PLR0913
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
                 dim = (dim,) if isinstance(dim, str) else dim  # type: ignore[redundant-expr, unused-ignore]
-                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable]
+                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable, reportUnknownVariableType, reportUnknownArgumentType]
                     return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
 
         axis, dim = mom_params.select_axis_dim_mult(
             data,
             axis=axis,
-            dim=dim,
+            dim=dim,  # pyright: ignore[reportUnknownArgumentType]
         )
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data,
             data,
             input_core_dims=[mom_params.core_dims(*dim)],

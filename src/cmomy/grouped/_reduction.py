@@ -210,6 +210,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
     axes_to_end: bool = False,
+    coords_policy: CoordsPolicy = "group",
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
@@ -235,6 +236,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     {order_cf}
     {axes_to_end}
     {parallel}
+    {coords_policy}
     {group_dim}
     {groups}
     {keep_attrs}
@@ -344,6 +346,15 @@ def reduce_data_grouped(  # noqa: PLR0913
             ),
         )
 
+        xout = _apply_coords_policy_grouped(  # type: ignore[type-var,assignment]  # no clue why?
+            selected=xout,
+            template=data,
+            dim=dim,
+            coords_policy=coords_policy,
+            by=by,
+            groups=groups,
+        )
+
         if not axes_to_end:
             xout = transpose_like(
                 xout,
@@ -352,8 +363,6 @@ def reduce_data_grouped(  # noqa: PLR0913
         elif is_dataset(xout):
             xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
-        if groups is not None:
-            xout = xout.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
         if group_dim:
             xout = xout.rename({dim: group_dim})
 
@@ -887,6 +896,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
     axes_to_end: bool = True,
+    coords_policy: CoordsPolicy = "group",
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
@@ -912,6 +922,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     {order_cf}
     {parallel}
     {axes_to_end}
+    {coords_policy}
     {group_dim}
     {groups}
     {keep_attrs}
@@ -983,6 +994,15 @@ def reduce_vals_grouped(  # noqa: PLR0913
             ),
         )
 
+        xout = _apply_coords_policy_grouped(  # type: ignore[type-var,assignment]  # no clue why?
+            selected=xout,
+            template=x,
+            dim=dim,
+            coords_policy=coords_policy,
+            by=by,
+            groups=groups,
+        )
+
         if not axes_to_end:
             xout = transpose_like(
                 xout,
@@ -997,8 +1017,6 @@ def reduce_vals_grouped(  # noqa: PLR0913
                 missing_dims="ignore",
             )
 
-        if groups is not None:
-            xout = xout.assign_coords({dim: (dim, groups)})  # pyright: ignore[reportUnknownMemberType]
         if group_dim:
             xout = xout.rename({dim: group_dim})
 
@@ -1008,8 +1026,8 @@ def reduce_vals_grouped(  # noqa: PLR0913
     mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
     axis_neg, args = prepare_values_for_reduction(
         x,
-        weight,
-        *y,
+        y,
+        *weight,
         axis=axis,
         dtype=dtype,
         recast=False,

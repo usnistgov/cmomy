@@ -502,7 +502,7 @@ def select_moment(
             else:
                 output_core_dims = [[]]
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _select_moment,
             data,
             input_core_dims=input_core_dims,
@@ -517,13 +517,13 @@ def select_moment(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes=output_sizes,
-                output_dtypes=data.dtype
+                output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
                 if is_dataarray(data)  # type: ignore[redundant-expr]
                 else np.float64,
             ),
         )
         if coords_combined is not None and dim_combined in xout.dims:
-            xout = xout.assign_coords(
+            xout = xout.assign_coords(  # pyright: ignore[reportUnknownMemberType]
                 {dim_combined: (dim_combined, list(coords_combined))}
             )
         return xout
@@ -726,7 +726,7 @@ def assign_moment(
                 # fallback
                 input_core_dims.append([])
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _assign_moment,
             data,
             *moment_kwargs.values(),
@@ -742,7 +742,7 @@ def assign_moment(
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=data.dtype
+                output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
                 if is_dataarray(data)  # type: ignore[redundant-expr]
                 else np.float64,
             ),
@@ -963,7 +963,7 @@ def vals_to_data(
                 out_, *args_ = args
                 return _vals_to_data(*args_, out=out_, **kwargs)
 
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
+        return xr.apply_ufunc(  # type: ignore[no-any-return]  # pyright: ignore[reportUnknownMemberType]
             _func,
             *args,
             input_core_dims=input_core_dims,

@@ -1,39 +1,8 @@
 """
-Routine to perform resampling (:mod:`cmomy.resample`)
+Routine to perform resampling (:mod:`~cmomy.resample`)
 =====================================================
 """
 
-from cmomy._lib.utils import freq_to_index_start_end_scales
+import lazy_loader as _lazy  # pyright: ignore[reportMissingTypeStubs]
 
-from .resample import (
-    jackknife_data,
-    jackknife_vals,
-    resample_data,
-    resample_vals,
-)
-from .sampler import (
-    IndexSampler,
-    factory_sampler,
-    freq_to_indices,
-    indices_to_freq,
-    jackknife_freq,
-    random_freq,
-    random_indices,
-    select_ndat,
-)
-
-__all__ = [
-    "IndexSampler",
-    "factory_sampler",
-    "freq_to_index_start_end_scales",
-    "freq_to_indices",
-    "indices_to_freq",
-    "jackknife_data",
-    "jackknife_freq",
-    "jackknife_vals",
-    "random_freq",
-    "random_indices",
-    "resample_data",
-    "resample_vals",
-    "select_ndat",
-]
+__getattr__, __dir__, __all__ = _lazy.attach_stub(__name__, __file__)  # pyright: ignore[reportUnknownVariableType]

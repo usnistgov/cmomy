@@ -53,13 +53,11 @@ from cmomy.factory import (
     parallel_heuristic,
 )
 
-from .sampler import (
+from ._sampler import (
     factory_sampler,
 )
 
 if TYPE_CHECKING:
-    from typing import Any
-
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from cmomy.core.typing import (
@@ -1106,12 +1104,8 @@ def jackknife_vals(  # noqa: PLR0913
             narrays=mom_params.ndim + 1,
         )
 
-        def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-            x, weight, *y, data_reduced = args
-            return _jackknife_vals(x, weight, *y, data_reduced=data_reduced, **kwargs)
-
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
-            _func,
+            _jackknife_vals,
             *xargs,
             data_reduced,
             input_core_dims=[*input_core_dims, mom_params.dims],  # type: ignore[has-type]
@@ -1172,7 +1166,7 @@ def jackknife_vals(  # noqa: PLR0913
 
     return _jackknife_vals(
         *args,
-        data_reduced=data_reduced,
+        data_reduced,
         mom=mom,
         mom_params=mom_params,
         axis_neg=axis_neg,
@@ -1186,10 +1180,12 @@ def jackknife_vals(  # noqa: PLR0913
 
 
 def _jackknife_vals(
-    x: NDArrayAny,
-    weight: NDArrayAny,
-    *y: NDArrayAny,
-    data_reduced: NDArrayAny,
+    # x, weight, *y, data_reduced
+    *args: NDArrayAny,
+    # x: NDArrayAny,
+    # weight: NDArrayAny,
+    # *y: NDArrayAny,
+    # data_reduced: NDArrayAny,
     mom: MomentsStrict,
     mom_params: MomParamsArray,
     axis_neg: int,
@@ -1200,9 +1196,9 @@ def _jackknife_vals(
     parallel: bool | None,
     fastpath: bool,
 ) -> NDArrayAny:
-    args = [x, weight, *y]
+    args, data_reduced = args[:-1], args[-1]
     if not fastpath:
-        dtype = select_dtype(x, out=out, dtype=dtype)
+        dtype = select_dtype(args[0], out=out, dtype=dtype)
 
     raise_if_dataset(data_reduced, "Passed Dataset for reduce_data in array context.")
     raise_if_wrong_value(
@@ -1226,7 +1222,7 @@ def _jackknife_vals(
             *args,
             mom=mom,
             axis_neg=axis_neg,
-            axis_new_size=x.shape[axis_neg],
+            axis_new_size=args[0].shape[axis_neg],
             dtype=dtype,
             order=order,
         )

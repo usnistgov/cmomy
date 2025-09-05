@@ -257,6 +257,7 @@ module = [
     "numba.*",
     "scipy.*",
     "scipy.special.*",
+
     "scipy.stats.*",
     "dask.*",
 ]
@@ -291,7 +292,7 @@ exclude = [
 pythonVersion = "3.11"
 typeCheckingMode = "standard"
 strict = [
-    "src/*.py",
+    "src/cmomy/*.py",
     "src/cmomy/core/*.py",
     "src/cmomy/grouped/*.py",
     "src/cmomy/resample/*.py",

@@ -283,7 +283,7 @@ def construct_rolling_window_array(
         # this avoids it being placed after any moment dimensions...
         return xout.transpose(*window_dim, ...)
 
-    return construct_rolling_window_array(
+    return construct_rolling_window_array(  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
         x=xr.DataArray(x),
         window=window,
         axis=axis,
@@ -438,7 +438,7 @@ def rolling_data(  # noqa: PLR0913
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = [mom_params.core_dims(dim)]
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_data,
             data,
             input_core_dims=core_dims,
@@ -711,7 +711,7 @@ def rolling_vals(  # noqa: PLR0913
             recast=False,
         )
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_vals,
             *xargs,
             input_core_dims=input_core_dims,
@@ -1000,7 +1000,7 @@ def rolling_exp_data(  # noqa: PLR0913
         else:
             alpha_axis = -1
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_exp_data,
             data,
             alpha,
@@ -1312,7 +1312,7 @@ def rolling_exp_vals(  # noqa: PLR0913
             recast=False,
         )
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _rolling_exp_vals,
             *xargs,
             input_core_dims=input_core_dims,

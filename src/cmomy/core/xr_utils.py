@@ -246,14 +246,17 @@ def _replace_coords_from_isel_dataset(
             var_indexers = {k: v for k, v in indexers.items() if k in var.dims}
             if var_indexers:
                 new_var = var.isel(var_indexers)
-                if drop and var.ndim == 0 and name in coord_names:
+                if drop and new_var.ndim == 0 and name in coord_names:
                     coord_names.remove(name)
                     continue
             else:
                 new_var = var
 
         variables[name] = new_var
-        dims.update(zip(new_var.dims, new_var.shape, strict=True))
+        if len(new_var.dims) != len(new_var.shape):  # pragma: no cover
+            msg = "dims and shape have different size"
+            raise ValueError(msg)
+        dims.update(zip(new_var.dims, new_var.shape))
 
     return template._construct_direct(  # pyright: ignore[reportUnknownMemberType]
         variables=variables,

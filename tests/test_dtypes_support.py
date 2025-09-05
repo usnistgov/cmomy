@@ -101,6 +101,18 @@ def _do_test(func, *args, expected, **kwargs):
             (2, 1, 2, 3),
         ),
         (
+            cmomy.reduce_vals_indexed,
+            {
+                "mom": 2,
+                "axes_to_end": False,
+                "axis": 0,
+                "index": range(5),
+                "group_start": [0, 2],
+                "group_end": [2, 5],
+            },
+            (2, 1, 2, 3),
+        ),
+        (
             cmomy.resample_data,
             {
                 "mom_ndim": 1,

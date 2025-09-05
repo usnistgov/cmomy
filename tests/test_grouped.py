@@ -7,6 +7,7 @@ from contextlib import nullcontext
 
 import numpy as np
 import pytest
+import xarray as xr
 
 import cmomy
 
@@ -174,7 +175,6 @@ def test_reduce_vals_grouped(rng, shapex, shapey, shapew, mom, by) -> None:
         group_start=start,
         group_end=end,
     )
-
     np.testing.assert_allclose(expected, check)
 
 
@@ -206,3 +206,87 @@ def test_grouped_bad_by(by: list[int]) -> None:
     data = np.zeros((10, 2, 4))
     with pytest.raises(ValueError, match=r".*Wrong length of `by`.*"):
         cmomy.reduce_data_grouped(data, mom_ndim=1, by=by, axis=0)
+
+
+@pytest.mark.parametrize(
+    ("selected", "template"),
+    [
+        (
+            xr.DataArray([0, 1], dims="a"),
+            xr.DataArray(range(6), dims="a", coords={"a": list("abcdef")}),
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    ("index", "start", "end", "groups"),
+    [
+        (np.arange(6), np.array([0, 3]), np.array([3, 6]), np.array(["one", "two"])),
+    ],
+)
+@pytest.mark.parametrize(
+    ("policy", "expected"),
+    [
+        ("first", ("a", "d")),
+        ("last", ("c", "f")),
+        ("group", ("one", "two")),
+        (None, [0, 1]),
+    ],
+)
+def test__apply_coords_policy_indexed(
+    selected, template, index, start, end, groups, policy, expected
+) -> None:
+    from cmomy.grouped._reduction import _apply_coords_policy_indexed
+
+    out = _apply_coords_policy_indexed(
+        selected=selected,
+        template=template,
+        dim="a",
+        coords_policy=policy,
+        index=index,
+        group_start=start,
+        group_end=end,
+        groups=groups,
+    )
+
+    assert np.all(out.coords["a"].values == np.array(expected))
+
+
+@pytest.mark.parametrize(
+    ("selected", "template"),
+    [
+        (
+            xr.DataArray([0, 1], dims="a"),
+            xr.DataArray(range(6), dims="a", coords={"a": list("abcdef")}),
+        ),
+    ],
+)
+@pytest.mark.parametrize(
+    ("by", "groups"),
+    [
+        (np.array([0, 0, 0, 1, 1, 1]), np.array(["one", "two"])),
+    ],
+)
+@pytest.mark.parametrize(
+    ("policy", "expected"),
+    [
+        ("first", ("a", "d")),
+        ("last", ("c", "f")),
+        ("group", ("one", "two")),
+        (None, [0, 1]),
+    ],
+)
+def test__apply_coords_policy_grouped(
+    selected, template, by, groups, policy, expected
+) -> None:
+    from cmomy.grouped._reduction import _apply_coords_policy_grouped
+
+    out = _apply_coords_policy_grouped(
+        selected=selected,
+        template=template,
+        dim="a",
+        coords_policy=policy,
+        by=by,
+        groups=groups,
+    )
+
+    assert np.all(out.coords["a"].values == np.array(expected))

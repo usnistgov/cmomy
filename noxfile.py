@@ -82,7 +82,7 @@ PYTHON_DEFAULT_VERSION = Path(".python-version").read_text(encoding="utf-8").str
 
 UVX_LOCK_CONSTRAINTS = "requirements/lock/uvx-tools.txt"
 UVX_MIN_CONSTRAINTS = "requirements/uvx-tools.txt"
-PIP_COMPILE_CONFIG = "requirements/uv.toml"
+PIP_COMPILE_CONFIG = None
 
 
 class SessionOptionsDict(TypedDict, total=False):
@@ -339,7 +339,7 @@ def install_dependencies(
             "uv",
             "pip",
             "sync",
-            f"--config-file={PIP_COMPILE_CONFIG}",
+            *((f"--config-file={PIP_COMPILE_CONFIG}",) if PIP_COMPILE_CONFIG else ()),
             infer_requirement_path(
                 name,
                 ext=".txt",
