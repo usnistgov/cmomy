@@ -139,6 +139,14 @@ def _apply_coords_policy_grouped(
     )
 
 
+def _optional_group_dim(
+    data: DataT, dim: Hashable, group_dim: str | None = None
+) -> DataT:
+    if group_dim:
+        return data.rename({dim: group_dim})
+    return data
+
+
 # * Data ----------------------------------------------------------------------
 # ** Grouped
 @overload
@@ -363,10 +371,7 @@ def reduce_data_grouped(  # noqa: PLR0913
         elif is_dataset(xout):
             xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
-        if group_dim:
-            xout = xout.rename({dim: group_dim})
-
-        return xout
+        return _optional_group_dim(xout, dim, group_dim)
 
     # Numpy
     axis, mom_params, data = prepare_data_for_reduction(
@@ -719,9 +724,7 @@ def reduce_data_indexed(  # noqa: PLR0913
         elif is_dataset(xout):
             xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
-        if group_dim:
-            xout = xout.rename({dim: group_dim})
-        return xout
+        return _optional_group_dim(xout, dim, group_dim)
 
     # Numpy
     axis, mom_params, data = prepare_data_for_reduction(
@@ -1017,10 +1020,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
                 missing_dims="ignore",
             )
 
-        if group_dim:
-            xout = xout.rename({dim: group_dim})
-
-        return xout
+        return _optional_group_dim(xout, dim, group_dim)
 
     # Numpy
     mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
@@ -1176,7 +1176,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
     axes_to_end: bool = True,
-    coords_policy: CoordsPolicy = "first",  # noqa: ARG001
+    coords_policy: CoordsPolicy = "first",
     group_dim: str | None = None,
     groups: Groups | None = None,
     keep_attrs: KeepAttrs = None,
@@ -1285,6 +1285,17 @@ def reduce_vals_indexed(  # noqa: PLR0913
             ),
         )
 
+        xout = _apply_coords_policy_indexed(  # type: ignore[type-var, assignment]
+            selected=xout,
+            template=x,
+            dim=dim,
+            coords_policy=coords_policy,
+            index=index,
+            group_start=group_start,
+            group_end=group_end,
+            groups=groups,
+        )
+
         if not axes_to_end:
             xout = transpose_like(
                 xout,
@@ -1299,12 +1310,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
                 missing_dims="ignore",
             )
 
-        if groups is not None:
-            xout = xout.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
-        if group_dim:
-            xout = xout.rename({dim: group_dim})
-
-        return xout
+        return _optional_group_dim(xout, dim, group_dim)
 
     # Numpy
     mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)

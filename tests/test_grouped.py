@@ -290,3 +290,19 @@ def test__apply_coords_policy_grouped(
     )
 
     assert np.all(out.coords["a"].values == np.array(expected))
+
+
+@pytest.mark.parametrize("data", [xr.DataArray([1, 2, 3], dims="a")])
+@pytest.mark.parametrize(
+    "group_dim",
+    [None, "b"],
+)
+def test__optional_group_dim(data, group_dim) -> None:
+    from cmomy.grouped._reduction import _optional_group_dim
+
+    out = _optional_group_dim(data, "a", group_dim)
+
+    if group_dim is None:
+        assert out.dims == data.dims
+    else:
+        assert out.dims == (group_dim,)
