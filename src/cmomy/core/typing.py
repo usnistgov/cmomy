@@ -372,6 +372,10 @@ class _IndexedKwargs(TypedDict, total=False):
     scale: ArrayLike | None
 
 
+class _SamplerKwargs(TypedDict, total=False):
+    sampler: Required[Sampler]
+
+
 class _DataKwargs(
     _MomParamsKwargs,
     _MomNDimKwargs,
@@ -497,6 +501,7 @@ class ResampleDataKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
     _MoveAxisToEndKwargs,
     _RepDimKwargs,
+    _SamplerKwargs,
     total=False,
     closed=True,
 ):
@@ -507,6 +512,7 @@ class ResampleValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _MoveAxisToEndKwargs,
     _RepDimKwargs,
+    _SamplerKwargs,
     total=False,
     closed=True,
 ):

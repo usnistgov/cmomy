@@ -96,7 +96,6 @@ if TYPE_CHECKING:
 def resample_data(
     data: DataT,
     *,
-    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -106,7 +105,6 @@ def resample_data(
 def resample_data(
     data: ArrayLikeArg[FloatT],
     *,
-    sampler: Sampler,
     out: None = ...,
     dtype: None = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -116,7 +114,6 @@ def resample_data(
 def resample_data(
     data: ArrayLike,
     *,
-    sampler: Sampler,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -126,7 +123,6 @@ def resample_data(
 def resample_data(
     data: ArrayLike,
     *,
-    sampler: Sampler,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[ResampleDataKwargs],
@@ -136,7 +132,6 @@ def resample_data(
 def resample_data(
     data: ArrayLike,
     *,
-    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleDataKwargs],
@@ -354,7 +349,6 @@ def resample_vals(
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -364,7 +358,6 @@ def resample_vals(
 def resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
-    sampler: Sampler,
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: None = ...,
@@ -375,7 +368,6 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    sampler: Sampler,
     weight: ArrayLike | None = ...,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
@@ -386,7 +378,6 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    sampler: Sampler,
     weight: ArrayLike | None = ...,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
@@ -397,7 +388,6 @@ def resample_vals(
 def resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
-    sampler: Sampler,
     weight: ArrayLike | None = ...,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
