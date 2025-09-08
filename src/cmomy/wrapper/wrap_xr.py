@@ -786,40 +786,6 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 
-        elif coords_policy in {"first", "last"}:
-            from cmomy.grouped import factor_by_to_index, reduce_data_indexed
-
-            if isinstance(by, str):
-                index, group_start, group_end, groups_ = factor_by_to_index(
-                    self._obj[by].to_numpy()  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
-                )
-            else:
-                index, group_start, group_end, groups_ = factor_by_to_index(by)
-
-            if groups is None:
-                groups = groups_
-
-            data = reduce_data_indexed(
-                self._obj,
-                mom_ndim=self.mom_ndim,
-                mom_dims=self.mom_dims,
-                index=index,
-                group_start=group_start,
-                group_end=group_end,
-                axis=axis,
-                dim=dim,
-                axes_to_end=axes_to_end,
-                parallel=parallel,
-                dtype=dtype,
-                out=out,
-                casting=casting,
-                order=order,
-                coords_policy=coords_policy,
-                group_dim=group_dim,
-                groups=groups,
-                keep_attrs=keep_attrs,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            )
         else:
             from cmomy.grouped import reduce_data_grouped
 
@@ -846,6 +812,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 out=out,
                 casting=casting,
                 order=order,
+                coords_policy=coords_policy,
                 group_dim=group_dim,
                 groups=groups,
                 keep_attrs=keep_attrs,
