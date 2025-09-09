@@ -285,7 +285,7 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
 def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2,), dtype=dtype_base)
     if cls == CentralMomentsData:
-        data = xr.DataArray(data)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
+        data = xr.DataArray(data)  # pylint: disable=redefined-variable-type
 
     func = partial(cls, data, mom_ndim=1, dtype=dtype)
     if dtype is None:

@@ -20,18 +20,13 @@ from .core.array_utils import (
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.moment_params import (
-    MomParamsArray,
-    MomParamsXArray,
     MomParamsXArrayOptional,
 )
 from .core.prepare import (
-    optional_prepare_out_for_resample_data,
-    prepare_data_for_reduction,
-    prepare_out_from_values,
-    prepare_values_for_reduction,
-    xprepare_out_for_resample_data,
-    xprepare_out_for_resample_vals,
-    xprepare_values_for_reduction,
+    PrepareDataArray,
+    PrepareDataXArray,
+    PrepareValsArray,
+    PrepareValsXArray,
 )
 from .core.utils import (
     mom_to_mom_shape,
@@ -427,7 +422,7 @@ def rolling_data(  # noqa: PLR0913
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray_typevar(data):
-        mom_params = MomParamsXArray.factory(
+        prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             axes=mom_axes,
@@ -435,6 +430,7 @@ def rolling_data(  # noqa: PLR0913
             data=data,
             default_ndim=1,
         )
+        mom_params = prep.mom_params
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = [mom_params.core_dims(dim)]
 
@@ -446,17 +442,16 @@ def rolling_data(  # noqa: PLR0913
             kwargs={
                 "window": window,
                 "axis": -(mom_params.ndim + 1),
-                "mom_params": mom_params.to_array(),
                 "min_periods": min_periods,
                 "center": center,
                 "zero_missing_weights": zero_missing_weights,
-                "out": xprepare_out_for_resample_data(
+                "out": prep.out_resample(
                     out,
-                    mom_params=mom_params,
                     axis=axis,
                     axes_to_end=axes_to_end,
                     data=data,
                 ),
+                "prep": prep.prepare_array,
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
@@ -482,22 +477,23 @@ def rolling_data(  # noqa: PLR0913
         return xout
 
     # Numpy
-    axis, mom_params, data = prepare_data_for_reduction(
-        data,
+    prep, axis, data = PrepareDataArray.factory(
+        mom_params=mom_params,
+        ndim=mom_ndim,
+        axes=mom_axes,
+        default_ndim=1,
+    ).data_for_reduction(
+        data=data,
         axis=axis,
-        mom_params=MomParamsArray.factory(
-            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
-        ),
-        dtype=dtype,
-        recast=False,
         axes_to_end=axes_to_end,
+        dtype=dtype,
     )
 
     return _rolling_data(
         data,
         window=window,
         axis=axis,
-        mom_params=mom_params,
+        prep=prep,
         min_periods=min_periods,
         center=center,
         zero_missing_weights=zero_missing_weights,
@@ -515,7 +511,7 @@ def _rolling_data(
     *,
     window: int,
     axis: int,
-    mom_params: MomParamsArray,
+    prep: PrepareDataArray,
     min_periods: int | None,
     center: bool,
     zero_missing_weights: bool,
@@ -526,13 +522,13 @@ def _rolling_data(
     parallel: bool | None,
     fastpath: bool = False,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(data, out=out, dtype=dtype)
+    dtype = select_dtype(data, out=out, dtype=dtype, fastpath=fastpath)
+    mom_params = prep.mom_params
 
     if (shift := (-window // 2) + 1 if center else None) is not None:
         data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
 
-    out = optional_prepare_out_for_resample_data(
+    out = prep.out_resample(
         data=data,
         out=out,
         axis=axis,
@@ -697,10 +693,11 @@ def rolling_vals(  # noqa: PLR0913
     dtype = select_dtype(x, out=out, dtype=dtype)
 
     if is_xarray_typevar(x):
-        mom, mom_params = MomParamsXArray.factory_mom(
-            mom, mom_params=mom_params, dims=mom_dims
+        prep, mom = PrepareValsXArray.factory_mom(
+            mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
-        dim, input_core_dims, xargs = xprepare_values_for_reduction(
+        mom_params = prep.mom_params
+        dim, input_core_dims, xargs = prep.values_for_reduction(
             x,
             weight,
             *y,
@@ -708,7 +705,6 @@ def rolling_vals(  # noqa: PLR0913
             dim=dim,
             narrays=mom_params.ndim + 1,
             dtype=dtype,
-            recast=False,
         )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -718,17 +714,16 @@ def rolling_vals(  # noqa: PLR0913
             output_core_dims=[mom_params.core_dims(dim)],
             kwargs={
                 "mom": mom,
-                "mom_params": mom_params.to_array(),
+                "prep": prep.prepare_array,
                 "axis_neg": -1,
                 "window": window,
                 "min_periods": min_periods,
                 "center": center,
                 "zero_missing_weights": zero_missing_weights,
-                "out": xprepare_out_for_resample_vals(
+                "out": prep.out_resample(
                     target=x,
                     out=out,
                     dim=dim,
-                    mom_ndim=mom_params.ndim,
                     axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
@@ -756,22 +751,23 @@ def rolling_vals(  # noqa: PLR0913
         return xout
 
     # Numpy
-    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
-    axis_neg, args = prepare_values_for_reduction(
+    prep, mom = PrepareValsArray.factory_mom(
+        mom=mom, mom_params=mom_params, recast=False
+    )
+    axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         *y,
         axis=axis,
-        narrays=mom_params.ndim + 1,
-        dtype=dtype,
-        recast=False,
+        narrays=prep.mom_params.ndim + 1,
         axes_to_end=axes_to_end,
+        dtype=dtype,
     )
 
     return _rolling_vals(
         *args,
         mom=mom,
-        mom_params=mom_params,
+        prep=prep,
         axis_neg=axis_neg,
         window=window,
         min_periods=min_periods,
@@ -790,7 +786,7 @@ def _rolling_vals(
     # x, weight, *y
     *args: NDArrayAny,
     mom: MomentsStrict,
-    mom_params: MomParamsArray,
+    prep: PrepareValsArray,
     window: int,
     axis_neg: int,
     min_periods: int | None,
@@ -804,9 +800,7 @@ def _rolling_vals(
     fastpath: bool = False,
 ) -> NDArrayAny:
     # Numpy
-    if not fastpath:
-        dtype = select_dtype(args[0], out=out, dtype=dtype)
-
+    dtype = select_dtype(args[0], out=out, dtype=dtype, fastpath=fastpath)
     axes_args: AxesGUFunc = get_axes_from_values(*args, axis_neg=axis_neg)
 
     if (shift := (-window // 2) + 1 if center else None) is not None:
@@ -815,7 +809,7 @@ def _rolling_vals(
             for arg, axes in zip(args, axes_args)
         )
 
-    out = prepare_out_from_values(
+    out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -827,7 +821,7 @@ def _rolling_vals(
 
     axes: AxesGUFunc = [
         # out
-        (axis_neg - mom_params.ndim, *mom_params.axes),
+        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
         # window, min_periods
         (),
         (),
@@ -836,8 +830,8 @@ def _rolling_vals(
     ]
 
     factory_rolling_vals(
-        mom_ndim=mom_params.ndim,
-        parallel=parallel_heuristic(parallel, args[0].size * mom_params.ndim),
+        mom_ndim=prep.mom_params.ndim,
+        parallel=parallel_heuristic(parallel, args[0].size * prep.mom_params.ndim),
     )(
         out,
         window,
@@ -851,10 +845,12 @@ def _rolling_vals(
 
     if shift is not None:
         valid = [slice(None)] * out.ndim
-        valid[axis_neg - mom_params.ndim] = slice(-shift, None)
+        valid[axis_neg - prep.mom_params.ndim] = slice(-shift, None)
         out = out[tuple(valid)]
 
-    return _optional_zero_missing_weight(out, mom_params.axes, zero_missing_weights)
+    return _optional_zero_missing_weight(
+        out, prep.mom_params.axes, zero_missing_weights
+    )
 
 
 # * Move Exponential
@@ -977,16 +973,17 @@ def rolling_exp_data(  # noqa: PLR0913
     dtype = select_dtype(data, out=out, dtype=dtype)
 
     if is_xarray_typevar(data):
-        mom_params = MomParamsXArray.factory(
+        prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             dims=mom_dims,
             axes=mom_axes,
             data=data,
             default_ndim=1,
+            recast=False,
         )
-        axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
-        core_dims = mom_params.core_dims(dim)
+        axis, dim = prep.mom_params.select_axis_dim(data, axis=axis, dim=dim)
+        core_dims = prep.mom_params.core_dims(dim)
 
         if not is_xarray(alpha):
             # prepare array alpha
@@ -1007,21 +1004,20 @@ def rolling_exp_data(  # noqa: PLR0913
             input_core_dims=[core_dims, [dim]],
             output_core_dims=[core_dims],
             kwargs={
-                "axis": -(mom_params.ndim + 1),
+                "axis": -(prep.mom_params.ndim + 1),
                 "alpha_axis": alpha_axis,
-                "mom_params": mom_params.to_array(),
+                "prep": prep.prepare_array,
                 "min_periods": min_periods,
                 "adjust": adjust,
                 "zero_missing_weights": zero_missing_weights,
-                "out": xprepare_out_for_resample_data(
+                "out": prep.out_resample(
                     out,
-                    mom_params=mom_params,
                     axis=axis,
                     axes_to_end=axes_to_end,
                     data=data,
                 ),
-                "dtype": dtype,
                 "casting": casting,
+                "dtype": dtype,
                 "order": order,
                 "parallel": parallel,
                 "fastpath": is_dataarray(data),
@@ -1040,20 +1036,20 @@ def rolling_exp_data(  # noqa: PLR0913
                 template=data,
             )
         elif is_dataset(data):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
+            )
 
         return xout
 
     # save the original axis for alpha_axis...
-    axis, mom_params, data = prepare_data_for_reduction(
-        data,
+    prep, axis, data = PrepareDataArray.factory(
+        mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+    ).data_for_reduction(
+        data=data,
         axis=axis,
-        mom_params=MomParamsArray.factory(
-            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
-        ),
-        dtype=dtype,
-        recast=False,
         axes_to_end=axes_to_end,
+        dtype=dtype,
     )
 
     # prepare alpha
@@ -1071,7 +1067,7 @@ def rolling_exp_data(  # noqa: PLR0913
         alpha,
         axis=axis,
         alpha_axis=alpha_axis,
-        mom_params=mom_params,
+        prep=prep,
         min_periods=min_periods,
         adjust=adjust,
         zero_missing_weights=zero_missing_weights,
@@ -1114,7 +1110,7 @@ def _rolling_exp_data(
     *,
     axis: int,
     alpha_axis: int,
-    mom_params: MomParamsArray,
+    prep: PrepareDataArray,
     min_periods: int | None,
     adjust: bool,
     zero_missing_weights: bool,
@@ -1125,10 +1121,10 @@ def _rolling_exp_data(
     parallel: bool | None,
     fastpath: bool,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(data, out=out, dtype=dtype)
+    dtype = select_dtype(data, out=out, dtype=dtype, fastpath=fastpath)
+    mom_params = prep.mom_params
 
-    out = optional_prepare_out_for_resample_data(
+    out = prep.out_resample(
         data=data,
         out=out,
         axis=axis,
@@ -1297,10 +1293,11 @@ def rolling_exp_vals(  # noqa: PLR0913
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
     if is_xarray_typevar(x):
-        mom, mom_params = MomParamsXArray.factory_mom(
-            mom=mom, mom_params=mom_params, dims=mom_dims
+        prep, mom = PrepareValsXArray.factory_mom(
+            mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
-        dim, input_core_dims, xargs = xprepare_values_for_reduction(
+        mom_params = prep.mom_params
+        dim, input_core_dims, xargs = prep.values_for_reduction(
             x,
             weight,
             alpha,
@@ -1309,7 +1306,6 @@ def rolling_exp_vals(  # noqa: PLR0913
             dim=dim,
             narrays=mom_params.ndim + 2,
             dtype=dtype,
-            recast=False,
         )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -1319,16 +1315,15 @@ def rolling_exp_vals(  # noqa: PLR0913
             output_core_dims=[mom_params.core_dims(dim)],
             kwargs={
                 "mom": mom,
-                "mom_params": mom_params.to_array(),
+                "prep": prep.prepare_array,
                 "axis_neg": -1,
                 "adjust": adjust,
                 "min_periods": min_periods,
                 "zero_missing_weights": zero_missing_weights,
-                "out": xprepare_out_for_resample_vals(
+                "out": prep.out_resample(
                     target=x,
                     out=out,
                     dim=dim,
-                    mom_ndim=mom_params.ndim,
                     axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
@@ -1357,23 +1352,24 @@ def rolling_exp_vals(  # noqa: PLR0913
 
         return xout
 
-    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
-    axis_neg, args = prepare_values_for_reduction(
+    prep, mom = PrepareValsArray.factory_mom(
+        mom=mom, mom_params=mom_params, recast=False
+    )
+    axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         alpha,
         *y,
         axis=axis,
-        narrays=mom_params.ndim + 2,
-        dtype=dtype,
-        recast=False,
+        narrays=prep.mom_params.ndim + 2,
         axes_to_end=axes_to_end,
+        dtype=dtype,
     )
 
     return _rolling_exp_vals(
         *args,
         mom=mom,
-        mom_params=mom_params,
+        prep=prep,
         axis_neg=axis_neg,
         adjust=adjust,
         min_periods=min_periods,
@@ -1393,7 +1389,7 @@ def _rolling_exp_vals(
     alpha: NDArrayAny,
     *y: NDArrayAny,
     mom: MomentsStrict,
-    mom_params: MomParamsArray,
+    prep: PrepareValsArray,
     axis_neg: int,
     adjust: bool,
     min_periods: int | None,
@@ -1406,11 +1402,9 @@ def _rolling_exp_vals(
     fastpath: bool = False,
 ) -> NDArrayAny:
     args: list[NDArrayAny] = [x, w, *y]
-    if not fastpath:
-        # reapply dtype in case calling with `apply_ufunc` with a dataset...
-        dtype = select_dtype(x, out=out, dtype=dtype)
+    dtype = select_dtype(args[0], out=out, dtype=dtype, fastpath=fastpath)
 
-    out = prepare_out_from_values(
+    out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -1423,7 +1417,7 @@ def _rolling_exp_vals(
     axes_alpha, *axes_args = get_axes_from_values(alpha, *args, axis_neg=axis_neg)
     axes = [
         # out
-        (axis_neg - mom_params.ndim, *mom_params.axes),
+        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
         # alpha
         axes_alpha,
         # adjust, min_periods
@@ -1435,8 +1429,8 @@ def _rolling_exp_vals(
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
     factory_rolling_exp_vals(
-        mom_ndim=mom_params.ndim,
-        parallel=parallel_heuristic(parallel, x.size * mom_params.ndim),
+        mom_ndim=prep.mom_params.ndim,
+        parallel=parallel_heuristic(parallel, x.size * prep.mom_params.ndim),
     )(
         out,
         alpha,
@@ -1449,4 +1443,6 @@ def _rolling_exp_vals(
         signature=(dtype, dtype, np.bool_, np.int64, *(dtype,) * len(args)),
     )
 
-    return _optional_zero_missing_weight(out, mom_params.axes, zero_missing_weights)
+    return _optional_zero_missing_weight(
+        out, prep.mom_params.axes, zero_missing_weights
+    )

@@ -155,6 +155,7 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = ...,
 ) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 @overload
 def select_dtype(
@@ -162,6 +163,7 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = ...,
 ) -> np.dtype[np.float32] | np.dtype[np.float64]: ...
 @overload
 def select_dtype(
@@ -169,6 +171,7 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = ...,
 ) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 
 
@@ -177,12 +180,17 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = False,
 ) -> np.dtype[np.float32] | np.dtype[np.float64] | None:  # DTypeLikeArg[Any]:
     """
     Select a dtype from, in order, out, dtype, or passed array.
 
     If pass in a Dataset, return dtype
     """
+    if fastpath:
+        assert dtype in _ALLOWED_FLOAT_DTYPES  # noqa: S101
+        return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]
+
     if is_dataset(x):
         if dtype is None:
             return dtype

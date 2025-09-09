@@ -113,6 +113,10 @@ _MOM_AXES_LAST: dict[MomNDim, MomAxesStrict] = {
 }
 
 
+# XArrayOptional -> select_axis_dim_mult, get_axes, axes_last, dims
+# ArrayOptional -> normalize_axes, normalize_axis_tuple, axes, axes_last, raise_if_in_mom_axes, normalize_axis_index
+
+
 @dataclass
 @docfiller.decorate
 class MomParamsBase(ABC, _MixinAsDict):

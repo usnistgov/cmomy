@@ -359,7 +359,7 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
 
     idx2 = resample.freq_to_indices(freq0, shuffle=True)
     if is_dataset(idx):
-        assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # pyright: ignore[reportAttributeAccessIssue]
+        assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
     else:
         np.testing.assert_allclose(idx1, np.sort(idx2, axis=-1))
 

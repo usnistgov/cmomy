@@ -25,10 +25,9 @@ from .core.moment_params import (
     MomParamsXArray,
 )
 from .core.prepare import (
-    prepare_out_from_values,
-    prepare_values_for_reduction,
-    xprepare_out_for_reduce_data,
-    xprepare_values_for_reduction,
+    PrepareDataXArray,
+    PrepareValsArray,
+    PrepareValsXArray,
 )
 from .core.utils import mom_to_mom_shape
 from .core.validate import (
@@ -193,10 +192,14 @@ def reduce_vals(
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
     if is_xarray_typevar(x):
-        mom, mom_params = MomParamsXArray.factory_mom(
-            mom_params=mom_params, mom=mom, dims=mom_dims
+        prep, mom = PrepareValsXArray.factory_mom(
+            mom_params=mom_params,
+            mom=mom,
+            dims=mom_dims,
+            recast=False,
         )
-        dim, input_core_dims, xargs = xprepare_values_for_reduction(
+        mom_params = prep.mom_params
+        dim, input_core_dims, xargs = prep.values_for_reduction(
             x,
             weight,
             *y,
@@ -204,7 +207,6 @@ def reduce_vals(
             dim=dim,
             narrays=mom_params.ndim + 1,
             dtype=dtype,
-            recast=False,
         )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -214,7 +216,7 @@ def reduce_vals(
             output_core_dims=[mom_params.dims],
             kwargs={
                 "mom": mom,
-                "mom_params": mom_params.to_array(),
+                "prep": prep.prepare_array,
                 "parallel": parallel,
                 "axis_neg": -1,
                 "out": None if is_dataset(x) else out,  # type: ignore[redundant-expr]
@@ -237,22 +239,23 @@ def reduce_vals(
         return xout
 
     # Numpy
-    mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
-    axis_neg, args = prepare_values_for_reduction(
+    prep, mom = PrepareValsArray.factory_mom(
+        mom=mom, mom_params=mom_params, recast=False
+    )
+    axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         *y,
         axis=axis,
-        dtype=dtype,
-        recast=False,
-        narrays=mom_params.ndim + 1,
+        narrays=prep.mom_params.ndim + 1,
         axes_to_end=False,
+        dtype=dtype,
     )
 
     return _reduce_vals(
         *args,
         mom=mom,
-        mom_params=mom_params,
+        prep=prep,
         out=out,
         dtype=dtype,
         casting=casting,
@@ -267,7 +270,7 @@ def _reduce_vals(
     # x, w, *y
     *args: NDArrayAny,
     mom: MomentsStrict,
-    mom_params: MomParamsArray,
+    prep: PrepareValsArray,
     axis_neg: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
@@ -276,10 +279,9 @@ def _reduce_vals(
     parallel: bool | None,
     fastpath: bool = False,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(args[0], out=out, dtype=dtype)
+    dtype = select_dtype(args[0], out=out, dtype=dtype, fastpath=fastpath)
 
-    out = prepare_out_from_values(
+    out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -291,14 +293,14 @@ def _reduce_vals(
 
     axes: AxesGUFunc = [
         # out
-        mom_params.axes,
+        prep.mom_params.axes,
         # x, weight, *y
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
     factory_reduce_vals(
-        mom_ndim=mom_params.ndim,
-        parallel=parallel_heuristic(parallel, size=args[0].size * mom_params.ndim),
+        mom_ndim=prep.mom_params.ndim,
+        parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(
         out,
         *args,
@@ -480,11 +482,10 @@ def reduce_data(  # noqa: PLR0913
             kwargs={
                 "mom_params": mom_params.to_array(),
                 "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
-                "out": xprepare_out_for_reduce_data(
+                "out": PrepareDataXArray(mom_params, recast=False).out_reduce(
                     target=data,
                     out=out,
                     dim=dim,
-                    mom_params=mom_params,
                     keepdims=keepdims,
                     axes_to_end=axes_to_end,
                 ),

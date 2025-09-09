@@ -250,6 +250,8 @@ enable_error_code = [
     "truthy-bool",
 ]
 always_true = [ "MYPY_ONLY" ]
+allow_redefinition_new = true
+local_partial_types = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true

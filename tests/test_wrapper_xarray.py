@@ -170,7 +170,7 @@ def test_new_like_errors() -> None:
 def test_push_datas_and_vals(rng, as_dataset, func, method, shape, dims, dim) -> None:
     data = xr.DataArray(rng.random(shape), dims=dims)
     if as_dataset:
-        data = data.to_dataset(name="data")  # type: ignore[assignment]
+        data = data.to_dataset(name="data")
 
     expected = func(data, dim=dim)
     base = cmomy.wrap(xr.zeros_like(expected))
