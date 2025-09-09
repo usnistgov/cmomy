@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, replace
-from typing import TYPE_CHECKING, TypedDict, cast, overload
+from typing import TYPE_CHECKING, ClassVar, TypedDict, cast, overload
 
 from module_utilities.docfiller import DocFiller
 
@@ -83,15 +83,19 @@ class MomParamsDict(TypedDict, total=False):
     dims: Hashable | Sequence[Hashable] | None
 
 
-@dataclass
-class _MixinAsDict:
+@dataclass(frozen=True)
+class _MixinDataclass:
     def asdict(self) -> MomParamsDict:
         return cast("MomParamsDict", asdict(self))
 
+    def new_like(self, **kwargs: Any) -> Self:
+        """Create new object from key, value pairs."""
+        return replace(self, **kwargs)
 
-@dataclass
+
+@dataclass(frozen=True)
 @docfiller.decorate
-class MomParams(_MixinAsDict):
+class MomParams(_MixinDataclass):
     """
     Dataclass for moment parameters input
 
@@ -113,23 +117,12 @@ _MOM_AXES_LAST: dict[MomNDim, MomAxesStrict] = {
 }
 
 
-# XArrayOptional -> select_axis_dim_mult, get_axes, axes_last, dims
-# ArrayOptional -> normalize_axes, normalize_axis_tuple, axes, axes_last, raise_if_in_mom_axes, normalize_axis_index
-
-
-@dataclass
+@dataclass(frozen=True)
 @docfiller.decorate
-class MomParamsBase(ABC, _MixinAsDict):
-    """
-    Base class for moment parameters.
+class MomParamsBase(ABC, _MixinDataclass):
+    """Base class for moment parameters."""
 
-    Parameters
-    ----------
-    {ndim}
-
-    """
-
-    ndim: MomNDim
+    ndim: MomNDim | None
 
     def new_like(self, **kwargs: Any) -> Self:
         """Create new object from key, value pairs."""
@@ -160,8 +153,15 @@ class MomParamsBase(ABC, _MixinAsDict):
         )
 
     @property
+    def _validated_ndim(self) -> MomNDim:
+        if self.ndim is None:
+            msg = "Must set ndim"
+            raise ValueError(msg)
+        return self.ndim
+
+    @property
     def axes_last(self) -> MomAxesStrict:
-        return _MOM_AXES_LAST[self.ndim]
+        return _MOM_AXES_LAST[self._validated_ndim]
 
     @abstractmethod
     def get_mom_shape(self, data: Any) -> MomentsStrict:
@@ -185,42 +185,14 @@ class MomParamsBase(ABC, _MixinAsDict):
             raise ValueError(msg) from e
 
 
-@dataclass
-@docfiller.decorate
-class MomParamsArray(MomParamsBase):
-    """
-    Array Mom Params.
+# ArrayOptional -> normalize_axes, normalize_axis_tuple, axes, axes_last, raise_if_in_mom_axes, normalize_axis_index
+@dataclass(frozen=True)
+class MomParamsArrayOptional(MomParamsBase):
+    """Array moment parameters."""
 
-    Parameters
-    ----------
-    {ndim}
-    {axes}
-    """
-
-    ndim: MomNDim
-    axes: MomAxesStrict
-
-    @classmethod
-    def from_params(
-        cls,
-        ndim: int | None = None,
-        axes: int | Sequence[int] | None = None,
-        default_ndim: MomNDim | None = None,
-        dims: Any = None,  # noqa: ARG003  # in case pass in dims parameter, it will be ignored.
-    ) -> Self:
-        """Create object from parameters."""
-        if axes is None:
-            ndim = validate_mom_ndim(ndim, default_ndim)
-            axes = _MOM_AXES_LAST[ndim]
-            return cls(ndim=ndim, axes=axes)
-
-        axes = validate_mom_axes(axes)
-        if ndim is None:
-            ndim = len(axes)
-        elif len(axes) != ndim:
-            msg = f"{len(axes)=} != {ndim=}"
-            raise ValueError(msg)
-        return cls(ndim=cast("MomNDim", ndim), axes=axes)
+    ndim: MomNDim | None
+    axes: MomAxesStrict | None
+    _OPTIONAL: ClassVar[bool] = True
 
     @classmethod
     @docfiller.decorate
@@ -257,6 +229,93 @@ class MomParamsArray(MomParamsBase):
         return cls.from_params(**mom_params, default_ndim=default_ndim)
 
     @classmethod
+    def from_params(
+        cls,
+        ndim: int | None = None,
+        axes: int | Sequence[int] | None = None,
+        default_ndim: MomNDim | None = None,
+        dims: Any = None,  # noqa: ARG003  # in case pass dims parameter, it will be ignored.
+    ) -> Self:
+        """Create from parameters."""
+        if cls._OPTIONAL and ndim is None and axes is None and default_ndim is None:
+            return cls(None, None)
+
+        if axes is None:
+            ndim = validate_mom_ndim(ndim, default_ndim)
+            axes = _MOM_AXES_LAST[ndim]
+            return cls(ndim=ndim, axes=axes)
+
+        axes = validate_mom_axes(axes)
+        if ndim is None:
+            ndim = len(axes)
+        elif len(axes) != ndim:
+            msg = f"{len(axes)=} != {ndim=}"
+            raise ValueError(msg)
+        return cls(ndim=cast("MomNDim", ndim), axes=axes)
+
+    def raise_if_in_mom_axes(self, *axes: int) -> None:
+        """Raise ``ValueError`` if any ``axes`` in ``self.axes``."""
+        # these ignores needed because inherit into optional classes below
+        if self.axes is not None and any(a in self.axes for a in axes):
+            msg = f"provided axis/axes cannot overlap mom_axes={self.axes}."
+            raise ValueError(msg)
+
+    @property
+    def _validated_axes(self) -> MomAxesStrict:
+        if self.axes is None:
+            msg = "Must set axes"
+            raise ValueError(msg)
+        return self.axes
+
+    def get_mom_shape(self, data: NDArrayAny) -> MomentsStrict:
+        """Calculate moment shape from data shape"""
+        try:
+            return cast(
+                "MomentsStrict", tuple(data.shape[a] for a in self._validated_axes)
+            )
+        except Exception as e:
+            msg = "Could not extract moment shape from data"
+            raise ValueError(msg) from e
+
+    def get_mom(self, data: NDArrayAny) -> MomentsStrict:
+        from .utils import mom_shape_to_mom
+
+        return mom_shape_to_mom(data.shape[a] for a in self._validated_axes)
+
+    def get_val_shape(self, data: NDArrayAny) -> tuple[int, ...]:
+        axes = self.normalize_axis_tuple(self._validated_axes, data.ndim)
+        return tuple(s for i, s in enumerate(data.shape) if i not in axes)
+
+    def normalize_axes(self, data_ndim: int) -> Self:
+        """Normalize self.axes in new object relative to ``data_ndim``."""
+        if self.axes is None:
+            return self
+
+        return replace(
+            self,
+            axes=normalize_axis_tuple(  # type: ignore[arg-type]
+                self.axes, data_ndim, msg_prefix="normalize_axes"
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class MomParamsArray(MomParamsArrayOptional):
+    """Array Mom Params"""
+
+    ndim: MomNDim
+    axes: MomAxesStrict
+    _OPTIONAL: ClassVar[bool] = False
+
+    @property
+    def _validated_ndim(self) -> MomNDim:
+        return self.ndim
+
+    @property
+    def _validated_axes(self) -> MomAxesStrict:
+        return self.axes
+
+    @classmethod
     @docfiller.decorate
     def factory_mom(
         cls,
@@ -284,18 +343,6 @@ class MomParamsArray(MomParamsBase):
         """Create new object with ``self.axes`` at end."""
         return replace(self, axes=self.axes_last)
 
-    def normalize_axes(self, data_ndim: int) -> Self:
-        """Normalize self.axes in new object relative to ``data_ndim``."""
-        if self.axes is None:  # pyright: ignore[reportUnnecessaryComparison]
-            return self  # type: ignore[unreachable]
-
-        return replace(
-            self,
-            axes=normalize_axis_tuple(  # type: ignore[arg-type]
-                self.axes, data_ndim, msg_prefix="normalize_axes"
-            ),
-        )
-
     def axes_data_reduction(
         self,
         *inner: int | tuple[int, ...],
@@ -322,82 +369,15 @@ class MomParamsArray(MomParamsBase):
             out_axes,
         ]
 
-    def raise_if_in_mom_axes(self, *axes: int) -> None:
-        """Raise ``ValueError`` if any ``axes`` in ``self.axes``."""
-        # these ignores needed because inherit into optional classes below
-        if self.axes is not None and any(a in self.axes for a in axes):  # type: ignore[redundant-expr] # pyright: ignore[reportUnnecessaryComparison]
-            msg = f"provided axis/axes cannot overlap mom_axes={self.axes}."
-            raise ValueError(msg)
 
-    def get_mom_shape(self, data: NDArrayAny) -> MomentsStrict:
-        """Calculate moment shape from data shape"""
-        try:
-            return cast("MomentsStrict", tuple(data.shape[a] for a in self.axes))
-        except Exception as e:
-            msg = "Could not extract moment shape from data"
-            raise ValueError(msg) from e
+# XArrayOptional -> select_axis_dim_mult, get_axes, axes_last, dims
+@dataclass(frozen=True)
+class MomParamsXArrayOptional(MomParamsBase):
+    """Optional moment parameters for xarray objects."""
 
-    def get_mom(self, data: NDArrayAny) -> MomentsStrict:
-        from .utils import mom_shape_to_mom
-
-        return mom_shape_to_mom(data.shape[a] for a in self.axes)
-
-    def get_val_shape(self, data: NDArrayAny) -> tuple[int, ...]:
-        axes = self.normalize_axis_tuple(self.axes, data.ndim)
-        return tuple(s for i, s in enumerate(data.shape) if i not in axes)
-
-
-@dataclass
-class MomParamsArrayOptional(MomParamsArray):  # noqa: D101
-    ndim: MomNDim | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
-    axes: MomAxesStrict | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
-
-    @classmethod
-    def from_params(
-        cls,
-        ndim: int | None = None,
-        axes: int | Sequence[int] | None = None,
-        default_ndim: MomNDim | None = None,
-        dims: Any = None,  # noqa: ARG003  # in case pass dims parameter, it will be ignored.
-    ) -> Self:
-        """Create from parameters."""
-        if ndim is None and axes is None and default_ndim is None:
-            return cls(None, None)
-        return super().from_params(ndim, axes, default_ndim)
-
-
-@dataclass
-@docfiller.decorate
-class MomParamsXArray(MomParamsBase):
-    """
-    XArray mom parameters.
-
-    Parameters
-    ----------
-    {ndim}
-    {dims}
-    """
-
-    dims: MomDimsStrict
-
-    @classmethod
-    def from_params(
-        cls,
-        ndim: int | None = None,
-        dims: Hashable | Sequence[Hashable] | None = None,
-        axes: int | Sequence[int] | None = None,
-        data: object = None,
-        default_ndim: MomNDim | None = None,
-    ) -> Self:
-        """Create from parameters."""
-        dims, ndim = validate_mom_dims_and_mom_ndim(
-            mom_dims=dims,
-            mom_ndim=ndim,
-            out=data,
-            mom_ndim_default=default_ndim,
-            mom_axes=axes,
-        )
-        return cls(ndim=ndim, dims=dims)
+    ndim: MomNDim | None
+    dims: MomDimsStrict | None
+    _OPTIONAL: ClassVar[bool] = True
 
     @classmethod
     @docfiller.decorate
@@ -439,24 +419,39 @@ class MomParamsXArray(MomParamsBase):
         return cls.from_params(**mom_params, data=data, default_ndim=default_ndim)
 
     @classmethod
-    def factory_mom(
+    def from_params(
         cls,
-        mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
         default_ndim: MomNDim | None = None,
-    ) -> tuple[MomentsStrict, Self]:
-        mom = validate_mom(mom)
-        return mom, cls.factory(
-            ndim=len(mom),
-            mom_params=mom_params,
-            dims=dims,
-            axes=axes,
-            data=data,
-            default_ndim=default_ndim,
+    ) -> Self:
+        """Create from parameters."""
+        if (
+            cls._OPTIONAL
+            and ndim is None
+            and dims is None
+            and axes is None
+            and default_ndim is None
+        ):
+            return cls(None, None)
+
+        dims, ndim = validate_mom_dims_and_mom_ndim(
+            mom_dims=dims,
+            mom_ndim=ndim,
+            out=data,
+            mom_ndim_default=default_ndim,
+            mom_axes=axes,
         )
+        return cls(ndim=ndim, dims=dims)
+
+    @property
+    def _validated_dims(self) -> MomDimsStrict:
+        if self.dims is None:
+            msg = "Must set dims"
+            raise ValueError(msg)
+        return self.dims
 
     def get_axes(self, data: xr.DataArray | None = None) -> MomAxesStrict:
         """
@@ -466,12 +461,14 @@ class MomParamsXArray(MomParamsBase):
         """
         if data is None:
             return self.axes_last
-        return cast("MomAxesStrict", data.get_axis_num(self.dims))
+        return cast("MomAxesStrict", data.get_axis_num(self._validated_dims))
 
     def get_mom_shape(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
         """Calculate moment shape from data shape"""
         try:
-            return cast("MomentsStrict", tuple(data.sizes[d] for d in self.dims))
+            return cast(
+                "MomentsStrict", tuple(data.sizes[d] for d in self._validated_dims)
+            )
         except Exception as e:
             msg = "Could not extract moment shape from data"
             raise ValueError(msg) from e
@@ -479,24 +476,12 @@ class MomParamsXArray(MomParamsBase):
     def get_mom(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
         from .utils import mom_shape_to_mom
 
-        return mom_shape_to_mom(data.sizes[d] for d in self.dims)
+        return mom_shape_to_mom(data.sizes[d] for d in self._validated_dims)
 
     def get_val_shape(self, data: xr.DataArray) -> tuple[int, ...]:
-        return tuple(data.sizes[d] for d in data.dims if d not in self.dims)
+        return tuple(data.sizes[d] for d in data.dims if d not in self._validated_dims)
 
-    def to_array(self, data: xr.DataArray | None = None) -> MomParamsArray:
-        """
-        Convert to MomParamsArray object.
-
-        Axes is ``self.get_axes(data)``.
-        """
-        return MomParamsArray(ndim=self.ndim, axes=self.get_axes(data))
-
-    def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
-        """Core dimensions (*dims, *self.dims)"""
-        return (*dims, *self.dims)
-
-    # ** Select
+    # * Select
     def _raise_if_dim_in_mom_dims(
         self,
         *,
@@ -504,7 +489,7 @@ class MomParamsXArray(MomParamsBase):
         dim: Hashable | None,
     ) -> None:
         # these ignores needed because inherit into optional classes below
-        if self.dims is not None and dim in self.dims:  # type: ignore[redundant-expr]  # pyright: ignore[reportUnnecessaryComparison]
+        if self.dims is not None and dim in self.dims:
             axis_msg = f", {axis=}" if axis is not None else ""
             msg = f"Cannot select moment dimension. {dim=}{axis_msg}."
             raise ValueError(msg)
@@ -530,6 +515,66 @@ class MomParamsXArray(MomParamsBase):
             msg = "Can only specify one of axis or dim"
             raise ValueError(msg)
         return axis, dim  # pyright: ignore[reportReturnType]
+
+    def select_axis_dim_mult(  # noqa: C901
+        self,
+        data: xr.DataArray | xr.Dataset,
+        axis: AxisReduceMultWrap | MissingType = MISSING,
+        dim: DimsReduceMult | MissingType = MISSING,
+        *,
+        default_axis: AxisReduceMultWrap | MissingType = MISSING,
+        default_dim: DimsReduceMult | MissingType = MISSING,
+        allow_select_mom_axes: bool = False,
+    ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
+        def _get_dim_none() -> tuple[Hashable, ...]:
+            dim_ = tuple(data.dims)
+            if self.dims is not None:
+                dim_ = tuple(d for d in dim_ if d not in self.dims)
+            return dim_
+
+        def _check_dim(dim_: tuple[Hashable, ...]) -> None:
+            if allow_select_mom_axes:
+                return
+            if self.dims is not None:
+                for d in dim_:
+                    self._raise_if_dim_in_mom_dims(dim=d)
+
+        dim_: tuple[Hashable, ...]
+        axis_: tuple[int, ...]
+        if is_dataset(data):
+            if axis is not MISSING or dim is MISSING:
+                msg = "For Dataset, must specify ``dim`` value only."
+                raise ValueError(msg)
+
+            if dim is None:
+                dim_ = _get_dim_none()
+            else:
+                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                _check_dim(dim_)
+            return (), dim_
+
+        axis, dim = self._axis_dim_defaults(
+            axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
+        )
+
+        if dim is not MISSING:
+            if dim is None:
+                dim_ = _get_dim_none()
+            else:
+                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            axis_ = data.get_axis_num(dim_)
+        elif axis is not MISSING:
+            axis_ = self.normalize_axis_tuple(
+                axis,
+                data.ndim,
+            )
+            dim_ = tuple(data.dims[a] for a in axis_)
+        else:  # pragma: no cover
+            msg = f"Unknown dim {dim} and axis {axis}"
+            raise TypeError(msg)
+
+        _check_dim(dim_)
+        return axis_, dim_
 
     def select_axis_dim(
         self,
@@ -576,87 +621,57 @@ class MomParamsXArray(MomParamsBase):
             self._raise_if_dim_in_mom_dims(dim=dim, axis=axis)
         return axis, dim
 
-    def select_axis_dim_mult(  # noqa: C901
-        self,
-        data: xr.DataArray | xr.Dataset,
-        axis: AxisReduceMultWrap | MissingType = MISSING,
-        dim: DimsReduceMult | MissingType = MISSING,
-        *,
-        default_axis: AxisReduceMultWrap | MissingType = MISSING,
-        default_dim: DimsReduceMult | MissingType = MISSING,
-        allow_select_mom_axes: bool = False,
-    ) -> tuple[tuple[int, ...], tuple[Hashable, ...]]:
-        def _get_dim_none() -> tuple[Hashable, ...]:
-            dim_ = tuple(data.dims)
-            if self.dims is not None:  # pyright: ignore[reportUnnecessaryComparison]
-                dim_ = tuple(d for d in dim_ if d not in self.dims)
-            return dim_
 
-        def _check_dim(dim_: tuple[Hashable, ...]) -> None:
-            if allow_select_mom_axes:
-                return
-            if self.dims is not None:  # pyright: ignore[reportUnnecessaryComparison]
-                for d in dim_:
-                    self._raise_if_dim_in_mom_dims(dim=d)
+@dataclass(frozen=True)
+class MomParamsXArray(MomParamsXArrayOptional):
+    """Moment parameters for xarray objects"""
 
-        dim_: tuple[Hashable, ...]
-        axis_: tuple[int, ...]
-        if is_dataset(data):
-            if axis is not MISSING or dim is MISSING:
-                msg = "For Dataset, must specify ``dim`` value only."
-                raise ValueError(msg)
+    ndim: MomNDim
+    dims: MomDimsStrict
+    _OPTIONAL: ClassVar[bool] = False
 
-            if dim is None:
-                dim_ = _get_dim_none()
-            else:
-                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
-                _check_dim(dim_)
-            return (), dim_
+    @property
+    def _validated_ndim(self) -> MomNDim:
+        return self.ndim
 
-        axis, dim = self._axis_dim_defaults(
-            axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
-        )
-
-        if dim is not MISSING:
-            if dim is None:
-                dim_ = _get_dim_none()
-            else:
-                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
-            axis_ = data.get_axis_num(dim_)
-        elif axis is not MISSING:
-            axis_ = self.normalize_axis_tuple(
-                axis,
-                data.ndim,
-            )
-            dim_ = tuple(data.dims[a] for a in axis_)
-        else:  # pragma: no cover
-            msg = f"Unknown dim {dim} and axis {axis}"
-            raise TypeError(msg)
-
-        _check_dim(dim_)
-        return axis_, dim_
-
-
-@dataclass
-class MomParamsXArrayOptional(MomParamsXArray):  # noqa: D101
-    ndim: MomNDim | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
-    dims: MomDimsStrict | None = None  # type: ignore[assignment]  # pyright: ignore[reportIncompatibleVariableOverride]
+    @property
+    def _validated_dims(self) -> MomDimsStrict:
+        return self.dims
 
     @classmethod
-    def from_params(
+    def factory_mom(
         cls,
-        ndim: int | None = None,
+        mom: int | Sequence[int],
+        mom_params: MomParamsInput = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
         default_ndim: MomNDim | None = None,
-    ) -> Self:
-        if ndim is None and dims is None and axes is None and default_ndim is None:
-            return cls(None, None)
-        return super().from_params(ndim, dims, axes, data, default_ndim)
+    ) -> tuple[MomentsStrict, Self]:
+        mom = validate_mom(mom)
+        return mom, cls.factory(
+            ndim=len(mom),
+            mom_params=mom_params,
+            dims=dims,
+            axes=axes,
+            data=data,
+            default_ndim=default_ndim,
+        )
+
+    def to_array(self, data: xr.DataArray | None = None) -> MomParamsArray:
+        """
+        Convert to MomParamsArray object.
+
+        Axes is ``self.get_axes(data)``.
+        """
+        return MomParamsArray(ndim=self.ndim, axes=self.get_axes(data))
+
+    def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
+        """Core dimensions (*dims, *self.dims)"""
+        return (*dims, *self.dims)
 
 
-default_mom_params_xarray = MomParamsXArrayOptional()
+default_mom_params_xarray = MomParamsXArrayOptional(None, None)
 
 
 @overload
