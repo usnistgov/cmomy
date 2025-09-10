@@ -19,8 +19,8 @@ from cmomy.core.moment_params import (
     MomParamsXArray,
 )
 from cmomy.core.prepare import (
-    prepare_data_for_reduction,
-    prepare_values_for_reduction,
+    PrepareDataArray,
+    PrepareValsArray,
 )
 from cmomy.core.typing import (
     AxisReduceWrap,
@@ -451,13 +451,15 @@ class CentralMomentsArray(
         <CentralMomentsArray(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
-        axis, _, datas = prepare_data_for_reduction(
+        _, axis, datas = PrepareDataArray.factory(
+            ndim=self.mom_ndim,
+            axes=mom_axes,
+            recast=False,
+        ).data_for_reduction(
             data=datas,
             axis=axis,
-            mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
-            dtype=self.dtype,
-            recast=False,
             axes_to_end=True,
+            dtype=self.dtype,
         )
 
         self._pusher(parallel, size=datas.size).datas(
@@ -571,14 +573,17 @@ class CentralMomentsArray(
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        axis, args = prepare_values_for_reduction(
+        axis, args = PrepareValsArray.factory(
+            mom_params=self.mom_params,
+            recast=False,
+        ).values_for_reduction(
             x,
             1.0 if weight is None else weight,
             *y,
             axis=axis,
             dtype=self.dtype,
-            recast=False,
             narrays=self.mom_ndim + 1,
+            axes_to_end=True,
         )
 
         self._pusher(parallel, size=self._obj.size).vals(

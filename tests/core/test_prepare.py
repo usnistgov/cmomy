@@ -42,11 +42,13 @@ def test_prepare_values_for_reduction(
 ) -> None:
     xv, yv, wv = 1, 2, 3
 
+    prep = prepare.PrepareValsArray.factory(ndim=2, recast=True)
+
     target = np.full(xshape, dtype=dtype or np.float64, fill_value=xv)
     y = yv if yshape == () else np.full(yshape, fill_value=yv, dtype=int)
     w = wv if wshape == () else np.full(wshape, fill_value=wv, dtype=int)
     with pytest.raises(ValueError, match=r"Number of arrays .*"):
-        prepare.prepare_values_for_reduction(
+        prep.values_for_reduction(
             target,
             y,
             w,
@@ -59,7 +61,7 @@ def test_prepare_values_for_reduction(
         error = TypeError if axis is None else ValueError
 
         with pytest.raises(error):
-            prepare.prepare_values_for_reduction(
+            prep.values_for_reduction(
                 target,
                 y,
                 w,
@@ -69,7 +71,7 @@ def test_prepare_values_for_reduction(
             )
 
     else:
-        _axis, (x, y, w) = prepare.prepare_values_for_reduction(
+        _axis, (x, y, w) = prep.values_for_reduction(
             target,
             y,
             w,
@@ -113,8 +115,9 @@ def test_prepare_values_for_reduction(
     ],
 )
 def test_xprepare_values_for_reduction_0(target, other, kws, raises, match):
+    prep = prepare.PrepareValsXArray.factory(ndim=2)
     with pytest.raises(raises, match=match):
-        prepare.xprepare_values_for_reduction(target, other, **kws)
+        prep.values_for_reduction(target, other, **kws)
 
 
 @pytest.mark.parametrize(
@@ -132,8 +135,9 @@ def test_xprepare_values_for_reduction_1(
 ) -> None:
     target = xr.DataArray(np.ones(xshape, dtype=dtype))
     other = np.ones(yshape, dtype=np.float32)
+    prep = prepare.PrepareValsXArray.factory(ndim=2, recast=True)
 
-    dim_out, core_dims, (x, y) = prepare.xprepare_values_for_reduction(
+    dim_out, core_dims, (x, y) = prep.values_for_reduction(
         target,
         other,
         narrays=2,
@@ -153,7 +157,7 @@ def test_xprepare_values_for_reduction_1(
     if xshape == yshape:
         # also do xr test
         other = xr.DataArray(other)  # pylint: disable=redefined-variable-type
-        dim_out, core_dims, (x, y) = prepare.xprepare_values_for_reduction(
+        dim_out, core_dims, (x, y) = prep.values_for_reduction(
             target,
             other,
             narrays=2,
@@ -242,11 +246,9 @@ def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> 
 
     kws = kws.copy()
     kws.setdefault("data", data)
-    kws["mom_params"] = factory_mom_params(
-        kws["data"], mom_params=mom_params_kws, data=data
-    )
+    mom_params = factory_mom_params(kws["data"], mom_params=mom_params_kws, data=data)
 
-    func = prepare.xprepare_out_for_resample_data
+    func = prepare.PrepareDataXArray(mom_params=mom_params).out_resample
     if expected is None:
         assert func(**kws) is None
     elif isinstance(expected, type):
@@ -259,7 +261,11 @@ def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> 
 def test_prepare_secondary_value_for_reduction() -> None:
     ds = xr.Dataset({"a": xr.DataArray([1, 2, 3], dims="x")})
 
+    prep = prepare.PrepareValsArray.factory(ndim=1)
     with pytest.raises(TypeError, match=r"Passed Dataset.*"):
-        _ = prepare.prepare_secondary_value_for_reduction(
-            ds, axis=1, nsamp=10, dtype=np.float64, recast=False
+        _ = prep.secondary_value_for_reduction(
+            ds,
+            axis=1,
+            nsamp=10,
+            dtype=np.float64,
         )

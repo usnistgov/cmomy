@@ -1007,8 +1007,7 @@ def _vals_to_data(
     dtype: DTypeLike,
     fastpath: bool,
 ) -> NDArrayAny | xr.DataArray:
-    if not fastpath:
-        dtype = select_dtype(x, out=out, dtype=dtype)
+    dtype = select_dtype(x, out=out, dtype=dtype, fastpath=fastpath)
 
     x_, w, *y_ = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))
     if out is None:

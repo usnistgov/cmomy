@@ -553,8 +553,7 @@ def _reduce_data(
     fastpath: bool = False,
     axes_to_end: bool,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(data, out=out, dtype=dtype)
+    dtype = select_dtype(data, out=out, dtype=dtype, fastpath=fastpath)
 
     mom_params = mom_params.normalize_axes(data.ndim)
 

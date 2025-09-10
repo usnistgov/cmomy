@@ -10,13 +10,12 @@ import xarray as xr
 from cmomy.core.docstrings import docfiller_xcentral as docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import (
-    MomParamsArray,
     MomParamsXArray,
 )
 from cmomy.core.prepare import (
-    prepare_data_for_reduction,
-    prepare_values_for_reduction,
-    xprepare_values_for_reduction,
+    PrepareDataArray,
+    PrepareValsArray,
+    PrepareValsXArray,
 )
 from cmomy.core.typing import DataT
 from cmomy.core.validate import (
@@ -459,13 +458,15 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             )
 
         else:
-            axis, _, datas = prepare_data_for_reduction(
-                datas,
-                axis=axis,
-                mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
-                dtype=self._dtype,
-                axes_to_end=True,
+            _, axis, datas = PrepareDataArray.factory(
+                ndim=self.mom_ndim,
+                axes=mom_axes,
                 recast=False,
+            ).data_for_reduction(
+                data=datas,
+                axis=axis,
+                axes_to_end=True,
+                dtype=self._dtype,
             )
             dim = "_dummy123"
 
@@ -557,27 +558,31 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         weight = 1.0 if weight is None else weight
         xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
         if is_xarray(x):
-            dim, input_core_dims, xargs = xprepare_values_for_reduction(
+            dim, input_core_dims, xargs = PrepareValsXArray(
+                mom_params=self.mom_params, recast=False
+            ).values_for_reduction(
                 x,
                 weight,
                 *y,
                 axis=axis,
                 dim=dim,
-                dtype=self._dtype,
-                recast=False,
                 narrays=self.mom_ndim + 1,
+                dtype=self._dtype,
             )
         else:
-            axis, xargs = prepare_values_for_reduction(
+            axis, xargs = PrepareValsArray.factory(
+                mom_params=self.mom_params,
+                recast=False,
+            ).values_for_reduction(
                 x,
                 weight,
                 *y,
                 axis=axis,
                 dtype=self._dtype,
-                recast=False,
                 narrays=self.mom_ndim + 1,
                 axes_to_end=True,
             )
+
             dim = "_dummy123"
             input_core_dims = [[dim]] * len(xargs)
 

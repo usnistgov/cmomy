@@ -23,10 +23,8 @@ from .core.moment_params import (
     default_mom_params_xarray,
 )
 from .core.prepare import (
-    optional_prepare_out_for_resample_data,
-    prepare_data_for_reduction,
-    xprepare_out_for_resample_data,
-    xprepare_out_for_transform,
+    PrepareDataArray,
+    PrepareDataXArray,
 )
 from .core.utils import (
     mom_to_mom_shape,
@@ -213,7 +211,7 @@ def moments_type(
     # TODO(wpk): add axes_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray_typevar(values_in):
-        mom_params = MomParamsXArray.factory(
+        prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             dims=mom_dims,
@@ -221,6 +219,7 @@ def moments_type(
             data=values_in,
             default_ndim=1,
         )
+        mom_params = prep.mom_params
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
@@ -230,10 +229,9 @@ def moments_type(
             kwargs={
                 "mom_params": mom_params.to_array(),
                 "to": to,
-                "out": xprepare_out_for_transform(
+                "out": prep.out_transform(
                     target=values_in,
                     out=out,
-                    mom_params=mom_params,
                     axes_to_end=axes_to_end,
                 ),
                 "dtype": dtype,
@@ -279,17 +277,16 @@ def _moments_type(
     axes_to_end: bool,
     fastpath: bool,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(values_in, out=out, dtype=dtype)
+    dtype = select_dtype(values_in, out=out, dtype=dtype, fastpath=fastpath)
 
     axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
 
+    values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
     if out is None and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
-        values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
         out = np.zeros(values_in.shape, dtype=dtype, order=_order_cf)
 
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
-        values_in,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        values_in,
         out=out,
         axes=[mom_params.axes, axes_out],
         dtype=dtype,
@@ -421,7 +418,7 @@ def cumulative(  # noqa: PLR0913
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
     if is_xarray_typevar(values_in):
-        mom_params = MomParamsXArray.factory(
+        prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             axes=mom_axes,
@@ -429,6 +426,7 @@ def cumulative(  # noqa: PLR0913
             data=values_in,
             default_ndim=1,
         )
+        mom_params = prep.mom_params
         axis, dim = mom_params.select_axis_dim(
             values_in,
             axis=axis,
@@ -442,12 +440,11 @@ def cumulative(  # noqa: PLR0913
             input_core_dims=core_dims,
             output_core_dims=core_dims,
             kwargs={
-                "mom_params": mom_params.to_array(),
+                "prep": prep.prepare_array,
                 "inverse": inverse,
                 "axis": -(mom_params.ndim + 1),
-                "out": xprepare_out_for_resample_data(
+                "out": prep.out_resample(
                     out,
-                    mom_params=mom_params,
                     axis=axis,
                     axes_to_end=axes_to_end,
                     data=values_in,
@@ -477,21 +474,22 @@ def cumulative(  # noqa: PLR0913
         return xout
 
     # Numpy
-    axis, mom_params, values_in = prepare_data_for_reduction(
-        values_in,
+    prep, axis, values_in = PrepareDataArray.factory(
+        mom_params=mom_params,
+        ndim=mom_ndim,
+        axes=mom_axes,
+        default_ndim=1,
+    ).data_for_reduction(
+        data=values_in,
         axis=axis,
-        mom_params=MomParamsArray.factory(
-            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
-        ),
-        dtype=None,
-        recast=False,
         axes_to_end=axes_to_end,
+        dtype=None,  # NOTE(wpk): what?
     )
     return _cumulative(
         values_in,
         out=out,
         axis=axis,
-        mom_params=mom_params,
+        prep=prep,
         inverse=inverse,
         parallel=parallel,
         dtype=dtype,
@@ -505,7 +503,7 @@ def _cumulative(
     values_in: NDArrayAny,
     out: NDArrayAny | None,
     axis: int,
-    mom_params: MomParamsArray,
+    prep: PrepareDataArray,
     inverse: bool,
     parallel: bool | None,
     dtype: DTypeLike,
@@ -513,15 +511,14 @@ def _cumulative(
     order: ArrayOrderKACF,
     fastpath: bool,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(values_in, out=out, dtype=dtype)
+    dtype = select_dtype(values_in, out=out, dtype=dtype, fastpath=fastpath)
 
-    axes = mom_params.axes_data_reduction(
+    axes = prep.mom_params.axes_data_reduction(
         axis=axis,
         out_has_axis=True,
     )
 
-    out = optional_prepare_out_for_resample_data(
+    out = prep.out_resample(
         data=values_in,
         out=out,
         axis=axis,
@@ -532,7 +529,7 @@ def _cumulative(
 
     # pylint: disable=unexpected-keyword-arg
     return factory_cumulative(
-        mom_ndim=mom_params.ndim,
+        mom_ndim=prep.mom_params.ndim,
         inverse=inverse,
         parallel=parallel_heuristic(parallel, values_in.size),
     )(
