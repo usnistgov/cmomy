@@ -14,8 +14,8 @@ from cmomy.core.moment_params import (
 )
 from cmomy.core.prepare import (
     PrepareDataArray,
-    PrepareValsArray,
-    PrepareValsXArray,
+    prepare_array_values_for_reduction,
+    prepare_xarray_values_for_reduction,
 )
 from cmomy.core.typing import DataT
 from cmomy.core.validate import (
@@ -558,9 +558,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         weight = 1.0 if weight is None else weight
         xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
         if is_xarray(x):
-            dim, input_core_dims, xargs = PrepareValsXArray(
-                mom_params=self.mom_params, recast=False
-            ).values_for_reduction(
+            dim, input_core_dims, xargs = prepare_xarray_values_for_reduction(
                 x,
                 weight,
                 *y,
@@ -568,12 +566,10 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 dim=dim,
                 narrays=self.mom_ndim + 1,
                 dtype=self._dtype,
+                recast=False,
             )
         else:
-            axis, xargs = PrepareValsArray.factory(
-                mom_params=self.mom_params,
-                recast=False,
-            ).values_for_reduction(
+            axis, xargs = prepare_array_values_for_reduction(
                 x,
                 weight,
                 *y,
@@ -581,6 +577,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 dtype=self._dtype,
                 narrays=self.mom_ndim + 1,
                 axes_to_end=True,
+                recast=False,
             )
 
             dim = "_dummy123"

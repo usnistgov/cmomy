@@ -482,7 +482,7 @@ def reduce_data(  # noqa: PLR0913
             kwargs={
                 "mom_params": mom_params.to_array(),
                 "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
-                "out": PrepareDataXArray(mom_params, recast=False).out_reduce(
+                "out": PrepareDataXArray(mom_params, recast=False).optional_out_reduce(
                     target=data,
                     out=out,
                     dim=dim,

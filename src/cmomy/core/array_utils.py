@@ -90,8 +90,8 @@ def normalize_axis_tuple(
 
 def moveaxis_order(
     ndim: int,
-    source: int | Iterable[int],
-    destination: int | Iterable[int],
+    source: complex | Iterable[complex],
+    destination: complex | Iterable[complex],
     normalize: bool = True,
 ) -> list[int]:
     """
@@ -107,6 +107,7 @@ def moveaxis_order(
         source = normalize_axis_tuple(source, ndim, msg_prefix="source")
         destination = normalize_axis_tuple(destination, ndim, msg_prefix="destination")
     else:
+        # white lie.  If normalize=False, already normalized.
         source = cast("Sequence[int]", source)
         destination = cast("Sequence[int]", destination)
 

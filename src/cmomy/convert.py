@@ -229,7 +229,7 @@ def moments_type(
             kwargs={
                 "mom_params": mom_params.to_array(),
                 "to": to,
-                "out": prep.out_transform(
+                "out": prep.optional_out_transform(
                     target=values_in,
                     out=out,
                     axes_to_end=axes_to_end,
@@ -443,7 +443,7 @@ def cumulative(  # noqa: PLR0913
                 "prep": prep.prepare_array,
                 "inverse": inverse,
                 "axis": -(mom_params.ndim + 1),
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     out,
                     axis=axis,
                     axes_to_end=axes_to_end,
@@ -518,7 +518,7 @@ def _cumulative(
         out_has_axis=True,
     )
 
-    out = prep.out_resample(
+    out = prep.optional_out_sample(
         data=values_in,
         out=out,
         axis=axis,

@@ -445,7 +445,7 @@ def rolling_data(  # noqa: PLR0913
                 "min_periods": min_periods,
                 "center": center,
                 "zero_missing_weights": zero_missing_weights,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     out,
                     axis=axis,
                     axes_to_end=axes_to_end,
@@ -528,7 +528,7 @@ def _rolling_data(
     if (shift := (-window // 2) + 1 if center else None) is not None:
         data = _pad_along_axis(data, axis=axis, shift=shift, fill_value=0.0)
 
-    out = prep.out_resample(
+    out = prep.optional_out_sample(
         data=data,
         out=out,
         axis=axis,
@@ -720,7 +720,7 @@ def rolling_vals(  # noqa: PLR0913
                 "min_periods": min_periods,
                 "center": center,
                 "zero_missing_weights": zero_missing_weights,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     target=x,
                     out=out,
                     dim=dim,
@@ -1010,7 +1010,7 @@ def rolling_exp_data(  # noqa: PLR0913
                 "min_periods": min_periods,
                 "adjust": adjust,
                 "zero_missing_weights": zero_missing_weights,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     out,
                     axis=axis,
                     axes_to_end=axes_to_end,
@@ -1124,7 +1124,7 @@ def _rolling_exp_data(
     dtype = select_dtype(data, out=out, dtype=dtype, fastpath=fastpath)
     mom_params = prep.mom_params
 
-    out = prep.out_resample(
+    out = prep.optional_out_sample(
         data=data,
         out=out,
         axis=axis,
@@ -1320,7 +1320,7 @@ def rolling_exp_vals(  # noqa: PLR0913
                 "adjust": adjust,
                 "min_periods": min_periods,
                 "zero_missing_weights": zero_missing_weights,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     target=x,
                     out=out,
                     dim=dim,

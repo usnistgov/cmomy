@@ -49,7 +49,7 @@ if TYPE_CHECKING:
     from .typing_compat import Self
 
 
-# * Data
+# * Prepare classes
 @dataclass
 class _PrepareBaseArray:
     mom_params: MomParamsArray
@@ -133,7 +133,30 @@ class PrepareDataArray(_PrepareBaseArray):
 
         return obj, axis_out, data
 
-    def out_grouped(
+    @staticmethod
+    def optional_out_sample(
+        out: NDArrayAny | None,
+        *,
+        data: NDArrayAny,
+        axis: int,
+        axis_new_size: int,
+        order: ArrayOrderKACF,
+        dtype: DTypeLike,
+    ) -> NDArrayAny | None:
+        """Prepare optional out with ordering."""
+        if out is not None:
+            return out
+
+        if (order := arrayorder_to_arrayorder_cf(order)) is None:
+            return None
+
+        return np.empty(
+            (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :]),
+            dtype=dtype,
+            order=order,
+        )
+
+    def out_sample(
         self,
         data: NDArrayAny,
         *,
@@ -142,7 +165,11 @@ class PrepareDataArray(_PrepareBaseArray):
         order: ArrayOrderCF,
         dtype: DTypeLike,
     ) -> NDArrayAny:
-        """Prepare out with ordering."""
+        """
+        Prepare out with ordering.
+
+        Use this when `out` is required (i.e., signature of gufunc doesn't have "->").
+        """
         shape = (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :])
         if order is None:
             # otherwise, make array in calculation order
@@ -160,29 +187,6 @@ class PrepareDataArray(_PrepareBaseArray):
                 return np.moveaxis(out, axes1, axes0)
 
         return np.empty(shape, dtype=dtype, order=order)
-
-    @staticmethod
-    def out_resample(
-        out: NDArrayAny | None,
-        *,
-        data: NDArrayAny,
-        axis: int,
-        axis_new_size: int,
-        order: ArrayOrderKACF,
-        dtype: DTypeLike,
-    ) -> NDArrayAny | None:
-        """Prepare out with ordering."""
-        if out is not None:
-            return out
-
-        if (order := arrayorder_to_arrayorder_cf(order)) is None:
-            return None
-
-        return np.empty(
-            (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :]),
-            dtype=dtype,
-            order=order,
-        )
 
 
 @dataclass
@@ -216,82 +220,15 @@ class PrepareValsArray(_PrepareBaseArray):
         axes_to_end: bool = True,
         dtype: DTypeLike,
     ) -> tuple[int, tuple[NDArrayAny, ...]]:
-        """
-        Convert input value arrays to correct form for reduction.
-
-        Note: Played around with using axes to handle the different axes, but it's easier to
-        just move to end before operation...
-
-        Parameters
-        ----------
-        narrays : int
-            The total number of expected arrays.  len(args) + 1 must equal narrays.
-        """
-        if len(args) + 1 != narrays:
-            msg = f"Number of arrays {len(args) + 1} != {narrays}"
-            raise ValueError(msg)
-
-        target = asarray_maybe_recast(target, dtype=dtype, recast=self.recast)
-        axis = normalize_axis_index(validate_axis(axis), target.ndim)
-        nsamp = target.shape[axis]
-
-        axis_neg = positive_to_negative_index(axis, target.ndim)
-        if axes_to_end and axis_neg != -1:
-            target = np.moveaxis(target, axis_neg, -1)
-
-        others: Iterable[NDArrayAny] = (
-            self.secondary_value_for_reduction(
-                x=x,
-                axis=axis_neg,
-                nsamp=nsamp,
-                axes_to_end=axes_to_end,
-                dtype=target.dtype,
-            )
-            for x in args
+        return prepare_array_values_for_reduction(
+            target,
+            *args,
+            narrays=narrays,
+            axis=axis,
+            axes_to_end=axes_to_end,
+            dtype=dtype,
+            recast=self.recast,
         )
-
-        return -1 if axes_to_end else axis_neg, (target, *others)
-
-    def secondary_value_for_reduction(
-        self,
-        x: ArrayLike | xr.Dataset,
-        *,
-        axis: int,
-        nsamp: int,
-        axes_to_end: bool = True,
-        dtype: DTypeLike,
-    ) -> NDArrayAny:
-        """
-        Prepare value array (x1, w) for reduction.
-
-        Here, target input base array with ``axis`` already moved
-        to the last position (``target = np.moveaxis(base, axis, -1)``).
-        If same number of dimensions, move axis if needed.
-        If ndim == 0, broadcast to target.shape[axis]
-        If ndim == 1, make sure length == target.shape[axis]
-        If ndim == target.ndim, move axis to last and verify
-        Otherwise, make sure x.shape == target.shape[-x.ndim:]
-        """
-        if is_dataset(x):
-            msg = "Passed Dataset as secondary value with array primary value."
-            raise TypeError(msg)
-
-        out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=self.recast)
-        if not out.ndim:
-            return np.broadcast_to(out, nsamp)
-
-        if out.ndim == 1:
-            axis_check = -1
-        elif axes_to_end and axis != -1:
-            out = np.moveaxis(out, axis, -1)
-            axis_check = -1
-        else:
-            axis_check = axis
-
-        if out.shape[axis_check] != nsamp:
-            msg = f"{out.shape[axis_check]} must be same as target.shape[axis]={nsamp}"
-            raise ValueError(msg)
-        return out
 
     @staticmethod
     def out_from_values(
@@ -351,7 +288,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
     def prepare_array(self) -> PrepareDataArray:
         return self.to_array()
 
-    def out_reduce(
+    def optional_out_reduce(
         self,
         target: xr.DataArray | xr.Dataset,
         out: NDArray[ScalarT] | None,
@@ -365,6 +302,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
             return None
 
         if axes_to_end:
+            # should a
             return out
 
         if keepdims:
@@ -380,7 +318,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
         return np.moveaxis(out, axes0, self.mom_params.axes_last)
 
-    def out_transform(
+    def optional_out_transform(
         self,
         target: xr.DataArray | xr.Dataset,
         out: NDArray[ScalarT] | None,
@@ -400,7 +338,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
             self.mom_params.axes_last,
         )
 
-    def out_resample(
+    def optional_out_sample(
         self,
         out: NDArray[ScalarT] | None,
         *,
@@ -483,62 +421,17 @@ class PrepareValsXArray(_PrepareBaseXArray):
         input_core_dims : list[list[Hashable]]
         tuple_of_arrays : tuple of DataArray or ndarray
         """
-        if len(args) + 1 != narrays:
-            msg = f"Number of arrays {len(args) + 1} != {narrays}"
-            raise ValueError(msg)
-
-        axis, dim = default_mom_params_xarray.select_axis_dim(
+        return prepare_xarray_values_for_reduction(
             target,
-            axis=axis,
+            *args,
+            narrays=narrays,
             dim=dim,
-        )
-
-        nsamp = target.sizes[dim]
-        axis_neg = positive_to_negative_index(
-            axis,
-            # if dataset, Use first variable as template...
-            ndim=(target[next(iter(target))] if is_dataset(target) else target).ndim,
-        )
-
-        arrays = [
-            self.secondary_value_for_reduction(
-                a,
-                axis=axis_neg,
-                nsamp=nsamp,
-                dtype=dtype,
-            )
-            for a in (target, *args)
-        ]
-        # NOTE: Go with list[Sequence[...]] here so that `input_core_dims` can
-        # be updated later with less restriction...
-        input_core_dims: list[Sequence[Hashable]] = [[dim]] * len(arrays)
-        return dim, input_core_dims, arrays
-
-    def secondary_value_for_reduction(
-        self,
-        x: xr.Dataset | xr.DataArray | ArrayLike,
-        axis: int,
-        nsamp: int,
-        dtype: DTypeLike,
-    ) -> xr.Dataset | xr.DataArray | NDArrayAny:
-        """Prepare secondary values for reduction."""
-        if is_dataset(x):
-            return x
-        if is_dataarray(x):
-            return (
-                x.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
-                if (self.recast and dtype is not None)
-                else x
-            )
-        return self.prepare_array.secondary_value_for_reduction(
-            x,
             axis=axis,
-            nsamp=nsamp,
-            axes_to_end=True,
             dtype=dtype,
+            recast=self.recast,
         )
 
-    def out_resample(
+    def optional_out_sample(
         self,
         target: xr.DataArray | xr.Dataset,
         out: NDArray[ScalarT] | None,
@@ -561,3 +454,179 @@ class PrepareValsXArray(_PrepareBaseXArray):
         return np.moveaxis(
             out, axis_neg - self.mom_params.ndim, -(self.mom_params.ndim + 1)
         )
+
+
+# * Methods
+# These don't require mom_params, so leave them a functions.
+def prepare_array_values_for_reduction(
+    target: ArrayLike,
+    *args: ArrayLike | xr.Dataset,
+    narrays: int,
+    axis: AxisReduceWrap | MissingType = MISSING,
+    axes_to_end: bool = True,
+    dtype: DTypeLike,
+    recast: bool = False,
+) -> tuple[int, tuple[NDArrayAny, ...]]:
+    """
+    Convert input value arrays to correct form for reduction.
+
+    Note: Played around with using axes to handle the different axes, but it's easier to
+    just move to end before operation...
+
+    Parameters
+    ----------
+    narrays : int
+        The total number of expected arrays.  len(args) + 1 must equal narrays.
+    """
+    if len(args) + 1 != narrays:
+        msg = f"Number of arrays {len(args) + 1} != {narrays}"
+        raise ValueError(msg)
+
+    target = asarray_maybe_recast(target, dtype=dtype, recast=recast)
+    axis = normalize_axis_index(validate_axis(axis), target.ndim)
+    nsamp = target.shape[axis]
+
+    axis_neg = positive_to_negative_index(axis, target.ndim)
+    if axes_to_end and axis_neg != -1:
+        target = np.moveaxis(target, axis_neg, -1)
+
+    others: Iterable[NDArrayAny] = (
+        _prepare_array_secondary_value_for_reduction(
+            x=x,
+            axis=axis_neg,
+            nsamp=nsamp,
+            axes_to_end=axes_to_end,
+            dtype=target.dtype,
+            recast=recast,
+        )
+        for x in args
+    )
+
+    return -1 if axes_to_end else axis_neg, (target, *others)
+
+
+def _prepare_array_secondary_value_for_reduction(
+    x: ArrayLike | xr.Dataset,
+    *,
+    axis: int,
+    nsamp: int,
+    axes_to_end: bool,
+    dtype: DTypeLike,
+    recast: bool,
+) -> NDArrayAny:
+    """
+    Prepare value array (x1, w) for reduction.
+
+    Here, target input base array with ``axis`` already moved
+    to the last position (``target = np.moveaxis(base, axis, -1)``).
+    If same number of dimensions, move axis if needed.
+    If ndim == 0, broadcast to target.shape[axis]
+    If ndim == 1, make sure length == target.shape[axis]
+    If ndim == target.ndim, move axis to last and verify
+    Otherwise, make sure x.shape == target.shape[-x.ndim:]
+    """
+    if is_dataset(x):
+        msg = "Passed Dataset as secondary value with array primary value."
+        raise TypeError(msg)
+
+    out: NDArrayAny = asarray_maybe_recast(x, dtype=dtype, recast=recast)
+    if not out.ndim:
+        return np.broadcast_to(out, nsamp)
+
+    if out.ndim == 1:
+        axis_check = -1
+    elif axes_to_end and axis != -1:
+        out = np.moveaxis(out, axis, -1)
+        axis_check = -1
+    else:
+        axis_check = axis
+
+    if out.shape[axis_check] != nsamp:
+        msg = f"{out.shape[axis_check]} must be same as target.shape[axis]={nsamp}"
+        raise ValueError(msg)
+    return out
+
+
+def prepare_xarray_values_for_reduction(
+    target: xr.Dataset | xr.DataArray,
+    *args: ArrayLike | xr.DataArray | xr.Dataset,
+    narrays: int,
+    dim: DimsReduce | MissingType,
+    axis: AxisReduceWrap | MissingType,
+    dtype: DTypeLike,
+    recast: bool = False,
+) -> tuple[
+    Hashable,
+    list[Sequence[Hashable]],
+    list[xr.Dataset | xr.DataArray | NDArrayAny],
+]:
+    """
+    Convert input value arrays to correct form for reduction.
+
+    Parameters
+    ----------
+        narrays : int
+        The total number of expected arrays.  len(args) + 1 must equal narrays.
+
+    Returns
+    -------
+    input_core_dims : list[list[Hashable]]
+    tuple_of_arrays : tuple of DataArray or ndarray
+    """
+    if len(args) + 1 != narrays:
+        msg = f"Number of arrays {len(args) + 1} != {narrays}"
+        raise ValueError(msg)
+
+    axis, dim = default_mom_params_xarray.select_axis_dim(
+        target,
+        axis=axis,
+        dim=dim,
+    )
+
+    nsamp = target.sizes[dim]
+    axis_neg = positive_to_negative_index(
+        axis,
+        # if dataset, Use first variable as template...
+        ndim=(target[next(iter(target))] if is_dataset(target) else target).ndim,
+    )
+
+    arrays = [
+        _prepare_xarray_secondary_value_for_reduction(
+            a,
+            axis=axis_neg,
+            nsamp=nsamp,
+            dtype=dtype,
+            recast=recast,
+        )
+        for a in (target, *args)
+    ]
+    # NOTE: Go with list[Sequence[...]] here so that `input_core_dims` can
+    # be updated later with less restriction...
+    input_core_dims: list[Sequence[Hashable]] = [[dim]] * len(arrays)
+    return dim, input_core_dims, arrays
+
+
+def _prepare_xarray_secondary_value_for_reduction(
+    x: xr.Dataset | xr.DataArray | ArrayLike,
+    axis: int,
+    nsamp: int,
+    dtype: DTypeLike,
+    recast: bool,
+) -> xr.Dataset | xr.DataArray | NDArrayAny:
+    """Prepare secondary values for reduction."""
+    if is_dataset(x):
+        return x
+    if is_dataarray(x):
+        return (
+            x.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
+            if (recast and dtype is not None)
+            else x
+        )
+    return _prepare_array_secondary_value_for_reduction(
+        x,
+        axis=axis,
+        nsamp=nsamp,
+        axes_to_end=True,
+        dtype=dtype,
+        recast=recast,
+    )

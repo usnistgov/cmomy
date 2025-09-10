@@ -326,7 +326,7 @@ def reduce_data_grouped(  # noqa: PLR0913
                 # Need total axis here...
                 "axis": -(mom_params.ndim + 1),
                 "dtype": dtype,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     out,
                     axis=axis,
                     axes_to_end=axes_to_end,
@@ -416,7 +416,7 @@ def _reduce_data_grouped(
     raise_if_wrong_value(len(by), data.shape[axis], "Wrong length of `by`.")
 
     if out is None:
-        out = prep.out_grouped(
+        out = prep.out_sample(
             data,
             axis=axis,
             axis_new_size=by.max() + 1,
@@ -676,7 +676,7 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "group_start": group_start,
                 "group_end": group_end,
                 "scale": scale,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     out,
                     axis=axis,
                     axes_to_end=axes_to_end,
@@ -790,7 +790,7 @@ def _reduce_data_indexed(
     )
 
     # optional out with correct ordering
-    out = prep.out_resample(
+    out = prep.optional_out_sample(
         out=out,
         data=data,
         axis=axis,
@@ -965,7 +965,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     target=x,
                     out=out,
                     dim=dim,
@@ -1252,7 +1252,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
                 "group_end": group_end,
                 "scale": scale,
                 "axis_neg": -1,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     target=x,
                     out=out,
                     dim=dim,

@@ -227,7 +227,7 @@ def resample_data(  # noqa: PLR0913
             kwargs={
                 "prep": prep.prepare_array,
                 "axis": -(mom_params.ndim + 1),
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     out,
                     axis=axis,
                     axes_to_end=axes_to_end,
@@ -315,7 +315,7 @@ def _resample_data(
         ),
     ]
 
-    out = prep.out_resample(
+    out = prep.optional_out_sample(
         data=data,
         out=out,
         axis=axis,
@@ -489,7 +489,7 @@ def resample_vals(  # noqa: PLR0913
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     target=x,
                     out=out,
                     dim=dim,
@@ -820,7 +820,7 @@ def jackknife_data(  # noqa: PLR0913
                 "axis": -(mom_params.ndim + 1),
                 "prep": prep.prepare_array,
                 "mom_axes_reduced": None,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     out,
                     axis=axis,
                     axes_to_end=axes_to_end,
@@ -910,7 +910,7 @@ def _jackknife_data(
         *prep.mom_params.axes_data_reduction(axis=axis, out_has_axis=True),
     ]
 
-    out = prep.out_resample(
+    out = prep.optional_out_sample(
         data=data,
         out=out,
         axis=axis,
@@ -1100,7 +1100,7 @@ def jackknife_vals(  # noqa: PLR0913
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
-                "out": prep.out_resample(
+                "out": prep.optional_out_sample(
                     target=x,
                     out=out,
                     dim=dim,

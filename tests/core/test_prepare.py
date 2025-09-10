@@ -248,7 +248,7 @@ def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> 
     kws.setdefault("data", data)
     mom_params = factory_mom_params(kws["data"], mom_params=mom_params_kws, data=data)
 
-    func = prepare.PrepareDataXArray(mom_params=mom_params).out_resample
+    func = prepare.PrepareDataXArray(mom_params=mom_params).optional_out_sample
     if expected is None:
         assert func(**kws) is None
     elif isinstance(expected, type):
@@ -258,14 +258,15 @@ def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> 
         np.testing.assert_allclose(func(**kws), expected)  # type: ignore[arg-type]
 
 
-def test_prepare_secondary_value_for_reduction() -> None:
+def test__prepare_secondary_value_for_reduction() -> None:
     ds = xr.Dataset({"a": xr.DataArray([1, 2, 3], dims="x")})
 
-    prep = prepare.PrepareValsArray.factory(ndim=1)
     with pytest.raises(TypeError, match=r"Passed Dataset.*"):
-        _ = prep.secondary_value_for_reduction(
+        _ = prepare._prepare_array_secondary_value_for_reduction(
             ds,
             axis=1,
+            axes_to_end=False,
+            recast=False,
             nsamp=10,
             dtype=np.float64,
         )
