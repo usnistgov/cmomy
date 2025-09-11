@@ -220,8 +220,14 @@ class PrepareValsArray(_PrepareBaseArray):
         axis: AxisReduceWrap | MissingType = MISSING,
         axes_to_end: bool = True,
         dtype: DTypeLike,
-    ) -> tuple[int, tuple[NDArrayAny, ...]]:
-        return prepare_array_values_for_reduction(
+    ) -> tuple[Self, int, tuple[NDArrayAny, ...]]:
+        obj = (
+            replace(self, mom_params=self.mom_params.axes_to_end())
+            if axes_to_end
+            else self
+        )
+
+        return obj, *prepare_array_values_for_reduction(
             target,
             *args,
             narrays=narrays,
@@ -249,9 +255,34 @@ class PrepareValsArray(_PrepareBaseArray):
             args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
         )
         mom_shape = mom_to_mom_shape(mom)
-
         axis = normalize_axis_index(axis_neg, len(val_shape))
 
+        if order is None:
+            # use calculation order
+            shape_calculate = (
+                *val_shape[:axis],
+                *val_shape[axis + 1 :],
+                *(() if axis_new_size is None else (axis_new_size,)),
+                *mom_shape,
+            )
+            out = np.empty(shape_calculate, dtype=dtype, order=order)
+
+            # reorder
+            if axis_new_size is None:
+                axes0 = self.mom_params.axes_last
+                axes1 = self.mom_params.axes
+            else:
+                axes0 = (
+                    len(shape_calculate) - (self.mom_params.ndim + 1),
+                    *self.mom_params.axes_last,
+                )
+                axes1 = (axis, *self.mom_params.axes)
+
+            if axes0 != axes1:
+                return np.moveaxis(out, axes0, axes1)
+            return out
+
+        # Use actual order
         shape: tuple[int, ...] = (
             *val_shape[:axis],
             *(() if axis_new_size is None else (axis_new_size,)),
@@ -259,24 +290,13 @@ class PrepareValsArray(_PrepareBaseArray):
             *mom_shape,
         )
 
-        if order is None:
-            # use calculation order
-            if axis_new_size is None:
-                axes0 = self.mom_params.axes
-                axes1 = self.mom_params.axes_last
-            else:
-                axes0 = (axis, *self.mom_params.axes)
-                axes1 = (
-                    len(shape) - (self.mom_params.ndim + 1),
-                    *self.mom_params.axes_last,
+        if self.mom_params.axes != self.mom_params.axes_last:
+            shape = tuple(
+                shape[o]
+                for o in moveaxis_order(
+                    len(shape), self.mom_params.axes_last, self.mom_params.axes
                 )
-
-            if axes0 != axes1:
-                new_shape = tuple(
-                    shape[o] for o in moveaxis_order(len(shape), axes0, axes1)
-                )
-                out = np.empty(new_shape, dtype=dtype, order=order)
-                return np.moveaxis(out, axes1, axes0)
+            )
 
         return np.empty(shape, dtype=dtype, order=order)
 
@@ -309,7 +329,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
             return None
 
         if axes_to_end:
-            # should a
+            # out should already be in correct order
             return out
 
         if keepdims:
@@ -337,6 +357,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
             return None
 
         if axes_to_end:
+            # out should already be in correct order
             return out
 
         return np.moveaxis(

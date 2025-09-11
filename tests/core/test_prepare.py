@@ -71,7 +71,7 @@ def test_prepare_values_for_reduction(
             )
 
     else:
-        _axis, (x, y, w) = prep.values_for_reduction(
+        prep, _axis, (x, y, w) = prep.values_for_reduction(
             target,
             y,
             w,

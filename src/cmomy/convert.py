@@ -133,6 +133,15 @@ def moments_type(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def moments_type(
+    values_in: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -340,6 +349,15 @@ def cumulative(
     dtype: Any = ...,
     **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def cumulative(
+    values_in: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: Any = ...,
+    **kwargs: Unpack[CumulativeKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -599,6 +617,15 @@ def moments_to_comoments(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def moments_to_comoments(
+    data: ArrayLike | DataT,
+    *,
+    mom: tuple[int, int],
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -777,6 +804,14 @@ def comoments_to_moments(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def comoments_to_moments(
+    data: ArrayLike | DataT,
+    *,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]

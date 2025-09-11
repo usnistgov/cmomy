@@ -190,6 +190,16 @@ def reduce_data_grouped(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataGroupedKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def reduce_data_grouped(
+    data: ArrayLike | DataT,
+    by: ArrayLike,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceDataGroupedKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 # *** public
@@ -529,6 +539,15 @@ def reduce_data_indexed(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataIndexedKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def reduce_data_indexed(
+    data: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceDataIndexedKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 # *** public
@@ -873,6 +892,17 @@ def reduce_vals_grouped(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsGroupedKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def reduce_vals_grouped(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    by: ArrayLike,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsGroupedKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -885,6 +915,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
+    mom_axes: MomAxes | None = None,
     mom_params: MomParamsInput = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -911,6 +942,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     {dim}
     {weight_genarray}
     {mom_dims}
+    {mom_axes}
     {mom_params}
     {out}
     {dtype}
@@ -1016,9 +1048,9 @@ def reduce_vals_grouped(  # noqa: PLR0913
 
     # Numpy
     prep, mom = PrepareValsArray.factory_mom(
-        mom=mom, mom_params=mom_params, recast=False
+        mom=mom, axes=mom_axes, mom_params=mom_params, recast=False
     )
-    axis_neg, args = prep.values_for_reduction(
+    prep, axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         *y,
@@ -1146,6 +1178,16 @@ def reduce_vals_indexed(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsIndexedKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def reduce_vals_indexed(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsIndexedKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -1161,6 +1203,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
+    mom_axes: MomAxes | None = None,
     mom_params: MomParamsInput = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -1194,6 +1237,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
     {dim}
     {weight_genarray}
     {mom_dims}
+    {mom_axes}
     {mom_params}
     {out}
     {dtype}
@@ -1305,9 +1349,9 @@ def reduce_vals_indexed(  # noqa: PLR0913
 
     # Numpy
     prep, mom = PrepareValsArray.factory_mom(
-        mom=mom, mom_params=mom_params, recast=False
+        mom=mom, axes=mom_axes, mom_params=mom_params, recast=False
     )
-    axis_neg, args = prep.values_for_reduction(
+    prep, axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         *y,

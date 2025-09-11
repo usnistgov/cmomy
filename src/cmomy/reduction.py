@@ -134,10 +134,20 @@ def reduce_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def reduce_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_vals(
+def reduce_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
@@ -145,12 +155,14 @@ def reduce_vals(
     dim: DimsReduce | MissingType = MISSING,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
+    mom_axes: MomAxes | None = None,
     mom_params: MomParamsInput = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> NDArrayAny | DataT:
@@ -166,6 +178,7 @@ def reduce_vals(
     {dim}
     {weight_genarray}
     {mom_dims}
+    {mom_axes}
     {mom_params}
     {out}
     {dtype}
@@ -240,15 +253,15 @@ def reduce_vals(
 
     # Numpy
     prep, mom = PrepareValsArray.factory_mom(
-        mom=mom, mom_params=mom_params, recast=False
+        mom=mom, axes=mom_axes, mom_params=mom_params, recast=False
     )
-    axis_neg, args = prep.values_for_reduction(
+    prep, axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         *y,
         axis=axis,
         narrays=prep.mom_params.ndim + 1,
-        axes_to_end=False,
+        axes_to_end=axes_to_end,
         dtype=dtype,
     )
 
@@ -358,6 +371,15 @@ def reduce_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArrayAny: ...
+# Arraylike or DataT
+@overload
+def reduce_data(
+    data: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 # ** public

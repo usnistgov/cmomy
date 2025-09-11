@@ -363,6 +363,15 @@ def rolling_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def rolling_data(
+    data: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -622,6 +631,16 @@ def rolling_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def rolling_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingValsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -754,7 +773,7 @@ def rolling_vals(  # noqa: PLR0913
     prep, mom = PrepareValsArray.factory_mom(
         mom=mom, mom_params=mom_params, recast=False
     )
-    axis_neg, args = prep.values_for_reduction(
+    prep, axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         *y,
@@ -904,6 +923,16 @@ def rolling_exp_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def rolling_exp_data(
+    data: ArrayLike | DataT,
+    alpha: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingExpDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -1221,6 +1250,17 @@ def rolling_exp_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def rolling_exp_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    alpha: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingExpValsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -1355,7 +1395,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     prep, mom = PrepareValsArray.factory_mom(
         mom=mom, mom_params=mom_params, recast=False
     )
-    axis_neg, args = prep.values_for_reduction(
+    prep, axis_neg, args = prep.values_for_reduction(
         x,
         weight,
         alpha,

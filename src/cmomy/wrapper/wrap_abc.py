@@ -1182,7 +1182,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             out = assign_moment(
                 out, weight=weight, mom_params=self._mom_params, copy=False
             )
-        return out
+        return out  # type: ignore[no-any-return]
 
     def rmom(self) -> GenArrayT:
         r"""

@@ -444,6 +444,8 @@ class ReduceDataKwargs(  # type: ignore[call-arg]
 
 class ReduceValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
+    _MoveAxisToEndKwargs,
+    _MomAxesKwargs,
     total=False,
     closed=True,
 ):
@@ -476,6 +478,7 @@ class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
 class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _MoveAxisToEndKwargs,
+    _MomAxesKwargs,
     _GroupsKwargs,
     _CoordsPolicyKwargs,
     total=False,
@@ -487,6 +490,7 @@ class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
 class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _MoveAxisToEndKwargs,
+    _MomAxesKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
     _CoordsPolicyKwargs,
@@ -511,6 +515,7 @@ class ResampleDataKwargs(  # type: ignore[call-arg]
 class ResampleValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _MoveAxisToEndKwargs,
+    _MomAxesKwargs,
     _RepDimKwargs,
     _SamplerKwargs,
     total=False,
@@ -534,12 +539,14 @@ class JackknifeDataKwargs(  # type: ignore[call-arg]
 class JackknifeValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _MoveAxisToEndKwargs,
+    _MomAxesKwargs,
     total=False,
     closed=True,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
     rep_dim: str | None
+    mom_axes_reduced: MomAxes | None
 
 
 # ** Convert

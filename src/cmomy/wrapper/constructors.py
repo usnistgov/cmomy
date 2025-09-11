@@ -6,6 +6,9 @@ Idea is to Wrap ndarray, xr.DataArray, and xr.Dataset objects...
 
 from __future__ import annotations
 
+from collections.abc import (
+    Mapping,
+)
 from typing import TYPE_CHECKING, overload
 
 import numpy as np
@@ -26,9 +29,6 @@ from .wrap_np import CentralMomentsArray
 from .wrap_xr import CentralMomentsData
 
 if TYPE_CHECKING:
-    from collections.abc import (
-        Mapping,
-    )
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -77,7 +77,7 @@ def wrap(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap(  # type: ignore[overload-cannot-match]
+def wrap(  # type: ignore[overload-cannot-match,overload-overlap]
     obj: xr.DataArray | xr.Dataset,
     *,
     dtype: DTypeLike | Mapping[str, DTypeLike] = ...,
@@ -104,6 +104,13 @@ def wrap(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArrayAny: ...
+@overload
+def wrap(
+    obj: ArrayLike | DataT,
+    *,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[WrapKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
 
 @docfiller.decorate  # type: ignore[misc]
@@ -233,7 +240,7 @@ def zeros_like(
 
 @docfiller.decorate
 def zeros_like(
-    c: CentralMomentsArrayAny | CentralMomentsDataAny,
+    c: CentralMomentsArrayAny | CentralMomentsData[DataT],
     *,
     dtype: DTypeLike | Mapping[Any, DTypeLike] = None,
     order: ArrayOrderKACF = None,
@@ -241,7 +248,7 @@ def zeros_like(
     chunks: Any = None,
     chunked_array_type: str | None = None,
     from_array_kwargs: dict[str, Any] | None = None,
-) -> CentralMomentsArrayAny | CentralMomentsDataAny:
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
     r"""
     Create new wrapped object with zeros like given wrapped object.
 
@@ -282,7 +289,7 @@ def zeros_like(
     """
     if isinstance(c, CentralMomentsData):
         return wrap(  # pyright: ignore[reportUnknownVariableType]
-            xr.zeros_like(  # type: ignore[misc]  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
+            xr.zeros_like(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
                 c.obj,
                 dtype=dtype,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
                 chunks=chunks,
@@ -291,15 +298,18 @@ def zeros_like(
             ),
             mom_params=c.mom_params,
         )
-    return wrap(  # pyright: ignore[reportUnknownVariableType]
-        np.zeros_like(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
+
+    assert not isinstance(dtype, Mapping)  # noqa: S101
+    out: CentralMomentsArrayAny = wrap(
+        np.zeros_like(
             c.obj,
-            dtype=dtype,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            dtype=dtype,
             order=order,
             subok=subok,
         ),
         mom_params=c.mom_params,
     )
+    return out
 
 
 # * From vals -----------------------------------------------------------------
@@ -313,7 +323,7 @@ def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap_reduce_vals(  # type: ignore[overload-cannot-match]
+def wrap_reduce_vals(  # type: ignore[overload-cannot-match,overload-overlap]
     x: xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | xr.Dataset,
     weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
@@ -357,6 +367,15 @@ def wrap_reduce_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArrayAny: ...
+@overload
+def wrap_reduce_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
 
 @docfiller.decorate  # type: ignore[misc]
@@ -425,8 +444,8 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     mom_params = factory_mom_params(
         x, mom_params=mom_params, ndim=len(mom), dims=mom_dims
     )
-    obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]  # pyright: ignore[reportCallIssue, reportUnknownVariableType, reportCallIssue]
-        x,  # pyright: ignore[reportArgumentType]
+    obj = reduce_vals(
+        x,
         *y,
         mom=mom,
         weight=weight,
@@ -442,8 +461,8 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         apply_ufunc_kwargs=apply_ufunc_kwargs,
     )
 
-    return wrap(  # pyright: ignore[reportUnknownVariableType]
-        obj=obj,  # pyright: ignore[reportUnknownArgumentType]
+    return wrap(
+        obj=obj,
         mom_params=mom_params,
         fastpath=True,
     )
@@ -460,7 +479,7 @@ def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap_resample_vals(  # type: ignore[overload-cannot-match]
+def wrap_resample_vals(  # type: ignore[overload-cannot-match,overload-overlap]
     x: xr.DataArray | xr.Dataset,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -504,6 +523,15 @@ def wrap_resample_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArrayAny: ...
+@overload
+def wrap_resample_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: Any = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
 
 @docfiller.decorate  # type: ignore[misc]
@@ -583,8 +611,8 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         target=x, mom_params=mom_params, ndim=len(mom), dims=mom_dims
     )
 
-    obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]  # unused in python3.12  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
-        x,  # pyright: ignore[reportArgumentType]
+    obj = resample_vals(
+        x,
         *y,
         sampler=sampler,
         mom=mom,
@@ -602,8 +630,8 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         casting=casting,
         order=order,
     )
-    return wrap(  # pyright: ignore[reportUnknownVariableType]
-        obj=obj,  # pyright: ignore[reportUnknownArgumentType]
+    return wrap(
+        obj=obj,
         mom_params=mom_params,
         fastpath=True,
     )
@@ -619,7 +647,7 @@ def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
     **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap_raw(  # type: ignore[overload-cannot-match]
+def wrap_raw(  # type: ignore[overload-cannot-match,overload-overlap]
     raw: xr.DataArray | xr.Dataset,
     *,
     out: NDArrayAny | None = ...,
@@ -658,6 +686,14 @@ def wrap_raw(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArrayAny: ...
+@overload
+def wrap_raw(
+    raw: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[WrapRawKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
 
 @docfiller.decorate  # type: ignore[misc]
