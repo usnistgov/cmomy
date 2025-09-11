@@ -204,7 +204,7 @@ def reduce_vals(  # noqa: PLR0913
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom_params=mom_params,
             mom=mom,
@@ -439,7 +439,7 @@ def reduce_data(  # noqa: PLR0913
         Same type as input ``data``.
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,

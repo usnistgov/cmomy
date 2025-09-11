@@ -311,7 +311,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
     by = np.asarray(by, dtype=np.int64)
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -356,7 +356,7 @@ def reduce_data_grouped(  # noqa: PLR0913
             ),
         )
 
-        xout = _apply_coords_policy_grouped(  # type: ignore[type-var,assignment]  # no clue why?
+        xout = _apply_coords_policy_grouped(
             selected=xout,
             template=data,
             dim=dim,
@@ -661,7 +661,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -716,7 +716,7 @@ def reduce_data_indexed(  # noqa: PLR0913
             ),
         )
 
-        xout = _apply_coords_policy_indexed(  # type: ignore[type-var, assignment]
+        xout = _apply_coords_policy_indexed(
             selected=xout,
             template=data,
             dim=dim,
@@ -971,7 +971,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     dtype = select_dtype(x, out=out, dtype=dtype)
     by = np.asarray(by, dtype=np.int64)
 
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
@@ -1021,7 +1021,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
             ),
         )
 
-        xout = _apply_coords_policy_grouped(  # type: ignore[type-var,assignment]  # no clue why?
+        xout = _apply_coords_policy_grouped(
             selected=xout,
             template=x,
             dim=dim,
@@ -1260,7 +1260,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
@@ -1320,7 +1320,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
             ),
         )
 
-        xout = _apply_coords_policy_indexed(  # type: ignore[type-var, assignment]
+        xout = _apply_coords_policy_indexed(
             selected=xout,
             template=x,
             dim=dim,

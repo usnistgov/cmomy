@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, Generic, cast, final
 
 import numpy as np
 import xarray as xr
 
 from .docstrings import docfiller
 from .missing import MISSING
+from .typing import DataT
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -18,10 +19,9 @@ if TYPE_CHECKING:
     )
     from typing import Any
 
-    from numpy.typing import ArrayLike, DTypeLike, NDArray
+    from numpy.typing import DTypeLike, NDArray
 
     from .typing import (
-        DataT,
         MissingType,
         MomAxesStrict,
         MomDimsStrict,
@@ -54,9 +54,14 @@ def is_xarray(x: object) -> TypeIs[xr.Dataset | xr.DataArray]:
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
-def is_xarray_typevar(x: ArrayLike | DataT) -> TypeIs[DataT]:
-    """Typeguard ``DataT`` typevar against array-like."""
-    return isinstance(x, (xr.DataArray, xr.Dataset))
+# NOTE: got this way to make sure DataT is bound
+@final
+class is_xarray_typevar(Generic[DataT]):  # noqa: N801
+    """Class based typeis for DataT TypeVar"""
+
+    @staticmethod
+    def check(x: object) -> TypeIs[DataT]:
+        return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
 # * Raises --------------------------------------------------------------------

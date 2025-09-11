@@ -462,7 +462,7 @@ def select_moment(
     array([1, 4])
 
     """
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         if name == "all":
             return data
 
@@ -696,7 +696,7 @@ def assign_moment(
         "assign_moment",
     )
 
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -846,6 +846,16 @@ def vals_to_data(
     out: NDArrayAny | None = ...,
     **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def vals_to_data(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -940,7 +950,7 @@ def vals_to_data(
     weight = 1.0 if weight is None else weight
     args: list[Any] = [x, weight, *y]
 
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom_params=mom_params, mom=mom, dims=mom_dims, data=out
         )

@@ -34,7 +34,6 @@ from .core.validate import (
     is_dataarray,
     is_dataset,
     is_ndarray,
-    is_xarray,
     is_xarray_typevar,
 )
 from .core.xr_utils import (
@@ -219,7 +218,7 @@ def moments_type(
     """
     # TODO(wpk): add axes_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray_typevar(values_in):
+    if is_xarray_typevar["DataT"].check(values_in):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -435,7 +434,7 @@ def cumulative(  # noqa: PLR0913
 
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray_typevar(values_in):
+    if is_xarray_typevar["DataT"].check(values_in):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -720,7 +719,7 @@ def moments_to_comoments(
 
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=1, dims=mom_dims, axes=mom_axes, data=data
         )
@@ -875,7 +874,7 @@ def comoments_to_moments(
     array([10.    ,  0.5505,  0.1014, -0.0178])
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=2, axes=mom_axes, dims=mom_dims, data=data
         )
@@ -1066,7 +1065,7 @@ def concat(
             **kwargs,
         )
 
-    if is_xarray(first):
+    if is_xarray_typevar["DataT"].check(first):
         if dim is MISSING or dim is None or dim in first.dims:
             axis, dim = default_mom_params_xarray.select_axis_dim(
                 first, axis=axis, dim=dim, default_axis=0

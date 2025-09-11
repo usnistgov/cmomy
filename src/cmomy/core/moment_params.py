@@ -175,6 +175,10 @@ class MomParamsBase(ABC, _MixinDataclass):
     def get_val_shape(self, data: Any) -> tuple[int, ...]:
         pass  # pragma: no cover
 
+    @abstractmethod
+    def axes_to_end(self) -> Self:
+        pass  # pragma: no cover
+
     def check_data(self, data: Any) -> None:
         # NOTE: Not an ideal solution, but get a bunch
         # of possible errors if don't do this.
@@ -220,8 +224,8 @@ class MomParamsArrayOptional(MomParamsBase):
 
         if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
             mom_params = mom_params.asdict()
-        else:
-            mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
+        elif mom_params is None:
+            mom_params = MomParamsDict()
 
         if ndim is not None:
             mom_params["ndim"] = ndim
@@ -276,6 +280,10 @@ class MomParamsArrayOptional(MomParamsBase):
         except Exception as e:
             msg = "Could not extract moment shape from data"
             raise ValueError(msg) from e
+
+    def axes_to_end(self) -> Self:
+        """Create new object with ``self.axes`` at end."""
+        return replace(self, axes=self.axes_last)
 
     def get_mom(self, data: NDArrayAny) -> MomentsStrict:
         from .utils import mom_shape_to_mom
@@ -409,8 +417,8 @@ class MomParamsXArrayOptional(MomParamsBase):
 
         if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
             mom_params = mom_params.asdict()
-        else:
-            mom_params = {} if mom_params is None else MomParamsDict(mom_params)  # type: ignore[misc]
+        elif mom_params is None:
+            mom_params = MomParamsDict()
 
         if ndim is not None:
             mom_params["ndim"] = ndim
@@ -452,6 +460,13 @@ class MomParamsXArrayOptional(MomParamsBase):
             msg = "Must set dims"
             raise ValueError(msg)
         return self.dims
+
+    def axes_to_end(self) -> Self:
+        """Create new object with ``self.axes`` at end."""
+        if self.ndim is None:
+            msg = "Must set ndim"
+            raise ValueError(msg)
+        return self
 
     def get_axes(self, data: xr.DataArray | None = None) -> MomAxesStrict:
         """

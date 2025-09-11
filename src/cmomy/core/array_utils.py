@@ -28,6 +28,7 @@ if TYPE_CHECKING:
         NDArrayAny,
         ScalarT,
     )
+    from .typing_compat import TypeIs
 
 
 # * Array order ---------------------------------------------------------------
@@ -150,6 +151,12 @@ def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
 
 
+def _is_allowed_float_dtype(
+    dtype: object,
+) -> TypeIs[np.dtype[np.float32] | np.dtype[np.float64]]:
+    return dtype in _ALLOWED_FLOAT_DTYPES
+
+
 @overload
 def select_dtype(
     x: xr.Dataset,
@@ -166,6 +173,14 @@ def select_dtype(
     dtype: DTypeLike,
     fastpath: bool = ...,
 ) -> np.dtype[np.float32] | np.dtype[np.float64]: ...
+@overload
+def select_dtype(
+    x: xr.Dataset | xr.DataArray,
+    *,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+    fastpath: bool = ...,
+) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 @overload
 def select_dtype(
     x: xr.Dataset | xr.DataArray | ArrayLike,
@@ -203,8 +218,8 @@ def select_dtype(
     else:
         dtype = getattr(x, "dtype", np.dtype(np.float64))
 
-    if dtype in _ALLOWED_FLOAT_DTYPES:
-        return dtype  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
+    if _is_allowed_float_dtype(dtype):
+        return dtype
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)

@@ -215,7 +215,7 @@ def resample_data(  # noqa: PLR0913
         parallel=parallel,
     )
 
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -418,9 +418,9 @@ def resample_vals(  # noqa: PLR0913
     *y: ArrayLike | xr.DataArray | DataT,
     sampler: Sampler,
     mom: Moments,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
-    weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
     mom_params: MomParamsInput = None,
@@ -485,7 +485,7 @@ def resample_vals(  # noqa: PLR0913
         parallel=parallel,
     )
 
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
@@ -837,7 +837,7 @@ def jackknife_data(  # noqa: PLR0913
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
         prep = PrepareDataXArray(mom_params=mom_params, recast=False)
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
@@ -1126,7 +1126,7 @@ def jackknife_vals(  # noqa: PLR0913
     elif not is_xarray(data_reduced):
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )

@@ -22,6 +22,7 @@ from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    is_xarray_typevar,
     raise_if_wrong_value,
     validate_floating_dtype,
 )
@@ -450,7 +451,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             )
             return out
 
-        if is_xarray(datas):
+        if is_xarray_typevar["DataT"].check(datas):
             axis, dim = self._mom_params.select_axis_dim(
                 datas,
                 axis=axis,
@@ -557,7 +558,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         """
         weight = 1.0 if weight is None else weight
         xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
-        if is_xarray(x):
+        if is_xarray_typevar["DataT"].check(x):
             dim, input_core_dims, xargs = prepare_xarray_values_for_reduction(
                 x,
                 weight,

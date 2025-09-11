@@ -236,7 +236,7 @@ def construct_rolling_window_array(
     --------
     xarray.DataArray.rolling
     """
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         mom_params = MomParamsXArrayOptional.factory(
             mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
         )
@@ -430,7 +430,7 @@ def rolling_data(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -711,7 +711,7 @@ def rolling_vals(  # noqa: PLR0913
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
@@ -1001,7 +1001,7 @@ def rolling_exp_data(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -1332,7 +1332,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )

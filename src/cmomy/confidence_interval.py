@@ -203,7 +203,7 @@ def bootstrap_confidence_interval(
         dtype=dtype,
     )
 
-    if is_xarray_typevar(theta_boot):
+    if is_xarray_typevar["DataT"].check(theta_boot):
         axis, dim = default_mom_params_xarray.select_axis_dim(
             theta_boot, axis=axis, dim=dim
         )
