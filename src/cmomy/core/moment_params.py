@@ -124,10 +124,6 @@ class MomParamsBase(ABC, _MixinDataclass):
 
     ndim: MomNDim | None
 
-    def new_like(self, **kwargs: Any) -> Self:
-        """Create new object from key, value pairs."""
-        return replace(self, **kwargs)
-
     def normalize_axis_index(
         self, axis: complex, data_ndim: int, msg_prefix: str | None = None
     ) -> int:
@@ -347,10 +343,6 @@ class MomParamsArray(MomParamsArrayOptional):
             ndim=len(mom), mom_params=mom_params, axes=axes, default_ndim=default_ndim
         )
 
-    def axes_to_end(self) -> Self:
-        """Create new object with ``self.axes`` at end."""
-        return replace(self, axes=self.axes_last)
-
     def axes_data_reduction(
         self,
         *inner: int | tuple[int, ...],
@@ -463,9 +455,7 @@ class MomParamsXArrayOptional(MomParamsBase):
 
     def axes_to_end(self) -> Self:
         """Create new object with ``self.axes`` at end."""
-        if self.ndim is None:
-            msg = "Must set ndim"
-            raise ValueError(msg)
+        _ = self._validated_ndim
         return self
 
     def get_axes(self, data: xr.DataArray | None = None) -> MomAxesStrict:

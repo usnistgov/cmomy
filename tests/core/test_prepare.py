@@ -6,39 +6,85 @@ import numpy as np
 import pytest
 import xarray as xr
 
+from cmomy import moveaxis
 from cmomy.core import prepare
 from cmomy.core.missing import MISSING
 
 # * prepare values/data
 dtype_mark = pytest.mark.parametrize("dtype", [np.float32, np.float64, None])
 order_mark = pytest.mark.parametrize("order", ["C", None])
-prepare_values_mark = pytest.mark.parametrize(
-    ("axis", "xshape", "xshape2", "yshape", "yshape2", "wshape", "wshape2"),
+
+
+@pytest.mark.parametrize(
+    (
+        "axes_to_end",
+        "axis",
+        "xshape",
+        "xshape2",
+        "yshape",
+        "yshape2",
+        "wshape",
+        "wshape2",
+    ),
     [
-        (0, (10, 2, 3), (2, 3, 10), (), (10,), (), (10,)),
-        (0, (10, 2, 3), (2, 3, 10), (10, 2, 1), (2, 1, 10), (10, 1, 1), (1, 1, 10)),
-        (1, (2, 10, 3), (2, 3, 10), (10, 3), (3, 10), (10,), (10,)),
+        # axes_to_end
+        (True, 0, (10, 2, 3), (2, 3, 10), (), (10,), (), (10,)),
+        (
+            True,
+            0,
+            (10, 2, 3),
+            (2, 3, 10),
+            (10, 2, 1),
+            (2, 1, 10),
+            (10, 1, 1),
+            (1, 1, 10),
+        ),
+        (True, 1, (2, 10, 3), (2, 3, 10), (10, 3), (3, 10), (10,), (10,)),
         # Note that "wrong" shapes are passed through.
-        (1, (2, 10, 3), "error", (3, 10), (3, 10), (10,), (10,)),
-        (1, (2, 10, 3), (2, 3, 10), (1, 10, 3), (1, 3, 10), (10,), (10,)),
+        (True, 1, (2, 10, 3), "error", (3, 10), (3, 10), (10,), (10,)),
+        (True, 1, (2, 10, 3), (2, 3, 10), (1, 10, 3), (1, 3, 10), (10,), (10,)),
         # bad shape on w
-        (1, (2, 10, 3), "error", (10,), (10,), (11,), (10,)),
-        (1, (2, 10, 3), "error", (11,), (10,), (10,), (10,)),
-        (2, (2, 3, 10), (2, 3, 10), (3, 10), (3, 10), (10,), (10,)),
-        (2, (2, 3, 10), (2, 3, 10), (1, 3, 10), (1, 3, 10), (10,), (10,)),
-        (-1, (2, 3, 10), (2, 3, 10), (3, 10), (3, 10), (10,), (10,)),
-        (-1, (2, 3, 10), (2, 3, 10), (1, 3, 10), (1, 3, 10), (10,), (10,)),
+        (True, 1, (2, 10, 3), "error", (10,), (10,), (11,), (10,)),
+        (True, 1, (2, 10, 3), "error", (11,), (10,), (10,), (10,)),
+        (True, 2, (2, 3, 10), (2, 3, 10), (3, 10), (3, 10), (10,), (10,)),
+        (True, 2, (2, 3, 10), (2, 3, 10), (1, 3, 10), (1, 3, 10), (10,), (10,)),
+        (True, -1, (2, 3, 10), (2, 3, 10), (3, 10), (3, 10), (10,), (10,)),
+        (True, -1, (2, 3, 10), (2, 3, 10), (1, 3, 10), (1, 3, 10), (10,), (10,)),
         # no axis
-        (None, (2, 3, 10), "error", (1, 3, 10), (1, 3, 10), (10,), (10,)),
+        (True, None, (2, 3, 10), "error", (1, 3, 10), (1, 3, 10), (10,), (10,)),
+        #
+        # no axes_to_end
+        #
+        (False, 0, (10, 2, 3), (10, 2, 3), (), (10,), (), (10,)),
+        (
+            False,
+            0,
+            (10, 2, 3),
+            (10, 2, 3),
+            (10, 2, 1),
+            (10, 2, 1),
+            (10, 1, 1),
+            (10, 1, 1),
+        ),
+        (False, 1, (2, 10, 3), (2, 10, 3), (10, 3), (10, 3), (10,), (10,)),
+        # Note that "wrong" shapes are passed through.
+        (False, 1, (2, 10, 3), "error", (3, 10), (3, 10), (10,), (10,)),
+        (False, 1, (2, 10, 3), (2, 10, 3), (1, 10, 3), (1, 10, 3), (10,), (10,)),
+        # bad shape on w
+        (False, 1, (2, 10, 3), "error", (10,), (10,), (11,), (10,)),
+        (False, 1, (2, 10, 3), "error", (11,), (10,), (10,), (10,)),
+        (False, 2, (2, 3, 10), (2, 3, 10), (3, 10), (3, 10), (10,), (10,)),
+        (False, 2, (2, 3, 10), (2, 3, 10), (1, 3, 10), (1, 3, 10), (10,), (10,)),
+        (False, -1, (2, 3, 10), (2, 3, 10), (3, 10), (3, 10), (10,), (10,)),
+        (False, -1, (2, 3, 10), (2, 3, 10), (1, 3, 10), (1, 3, 10), (10,), (10,)),
+        # no axis
+        (False, None, (2, 3, 10), "error", (1, 3, 10), (1, 3, 10), (10,), (10,)),
     ],
 )
-
-
-@prepare_values_mark
 @dtype_mark
 # @order_mark
 def test_prepare_values_for_reduction(
-    dtype, axis, xshape, xshape2, yshape, yshape2, wshape, wshape2
+    axes_to_end, dtype, axis, xshape, xshape2, yshape, yshape2, wshape, wshape2
 ) -> None:
     xv, yv, wv = 1, 2, 3
 
@@ -55,6 +101,7 @@ def test_prepare_values_for_reduction(
             narrays=2,
             axis=axis,
             dtype=dtype,
+            axes_to_end=axes_to_end,
         )
 
     if xshape2 == "error":
@@ -68,6 +115,7 @@ def test_prepare_values_for_reduction(
                 narrays=3,
                 axis=axis,
                 dtype=dtype,
+                axes_to_end=axes_to_end,
             )
 
     else:
@@ -78,12 +126,116 @@ def test_prepare_values_for_reduction(
             narrays=3,
             axis=axis,
             dtype=dtype,
+            axes_to_end=axes_to_end,
         )
 
         for xx, vv, ss in zip([x, y, w], [xv, yv, wv], [xshape2, yshape2, wshape2]):
             assert xx.shape == ss
             assert xx.dtype == np.dtype(dtype or np.float64)
             np.testing.assert_allclose(xx, vv)
+
+
+@pytest.mark.parametrize(
+    ("mom_axes", "args", "axis_sample_out"),
+    [
+        # axis_neg, axis, axis_new_size, out_ndim
+        ((-2, -1), (-10, None, None, 5), -12),
+        ((-2, -1), (-1, 2, None, 5), -3),
+        ((1, 2), (-2, 1, 10, 5), 3),
+        ((1, 2), (-2, None, 10, 5), 3),
+        ((1, 3), (-2, 1, 10, 5), 2),
+        ((1, 3), (-2, 1, None, 5), -4),
+    ],
+)
+def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
+    prep = prepare.PrepareValsArray.factory(axes=mom_axes)
+    assert prep.get_axis_sample_out(*args) == axis_sample_out
+
+
+@dtype_mark
+@order_mark
+@pytest.mark.parametrize(
+    (
+        "mom",
+        "shapes",
+        "axis_neg",
+        "axis_new_size",
+        "mom_axes",
+        "out_shape",
+        "axis_sample",
+    ),
+    [
+        ((3,), [(10, 2, 3), (10,)], -3, None, None, (2, 3, 4), None),
+        ((3,), [(10, 2, 3), (10,)], -3, 5, None, (5, 2, 3, 4), 0),
+        ((3,), [(10, 2, 3), (10,)], -3, None, (1,), (2, 4, 3), None),
+        ((3,), [(10, 2, 3), (10,)], -3, 5, (1,), (5, 4, 2, 3), 0),
+        ((3,), [(2, 10, 3), (10,)], -2, None, None, (2, 3, 4), None),
+        ((3,), [(2, 10, 3), (10,)], -2, 5, None, (2, 5, 3, 4), 1),
+        ((3,), [(2, 10, 3), (10,)], -2, None, (-2,), (2, 4, 3), None),
+        ((3,), [(2, 10, 3), (10,)], -2, 5, (-2,), (2, 5, 4, 3), 1),
+        ((3,), [(2, 10, 3), (10,)], -2, None, (1,), (2, 4, 3), None),
+        ((3,), [(2, 10, 3), (10,)], -2, 5, (1,), (2, 4, 5, 3), 2),
+        ((3,), [(2, 10, 3), (10,)], -2, None, (0,), (4, 2, 3), None),
+        ((3,), [(2, 10, 3), (10,)], -2, 5, (0,), (4, 2, 5, 3), 2),
+        # more
+        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, None, None, (2, 3, 4, 5), None),
+        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, 1, None, (1, 2, 3, 4, 5), None),
+        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, None, (1, 2), (2, 4, 5, 3), None),
+        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, 1, (1, 2), (1, 4, 5, 2, 3), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, None, None, (2, 3, 4, 5), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, None, (2, 1, 3, 4, 5), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, None, (1, 2), (2, 4, 5, 3), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, (1, 2), (2, 4, 5, 1, 3), 3),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, None, (1, 3), (2, 4, 3, 5), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, (1, 3), (2, 4, 1, 5, 3), 2),
+        (
+            (3, 4),
+            [(2, 10, 3), (1, 1, 10, 3), (10,)],
+            -2,
+            None,
+            None,
+            (1, 2, 3, 4, 5),
+            None,
+        ),
+    ],
+)
+def test_prepare_out_from_values(
+    dtype, order, mom, shapes, axis_neg, axis_new_size, mom_axes, out_shape, axis_sample
+) -> None:
+    ndim = len(mom)
+    prep = prepare.PrepareValsArray.factory(ndim=ndim, axes=mom_axes, recast=False)
+
+    out, axis_sample_out = prep.out_from_values(
+        None,
+        *(np.zeros(shape) for shape in shapes),
+        mom=mom,
+        axis_neg=axis_neg,
+        axis_new_size=axis_new_size,
+        dtype=dtype,
+        order=order,
+    )
+
+    assert out.shape == out_shape
+
+    if order == "C":
+        check = out
+    elif axis_new_size is None:
+        check = moveaxis(out, mom_params=prep.mom_params, axes_to_end=True)
+    else:
+        if axis_sample is None:
+            axis_sample = prep.mom_params.normalize_axis_index(
+                axis_neg - ndim, out.ndim
+            )
+        axis_sample_out = prep.mom_params.normalize_axis_index(
+            axis_sample_out, out.ndim
+        )
+        assert axis_sample_out == axis_sample
+
+        check = moveaxis(
+            out, axis_sample, -(ndim + 1), mom_params=prep.mom_params, axes_to_end=True
+        )
+
+    assert check.flags["C_CONTIGUOUS"]
 
 
 # * xarray stuff

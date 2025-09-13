@@ -237,6 +237,28 @@ class PrepareValsArray(_PrepareBaseArray):
             recast=self.recast,
         )
 
+    def get_axis_sample_out(
+        self,
+        axis_neg: int,
+        axis: int | None,
+        axis_new_size: int | None,
+        out_ndim: int,
+    ) -> int:
+        if axis_new_size is None or self.mom_params.axes == self.mom_params.axes_last:
+            return axis_neg - self.mom_params.ndim
+
+        if axis is None:
+            axis = normalize_axis_index(axis_neg, out_ndim - self.mom_params.ndim)
+        return moveaxis_order(
+            out_ndim, self.mom_params.axes_last, self.mom_params.axes
+        ).index(axis)
+
+    @staticmethod
+    def get_val_shape(*args: NDArrayAny) -> tuple[int, ...]:
+        return np.broadcast_shapes(
+            args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
+        )
+
     def out_from_values(
         self,
         out: NDArrayAny | None,
@@ -246,16 +268,19 @@ class PrepareValsArray(_PrepareBaseArray):
         axis_new_size: int | None = None,
         dtype: DTypeLike,
         order: ArrayOrderCF,
-    ) -> NDArrayAny:
+    ) -> tuple[NDArrayAny, int]:
         """Pass in axis if this is a reduction and will be removing axis_neg"""
         if out is not None:
-            return out
+            return out, self.get_axis_sample_out(
+                axis_neg, None, axis_new_size, out.ndim
+            )
 
-        val_shape: tuple[int, ...] = np.broadcast_shapes(
-            args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
-        )
+        val_shape = self.get_val_shape(*args)
         mom_shape = mom_to_mom_shape(mom)
         axis = normalize_axis_index(axis_neg, len(val_shape))
+        axis_sample_out = self.get_axis_sample_out(
+            axis_neg, axis, axis_new_size, len(val_shape) + self.mom_params.ndim
+        )
 
         if order is None:
             # use calculation order
@@ -276,11 +301,11 @@ class PrepareValsArray(_PrepareBaseArray):
                     len(shape_calculate) - (self.mom_params.ndim + 1),
                     *self.mom_params.axes_last,
                 )
-                axes1 = (axis, *self.mom_params.axes)
+                axes1 = (axis_sample_out, *self.mom_params.axes)
 
             if axes0 != axes1:
-                return np.moveaxis(out, axes0, axes1)
-            return out
+                return np.moveaxis(out, axes0, axes1), axis_sample_out
+            return out, axis_sample_out
 
         # Use actual order
         shape: tuple[int, ...] = (
@@ -298,7 +323,7 @@ class PrepareValsArray(_PrepareBaseArray):
                 )
             )
 
-        return np.empty(shape, dtype=dtype, order=order)
+        return np.empty(shape, dtype=dtype, order=order), axis_sample_out
 
 
 @dataclass

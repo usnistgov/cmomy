@@ -1092,7 +1092,7 @@ def _reduce_vals_grouped(
 
     args, by = args[:-1], args[-1]
 
-    out = prep.out_from_values(
+    out, axis_sample_out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -1105,7 +1105,7 @@ def _reduce_vals_grouped(
 
     axes: AxesGUFunc = [
         # out
-        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
+        (axis_sample_out, *prep.mom_params.axes),
         # by
         (-1,),
         # x, weight, *y
@@ -1413,7 +1413,7 @@ def _reduce_vals_indexed(
             len(scale), len(index), "`scale` and `index` must have same length."
         )
 
-    out = prep.out_from_values(
+    out, axis_sample_out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -1426,7 +1426,7 @@ def _reduce_vals_indexed(
 
     axes: AxesGUFunc = [
         # out
-        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
+        (axis_sample_out, *prep.mom_params.axes),
         # index,start,end,scale,
         *((-1,),) * 4,
         # x, weight, *y

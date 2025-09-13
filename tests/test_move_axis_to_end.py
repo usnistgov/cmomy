@@ -168,15 +168,13 @@ def test_data_axes_to_end(
     mom_params = factory_mom_params(None, ndim=mom_ndim, axes=mom_axes)
     kws_axis = {k: kws[k] for k in ("axis",) if k in kws}
 
-    np.testing.assert_allclose(
-        outs[0],
-        cmomy.moveaxis(
-            outs[1],
-            **kws_axis,
-            mom_params=mom_params,
-            axes_to_end=True,
-        ),
+    b = cmomy.moveaxis(
+        outs[1],
+        **kws_axis,
+        mom_params=mom_params,
+        axes_to_end=True,
     )
+    np.testing.assert_allclose(outs[0], b)
 
     # check that moving axis to end on data gives same result
     kws2 = kws.copy()

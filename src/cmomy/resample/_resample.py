@@ -597,7 +597,7 @@ def _resample_vals(
 
     args, freq = args[:-1], args[-1]
 
-    out = prep.out_from_values(
+    out, axis_sample_out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -610,7 +610,7 @@ def _resample_vals(
 
     axes: AxesGUFunc = [
         # out
-        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
+        (axis_sample_out, *prep.mom_params.axes),
         # freq
         (-2, -1),
         # x, weight, *y
@@ -1253,17 +1253,8 @@ def _jackknife_vals(
         "Wrong moment shape of data_reduced.",
     )
 
-    axes: AxesGUFunc = [
-        # data_reduced
-        mom_axes_reduced,
-        # x, w, *y
-        *get_axes_from_values(*args, axis_neg=axis_neg),
-        # out
-        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
-    ]
-
     if out is None and order is not None:
-        out = prep.out_from_values(
+        out, axis_sample_out = prep.out_from_values(
             out,
             *args,
             mom=mom,
@@ -1272,6 +1263,22 @@ def _jackknife_vals(
             dtype=dtype,
             order=order,
         )
+    else:
+        axis_sample_out = prep.get_axis_sample_out(
+            axis_neg=axis_neg,
+            axis=None,
+            axis_new_size=args[0].shape[axis_neg],
+            out_ndim=len(prep.get_val_shape(*args)) + prep.mom_params.ndim,
+        )
+
+    axes: AxesGUFunc = [
+        # data_reduced
+        mom_axes_reduced,
+        # x, w, *y
+        *get_axes_from_values(*args, axis_neg=axis_neg),
+        # out
+        (axis_sample_out, *prep.mom_params.axes),
+    ]
 
     return factory_jackknife_vals(
         mom_ndim=prep.mom_params.ndim,

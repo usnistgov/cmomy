@@ -828,7 +828,7 @@ def _rolling_vals(
             for arg, axes in zip(args, axes_args)
         )
 
-    out = prep.out_from_values(
+    out, axis_sample_out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -840,7 +840,7 @@ def _rolling_vals(
 
     axes: AxesGUFunc = [
         # out
-        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
+        (axis_sample_out, *prep.mom_params.axes),
         # window, min_periods
         (),
         (),
@@ -1444,7 +1444,7 @@ def _rolling_exp_vals(
     args: list[NDArrayAny] = [x, w, *y]
     dtype = select_dtype(args[0], out=out, dtype=dtype, fastpath=fastpath)
 
-    out = prep.out_from_values(
+    out, axis_sample_out = prep.out_from_values(
         out,
         *args,
         mom=mom,
@@ -1457,7 +1457,7 @@ def _rolling_exp_vals(
     axes_alpha, *axes_args = get_axes_from_values(alpha, *args, axis_neg=axis_neg)
     axes = [
         # out
-        (axis_neg - prep.mom_params.ndim, *prep.mom_params.axes),
+        (axis_sample_out, *prep.mom_params.axes),
         # alpha
         axes_alpha,
         # adjust, min_periods

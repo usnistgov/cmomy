@@ -8,6 +8,7 @@ import xarray as xr
 
 from cmomy.core.moment_params import (
     MomParamsArray,
+    MomParamsArrayOptional,
     MomParamsXArray,
     MomParamsXArrayOptional,
     default_mom_params_xarray,
@@ -43,6 +44,80 @@ def test_MomParamsArray(kws, expected) -> None:
         return m.ndim, m.axes
 
     _do_test(_func, expected=expected, **kws)
+
+
+@pytest.mark.parametrize(
+    ("kws", "expected_ndim", "expected_axes"),
+    [
+        ({"ndim": None, "axes": None}, ValueError, ValueError),
+        ({"ndim": 1, "axes": None}, 1, (-1,)),
+        ({"ndim": None, "axes": 1}, 1, (1,)),
+        ({"ndim": None, "axes": (1, 2)}, 2, (1, 2)),
+    ],
+)
+def test_MomParamsArrayOptional_validated(kws, expected_ndim, expected_axes) -> None:
+    def _func(key, **kwargs):
+        return getattr(MomParamsArrayOptional.factory(**kwargs), key)
+
+    _do_test(_func, expected=expected_ndim, key="_validated_ndim", **kws)
+    _do_test(_func, expected=expected_axes, key="_validated_axes", **kws)
+
+
+@pytest.mark.parametrize(
+    ("kws", "expected_ndim", "expected_dims"),
+    [
+        ({"ndim": None, "dims": None}, ValueError, ValueError),
+        ({"ndim": 1, "dims": None}, 1, ("mom_0",)),
+        ({"ndim": None, "dims": "a"}, 1, ("a",)),
+        ({"ndim": None, "dims": ("a", "b")}, 2, ("a", "b")),
+    ],
+)
+def test_MomParamsXArrayOptional_validated(kws, expected_ndim, expected_dims) -> None:
+    def _func(key, **kwargs):
+        return getattr(MomParamsXArrayOptional.factory(**kwargs), key)
+
+    _do_test(_func, expected=expected_ndim, key="_validated_ndim", **kws)
+    _do_test(_func, expected=expected_dims, key="_validated_dims", **kws)
+
+
+def test_MomParamsArrayOptional_from_other() -> None:
+    a = MomParamsArray.factory(ndim=2, axes=(1, 2))
+    b = MomParamsArrayOptional.factory(mom_params=a)
+
+    assert a is b
+
+
+def test_MomParamsXArrayOptional_from_other() -> None:
+    a = MomParamsXArray.factory(ndim=2, dims=list("ab"))
+    b = MomParamsXArrayOptional.factory(mom_params=a)
+
+    assert a is b
+
+
+def test_MomParams() -> None:
+    from cmomy.core.moment_params import MomParams
+
+    mom_params = MomParams(ndim=2, axes=(1, 2), dims=("a", "b"))
+
+    assert (
+        MomParamsArray.factory(mom_params=mom_params).asdict()
+        == MomParamsArray.factory(ndim=2, axes=(1, 2)).asdict()
+    )
+
+    assert (
+        MomParamsXArray.factory(mom_params=mom_params).asdict()
+        == MomParamsXArray.factory(ndim=2, dims=("a", "b")).asdict()
+    )
+
+
+def test_MomParamsArray_axes_to_end() -> None:
+    m = MomParamsArray.factory(axes=(1, 2))
+    assert m.axes_to_end().axes == m.axes_last
+
+
+def test_MomParamsXArray_axes_to_end() -> None:
+    m = MomParamsXArray.factory(ndim=2)
+    assert m.axes_to_end() is m
 
 
 @pytest.mark.parametrize(

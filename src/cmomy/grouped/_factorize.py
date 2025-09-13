@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, SupportsInt
 
 import numpy as np
 import pandas as pd
@@ -87,7 +87,7 @@ def factor_by(
         by
         if isinstance(by, pd.Index)
         else np.fromiter(
-            (None if isinstance(x, (int, np.integer)) and x < 0 else x for x in by),  # pyright: ignore[reportUnknownArgumentType]
+            (None if isinstance(x, SupportsInt) and int(x) < 0 else x for x in by),
             dtype=object,
         )
     )

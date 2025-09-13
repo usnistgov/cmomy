@@ -294,7 +294,7 @@ def _reduce_vals(
 ) -> NDArrayAny:
     dtype = select_dtype(args[0], out=out, dtype=dtype, fastpath=fastpath)
 
-    out = prep.out_from_values(
+    out, _ = prep.out_from_values(
         out,
         *args,
         mom=mom,
