@@ -9,7 +9,7 @@ import xarray as xr
 
 from .docstrings import docfiller
 from .missing import MISSING
-from .typing import DataT
+from .typing import AxesToEndStrict, DataT
 
 if TYPE_CHECKING:
     from collections.abc import (
@@ -221,6 +221,20 @@ def validate_axis_mult(
         msg = f"Must specify axis. Received {axis=}."
         raise TypeError(msg)
     return axis
+
+
+def validate_axes_to_end(axes_to_end: object) -> AxesToEndStrict:
+    """Validate axes_to_end."""
+    if isinstance(axes_to_end, bool):
+        return "all" if axes_to_end else "keep"
+    if isinstance(axes_to_end, str) and (axes_to_end := axes_to_end.lower()) in {
+        "all",
+        "mom",
+        "keep",
+    }:
+        return cast("AxesToEndStrict", axes_to_end)
+    msg = f"Unknown {axes_to_end=}"
+    raise ValueError(msg)
 
 
 # * DataArray -----------------------------------------------------------------

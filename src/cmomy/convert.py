@@ -13,6 +13,7 @@ import xarray as xr
 from .core.array_utils import (
     arrayorder_to_arrayorder_cf,
     asarray_maybe_recast,
+    moveaxis_order,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -241,6 +242,8 @@ def moments_type(
                     target=values_in,
                     out=out,
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -287,11 +290,20 @@ def _moments_type(
 ) -> NDArrayAny:
     dtype = select_dtype(values_in, out=out, dtype=dtype, fastpath=fastpath)
 
-    axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
-
     values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
-    if out is None and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
-        out = np.zeros(values_in.shape, dtype=dtype, order=_order_cf)
+    axes_out = mom_params.axes_last if axes_to_end else mom_params.axes
+
+    # out, by default, will be in calculation order.
+    if (
+        out is None
+        and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None
+        and axes_out != mom_params.axes_last
+    ):
+        shape = tuple(
+            values_in.shape[o]
+            for o in moveaxis_order(values_in.ndim, mom_params.axes, axes_out)
+        )
+        out = np.empty(shape, dtype=dtype, order=_order_cf)
 
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
         values_in,
@@ -462,9 +474,11 @@ def cumulative(  # noqa: PLR0913
                 "axis": -(mom_params.ndim + 1),
                 "out": prep.optional_out_sample(
                     out,
+                    data=values_in,
                     axis=axis,
                     axes_to_end=axes_to_end,
-                    data=values_in,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "parallel": parallel,
                 "dtype": dtype,

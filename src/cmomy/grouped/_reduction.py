@@ -323,6 +323,7 @@ def reduce_data_grouped(  # noqa: PLR0913
         mom_params = prep.mom_params
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = mom_params.core_dims(dim)
+        axis_new_size = by.max() + 1
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_grouped,
@@ -338,9 +339,12 @@ def reduce_data_grouped(  # noqa: PLR0913
                 "dtype": dtype,
                 "out": prep.optional_out_sample(
                     out,
-                    axis=axis,
-                    axes_to_end=axes_to_end,
                     data=data,
+                    axis=axis,
+                    axis_new_size=axis_new_size,
+                    axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "casting": casting,
                 "order": order,
@@ -351,7 +355,7 @@ def reduce_data_grouped(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes={dim: by.max() + 1},
+                output_sizes={dim: axis_new_size},
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
@@ -681,6 +685,7 @@ def reduce_data_indexed(  # noqa: PLR0913
             group_start=group_start,
             group_end=group_end,
         )
+        axis_new_size = len(group_start)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data_indexed,
@@ -697,9 +702,12 @@ def reduce_data_indexed(  # noqa: PLR0913
                 "scale": scale,
                 "out": prep.optional_out_sample(
                     out,
-                    axis=axis,
-                    axes_to_end=axes_to_end,
                     data=data,
+                    axis=axis,
+                    axis_new_size=axis_new_size,
+                    axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -711,7 +719,7 @@ def reduce_data_indexed(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes={dim: len(group_start)},
+                output_sizes={dim: axis_new_size},
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )

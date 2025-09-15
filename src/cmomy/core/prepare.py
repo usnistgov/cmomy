@@ -376,40 +376,70 @@ class PrepareDataXArray(_PrepareBaseXArray):
         out: NDArray[ScalarT] | None,
         *,
         axes_to_end: bool,
+        order: ArrayOrderKACF,
+        dtype: DTypeLike,
     ) -> NDArray[ScalarT] | None:
         """Prepare out for transform."""
-        if out is None or is_dataset(target):
+        if is_dataset(target):
             return None
 
         if axes_to_end:
-            # out should already be in correct order
+            # out is None or in correct order
             return out
 
-        return np.moveaxis(
-            out,
-            self.mom_params.get_axes(target),
-            self.mom_params.axes_last,
-        )
+        if out is None:
+            if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+                out = np.empty(target.shape, dtype=dtype, order=_order_cf)
+            else:
+                return None
+
+        axes0 = self.mom_params.get_axes(target)
+        axes1 = self.mom_params.axes_last
+
+        if axes0 != axes1:
+            return np.moveaxis(
+                out,
+                self.mom_params.get_axes(target),
+                self.mom_params.axes_last,
+            )
+        return out
 
     def optional_out_sample(
         self,
         out: NDArray[ScalarT] | None,
         *,
-        axis: int,
-        axes_to_end: bool,
         data: xr.DataArray | xr.Dataset,
+        axis: int,
+        axis_new_size: int | None = None,
+        axes_to_end: bool,
+        order: ArrayOrderKACF,
+        dtype: DTypeLike,
     ) -> NDArray[ScalarT] | None:
         """Move axis to last dimensions before moment dimensions."""
-        if out is None or is_dataset(data):
+        if is_dataset(data):
             return None
 
         if axes_to_end:
-            # out should already be in correct order
+            # out is None or in correct order
             return out
+
+        if out is None:
+            if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+                if axis_new_size is None:
+                    axis_new_size = data.shape[axis]
+                out = np.empty(
+                    (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :]),
+                    dtype=dtype,
+                    order=_order_cf,
+                )
+            else:
+                return None
 
         axes0 = (axis, *self.mom_params.get_axes(data))
         axes1 = (-(self.mom_params.ndim + 1), *self.mom_params.axes_last)
-        return np.moveaxis(out, axes0, axes1)
+        if axes0 != axes1:
+            return np.moveaxis(out, axes0, axes1)
+        return out
 
 
 @dataclass

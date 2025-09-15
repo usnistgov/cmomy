@@ -347,6 +347,43 @@ def test_xprepare_values_for_reduction_1(
         ),
         (
             {
+                "out": None,
+                "axis": 0,
+                "axes_to_end": False,
+                "order": "c",
+            },
+            {
+                "ndim": 1,
+            },
+            (3, 4, 2, 5),
+        ),
+        (
+            {
+                "out": None,
+                "axis": 0,
+                "axes_to_end": True,
+                "order": "c",
+            },
+            {
+                "ndim": 1,
+            },
+            None,
+        ),
+        (
+            {
+                "out": None,
+                "axis": 0,
+                "axes_to_end": False,
+                "order": "c",
+                "axis_new_size": 10,
+            },
+            {
+                "ndim": 1,
+            },
+            (3, 4, 10, 5),
+        ),
+        (
+            {
                 "out": np.zeros((2, 3, 4, 5)),
                 "axis": 0,
                 "axes_to_end": False,
@@ -354,7 +391,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "ndim": 1,
             },
-            np.zeros((3, 4, 2, 5)),
+            (3, 4, 2, 5),
         ),
         (
             {
@@ -365,7 +402,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "axes": (0, 2),
             },
-            np.zeros((5, 3, 2, 4)),
+            (5, 3, 2, 4),
         ),
         (
             {
@@ -376,7 +413,7 @@ def test_xprepare_values_for_reduction_1(
             {
                 "ndim": 1,
             },
-            np.zeros((2, 3, 4)),
+            (2, 3, 4),
         ),
         # Silently ignore passing out value for dataset output...
         (
@@ -398,16 +435,21 @@ def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> 
 
     kws = kws.copy()
     kws.setdefault("data", data)
+    kws.setdefault("dtype", np.float64)
+    kws.setdefault("order", None)
     mom_params = factory_mom_params(kws["data"], mom_params=mom_params_kws, data=data)
 
     func = prepare.PrepareDataXArray(mom_params=mom_params).optional_out_sample
-    if expected is None:
-        assert func(**kws) is None
-    elif isinstance(expected, type):
+
+    if isinstance(expected, type):
         with pytest.raises(expected):
             func(**kws)
     else:
-        np.testing.assert_allclose(func(**kws), expected)  # type: ignore[arg-type]
+        out = func(**kws)
+        if out is None:
+            assert expected is None
+        else:
+            assert out.shape == expected
 
 
 def test__prepare_secondary_value_for_reduction() -> None:
