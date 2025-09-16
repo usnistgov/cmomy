@@ -290,16 +290,6 @@ BlockByModes: TypeAlias = Literal[
     "drop_first", "drop_last", "expand_first", "expand_last"
 ]
 
-AxesToEndStrict = Literal["all", "mom", "keep"]
-AxesToEnd = Union[AxesToEndStrict, bool]
-"""
-Move axes to the end upon reduction/transformation
-
-  * ``"all"`` or ``True``: move ``axis`` (if applicable) and ``mom_axes`` to end
-  * ``"mom"``: move ``mom_axes`` to end only (equivalent to ``True`` if no sample axis)
-  * ``"keep"`` or ``False``: keep ``axis`` and ``mom_axes``.
-"""
-
 
 # * Keyword args --------------------------------------------------------------
 # ** Common
