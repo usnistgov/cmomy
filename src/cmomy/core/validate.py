@@ -214,8 +214,8 @@ def validate_axis(axis: T | MissingType | None) -> T:
 
 
 def validate_axis_mult(
-    axis: T | tuple[T, ...] | MissingType | None,
-) -> T | tuple[T, ...] | None:
+    axis: T | tuple[T, ...] | MissingType,
+) -> T | tuple[T, ...]:
     """Validate that axis is specified."""
     if axis is MISSING:
         msg = f"Must specify axis. Received {axis=}."

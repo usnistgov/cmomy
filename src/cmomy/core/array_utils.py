@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
@@ -13,7 +14,6 @@ from .validate import (
 
 if TYPE_CHECKING:
     from collections.abc import (
-        Iterable,
         Sequence,
     )
 
@@ -65,17 +65,14 @@ def normalize_axis_index(
 
 
 def normalize_axis_tuple(
-    axis: complex | Iterable[complex] | None,
+    axis: complex | Iterable[complex],
     ndim: int,
     mom_ndim: MomNDim | None = None,
     msg_prefix: str | None = None,
     allow_duplicate: bool = False,
 ) -> tuple[int, ...]:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
-    if axis is None:
-        return tuple(range(ndim - (0 if mom_ndim is None else mom_ndim)))
-
-    if isinstance(axis, (int, float, complex)):
+    if not isinstance(axis, Iterable):
         axis = (axis,)
 
     out = tuple(

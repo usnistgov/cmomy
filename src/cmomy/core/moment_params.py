@@ -134,7 +134,7 @@ class MomParamsBase(ABC, _MixinDataclass):
 
     def normalize_axis_tuple(
         self,
-        axis: complex | Iterable[complex] | None,
+        axis: complex | Iterable[complex],
         data_ndim: int,
         msg_prefix: str | None = None,
         allow_duplicate: bool = False,
@@ -562,14 +562,11 @@ class MomParamsXArrayOptional(MomParamsBase):
             axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
         )
 
-        if axis is None:
-            dim = None
-
-        if dim is not MISSING:
-            if dim is None:
-                dim_ = _get_dim_none()
-            else:
-                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        if axis is None or dim is None:
+            dim_ = _get_dim_none()
+            axis_ = data.get_axis_num(dim_)
+        elif dim is not MISSING:
+            dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis_ = data.get_axis_num(dim_)
         elif axis is not MISSING:
             axis_ = self.normalize_axis_tuple(
