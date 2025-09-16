@@ -139,12 +139,12 @@ def test_prepare_values_for_reduction(
     ("mom_axes", "args", "axis_sample_out"),
     [
         # axis_neg, axis, axis_new_size, out_ndim
-        ((-2, -1), (-10, None, None, 5), -12),
-        ((-2, -1), (-1, 2, None, 5), -3),
+        ((-2, -1), (-10, None, MISSING, 5), -12),
+        ((-2, -1), (-1, 2, MISSING, 5), -3),
         ((1, 2), (-2, 1, 10, 5), 3),
         ((1, 2), (-2, None, 10, 5), 3),
         ((1, 3), (-2, 1, 10, 5), 2),
-        ((1, 3), (-2, 1, None, 5), -4),
+        ((1, 3), (-2, 1, MISSING, 5), -4),
     ],
 )
 def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
@@ -165,34 +165,34 @@ def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
         "axis_sample",
     ),
     [
-        ((3,), [(10, 2, 3), (10,)], -3, None, None, (2, 3, 4), None),
+        ((3,), [(10, 2, 3), (10,)], -3, MISSING, None, (2, 3, 4), None),
         ((3,), [(10, 2, 3), (10,)], -3, 5, None, (5, 2, 3, 4), 0),
-        ((3,), [(10, 2, 3), (10,)], -3, None, (1,), (2, 4, 3), None),
+        ((3,), [(10, 2, 3), (10,)], -3, MISSING, (1,), (2, 4, 3), None),
         ((3,), [(10, 2, 3), (10,)], -3, 5, (1,), (5, 4, 2, 3), 0),
-        ((3,), [(2, 10, 3), (10,)], -2, None, None, (2, 3, 4), None),
+        ((3,), [(2, 10, 3), (10,)], -2, MISSING, None, (2, 3, 4), None),
         ((3,), [(2, 10, 3), (10,)], -2, 5, None, (2, 5, 3, 4), 1),
-        ((3,), [(2, 10, 3), (10,)], -2, None, (-2,), (2, 4, 3), None),
+        ((3,), [(2, 10, 3), (10,)], -2, MISSING, (-2,), (2, 4, 3), None),
         ((3,), [(2, 10, 3), (10,)], -2, 5, (-2,), (2, 5, 4, 3), 1),
-        ((3,), [(2, 10, 3), (10,)], -2, None, (1,), (2, 4, 3), None),
+        ((3,), [(2, 10, 3), (10,)], -2, MISSING, (1,), (2, 4, 3), None),
         ((3,), [(2, 10, 3), (10,)], -2, 5, (1,), (2, 4, 5, 3), 2),
-        ((3,), [(2, 10, 3), (10,)], -2, None, (0,), (4, 2, 3), None),
+        ((3,), [(2, 10, 3), (10,)], -2, MISSING, (0,), (4, 2, 3), None),
         ((3,), [(2, 10, 3), (10,)], -2, 5, (0,), (4, 2, 5, 3), 2),
         # more
-        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, None, None, (2, 3, 4, 5), None),
+        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, MISSING, None, (2, 3, 4, 5), None),
         ((3, 4), [(10, 2, 3), (10,), (10,)], -3, 1, None, (1, 2, 3, 4, 5), None),
-        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, None, (1, 2), (2, 4, 5, 3), None),
+        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, MISSING, (1, 2), (2, 4, 5, 3), None),
         ((3, 4), [(10, 2, 3), (10,), (10,)], -3, 1, (1, 2), (1, 4, 5, 2, 3), None),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, None, None, (2, 3, 4, 5), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, MISSING, None, (2, 3, 4, 5), None),
         ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, None, (2, 1, 3, 4, 5), None),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, None, (1, 2), (2, 4, 5, 3), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, MISSING, (1, 2), (2, 4, 5, 3), None),
         ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, (1, 2), (2, 4, 5, 1, 3), 3),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, None, (1, 3), (2, 4, 3, 5), None),
+        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, MISSING, (1, 3), (2, 4, 3, 5), None),
         ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, (1, 3), (2, 4, 1, 5, 3), 2),
         (
             (3, 4),
             [(2, 10, 3), (1, 1, 10, 3), (10,)],
             -2,
-            None,
+            MISSING,
             None,
             (1, 2, 3, 4, 5),
             None,
@@ -207,7 +207,7 @@ def test_prepare_out_from_values(
 
     out, axis_sample_out = prep.out_from_values(
         None,
-        *(np.zeros(shape) for shape in shapes),
+        val_shape=prep.get_val_shape(*(np.zeros(shape) for shape in shapes)),
         mom=mom,
         axis_neg=axis_neg,
         axis_new_size=axis_new_size,
@@ -219,7 +219,7 @@ def test_prepare_out_from_values(
 
     if order == "C":
         check = out
-    elif axis_new_size is None:
+    elif axis_new_size is MISSING:
         check = moveaxis(out, mom_params=prep.mom_params, axes_to_end=True)
     else:
         if axis_sample is None:
@@ -275,10 +275,10 @@ def test_xprepare_values_for_reduction_0(target, other, kws, raises, match):
 @pytest.mark.parametrize(
     ("dim", "xshape", "xshape2", "yshape", "yshape2"),
     [
-        ("dim_0", (2, 3, 4), (2, 3, 4), (2,), (2,)),
-        ("dim_1", (2, 3, 4), (2, 3, 4), (3, 4), (4, 3)),
+        ("dim_0", (2, 3, 4), (3, 4, 2), (2,), (2,)),
+        ("dim_1", (2, 3, 4), (2, 4, 3), (3, 4), (4, 3)),
         ("dim_2", (2, 3, 4), (2, 3, 4), (4,), (4,)),
-        ("dim_0", (2, 3, 4), (2, 3, 4), (2, 3, 4), (3, 4, 2)),
+        ("dim_0", (2, 3, 4), (3, 4, 2), (2, 3, 4), (3, 4, 2)),
     ],
 )
 @dtype_mark
@@ -322,7 +322,7 @@ def test_xprepare_values_for_reduction_1(
         assert core_dims == [[dim]] * 2
 
         assert x.shape == xshape2
-        assert y.shape == other.shape
+        assert y.shape == yshape2
         assert x.dtype == np.dtype(dtype or target.dtype)
         assert y.dtype == np.dtype(dtype or other.dtype)
 

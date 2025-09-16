@@ -741,11 +741,16 @@ def rolling_vals(  # noqa: PLR0913
                 "min_periods": min_periods,
                 "center": center,
                 "zero_missing_weights": zero_missing_weights,
-                "out": prep.optional_out_sample(
+                "out": prep.optional_out_from_values(
+                    out,
+                    *xargs,
                     target=x,
-                    out=out,
                     dim=dim,
+                    mom=mom,
+                    axis_new_size=x.sizes[dim],
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -832,10 +837,10 @@ def _rolling_vals(
 
     out, axis_sample_out = prep.out_from_values(
         out,
-        *args,
+        val_shape=prep.get_val_shape(*args),
         mom=mom,
         axis_neg=axis_neg,
-        axis_new_size=args[0].shape[axis_neg],
+        axis_new_size=None,
         dtype=dtype,
         order=order,
     )
@@ -1364,11 +1369,16 @@ def rolling_exp_vals(  # noqa: PLR0913
                 "adjust": adjust,
                 "min_periods": min_periods,
                 "zero_missing_weights": zero_missing_weights,
-                "out": prep.optional_out_sample(
+                "out": prep.optional_out_from_values(
+                    out,
+                    *(*xargs[:2], *xargs[3:]),  # type: ignore[has-type]
                     target=x,
-                    out=out,
                     dim=dim,
+                    mom=mom,
+                    axis_new_size=x.sizes[dim],
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -1450,10 +1460,10 @@ def _rolling_exp_vals(
 
     out, axis_sample_out = prep.out_from_values(
         out,
-        *args,
+        val_shape=prep.get_val_shape(*args),
         mom=mom,
         axis_neg=axis_neg,
-        axis_new_size=args[0].shape[axis_neg],
+        axis_new_size=None,
         dtype=dtype,
         order=order,
     )

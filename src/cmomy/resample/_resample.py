@@ -513,11 +513,16 @@ def resample_vals(  # noqa: PLR0913
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
-                "out": prep.optional_out_sample(
+                "out": prep.optional_out_from_values(
+                    out,
+                    *xargs,
                     target=x,
-                    out=out,
                     dim=dim,
+                    mom=mom,
+                    axis_new_size=sampler.nrep,
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -602,7 +607,7 @@ def _resample_vals(
 
     out, axis_sample_out = prep.out_from_values(
         out,
-        *args,
+        val_shape=prep.get_val_shape(*args),
         mom=mom,
         axis_neg=axis_neg,
         axis_new_size=freq.shape[0],
@@ -1160,11 +1165,16 @@ def jackknife_vals(  # noqa: PLR0913
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
                 "mom_axes_reduced": mom_axes_reduced,
-                "out": prep.optional_out_sample(
+                "out": prep.optional_out_from_values(
+                    out,
+                    *xargs,
                     target=x,
-                    out=out,
                     dim=dim,
+                    mom=mom,
+                    axis_new_size=x.sizes[dim],
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -1261,10 +1271,10 @@ def _jackknife_vals(
     if out is None and order is not None:
         out, axis_sample_out = prep.out_from_values(
             out,
-            *args,
+            val_shape=prep.get_val_shape(*args),
             mom=mom,
             axis_neg=axis_neg,
-            axis_new_size=args[0].shape[axis_neg],
+            axis_new_size=None,
             dtype=dtype,
             order=order,
         )

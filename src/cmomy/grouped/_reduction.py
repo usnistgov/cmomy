@@ -978,6 +978,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
     by = np.asarray(by, dtype=np.int64)
+    axis_new_size = by.max() + 1
 
     if is_xarray_typevar["DataT"].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
@@ -1005,24 +1006,30 @@ def reduce_vals_grouped(  # noqa: PLR0913
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
-                "out": prep.optional_out_sample(
+                "out": prep.optional_out_from_values(
+                    out,
+                    *xargs,
                     target=x,
-                    out=out,
                     dim=dim,
+                    mom=mom,
+                    axis_new_size=axis_new_size,
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
                 "parallel": parallel,
                 "fastpath": is_dataarray(x),
+                "axis_new_size": axis_new_size,
             },
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={
-                    dim: by.max() + 1,
+                    dim: axis_new_size,
                     **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
@@ -1078,6 +1085,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
         casting=casting,
         order=order,
         axis_neg=axis_neg,
+        axis_new_size=axis_new_size,
         parallel=parallel,
         fastpath=True,
     )
@@ -1089,6 +1097,7 @@ def _reduce_vals_grouped(
     mom: MomentsStrict,
     prep: PrepareValsArray,
     axis_neg: int,
+    axis_new_size: int,
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
@@ -1102,10 +1111,10 @@ def _reduce_vals_grouped(
 
     out, axis_sample_out = prep.out_from_values(
         out,
-        *args,
+        val_shape=prep.get_val_shape(*args),
         mom=mom,
         axis_neg=axis_neg,
-        axis_new_size=by.max() + 1,
+        axis_new_size=axis_new_size,
         dtype=dtype,
         order=order,
     )
@@ -1304,11 +1313,16 @@ def reduce_vals_indexed(  # noqa: PLR0913
                 "group_end": group_end,
                 "scale": scale,
                 "axis_neg": -1,
-                "out": prep.optional_out_sample(
+                "out": prep.optional_out_from_values(
+                    out,
+                    *xargs,
                     target=x,
-                    out=out,
                     dim=dim,
+                    mom=mom,
+                    axis_new_size=len(group_start),
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -1423,7 +1437,7 @@ def _reduce_vals_indexed(
 
     out, axis_sample_out = prep.out_from_values(
         out,
-        *args,
+        val_shape=prep.get_val_shape(*args),
         mom=mom,
         axis_neg=axis_neg,
         axis_new_size=len(group_start),

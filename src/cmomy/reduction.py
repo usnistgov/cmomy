@@ -296,7 +296,7 @@ def _reduce_vals(
 
     out, _ = prep.out_from_values(
         out,
-        *args,
+        val_shape=prep.get_val_shape(*args),
         mom=mom,
         axis_neg=axis_neg,
         dtype=dtype,
@@ -612,8 +612,11 @@ def _reduce_data(
         elif keepdims:
             out = np.squeeze(out, axis=axis_tuple)
 
-    elif (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:  # pylint: disable=confusing-consecutive-elif
+    elif (
+        _order_cf := arrayorder_to_arrayorder_cf(order)
+    ) is not None and not axes_to_end:  # pylint: disable=confusing-consecutive-elif
         # make the output have correct order if passed ``order`` flag.
+        # if `axes_to_end`, let factory_reduce_data handle it.
         out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
 
     # pylint: disable=unexpected-keyword-arg

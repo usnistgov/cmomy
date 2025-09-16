@@ -162,7 +162,7 @@ class PrepareDataArray(_PrepareBaseArray):
         data: NDArrayAny,
         *,
         axis: int,
-        axis_new_size: int,
+        axis_new_size: int | None,
         order: ArrayOrderCF,
         dtype: DTypeLike,
     ) -> NDArrayAny:
@@ -171,6 +171,9 @@ class PrepareDataArray(_PrepareBaseArray):
 
         Use this when `out` is required (i.e., signature of gufunc doesn't have "->").
         """
+        if axis_new_size is None:
+            axis_new_size = data.shape[axis]
+
         shape = (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :])
         if order is None:
             # otherwise, make array in calculation order
@@ -241,10 +244,13 @@ class PrepareValsArray(_PrepareBaseArray):
         self,
         axis_neg: int,
         axis: int | None,
-        axis_new_size: int | None,
+        axis_new_size: int | MissingType | None,
         out_ndim: int,
     ) -> int:
-        if axis_new_size is None or self.mom_params.axes == self.mom_params.axes_last:
+        if (
+            axis_new_size is MISSING
+            or self.mom_params.axes == self.mom_params.axes_last
+        ):
             return axis_neg - self.mom_params.ndim
 
         if axis is None:
@@ -254,7 +260,7 @@ class PrepareValsArray(_PrepareBaseArray):
         ).index(axis)
 
     @staticmethod
-    def get_val_shape(*args: NDArrayAny) -> tuple[int, ...]:
+    def get_val_shape(*args: NDArrayAny | xr.DataArray) -> tuple[int, ...]:
         return np.broadcast_shapes(
             args[0].shape, *(a.shape for a in args[1:] if a.ndim > 1)
         )
@@ -262,22 +268,28 @@ class PrepareValsArray(_PrepareBaseArray):
     def out_from_values(
         self,
         out: NDArrayAny | None,
-        *args: NDArrayAny,
+        *,
+        val_shape: tuple[int, ...],
         mom: MomentsStrict,
         axis_neg: int,
-        axis_new_size: int | None = None,
+        axis_new_size: int | MissingType | None = MISSING,
         dtype: DTypeLike,
         order: ArrayOrderCF,
     ) -> tuple[NDArrayAny, int]:
-        """Pass in axis if this is a reduction and will be removing axis_neg"""
+        """
+        Pass in axis if this is a reduction and will be removing axis_neg
+
+        None value for axis_new_size implies axis_new_size = val_shape[axis_neg]
+        """
         if out is not None:
             return out, self.get_axis_sample_out(
                 axis_neg, None, axis_new_size, out.ndim
             )
 
-        val_shape = self.get_val_shape(*args)
         mom_shape = mom_to_mom_shape(mom)
         axis = normalize_axis_index(axis_neg, len(val_shape))
+        if axis_new_size is None:
+            axis_new_size = val_shape[axis]
         axis_sample_out = self.get_axis_sample_out(
             axis_neg, axis, axis_new_size, len(val_shape) + self.mom_params.ndim
         )
@@ -287,13 +299,13 @@ class PrepareValsArray(_PrepareBaseArray):
             shape_calculate = (
                 *val_shape[:axis],
                 *val_shape[axis + 1 :],
-                *(() if axis_new_size is None else (axis_new_size,)),
+                *(() if axis_new_size is MISSING else (axis_new_size,)),
                 *mom_shape,
             )
             out = np.empty(shape_calculate, dtype=dtype, order=order)
 
             # reorder
-            if axis_new_size is None:
+            if axis_new_size is MISSING:
                 axes0 = self.mom_params.axes_last
                 axes1 = self.mom_params.axes
             else:
@@ -310,7 +322,7 @@ class PrepareValsArray(_PrepareBaseArray):
         # Use actual order
         shape: tuple[int, ...] = (
             *val_shape[:axis],
-            *(() if axis_new_size is None else (axis_new_size,)),
+            *(() if axis_new_size is MISSING else (axis_new_size,)),
             *val_shape[axis + 1 :],
             *mom_shape,
         )
@@ -514,26 +526,55 @@ class PrepareValsXArray(_PrepareBaseXArray):
             recast=self.recast,
         )
 
-    def optional_out_sample(
+    def optional_out_from_values(
         self,
-        target: xr.DataArray | xr.Dataset,
         out: NDArray[ScalarT] | None,
+        *args: NDArrayAny | xr.DataArray | xr.Dataset,
+        target: xr.DataArray | xr.Dataset,
         dim: DimsReduce,
+        mom: MomentsStrict,
+        axis_new_size: int | MissingType | None = MISSING,
         axes_to_end: bool,
+        order: ArrayOrderCF,
+        dtype: DTypeLike,
     ) -> NDArray[ScalarT] | None:
         """Prepare out for resampling"""
         # NOTE: silently ignore out of datasets.
-        if out is None or is_dataset(target):
+        if is_dataset(target) or (out is None and order is None):
             return None
 
         if axes_to_end:
-            # out should already be in correct order
+            # out is None or in correct order
             return out
 
-        axis_neg = positive_to_negative_index(
-            target.get_axis_num(dim),
-            ndim=target.ndim,
-        )
+        if any(is_dataset(_) for _ in args):
+            msg = "Passed secondary dataset"
+            raise ValueError(msg)
+
+        axis_neg = positive_to_negative_index(target.get_axis_num(dim), target.ndim)
+        if out is None:
+            # construct array in correct order
+            prep_array = self.prepare_array
+            # shape of values with axis in last position
+            val_shape_last = prep_array.get_val_shape(*args)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            val_shape = tuple(
+                val_shape_last[o] for o in moveaxis_order(target.ndim, -1, axis_neg)
+            )
+
+            out_, _ = prep_array.out_from_values(
+                None,
+                val_shape=val_shape,
+                mom=mom,
+                axis_neg=axis_neg,
+                axis_new_size=axis_new_size,
+                dtype=dtype,
+                order=order,
+            )
+            assert out_ is not None  # noqa: S101
+            out = out_
+
+        if axis_new_size is MISSING:
+            return out
         return np.moveaxis(
             out, axis_neg - self.mom_params.ndim, -(self.mom_params.ndim + 1)
         )
@@ -677,6 +718,7 @@ def prepare_xarray_values_for_reduction(
         _prepare_xarray_secondary_value_for_reduction(
             a,
             axis=axis_neg,
+            dim=dim,
             nsamp=nsamp,
             dtype=dtype,
             recast=recast,
@@ -692,6 +734,7 @@ def prepare_xarray_values_for_reduction(
 def _prepare_xarray_secondary_value_for_reduction(
     x: xr.Dataset | xr.DataArray | ArrayLike,
     axis: int,
+    dim: DimsReduce,
     nsamp: int,
     dtype: DTypeLike,
     recast: bool,
@@ -704,7 +747,7 @@ def _prepare_xarray_secondary_value_for_reduction(
             x.astype(dtype, copy=False)  # pyright: ignore[reportUnknownMemberType]
             if (recast and dtype is not None)
             else x
-        )
+        ).transpose(..., dim)
     return _prepare_array_secondary_value_for_reduction(
         x,
         axis=axis,
