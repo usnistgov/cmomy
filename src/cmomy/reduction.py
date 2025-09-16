@@ -12,7 +12,6 @@ import xarray as xr
 
 from .core.array_utils import (
     arrayorder_to_arrayorder_cf,
-    asarray_maybe_recast,
     get_axes_from_values,
     moveaxis_order,
     optional_keepdims,
@@ -20,11 +19,8 @@ from .core.array_utils import (
 )
 from .core.docstrings import docfiller
 from .core.missing import MISSING
-from .core.moment_params import (
-    MomParamsArray,
-    MomParamsXArray,
-)
 from .core.prepare import (
+    PrepareDataArray,
     PrepareDataXArray,
     PrepareValsArray,
     PrepareValsXArray,
@@ -34,7 +30,6 @@ from .core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray_typevar,
-    validate_axis_mult,
 )
 from .core.xr_utils import (
     contains_dims,
@@ -440,7 +435,7 @@ def reduce_data(  # noqa: PLR0913
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
     if is_xarray_typevar["DataT"].check(data):
-        mom_params = MomParamsXArray.factory(
+        prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             axes=mom_axes,
@@ -448,6 +443,7 @@ def reduce_data(  # noqa: PLR0913
             data=data,
             default_ndim=1,
         )
+        mom_params = prep.mom_params
 
         # Special case for dataset with multiple dimensions.
         # Can't do this with xr.apply_ufunc if variables have different
@@ -502,14 +498,16 @@ def reduce_data(  # noqa: PLR0913
             ],
             exclude_dims=set(dim),
             kwargs={
-                "mom_params": mom_params.to_array(),
+                "prep": prep.prepare_array,
                 "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
-                "out": PrepareDataXArray(mom_params, recast=False).optional_out_reduce(
+                "out": prep.optional_out_reduce(
                     target=data,
                     out=out,
                     dim=dim,
                     keepdims=keepdims,
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "parallel": parallel,
@@ -517,7 +515,6 @@ def reduce_data(  # noqa: PLR0913
                 "fastpath": is_dataarray(data),
                 "casting": casting,
                 "order": order,
-                "axes_to_end": False,
             },
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
@@ -543,13 +540,19 @@ def reduce_data(  # noqa: PLR0913
         return xout
 
     # Numpy
-    mom_params = MomParamsArray.factory(
+    prep, axis, data = PrepareDataArray.factory(
         mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
+    ).data_for_reduction_multiple(
+        data,
+        axis=axis,
+        axes_to_end=axes_to_end,
+        dtype=dtype,
     )
+
     return _reduce_data(
-        asarray_maybe_recast(data, dtype=dtype, recast=False),
-        mom_params=mom_params,
-        axis=validate_axis_mult(axis),
+        data,
+        prep=prep,
+        axis=axis,
         out=out,
         dtype=dtype,
         casting=casting,
@@ -557,15 +560,14 @@ def reduce_data(  # noqa: PLR0913
         parallel=parallel,
         keepdims=keepdims,
         fastpath=True,
-        axes_to_end=axes_to_end,
     )
 
 
 def _reduce_data(
     data: NDArrayAny,
     *,
-    mom_params: MomParamsArray,
-    axis: AxisReduceMultWrap,
+    prep: PrepareDataArray,
+    axis: tuple[int, ...],
     out: NDArrayAny | None,
     dtype: DTypeLike,
     casting: Casting,
@@ -573,51 +575,26 @@ def _reduce_data(
     parallel: bool | None,
     keepdims: bool = False,
     fastpath: bool = False,
-    axes_to_end: bool,
 ) -> NDArrayAny:
     dtype = select_dtype(data, out=out, dtype=dtype, fastpath=fastpath)
 
-    mom_params = mom_params.normalize_axes(data.ndim)
-
-    axis_tuple: tuple[int, ...]
-    if axis is None:  # pylint: disable=consider-ternary-expression
-        axis_tuple = tuple(a for a in range(data.ndim) if a not in mom_params.axes)
-    else:
-        axis_tuple = mom_params.normalize_axis_tuple(
-            axis, data.ndim, msg_prefix="reduce_data"
-        )
-
-    if axis_tuple == ():
+    mom_params = prep.mom_params.normalize_axes(data.ndim)
+    if axis == ():
         return data
 
     # move reduction dimensions to last positions and reshape
-    order_ = moveaxis_order(data.ndim, axis_tuple, range(-len(axis_tuple), 0))
+    order_ = moveaxis_order(data.ndim, axis, range(-len(axis), 0))
     data = data.transpose(*order_)
-    data = data.reshape(*data.shape[: -len(axis_tuple)], -1)
+    if len(axis) > 1:
+        data = data.reshape(*data.shape[: -len(axis)], -1)
     # transform _mom_axes to new positions
     mom_axes = tuple(order_.index(a) for a in mom_params.axes)
 
-    if out is not None:
-        if axes_to_end:
-            # easier to move axes in case keep dims
-            if keepdims:
-                # get rid of reduction axes and move moment axes
-                out = np.squeeze(
-                    out,
-                    axis=tuple(
-                        range(-(len(axis_tuple) + mom_params.ndim), -mom_params.ndim)
-                    ),
-                )
-            out = np.moveaxis(out, mom_params.axes_last, mom_axes)
-        elif keepdims:
-            out = np.squeeze(out, axis=axis_tuple)
-
-    elif (
-        _order_cf := arrayorder_to_arrayorder_cf(order)
-    ) is not None and not axes_to_end:  # pylint: disable=confusing-consecutive-elif
-        # make the output have correct order if passed ``order`` flag.
-        # if `axes_to_end`, let factory_reduce_data handle it.
-        out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
+    if out is None:
+        if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+            out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
+    elif keepdims:
+        out = np.squeeze(out, axis=axis)
 
     # pylint: disable=unexpected-keyword-arg
     out = factory_reduce_data(
@@ -632,20 +609,8 @@ def _reduce_data(
         casting=casting,
         order=order,
     )
-    out = optional_keepdims(
+    return optional_keepdims(
         out,
-        axis=axis_tuple,
+        axis=axis,
         keepdims=keepdims,
     )
-
-    if axes_to_end:
-        if keepdims:
-            order0 = (*axis_tuple, *mom_params.axes)
-            order1 = tuple(range(-mom_params.ndim - len(axis_tuple), 0))
-        else:
-            order0 = mom_axes
-            order1 = mom_params.axes_to_end().axes
-
-        out = np.moveaxis(out, order0, order1)
-
-    return out

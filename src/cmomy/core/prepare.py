@@ -22,6 +22,7 @@ from .validate import (
     is_dataarray,
     is_dataset,
     validate_axis,
+    validate_axis_mult,
     validate_mom,
 )
 
@@ -38,6 +39,7 @@ if TYPE_CHECKING:
     from .typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
+        AxisReduceMultWrap,
         AxisReduceWrap,
         DimsReduce,
         MissingType,
@@ -112,27 +114,59 @@ class PrepareDataArray(_PrepareBaseArray):
     ) -> tuple[Self, int, NDArrayAny]:
         """Convert central moments array to correct form for reduction."""
         data = asarray_maybe_recast(data, dtype=dtype, recast=self.recast)
-        axis = normalize_axis_index(
+        axis = self.mom_params.normalize_axis_index(
             validate_axis(axis),
             data.ndim,
-            mom_ndim=self.mom_params.ndim,
         )
 
         if axes_to_end:
             axis_out = data.ndim - (self.mom_params.ndim + 1)
-            mom_params_orig, mom_params = (
-                self.mom_params,
-                self.mom_params.axes_to_end(),
-            )
-            data = np.moveaxis(
-                data, (axis, *mom_params_orig.axes), (axis_out, *mom_params.axes)
-            )
-            obj = replace(self, mom_params=mom_params)
-        else:
-            axis_out = axis
-            obj = self
+            axes0 = (axis, *self.mom_params.axes)
+            axes1 = (axis_out, *self.mom_params.axes_last)
+            if axes0 != axes1:
+                data = np.moveaxis(data, axes0, axes1)
+                return (
+                    replace(self, mom_params=self.mom_params.axes_to_end()),
+                    axis_out,
+                    data,
+                )
 
-        return obj, axis_out, data
+        return self, axis, data
+
+    def data_for_reduction_multiple(
+        self,
+        data: ArrayLike,
+        *,
+        axis: AxisReduceMultWrap | MissingType,
+        axes_to_end: bool,
+        dtype: DTypeLike,
+    ) -> tuple[Self, tuple[int, ...], NDArrayAny]:
+        data = asarray_maybe_recast(data, dtype=dtype, recast=self.recast)
+        if axis is None:
+            mom_axes = self.mom_params.normalize_axis_tuple(
+                self.mom_params.axes, data.ndim
+            )
+            axis = tuple(i for i in range(data.ndim) if i not in mom_axes)
+        else:
+            axis = self.mom_params.normalize_axis_tuple(
+                validate_axis_mult(axis),
+                data.ndim,
+            )
+
+        if axes_to_end:
+            axis_out = tuple(
+                range(-len(axis) - self.mom_params.ndim, -self.mom_params.ndim)
+            )
+            axes0 = (*axis, *self.mom_params.axes)
+            axes1 = (*axis_out, *self.mom_params.axes_last)
+            if axes0 != axes1:
+                data = np.moveaxis(data, axes0, axes1)
+                return (
+                    replace(self, mom_params=self.mom_params.axes_to_end()),
+                    axis_out,
+                    data,
+                )
+        return self, axis, data
 
     @staticmethod
     def optional_out_sample(
@@ -360,27 +394,44 @@ class PrepareDataXArray(_PrepareBaseXArray):
         dim: tuple[Hashable, ...],
         keepdims: bool,
         axes_to_end: bool,
+        order: ArrayOrderKACF,
+        dtype: DTypeLike,
     ) -> NDArray[ScalarT] | None:
         """Prepare out for reduce_data"""
-        if out is None or is_dataset(target):
+        if is_dataset(target):
             return None
 
         if axes_to_end:
-            # out should already be in correct order
+            # out is None or in correct form
             return out
+
+        axis = target.get_axis_num(dim)
+        if out is None:
+            if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+                if keepdims:
+                    shape = tuple(
+                        1 if i in axis else s for i, s in enumerate(target.shape)
+                    )
+                else:
+                    shape = tuple(
+                        s for i, s in enumerate(target.shape) if i not in axis
+                    )
+                out = np.empty(shape, dtype=dtype, order=_order_cf)
+            else:
+                return None
 
         if keepdims:
             return np.moveaxis(
                 out,
-                (*target.get_axis_num(dim), *self.mom_params.get_axes(target)),
+                (*axis, *self.mom_params.get_axes(target)),
                 range(-(len(dim) + self.mom_params.ndim), 0),
             )
 
         # otherwise need to remove reduction dimensions before move.
         dims = [d for d in target.dims if d not in dim]
-        axes0 = [dims.index(d) for d in self.mom_params.dims]
+        mom_axes = [dims.index(d) for d in self.mom_params.dims]
 
-        return np.moveaxis(out, axes0, self.mom_params.axes_last)
+        return np.moveaxis(out, mom_axes, self.mom_params.axes_last)
 
     def optional_out_transform(
         self,

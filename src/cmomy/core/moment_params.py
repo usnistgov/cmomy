@@ -562,6 +562,9 @@ class MomParamsXArrayOptional(MomParamsBase):
             axis=axis, dim=dim, default_axis=default_axis, default_dim=default_dim
         )
 
+        if axis is None:
+            dim = None
+
         if dim is not MISSING:
             if dim is None:
                 dim_ = _get_dim_none()
