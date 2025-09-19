@@ -15,6 +15,149 @@ dtype_mark = pytest.mark.parametrize("dtype", [np.float32, np.float64, None])
 order_mark = pytest.mark.parametrize("order", ["C", None])
 
 
+@pytest.mark.parametrize("data", [np.arange(2 * 3 * 4 * 5).reshape(2, 3, 4, 5)])
+@pytest.mark.parametrize(
+    ("mom_axes", "axis"),
+    [
+        (1, (-4, -2)),
+        (2, (0, 1)),
+        (-1, (-2,)),
+        ((1, 2), (0, -1)),
+        ((0, -1), (1, 2)),
+        ((-2, -1), (-4, -3)),
+    ],
+)
+@pytest.mark.parametrize("axes_to_end", [True, False])
+def test_prepare_data_data_for_reduction_multiple(
+    mom_axes, axis, axes_to_end, data
+) -> None:
+    prep = prepare.PrepareDataArray.factory(axes=mom_axes)
+
+    prep_check, axis_check, out = prep.data_for_reduction_multiple(
+        data, axis=axis, axes_to_end=axes_to_end, dtype=None
+    )
+
+    if axes_to_end:
+        assert prep_check.mom_params.axes == prep.mom_params.axes_last
+        assert axis_check == tuple(
+            range(
+                data.ndim - len(axis) - prep.mom_params.ndim,
+                data.ndim - prep.mom_params.ndim,
+            )
+        )
+        np.testing.assert_allclose(
+            moveaxis(data, axis, mom_params=prep.mom_params, axes_to_end=True), out
+        )
+    else:
+        assert prep_check.mom_params.axes == prep.mom_params.axes
+        assert axis_check == prep.mom_params.normalize_axis_tuple(axis, data.ndim)
+        np.testing.assert_allclose(data, out)
+
+
+@pytest.mark.parametrize(
+    "data",
+    [np.empty((2, 3, 4, 5))],
+)
+@pytest.mark.parametrize(
+    ("out", "kws", "expected"),
+    [
+        (np.zeros((2, 3)), {}, (2, 3)),
+        (None, {"order": None}, None),
+        (None, {"order": "c", "axis_new_size": 10, "axis": 1}, (2, 10, 4, 5)),
+    ],
+)
+def test_prepare_data_optional_out_sample(data, out, kws, expected) -> None:
+    kwargs = kws.copy()
+    for k, v in {
+        "axis": 0,
+        "axis_new_size": None,
+        "order": None,
+        "dtype": np.float64,
+    }.items():
+        kwargs.setdefault(k, v)
+
+    out = prepare.PrepareDataArray.optional_out_sample(out, data=data, **kwargs)
+
+    if out is None:
+        assert expected is None
+    else:
+        assert out.shape == expected
+
+
+@pytest.mark.parametrize(
+    "data",
+    [np.empty((2, 3, 4, 5))],
+)
+@pytest.mark.parametrize(
+    ("mom_axes", "out", "kws", "expected"),
+    [
+        (-1, np.zeros((2, 3)), {}, (2, 3)),
+        (-1, None, {"axis": 1}, (2, 3, 4, 5)),
+        (-1, None, {"order": "c", "axis_new_size": 10, "axis": 1}, (2, 10, 4, 5)),
+        (-1, None, {"order": None, "axis_new_size": 10, "axis": 1}, (2, 10, 4, 5)),
+        ((0, 1), None, {"order": "c", "axis_new_size": 10, "axis": 3}, (2, 3, 4, 10)),
+        ((0, 1), None, {"order": None, "axis_new_size": 10, "axis": 3}, (2, 3, 4, 10)),
+    ],
+)
+def test_prepare_data_out_sample(data, mom_axes, out, kws, expected) -> None:
+    kwargs = kws.copy()
+    for k, v in {
+        "axis": 0,
+        "axis_new_size": None,
+        "order": None,
+        "dtype": np.float64,
+    }.items():
+        kwargs.setdefault(k, v)
+
+    prep = prepare.PrepareDataArray.factory(axes=mom_axes)
+
+    out = prep.out_sample(out, data=data, **kwargs)
+
+    if out is None:
+        assert expected is None
+    else:
+        assert out.shape == expected
+
+        if kwargs["order"] is None:
+            assert moveaxis(
+                out, kwargs["axis"], mom_params=prep.mom_params, axes_to_end=True
+            ).flags["C_CONTIGUOUS"]
+        elif kwargs["order"] == "c":
+            assert out.flags["C_CONTIGUOUS"]
+
+
+@pytest.mark.parametrize(
+    ("shapes", "expected"),
+    [
+        ([(10, 2, 3)], (10, 2, 3)),
+        ([(10, 2, 3), (10,)], (10, 2, 3)),
+        ([(10, 2, 3), (4, 5, 10, 1, 1), (10,)], (4, 5, 10, 2, 3)),
+    ],
+)
+def test_prepare_values_get_axis_sample_out(shapes, expected) -> None:
+    assert (
+        prepare.PrepareValsArray.get_val_shape(*(np.empty(shape) for shape in shapes))
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    ("mom_axes", "args", "axis_sample_out"),
+    [
+        # axis_neg, axis, axis_new_size, out_ndim
+        ((-2, -1), (-10, None, MISSING, 5), -12),
+        ((-2, -1), (-1, 2, MISSING, 5), -3),
+        ((1, 2), (-2, 1, 10, 5), 3),
+        ((1, 2), (-2, None, 10, 5), 3),
+        ((1, 3), (-2, 1, 10, 5), 2),
+        ((1, 3), (-2, 1, MISSING, 5), -4),
+    ],
+)
+def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
+    prep = prepare.PrepareValsArray.factory(axes=mom_axes)
+    assert prep.get_axis_sample_out(*args) == axis_sample_out
+
+
 @pytest.mark.parametrize(
     (
         "axes_to_end",
@@ -83,7 +226,7 @@ order_mark = pytest.mark.parametrize("order", ["C", None])
 )
 @dtype_mark
 # @order_mark
-def test_prepare_values_for_reduction(
+def test_prepare_values_values_for_reduction(
     axes_to_end, dtype, axis, xshape, xshape2, yshape, yshape2, wshape, wshape2
 ) -> None:
     xv, yv, wv = 1, 2, 3
@@ -135,29 +278,12 @@ def test_prepare_values_for_reduction(
             np.testing.assert_allclose(xx, vv)
 
 
-@pytest.mark.parametrize(
-    ("mom_axes", "args", "axis_sample_out"),
-    [
-        # axis_neg, axis, axis_new_size, out_ndim
-        ((-2, -1), (-10, None, MISSING, 5), -12),
-        ((-2, -1), (-1, 2, MISSING, 5), -3),
-        ((1, 2), (-2, 1, 10, 5), 3),
-        ((1, 2), (-2, None, 10, 5), 3),
-        ((1, 3), (-2, 1, 10, 5), 2),
-        ((1, 3), (-2, 1, MISSING, 5), -4),
-    ],
-)
-def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
-    prep = prepare.PrepareValsArray.factory(axes=mom_axes)
-    assert prep.get_axis_sample_out(*args) == axis_sample_out
-
-
 @dtype_mark
 @order_mark
 @pytest.mark.parametrize(
     (
         "mom",
-        "shapes",
+        "val_shape",
         "axis_neg",
         "axis_new_size",
         "mom_axes",
@@ -165,32 +291,32 @@ def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
         "axis_sample",
     ),
     [
-        ((3,), [(10, 2, 3), (10,)], -3, MISSING, None, (2, 3, 4), None),
-        ((3,), [(10, 2, 3), (10,)], -3, 5, None, (5, 2, 3, 4), 0),
-        ((3,), [(10, 2, 3), (10,)], -3, MISSING, (1,), (2, 4, 3), None),
-        ((3,), [(10, 2, 3), (10,)], -3, 5, (1,), (5, 4, 2, 3), 0),
-        ((3,), [(2, 10, 3), (10,)], -2, MISSING, None, (2, 3, 4), None),
-        ((3,), [(2, 10, 3), (10,)], -2, 5, None, (2, 5, 3, 4), 1),
-        ((3,), [(2, 10, 3), (10,)], -2, MISSING, (-2,), (2, 4, 3), None),
-        ((3,), [(2, 10, 3), (10,)], -2, 5, (-2,), (2, 5, 4, 3), 1),
-        ((3,), [(2, 10, 3), (10,)], -2, MISSING, (1,), (2, 4, 3), None),
-        ((3,), [(2, 10, 3), (10,)], -2, 5, (1,), (2, 4, 5, 3), 2),
-        ((3,), [(2, 10, 3), (10,)], -2, MISSING, (0,), (4, 2, 3), None),
-        ((3,), [(2, 10, 3), (10,)], -2, 5, (0,), (4, 2, 5, 3), 2),
+        ((3,), (10, 2, 3), -3, MISSING, None, (2, 3, 4), None),
+        ((3,), (10, 2, 3), -3, 5, None, (5, 2, 3, 4), 0),
+        ((3,), (10, 2, 3), -3, MISSING, (1,), (2, 4, 3), None),
+        ((3,), (10, 2, 3), -3, 5, (1,), (5, 4, 2, 3), 0),
+        ((3,), (2, 10, 3), -2, MISSING, None, (2, 3, 4), None),
+        ((3,), (2, 10, 3), -2, 5, None, (2, 5, 3, 4), 1),
+        ((3,), (2, 10, 3), -2, MISSING, (-2,), (2, 4, 3), None),
+        ((3,), (2, 10, 3), -2, 5, (-2,), (2, 5, 4, 3), 1),
+        ((3,), (2, 10, 3), -2, MISSING, (1,), (2, 4, 3), None),
+        ((3,), (2, 10, 3), -2, 5, (1,), (2, 4, 5, 3), 2),
+        ((3,), (2, 10, 3), -2, MISSING, (0,), (4, 2, 3), None),
+        ((3,), (2, 10, 3), -2, 5, (0,), (4, 2, 5, 3), 2),
         # more
-        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, MISSING, None, (2, 3, 4, 5), None),
-        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, 1, None, (1, 2, 3, 4, 5), None),
-        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, MISSING, (1, 2), (2, 4, 5, 3), None),
-        ((3, 4), [(10, 2, 3), (10,), (10,)], -3, 1, (1, 2), (1, 4, 5, 2, 3), None),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, MISSING, None, (2, 3, 4, 5), None),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, None, (2, 1, 3, 4, 5), None),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, MISSING, (1, 2), (2, 4, 5, 3), None),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, (1, 2), (2, 4, 5, 1, 3), 3),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, MISSING, (1, 3), (2, 4, 3, 5), None),
-        ((3, 4), [(2, 10, 3), (10,), (10,)], -2, 1, (1, 3), (2, 4, 1, 5, 3), 2),
+        ((3, 4), (10, 2, 3), -3, MISSING, None, (2, 3, 4, 5), None),
+        ((3, 4), (10, 2, 3), -3, 1, None, (1, 2, 3, 4, 5), None),
+        ((3, 4), (10, 2, 3), -3, MISSING, (1, 2), (2, 4, 5, 3), None),
+        ((3, 4), (10, 2, 3), -3, 1, (1, 2), (1, 4, 5, 2, 3), None),
+        ((3, 4), (2, 10, 3), -2, MISSING, None, (2, 3, 4, 5), None),
+        ((3, 4), (2, 10, 3), -2, 1, None, (2, 1, 3, 4, 5), None),
+        ((3, 4), (2, 10, 3), -2, MISSING, (1, 2), (2, 4, 5, 3), None),
+        ((3, 4), (2, 10, 3), -2, 1, (1, 2), (2, 4, 5, 1, 3), 3),
+        ((3, 4), (2, 10, 3), -2, MISSING, (1, 3), (2, 4, 3, 5), None),
+        ((3, 4), (2, 10, 3), -2, 1, (1, 3), (2, 4, 1, 5, 3), 2),
         (
             (3, 4),
-            [(2, 10, 3), (1, 1, 10, 3), (10,)],
+            (1, 2, 10, 3),
             -2,
             MISSING,
             None,
@@ -199,15 +325,23 @@ def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
         ),
     ],
 )
-def test_prepare_out_from_values(
-    dtype, order, mom, shapes, axis_neg, axis_new_size, mom_axes, out_shape, axis_sample
+def test_prepare_values_out_from_values(
+    dtype,
+    order,
+    mom,
+    val_shape,
+    axis_neg,
+    axis_new_size,
+    mom_axes,
+    out_shape,
+    axis_sample,
 ) -> None:
     ndim = len(mom)
     prep = prepare.PrepareValsArray.factory(ndim=ndim, axes=mom_axes, recast=False)
 
     out, axis_sample_out = prep.out_from_values(
         None,
-        val_shape=prep.get_val_shape(*(np.zeros(shape) for shape in shapes)),
+        val_shape=val_shape,
         mom=mom,
         axis_neg=axis_neg,
         axis_new_size=axis_new_size,
@@ -266,7 +400,7 @@ def test_prepare_out_from_values(
         ({"narrays": 2, "axis": 0, "dim": None, "dtype": np.float32}, TypeError, None),
     ],
 )
-def test_xprepare_values_for_reduction_0(target, other, kws, raises, match):
+def test_prepare_data_xarray_values_for_reduction_0(target, other, kws, raises, match):
     prep = prepare.PrepareValsXArray.factory(ndim=2)
     with pytest.raises(raises, match=match):
         prep.values_for_reduction(target, other, **kws)
@@ -282,7 +416,7 @@ def test_xprepare_values_for_reduction_0(target, other, kws, raises, match):
     ],
 )
 @dtype_mark
-def test_xprepare_values_for_reduction_1(
+def test_prepare_data_xarray_values_for_reduction_1(
     dtype, dim, xshape, xshape2, yshape, yshape2
 ) -> None:
     target = xr.DataArray(np.ones(xshape, dtype=dtype))
@@ -430,7 +564,9 @@ def test_xprepare_values_for_reduction_1(
         ),
     ],
 )
-def test_xprepare_out_for_resample_data(data, kws, mom_params_kws, expected) -> None:
+def test_prepare_data_xarray_out_for_resample_data(
+    data, kws, mom_params_kws, expected
+) -> None:
     from cmomy.core.moment_params import factory_mom_params
 
     kws = kws.copy()
@@ -464,3 +600,203 @@ def test__prepare_secondary_value_for_reduction() -> None:
             nsamp=10,
             dtype=np.float64,
         )
+
+
+data_xarray_mark = pytest.mark.parametrize(
+    "data", [xr.DataArray(np.zeros((2, 3, 4, 5)))]
+)
+
+
+@data_xarray_mark
+@pytest.mark.parametrize(
+    ("mom_axes", "out", "axis", "kws", "expected"),
+    [
+        (-1, None, (0,), {"axes_to_end": True}, None),
+        (-1, np.zeros((2, 3)), (0,), {"axes_to_end": True}, (2, 3)),
+        (-1, None, (0,), {"order": None}, None),
+        (-1, None, (0,), {"order": "c"}, (3, 4, 5)),
+        (1, None, (0,), {"order": "c"}, (4, 5, 3)),
+        (-1, None, (0,), {"order": "c", "keepdims": True}, (3, 4, 1, 5)),
+        (1, None, (0,), {"order": "c", "keepdims": True}, (4, 5, 1, 3)),
+    ],
+)
+def test_prepare_data_xarray_optional_out_reduce(
+    data, mom_axes, out, axis, kws, expected
+) -> None:
+    prep = prepare.PrepareDataXArray.factory(data=data, axes=mom_axes)
+    dim = tuple(data.dims[k] for k in axis)
+
+    kwargs = kws.copy()
+    for k, v in {
+        "keepdims": False,
+        "axes_to_end": False,
+        "order": None,
+        "dtype": np.float64,
+    }.items():
+        kwargs.setdefault(k, v)
+
+    out = prep.optional_out_reduce(out, target=data, dim=dim, **kwargs)
+
+    if out is None:
+        assert expected is None
+    else:
+        assert out.shape == expected
+
+        if kwargs["order"] == "c" and kwargs["keepdims"]:
+            assert moveaxis(
+                out,
+                (
+                    *range(-len(axis) - prep.mom_params.ndim, -prep.mom_params.ndim),
+                    *prep.mom_params.axes_last,
+                ),
+                (*axis, *prep.mom_params.get_axes(data)),
+            ).flags["C_CONTIGUOUS"]
+
+
+@data_xarray_mark
+@pytest.mark.parametrize(
+    ("mom_axes", "out", "kws", "expected"),
+    [
+        (-1, None, {"axes_to_end": True}, None),
+        (-1, np.zeros((2, 3)), {"axes_to_end": True}, (2, 3)),
+        (-1, None, {"order": "c"}, (2, 3, 4, 5)),
+        (0, None, {"order": "c"}, (3, 4, 5, 2)),
+    ],
+)
+def test_prepare_data_xarray_optional_out_transform(
+    data, mom_axes, out, kws, expected
+) -> None:
+    prep = prepare.PrepareDataXArray.factory(data=data, axes=mom_axes)
+
+    kwargs = kws.copy()
+    for k, v in {"axes_to_end": False, "order": None, "dtype": np.float64}.items():
+        kwargs.setdefault(k, v)
+
+    out = prep.optional_out_transform(out, target=data, **kwargs)
+
+    if out is None:
+        assert expected is None
+    else:
+        assert out.shape == expected
+
+        if kwargs["order"] == "c":
+            assert moveaxis(
+                out,
+                prep.mom_params.axes_last,
+                prep.mom_params.get_axes(data),
+            ).flags["C_CONTIGUOUS"]
+
+
+@pytest.mark.parametrize(
+    "target", [xr.DataArray(np.empty((10, 3, 4)), dims=list("abc"))]
+)
+@pytest.mark.parametrize(
+    ("out", "mom", "args", "kws", "expected"),
+    [
+        (
+            np.zeros((2, 3)),  # white like.  This should pass through
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": True},
+            (2, 3),
+        ),
+        (
+            None,
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c"},
+            (3, 4, 5),
+        ),
+        (
+            np.zeros((3, 4, 6)),  # white lie.  This should pass through
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c"},
+            (3, 4, 6),
+        ),
+        (
+            None,
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c", "axis_new_size": None},
+            (3, 4, 10, 5),
+        ),
+        (
+            np.zeros((10, 3, 4, 6)),  # white lie.  This should pass through
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c", "axis_new_size": None},
+            (3, 4, 10, 6),
+        ),
+        (
+            None,
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]).to_dataset(
+                    name="hello"
+                ),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c"},
+            TypeError,
+        ),
+    ],
+)
+def test_prepare_values_xarray_optional_out_from_values(
+    target,
+    out,
+    mom,
+    args,
+    kws,
+    expected,
+) -> None:
+    prep = prepare.PrepareValsXArray.factory(ndim=len(mom))
+
+    kwargs = kws.copy()
+    for k, v in {
+        "dim": "a",
+        "axis_new_size": MISSING,
+        "axes_to_end": False,
+        "order": None,
+        "dtype": np.float64,
+    }.items():
+        kwargs.setdefault(k, v)
+
+    if isinstance(expected, type):
+        with pytest.raises(expected):
+            _ = prep.optional_out_from_values(
+                out, *args, target=target, mom=mom, **kwargs
+            )
+        return
+
+    out = prep.optional_out_from_values(out, *args, target=target, mom=mom, **kwargs)
+
+    if out is None:
+        assert expected is None
+    else:
+        assert out.shape == expected
+
+        if kwargs["order"] == "c":
+            if kwargs["axis_new_size"] is not MISSING:
+                check = np.moveaxis(
+                    out, -(len(mom) + 1), target.get_axis_num(kwargs["dim"])
+                )
+            else:
+                check = out
+
+            assert check.flags["C_CONTIGUOUS"]

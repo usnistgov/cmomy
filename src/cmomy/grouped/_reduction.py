@@ -429,14 +429,14 @@ def _reduce_data_grouped(
     )
     raise_if_wrong_value(len(by), data.shape[axis], "Wrong length of `by`.")
 
-    if out is None:
-        out = prep.out_sample(
-            data,
-            axis=axis,
-            axis_new_size=by.max() + 1,
-            order=order,
-            dtype=dtype,
-        )
+    out = prep.out_sample(
+        out,
+        data=data,
+        axis=axis,
+        axis_new_size=by.max() + 1,
+        order=order,
+        dtype=dtype,
+    )
     out.fill(0.0)
 
     # pylint: disable=unexpected-keyword-arg

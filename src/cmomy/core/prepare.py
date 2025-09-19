@@ -155,7 +155,10 @@ class PrepareDataArray(_PrepareBaseArray):
 
         if axes_to_end:
             axis_out = tuple(
-                range(-len(axis) - self.mom_params.ndim, -self.mom_params.ndim)
+                range(
+                    data.ndim - (self.mom_params.ndim + len(axis)),
+                    data.ndim - self.mom_params.ndim,
+                )
             )
             axes0 = (*axis, *self.mom_params.axes)
             axes1 = (*axis_out, *self.mom_params.axes_last)
@@ -193,8 +196,9 @@ class PrepareDataArray(_PrepareBaseArray):
 
     def out_sample(
         self,
-        data: NDArrayAny,
+        out: NDArrayAny | None,
         *,
+        data: NDArrayAny,
         axis: int,
         axis_new_size: int | None,
         order: ArrayOrderCF,
@@ -205,6 +209,9 @@ class PrepareDataArray(_PrepareBaseArray):
 
         Use this when `out` is required (i.e., signature of gufunc doesn't have "->").
         """
+        if out is not None:
+            return out
+
         if axis_new_size is None:
             axis_new_size = data.shape[axis]
 
@@ -388,9 +395,9 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_reduce(
         self,
-        target: xr.DataArray | xr.Dataset,
         out: NDArray[ScalarT] | None,
         *,
+        target: xr.DataArray | xr.Dataset,
         dim: tuple[Hashable, ...],
         keepdims: bool,
         axes_to_end: bool,
@@ -435,9 +442,9 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_transform(
         self,
-        target: xr.DataArray | xr.Dataset,
         out: NDArray[ScalarT] | None,
         *,
+        target: xr.DataArray | xr.Dataset,
         axes_to_end: bool,
         order: ArrayOrderKACF,
         dtype: DTypeLike,
@@ -456,16 +463,11 @@ class PrepareDataXArray(_PrepareBaseXArray):
             else:
                 return None
 
-        axes0 = self.mom_params.get_axes(target)
-        axes1 = self.mom_params.axes_last
-
-        if axes0 != axes1:
-            return np.moveaxis(
-                out,
-                self.mom_params.get_axes(target),
-                self.mom_params.axes_last,
-            )
-        return out
+        return np.moveaxis(
+            out,
+            self.mom_params.get_axes(target),
+            self.mom_params.axes_last,
+        )
 
     def optional_out_sample(
         self,
@@ -500,9 +502,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
         axes0 = (axis, *self.mom_params.get_axes(data))
         axes1 = (-(self.mom_params.ndim + 1), *self.mom_params.axes_last)
-        if axes0 != axes1:
-            return np.moveaxis(out, axes0, axes1)
-        return out
+        return np.moveaxis(out, axes0, axes1)
 
 
 @dataclass
@@ -598,12 +598,12 @@ class PrepareValsXArray(_PrepareBaseXArray):
             # out is None or in correct order
             return out
 
-        if any(is_dataset(_) for _ in args):
-            msg = "Passed secondary dataset"
-            raise ValueError(msg)
-
         axis_neg = positive_to_negative_index(target.get_axis_num(dim), target.ndim)
         if out is None:
+            if any(is_dataset(_) for _ in args):
+                msg = "Passed secondary dataset"
+                raise TypeError(msg)
+
             # construct array in correct order
             prep_array = self.prepare_array
             # shape of values with axis in last position
