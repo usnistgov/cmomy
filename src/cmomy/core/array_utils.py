@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import (
         Sequence,
     )
+    from typing import Any
 
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
@@ -28,7 +29,10 @@ if TYPE_CHECKING:
         NDArrayAny,
         ScalarT,
     )
-    from .typing_compat import TypeIs
+    from .typing_compat import TypeIs, TypeVar
+
+    _NDArrayT = TypeVar("_NDArrayT", bound=NDArray[Any])
+    _T = TypeVar("_T")
 
 
 # * Array order ---------------------------------------------------------------
@@ -86,24 +90,49 @@ def normalize_axis_tuple(
     return out
 
 
-def moveaxis_order(
-    ndim: int,
+@overload
+def reorder(
+    ndim_or_seq: int,
     source: complex | Iterable[complex],
     destination: complex | Iterable[complex],
-    normalize: bool = True,
-) -> list[int]:
-    """
-    Get new order of array for moveaxis
+    *,
+    normalize: bool = ...,
+) -> list[int]: ...
+@overload
+def reorder(
+    ndim_or_seq: Iterable[_T],
+    source: complex | Iterable[complex],
+    destination: complex | Iterable[complex],
+    *,
+    normalize: bool = ...,
+) -> list[_T]: ...
 
-    Using ``x.transpose(*moveaxis_order(x.ndim, source, destination))``
+
+def reorder(
+    ndim_or_seq: int | Iterable[_T],
+    source: complex | Iterable[complex],
+    destination: complex | Iterable[complex],
+    *,
+    normalize: bool = True,
+) -> list[int] | list[_T]:
+    """
+    Reorder sequence.
+
+    Using ``x.transpose(*reorder(x.ndim, source, destination))``
     is equivalent to ``np.moveaxis(x, source, destination)``.
 
     Useful for keeping track of where indices end up.
     To extract to new position for an axis, use ``order.index(axis)``.
     """
+    seq: Sequence[Any] = (
+        range(ndim_or_seq) if isinstance(ndim_or_seq, int) else list(ndim_or_seq)
+    )
+
     if normalize:
-        source = normalize_axis_tuple(source, ndim, msg_prefix="source")
-        destination = normalize_axis_tuple(destination, ndim, msg_prefix="destination")
+        source = normalize_axis_tuple(source, len(seq), msg_prefix="source")
+        destination = normalize_axis_tuple(
+            destination, len(seq), msg_prefix="destination"
+        )
     else:
         # white lie.  If normalize=False, already normalized.
         source = cast("Sequence[int]", source)
@@ -113,11 +142,10 @@ def moveaxis_order(
         msg = "source and destination must have same length"
         raise ValueError(msg)
 
-    order = [n for n in range(ndim) if n not in source]
-    for dest, src in sorted(zip(destination, source)):
-        order.insert(dest, src)
-
-    return order
+    out: list[int] | list[_T] = [x for n, x in enumerate(seq) if n not in source]
+    for dest, src in sorted(zip(destination, (seq[s] for s in source))):
+        out.insert(dest, src)
+    return out
 
 
 def positive_to_negative_index(index: int, ndim: int) -> int:

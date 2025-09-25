@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Generic, cast, final
 
 import numpy as np
@@ -14,7 +15,6 @@ from .typing import DataT
 if TYPE_CHECKING:
     from collections.abc import (
         Hashable,
-        Iterable,
         Sequence,
     )
     from typing import Any
@@ -207,20 +207,22 @@ def validate_axis(axis: T | MissingType | None) -> T:
 
     In the future, will allow axis to be None also.
     """
-    if axis is None or axis is MISSING:
+    if axis is MISSING or axis is None:
         msg = f"Must specify axis. Received {axis=}."
         raise TypeError(msg)
     return axis
 
 
 def validate_axis_mult(
-    axis: T | tuple[T, ...] | MissingType,
-) -> T | tuple[T, ...]:
+    axis: T | Iterable[T] | MissingType | None,
+) -> tuple[T, ...]:
     """Validate that axis is specified."""
-    if axis is MISSING:
+    if axis is MISSING or axis is None:
         msg = f"Must specify axis. Received {axis=}."
         raise TypeError(msg)
-    return axis
+    if isinstance(axis, Iterable):
+        return tuple(axis)  # pyright: ignore[reportUnknownArgumentType]
+    return (axis,)
 
 
 # * DataArray -----------------------------------------------------------------

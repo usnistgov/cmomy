@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 from xarray.namedarray.utils import either_dict_or_kwargs
 
-from .core.array_utils import select_dtype
+from .core.array_utils import reorder, select_dtype
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.moment_params import (
@@ -89,8 +89,6 @@ def moveaxis_order(
     allow_select_mom_axes: bool = False,
 ) -> list[int]:
     """Get new integer order for transpose corresponding to `moveaxis` parameters."""
-    from .core.array_utils import moveaxis_order as _moveaxis_order
-
     if is_dataarray(x):
         mom_params = MomParamsXArrayOptional.factory(
             mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
@@ -130,7 +128,7 @@ def moveaxis_order(
             )[0]
             for a, d in zip((axis, dest), (dim, dest_dim))
         )
-        return _moveaxis_order(x.ndim, axes0, axes1, normalize=False)
+        return reorder(x.ndim, axes0, axes1, normalize=False)
 
     # numpy
     mom_params = MomParamsArrayOptional.factory(
@@ -163,7 +161,7 @@ def moveaxis_order(
     if not allow_select_mom_axes:
         mom_params.raise_if_in_mom_axes(*axes0, *axes1)
 
-    return _moveaxis_order(x.ndim, axes0, axes1, normalize=False)
+    return reorder(x.ndim, axes0, axes1, normalize=False)
 
 
 @overload

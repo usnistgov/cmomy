@@ -13,8 +13,8 @@ import xarray as xr
 from .core.array_utils import (
     arrayorder_to_arrayorder_cf,
     get_axes_from_values,
-    moveaxis_order,
     optional_keepdims,
+    reorder,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -583,7 +583,7 @@ def _reduce_data(
         return data
 
     # move reduction dimensions to last positions and reshape
-    order_ = moveaxis_order(data.ndim, axis, range(-len(axis), 0))
+    order_ = reorder(data.ndim, axis, range(-len(axis), 0))
     data = data.transpose(*order_)
     if len(axis) > 1:
         data = data.reshape(*data.shape[: -len(axis)], -1)

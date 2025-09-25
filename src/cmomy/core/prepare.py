@@ -11,9 +11,9 @@ import numpy as np
 from .array_utils import (
     arrayorder_to_arrayorder_cf,
     asarray_maybe_recast,
-    moveaxis_order,
     normalize_axis_index,
     positive_to_negative_index,
+    reorder,
 )
 from .missing import MISSING
 from .moment_params import MomParamsArray, MomParamsXArray, default_mom_params_xarray
@@ -114,22 +114,20 @@ class PrepareDataArray(_PrepareBaseArray):
     ) -> tuple[Self, int, NDArrayAny]:
         """Convert central moments array to correct form for reduction."""
         data = asarray_maybe_recast(data, dtype=dtype, recast=self.recast)
-        axis = self.mom_params.normalize_axis_index(
-            validate_axis(axis),
-            data.ndim,
-        )
+        axis = self.mom_params.normalize_axis_index(validate_axis(axis), data.ndim)
 
         if axes_to_end:
             axis_out = data.ndim - (self.mom_params.ndim + 1)
-            axes0 = (axis, *self.mom_params.axes)
-            axes1 = (axis_out, *self.mom_params.axes_last)
-            if axes0 != axes1:
-                data = np.moveaxis(data, axes0, axes1)
-                return (
-                    replace(self, mom_params=self.mom_params.axes_to_end()),
-                    axis_out,
-                    data,
-                )
+            data = np.moveaxis(
+                data,
+                (axis, *self.mom_params.axes),
+                (axis_out, *self.mom_params.axes_last),
+            )
+            return (
+                replace(self, mom_params=self.mom_params.axes_to_end()),
+                axis_out,
+                data,
+            )
 
         return self, axis, data
 
@@ -149,8 +147,7 @@ class PrepareDataArray(_PrepareBaseArray):
             axis = tuple(i for i in range(data.ndim) if i not in mom_axes)
         else:
             axis = self.mom_params.normalize_axis_tuple(
-                validate_axis_mult(axis),
-                data.ndim,
+                validate_axis_mult(axis), data.ndim
             )
 
         if axes_to_end:
@@ -160,15 +157,16 @@ class PrepareDataArray(_PrepareBaseArray):
                     data.ndim - self.mom_params.ndim,
                 )
             )
-            axes0 = (*axis, *self.mom_params.axes)
-            axes1 = (*axis_out, *self.mom_params.axes_last)
-            if axes0 != axes1:
-                data = np.moveaxis(data, axes0, axes1)
-                return (
-                    replace(self, mom_params=self.mom_params.axes_to_end()),
-                    axis_out,
-                    data,
-                )
+            data = np.moveaxis(
+                data,
+                (*axis, *self.mom_params.axes),
+                (*axis_out, *self.mom_params.axes_last),
+            )
+            return (
+                replace(self, mom_params=self.mom_params.axes_to_end()),
+                axis_out,
+                data,
+            )
         return self, axis, data
 
     @staticmethod
@@ -220,16 +218,12 @@ class PrepareDataArray(_PrepareBaseArray):
             # otherwise, make array in calculation order
             axes0 = (axis, *self.mom_params.axes)
             axes1 = (data.ndim - (self.mom_params.ndim + 1), *self.mom_params.axes_last)
-            if axes0 != axes1:
-                new_shape = tuple(
-                    shape[o] for o in moveaxis_order(data.ndim, axes0, axes1)
-                )
-                out = np.empty(
-                    new_shape,
-                    dtype=dtype,
-                    order=None,
-                )
-                return np.moveaxis(out, axes1, axes0)
+            out = np.empty(
+                reorder(shape, axes0, axes1),
+                dtype=dtype,
+                order=None,
+            )
+            return np.moveaxis(out, axes1, axes0)
 
         return np.empty(shape, dtype=dtype, order=order)
 
@@ -296,9 +290,9 @@ class PrepareValsArray(_PrepareBaseArray):
 
         if axis is None:
             axis = normalize_axis_index(axis_neg, out_ndim - self.mom_params.ndim)
-        return moveaxis_order(
-            out_ndim, self.mom_params.axes_last, self.mom_params.axes
-        ).index(axis)
+        return reorder(out_ndim, self.mom_params.axes_last, self.mom_params.axes).index(
+            axis
+        )
 
     @staticmethod
     def get_val_shape(*args: NDArrayAny | xr.DataArray) -> tuple[int, ...]:
@@ -310,7 +304,7 @@ class PrepareValsArray(_PrepareBaseArray):
         self,
         out: NDArrayAny | None,
         *,
-        val_shape: tuple[int, ...],
+        val_shape: Sequence[int],
         mom: MomentsStrict,
         axis_neg: int,
         axis_new_size: int | MissingType | None = MISSING,
@@ -351,31 +345,22 @@ class PrepareValsArray(_PrepareBaseArray):
                 axes1 = self.mom_params.axes
             else:
                 axes0 = (
-                    len(shape_calculate) - (self.mom_params.ndim + 1),
+                    out.ndim - (self.mom_params.ndim + 1),
                     *self.mom_params.axes_last,
                 )
                 axes1 = (axis_sample_out, *self.mom_params.axes)
 
-            if axes0 != axes1:
-                return np.moveaxis(out, axes0, axes1), axis_sample_out
-            return out, axis_sample_out
+            return np.moveaxis(out, axes0, axes1), axis_sample_out
 
         # Use actual order
-        shape: tuple[int, ...] = (
+        shape: list[int] = [
             *val_shape[:axis],
             *(() if axis_new_size is MISSING else (axis_new_size,)),
             *val_shape[axis + 1 :],
             *mom_shape,
-        )
+        ]
 
-        if self.mom_params.axes != self.mom_params.axes_last:
-            shape = tuple(
-                shape[o]
-                for o in moveaxis_order(
-                    len(shape), self.mom_params.axes_last, self.mom_params.axes
-                )
-            )
-
+        shape = reorder(shape, self.mom_params.axes_last, self.mom_params.axes)
         return np.empty(shape, dtype=dtype, order=order), axis_sample_out
 
 
@@ -428,17 +413,16 @@ class PrepareDataXArray(_PrepareBaseXArray):
                 return None
 
         if keepdims:
-            return np.moveaxis(
-                out,
-                (*axis, *self.mom_params.get_axes(target)),
-                range(-(len(dim) + self.mom_params.ndim), 0),
-            )
+            axes0 = (*axis, *self.mom_params.get_axes(target))
+            axes1 = range(-(len(dim) + self.mom_params.ndim), 0)
 
-        # otherwise need to remove reduction dimensions before move.
-        dims = [d for d in target.dims if d not in dim]
-        mom_axes = [dims.index(d) for d in self.mom_params.dims]
+        else:
+            # otherwise need to remove reduction dimensions before move.
+            dims = [d for d in target.dims if d not in dim]
+            axes0 = tuple(dims.index(d) for d in self.mom_params.dims)
+            axes1 = self.mom_params.axes_last
 
-        return np.moveaxis(out, mom_axes, self.mom_params.axes_last)
+        return np.moveaxis(out, axes0, axes1)
 
     def optional_out_transform(
         self,
@@ -500,9 +484,11 @@ class PrepareDataXArray(_PrepareBaseXArray):
             else:
                 return None
 
-        axes0 = (axis, *self.mom_params.get_axes(data))
-        axes1 = (-(self.mom_params.ndim + 1), *self.mom_params.axes_last)
-        return np.moveaxis(out, axes0, axes1)
+        return np.moveaxis(
+            out,
+            (axis, *self.mom_params.get_axes(data)),
+            (-(self.mom_params.ndim + 1), *self.mom_params.axes_last),
+        )
 
 
 @dataclass
@@ -607,9 +593,10 @@ class PrepareValsXArray(_PrepareBaseXArray):
             # construct array in correct order
             prep_array = self.prepare_array
             # shape of values with axis in last position
-            val_shape_last = prep_array.get_val_shape(*args)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
-            val_shape = tuple(
-                val_shape_last[o] for o in moveaxis_order(target.ndim, -1, axis_neg)
+            val_shape = reorder(
+                prep_array.get_val_shape(*args),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                -1,
+                axis_neg,
             )
 
             out_, _ = prep_array.out_from_values(

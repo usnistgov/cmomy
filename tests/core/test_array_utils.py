@@ -159,3 +159,16 @@ def test_optional_keepdims(shape, axis, out) -> None:
         assert array_utils.optional_keepdims(x, axis=axis, keepdims=keepdims).shape == (
             out if keepdims else shape
         )
+
+
+@pytest.mark.parametrize(
+    ("data", "src", "dest", "expected"),
+    [
+        (5, (0, 1), (-1, -2), [2, 3, 4, 1, 0]),
+        (5, (-2, 0), (0, -2), [3, 1, 2, 0, 4]),
+        ((2, 3, 4, 5, 6), (0, 1), (-1, -2), [4, 5, 6, 3, 2]),
+        ((2, 3, 4, 5, 6), (-2, 0), (0, -2), [5, 3, 4, 2, 6]),
+    ],
+)
+def test_reorder(data, src, dest, expected) -> None:
+    assert array_utils.reorder(data, src, dest) == expected

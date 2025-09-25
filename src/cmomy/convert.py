@@ -13,7 +13,7 @@ import xarray as xr
 from .core.array_utils import (
     arrayorder_to_arrayorder_cf,
     asarray_maybe_recast,
-    moveaxis_order,
+    reorder,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -301,7 +301,7 @@ def _moments_type(
     ):
         shape = tuple(
             values_in.shape[o]
-            for o in moveaxis_order(values_in.ndim, mom_params.axes, axes_out)
+            for o in reorder(values_in.ndim, mom_params.axes, axes_out)
         )
         out = np.empty(shape, dtype=dtype, order=_order_cf)
 
