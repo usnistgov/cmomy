@@ -80,7 +80,7 @@ def factor_by(
     Index(['a', 'c'], dtype='object')
 
     """
-    from pandas import factorize  # pyright: ignore[reportUnknownVariableType]
+    from pandas import factorize
 
     # filter None and negative -> None
     by_: Groups = (
@@ -92,17 +92,17 @@ def factor_by(
         )
     )
 
-    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]  # pyright: ignore[reportUnknownVariableType]
+    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]
 
-    codes = codes.astype(np.int64)  # pyright: ignore[reportUnknownVariableType]
+    codes = codes.astype(np.int64)
     if isinstance(by_, (pd.Index, pd.MultiIndex)):
         if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # type: ignore[unreachable] # pragma: no cover
-            msg = f"{type(groups)=} should be instance of pd.Index"  # pyright: ignore[reportUnknownArgumentType]
+            msg = f"{type(groups)=} should be instance of pd.Index"
             raise TypeError(msg)
         groups.names = by_.names  # type: ignore[unreachable]
-        return codes, groups  # pyright: ignore[reportUnknownVariableType]
+        return codes, groups
 
-    return codes, list(groups)  # pyright: ignore[reportUnknownArgumentType,reportUnknownVariableType]
+    return codes, list(groups)
 
 
 def block_by(

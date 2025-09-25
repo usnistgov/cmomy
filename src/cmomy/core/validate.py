@@ -114,7 +114,7 @@ def validate_mom(mom: int | Iterable[int]) -> MomentsStrict:
     if is_mom_tuple(mom):
         return mom
 
-    msg = f"{mom=} must be an integer, or tuple of length 1 or 2, with positive values."  # type: ignore[unreachable]
+    msg = f"{mom=} must be an integer, or tuple of length 1 or 2, with positive values."
     raise ValueError(msg)
 
 

@@ -213,7 +213,11 @@ class PrepareDataArray(_PrepareBaseArray):
         if axis_new_size is None:
             axis_new_size = data.shape[axis]
 
-        shape = (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :])
+        shape: tuple[int, ...] = (
+            *data.shape[:axis],
+            axis_new_size,  # pyright: ignore[reportAssignmentType]
+            *data.shape[axis + 1 :],
+        )
         if order is None:
             # otherwise, make array in calculation order
             axes0 = (axis, *self.mom_params.axes)

@@ -198,7 +198,7 @@ class IndexSampler(Generic[SamplerArrayT]):
 
     @overload
     @classmethod
-    def from_data(
+    def from_data(  # pyright: ignore[reportOverlappingOverload]
         cls: type[IndexSampler[Any]],
         data: xr.DataArray,
         *,
@@ -683,7 +683,7 @@ def select_ndat(
 
 # * Convert -------------------------------------------------------------------
 @overload
-def freq_to_indices(
+def freq_to_indices(  # pyright: ignore[reportOverlappingOverload]
     freq: DataT,
     *,
     shuffle: bool = ...,
@@ -762,7 +762,7 @@ def freq_to_indices(
 
 
 @overload
-def indices_to_freq(
+def indices_to_freq(  # pyright: ignore[reportOverlappingOverload]
     indices: DataT,
     *,
     ndat: int | None = ...,

@@ -364,7 +364,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     @property
     def _dtype(self) -> np.dtype[Any] | None:
         if is_dataarray(self._obj):
-            return self._obj.dtype  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+            return self._obj.dtype
         return None
 
     @docfiller_inherit_abc()
@@ -796,7 +796,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             if isinstance(by, str):
                 from cmomy.grouped import factor_by
 
-                codes, groups_ = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                codes, groups_ = factor_by(self._obj[by].to_numpy())
                 if groups is None:
                     groups = groups_
             else:
@@ -1446,9 +1446,9 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         if is_dataset(self.obj):
             self._raise_notimplemented_for_dataset()
 
-        obj = self._obj.to_numpy()  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        obj = self._obj.to_numpy()
         return CentralMomentsArray(
-            obj.copy() if copy else obj,  # pyright: ignore[reportUnknownArgumentType]
+            obj.copy() if copy else obj,
             mom_params=self._mom_params.to_array(),
             fastpath=True,
         )

@@ -515,7 +515,7 @@ def select_moment(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes=output_sizes,
-                output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
+                output_dtypes=data.dtype
                 if is_dataarray(data)  # type: ignore[redundant-expr]
                 else np.float64,
             ),
@@ -740,7 +740,7 @@ def assign_moment(
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=data.dtype  # pyright: ignore[reportUnknownMemberType]
+                output_dtypes=data.dtype
                 if is_dataarray(data)  # type: ignore[redundant-expr]
                 else np.float64,
             ),
@@ -785,7 +785,7 @@ def _assign_moment(
 # * Vals -> Data --------------------------------------------------------------
 # TODO(wpk): move this to convert?
 @overload
-def vals_to_data(
+def vals_to_data(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,

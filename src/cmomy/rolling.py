@@ -278,7 +278,7 @@ def construct_rolling_window_array(
         # this avoids it being placed after any moment dimensions...
         return xout.transpose(*window_dim, ...)
 
-    return construct_rolling_window_array(  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+    return construct_rolling_window_array(
         x=xr.DataArray(x),
         window=window,
         axis=axis,
@@ -320,7 +320,7 @@ def _optional_zero_missing_weight(
 
 # ** Data
 @overload
-def rolling_data(
+def rolling_data(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -585,7 +585,7 @@ def _rolling_data(
 
 # * Vals
 @overload
-def rolling_vals(
+def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -882,7 +882,7 @@ def _rolling_vals(
 # * Move Exponential
 # ** Data
 @overload
-def rolling_exp_data(
+def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
@@ -1206,7 +1206,7 @@ def _rolling_exp_data(
 
 # ** Vals
 @overload
-def rolling_exp_vals(
+def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     alpha: ArrayLike | xr.DataArray | DataT,

@@ -142,7 +142,7 @@ def _optional_group_dim(
 # * Data ----------------------------------------------------------------------
 # ** Grouped
 @overload
-def reduce_data_grouped(
+def reduce_data_grouped(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     by: ArrayLike,
     *,
@@ -500,7 +500,7 @@ def _validate_index(
 
 
 @overload
-def reduce_data_indexed(
+def reduce_data_indexed(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -847,7 +847,7 @@ def _reduce_data_indexed(
 # * Vals
 # ** Grouped
 @overload
-def reduce_vals_grouped(
+def reduce_vals_grouped(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     by: ArrayLike,
@@ -1147,7 +1147,7 @@ def _reduce_vals_grouped(
 
 # ** Indexed
 @overload
-def reduce_vals_indexed(
+def reduce_vals_indexed(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,

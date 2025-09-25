@@ -105,7 +105,7 @@ def astype_dtype_dict(
     """Get a dtype dict for obj."""
     if isinstance(dtype, Mapping):
         if is_dataset(obj):
-            return dict(obj.dtypes, **dtype)  # type: ignore[arg-type, return-value]  # pyright: ignore[reportCallIssue, reportUnknownVariableType, reportUnknownMemberType]
+            return dict(obj.dtypes, **dtype)  # type: ignore[arg-type, return-value]  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
 
         msg = "Passing a mapping for `dtype` only allowed for Dataset."
         raise ValueError(msg)

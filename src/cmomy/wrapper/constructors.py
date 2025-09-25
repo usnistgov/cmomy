@@ -73,7 +73,7 @@ if TYPE_CHECKING:
 
 # * General wrapper -----------------------------------------------------------
 @overload
-def wrap(
+def wrap(  # pyright: ignore[reportOverlappingOverload]
     obj: DataT,
     *,
     dtype: DTypeMaybeMapping | None = ...,
@@ -311,7 +311,7 @@ def zeros_like(
 
 # * From vals -----------------------------------------------------------------
 @overload
-def wrap_reduce_vals(
+def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -464,7 +464,7 @@ def wrap_reduce_vals(  # noqa: PLR0913
 
 # * resample vals -------------------------------------------------------------
 @overload
-def wrap_resample_vals(
+def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -626,7 +626,7 @@ def wrap_resample_vals(  # noqa: PLR0913
 
 # * From raw -----------------------------------------------------------------
 @overload
-def wrap_raw(
+def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
     raw: DataT,
     *,
     out: NDArrayAny | None = ...,

@@ -147,7 +147,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """DType of wrapped object."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self._obj.dtype  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+        return self._obj.dtype
 
     @property
     def shape(self) -> tuple[int, ...]:
