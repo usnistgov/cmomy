@@ -52,8 +52,8 @@ def _dummy_docstrings() -> None:
         ``args[0].shape[axis]`` or array of same form as ``args[0]``.
     wrapped_out | wrapped : CentralMomentsArray or CentralMomentsData
         Wrapped object. If input data is an :mod:`xarray` object, then return
-        :class:`.CentralMomentsData` instance. Otherwise, return
-        :class:`.CentralMomentsArray` instance.
+        :class:`~cmomy.CentralMomentsData` instance. Otherwise, return
+        :class:`~cmomy.CentralMomentsArray` instance.
 
     x_genarray | x : array-like or DataArray or Dataset
         Values to reduce.
@@ -126,12 +126,12 @@ def _dummy_docstrings() -> None:
 
 
     sampler : int or array-like or IndexSampler or mapping
-        Passed through :func:`.resample.factory_sampler` to create an
-        :class:`~.resample.IndexSampler`. Value can either be ``nrep`` (the
+        Passed through :func:`cmomy.resample.factory_sampler` to create an
+        :class:`~cmomy.resample.IndexSampler`. Value can either be ``nrep`` (the
         number of replicates), ``freq`` (frequency array), a
-        :class:`~.resample.IndexSampler` object, or a mapping of parameters.
+        :class:`~cmomy.resample.IndexSampler` object, or a mapping of parameters.
         The mapping can have form of
-        :class:`~.core.typing.FactoryIndexSamplerKwargs`. Allowable keys are
+        :class:`~cmomy.core.typing.FactoryIndexSamplerKwargs`. Allowable keys are
         ``freq``, ``indices``, ``ndat``, ``nrep``, ``nsamp``, ``paired``,
         ``rng``, ``replace``, ``shuffle``.
     freq_xarray | freq : array-like, DataArray, or Dataset of int
@@ -144,7 +144,7 @@ def _dummy_docstrings() -> None:
     nrep : int
         Number of resample replicates.
     nrep_optional | nrep : int, optional
-        Construct ``freq`` (see :func:`~.resample.factory_sampler`) with ``nrep``
+        Construct ``freq`` (see :func:`~cmomy.resample.factory_sampler`) with ``nrep``
         replicates if ``freq`` is not passed directly.
     paired : bool
         If ``False`` and generating ``freq`` from ``nrep`` with ``data`` of type
@@ -158,7 +158,7 @@ def _dummy_docstrings() -> None:
         Size of data along resampled axis.
     rng :
         Random number generator object. Defaults to output of
-        :func:`~.random.default_rng`. If pass in a seed value, create a new
+        :func:`~cmomy.random.default_rng`. If pass in a seed value, create a new
         :class:`~numpy.random.Generator` object with this seed
     resample_replace : bool
         If True, do resampling with replacement.
@@ -194,11 +194,11 @@ def _dummy_docstrings() -> None:
         ``mom_ndim`` to ``len(mom_axes)``. Note that if ``mom_axes`` is
         specified, negative values are relative to the end of the array. This
         is also the case for ``axes`` if ``mom_axes`` is specified.
-    mom_params : :class:`cmomy.MomParams` or :class:`cmomy.MomParamsDict` or dict, optional
+    mom_params : :class:`~cmomy.MomParams` or :class:`~cmomy.MomParamsDict` or dict, optional
         Moment parameters. You can set moment parameters ``axes`` and ``dims``
         using this option. For example, passing ``mom_params={"dim": ("a",
         "b")}`` is equivalent to passing ``mom_dims=("a", "b")``. You can also
-        pass as a :class:`cmomy.MomParams` object with
+        pass as a :class:`~cmomy.MomParams` object with
         ``mom_params=cmomy.MomParams(dims=("a", "b"))``.
     apply_ufunc_kwargs : dict-like
         Extra parameters to :func:`xarray.apply_ufunc`. One useful option is
@@ -361,7 +361,7 @@ docfiller = (
             Note that the resampled axis (``resamp_axis``) is at position
             ``-(len(mom) + 1)``, just before the moment axes. This is opposed
             to the behavior of resampling moments arrays (e.g.,
-            func:`.resample_data`), where the resampled axis is the same as the
+            func:`cmomy.resample_data`), where the resampled axis is the same as the
             argument ``axis``. This is because the shape of the output array
             when resampling values is dependent the result of broadcasting
             ``x`` and ``y`` and ``weight``.

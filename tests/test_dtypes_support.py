@@ -96,6 +96,23 @@ def _do_test(func, *args, expected, **kwargs):
             (10, 1, 2, 3),
         ),
         (
+            cmomy.reduce_vals_grouped,
+            {"mom": 2, "axes_to_end": False, "axis": 0, "by": [0, 0, 1, 1, 1]},
+            (2, 1, 2, 3),
+        ),
+        (
+            cmomy.reduce_vals_indexed,
+            {
+                "mom": 2,
+                "axes_to_end": False,
+                "axis": 0,
+                "index": range(5),
+                "group_start": [0, 2],
+                "group_end": [2, 5],
+            },
+            (2, 1, 2, 3),
+        ),
+        (
             cmomy.resample_data,
             {
                 "mom_ndim": 1,
@@ -268,7 +285,7 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
 def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2,), dtype=dtype_base)
     if cls == CentralMomentsData:
-        data = xr.DataArray(data)  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
+        data = xr.DataArray(data)  # pylint: disable=redefined-variable-type
 
     func = partial(cls, data, mom_ndim=1, dtype=dtype)
     if dtype is None:
@@ -300,7 +317,7 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data_base).dtype.type == dtype_base
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == dtype_base
         if cls == CentralMomentsData:
-            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
 
     else:
         assert c.new_like().dtype.type == dtype_base
@@ -310,5 +327,5 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data_base).dtype.type == dtype_base
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == expected
         if cls == CentralMomentsData:
-            assert c.new_like(obj=xdata).dtype.type == expected
-            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected
+            assert c.new_like(obj=xdata).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]

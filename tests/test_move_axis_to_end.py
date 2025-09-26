@@ -10,6 +10,7 @@ import xarray as xr
 
 import cmomy
 from cmomy.core.moment_params import factory_mom_params
+from cmomy.core.validate import validate_mom_ndim
 from cmomy.wrapper.wrap_np import CentralMomentsArray
 
 from ._dataarray_set_utils import remove_axis_from_kwargs
@@ -81,7 +82,7 @@ def test_vals_axes_to_end(
     kwargs,
     kwargs_callback,
 ) -> None:
-    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]
+    mom_ndim: MomNDim = validate_mom_ndim(len(mom))
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray)
 
@@ -167,15 +168,13 @@ def test_data_axes_to_end(
     mom_params = factory_mom_params(None, ndim=mom_ndim, axes=mom_axes)
     kws_axis = {k: kws[k] for k in ("axis",) if k in kws}
 
-    np.testing.assert_allclose(
-        outs[0],
-        cmomy.moveaxis(
-            outs[1],
-            **kws_axis,
-            mom_params=mom_params,
-            axes_to_end=True,
-        ),
+    b = cmomy.moveaxis(
+        outs[1],
+        **kws_axis,
+        mom_params=mom_params,
+        axes_to_end=True,
     )
+    np.testing.assert_allclose(outs[0], b)
 
     # check that moving axis to end on data gives same result
     kws2 = kws.copy()
@@ -227,7 +226,7 @@ def test_vals_order(
     kwargs,
     kwargs_callback,
 ) -> None:
-    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]
+    mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray=False)
 

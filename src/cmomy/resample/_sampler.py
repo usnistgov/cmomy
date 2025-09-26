@@ -198,7 +198,7 @@ class IndexSampler(Generic[SamplerArrayT]):
 
     @overload
     @classmethod
-    def from_data(
+    def from_data(  # pyright: ignore[reportOverlappingOverload]
         cls: type[IndexSampler[Any]],
         data: xr.DataArray,
         *,
@@ -575,10 +575,10 @@ def _randsamp_indices_dataarray_or_dataset(
     replace: bool = True,
 ) -> xr.DataArray | DataT:
     """Create a resampling DataArray or Dataset."""
-    xmom_params = MomParamsXArrayOptional.factory(
+    mom_params_: MomParamsXArrayOptional = MomParamsXArrayOptional.factory(
         mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, data=data, axes=mom_axes
     )
-    dim = xmom_params.select_axis_dim(
+    dim = mom_params_.select_axis_dim(
         data,
         axis=axis,
         dim=dim,
@@ -592,11 +592,11 @@ def _randsamp_indices_dataarray_or_dataset(
             dims=[rep_dim, dim],
         )
 
-    if is_dataarray(data) or paired:
+    if is_dataarray(data) or paired:  # type: ignore[redundant-expr]
         return _get_unique_indices()
 
     # generate non-paired dataset
-    dims = {dim, *(() if xmom_params.dims is None else xmom_params.dims)}  # type: ignore[has-type]
+    dims = {dim, *(() if mom_params_.dims is None else mom_params_.dims)}
     out: dict[Hashable, xr.DataArray] = {}
     for name, da in data.items():
         if dims.issubset(da.dims):
@@ -683,7 +683,7 @@ def select_ndat(
 
 # * Convert -------------------------------------------------------------------
 @overload
-def freq_to_indices(
+def freq_to_indices(  # pyright: ignore[reportOverlappingOverload]
     freq: DataT,
     *,
     shuffle: bool = ...,
@@ -729,7 +729,7 @@ def freq_to_indices(
         Indices array of shape ``(nrep, nsamp)`` where ``nsamp = freq[k,
         :].sum()`` where `k` is any row.
     """
-    if is_xarray_typevar(freq):
+    if is_xarray_typevar["DataT"].check(freq):
         rep_dim, dim = freq.dims
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             freq_to_indices,
@@ -762,7 +762,7 @@ def freq_to_indices(
 
 
 @overload
-def indices_to_freq(
+def indices_to_freq(  # pyright: ignore[reportOverlappingOverload]
     indices: DataT,
     *,
     ndat: int | None = ...,
@@ -789,7 +789,7 @@ def indices_to_freq(
     It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp ==
     ndat``. For cases that ``nsamp != ndat``, pass in ``ndat`` explicitly.
     """
-    if is_xarray_typevar(indices):
+    if is_xarray_typevar["DataT"].check(indices):
         # assume dims are in order (rep, dim)
         rep_dim, dim = indices.dims
         ndat = ndat or indices.sizes[dim]

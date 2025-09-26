@@ -1,5 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment, arg-type"
-# pyright: reportCallIssue=false, reportArgumentType=false
+# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
 """
 Test that basic operations on DataArrays give same results and on np.ndarrays
 and that operations on datasets give same results as on dataarrays.
@@ -25,6 +25,8 @@ from ._dataarray_set_utils import (
     do_moveaxis,
     do_reduce_data_grouped,
     do_reduce_data_indexed,
+    do_reduce_vals_grouped,
+    do_reduce_vals_indexed,
     do_wrap,
     do_wrap_method,
     do_wrap_raw,
@@ -155,6 +157,8 @@ func_params_data_dataset = [
 func_params_vals_common = [
     (cmomy.reduce_vals, None),
     (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),
+    (do_reduce_vals_grouped, None),
+    (do_reduce_vals_indexed, None),
     (cmomy.resample.jackknife_vals, None),
     (cmomy.utils.vals_to_data, remove_dim_from_kwargs),
     (partial(cmomy.rolling.rolling_vals, window=2), None),
@@ -710,7 +714,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
 
 # * Chunking
 try:  # pylint: disable=too-many-try-statements
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]  # pylint: disable=unused-import
 
     HAS_DASK = True
 except ImportError:
@@ -859,7 +863,8 @@ def test_func_data_chunking_out_parameter(
 
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
-    assert np.shares_memory(res_chunk.compute(), out)
+    # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
+    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001
 
 
 @pytest.mark.slow
@@ -906,4 +911,5 @@ def test_func_vals_chunking_out_parameter(rng, func, kwargs_callback, dim, mom, 
 
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
-    assert np.shares_memory(res_chunk.compute(), out)
+    # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
+    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001

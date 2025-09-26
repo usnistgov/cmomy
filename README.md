@@ -1,11 +1,14 @@
 <!-- markdownlint-disable MD041 -->
 <!-- markdownlint-disable MD013 -->
 
-[![Repo][repo-badge]][repo-link] [![Docs][docs-badge]][docs-link]
+<!-- prettier-ignore-start -->
+[![Repo][repo-badge]][repo-link]
+[![Docs][docs-badge]][docs-link]
 [![PyPI license][license-badge]][license-link]
 [![PyPI version][pypi-badge]][pypi-link]
 [![Conda (channel only)][conda-badge]][conda-link]
-[![Code style: black][black-badge]][black-link]
+[![Code style: ruff][ruff-badge]][ruff-link]
+[![uv][uv-badge]][uv-link]
 
 <!--
   For more badges, see
@@ -14,8 +17,10 @@
   [pypi-badge]: https://badge.fury.io/py/cmomy
 -->
 
-[black-badge]: https://img.shields.io/badge/code%20style-black-000000.svg
-[black-link]: https://github.com/psf/black
+[ruff-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json
+[ruff-link]: https://github.com/astral-sh/ruff
+[uv-badge]: https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json
+[uv-link]: https://github.com/astral-sh/uv
 [pypi-badge]: https://img.shields.io/pypi/v/cmomy
 [pypi-link]: https://pypi.org/project/cmomy
 [docs-badge]: https://img.shields.io/badge/docs-sphinx-informational
@@ -30,27 +35,27 @@
 <!-- other links -->
 
 [numpy]: https://numpy.org
-[Numba]: https://numba.pydata.org/
+[numba]: https://numba.pydata.org/
 [xarray]: https://docs.xarray.dev/en/stable/
+
+<!-- prettier-ignore-end -->
 
 # cmomy
 
 A Python package to calculate and manipulate Central (co)moments. The main
 features of `cmomy` are as follows:
 
-- [Numba][Numba] accelerated computation of central moments and co-moments
+- [numba] accelerated computation of central moments and co-moments
 - Routines to combine, and resample central moments.
-- Supports [numpy][numpy] array and [xarray][xarray] DataArray or Dataset based
-  data.
+- Supports [numpy] array and [xarray] DataArray or Dataset based data.
 - Routines to convert between central and raw moments.
 
 ## Overview
 
 `cmomy` is an open source package to calculate central moments and co-moments in
 a numerical stable and direct way. Behind the scenes, `cmomy` makes use of
-[Numba][Numba] to rapidly calculate moments. A good introduction to the type of
-formulas used can be found
-[here](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance).
+[numba] to rapidly calculate moments. A good introduction to the type of
+[formulas used can be found here](https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance).
 
 ## Features
 
@@ -63,20 +68,6 @@ formulas used can be found
 
 This package is actively used by the author. Please feel free to create a pull
 request for wanted features and suggestions!
-
-## Quick start
-
-Use one of the following
-
-```bash
-pip install cmomy
-```
-
-or
-
-```bash
-conda install -c conda-forge cmomy
-```
 
 ## Example usage
 
@@ -118,16 +109,42 @@ array([ 1.    ,  0.    ,  0.0919, -0.0061])
 
 ```
 
-## Note on caching
+<!-- end-docs -->
+
+## Installation
+
+<!-- start-installation -->
+
+Use one of the following
+
+```bash
+pip install cmomy
+```
+
+or
+
+```bash
+conda install -c conda-forge cmomy
+```
+
+### Note on caching
 
 This code makes extensive use of the numba python package. This uses a jit
 compiler to speed up vital code sections. This means that the first time a
 function called, it has to compile the underlying code. However, caching has
 been implemented. Therefore, the very first time you run a function, it may be
 slow. But all subsequent uses (including other sessions) will be already
-compiled.
+compiled. You can pre-compile the `cmomy` by running
 
-<!-- end-docs -->
+```bash
+python -m cmomy.compile
+```
+
+If you'll be using `cmomy` in parallel (e.g., using `multiprocessing`), make
+sure to pre-compile `cmomy`, or to turn off caching by setting the environment
+variable `CMOMY_NUMBA_CACHE=0`.
+
+<!-- end-installation -->
 
 ## Documentation
 
@@ -139,8 +156,8 @@ This is free software. See [LICENSE][license-link].
 
 ## Related work
 
-This package is used extensively in the newest version of `thermoextrap`. See
-[here](https://github.com/usnistgov/thermo-extrap).
+This package is used extensively in the newest version of `thermoextrap`.
+[See here](https://github.com/usnistgov/thermo-extrap).
 
 ## Contact
 

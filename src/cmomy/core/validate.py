@@ -2,26 +2,26 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Generic, cast, final, overload
 
 import numpy as np
 import xarray as xr
 
 from .docstrings import docfiller
 from .missing import MISSING
+from .typing import DataT
 
 if TYPE_CHECKING:
     from collections.abc import (
         Hashable,
-        Iterable,
         Sequence,
     )
     from typing import Any
 
-    from numpy.typing import ArrayLike, DTypeLike, NDArray
+    from numpy.typing import DTypeLike, NDArray
 
     from .typing import (
-        DataT,
         MissingType,
         MomAxesStrict,
         MomDimsStrict,
@@ -54,9 +54,14 @@ def is_xarray(x: object) -> TypeIs[xr.Dataset | xr.DataArray]:
     return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
-def is_xarray_typevar(x: ArrayLike | DataT) -> TypeIs[DataT]:
-    """Typeguard ``DataT`` typevar against array-like."""
-    return isinstance(x, (xr.DataArray, xr.Dataset))
+# NOTE: got this way to make sure DataT is bound
+@final
+class is_xarray_typevar(Generic[DataT]):  # noqa: N801
+    """Class based typeis for DataT TypeVar"""
+
+    @staticmethod
+    def check(x: object) -> TypeIs[DataT]:
+        return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
 # * Raises --------------------------------------------------------------------
@@ -196,26 +201,44 @@ def validate_mom_ndim_and_mom_axes(
 
 
 # * Validate Axis -------------------------------------------------------------
-def validate_axis(axis: T | MissingType | None) -> T:
+@overload
+def validate_axis(axis: int | MissingType | None) -> int: ...  # type: ignore[overload-overlap]
+@overload
+def validate_axis(axis: complex | MissingType | None) -> complex: ...
+
+
+def validate_axis(axis: complex | MissingType | None) -> complex:
     """
     Validate that axis is an integer
 
     In the future, will allow axis to be None also.
     """
-    if axis is None or axis is MISSING:
+    if axis is MISSING or axis is None:
         msg = f"Must specify axis. Received {axis=}."
         raise TypeError(msg)
     return axis
+
+
+@overload
+def validate_axis_mult(  # type: ignore[overload-overlap]
+    axis: int | Iterable[int] | MissingType | None,
+) -> tuple[int, ...]: ...
+@overload
+def validate_axis_mult(
+    axis: complex | Iterable[complex] | MissingType | None,
+) -> tuple[complex, ...]: ...
 
 
 def validate_axis_mult(
-    axis: T | tuple[T, ...] | MissingType | None,
-) -> T | tuple[T, ...] | None:
+    axis: complex | Iterable[complex] | MissingType | None,
+) -> tuple[complex, ...]:
     """Validate that axis is specified."""
-    if axis is MISSING:
+    if axis is MISSING or axis is None:
         msg = f"Must specify axis. Received {axis=}."
         raise TypeError(msg)
-    return axis
+    if isinstance(axis, Iterable):
+        return tuple(axis)
+    return (axis,)
 
 
 # * DataArray -----------------------------------------------------------------
@@ -270,7 +293,7 @@ def validate_mom_dims_and_mom_ndim(
     if mom_dims is not None:
         mom_dims = cast(
             "MomDimsStrict",
-            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]
+            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
         mom_ndim = validate_mom_ndim(len(mom_dims), mom_axes)
         return mom_dims, mom_ndim

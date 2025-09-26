@@ -80,31 +80,6 @@ def test_factory_apply_ufunc_kwargs(kws, expected) -> None:
     _do_test(xr_utils.factory_apply_ufunc_kwargs, expected=expected, **kws)
 
 
-@pytest.mark.parametrize("drop", [False, True])
-@pytest.mark.parametrize(
-    "indexer",
-    [
-        {"a": 0},
-        {"a": slice(1, None)},
-        {"a": 0, "b": slice(1, None), "c": slice(2, None)},
-    ],
-)
-def test_replace_coords_from_isel(indexer, drop):
-    x_with_coords = xr.DataArray(
-        np.zeros((2, 3, 4)),
-        dims=["a", "b", "c"],
-        coords={"a": ("a", [1, 2]), "b": ("b", list("abc")), "c": ("c", [4, 5, 6, 7])},
-    )
-
-    x_without = xr.DataArray(np.ones((2, 3, 4)), dims=list("abc"))
-
-    t = xr_utils.replace_coords_from_isel(
-        x_with_coords, x_without.isel(indexer), indexer, drop=drop
-    )
-
-    xr.testing.assert_identical(t, x_with_coords.isel(indexer, drop=drop) + 1)
-
-
 @pytest.mark.parametrize("x", [xr.DataArray(np.zeros((2, 3, 4)), dims=["a", "b", "c"])])
 @pytest.mark.parametrize(
     ("kws", "expected"),
@@ -187,3 +162,61 @@ def test_astype_dtype_dict(data, dtype, expected) -> None:
 
     else:
         assert xr_utils.astype_dtype_dict(data, dtype) == expected
+
+
+@pytest.mark.parametrize("drop", [False, True])
+@pytest.mark.parametrize(
+    "indexer",
+    [
+        {"a": 0},
+        {"a": 0, "b": [1, 2]},
+        {"a": slice(1, None)},
+        {"a": 0, "b": slice(1, None), "c": slice(2, None)},
+    ],
+)
+@pytest.mark.parametrize(
+    "x_with_coords",
+    [
+        xr.DataArray(
+            np.zeros((2, 3, 4)),
+            dims=["a", "b", "c"],
+            coords={
+                "a": ("a", [1, 2]),
+                "b": ("b", list("abc")),
+                "c": ("c", [4, 5, 6, 7]),
+            },
+        ),
+        xr.Dataset(
+            {
+                "x": (("a", "b", "c"), np.zeros((2, 3, 4))),
+                "y": (("a", "b"), np.zeros((2, 3))),
+                "z": (("b", "c"), np.zeros((3, 4))),
+                "w": (("c",), np.zeros(4)),
+            },
+            coords={
+                "a": ("a", [1, 2]),
+                "b": ("b", list("abc")),
+                "c": ("c", [4, 5, 6, 7]),
+            },
+        ),
+    ],
+)
+def test_replace_coords_from_isel(indexer, drop, x_with_coords):
+    x_without = (x_with_coords + 1).drop_vars(("a", "b", "c"))
+
+    t = xr_utils.replace_coords_from_isel(
+        x_with_coords, x_without.isel(indexer), indexer, drop=drop
+    )
+
+    xr.testing.assert_identical(t, x_with_coords.isel(indexer, drop=drop) + 1)
+
+
+def test_replace_coords_form_isel_error() -> None:
+    da = xr.DataArray([1, 2, 3], dims="a")
+    ds = da.to_dataset(name="hello")
+    with pytest.raises(TypeError, match=r"template and selected.*"):
+        _ = xr_utils.replace_coords_from_isel(  # type: ignore[type-var]
+            da,
+            ds,
+            {"a": [0]},
+        )

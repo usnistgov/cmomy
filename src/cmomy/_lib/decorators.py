@@ -34,7 +34,7 @@ def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
         from numba.np.ufunc import (  # pylint: disable=unused-import
-            tbbpool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
+            tbbpool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]  # ty: ignore[unresolved-import]
         )
     except ImportError:
         pass
@@ -43,7 +43,7 @@ def _thread_backend() -> str | None:
 
     try:
         from numba.np.ufunc import (  # pylint: disable=unused-import
-            omppool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]
+            omppool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue, reportUnusedImport]  # ty: ignore[unresolved-import]
         )
     except ImportError:
         pass
@@ -74,6 +74,17 @@ def myguvectorize(
     signatures = _get_signatures(signature, signature_generator)
 
     args = (signatures, gufunc_sig) if signatures else (gufunc_sig,)
+
+    # Sanity check on gufunc_sig and writable
+    # If arrow = ("->" in signature), writable should be None
+    # other, writable should not be None.
+    arrow = "->" in gufunc_sig
+    if arrow and writable is not None:
+        msg = f"Should have no writable args for sig={gufunc_sig}"
+        raise ValueError(msg)
+    if not arrow and writable is None:
+        msg = f"Should have writable args for sig={gufunc_sig}"
+        raise ValueError(msg)
 
     if cache is None:
         cache = OPTIONS["cache"]

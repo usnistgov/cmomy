@@ -89,7 +89,7 @@ def infer_requirement_path(
     filename = name
     if ext is not None and not filename.endswith(ext):
         filename += ext
-    if python_version is not None:
+    if python_version is not None and ext != ".txt":
         prefix = py_prefix(python_version)
         if not filename.startswith(prefix):
             filename = f"{prefix}-{filename}"
@@ -296,7 +296,7 @@ def write_hashes(hash_path: str | Path, hashes: dict[str, Any]) -> None:
 def _get_file_hash(path: str | Path, buff_size: int = 65536) -> str:
     import hashlib
 
-    md5 = hashlib.md5()
+    md5 = hashlib.md5()  # noqa: S324
     with Path(path).open("rb") as f:
         while data := f.read(buff_size):  # pylint: disable=while-used
             md5.update(data)

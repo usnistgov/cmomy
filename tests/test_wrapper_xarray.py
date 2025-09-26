@@ -1,6 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false
-# pylint: disable=protected-access
+# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
 from __future__ import annotations
 
 from functools import partial
@@ -12,7 +11,7 @@ import xarray as xr
 import cmomy
 
 try:  # pylint: disable=too-many-try-statements
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport, reportMissingImports]  # pylint: disable=unused-import
+    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]  # pylint: disable=unused-import
 
     HAS_DASK = True
 except ImportError:
@@ -70,6 +69,35 @@ def test_pipe(c_dataset) -> None:
     xr.testing.assert_allclose(c2.obj, c_dataset.obj + 1)
 
 
+def test_val_dims(c_dataset) -> None:
+    with pytest.raises(NotImplementedError):
+        _ = c_dataset.val_dims
+
+    c = get_first(c_dataset)
+
+    assert c.val_dims == ("dim_0", "dim_1")
+
+    c = cmomy.CentralMomentsData(
+        c.obj,
+        mom_dims="dim_0",
+    )
+
+    assert c.val_dims == ("dim_1", "dim_2")
+
+
+def test_to_numpy(c_dataset) -> None:
+    c = get_first(c_dataset)
+
+    assert c.to_numpy() is c.obj.to_numpy()
+
+
+def test_repr_html(c_dataset) -> None:
+    # Silly for coverage
+    from cmomy.core.formatting import repr_html_wrapper
+
+    assert c_dataset._repr_html_()[:500] == repr_html_wrapper(c_dataset)[:500]
+
+
 def test_as_dict(c_dataset) -> None:
     # add a new variable missing mom_dims...
     c = c_dataset.assign(other=xr.DataArray(np.zeros(3), dims=["b"]))
@@ -82,7 +110,7 @@ def test_as_dict(c_dataset) -> None:
 
     c = get_first(c_dataset)
     with pytest.raises(NotImplementedError):
-        c.as_dict()  # pyright: ignore[reportAttributeAccessIssue]
+        c.as_dict()  # type: ignore[misc]  # pyright: ignore[reportAttributeAccessIssue]
 
 
 def test_getitem(c_dataset) -> None:
@@ -170,7 +198,7 @@ def test_new_like_errors() -> None:
 def test_push_datas_and_vals(rng, as_dataset, func, method, shape, dims, dim) -> None:
     data = xr.DataArray(rng.random(shape), dims=dims)
     if as_dataset:
-        data = data.to_dataset(name="data")  # type: ignore[assignment]
+        data = data.to_dataset(name="data")
 
     expected = func(data, dim=dim)
     base = cmomy.wrap(xr.zeros_like(expected))
@@ -206,13 +234,7 @@ def test_reduce_data_grouped(rng, policy) -> None:
     dim = "rec"
     kws = {"dim": dim, "coords_policy": policy}
 
-    if policy in {"first", "last"}:
-        _, index, start, end = cmomy.grouped.factor_by_to_index(by)
-        expected = cmomy.grouped.reduce_data_indexed(
-            data, **kws, index=index, group_start=start, group_end=end
-        )
-    else:
-        expected = cmomy.reduce_data_grouped(data, dim=dim, by=by, groups=[0, 1])
+    expected = cmomy.reduce_data_grouped(data, **kws, by=by, groups=[0, 1])
 
     a = cmomy.wrap(data).reduce(by=by, **kws, groups=[0, 1])
     b = cmomy.wrap(data).reduce(by="by", **kws)

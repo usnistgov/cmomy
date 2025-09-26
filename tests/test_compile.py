@@ -7,6 +7,8 @@ from unittest.mock import call, patch
 
 import pytest
 
+from cmomy.factory import supports_parallel
+
 
 def _add_parameter(param, flag, args, expected):
     if param is None:
@@ -38,7 +40,7 @@ def import_module():
                 "include_parallel": None,
                 "include_vec": None,
                 "include_resample": None,
-                "include_indexed": None,
+                "include_grouped": None,
                 "include_convert": None,
                 "include_rolling": None,
             },
@@ -51,7 +53,7 @@ def import_module():
                 "include_parallel": None,
                 "include_vec": None,
                 "include_resample": None,
-                "include_indexed": None,
+                "include_grouped": None,
                 "include_convert": None,
                 "include_rolling": None,
             },
@@ -67,7 +69,7 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
     args, expected = _add_parameter(others, "parallel", args, expected)
     args, expected = _add_parameter(others, "vec", args, expected)
     args, expected = _add_parameter(others, "resample", args, expected)
-    args, expected = _add_parameter(others, "indexed", args, expected)
+    args, expected = _add_parameter(others, "grouped", args, expected)
     args, expected = _add_parameter(others, "rolling", args, expected)
     args, expected = _add_parameter(others, "convert", args, expected)
 
@@ -76,7 +78,10 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
     all_ = expected["include_all"]
     cov = all_ if cov is None else cov
     others = all_ if others is None else others
-    parallel = vec = resample = indexed = convert = rolling = others
+    parallel = vec = resample = grouped = convert = rolling = others
+
+    if not supports_parallel():
+        parallel = False
 
     _main(args)
 
@@ -85,15 +90,15 @@ def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: P
         modules.append("push")
     if resample:
         modules.append("resample")
-    if indexed:
-        modules.append("indexed")
+    if grouped:
+        modules.append("grouped")
     if rolling:
         modules.append("rolling")
 
     covs = ["", "_cov"] if cov else [""]
     parallels = ["", "_parallel"] if parallel else [""]
 
-    modules = itertools.chain(  # type: ignore[assignment]  # pylint: disable=redefined-variable-type
+    modules = itertools.chain(  # pylint: disable=redefined-variable-type
         f"{m}{c}{p}" for m in modules for c in covs for p in parallels
     )
 

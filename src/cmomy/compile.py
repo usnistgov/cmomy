@@ -68,7 +68,7 @@ def load_numba_modules(
     include_parallel: bool | None = None,
     include_vec: bool | None = None,
     include_resample: bool | None = None,
-    include_indexed: bool | None = None,
+    include_grouped: bool | None = None,
     include_convert: bool | None = None,
     include_rolling: bool | None = None,
 ) -> None:
@@ -92,7 +92,7 @@ def load_numba_modules(
     include_cov = _set_default(include_cov)
     include_vec = _set_default(include_vec)
     include_resample = _set_default(include_resample)
-    include_indexed = _set_default(include_indexed)
+    include_grouped = _set_default(include_grouped)
     include_parallel = _set_default(include_parallel) if supports_parallel() else False
     include_convert = _set_default(include_convert)
     include_rolling = _set_default(include_rolling)
@@ -105,8 +105,8 @@ def load_numba_modules(
         modules.append("push")
     if include_resample:
         modules.append("resample")
-    if include_indexed:
-        modules.append("indexed")
+    if include_grouped:
+        modules.append("grouped")
     if include_rolling:
         modules.append("rolling")
     if include_convert:
@@ -140,7 +140,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
             dest: str,
             **kwargs: str | None,
         ) -> None:
-            super().__init__(option_strings, dest, nargs=0, **kwargs)  # type: ignore[arg-type]
+            super().__init__(option_strings, dest, nargs=0, **kwargs)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
         def __call__(
             self,
@@ -199,12 +199,12 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         help=msg.format(name="resample"),
     )
     parser.add_argument(
-        "--indexed",
-        "--no-indexed",
-        dest="include_indexed",
+        "--grouped",
+        "--no-grouped",
+        dest="include_grouped",
         action=BooleanAction,
         default=None,
-        help=msg.format(name="indexed"),
+        help=msg.format(name="grouped"),
     )
     parser.add_argument(
         "--rolling",

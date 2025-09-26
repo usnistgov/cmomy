@@ -31,7 +31,4 @@ def test_default_rng() -> None:
 
 
 def test_validate_rng() -> None:
-    rs = np.random.RandomState()  # pylint: disable=no-member
-
-    with pytest.raises(TypeError):
-        random.validate_rng(rs)  # type: ignore[arg-type]
+    assert random.validate_rng(None) is random.default_rng()

@@ -1,5 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false
+# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
 
 from __future__ import annotations
 
@@ -17,8 +17,8 @@ if TYPE_CHECKING:
     from cmomy.core.typing import Moments
 
 try:  # pylint: disable=too-many-try-statements
-    from scipy import stats as st  # pyright: ignore[reportMissingImports]
-    from scipy.special import ndtr, ndtri  # pyright: ignore[reportMissingImports]
+    from scipy import stats as st
+    from scipy.special import ndtr, ndtri
 
     HAS_SCIPY = True
 except ImportError:
@@ -35,11 +35,11 @@ def test_ndtr(rng: np.random.Generator) -> None:
 
     x = rng.random(100)
 
-    a = ndtr(x)
+    a = ndtr(x)  # pyright: ignore[reportPossiblyUnboundVariable]
     b = prob.ndtr(x)
     np.testing.assert_allclose(a, b)
 
-    aa = ndtri(a)
+    aa = ndtri(a)  # pyright: ignore[reportPossiblyUnboundVariable]
     bb = prob.ndtri(b)
 
     np.testing.assert_allclose(aa, bb)
@@ -59,12 +59,12 @@ def shape_axis(request: pytest.FixtureRequest) -> tuple[tuple[int, ...], int]:
 
 
 @pytest.fixture
-def shape(shape_axis) -> tuple[int, ...]:  # noqa: FURB118
+def shape(shape_axis) -> tuple[int, ...]:
     return shape_axis[0]  # type: ignore[no-any-return]
 
 
 @pytest.fixture
-def axis(shape_axis) -> int:  # noqa: FURB118
+def axis(shape_axis) -> int:
     return shape_axis[1]  # type: ignore[no-any-return]
 
 
@@ -173,7 +173,7 @@ def method(request: pytest.FixtureRequest) -> str:
 
 @pytest.fixture
 def scipy_boot_mean(data, nrep, alpha, method, axis) -> st._resampling.BootstrapResult:
-    return st.bootstrap(
+    return st.bootstrap(  # pyright: ignore[reportPossiblyUnboundVariable]
         [data],
         np.mean,
         n_resamples=nrep,
@@ -186,7 +186,7 @@ def scipy_boot_mean(data, nrep, alpha, method, axis) -> st._resampling.Bootstrap
 
 @pytest.fixture
 def scipy_boot_var(data, nrep, alpha, method, axis) -> st._resampling.BootstrapResult:
-    return st.bootstrap(
+    return st.bootstrap(  # pyright: ignore[reportPossiblyUnboundVariable]
         [data],
         np.var,
         n_resamples=nrep,
@@ -201,7 +201,7 @@ def scipy_boot_var(data, nrep, alpha, method, axis) -> st._resampling.BootstrapR
 def scipy_boot_mean_log(
     data, nrep, alpha, method, axis
 ) -> st._resampling.BootstrapResult:
-    return st.bootstrap(
+    return st.bootstrap(  # pyright: ignore[reportPossiblyUnboundVariable]
         [data],
         lambda x, axis=None: np.log(np.mean(x, axis=axis)),
         n_resamples=nrep,

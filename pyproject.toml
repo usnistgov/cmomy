@@ -12,16 +12,15 @@ description = "Central (co)moment calculation/manipulation"
 keywords = [
     "cmomy",
 ]
-license = { text = "NIST-PD" }
-license-files = { paths = [ "LICENSE" ] }
+license = "NIST-PD"
+license-files = [ "LICENSE" ]
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
-requires-python = ">=3.9,<3.14"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
-    "License :: Public Domain",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
@@ -50,19 +49,24 @@ urls.Homepage = "https://github.com/usnistgov/cmomy"
 
 [dependency-groups]
 dev = [
-    { include-group = "dev-extras" },
     { include-group = "mypy" },
+    { include-group = "notebook" },
+    { include-group = "nox" },
+    { include-group = "pytest-accept" },
     { include-group = "test" },
     { include-group = "test-notebook" },
-    { include-group = "typing" },
-    { include-group = "uvxrun" },
+    { include-group = "typecheck" },
 ]
 test = [
-    { include-group = "test-extras" },
+    "pytest-cov",
+    "pytest-env",
+    "pytest-sugar",
+    { include-group = "pytest" },
+    { include-group = "test-scipy" },
 ]
 docs = [
     "autodocsumm",
-    "myst-nb; python_version>'3.9'",
+    "myst-nb",
     "pyenchant",
     "sphinx>=5.3.0",
     "sphinx-autodoc-typehints",
@@ -70,46 +74,43 @@ docs = [
     "sphinx-copybutton",
     "sphinxcontrib-spelling",
 ]
-cog = [ "cogapp" ]
-dev-extras = [
-    "ipykernel",
-    "ipython",
-    "nbclient>=0.10.0",
-    "nox>=2024.4.15",
-    "pytest-accept",
-]
+# other packages/tools
+ipython = [ "ipython" ]
+mypy = [ "mypy>=1.15.0", "orjson" ]
+notebook = [ "ipykernel", "nbclient" ]
+nox = [ "nox>=2025.5.1" ]
+pylint = [ "pylint" ]
+pytest = [ "pytest" ]
+pytest-accept = [ "pytest-accept" ]
+# other environments
+numpy1 = [ "numpy<2.0" ]
+numpy2 = [ "numpy>2.0" ]
 docs-live = [
     "sphinx-autobuild",
     { include-group = "docs" },
 ]
-numpy1 = [ "numpy<2.0" ]
-numpy2 = [ "numpy>2.0" ]
-mypy = [ "mypy>=1.14.1" ]
-nbval = [ "nbval" ]
+docs-spelling = [
+    "pyenchant",
+    "sphinxcontrib-spelling",
+    { include-group = "docs" },
+]
 test-extras = [
-    "pytest",
-    "pytest-cov",
-    "pytest-sugar",
-    "pytest-xdist",
-    { include-group = "test-scipy" },
+    { include-group = "test" },
 ]
 test-notebook = [
     "dask[diagnostics]",
-    { include-group = "nbval" },
-    { include-group = "test-extras" },
+    "nbval",
+    { include-group = "test" },
 ]
 test-scipy = [
-    "dask; python_version=='3.12'",
-    "scipy; python_version=='3.12'",
+    "dask; python_version=='3.13'",
+    "scipy; python_version=='3.13'",
 ]
-typing = [
+typecheck = [
     "pandas-stubs",
-    "pylint",
-    "pytest",
-    { include-group = "uvxrun" },
+    { include-group = "pylint" },
+    { include-group = "pytest" },
 ]
-# Anything needed to run tools/uvxrun.py
-uvxrun = [ "packaging" ]
 
 [tool.hatch.version]
 source = "vcs"
@@ -128,181 +129,17 @@ fragments = [
     { path = "LICENSE" },
 ]
 
-# * Linting --------------------------------------------------------------------
-
-[tool.ruff]
-line-length = 88
-extend-include = [
-    "*.ipynb",
-]
-extend-exclude = [
-    ".numba_cache",
-    ".venv",
-    "dist-conda",
-    "examples/archived",
-    "tests/test_typing_auto.py",
-    # "tests/"
-    # "src/cmomy/tests",
-]
-fix = true
-unsafe-fixes = true
-
-format.docstring-code-format = true
-lint.select = [
-    "ALL",
-]
-lint.ignore = [
-    # * Annotations
-    "ANN401", # - Any ok sometimes
-    # * These conflict with formatter
-    "COM", # - flake8-commas, formatter should take care of this?
-    "CPY", # - Don't require copyright
-    # * Docstrings
-    "D105", # - Missing magic method docstring
-    # * Not a fan of these.  And lead to issues with docfiller
-    "D107", # - Missing docstring in __init__
-    "D203", # - 1 blank line required before class docstring
-    "D205", # - blank line after summary
-    "D212", # - Multi-line docstring summary should start at the first line
-    # * This leads to errors with placing titles in module
-    "D400", # - First line should end with a period
-    "D401", # - First line of docstring should be in imperative mood: "{first_line}"
-    "D415", # - First line should end with a period, question mark, or exclamation point
-    "D417", # - Missing argument description in the docstring for {definition}: {name} (bad with docfiller)
-    "E402", # - module level import not at top of file
-    # * Other
-    "E501", # - line too long - let formatter fix this
-    "E731", # - do not assign a lambda expression, use a def
-    "FBT",  # - bools are ok
-    "ISC",  # - flake8-implicit-str-concat
-    # * Allow non top level imports
-    "PLC0415", # - import should be at top level (leads to issues with imports in func?)
-    "TID252",  # - Allow relative imports
-]
-# Use extend-ignore for project specific ignores (avoid changing ignore directly)
-lint.extend-ignore = [
-    # "PD",        # - not using pandas?
-    # "NPY",       # - not using numpy?
-    # "ERA",  # - eradicate (want to keep some stuff)
-    # * Annotations
-    # "SLF001",  # - flake8-self (private access sometimes OK)
-    # "ANN",     # - Annotations (just use mypy/pyright)
-    # * pylint
-    # "PLR2004", # - numbers in comparison sometimes ok
-    # "PLR0913", # - complexity sometimes ok
-    # "PLR0917", # - complexity sometimes ok
-    # * Docstrings ymmv
-    # "D102",    # - Missing docstring in public method
-    # "D103",    # - Missing docstring in public function
-    # "D202",    # - blank line after docstring
-    "DOC201", # - Missing return from documentation
-    "DOC202", # - Missing return from documentation
-    "DOC501", # - Missing raises from documentation
-]
-lint.per-file-ignores."**/*.ipynb" = [
-    "B018",
-    "D100",
-    "INP001",
-]
-lint.per-file-ignores."conftest.py" = [
-    "ANN",
-    "ARG",
-    "D",
-    "PT",
-]
-lint.per-file-ignores."docs/conf.py" = [
-    "ERA",
-    "INP001",
-]
-lint.per-file-ignores."noxfile.py" = [
-    "RUF009",
-]
-lint.per-file-ignores."tests/*.py" = [
-    "ANN",
-    "D",
-    "DOC",
-    "S101",
-]
-lint.per-file-ignores."tests/test_central_2.py" = [
-    "ERA",
-]
-lint.per-file-ignores."tools/*.py" = [
-    "A",
-    "D102",
-    "DOC",
-    "S",
-    "SLF001",
-]
-lint.extend-per-file-ignores."**/*.ipynb" = [
-    "ANN",
-    "D103",
-    "E302",
-    "E305",
-    "PD013",
-    "PLR2004",
-    "T201",
-]
-lint.extend-per-file-ignores."src/**/*.py" = [
-    "D102",
-    "FIX002",
-    "PLR2004",
-    "TD003",
-]
-lint.extend-per-file-ignores."src/**/_lib/*.py" = [
-    "ANN",
-    "N803",
-    "PLR0914",
-    "PLR2004",
-    "S101",
-]
-lint.extend-per-file-ignores."src/**/_lib/convert.py" = [
-    "PLR1702",
-]
-lint.extend-per-file-ignores."src/**/core/formatting.py" = [
-    "ANN",
-    "D",
-    "SLF001",
-]
-lint.extend-per-file-ignores."src/**/factory.py" = [
-    "D",
-]
-lint.extend-per-file-ignores."src/**/{typing,random}.py" = [
-    "A005",
-]
-# Project specific ignores (avoid changing per-file-ignores directly)
-lint.extend-per-file-ignores."tests/**/*.py" = [
-    "ANN",
-    "FIX002",
-    "N802",
-    "N806",
-    "PLC2701",
-    "PLR0904",
-    "PLR2004",
-    "PT011",
-    "SLF001",
-    "TD003",
-]
-lint.extend-per-file-ignores."tests/test_typing.py" = [ "ERA" ]
-# fixable = ["ALL"]
-lint.unfixable = [
-    "PLR6104",
-    "T",
-]
-# Allow unused variables when underscore-prefixed.
-lint.dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
-lint.isort.known-first-party = [
-    "cmomy",
-]
-lint.mccabe.max-complexity = 12
-lint.pydocstyle.convention = "numpy"
-lint.pylint.max-args = 15
-lint.pylint.max-branches = 15
-lint.pylint.max-positional-args = 15
-lint.pylint.max-public-methods = 30
-lint.preview = true
-
 [tool.nbqa.exclude]
 codespell = "^examples/archived"
+
+[tool.repo-review]
+ignore = [
+    "GH",    # enable for actions
+    "PC140", # do this externally
+    "PC170", # pygrep
+    "PC901", # ci message
+    "RTD",
+]
 
 [tool.check-wheel-contents]
 toplevel = [
@@ -320,10 +157,16 @@ package_omit = [
     "*.egg-info",
 ]
 
+[tool.pyproject-fmt]
+max_supported_python = "3.13"
+
 # * Testing --------------------------------------------------------------------
 
 [tool.pytest.ini_options]
 addopts = [
+    "-ra",
+    "--strict-config",
+    "--strict-markers",
     "--doctest-modules",
     "--doctest-glob=*.md",
     "--pyargs",
@@ -340,6 +183,19 @@ testpaths = [
 markers = [
     "scipy: test scipy dependent code",
 ]
+minversion = "8"
+log_cli_level = "INFO"
+xfail_strict = true
+filterwarnings = [
+    "error",
+    "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
+    "ignore: FNV hashing is not implemented in Numba:UserWarning",
+    "ignore: Module cmomy was never imported:coverage.exceptions.CoverageWarning",       # test-notebook issue
+    "ignore: No data was collected:coverage.exceptions.CoverageWarning",                 # test-notebook issue
+]
+
+[tool.pytest_env]
+NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
 
 [tool.coverage.run]
 branch = true
@@ -367,17 +223,17 @@ source = [
     ".nox/**/site-packages/",
 ]
 
-# * Typing ---------------------------------------------------------------------
+# * typecheck ---------------------------------------------------------------------
 
 [tool.mypy]
 files = [
     "src",
     "tests",
 ]
-show_error_codes = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unused_configs = true
+warn_unreachable = true
 exclude = [
     ".eggs",
     ".tox",
@@ -388,7 +244,14 @@ exclude = [
 ]
 check_untyped_defs = true
 strict = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-expr",
+    "truthy-bool",
+]
 always_true = [ "MYPY_ONLY" ]
+allow_redefinition_new = true
+local_partial_types = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -396,13 +259,14 @@ module = [
     "numba.*",
     "scipy.*",
     "scipy.special.*",
+
     "scipy.stats.*",
     "dask.*",
 ]
 
-[[tool.mypy.overrides]]
-ignore_errors = true
-module = [  ]
+# [[tool.mypy.overrides]]
+# ignore_errors = true
+# module = [  ]
 
 # [[tool.mypy.overrides]]
 # # mypy doesn't like how we handle default values of TypeVars
@@ -417,29 +281,6 @@ include = [
     "src",
     "tests",
 ]
-strict = [
-    "noxfile.py",
-    "tools/*.py",
-    "src/cmomy/*.py",
-    "src/cmomy/wrapper/*.py",
-    "src/cmomy/resample/*.py",
-    "src/cmomy/_lib/_binomial.py",
-    "src/cmomy/core/__init__.py",
-    "src/cmomy/core/array_utils.py",
-    "src/cmomy/core/compat.py",
-    "src/cmomy/core/docstrings.py",
-    # "src/cmomy/core/formatting.py",
-    "src/cmomy/core/missing.py",
-    "src/cmomy/core/moment_params.py",
-    "src/cmomy/core/prepare.py",
-    "src/cmomy/core/prob.py",
-    "src/cmomy/core/typing.py",
-    "src/cmomy/core/typing_compat.py",
-    # "src/cmomy/core/typing_nested_sequence.py",
-    "src/cmomy/core/utils.py",
-    "src/cmomy/core/validate.py",
-    "src/cmomy/core/xr_utils.py",
-]
 exclude = [
     "**/__pycache__",
     ".tox/**",
@@ -451,8 +292,16 @@ exclude = [
 ]
 # strict = ["src", "tests", "noxfile.py", "tools/*.py"]
 pythonVersion = "3.11"
-typeCheckingMode = "basic"
-# enable subset of "strict"
+typeCheckingMode = "standard"
+strict = [
+    "src/cmomy/*.py",
+    "src/cmomy/core/*.py",
+    "src/cmomy/grouped/*.py",
+    "src/cmomy/resample/*.py",
+    "src/cmomy/wrapper/*.py",
+    "noxfile.py",
+    "tools/*.py",
+]
 reportDuplicateImport = true
 reportInvalidStubStatement = true
 reportOverlappingOverload = true
@@ -461,16 +310,12 @@ reportUntypedClassDecorator = true
 reportUntypedFunctionDecorator = true
 reportUntypedNamedTuple = true
 reportUnusedImport = true
-# disable subset of "basic"
-reportGeneralTypeIssues = false
-reportMissingModuleSource = false
-reportOptionalCall = false
-reportOptionalIterable = false
-reportOptionalMemberAccess = false
-reportOptionalOperand = false
-reportOptionalSubscript = false
-reportPrivateImportUsage = false
-reportUnboundVariable = false
+# Extra flags
+enableTypeIgnoreComments = false
+reportUnnecessaryTypeIgnoreComment = true
+reportUnreachable = "warning"
+# Needed for pep728 support for TypeDict(closed=...)
+enableExperimentalFeatures = true
 
 [tool.pytype]
 inputs = [
@@ -481,9 +326,10 @@ inputs = [
 # * Dependency creation --------------------------------------------------------
 
 [tool.pyproject2conda]
-user_config = "config/userconfig.toml"
-template_python = "requirements/py{py}-{env}"
+user-config = "config/userconfig.toml"
+template-python = "requirements/py{py}-{env}"
 template = "requirements/{env}"
+name = "py{py}-{env}"
 python = "default"
 channels = "conda-forge"
 style = "yaml"
@@ -501,31 +347,37 @@ python = "default"
 groups = [ "test" ]
 python = "all"
 
-[tool.pyproject2conda.envs.uvxrun-tools]
-# define these here so they don't override deps in uv.lock
+[tool.pyproject2conda.envs.uvx-tools]
 reqs = [
-    # these used solely for specking tools to be used with tools/uvxrun.py
+    # these used solely for specking tools to be used with uvx ...
     "conda-lock>=2.5.5",
+    "cruft",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pre-commit",
-    "pyproject2conda>=0.16.0",
-    "pyright>=1.1.391",
+    "pre-commit>=4.0.0",
+    "pre-commit-uv",
+    "pyrefly",
+    "pyright>=1.1.396",
+    "basedpyright>=1.31.3",
     "scriv",
     "twine>=5.0.0",
+    "ty",
 ]
-groups = [ "mypy" ]
-skip_package = true
+groups = [
+    "mypy",
+    "nox",
+]
+skip-package = true
 style = "requirements"
 
 [tool.pyproject2conda.envs.build]
 groups = "build-system.requires"
-skip_package = true
+skip-package = true
 style = "requirements"
 
 [tool.pyproject2conda.envs.test-extras]
 groups = [ "test-extras" ]
-skip_package = true
+skip-package = true
 python = "all"
 
 # * uv -------------------------------------------------------------------------
@@ -540,15 +392,22 @@ conflicts = [
         { group = "numpy2" },
     ],
 ]
-required-version = ">=0.5.21"
+required-version = ">=0.7.15"
 
 [tool.uv.pip]
 annotation-style = "line"
+generate-hashes = true
 
-[[tool.uv.index]]
-name = "testpypi"
-url = "https://test.pypi.org/"
-publish-url = "https://test.pypi.org/legacy/"
+[tool.uv.dependency-groups]
+dev.requires-python = ">=3.12"
+docs.requires-python = ">=3.12"
+docs-live.requires-python = ">=3.12"
+docs-spelling.requires-python = ">=3.12"
+# other tools
+ipython.requires-python = ">=3.12"
+mypy.requires-python = ">=3.12"
+notebook.requires-python = ">=3.12"
+nox.requires-python = ">=3.12"
 
 # * Other tools ----------------------------------------------------------------
 
@@ -565,5 +424,8 @@ use_shortcuts = true
 [tool.typos.default.extend-words]
 datas = "datas"
 
+[tool.typos.default]
+extend-ignore-identifiers-re = [ "NDArray.*" ]
+
 [tool.typos.default.extend-identifiers]
-NDArrayAny = "NDArrayAny"
+NDGeneric = "NDGeneric"

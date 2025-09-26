@@ -194,9 +194,9 @@ def test_validate_mom_dims_mom_ndim(args, expected):
 @pytest.mark.parametrize(
     ("arg", "expected"),
     [
-        (1, 1),
+        (1, (1,)),
         ((1, 2), (1, 2)),
-        (None, None),
+        (None, TypeError),
         (MISSING, TypeError),
     ],
 )

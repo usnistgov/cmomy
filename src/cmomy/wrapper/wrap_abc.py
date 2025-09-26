@@ -34,8 +34,8 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxisReduce,
         BlockByModes,
         Casting,
@@ -135,19 +135,19 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     @property
     def mom_shape(self) -> MomentsStrict:
         """Shape of moments dimensions."""
-        return self._mom_params.get_mom_shape(self._obj)  # type: ignore[arg-type]
+        return self._mom_params.get_mom_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
     @property
     def mom(self) -> MomentsStrict:
         """Moments tuple."""
-        return self._mom_params.get_mom(self._obj)  # type: ignore[arg-type]
+        return self._mom_params.get_mom(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
     @property
     def dtype(self) -> np.dtype[Any]:
         """DType of wrapped object."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self._obj.dtype  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType]
+        return self._obj.dtype
 
     @property
     def shape(self) -> tuple[int, ...]:
@@ -161,7 +161,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Shape of values dimensions."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self._mom_params.get_val_shape(self._obj)  # type: ignore[arg-type]
+        return self._mom_params.get_val_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
     @property
     def ndim(self) -> int:
@@ -188,7 +188,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             repr_html_wrapper,  # pyright: ignore[reportUnknownVariableType]
         )
 
-        return repr_html_wrapper(self)  # type: ignore[no-any-return,no-untyped-call]
+        return repr_html_wrapper(self)  # type: ignore[no-any-return,no-untyped-call]  # pyright: ignore[reportUnknownVariableType]
 
     def __array__(  # noqa: PLW3201
         self, dtype: DTypeLike = None, copy: bool | None = None
@@ -218,7 +218,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         verify: bool = False,
         copy: bool | None = None,
         dtype: DTypeLike = None,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         fastpath: bool = False,
     ) -> Self:
         """
@@ -245,7 +245,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         self,
         dtype: DTypeLike,
         *,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
@@ -284,7 +284,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         return self._new_like(
-            obj=self._obj.astype(dtype, **kwargs),  # type: ignore[arg-type]
+            obj=self._obj.astype(dtype, **kwargs),  # type: ignore[arg-type]  # pyright: ignore[reportUnknownMemberType, reportCallIssue, reportArgumentType]
         )
 
     @docfiller.decorate
@@ -761,7 +761,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
         axes_to_end: bool = False,
         keep_attrs: KeepAttrs = None,
@@ -859,7 +859,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
-            mom_params=mom_params_out,  # type: ignore[arg-type]
+            mom_params=mom_params_out,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
 
     # *** .resample -----------------------------------------------------------
@@ -875,7 +875,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...
@@ -977,7 +977,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
         keep_attrs: KeepAttrs = None,
         # dask specific...
@@ -1182,7 +1182,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             out = assign_moment(
                 out, weight=weight, mom_params=self._mom_params, copy=False
             )
-        return out
+        return out  # type: ignore[no-any-return]
 
     def rmom(self) -> GenArrayT:
         r"""

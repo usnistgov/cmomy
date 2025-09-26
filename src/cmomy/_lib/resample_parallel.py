@@ -95,7 +95,6 @@ def resample_data_fromzero(
             nb.float64[:],
         ),
     ],
-    writable=None,
 )
 def resample_vals(
     out: NDArray[FloatT],
@@ -116,7 +115,7 @@ def resample_vals(
 # Instead of out[i, ...] = reduce(data[[0, 1, ..., i-1, i+1, ...], ...]) (which is order n^2)
 # we use out[i, ...] = reduce(data[:, ...]) - data[i, ...]  (which is order n or 2n)
 @_vectorize(
-    "(mom),(sample,mom)-> (sample,mom)",
+    "(mom),(sample,mom) -> (sample,mom)",
     [
         (nb.float32[:], nb.float32[:, :], nb.float32[:, :]),
         (nb.float64[:], nb.float64[:, :], nb.float64[:, :]),
@@ -137,7 +136,7 @@ def jackknife_data_fromzero(
 
 
 @_vectorize(
-    "(mom),(sample),(sample) ->(sample,mom)",
+    "(mom),(sample),(sample) -> (sample,mom)",
     [
         (nb.float32[:], nb.float32[:], nb.float32[:], nb.float32[:, :]),
         (nb.float64[:], nb.float64[:], nb.float64[:], nb.float64[:, :]),

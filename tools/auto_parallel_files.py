@@ -7,7 +7,7 @@ _PARALLEL = False  # !!!PARALLEL_FALSE!!!
 
 and inserts
 
-_PARALLE = True  # !!!PARALLEL_TRUE!!!
+_PARALLEL = True  # !!!PARALLEL_TRUE!!!
 """
 
 from __future__ import annotations
@@ -23,7 +23,10 @@ logger = logging.getLogger("make_parallel_files")
 
 def _write_file(path_in: Path, path_out: Path) -> None:
     parallel_line = re.compile(r"^_PARALLEL.*?=.*?False(.*)")
-    with path_in.open() as f_in, path_out.open("w") as f_out:
+    with (
+        path_in.open(encoding="utf-8") as f_in,
+        path_out.open("w", encoding="utf-8") as f_out,
+    ):
         for line in f_in:
             match = parallel_line.match(line)
             if match:
@@ -40,8 +43,8 @@ if __name__ == "__main__":
         "push_cov",
         "resample",
         "resample_cov",
-        "indexed",
-        "indexed_cov",
+        "grouped",
+        "grouped_cov",
         "rolling",
         "rolling_cov",
     ]

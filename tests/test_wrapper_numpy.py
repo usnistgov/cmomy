@@ -1,6 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 # pyright: reportCallIssue=false, reportArgumentType=false
-# pylint: disable=protected-access
 from __future__ import annotations
 
 import functools
@@ -89,6 +88,17 @@ def test_getitem(wrapped) -> None:
 
         with pytest.raises(ValueError):
             _ = wrapped[..., 0]
+
+
+def test_repr_html(wrapped) -> None:
+    # Silly test.  For coverage.
+    from cmomy.core.formatting import repr_html_wrapper
+
+    assert wrapped._repr_html_()[:500] == repr_html_wrapper(wrapped)[:500]
+
+
+def test_to_numpy(wrapped) -> None:
+    assert wrapped.to_numpy() is wrapped.obj
 
 
 def test_new_like(wrapped) -> None:
@@ -393,7 +403,7 @@ def test_select_moment(
     elif callable(name):
         check = name(data, mom_ndim)
     else:
-        raise TypeError
+        raise TypeError  # pyright: ignore[reportUnreachable]
     np.testing.assert_allclose(val, check)
 
 
@@ -406,7 +416,7 @@ def test_select_moment(
         ((10, 3, 4, 4), 2),
     ],
 )
-def test_opertors(rng, shape, mom_ndim) -> None:
+def test_operators(rng, shape, mom_ndim) -> None:
     data = rng.random(shape)
     c = CentralMomentsArray(data, mom_ndim=mom_ndim)
 
@@ -452,7 +462,7 @@ def test_operator_raises() -> None:
     c1 = CentralMomentsArray.zeros(mom=4)
 
     with pytest.raises(TypeError):
-        _ = c0 + 1  # type: ignore[operator]
+        _ = c0 + 1  # type: ignore[operator]  # pyright: ignore[reportOperatorIssue]
 
     with pytest.raises(ValueError):
         _ = c0 + c1

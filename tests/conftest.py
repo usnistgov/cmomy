@@ -4,9 +4,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-import cmomy.random
-import cmomy.reduction
-import cmomy.resample
+import cmomy
 
 default_rng = cmomy.default_rng(0)
 
