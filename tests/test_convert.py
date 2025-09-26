@@ -1,5 +1,4 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
-# pylint: disable=protected-access
 from __future__ import annotations
 
 from functools import partial

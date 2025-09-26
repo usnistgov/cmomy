@@ -1,6 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call"
 # pyright: reportCallIssue=false, reportArgumentType=false
-# pylint: disable=protected-access
 from __future__ import annotations
 
 import functools
@@ -89,6 +88,17 @@ def test_getitem(wrapped) -> None:
 
         with pytest.raises(ValueError):
             _ = wrapped[..., 0]
+
+
+def test_repr_html(wrapped) -> None:
+    # Silly test.  For coverage.
+    from cmomy.core.formatting import repr_html_wrapper
+
+    assert wrapped._repr_html_()[:500] == repr_html_wrapper(wrapped)[:500]
+
+
+def test_to_numpy(wrapped) -> None:
+    assert wrapped.to_numpy() is wrapped.obj
 
 
 def test_new_like(wrapped) -> None:

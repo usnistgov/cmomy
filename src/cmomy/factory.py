@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from importlib import import_module
 from typing import TYPE_CHECKING, NamedTuple, cast
 
 from cmomy.options import OPTIONS
@@ -119,6 +120,18 @@ if TYPE_CHECKING:
             **kwargs: Any,
         ) -> tuple[()]: ...
 
+    class ReduceValsGrouped(Protocol):
+        def __call__(
+            self,
+            out: NDArray[FloatT],
+            group_idx: NDArrayInt,
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            /,
+            *y: NDArray[FloatT],
+            **kwargs: Any,
+        ) -> tuple[()]: ...
+
     # Indexed
     class ReduceDataIndexed(Protocol):
         def __call__(
@@ -132,6 +145,21 @@ if TYPE_CHECKING:
             out: NDArray[FloatT] | None = None,
             **kwargs: Any,
         ) -> NDArray[FloatT]: ...
+
+    class ReduceValsIndexed(Protocol):
+        def __call__(
+            self,
+            out: NDArray[FloatT],
+            index: NDArrayInt,
+            group_start: NDArrayInt,
+            group_end: NDArrayInt,
+            scale: NDArray[FloatT],
+            x: NDArray[FloatT],
+            w: NDArray[FloatT],
+            /,
+            *y: NDArray[FloatT],
+            **kwargs: Any,
+        ) -> tuple[()]: ...
 
     # convert
     class Convert(Protocol):
@@ -244,335 +272,253 @@ class Pusher(NamedTuple):
 
 
 @lru_cache
+def _import_library_module_cached(
+    submodule_base_name: str,
+    mom_ndim: int = 1,
+    parallel: bool = False,
+    package: str | None = None,
+) -> ModuleType:
+    submodule = submodule_base_name
+    if mom_ndim == 2:
+        submodule += "_cov"
+
+    if parallel:
+        submodule += "_parallel"
+    return import_module(f"cmomy._lib.{submodule}", package=package)
+
+
+# NOTE(wpk): Use call to `_import_library_module_cached` so always recalculate supports_parallel
+def _import_library_module(
+    submodule_base_name: str,
+    mom_ndim: int = 1,
+    parallel: bool = False,
+    package: str | None = None,
+) -> ModuleType:
+    return _import_library_module_cached(
+        submodule_base_name,
+        mom_ndim=mom_ndim,
+        parallel=parallel and supports_parallel(),
+        package=package,
+    )
+
+
 def factory_pusher(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> Pusher:
     """Factory method to get pusher functions."""
-    parallel = parallel and supports_parallel()
-
-    _push_mod: ModuleType
-    if mom_ndim == 1 and parallel:
-        from ._lib import push_parallel as _push_mod
-    elif mom_ndim == 1:
-        from ._lib import push as _push_mod
-    elif parallel:
-        from ._lib import push_cov_parallel as _push_mod
-    else:
-        from ._lib import push_cov as _push_mod
+    push_mod = _import_library_module("push", mom_ndim=mom_ndim, parallel=parallel)
 
     return Pusher(
-        val=_push_mod.push_val,
-        vals=_push_mod.reduce_vals,
-        data=_push_mod.push_data,
-        data_scale=_push_mod.push_data_scale,
-        datas=_push_mod.reduce_data,
+        val=push_mod.push_val,
+        vals=push_mod.reduce_vals,
+        data=push_mod.push_data,
+        data_scale=push_mod.push_data_scale,
+        datas=push_mod.reduce_data,
     )
 
 
 # * Resample
-@lru_cache
 def factory_freq_to_indices(parallel: bool = True) -> FreqToIndices:
-    if parallel := parallel and supports_parallel():
-        from ._lib.resample_parallel import freq_to_indices
-    else:
-        from ._lib.resample import freq_to_indices
-    return cast("FreqToIndices", freq_to_indices)
+    return cast(
+        "FreqToIndices",
+        _import_library_module("resample", parallel=parallel).freq_to_indices,
+    )
 
 
-@lru_cache
 def factory_indices_to_freq(parallel: bool = True) -> IndicesToFreq:
-    if parallel := parallel and supports_parallel():
-        from ._lib.resample_parallel import indices_to_freq
-    else:
-        from ._lib.resample import indices_to_freq
-    return cast("IndicesToFreq", indices_to_freq)
+    return cast(
+        "IndicesToFreq",
+        _import_library_module("resample", parallel=parallel).indices_to_freq,
+    )
 
 
-@lru_cache
 def factory_resample_vals(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ResampleVals:
     """Resample values."""
-    parallel = parallel and supports_parallel()
-
-    if mom_ndim == 1:
-        if parallel:
-            from ._lib.resample_parallel import resample_vals as _resample
-        else:
-            from ._lib.resample import resample_vals as _resample
-        return cast("ResampleVals", _resample)
-
-    if parallel:
-        from ._lib.resample_cov_parallel import resample_vals as _resample_cov
-    else:
-        from ._lib.resample_cov import resample_vals as _resample_cov
-    return cast("ResampleVals", _resample_cov)
+    return cast(
+        "ResampleVals",
+        _import_library_module(
+            "resample", parallel=parallel, mom_ndim=mom_ndim
+        ).resample_vals,
+    )
 
 
-@lru_cache
 def factory_resample_data(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ResampleData:
     """Resample data."""
-    parallel = parallel and supports_parallel()
-    if mom_ndim == 1 and parallel:
-        from ._lib.resample_parallel import resample_data_fromzero
-    elif mom_ndim == 1:
-        from ._lib.resample import resample_data_fromzero
-    elif parallel:
-        from ._lib.resample_cov_parallel import resample_data_fromzero
-    else:
-        from ._lib.resample_cov import resample_data_fromzero
-    return cast("ResampleData", resample_data_fromzero)
+    return cast(
+        "ResampleData",
+        _import_library_module(
+            "resample", parallel=parallel, mom_ndim=mom_ndim
+        ).resample_data_fromzero,
+    )
 
 
 # * Jackknife
-@lru_cache
 def factory_jackknife_vals(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> JackknifeVals:
-    parallel = parallel and supports_parallel()
-
-    if mom_ndim == 1:
-        if parallel:
-            from ._lib.resample_parallel import jackknife_vals_fromzero as _jackknife
-        else:
-            from ._lib.resample import jackknife_vals_fromzero as _jackknife
-        return cast("JackknifeVals", _jackknife)
-
-    if parallel:
-        from ._lib.resample_cov_parallel import (
-            jackknife_vals_fromzero as _jackknife_cov,
-        )
-    else:
-        from ._lib.resample_cov import jackknife_vals_fromzero as _jackknife_cov
-    return cast("JackknifeVals", _jackknife_cov)
+    return cast(
+        "JackknifeVals",
+        _import_library_module(
+            "resample", parallel=parallel, mom_ndim=mom_ndim
+        ).jackknife_vals_fromzero,
+    )
 
 
-@lru_cache
 def factory_jackknife_data(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> JackknifeData:
-    parallel = parallel and supports_parallel()
-    if mom_ndim == 1 and parallel:
-        from ._lib.resample_parallel import jackknife_data_fromzero
-    elif mom_ndim == 1:
-        from ._lib.resample import jackknife_data_fromzero
-    elif parallel:
-        from ._lib.resample_cov_parallel import jackknife_data_fromzero
-    else:
-        from ._lib.resample_cov import jackknife_data_fromzero
-    return cast("JackknifeData", jackknife_data_fromzero)
+    return cast(
+        "JackknifeData",
+        _import_library_module(
+            "resample", parallel=parallel, mom_ndim=mom_ndim
+        ).jackknife_data_fromzero,
+    )
 
 
 # * Reduce
-@lru_cache
 def factory_reduce_vals(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceVals:
-    parallel = parallel and supports_parallel()
-    if mom_ndim == 1:
-        if parallel:
-            from ._lib.push_parallel import reduce_vals as _reduce
-        else:
-            from ._lib.push import reduce_vals as _reduce
-        return cast("ReduceVals", _reduce)
-
-    if parallel:
-        from ._lib.push_cov_parallel import reduce_vals as _reduce_cov
-    else:
-        from ._lib.push_cov import reduce_vals as _reduce_cov
-    return cast("ReduceVals", _reduce_cov)
+    return cast(
+        "ReduceVals",
+        _import_library_module(
+            "push", parallel=parallel, mom_ndim=mom_ndim
+        ).reduce_vals,
+    )
 
 
-@lru_cache
 def factory_reduce_data(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceData:
-    parallel = parallel and supports_parallel()
-
-    if mom_ndim == 1 and parallel:
-        from ._lib.push_parallel import reduce_data_fromzero
-    elif mom_ndim == 1:
-        from ._lib.push import reduce_data_fromzero
-    elif parallel:
-        from ._lib.push_cov_parallel import reduce_data_fromzero
-    else:
-        from ._lib.push_cov import reduce_data_fromzero
-
-    return cast("ReduceData", reduce_data_fromzero)
+    return cast(
+        "ReduceData",
+        _import_library_module(
+            "push", parallel=parallel, mom_ndim=mom_ndim
+        ).reduce_data_fromzero,
+    )
 
 
-@lru_cache
 def factory_reduce_data_grouped(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceDataGrouped:
-    parallel = parallel and supports_parallel()
-    if mom_ndim == 1 and parallel:
-        from ._lib.indexed_parallel import reduce_data_grouped
-    elif mom_ndim == 1:
-        from ._lib.indexed import reduce_data_grouped
-    elif parallel:
-        from ._lib.indexed_cov_parallel import reduce_data_grouped
-    else:
-        from ._lib.indexed_cov import reduce_data_grouped
-
-    return cast("ReduceDataGrouped", reduce_data_grouped)
+    return cast(
+        "ReduceDataGrouped",
+        _import_library_module(
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
+        ).reduce_data_grouped,
+    )
 
 
-@lru_cache
+def factory_reduce_vals_grouped(
+    mom_ndim: MomNDim = 1,
+    parallel: bool = True,
+) -> ReduceValsGrouped:
+    return cast(
+        "ReduceValsGrouped",
+        _import_library_module(
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
+        ).reduce_vals_grouped,
+    )
+
+
 def factory_reduce_data_indexed(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> ReduceDataIndexed:
-    parallel = parallel and supports_parallel()
+    return cast(
+        "ReduceDataIndexed",
+        _import_library_module(
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
+        ).reduce_data_indexed_fromzero,
+    )
 
-    if mom_ndim == 1 and parallel:
-        from ._lib.indexed_parallel import reduce_data_indexed_fromzero
-    elif mom_ndim == 1:
-        from ._lib.indexed import reduce_data_indexed_fromzero
-    elif parallel:
-        from ._lib.indexed_cov_parallel import reduce_data_indexed_fromzero
-    else:
-        from ._lib.indexed_cov import reduce_data_indexed_fromzero
 
-    # cast because guvectorized with optional out
-    return cast("ReduceDataIndexed", reduce_data_indexed_fromzero)
+def factory_reduce_vals_indexed(
+    mom_ndim: MomNDim = 1,
+    parallel: bool = True,
+) -> ReduceValsIndexed:
+    return cast(
+        "ReduceValsIndexed",
+        _import_library_module(
+            "grouped", parallel=parallel, mom_ndim=mom_ndim
+        ).reduce_vals_indexed_fromzero,
+    )
 
 
 # * Convert
-@lru_cache
 def factory_convert(mom_ndim: MomNDim = 1, to: ConvertStyle = "central") -> Convert:
-    if to == "central":
-        # raw to central
-        if mom_ndim == 1:
-            from ._lib.convert import raw_to_central
-        else:
-            from ._lib.convert_cov import raw_to_central
-        return cast("Convert", raw_to_central)
-
-    # central to raw
-    if mom_ndim == 1:
-        from ._lib.convert import central_to_raw
-    else:
-        from ._lib.convert_cov import central_to_raw
-    return cast("Convert", central_to_raw)
+    m = _import_library_module("convert", mom_ndim=mom_ndim)
+    name = "raw_to_central" if to == "central" else "central_to_raw"
+    return cast("Convert", getattr(m, name))
 
 
 # * CumReduce
-@lru_cache
 def factory_cumulative(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
     inverse: bool = False,
 ) -> Convert:
-    parallel = parallel and supports_parallel()
-    if inverse:
-        if mom_ndim == 1 and parallel:
-            from ._lib.push_parallel import cumulative_inverse as func
-        elif mom_ndim == 1:
-            from ._lib.push import cumulative_inverse as func
-        elif parallel:
-            from ._lib.push_cov_parallel import cumulative_inverse as func
-        else:
-            from ._lib.push_cov import cumulative_inverse as func
-
-    elif mom_ndim == 1 and parallel:
-        from ._lib.push_parallel import cumulative as func
-    elif mom_ndim == 1:
-        from ._lib.push import cumulative as func
-    elif parallel:
-        from ._lib.push_cov_parallel import cumulative as func
-    else:
-        from ._lib.push_cov import cumulative as func
-
-    return cast("Convert", func)
+    m = _import_library_module("push", parallel=parallel, mom_ndim=mom_ndim)
+    name = "cumulative_inverse" if inverse else "cumulative"
+    return cast("Convert", getattr(m, name))
 
 
 # * Rolling
-@lru_cache
 def factory_rolling_vals(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingVals:
-    parallel = parallel and supports_parallel()
-
-    if mom_ndim == 1:
-        if parallel:
-            from ._lib.rolling_parallel import rolling_vals
-        else:
-            from ._lib.rolling import rolling_vals
-        return cast("RollingVals", rolling_vals)
-
-    if parallel:
-        from ._lib.rolling_cov_parallel import rolling_vals as _rolling_cov
-    else:
-        from ._lib.rolling_cov import rolling_vals as _rolling_cov
-    return cast("RollingVals", _rolling_cov)
+    return cast(
+        "RollingVals",
+        _import_library_module(
+            "rolling", parallel=parallel, mom_ndim=mom_ndim
+        ).rolling_vals,
+    )
 
 
-@lru_cache
 def factory_rolling_data(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingData:
-    parallel = parallel and supports_parallel()
-
-    if mom_ndim == 1 and parallel:
-        from ._lib.rolling_parallel import rolling_data
-    elif mom_ndim == 1:
-        from ._lib.rolling import rolling_data
-    elif parallel:
-        from ._lib.rolling_cov_parallel import rolling_data
-    else:
-        from ._lib.rolling_cov import rolling_data
-
-    return cast("RollingData", rolling_data)
+    return cast(
+        "RollingData",
+        _import_library_module(
+            "rolling", parallel=parallel, mom_ndim=mom_ndim
+        ).rolling_data,
+    )
 
 
-@lru_cache
 def factory_rolling_exp_vals(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingExpVals:
-    parallel = parallel and supports_parallel()
-
-    if mom_ndim == 1:
-        if parallel:
-            from ._lib.rolling_parallel import rolling_exp_vals
-        else:
-            from ._lib.rolling import rolling_exp_vals
-        return cast("RollingExpVals", rolling_exp_vals)
-
-    if parallel:
-        from ._lib.rolling_cov_parallel import rolling_exp_vals as _rolling_cov
-    else:
-        from ._lib.rolling_cov import rolling_exp_vals as _rolling_cov
-    return cast("RollingExpVals", _rolling_cov)
+    return cast(
+        "RollingExpVals",
+        _import_library_module(
+            "rolling", parallel=parallel, mom_ndim=mom_ndim
+        ).rolling_exp_vals,
+    )
 
 
-@lru_cache
 def factory_rolling_exp_data(
     mom_ndim: MomNDim = 1,
     parallel: bool = True,
 ) -> RollingExpData:
-    parallel = parallel and supports_parallel()
-
-    if mom_ndim == 1 and parallel:
-        from ._lib.rolling_parallel import rolling_exp_data
-    elif mom_ndim == 1:
-        from ._lib.rolling import rolling_exp_data
-    elif parallel:
-        from ._lib.rolling_cov_parallel import rolling_exp_data
-    else:
-        from ._lib.rolling_cov import rolling_exp_data
-
-    return cast("RollingExpData", rolling_exp_data)
+    return cast(
+        "RollingExpData",
+        _import_library_module(
+            "rolling", parallel=parallel, mom_ndim=mom_ndim
+        ).rolling_exp_data,
+    )

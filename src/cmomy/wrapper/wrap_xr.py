@@ -10,19 +10,19 @@ import xarray as xr
 from cmomy.core.docstrings import docfiller_xcentral as docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import (
-    MomParamsArray,
     MomParamsXArray,
 )
 from cmomy.core.prepare import (
-    prepare_data_for_reduction,
-    prepare_values_for_reduction,
-    xprepare_values_for_reduction,
+    PrepareDataArray,
+    prepare_array_values_for_reduction,
+    prepare_xarray_values_for_reduction,
 )
 from cmomy.core.typing import DataT
 from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
     is_xarray,
+    is_xarray_typevar,
     raise_if_wrong_value,
     validate_floating_dtype,
 )
@@ -54,8 +54,8 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AttrsType,
         AxisReduce,
         Casting,
@@ -331,7 +331,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         self,
         dtype: DTypeLike | Mapping[Hashable, DTypeLike],
         *,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
@@ -364,7 +364,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     @property
     def _dtype(self) -> np.dtype[Any] | None:
         if is_dataarray(self._obj):
-            return self._obj.dtype  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+            return self._obj.dtype
         return None
 
     @docfiller_inherit_abc()
@@ -451,7 +451,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             )
             return out
 
-        if is_xarray(datas):
+        if is_xarray_typevar["DataT"].check(datas):
             axis, dim = self._mom_params.select_axis_dim(
                 datas,
                 axis=axis,
@@ -459,13 +459,15 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             )
 
         else:
-            axis, _, datas = prepare_data_for_reduction(
-                datas,
-                axis=axis,
-                mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
-                dtype=self._dtype,
-                axes_to_end=True,
+            _, axis, datas = PrepareDataArray.factory(
+                ndim=self.mom_ndim,
+                axes=mom_axes,
                 recast=False,
+            ).data_for_reduction(
+                data=datas,
+                axis=axis,
+                axes_to_end=True,
+                dtype=self._dtype,
             )
             dim = "_dummy123"
 
@@ -556,28 +558,29 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         """
         weight = 1.0 if weight is None else weight
         xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
-        if is_xarray(x):
-            dim, input_core_dims, xargs = xprepare_values_for_reduction(
+        if is_xarray_typevar["DataT"].check(x):
+            dim, input_core_dims, xargs = prepare_xarray_values_for_reduction(
                 x,
                 weight,
                 *y,
                 axis=axis,
                 dim=dim,
+                narrays=self.mom_ndim + 1,
                 dtype=self._dtype,
                 recast=False,
-                narrays=self.mom_ndim + 1,
             )
         else:
-            axis, xargs = prepare_values_for_reduction(
+            axis, xargs = prepare_array_values_for_reduction(
                 x,
                 weight,
                 *y,
                 axis=axis,
                 dtype=self._dtype,
-                recast=False,
                 narrays=self.mom_ndim + 1,
                 axes_to_end=True,
+                recast=False,
             )
+
             dim = "_dummy123"
             input_core_dims = [[dim]] * len(xargs)
 
@@ -786,40 +789,6 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
             )
 
-        elif coords_policy in {"first", "last"}:
-            from cmomy.grouped import factor_by_to_index, reduce_data_indexed
-
-            if isinstance(by, str):
-                groups_, index, group_start, group_end = factor_by_to_index(
-                    self._obj[by].to_numpy()  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
-                )
-            else:
-                groups_, index, group_start, group_end = factor_by_to_index(by)
-
-            if groups is None:
-                groups = groups_
-
-            data = reduce_data_indexed(
-                self._obj,
-                mom_ndim=self.mom_ndim,
-                mom_dims=self.mom_dims,
-                index=index,
-                group_start=group_start,
-                group_end=group_end,
-                axis=axis,
-                dim=dim,
-                axes_to_end=axes_to_end,
-                parallel=parallel,
-                dtype=dtype,
-                out=out,
-                casting=casting,
-                order=order,
-                coords_policy=coords_policy,
-                group_dim=group_dim,
-                groups=groups,
-                keep_attrs=keep_attrs,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            )
         else:
             from cmomy.grouped import reduce_data_grouped
 
@@ -827,7 +796,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             if isinstance(by, str):
                 from cmomy.grouped import factor_by
 
-                groups_, codes = factor_by(self._obj[by].to_numpy())  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+                codes, groups_ = factor_by(self._obj[by].to_numpy())
                 if groups is None:
                     groups = groups_
             else:
@@ -846,6 +815,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                 out=out,
                 casting=casting,
                 order=order,
+                coords_policy=coords_policy,
                 group_dim=group_dim,
                 groups=groups,
                 keep_attrs=keep_attrs,
@@ -1476,9 +1446,9 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         if is_dataset(self.obj):
             self._raise_notimplemented_for_dataset()
 
-        obj = self._obj.to_numpy()  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        obj = self._obj.to_numpy()
         return CentralMomentsArray(
-            obj.copy() if copy else obj,  # pyright: ignore[reportUnknownArgumentType]
+            obj.copy() if copy else obj,
             mom_params=self._mom_params.to_array(),
             fastpath=True,
         )

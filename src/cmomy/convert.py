@@ -13,6 +13,7 @@ import xarray as xr
 from .core.array_utils import (
     arrayorder_to_arrayorder_cf,
     asarray_maybe_recast,
+    reorder,
     select_dtype,
 )
 from .core.docstrings import docfiller
@@ -23,10 +24,8 @@ from .core.moment_params import (
     default_mom_params_xarray,
 )
 from .core.prepare import (
-    optional_prepare_out_for_resample_data,
-    prepare_data_for_reduction,
-    xprepare_out_for_resample_data,
-    xprepare_out_for_transform,
+    PrepareDataArray,
+    PrepareDataXArray,
 )
 from .core.utils import (
     mom_to_mom_shape,
@@ -36,7 +35,6 @@ from .core.validate import (
     is_dataarray,
     is_dataset,
     is_ndarray,
-    is_xarray,
     is_xarray_typevar,
 )
 from .core.xr_utils import (
@@ -65,8 +63,8 @@ if TYPE_CHECKING:
     from .core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxisReduce,
         Casting,
         CentralMomentsT,
@@ -92,7 +90,7 @@ if TYPE_CHECKING:
 
 # * Convert between raw and central moments
 @overload
-def moments_type(
+def moments_type(  # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -135,6 +133,15 @@ def moments_type(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def moments_type(
+    values_in: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsTypeKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -149,7 +156,7 @@ def moments_type(
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -212,8 +219,8 @@ def moments_type(
     """
     # TODO(wpk): add axes_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray_typevar(values_in):
-        mom_params = MomParamsXArray.factory(
+    if is_xarray_typevar["DataT"].check(values_in):
+        prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             dims=mom_dims,
@@ -222,19 +229,20 @@ def moments_type(
             default_ndim=1,
         )
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
             values_in,
-            input_core_dims=[mom_params.dims],
-            output_core_dims=[mom_params.dims],
+            input_core_dims=[prep.mom_params.dims],
+            output_core_dims=[prep.mom_params.dims],
             kwargs={
-                "mom_params": mom_params.to_array(),
+                "mom_params": prep.mom_params.to_array(),
                 "to": to,
-                "out": xprepare_out_for_transform(
+                "out": prep.optional_out_transform(
                     target=values_in,
                     out=out,
-                    mom_params=mom_params,
                     axes_to_end=axes_to_end,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "dtype": dtype,
                 "casting": casting,
@@ -275,21 +283,29 @@ def _moments_type(
     to: ConvertStyle,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     axes_to_end: bool,
     fastpath: bool,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(values_in, out=out, dtype=dtype)
+    dtype = select_dtype(values_in, out=out, dtype=dtype, fastpath=fastpath)
 
-    axes_out = mom_params.axes_to_end().axes if axes_to_end else mom_params.axes
+    values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
+    axes_out = mom_params.axes_last if axes_to_end else mom_params.axes
 
-    if out is None and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
-        values_in = asarray_maybe_recast(values_in, dtype=dtype, recast=False)
-        out = np.zeros(values_in.shape, dtype=dtype, order=_order_cf)
+    # out, by default, will be in calculation order.
+    if (
+        out is None
+        and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None
+        and axes_out != mom_params.axes_last
+    ):
+        shape = tuple(
+            values_in.shape[o]
+            for o in reorder(values_in.ndim, mom_params.axes, axes_out)
+        )
+        out = np.empty(shape, dtype=dtype, order=_order_cf)
 
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
-        values_in,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        values_in,
         out=out,
         axes=[mom_params.axes, axes_out],
         dtype=dtype,
@@ -300,7 +316,7 @@ def _moments_type(
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(
+def cumulative(  # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -343,6 +359,15 @@ def cumulative(
     dtype: Any = ...,
     **kwargs: Unpack[CumulativeKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def cumulative(
+    values_in: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: Any = ...,
+    **kwargs: Unpack[CumulativeKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -359,7 +384,7 @@ def cumulative(  # noqa: PLR0913
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     parallel: bool | None = None,
     axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
@@ -420,8 +445,8 @@ def cumulative(  # noqa: PLR0913
 
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray_typevar(values_in):
-        xmom_params = MomParamsXArray.factory(
+    if is_xarray_typevar["DataT"].check(values_in):
+        prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
             axes=mom_axes,
@@ -429,28 +454,29 @@ def cumulative(  # noqa: PLR0913
             data=values_in,
             default_ndim=1,
         )
-        axis, dim = xmom_params.select_axis_dim(
+        axis, dim = prep.mom_params.select_axis_dim(
             values_in,
             axis=axis,
             dim=dim,
         )
-        core_dims = [xmom_params.core_dims(dim)]
+        core_dims = [prep.mom_params.core_dims(dim)]
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _cumulative,
             values_in,
             input_core_dims=core_dims,
             output_core_dims=core_dims,
             kwargs={
-                "mom_params": xmom_params.to_array(),
+                "prep": prep.prepare_array,
                 "inverse": inverse,
-                "axis": -(xmom_params.ndim + 1),
-                "out": xprepare_out_for_resample_data(
+                "axis": -(prep.mom_params.ndim + 1),
+                "out": prep.optional_out_sample(
                     out,
-                    mom_params=xmom_params,
+                    data=values_in,
                     axis=axis,
                     axes_to_end=axes_to_end,
-                    data=values_in,
+                    order=order,
+                    dtype=dtype,
                 ),
                 "parallel": parallel,
                 "dtype": dtype,
@@ -472,26 +498,29 @@ def cumulative(  # noqa: PLR0913
                 template=values_in,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *xmom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
+            )
 
         return xout
 
     # Numpy
-    axis, mom_params, values_in = prepare_data_for_reduction(
-        values_in,
+    prep, axis, values_in = PrepareDataArray.factory(
+        mom_params=mom_params,
+        ndim=mom_ndim,
+        axes=mom_axes,
+        default_ndim=1,
+    ).data_for_reduction(
+        data=values_in,
         axis=axis,
-        mom_params=MomParamsArray.factory(
-            mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
-        ),
-        dtype=None,
-        recast=False,
         axes_to_end=axes_to_end,
+        dtype=None,  # NOTE(wpk): what?
     )
     return _cumulative(
         values_in,
         out=out,
         axis=axis,
-        mom_params=mom_params,
+        prep=prep,
         inverse=inverse,
         parallel=parallel,
         dtype=dtype,
@@ -505,23 +534,22 @@ def _cumulative(
     values_in: NDArrayAny,
     out: NDArrayAny | None,
     axis: int,
-    mom_params: MomParamsArray,
+    prep: PrepareDataArray,
     inverse: bool,
     parallel: bool | None,
     dtype: DTypeLike,
     casting: Casting,
-    order: ArrayOrder,
+    order: ArrayOrderKACF,
     fastpath: bool,
 ) -> NDArrayAny:
-    if not fastpath:
-        dtype = select_dtype(values_in, out=out, dtype=dtype)
+    dtype = select_dtype(values_in, out=out, dtype=dtype, fastpath=fastpath)
 
-    axes = mom_params.axes_data_reduction(
+    axes = prep.mom_params.axes_data_reduction(
         axis=axis,
         out_has_axis=True,
     )
 
-    out = optional_prepare_out_for_resample_data(
+    out = prep.optional_out_sample(
         data=values_in,
         out=out,
         axis=axis,
@@ -530,9 +558,8 @@ def _cumulative(
         dtype=dtype,
     )
 
-    # pylint: disable=unexpected-keyword-arg
     return factory_cumulative(
-        mom_ndim=mom_params.ndim,
+        mom_ndim=prep.mom_params.ndim,
         inverse=inverse,
         parallel=parallel_heuristic(parallel, values_in.size),
     )(
@@ -568,7 +595,7 @@ def _validate_mom_moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(
+def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     mom: tuple[int, int],
@@ -602,6 +629,15 @@ def moments_to_comoments(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def moments_to_comoments(
+    data: ArrayLike | DataT,
+    *,
+    mom: tuple[int, int],
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -696,7 +732,7 @@ def moments_to_comoments(
 
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=1, dims=mom_dims, axes=mom_axes, data=data
         )
@@ -706,7 +742,7 @@ def moments_to_comoments(
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
             data = data.rename({old_name: mom_dim_in})
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_to_comoments,
             data,
             input_core_dims=[[mom_dim_in]],
@@ -750,7 +786,7 @@ def moments_to_comoments(
 
 
 @overload
-def comoments_to_moments(
+def comoments_to_moments(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     dtype: DTypeLike = ...,
@@ -780,6 +816,14 @@ def comoments_to_moments(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsToComomentsKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def comoments_to_moments(
+    data: ArrayLike | DataT,
+    *,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[MomentsToComomentsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -843,7 +887,7 @@ def comoments_to_moments(
     array([10.    ,  0.5505,  0.1014, -0.0178])
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=2, axes=mom_axes, dims=mom_dims, data=data
         )
@@ -856,7 +900,7 @@ def comoments_to_moments(
                 dims=tuple(new_name if d == mom_dim_out else d for d in mom_params.dims)
             )
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             comoments_to_moments,
             data,
             input_core_dims=[mom_params.dims],
@@ -920,7 +964,7 @@ def concat(
 ) -> NDArrayT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type]
+@docfiller.decorate
 def concat(
     arrays: Iterable[NDArrayT] | Iterable[DataT] | Iterable[CentralMomentsT],
     *,
@@ -1027,14 +1071,14 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue]
+        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
             tuple(arrays_iter),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis=axis,
             dtype=first.dtype,
             **kwargs,
         )
 
-    if is_xarray(first):
+    if is_xarray_typevar["DataT"].check(first):
         if dim is MISSING or dim is None or dim in first.dims:
             axis, dim = default_mom_params_xarray.select_axis_dim(
                 first, axis=axis, dim=dim, default_axis=0
@@ -1044,7 +1088,7 @@ def concat(
 
     return type(first)(  # type: ignore[call-arg, return-value]  # pyright: ignore[reportCallIssue]
         concat(
-            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue]
+            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue, reportUnknownArgumentType, reportUnknownMemberType]
             axis=axis,
             dim=dim,
             **kwargs,

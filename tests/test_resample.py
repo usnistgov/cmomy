@@ -1,6 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, assignment, arg-type, call-overload"
 # pyright: reportCallIssue=false, reportArgumentType=false
-# pylint: disable=protected-access
 """
 Test basics of resampling.
 
@@ -91,9 +90,16 @@ def test_resample_data_0(data_and_kwargs, nrep):
     )
 
     # against using reduce_data_indexed....
+    index, start, end, scale = cmomy.resample.freq_to_index_start_end_scales(freq)
     np.testing.assert_allclose(
-        cmomy.grouped.resample_data_indexed(
-            data, sampler={"freq": freq}, axis=axis, mom_ndim=mom_ndim
+        cmomy.grouped.reduce_data_indexed(
+            data,
+            axis=axis,
+            mom_ndim=mom_ndim,
+            index=index,
+            group_start=start,
+            group_end=end,
+            scale=scale,
         ),
         expected,
     )
@@ -101,7 +107,7 @@ def test_resample_data_0(data_and_kwargs, nrep):
 
 @pytest.mark.parametrize("data_and_kwargs", vals_params, indirect=True)
 @pytest.mark.parametrize("nrep", [10])
-def test_resample_vals_0(data_and_kwargs, nrep):
+def test_resample_vals_0(data_and_kwargs, nrep):  # noqa: PLR0914
     data, kwargs = data_and_kwargs
     axis, mom = (kwargs[k] for k in ("axis", "mom"))
     ndat = cmomy.resample.select_ndat(data[0], axis=axis)
@@ -128,6 +134,23 @@ def test_resample_vals_0(data_and_kwargs, nrep):
             sampler={"nrep": nrep, "rng": 123},
             **kwargs,
             axes_to_end=False,
+        ),
+        expected,
+    )
+
+    # against using reduce_vals_indexed...
+    index, start, end, scale = cmomy.resample.freq_to_index_start_end_scales(freq)
+
+    np.testing.assert_allclose(
+        cmomy.grouped.reduce_vals_indexed(
+            *xy,
+            weight=weight,
+            index=index,
+            group_start=start,
+            group_end=end,
+            scale=scale,
+            axes_to_end=False,
+            **kwargs,
         ),
         expected,
     )
@@ -335,7 +358,7 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
 
     idx2 = resample.freq_to_indices(freq0, shuffle=True)
     if is_dataset(idx):
-        assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # pyright: ignore[reportAttributeAccessIssue]
+        assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
     else:
         np.testing.assert_allclose(idx1, np.sort(idx2, axis=-1))
 

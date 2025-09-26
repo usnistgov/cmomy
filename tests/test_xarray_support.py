@@ -25,6 +25,8 @@ from ._dataarray_set_utils import (
     do_moveaxis,
     do_reduce_data_grouped,
     do_reduce_data_indexed,
+    do_reduce_vals_grouped,
+    do_reduce_vals_indexed,
     do_wrap,
     do_wrap_method,
     do_wrap_raw,
@@ -155,6 +157,8 @@ func_params_data_dataset = [
 func_params_vals_common = [
     (cmomy.reduce_vals, None),
     (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),
+    (do_reduce_vals_grouped, None),
+    (do_reduce_vals_indexed, None),
     (cmomy.resample.jackknife_vals, None),
     (cmomy.utils.vals_to_data, remove_dim_from_kwargs),
     (partial(cmomy.rolling.rolling_vals, window=2), None),

@@ -203,7 +203,9 @@ def bootstrap_confidence_interval(
         dtype=dtype,
     )
 
-    if is_xarray_typevar(theta_boot):
+    check_datat = is_xarray_typevar["DataT"].check
+
+    if check_datat(theta_boot):
         axis, dim = default_mom_params_xarray.select_axis_dim(
             theta_boot, axis=axis, dim=dim
         )
@@ -214,27 +216,27 @@ def bootstrap_confidence_interval(
             theta_jack = np.moveaxis(np.asarray(theta_jack, dtype=dtype), axis, -1)
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-            out = _bootstrap_confidence_interval(*args, **kwargs)
+            out = _bootstrap_confidence_interval(*args, **kwargs)  # ty: ignore[missing-argument]
             # move axis to end for apply_ufunc
             return np.moveaxis(out, 0, -1)
 
         args: list[DataT] = [theta_boot]
         input_core_dims: list[list[Hashable]] = [[dim]]
         if method in {"basic", "bca"}:
-            if not is_xarray(theta_hat):
+            if not check_datat(theta_hat):
                 msg = "`theta_hat` must be an xarray object"
                 raise TypeError(msg)
             args.append(theta_hat)
             input_core_dims.append([])
         if method == "bca":
-            if not is_xarray(theta_jack):
+            if not check_datat(theta_jack):
                 msg = "`theta_jack` must be an xarray object"
                 raise TypeError(msg)
             args.append(theta_jack)
             input_core_dims.append(["_rep_jack"])
 
         xout: DataT = (
-            xr.apply_ufunc(
+            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
                 _func,
                 *args,
                 input_core_dims=input_core_dims,

@@ -69,7 +69,6 @@ def resample_data_fromzero(
             nb.float64[:],
         ),
     ],
-    writable=None,
 )
 def resample_vals(
     out: NDArray[FloatT],

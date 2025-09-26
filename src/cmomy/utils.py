@@ -11,7 +11,7 @@ import numpy as np
 import xarray as xr
 from xarray.namedarray.utils import either_dict_or_kwargs
 
-from .core.array_utils import select_dtype
+from .core.array_utils import reorder, select_dtype
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.moment_params import (
@@ -89,8 +89,6 @@ def moveaxis_order(
     allow_select_mom_axes: bool = False,
 ) -> list[int]:
     """Get new integer order for transpose corresponding to `moveaxis` parameters."""
-    from .core.array_utils import moveaxis_order as _moveaxis_order
-
     if is_dataarray(x):
         mom_params = MomParamsXArrayOptional.factory(
             mom_params=mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
@@ -130,7 +128,7 @@ def moveaxis_order(
             )[0]
             for a, d in zip((axis, dest), (dim, dest_dim))
         )
-        return _moveaxis_order(x.ndim, axes0, axes1, normalize=False)
+        return reorder(x.ndim, axes0, axes1, normalize=False)
 
     # numpy
     mom_params = MomParamsArrayOptional.factory(
@@ -163,7 +161,7 @@ def moveaxis_order(
     if not allow_select_mom_axes:
         mom_params.raise_if_in_mom_axes(*axes0, *axes1)
 
-    return _moveaxis_order(x.ndim, axes0, axes1, normalize=False)
+    return reorder(x.ndim, axes0, axes1, normalize=False)
 
 
 @overload
@@ -462,7 +460,7 @@ def select_moment(
     array([1, 4])
 
     """
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         if name == "all":
             return data
 
@@ -502,7 +500,7 @@ def select_moment(
             else:
                 output_core_dims = [[]]
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _select_moment,
             data,
             input_core_dims=input_core_dims,
@@ -523,7 +521,7 @@ def select_moment(
             ),
         )
         if coords_combined is not None and dim_combined in xout.dims:
-            xout = xout.assign_coords(
+            xout = xout.assign_coords(  # pyright: ignore[reportUnknownMemberType]
                 {dim_combined: (dim_combined, list(coords_combined))}
             )
         return xout
@@ -696,7 +694,7 @@ def assign_moment(
         "assign_moment",
     )
 
-    if is_xarray_typevar(data):
+    if is_xarray_typevar["DataT"].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -726,7 +724,7 @@ def assign_moment(
                 # fallback
                 input_core_dims.append([])
 
-        xout: DataT = xr.apply_ufunc(
+        xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _assign_moment,
             data,
             *moment_kwargs.values(),
@@ -787,7 +785,7 @@ def _assign_moment(
 # * Vals -> Data --------------------------------------------------------------
 # TODO(wpk): move this to convert?
 @overload
-def vals_to_data(
+def vals_to_data(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -846,6 +844,16 @@ def vals_to_data(
     out: NDArrayAny | None = ...,
     **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArrayAny: ...
+# arraylike or DataT
+@overload
+def vals_to_data(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -940,7 +948,7 @@ def vals_to_data(
     weight = 1.0 if weight is None else weight
     args: list[Any] = [x, weight, *y]
 
-    if is_xarray_typevar(x):
+    if is_xarray_typevar["DataT"].check(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom_params=mom_params, mom=mom, dims=mom_dims, data=out
         )
@@ -963,7 +971,7 @@ def vals_to_data(
                 out_, *args_ = args
                 return _vals_to_data(*args_, out=out_, **kwargs)
 
-        return xr.apply_ufunc(  # type: ignore[no-any-return]
+        return xr.apply_ufunc(  # type: ignore[no-any-return]  # pyright: ignore[reportUnknownMemberType]
             _func,
             *args,
             input_core_dims=input_core_dims,
@@ -1007,8 +1015,7 @@ def _vals_to_data(
     dtype: DTypeLike,
     fastpath: bool,
 ) -> NDArrayAny | xr.DataArray:
-    if not fastpath:
-        dtype = select_dtype(x, out=out, dtype=dtype)
+    dtype = select_dtype(x, out=out, dtype=dtype, fastpath=fastpath)
 
     x_, w, *y_ = (np.asarray(a, dtype=dtype) for a in (x, weight, *y))
     if out is None:

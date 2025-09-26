@@ -19,8 +19,8 @@ from cmomy.core.moment_params import (
     MomParamsXArray,
 )
 from cmomy.core.prepare import (
-    prepare_data_for_reduction,
-    prepare_values_for_reduction,
+    PrepareDataArray,
+    prepare_array_values_for_reduction,
 )
 from cmomy.core.typing import (
     AxisReduceWrap,
@@ -48,9 +48,9 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing import (
         ArrayLikeArg,
-        ArrayOrder,
+        ArrayOrderACF,
         ArrayOrderCF,
-        ArrayOrderCFA,
+        ArrayOrderKACF,
         AttrsType,
         AxisReduce,
         Casting,
@@ -112,7 +112,7 @@ class CentralMomentsArray(
         mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: None = ...,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         mom_params: MomParamsInput = ...,
         fastpath: bool = ...,
     ) -> None: ...
@@ -125,7 +125,7 @@ class CentralMomentsArray(
         mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: DTypeLikeArg[FloatT],
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         mom_params: MomParamsInput = ...,
         fastpath: bool = ...,
     ) -> None: ...
@@ -138,7 +138,7 @@ class CentralMomentsArray(
         mom_axes: MomAxes | None = ...,
         copy: bool | None = ...,
         dtype: DTypeLike = ...,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         mom_params: MomParamsInput = ...,
         fastpath: bool = ...,
     ) -> None: ...
@@ -151,7 +151,7 @@ class CentralMomentsArray(
         mom_axes: MomAxes | None = None,
         copy: bool | None = None,
         dtype: DTypeLike = None,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         mom_params: MomParamsInput = None,
         fastpath: bool = False,
     ) -> None:
@@ -229,7 +229,7 @@ class CentralMomentsArray(
         verify: bool = ...,
         copy: bool | None = ...,
         dtype: None = ...,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         fastpath: bool = ...,
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
@@ -240,7 +240,7 @@ class CentralMomentsArray(
         verify: bool = ...,
         copy: bool | None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         fastpath: bool = ...,
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
@@ -251,7 +251,7 @@ class CentralMomentsArray(
         verify: bool = ...,
         copy: bool | None = ...,
         dtype: None = ...,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         fastpath: bool = ...,
     ) -> Self: ...
     @overload
@@ -262,7 +262,7 @@ class CentralMomentsArray(
         verify: bool = ...,
         copy: bool | None = ...,
         dtype: DTypeLike = ...,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         fastpath: bool = ...,
     ) -> CentralMomentsArrayAny: ...
 
@@ -274,7 +274,7 @@ class CentralMomentsArray(
         verify: bool = False,
         copy: bool | None = None,
         dtype: DTypeLike = None,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         fastpath: bool = False,
     ) -> CentralMomentsArrayAny:
         """
@@ -326,7 +326,7 @@ class CentralMomentsArray(
         self,
         dtype: DTypeLikeArg[FloatT_],
         *,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
@@ -336,7 +336,7 @@ class CentralMomentsArray(
         self,
         dtype: None,
         *,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
@@ -346,7 +346,7 @@ class CentralMomentsArray(
         self,
         dtype: DTypeLike,
         *,
-        order: ArrayOrder = ...,
+        order: ArrayOrderKACF = ...,
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
@@ -357,7 +357,7 @@ class CentralMomentsArray(
         self,
         dtype: DTypeLike,
         *,
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         casting: Casting | None = None,
         subok: bool | None = None,
         copy: bool = False,
@@ -451,13 +451,15 @@ class CentralMomentsArray(
         <CentralMomentsArray(mom_ndim=1)>
         array([20.    ,  0.5124,  0.1033])
         """
-        axis, _, datas = prepare_data_for_reduction(
+        _, axis, datas = PrepareDataArray.factory(
+            ndim=self.mom_ndim,
+            axes=mom_axes,
+            recast=False,
+        ).data_for_reduction(
             data=datas,
             axis=axis,
-            mom_params=MomParamsArray.factory(ndim=self.mom_ndim, axes=mom_axes),
-            dtype=self.dtype,
-            recast=False,
             axes_to_end=True,
+            dtype=self.dtype,
         )
 
         self._pusher(parallel, size=datas.size).datas(
@@ -571,14 +573,15 @@ class CentralMomentsArray(
                 [ 9.3979e-02,  9.9433e-04,  6.5765e-03]]])
 
         """
-        axis, args = prepare_values_for_reduction(
+        axis, args = prepare_array_values_for_reduction(
             x,
             1.0 if weight is None else weight,
             *y,
             axis=axis,
             dtype=self.dtype,
-            recast=False,
             narrays=self.mom_ndim + 1,
+            axes_to_end=True,
+            recast=False,
         )
 
         self._pusher(parallel, size=self._obj.size).vals(
@@ -630,7 +633,7 @@ class CentralMomentsArray(
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
     ) -> NDArrayAny:
         return super().cumulative(
@@ -730,7 +733,7 @@ class CentralMomentsArray(
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
     ) -> Self | CentralMomentsArrayAny:
         """
@@ -815,7 +818,7 @@ class CentralMomentsArray(
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         parallel: bool | None = None,
     ) -> Self | CentralMomentsArrayAny:
         return super().jackknife_and_reduce(
@@ -874,7 +877,7 @@ class CentralMomentsArray(
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,
         casting: Casting = "same_kind",
-        order: ArrayOrder = None,
+        order: ArrayOrderKACF = None,
         keepdims: bool = False,
         parallel: bool | None = None,
     ) -> Self | CentralMomentsArrayAny:
@@ -986,7 +989,7 @@ class CentralMomentsArray(
         self,
         shape: int | Sequence[int],
         *,
-        order: ArrayOrderCFA = None,
+        order: ArrayOrderACF = None,
     ) -> Self:
         """
         Create a new object with reshaped data.

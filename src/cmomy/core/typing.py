@@ -2,7 +2,7 @@
 Typing aliases (:mod:`cmomy.core.typing`)
 =========================================
 """
-# pylint: disable=missing-class-docstring,consider-alternative-union-syntax,duplicate-bases
+# pylint: disable=missing-class-docstring,consider-alternative-union-syntax,too-many-ancestors
 
 from __future__ import annotations
 
@@ -28,7 +28,7 @@ from .docstrings import docfiller
 from .typing_compat import EllipsisType, TypedDict, TypeVar
 
 if TYPE_CHECKING:
-    from cmomy.resample.sampler import IndexSampler
+    from cmomy.resample import IndexSampler
     from cmomy.wrapper import CentralMomentsArray, CentralMomentsData  # noqa: F401
     from cmomy.wrapper.wrap_abc import CentralMomentsABC  # noqa: F401
 
@@ -258,9 +258,9 @@ Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
 #: Order parameters
 ArrayOrderCF = Optional[Literal["C", "F"]]
 #: Order parameters
-ArrayOrderCFA = Optional[Literal["C", "F", "A"]]
+ArrayOrderACF = Optional[Literal["A", "C", "F"]]
 #: Order parameters
-ArrayOrder = Optional[Literal["C", "F", "A", "K"]]
+ArrayOrderKACF = Optional[Literal["K", "A", "C", "F"]]
 #: Casting rules
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
@@ -340,8 +340,8 @@ class _MoveAxisToEndKwargs(TypedDict, total=False):
     axes_to_end: bool
 
 
-class _OrderKwargs(TypedDict, total=False):
-    order: ArrayOrder
+class _OrderKACFKwargs(TypedDict, total=False):
+    order: ArrayOrderKACF
 
 
 class _OrderCFKwargs(TypedDict, total=False):
@@ -356,33 +356,87 @@ class _RepDimKwargs(TypedDict, total=False):
     rep_dim: str
 
 
+class _CoordsPolicyKwargs(TypedDict, total=False):
+    coords_policy: CoordsPolicy
+
+
+class _GroupsKwargs(TypedDict, total=False):
+    group_dim: str | None
+    groups: Groups | None
+
+
+class _IndexedKwargs(TypedDict, total=False):
+    index: Required[ArrayLike]
+    group_start: Required[ArrayLike]
+    group_end: Required[ArrayLike]
+    scale: ArrayLike | None
+
+
+class _SamplerKwargs(TypedDict, total=False):
+    sampler: Required[Sampler]
+
+
 class _DataKwargs(
+    _MomParamsKwargs,
     _MomNDimKwargs,
+    _MomAxesKwargs,
+    _MoveAxisToEndKwargs,
     _AxisKwargs,
     _ReductionKwargs,
     _ParallelKwargs,
-    _MomAxesKwargs,
+    total=False,
+):
+    pass
+
+
+class _DataCFKwargs(
+    _DataKwargs,
+    _OrderCFKwargs,
+    total=False,
+):
+    pass
+
+
+class _DataKACFKwargs(
+    _DataKwargs,
+    _OrderKACFKwargs,
     total=False,
 ):
     pass
 
 
 class _ValsKwargs(
-    _MomKwargs, _AxisKwargs, _ReductionKwargs, _ParallelKwargs, total=False
+    _MomParamsKwargs,
+    _MomKwargs,
+    _MomAxesKwargs,
+    _MoveAxisToEndKwargs,
+    _AxisKwargs,
+    _ReductionKwargs,
+    _ParallelKwargs,
+    total=False,
+):
+    pass
+
+
+class _ValsCFKwargs(
+    _ValsKwargs,
+    _OrderCFKwargs,
+    total=False,
 ):
     pass
 
 
 # ** Reduction
+# NOTE: special case with multiple axes
 class ReduceDataKwargs(  # type: ignore[call-arg]
+    _MomParamsKwargs,
     _MomNDimKwargs,
     _AxisMultKwargs,
     _ReductionKwargs,
     _ParallelKwargs,
-    _OrderKwargs,
-    _KeepDimsKwargs,
+    _OrderKACFKwargs,
     _MomAxesKwargs,
-    _MomParamsKwargs,
+    _KeepDimsKwargs,
     _MoveAxisToEndKwargs,
     total=False,
     closed=True,
@@ -393,69 +447,60 @@ class ReduceDataKwargs(  # type: ignore[call-arg]
 
 
 class ReduceValsKwargs(  # type: ignore[call-arg]
-    _ValsKwargs,
-    _OrderCFKwargs,
-    _MomParamsKwargs,
+    _ValsCFKwargs,
     total=False,
     closed=True,
 ):
     """Extra parameters to :func:`.reduction.reduce_vals`"""
 
 
-class ReduceValsArrayKwargs(  # type: ignore[call-arg]
-    _MomKwargs,
-    _MomParamsKwargs,
-    _OrderCFKwargs,
-    _ParallelKwargs,
-    total=False,
-    closed=True,
-):
-    """Extra parameters to :meth:`.CentralMomentsArray.from_vals`"""
-
-    casting: Casting
-
-
 class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
-    _DataKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderCFKwargs,
-    _MomParamsKwargs,
+    _DataCFKwargs,
+    _GroupsKwargs,
+    _CoordsPolicyKwargs,
     total=False,
     closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_data_grouped`"""
 
-    group_dim: str | None
-    groups: Groups | None
-
 
 class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
-    _DataKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderKwargs,
-    _MomParamsKwargs,
+    _DataKACFKwargs,
+    _GroupsKwargs,
+    _IndexedKwargs,
+    _CoordsPolicyKwargs,
     total=False,
     closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_data_indexed`"""
 
-    index: Required[ArrayLike]
-    group_start: Required[ArrayLike]
-    group_end: Required[ArrayLike]
-    scale: ArrayLike | None
 
-    coords_policy: CoordsPolicy
-    group_dim: str | None
-    groups: Groups | None
+class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
+    _ValsCFKwargs,
+    _GroupsKwargs,
+    _CoordsPolicyKwargs,
+    total=False,
+    closed=True,
+):
+    """Extra parameters to :func:`.grouped.reduce_vals_grouped`"""
+
+
+class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
+    _ValsCFKwargs,
+    _GroupsKwargs,
+    _IndexedKwargs,
+    _CoordsPolicyKwargs,
+    total=False,
+    closed=True,
+):
+    """Extra parameters to :func:`.grouped.reduce_vals_indexed`"""
 
 
 # ** Resample
 class ResampleDataKwargs(  # type: ignore[call-arg]
-    _DataKwargs,
+    _DataKACFKwargs,
     _RepDimKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderKwargs,
-    _MomParamsKwargs,
+    _SamplerKwargs,
     total=False,
     closed=True,
 ):
@@ -463,11 +508,9 @@ class ResampleDataKwargs(  # type: ignore[call-arg]
 
 
 class ResampleValsKwargs(  # type: ignore[call-arg]
-    _ValsKwargs,
+    _ValsCFKwargs,
     _RepDimKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderCFKwargs,
-    _MomParamsKwargs,
+    _SamplerKwargs,
     total=False,
     closed=True,
 ):
@@ -475,10 +518,7 @@ class ResampleValsKwargs(  # type: ignore[call-arg]
 
 
 class JackknifeDataKwargs(  # type: ignore[call-arg]
-    _DataKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderKwargs,
-    _MomParamsKwargs,
+    _DataKACFKwargs,
     total=False,
     closed=True,
 ):
@@ -489,23 +529,21 @@ class JackknifeDataKwargs(  # type: ignore[call-arg]
 
 
 class JackknifeValsKwargs(  # type: ignore[call-arg]
-    _ValsKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderCFKwargs,
-    _MomParamsKwargs,
+    _ValsCFKwargs,
     total=False,
     closed=True,
 ):
     """Extra parameters for :func:`.resample.jackknife_data`"""
 
     rep_dim: str | None
+    mom_axes_reduced: MomAxes | None
 
 
 # ** Convert
 class _WrapRawKwargs(
     _MomNDimKwargs,
     _ReductionKwargs,
-    _OrderKwargs,
+    _OrderKACFKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
     total=False,
@@ -533,10 +571,7 @@ class MomentsTypeKwargs(  # type: ignore[call-arg]
 
 
 class CumulativeKwargs(  # type: ignore[call-arg]
-    _DataKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderKwargs,
-    _MomParamsKwargs,
+    _DataKACFKwargs,
     total=False,
     closed=True,
 ):
@@ -600,11 +635,8 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
 
 
 class RollingDataKwargs(  # type: ignore[call-arg]
-    _DataKwargs,
+    _DataKACFKwargs,
     _RollingKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderKwargs,
-    _MomParamsKwargs,
     total=False,
     closed=True,
 ):
@@ -612,11 +644,8 @@ class RollingDataKwargs(  # type: ignore[call-arg]
 
 
 class RollingValsKwargs(  # type: ignore[call-arg]
-    _ValsKwargs,
+    _ValsCFKwargs,
     _RollingKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderCFKwargs,
-    _MomParamsKwargs,
     total=False,
     closed=True,
 ):
@@ -624,11 +653,8 @@ class RollingValsKwargs(  # type: ignore[call-arg]
 
 
 class RollingExpDataKwargs(  # type: ignore[call-arg]
-    _DataKwargs,
+    _DataKACFKwargs,
     _RollingExpKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderKwargs,
-    _MomParamsKwargs,
     total=False,
     closed=True,
 ):
@@ -638,11 +664,8 @@ class RollingExpDataKwargs(  # type: ignore[call-arg]
 
 
 class RollingExpValsKwargs(  # type: ignore[call-arg]
-    _ValsKwargs,
+    _ValsCFKwargs,
     _RollingExpKwargs,
-    _MoveAxisToEndKwargs,
-    _OrderCFKwargs,
-    _MomParamsKwargs,
     total=False,
     closed=True,
 ):
@@ -665,7 +688,7 @@ class WrapKwargs(  # type: ignore[call-arg]
 
 
 class ZerosLikeKwargs(  # type: ignore[call-arg]
-    _OrderKwargs,
+    _OrderKACFKwargs,
     total=False,
     closed=True,
 ):
@@ -680,7 +703,7 @@ class ZerosLikeKwargs(  # type: ignore[call-arg]
 # *** Wrap_np
 class _WrapNPTransform(
     _MoveAxisToEndKwargs,
-    _OrderKwargs,
+    _OrderKACFKwargs,
     _ParallelKwargs,
     total=False,
 ):

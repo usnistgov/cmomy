@@ -6,6 +6,9 @@ Idea is to Wrap ndarray, xr.DataArray, and xr.Dataset objects...
 
 from __future__ import annotations
 
+from collections.abc import (
+    Mapping,
+)
 from typing import TYPE_CHECKING, overload
 
 import numpy as np
@@ -18,7 +21,7 @@ from cmomy.core.moment_params import (
     factory_mom_params,
 )
 from cmomy.core.validate import (
-    is_xarray,
+    is_xarray_typevar,
     validate_mom,
 )
 
@@ -26,18 +29,16 @@ from .wrap_np import CentralMomentsArray
 from .wrap_xr import CentralMomentsData
 
 if TYPE_CHECKING:
-    from collections.abc import (
-        Mapping,
-    )
     from typing import Any
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
+    from xarray.core.types import DTypeLikeSave
 
     from cmomy.core.typing import (
         ApplyUFuncKwargs,
         ArrayLikeArg,
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxisReduceWrap,
         Casting,
         CentralMomentsArrayAny,
@@ -65,7 +66,9 @@ if TYPE_CHECKING:
         WrapRawKwargs,
         ZerosLikeKwargs,
     )
-    from cmomy.core.typing_compat import Unpack
+    from cmomy.core.typing_compat import TypeAlias, Unpack
+
+    DTypeMaybeMapping: TypeAlias = DTypeLikeSave | Mapping[Any, DTypeLikeSave]
 
 
 # * General wrapper -----------------------------------------------------------
@@ -73,16 +76,9 @@ if TYPE_CHECKING:
 def wrap(  # pyright: ignore[reportOverlappingOverload]
     obj: DataT,
     *,
-    dtype: DTypeLike | Mapping[str, DTypeLike] = ...,
+    dtype: DTypeMaybeMapping | None = ...,
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsData[DataT]: ...
-@overload
-def wrap(  # type: ignore[overload-cannot-match]
-    obj: xr.DataArray | xr.Dataset,
-    *,
-    dtype: DTypeLike | Mapping[str, DTypeLike] = ...,
-    **kwargs: Unpack[WrapKwargs],
-) -> CentralMomentsDataArray | CentralMomentsDataset: ...
 @overload
 def wrap(
     obj: ArrayLikeArg[FloatT],
@@ -101,20 +97,27 @@ def wrap(
 def wrap(
     obj: ArrayLike,
     *,
-    dtype: DTypeLike = ...,
+    dtype: DTypeLikeSave | None = ...,
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArrayAny: ...
+@overload
+def wrap(
+    obj: ArrayLike | DataT,
+    *,
+    dtype: DTypeMaybeMapping | None = ...,
+    **kwargs: Unpack[WrapKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
 
-@docfiller.decorate  # type: ignore[misc]
-def wrap(  # pyright: ignore[reportInconsistentOverload]
+@docfiller.decorate
+def wrap(
     obj: ArrayLike | DataT,
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
     mom_params: MomParamsInput = None,
-    dtype: DTypeLike | Mapping[str, DTypeLike] = None,
+    dtype: DTypeMaybeMapping | None = None,
     copy: bool | None = False,
     fastpath: bool = False,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
@@ -170,7 +173,7 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
         default_ndim=1,
     )
 
-    if is_xarray(obj):
+    if is_xarray_typevar["DataT"].check(obj):
         if not fastpath:
             copy = copy_if_needed(copy)
             if dtype is not None:
@@ -178,17 +181,18 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
             elif copy:
                 obj = obj.copy(deep=True)
 
-        return CentralMomentsData(  # pyright: ignore[reportReturnType]
-            obj=obj,  # type: ignore[arg-type]
+        return CentralMomentsData(
+            obj=obj,
             mom_params=mom_params,
             fastpath=fastpath,
         )
 
-    return CentralMomentsArray(  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
-        obj=obj,  # type: ignore[arg-type]
+    assert not isinstance(dtype, Mapping)  # noqa: S101
+    return CentralMomentsArray(
+        obj=obj,
         mom_params=mom_params,
         fastpath=fastpath,
-        dtype=dtype,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        dtype=dtype,
         copy=copy,
     )
 
@@ -198,7 +202,7 @@ def wrap(  # pyright: ignore[reportInconsistentOverload]
 def zeros_like(
     c: CentralMomentsDataT,
     *,
-    dtype: DTypeLike | Mapping[Any, DTypeLike] = ...,
+    dtype: DTypeMaybeMapping | None = ...,
     **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsDataT: ...
 @overload
@@ -219,29 +223,29 @@ def zeros_like(
 def zeros_like(
     c: CentralMomentsArrayAny,
     *,
-    dtype: DTypeLike = ...,
+    dtype: DTypeLikeSave | None = ...,
     **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
 def zeros_like(
     c: CentralMomentsArrayAny | CentralMomentsDataAny,
     *,
-    dtype: DTypeLike | Mapping[Any, DTypeLike] = ...,
+    dtype: DTypeMaybeMapping | None = ...,
     **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsArrayAny | CentralMomentsDataAny: ...
 
 
 @docfiller.decorate
 def zeros_like(
-    c: CentralMomentsArrayAny | CentralMomentsDataAny,
+    c: CentralMomentsArrayAny | CentralMomentsDataArray | CentralMomentsDataset,
     *,
-    dtype: DTypeLike | Mapping[Any, DTypeLike] = None,
-    order: ArrayOrder = None,
+    dtype: DTypeMaybeMapping | None = None,
+    order: ArrayOrderKACF = None,
     subok: bool = True,
     chunks: Any = None,
     chunked_array_type: str | None = None,
     from_array_kwargs: dict[str, Any] | None = None,
-) -> CentralMomentsArrayAny | CentralMomentsDataAny:
+) -> CentralMomentsArrayAny | CentralMomentsDataArray | CentralMomentsDataset:
     r"""
     Create new wrapped object with zeros like given wrapped object.
 
@@ -281,25 +285,28 @@ def zeros_like(
     xarray.zeros_like
     """
     if isinstance(c, CentralMomentsData):
-        return wrap(  # pyright: ignore[reportUnknownVariableType]
-            xr.zeros_like(  # type: ignore[misc]  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
+        return wrap(
+            xr.zeros_like(
                 c.obj,
-                dtype=dtype,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                dtype=dtype,
                 chunks=chunks,
                 chunked_array_type=chunked_array_type,
                 from_array_kwargs=from_array_kwargs,
             ),
             mom_params=c.mom_params,
         )
-    return wrap(  # pyright: ignore[reportUnknownVariableType]
-        np.zeros_like(  # pyright: ignore[reportCallIssue, reportUnknownArgumentType]
+
+    assert not isinstance(dtype, Mapping)  # noqa: S101
+    out: CentralMomentsArrayAny = wrap(
+        np.zeros_like(
             c.obj,
-            dtype=dtype,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            dtype=dtype,
             order=order,
             subok=subok,
         ),
         mom_params=c.mom_params,
     )
+    return out
 
 
 # * From vals -----------------------------------------------------------------
@@ -312,15 +319,6 @@ def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsData[DataT]: ...
-@overload
-def wrap_reduce_vals(  # type: ignore[overload-cannot-match]
-    x: xr.DataArray | xr.Dataset,
-    *y: ArrayLike | xr.DataArray | xr.Dataset,
-    weight: ArrayLike | xr.DataArray | xr.Dataset | None = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceValsKwargs],
-) -> CentralMomentsDataArray | CentralMomentsDataset: ...
 @overload
 def wrap_reduce_vals(
     x: ArrayLikeArg[FloatT],
@@ -357,23 +355,34 @@ def wrap_reduce_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArrayAny: ...
+@overload
+def wrap_reduce_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceValsKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
 
-@docfiller.decorate  # type: ignore[misc]
-def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
+@docfiller.decorate
+def wrap_reduce_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
-    weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
-    mom_params: MomParamsInput = None,
     dim: DimsReduce | MissingType = MISSING,
+    weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
+    mom_axes: MomAxes | None = None,
+    mom_params: MomParamsInput = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
+    axes_to_end: bool = True,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
@@ -389,6 +398,8 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
     {axis}
     {dim}
     {mom_dims}
+    {mom_axes}
+    {mom_params}
     {out}
     {dtype}
     {casting}
@@ -423,10 +434,11 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
 
     mom = validate_mom(mom)
     mom_params = factory_mom_params(
-        x, mom_params=mom_params, ndim=len(mom), dims=mom_dims
+        x, mom_params=mom_params, axes=mom_axes, ndim=len(mom), dims=mom_dims
     )
-    obj = reduce_vals(  # type: ignore[type-var, misc, unused-ignore]  # pyright: ignore[reportCallIssue, reportUnknownVariableType, reportCallIssue]
-        x,  # pyright: ignore[reportArgumentType]
+
+    obj = reduce_vals(
+        x,
         *y,
         mom=mom,
         weight=weight,
@@ -438,13 +450,14 @@ def wrap_reduce_vals(  # pyright: ignore[reportInconsistentOverload]
         dtype=dtype,
         casting=casting,
         order=order,
+        axes_to_end=axes_to_end,
         keep_attrs=keep_attrs,
         apply_ufunc_kwargs=apply_ufunc_kwargs,
     )
 
-    return wrap(  # pyright: ignore[reportUnknownVariableType]
-        obj=obj,  # pyright: ignore[reportUnknownArgumentType]
-        mom_params=mom_params,
+    return wrap(
+        obj=obj,
+        mom_params=mom_params.axes_to_end() if axes_to_end else mom_params,
         fastpath=True,
     )
 
@@ -455,27 +468,15 @@ def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    sampler: Sampler,
     out: NDArrayAny | None = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
-def wrap_resample_vals(  # type: ignore[overload-cannot-match]
-    x: xr.DataArray | xr.Dataset,
-    *y: ArrayLike | xr.DataArray | DataT,
-    weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    sampler: Sampler,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[ResampleValsKwargs],
-) -> CentralMomentsDataArray | CentralMomentsDataset: ...
-@overload
 def wrap_resample_vals(
     x: ArrayLikeArg[FloatT],
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    sampler: Sampler,
     out: None = ...,
     dtype: None = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -485,7 +486,6 @@ def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    sampler: Sampler,
     out: NDArray[FloatT],
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
@@ -495,7 +495,6 @@ def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    sampler: Sampler,
     out: None = ...,
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[ResampleValsKwargs],
@@ -505,31 +504,40 @@ def wrap_resample_vals(
     x: ArrayLike,
     *y: ArrayLike,
     weight: ArrayLike | None = ...,
-    sampler: Sampler,
     out: Any = ...,
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArrayAny: ...
-
-
-@docfiller.decorate  # type: ignore[misc]
-def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: PLR0913
+@overload
+def wrap_resample_vals(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    mom: Moments,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: Any = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ResampleValsKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
+
+
+@docfiller.decorate
+def wrap_resample_vals(  # noqa: PLR0913
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
     sampler: Sampler,
+    mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
-    mom_params: MomParamsInput = None,
     dim: DimsReduce | MissingType = MISSING,
-    axes_to_end: bool = True,
+    mom_dims: MomDims | None = None,
+    mom_axes: MomAxes | None = None,
+    mom_params: MomParamsInput = None,
+    rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    mom_dims: MomDims | None = None,
-    rep_dim: str = "rep",
+    axes_to_end: bool = True,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
@@ -541,20 +549,21 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
     ----------
     {x_genarray}
     {y_genarray}
-    {mom}
     {sampler}
+    {mom}
     {weight_genarray}
     {axis}
     {dim}
-    {axes_to_end}
-    {order}
+    {mom_dims}
+    {mom_axes}
+    {mom_params}
+    {rep_dim}
     {out}
     {dtype}
     {casting}
     {order_cf}
     {parallel}
-    {mom_dims}
-    {rep_dim}
+    {axes_to_end}
     {keep_attrs}
     {apply_ufunc_kwargs}
 
@@ -586,11 +595,11 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
 
     mom = validate_mom(mom)
     mom_params = factory_mom_params(
-        target=x, mom_params=mom_params, ndim=len(mom), dims=mom_dims
+        target=x, axes=mom_axes, mom_params=mom_params, ndim=len(mom), dims=mom_dims
     )
 
-    obj = resample_vals(  # type: ignore[type-var, misc, unused-ignore]  # unused in python3.12  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
-        x,  # pyright: ignore[reportArgumentType]
+    obj = resample_vals(
+        x,
         *y,
         sampler=sampler,
         mom=mom,
@@ -608,9 +617,9 @@ def wrap_resample_vals(  # pyright: ignore[reportInconsistentOverload] # noqa: P
         casting=casting,
         order=order,
     )
-    return wrap(  # pyright: ignore[reportUnknownVariableType]
-        obj=obj,  # pyright: ignore[reportUnknownArgumentType]
-        mom_params=mom_params,
+    return wrap(
+        obj=obj,
+        mom_params=mom_params.axes_to_end() if axes_to_end else mom_params,
         fastpath=True,
     )
 
@@ -624,14 +633,6 @@ def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
     dtype: DTypeLike = ...,
     **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsData[DataT]: ...
-@overload
-def wrap_raw(  # type: ignore[overload-cannot-match]
-    raw: xr.DataArray | xr.Dataset,
-    *,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[WrapRawKwargs],
-) -> CentralMomentsDataArray | CentralMomentsDataset: ...
 @overload
 def wrap_raw(
     raw: ArrayLikeArg[FloatT],
@@ -664,10 +665,18 @@ def wrap_raw(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArrayAny: ...
+@overload
+def wrap_raw(
+    raw: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[WrapRawKwargs],
+) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
 
-@docfiller.decorate  # type: ignore[misc]
-def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
+@docfiller.decorate
+def wrap_raw(
     raw: ArrayLike | DataT,
     *,
     mom_ndim: MomNDim | None = None,
@@ -676,7 +685,7 @@ def wrap_raw(  # pyright: ignore[reportInconsistentOverload]
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
-    order: ArrayOrder = None,
+    order: ArrayOrderKACF = None,
     keep_attrs: KeepAttrs = None,
     mom_dims: MomDims | None = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
@@ -13,25 +14,29 @@ from .validate import (
 
 if TYPE_CHECKING:
     from collections.abc import (
-        Iterable,
         Sequence,
     )
+    from typing import Any
 
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .typing import (
-        ArrayOrder,
         ArrayOrderCF,
+        ArrayOrderKACF,
         AxesGUFunc,
         MomNDim,
         NDArrayAny,
         ScalarT,
     )
+    from .typing_compat import TypeIs, TypeVar
+
+    _NDArrayT = TypeVar("_NDArrayT", bound=NDArray[Any])
+    _T = TypeVar("_T")
 
 
 # * Array order ---------------------------------------------------------------
-def arrayorder_to_arrayorder_cf(order: ArrayOrder) -> ArrayOrderCF:
+def arrayorder_to_arrayorder_cf(order: ArrayOrderKACF) -> ArrayOrderCF:
     """Convert general array order to C/F/None"""
     if order is None:
         return order
@@ -64,17 +69,14 @@ def normalize_axis_index(
 
 
 def normalize_axis_tuple(
-    axis: complex | Iterable[complex] | None,
+    axis: complex | Iterable[complex],
     ndim: int,
     mom_ndim: MomNDim | None = None,
     msg_prefix: str | None = None,
     allow_duplicate: bool = False,
 ) -> tuple[int, ...]:
     """Interface to numpy.core.multiarray.normalize_axis_index"""
-    if axis is None:
-        return tuple(range(ndim - (0 if mom_ndim is None else mom_ndim)))
-
-    if isinstance(axis, (int, float, complex)):
+    if not isinstance(axis, Iterable):
         axis = (axis,)
 
     out = tuple(
@@ -88,25 +90,51 @@ def normalize_axis_tuple(
     return out
 
 
-def moveaxis_order(
-    ndim: int,
-    source: int | Iterable[int],
-    destination: int | Iterable[int],
-    normalize: bool = True,
-) -> list[int]:
-    """
-    Get new order of array for moveaxis
+@overload
+def reorder(
+    ndim_or_seq: int,
+    source: complex | Iterable[complex],
+    destination: complex | Iterable[complex],
+    *,
+    normalize: bool = ...,
+) -> list[int]: ...
+@overload
+def reorder(
+    ndim_or_seq: Iterable[_T],
+    source: complex | Iterable[complex],
+    destination: complex | Iterable[complex],
+    *,
+    normalize: bool = ...,
+) -> list[_T]: ...
 
-    Using ``x.transpose(*moveaxis_order(x.ndim, source, destination))``
+
+def reorder(
+    ndim_or_seq: int | Iterable[_T],
+    source: complex | Iterable[complex],
+    destination: complex | Iterable[complex],
+    *,
+    normalize: bool = True,
+) -> list[int] | list[_T]:
+    """
+    Reorder sequence.
+
+    Using ``x.transpose(*reorder(x.ndim, source, destination))``
     is equivalent to ``np.moveaxis(x, source, destination)``.
 
     Useful for keeping track of where indices end up.
     To extract to new position for an axis, use ``order.index(axis)``.
     """
+    seq: Sequence[Any] = (
+        range(ndim_or_seq) if isinstance(ndim_or_seq, int) else list(ndim_or_seq)
+    )
+
     if normalize:
-        source = normalize_axis_tuple(source, ndim, msg_prefix="source")
-        destination = normalize_axis_tuple(destination, ndim, msg_prefix="destination")
+        source = normalize_axis_tuple(source, len(seq), msg_prefix="source")
+        destination = normalize_axis_tuple(
+            destination, len(seq), msg_prefix="destination"
+        )
     else:
+        # white lie.  If normalize=False, already normalized.
         source = cast("Sequence[int]", source)
         destination = cast("Sequence[int]", destination)
 
@@ -114,11 +142,10 @@ def moveaxis_order(
         msg = "source and destination must have same length"
         raise ValueError(msg)
 
-    order = [n for n in range(ndim) if n not in source]
-    for dest, src in sorted(zip(destination, source)):
-        order.insert(dest, src)
-
-    return order
+    out: list[int] | list[_T] = [x for n, x in enumerate(seq) if n not in source]
+    for dest, src in sorted(zip(destination, (seq[s] for s in source))):
+        out.insert(dest, src)
+    return out
 
 
 def positive_to_negative_index(index: int, ndim: int) -> int:
@@ -149,12 +176,19 @@ def get_axes_from_values(*args: NDArrayAny, axis_neg: int) -> AxesGUFunc:
 _ALLOWED_FLOAT_DTYPES = {np.dtype(np.float32), np.dtype(np.float64)}
 
 
+def _is_allowed_float_dtype(
+    dtype: object,
+) -> TypeIs[np.dtype[np.float32] | np.dtype[np.float64]]:
+    return dtype in _ALLOWED_FLOAT_DTYPES
+
+
 @overload
 def select_dtype(
     x: xr.Dataset,
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = ...,
 ) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 @overload
 def select_dtype(
@@ -162,13 +196,23 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = ...,
 ) -> np.dtype[np.float32] | np.dtype[np.float64]: ...
+@overload
+def select_dtype(
+    x: xr.Dataset | xr.DataArray,
+    *,
+    out: NDArrayAny | xr.DataArray | None,
+    dtype: DTypeLike,
+    fastpath: bool = ...,
+) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 @overload
 def select_dtype(
     x: xr.Dataset | xr.DataArray | ArrayLike,
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = ...,
 ) -> np.dtype[np.float32] | np.dtype[np.float64] | None: ...
 
 
@@ -177,25 +221,30 @@ def select_dtype(
     *,
     out: NDArrayAny | xr.DataArray | None,
     dtype: DTypeLike,
+    fastpath: bool = False,
 ) -> np.dtype[np.float32] | np.dtype[np.float64] | None:  # DTypeLikeArg[Any]:
     """
     Select a dtype from, in order, out, dtype, or passed array.
 
     If pass in a Dataset, return dtype
     """
+    if fastpath:
+        assert dtype in _ALLOWED_FLOAT_DTYPES  # noqa: S101
+        return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]
+
     if is_dataset(x):
         if dtype is None:
             return dtype
         dtype = np.dtype(dtype)
     elif out is not None:
-        dtype = out.dtype  # pyright: ignore[reportUnknownMemberType,reportUnknownVariableType]
+        dtype = out.dtype
     elif dtype is not None:
         dtype = np.dtype(dtype)
     else:
         dtype = getattr(x, "dtype", np.dtype(np.float64))
 
-    if dtype in _ALLOWED_FLOAT_DTYPES:
-        return dtype  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
+    if _is_allowed_float_dtype(dtype):
+        return dtype
 
     msg = f"{dtype=} not supported.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, SupportsInt
 
 import numpy as np
 import pandas as pd
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 def factor_by(
     by: Groups,
     sort: bool = True,
-) -> tuple[list[Any] | IndexAny | pd.MultiIndex, NDArrayInt]:
+) -> tuple[NDArrayInt, list[Any] | IndexAny | pd.MultiIndex]:
     """
     Factor by to codes and groups.
 
@@ -32,73 +32,77 @@ def factor_by(
 
     Returns
     -------
-    groups : list or :class:`pandas.Index`
-        Unique group names (excluding negative or ``None`` Values.)
     codes : ndarray of int
         Indexer into ``groups``.
+    groups : list or :class:`pandas.Index`
+        Unique group names (excluding negative or ``None`` Values.)
+
+    See Also
+    --------
+    pandas.factorize
 
 
     Examples
     --------
     >>> by = [1, 1, 0, -1, 0, 2, 2]
-    >>> groups, codes = factor_by(by, sort=False)
-    >>> groups
-    [1, 0, 2]
+    >>> codes, groups = factor_by(by, sort=False)
     >>> codes
     array([ 0,  0,  1, -1,  1,  2,  2])
+    >>> groups
+    [1, 0, 2]
 
     Note that with sort=False, groups are in order of first appearance.
 
-    >>> groups, codes = factor_by(by)
-    >>> groups
-    [0, 1, 2]
+    >>> codes, groups = factor_by(by)
     >>> codes
     array([ 1,  1,  0, -1,  0,  2,  2])
+    >>> groups
+    [0, 1, 2]
 
     This also works for sequences of non-integers.
 
     >>> by = ["a", "a", None, "c", "c", -1]
-    >>> groups, codes = factor_by(by)
-    >>> groups
-    ['a', 'c']
+    >>> codes, groups = factor_by(by)
     >>> codes
     array([ 0,  0, -1,  1,  1, -1])
+    >>> groups
+    ['a', 'c']
 
     And for :class:`pandas.Index` objects
 
     >>> import pandas as pd
     >>> by = pd.Index(["a", "a", None, "c", "c", None])
-    >>> groups, codes = factor_by(by)
+    >>> codes, groups = factor_by(by)
 
-    >>> groups
-    Index(['a', 'c'], dtype='object')
     >>> codes
     array([ 0,  0, -1,  1,  1, -1])
+    >>> groups
+    Index(['a', 'c'], dtype='object')
 
     """
-    from pandas import factorize  # pyright: ignore[reportUnknownVariableType]
+    from pandas import factorize
 
     # filter None and negative -> None
     by_: Groups = (
         by
         if isinstance(by, pd.Index)
         else np.fromiter(
-            (None if isinstance(x, (int, np.integer)) and x < 0 else x for x in by),  # pyright: ignore[reportUnknownArgumentType]
+            (None if isinstance(x, SupportsInt) and int(x) < 0 else x for x in by),
             dtype=object,
         )
     )
 
-    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]  # pyright: ignore[reportUnknownVariableType]
+    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]
 
-    codes = codes.astype(np.int64)  # pyright: ignore[reportUnknownVariableType]
+    codes = codes.astype(np.int64)
     if isinstance(by_, (pd.Index, pd.MultiIndex)):
         if not isinstance(groups, (pd.Index, pd.MultiIndex)):  # type: ignore[unreachable] # pragma: no cover
-            msg = f"{type(groups)=} should be instance of pd.Index"  # pyright: ignore[reportUnknownArgumentType]
+            msg = f"{type(groups)=} should be instance of pd.Index"
             raise TypeError(msg)
         groups.names = by_.names  # type: ignore[unreachable]
-        return groups, codes  # pyright: ignore[reportUnknownVariableType]
+        return codes, groups
 
-    return list(groups), codes  # pyright: ignore[reportUnknownArgumentType,reportUnknownVariableType]
+    return codes, list(groups)
 
 
 def block_by(
@@ -174,7 +178,7 @@ def block_by(
 def factor_by_to_index(
     by: Groups,
     **kwargs: Any,
-) -> tuple[list[Any] | IndexAny | pd.MultiIndex, NDArrayInt, NDArrayInt, NDArrayInt]:
+) -> tuple[NDArrayInt, NDArrayInt, NDArrayInt, list[Any] | IndexAny | pd.MultiIndex]:
     """
     Transform group_idx to quantities to be used with :func:`reduce_data_indexed`.
 
@@ -187,9 +191,6 @@ def factor_by_to_index(
 
     Returns
     -------
-    groups : list or :class:`pandas.Index`
-        Unique groups in `group_idx` (excluding Negative or ``None`` values in
-        ``group_idx`` if ``exclude_negative`` is ``True``).
     index : ndarray
         Indexing array. ``index[start[k]:end[k]]`` are the index with group
         ``groups[k]``.
@@ -197,6 +198,9 @@ def factor_by_to_index(
         See ``index``
     end : ndarray
         See ``index``.
+    groups : list or :class:`pandas.Index`
+        Unique groups in `group_idx` (excluding Negative or ``None`` values in
+        ``group_idx`` if ``exclude_negative`` is ``True``).
 
     See Also
     --------
@@ -206,24 +210,24 @@ def factor_by_to_index(
     Examples
     --------
     >>> factor_by_to_index([0, 1, 0, 1])
-    ([0, 1], array([0, 2, 1, 3]), array([0, 2]), array([2, 4]))
+    (array([0, 2, 1, 3]), array([0, 2]), array([2, 4]), [0, 1])
 
     >>> factor_by_to_index(["a", "b", "a", "b"])
-    (['a', 'b'], array([0, 2, 1, 3]), array([0, 2]), array([2, 4]))
+    (array([0, 2, 1, 3]), array([0, 2]), array([2, 4]), ['a', 'b'])
 
     Also, missing values (None or negative) are excluded:
 
     >>> factor_by_to_index([None, "a", None, "b"])
-    (['a', 'b'], array([1, 3]), array([0, 1]), array([1, 2]))
+    (array([1, 3]), array([0, 1]), array([1, 2]), ['a', 'b'])
 
     You can also pass :class:`pandas.Index` objects:
 
     >>> factor_by_to_index(pd.Index([None, "a", None, "b"], name="my_index"))
-    (Index(['a', 'b'], dtype='object', name='my_index'), array([1, 3]), array([0, 1]), array([1, 2]))
+    (array([1, 3]), array([0, 1]), array([1, 2]), Index(['a', 'b'], dtype='object', name='my_index'))
 
     """
     # factorize by to groups and codes
-    groups, codes = factor_by(by, sort=True)
+    codes, groups = factor_by(by, sort=True)
 
     # exclude missing
     keep = codes >= 0
@@ -243,4 +247,4 @@ def factor_by_to_index(
     if index is not None:
         indexes_sorted = index[indexes_sorted]
 
-    return groups, indexes_sorted, n_start, n_end
+    return indexes_sorted, n_start, n_end, groups

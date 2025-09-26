@@ -1,6 +1,6 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type, index, assignment, call-overload"
 # pyright:  reportArgumentType=false, reportAssignmentType=false
-# pylint: disable=missing-class-docstring,protected-access
+# pylint: disable=missing-class-docstring
 from __future__ import annotations
 
 from functools import partial
@@ -248,7 +248,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    outc = np.where(  # pylint: disable=redefined-variable-type
+    outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
@@ -311,7 +311,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
 
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    outc = np.where(  # pylint: disable=redefined-variable-type
+    outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         outc,
@@ -385,7 +385,7 @@ def test_rolling_data_from_constructed_windows(
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
     count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
 
-    out2 = np.where(  # pylint: disable=redefined-variable-type
+    out2 = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
         >= (window if min_periods is None else min_periods),
         out2,
@@ -395,9 +395,9 @@ def test_rolling_data_from_constructed_windows(
     # nan weights -> 0
     w = cmomy.select_moment(out2, "weight", mom_ndim=mom_ndim)
     w[np.isnan(w)] = 0.0
-    out2 = cmomy.utils.assign_moment(out2, weight=w, mom_ndim=mom_ndim, copy=False)
+    out3 = cmomy.utils.assign_moment(out2, weight=w, mom_ndim=mom_ndim, copy=False)
 
-    np.testing.assert_allclose(out, out2)
+    np.testing.assert_allclose(out, out3)
 
 
 # * rolling exp

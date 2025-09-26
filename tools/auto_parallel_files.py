@@ -43,8 +43,8 @@ if __name__ == "__main__":
         "push_cov",
         "resample",
         "resample_cov",
-        "indexed",
-        "indexed_cov",
+        "grouped",
+        "grouped_cov",
         "rolling",
         "rolling_cov",
     ]
