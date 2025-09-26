@@ -233,9 +233,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
         mom_ndim=mom_ndim,
     )
     outd = rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
-    out = np.moveaxis(
-        rolling.rolling_vals(*xy, **kws, axis=0, mom=mom, weight=w), -(mom_ndim + 1), 0
-    )
+    out = rolling.rolling_vals(*xy, **kws, axis=0, mom=mom, weight=w)
 
     np.testing.assert_allclose(out, outd, atol=1e-14)
     # just to make sure, we also use construct
@@ -346,7 +344,6 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     w2 = select(outc, "weight")
     w2[np.isnan(w2)] = 0.0
 
-    outc = cmomy.moveaxis(outc, 0, -1j, mom_ndim=mom_ndim)
     np.testing.assert_allclose(out, outc, atol=1e-10)
 
 
@@ -443,7 +440,6 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     outd = rolling.rolling_exp_data(data, **kws, axis=0, mom_ndim=mom_ndim)
     out = rolling.rolling_exp_vals(*xy, weight=w, **kws, axis=0, mom=mom)
 
-    out = np.moveaxis(out, -(mom_ndim + 1), 0)
     np.testing.assert_allclose(out, outd, atol=1e-14)
 
     rx = pd.DataFrame(x).ewm(**kws)
@@ -487,9 +483,6 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         axis=axis,
         adjust=adjust,
     )
-
-    # move to original position
-    out = np.moveaxis(out, -2, axis)
 
     data = cmomy.utils.vals_to_data(
         x,
@@ -609,7 +602,7 @@ def test_rolling_exp_weight(
     )
     np.testing.assert_allclose(
         a,
-        np.moveaxis(c, axis, -(mom_ndim + 1)),
+        c,
     )
 
 
@@ -631,14 +624,26 @@ def test_rolling_exp_multiple_alpha(
     data = cmomy.utils.vals_to_data(*xy, weight=weight, mom=mom)
 
     a = rolling.rolling_exp_vals(
-        *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
+        *xy,
+        weight=weight,
+        alpha=alphas,
+        mom=mom,
+        axis=axis,
+        adjust=adjust,
+        axes_to_end=True,
     )
     c = rolling.rolling_exp_data(
-        data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust, alpha_axis=axis
+        data,
+        alpha=alphas,
+        mom_ndim=mom_ndim,
+        axis=axis,
+        adjust=adjust,
+        alpha_axis=axis,
+        axes_to_end=True,
     )
     np.testing.assert_allclose(
         a,
-        np.moveaxis(c, axis, -(mom_ndim + 1)),
+        c,
     )
 
     for k in range(shape[-1]):

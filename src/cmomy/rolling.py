@@ -666,7 +666,7 @@ def rolling_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    axes_to_end: bool = True,
+    axes_to_end: bool = False,
     # xarray specific
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
@@ -1301,7 +1301,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    axes_to_end: bool = True,
+    axes_to_end: bool = False,
     # xarray specific
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
