@@ -90,6 +90,17 @@ def test_getitem(wrapped) -> None:
             _ = wrapped[..., 0]
 
 
+def test_repr_html(wrapped) -> None:
+    # Silly test.  For coverage.
+    from cmomy.core.formatting import repr_html_wrapper
+
+    assert wrapped._repr_html_()[:500] == repr_html_wrapper(wrapped)[:500]
+
+
+def test_to_numpy(wrapped) -> None:
+    assert wrapped.to_numpy() is wrapped.obj
+
+
 def test_new_like(wrapped) -> None:
     np.testing.assert_allclose(wrapped.new_like().obj, np.zeros_like(wrapped.obj))
 

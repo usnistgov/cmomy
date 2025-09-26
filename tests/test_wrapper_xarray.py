@@ -69,6 +69,35 @@ def test_pipe(c_dataset) -> None:
     xr.testing.assert_allclose(c2.obj, c_dataset.obj + 1)
 
 
+def test_val_dims(c_dataset) -> None:
+    with pytest.raises(NotImplementedError):
+        _ = c_dataset.val_dims
+
+    c = get_first(c_dataset)
+
+    assert c.val_dims == ("dim_0", "dim_1")
+
+    c = cmomy.CentralMomentsData(
+        c.obj,
+        mom_dims="dim_0",
+    )
+
+    assert c.val_dims == ("dim_1", "dim_2")
+
+
+def test_to_numpy(c_dataset) -> None:
+    c = get_first(c_dataset)
+
+    assert c.to_numpy() is c.obj.to_numpy()
+
+
+def test_repr_html(c_dataset) -> None:
+    # Silly for coverage
+    from cmomy.core.formatting import repr_html_wrapper
+
+    assert c_dataset._repr_html_()[:500] == repr_html_wrapper(c_dataset)[:500]
+
+
 def test_as_dict(c_dataset) -> None:
     # add a new variable missing mom_dims...
     c = c_dataset.assign(other=xr.DataArray(np.zeros(3), dims=["b"]))

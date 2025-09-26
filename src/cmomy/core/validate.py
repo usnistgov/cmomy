@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import TYPE_CHECKING, Generic, cast, final
+from typing import TYPE_CHECKING, Generic, cast, final, overload
 
 import numpy as np
 import xarray as xr
@@ -201,7 +201,13 @@ def validate_mom_ndim_and_mom_axes(
 
 
 # * Validate Axis -------------------------------------------------------------
-def validate_axis(axis: T | MissingType | None) -> T:
+@overload
+def validate_axis(axis: int | MissingType | None) -> int: ...  # type: ignore[overload-overlap]
+@overload
+def validate_axis(axis: complex | MissingType | None) -> complex: ...
+
+
+def validate_axis(axis: complex | MissingType | None) -> complex:
     """
     Validate that axis is an integer
 
@@ -213,15 +219,25 @@ def validate_axis(axis: T | MissingType | None) -> T:
     return axis
 
 
+@overload
+def validate_axis_mult(  # type: ignore[overload-overlap]
+    axis: int | Iterable[int] | MissingType | None,
+) -> tuple[int, ...]: ...
+@overload
 def validate_axis_mult(
-    axis: T | Iterable[T] | MissingType | None,
-) -> tuple[T, ...]:
+    axis: complex | Iterable[complex] | MissingType | None,
+) -> tuple[complex, ...]: ...
+
+
+def validate_axis_mult(
+    axis: complex | Iterable[complex] | MissingType | None,
+) -> tuple[complex, ...]:
     """Validate that axis is specified."""
     if axis is MISSING or axis is None:
         msg = f"Must specify axis. Received {axis=}."
         raise TypeError(msg)
     if isinstance(axis, Iterable):
-        return tuple(axis)  # pyright: ignore[reportUnknownArgumentType]
+        return tuple(axis)
     return (axis,)
 
 

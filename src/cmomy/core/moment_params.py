@@ -13,6 +13,7 @@ from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .docstrings import docfiller as _docfiller
 from .missing import MISSING
 from .validate import (
+    is_dataarray,
     is_dataset,
     is_xarray,
     validate_mom,
@@ -305,9 +306,7 @@ class MomParamsArrayOptional(MomParamsBase):
 
     def maybe_reorder_dataarray(self, x: DataT) -> DataT:
         """Reorder DataArray mom_axes_last to mom_axes."""
-        if is_dataset(x):
-            return x
-        if self._validated_axes != self.axes_last:
+        if is_dataarray(x) and self._validated_axes != self.axes_last:  # type: ignore[redundant-expr]
             from .array_utils import reorder
 
             return x.transpose(*reorder(x.dims, self.axes_last, self._validated_axes))
