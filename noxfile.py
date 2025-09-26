@@ -94,11 +94,11 @@ class SessionOptionsDict(TypedDict, total=False):
 
 CONDA_DEFAULT_KWS: SessionOptionsDict = {
     "python": PYTHON_DEFAULT_VERSION,
-    "venv_backend": "micromamba|mamba|conda",
+    "venv_backend": "mamba|micromamba|conda",
 }
 CONDA_ALL_KWS: SessionOptionsDict = {
     "python": PYTHON_ALL_VERSIONS,
-    "venv_backend": "micromamba|mamba|conda",
+    "venv_backend": "mamba|micromamba|conda",
 }
 
 DEFAULT_KWS: SessionOptionsDict = {"python": PYTHON_DEFAULT_VERSION}

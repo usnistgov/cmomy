@@ -262,7 +262,7 @@ class PrepareValsArray(_PrepareBaseArray):
         *args: ArrayLike | xr.Dataset,
         narrays: int,
         axis: AxisReduceWrap | MissingType = MISSING,
-        axes_to_end: bool = True,
+        axes_to_end: bool,
         dtype: DTypeLike,
     ) -> tuple[Self, int, tuple[NDArrayAny, ...]]:
         obj = (
@@ -641,7 +641,7 @@ def prepare_array_values_for_reduction(
     *args: ArrayLike | xr.Dataset,
     narrays: int,
     axis: AxisReduceWrap | MissingType = MISSING,
-    axes_to_end: bool = True,
+    axes_to_end: bool,
     dtype: DTypeLike,
     recast: bool = False,
 ) -> tuple[int, tuple[NDArrayAny, ...]]:

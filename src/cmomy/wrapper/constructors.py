@@ -382,7 +382,7 @@ def wrap_reduce_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    axes_to_end: bool = True,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
@@ -537,7 +537,7 @@ def wrap_resample_vals(  # noqa: PLR0913
     casting: Casting = "same_kind",
     order: ArrayOrderCF = None,
     parallel: bool | None = None,
-    axes_to_end: bool = True,
+    axes_to_end: bool = False,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:

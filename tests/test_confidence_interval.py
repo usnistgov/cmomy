@@ -114,9 +114,7 @@ def theta_hat(
 def theta_boot(
     data: NDArray[np.float64], mom: Moments, sampler, axis
 ) -> NDArray[np.float64]:
-    return np.moveaxis(
-        cmomy.resample_vals(data, mom=mom, axis=axis, sampler=sampler), -2, axis
-    )
+    return cmomy.resample_vals(data, mom=mom, axis=axis, sampler=sampler)
 
 
 @pytest.fixture
@@ -126,10 +124,8 @@ def theta_jack(
     theta_hat: NDArray[np.float64],
     axis,
 ) -> NDArray[np.float64]:
-    return np.moveaxis(
-        cmomy.resample.jackknife_vals(data, mom=mom, data_reduced=theta_hat, axis=axis),
-        -2,
-        axis,
+    return cmomy.resample.jackknife_vals(
+        data, mom=mom, data_reduced=theta_hat, axis=axis
     )
 
 
