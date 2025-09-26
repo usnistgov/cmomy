@@ -1,6 +1,5 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, assignment, arg-type, call-overload"
 # pyright: reportCallIssue=false, reportArgumentType=false
-# pylint: disable=protected-access
 """
 Test basics of resampling.
 

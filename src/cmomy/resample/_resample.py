@@ -224,18 +224,17 @@ def resample_data(  # noqa: PLR0913
             data=data,
             default_ndim=1,
         )
-        mom_params = prep.mom_params
-        axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
+        axis, dim = prep.mom_params.select_axis_dim(data, axis=axis, dim=dim)
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _resample_data,
             data,
             sampler.freq,
-            input_core_dims=[mom_params.core_dims(dim), [rep_dim, dim]],
-            output_core_dims=[mom_params.core_dims(rep_dim)],
+            input_core_dims=[prep.mom_params.core_dims(dim), [rep_dim, dim]],
+            output_core_dims=[prep.mom_params.core_dims(rep_dim)],
             kwargs={
                 "prep": prep.prepare_array,
-                "axis": -(mom_params.ndim + 1),
+                "axis": -(prep.mom_params.ndim + 1),
                 "out": prep.optional_out_sample(
                     out,
                     data=data,
@@ -267,7 +266,9 @@ def resample_data(  # noqa: PLR0913
                 replace={dim: rep_dim},
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., rep_dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(
+                ..., rep_dim, *prep.mom_params.dims, missing_dims="ignore"
+            )
 
         if not axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index,unused-ignore]
@@ -336,7 +337,6 @@ def _resample_data(
         dtype=dtype,
     )
 
-    # pylint: disable=unexpected-keyword-arg
     return factory_resample_data(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -492,15 +492,28 @@ def resample_vals(  # noqa: PLR0913
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
-        mom_params = prep.mom_params
         dim, input_core_dims, xargs = prep.values_for_reduction(
             x,
             weight,
             *y,
             axis=axis,
             dim=dim,
-            narrays=mom_params.ndim + 1,
+            narrays=prep.mom_params.ndim + 1,
             dtype=dtype,
+        )
+
+        out, mom_params_axes = prep.optional_out_from_values(
+            out,
+            *xargs,
+            target=x,
+            dim=dim,
+            mom=mom,
+            axis_new_size=sampler.nrep,
+            axes_to_end=axes_to_end,
+            order=order,
+            dtype=dtype,
+            mom_axes=mom_axes,
+            mom_params=prep.mom_params,
         )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
@@ -508,22 +521,12 @@ def resample_vals(  # noqa: PLR0913
             *xargs,
             sampler.freq,
             input_core_dims=[*input_core_dims, [rep_dim, dim]],  # type: ignore[has-type]
-            output_core_dims=[mom_params.core_dims(rep_dim)],
+            output_core_dims=[prep.mom_params.core_dims(rep_dim)],
             kwargs={
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
-                "out": prep.optional_out_from_values(
-                    out,
-                    *xargs,
-                    target=x,
-                    dim=dim,
-                    mom=mom,
-                    axis_new_size=sampler.nrep,
-                    axes_to_end=axes_to_end,
-                    order=order,
-                    dtype=dtype,
-                ),
+                "out": out,
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
@@ -536,27 +539,27 @@ def resample_vals(  # noqa: PLR0913
                 dask="parallelized",
                 output_sizes={
                     rep_dim: sampler.nrep,
-                    **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
+                    **dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
         if not axes_to_end:
-            xout = transpose_like(
+            return transpose_like(
                 xout,
                 template=x,
                 replace={dim: rep_dim},
-                append=mom_params.dims,
+                append=prep.mom_params.dims,
+                mom_params_axes=mom_params_axes,
             )
-        elif is_dataset(x):
-            xout = xout.transpose(
+        if is_dataset(x):
+            return xout.transpose(
                 ...,
                 rep_dim,
-                *mom_params.dims,
+                *prep.mom_params.dims,
                 missing_dims="ignore",
             )
-
         return xout
 
     # numpy
@@ -960,7 +963,6 @@ def _jackknife_data(
         dtype=dtype,
     )
 
-    # pylint: disable=unexpected-keyword-arg
     return factory_jackknife_data(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
@@ -1140,7 +1142,6 @@ def jackknife_vals(  # noqa: PLR0913
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
-        mom_params = prep.mom_params
         dim, input_core_dims, xargs = prep.values_for_reduction(
             x,
             weight,
@@ -1148,34 +1149,38 @@ def jackknife_vals(  # noqa: PLR0913
             axis=axis,
             dim=dim,
             dtype=dtype,
-            narrays=mom_params.ndim + 1,
+            narrays=prep.mom_params.ndim + 1,
         )
 
         if is_xarray(data_reduced):
             mom_axes_reduced = None
 
+        out, mom_params_axes = prep.optional_out_from_values(
+            out,
+            *xargs,
+            target=x,
+            dim=dim,
+            mom=mom,
+            axis_new_size=x.sizes[dim],
+            axes_to_end=axes_to_end,
+            order=order,
+            dtype=dtype,
+            mom_axes=mom_axes,
+            mom_params=prep.mom_params,
+        )
+
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _jackknife_vals,
             *xargs,
             data_reduced,
-            input_core_dims=[*input_core_dims, mom_params.dims],  # type: ignore[has-type]
-            output_core_dims=[mom_params.core_dims(dim)],
+            input_core_dims=[*input_core_dims, prep.mom_params.dims],  # type: ignore[has-type]
+            output_core_dims=[prep.mom_params.core_dims(dim)],
             kwargs={
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "axis_neg": -1,
                 "mom_axes_reduced": mom_axes_reduced,
-                "out": prep.optional_out_from_values(
-                    out,
-                    *xargs,
-                    target=x,
-                    dim=dim,
-                    mom=mom,
-                    axis_new_size=x.sizes[dim],
-                    axes_to_end=axes_to_end,
-                    order=order,
-                    dtype=dtype,
-                ),
+                "out": out,
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
@@ -1186,7 +1191,7 @@ def jackknife_vals(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes=dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
+                output_sizes=dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
@@ -1195,13 +1200,16 @@ def jackknife_vals(  # noqa: PLR0913
             xout = transpose_like(
                 xout,
                 template=x,
-                append=mom_params.dims,
+                append=prep.mom_params.dims,
+                mom_params_axes=mom_params_axes,
             )
         elif is_dataset(x):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
+            )
 
         if rep_dim is not None:
-            xout = xout.rename({dim: rep_dim})
+            return xout.rename({dim: rep_dim})
         return xout
 
     # Numpy

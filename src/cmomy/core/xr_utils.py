@@ -24,6 +24,7 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import DTypeLike
 
+    from .moment_params import MomParamsArrayOptional
     from .typing import (
         ApplyUFuncKwargs,
         DataT,
@@ -127,6 +128,7 @@ def transpose_like(
     keep_attrs: bool | None = True,
     prepend: Sequence[Hashable] | EllipsisType | None = ...,
     append: Sequence[Hashable] | EllipsisType | None = None,
+    mom_params_axes: MomParamsArrayOptional | None = None,
 ) -> DataT:
     """Transpose ``data_out`` like ``template``."""
     replace = {} if replace is None else dict(replace)
@@ -151,7 +153,7 @@ def transpose_like(
             prepend=prepend,
             append=append,
         )
-    return _transpose_like(
+    out = _transpose_like(
         data_out,
         template=template,
         replace=replace,
@@ -159,6 +161,10 @@ def transpose_like(
         prepend=prepend,
         append=append,
     )
+
+    if mom_params_axes is not None:
+        return mom_params_axes.maybe_reorder_dataarray(out)
+    return out
 
 
 def _transpose_like(

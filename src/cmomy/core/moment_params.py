@@ -32,6 +32,7 @@ if TYPE_CHECKING:
         AxesGUFunc,
         AxisReduceMultWrap,
         AxisReduceWrap,
+        DataT,
         DimsReduce,
         DimsReduceMult,
         MissingType,
@@ -218,7 +219,7 @@ class MomParamsArrayOptional(MomParamsBase):
                 assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
 
-        if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
+        if isinstance(mom_params, (MomParams, MomParamsBase)):
             mom_params = mom_params.asdict()
         elif mom_params is None:
             mom_params = MomParamsDict()
@@ -301,6 +302,16 @@ class MomParamsArrayOptional(MomParamsBase):
                 self.axes, data_ndim, msg_prefix="normalize_axes"
             ),
         )
+
+    def maybe_reorder_dataarray(self, x: DataT) -> DataT:
+        """Reorder DataArray mom_axes_last to mom_axes."""
+        if is_dataset(x):
+            return x
+        if self._validated_axes != self.axes_last:
+            from .array_utils import reorder
+
+            return x.transpose(*reorder(x.dims, self.axes_last, self._validated_axes))
+        return x
 
 
 @dataclass(frozen=True)
@@ -407,7 +418,7 @@ class MomParamsXArrayOptional(MomParamsBase):
                 assert mom_params.ndim == ndim  # noqa: S101
             return mom_params
 
-        if isinstance(mom_params, (MomParams, MomParamsBase)):  # pylint: disable=consider-ternary-expression
+        if isinstance(mom_params, (MomParams, MomParamsBase)):
             mom_params = mom_params.asdict()
         elif mom_params is None:
             mom_params = MomParamsDict()

@@ -1,5 +1,7 @@
 """Prepare arrays for operations."""
 
+# pylint: disable=missing-class-docstring
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
@@ -578,48 +580,58 @@ class PrepareValsXArray(_PrepareBaseXArray):
         axes_to_end: bool,
         order: ArrayOrderCF,
         dtype: DTypeLike,
-    ) -> NDArray[ScalarT] | None:
+        mom_axes: int | Sequence[int] | None,
+        mom_params: MomParamsInput,
+    ) -> tuple[NDArray[ScalarT] | None, MomParamsArray]:
         """Prepare out for resampling"""
         # NOTE: silently ignore out of datasets.
-        if is_dataset(target) or (out is None and order is None):
-            return None
 
-        if axes_to_end:
-            # out is None or in correct order
-            return out
+        if is_dataset(target):
+            return None, self.prepare_array.mom_params
+
+        # special case for if have new mom_axes
+        prep_array = PrepareValsArray.factory(
+            axes=mom_axes, mom_params=mom_params, ndim=self.mom_params.ndim
+        )
+
+        mom_params = prep_array.mom_params
+        if out is None and order is None:
+            return None, mom_params
+
+        if axes_to_end or (out is None and order is None):
+            # axes_to_end -> out is None or in correct order
+            # out is None and order is None -> defer to PrepareValsArray
+            return out, mom_params
+
+        if any(is_dataset(_) for _ in args):
+            msg = "Passed secondary dataset"
+            raise TypeError(msg)
 
         axis_neg = positive_to_negative_index(target.get_axis_num(dim), target.ndim)
-        if out is None:
-            if any(is_dataset(_) for _ in args):
-                msg = "Passed secondary dataset"
-                raise TypeError(msg)
+        val_shape = reorder(
+            prep_array.get_val_shape(*args),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            -1,
+            axis_neg,
+        )
 
-            # construct array in correct order
-            prep_array = self.prepare_array
-            # shape of values with axis in last position
-            val_shape = reorder(
-                prep_array.get_val_shape(*args),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
-                -1,
-                axis_neg,
-            )
-
-            out_, _ = prep_array.out_from_values(
-                None,
-                val_shape=val_shape,
-                mom=mom,
-                axis_neg=axis_neg,
-                axis_new_size=axis_new_size,
-                dtype=dtype,
-                order=order,
-            )
-            assert out_ is not None  # noqa: S101
-            out = out_
+        # shape of values with axis in last position
+        out, axis_sample_out = prep_array.out_from_values(
+            out,
+            val_shape=val_shape,
+            mom=mom,
+            axis_neg=axis_neg,
+            axis_new_size=axis_new_size,
+            dtype=dtype,
+            order=order,
+        )
 
         if axis_new_size is MISSING:
-            return out
-        return np.moveaxis(
-            out, axis_neg - self.mom_params.ndim, -(self.mom_params.ndim + 1)
-        )
+            axes0 = prep_array.mom_params.axes
+            axes1 = prep_array.mom_params.axes_last
+        else:
+            axes0 = (axis_sample_out, *prep_array.mom_params.axes)
+            axes1 = range(-(self.mom_params.ndim + 1), 0)
+        return np.moveaxis(out, axes0, axes1), mom_params
 
 
 # * Methods

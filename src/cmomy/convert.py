@@ -228,15 +228,14 @@ def moments_type(
             data=values_in,
             default_ndim=1,
         )
-        mom_params = prep.mom_params
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _moments_type,
             values_in,
-            input_core_dims=[mom_params.dims],
-            output_core_dims=[mom_params.dims],
+            input_core_dims=[prep.mom_params.dims],
+            output_core_dims=[prep.mom_params.dims],
             kwargs={
-                "mom_params": mom_params.to_array(),
+                "mom_params": prep.mom_params.to_array(),
                 "to": to,
                 "out": prep.optional_out_transform(
                     target=values_in,
@@ -455,13 +454,12 @@ def cumulative(  # noqa: PLR0913
             data=values_in,
             default_ndim=1,
         )
-        mom_params = prep.mom_params
-        axis, dim = mom_params.select_axis_dim(
+        axis, dim = prep.mom_params.select_axis_dim(
             values_in,
             axis=axis,
             dim=dim,
         )
-        core_dims = [mom_params.core_dims(dim)]
+        core_dims = [prep.mom_params.core_dims(dim)]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _cumulative,
@@ -471,7 +469,7 @@ def cumulative(  # noqa: PLR0913
             kwargs={
                 "prep": prep.prepare_array,
                 "inverse": inverse,
-                "axis": -(mom_params.ndim + 1),
+                "axis": -(prep.mom_params.ndim + 1),
                 "out": prep.optional_out_sample(
                     out,
                     data=values_in,
@@ -500,7 +498,9 @@ def cumulative(  # noqa: PLR0913
                 template=values_in,
             )
         elif is_dataset(xout):
-            xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
+            xout = xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
+            )
 
         return xout
 
@@ -558,7 +558,6 @@ def _cumulative(
         dtype=dtype,
     )
 
-    # pylint: disable=unexpected-keyword-arg
     return factory_cumulative(
         mom_ndim=prep.mom_params.ndim,
         inverse=inverse,

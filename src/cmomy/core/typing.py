@@ -2,7 +2,7 @@
 Typing aliases (:mod:`cmomy.core.typing`)
 =========================================
 """
-# pylint: disable=missing-class-docstring,consider-alternative-union-syntax,duplicate-bases
+# pylint: disable=missing-class-docstring,consider-alternative-union-syntax,too-many-ancestors
 
 from __future__ import annotations
 
@@ -379,10 +379,11 @@ class _SamplerKwargs(TypedDict, total=False):
 class _DataKwargs(
     _MomParamsKwargs,
     _MomNDimKwargs,
+    _MomAxesKwargs,
+    _MoveAxisToEndKwargs,
     _AxisKwargs,
     _ReductionKwargs,
     _ParallelKwargs,
-    _MomAxesKwargs,
     total=False,
 ):
     pass
@@ -407,6 +408,8 @@ class _DataKACFKwargs(
 class _ValsKwargs(
     _MomParamsKwargs,
     _MomKwargs,
+    _MomAxesKwargs,
+    _MoveAxisToEndKwargs,
     _AxisKwargs,
     _ReductionKwargs,
     _ParallelKwargs,
@@ -424,6 +427,7 @@ class _ValsCFKwargs(
 
 
 # ** Reduction
+# NOTE: special case with multiple axes
 class ReduceDataKwargs(  # type: ignore[call-arg]
     _MomParamsKwargs,
     _MomNDimKwargs,
@@ -444,8 +448,6 @@ class ReduceDataKwargs(  # type: ignore[call-arg]
 
 class ReduceValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
-    _MoveAxisToEndKwargs,
-    _MomAxesKwargs,
     total=False,
     closed=True,
 ):
@@ -454,7 +456,6 @@ class ReduceValsKwargs(  # type: ignore[call-arg]
 
 class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
     _DataCFKwargs,
-    _MoveAxisToEndKwargs,
     _GroupsKwargs,
     _CoordsPolicyKwargs,
     total=False,
@@ -465,7 +466,6 @@ class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
 
 class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
-    _MoveAxisToEndKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
     _CoordsPolicyKwargs,
@@ -477,8 +477,6 @@ class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
 
 class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
-    _MoveAxisToEndKwargs,
-    _MomAxesKwargs,
     _GroupsKwargs,
     _CoordsPolicyKwargs,
     total=False,
@@ -489,8 +487,6 @@ class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
 
 class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
-    _MoveAxisToEndKwargs,
-    _MomAxesKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
     _CoordsPolicyKwargs,
@@ -503,7 +499,6 @@ class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
 # ** Resample
 class ResampleDataKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
-    _MoveAxisToEndKwargs,
     _RepDimKwargs,
     _SamplerKwargs,
     total=False,
@@ -514,8 +509,6 @@ class ResampleDataKwargs(  # type: ignore[call-arg]
 
 class ResampleValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
-    _MoveAxisToEndKwargs,
-    _MomAxesKwargs,
     _RepDimKwargs,
     _SamplerKwargs,
     total=False,
@@ -526,7 +519,6 @@ class ResampleValsKwargs(  # type: ignore[call-arg]
 
 class JackknifeDataKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
-    _MoveAxisToEndKwargs,
     total=False,
     closed=True,
 ):
@@ -538,8 +530,6 @@ class JackknifeDataKwargs(  # type: ignore[call-arg]
 
 class JackknifeValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
-    _MoveAxisToEndKwargs,
-    _MomAxesKwargs,
     total=False,
     closed=True,
 ):
@@ -582,7 +572,6 @@ class MomentsTypeKwargs(  # type: ignore[call-arg]
 
 class CumulativeKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
-    _MoveAxisToEndKwargs,
     total=False,
     closed=True,
 ):
@@ -648,7 +637,6 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
 class RollingDataKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
     _RollingKwargs,
-    _MoveAxisToEndKwargs,
     total=False,
     closed=True,
 ):
@@ -658,7 +646,6 @@ class RollingDataKwargs(  # type: ignore[call-arg]
 class RollingValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _RollingKwargs,
-    _MoveAxisToEndKwargs,
     total=False,
     closed=True,
 ):
@@ -668,7 +655,6 @@ class RollingValsKwargs(  # type: ignore[call-arg]
 class RollingExpDataKwargs(  # type: ignore[call-arg]
     _DataKACFKwargs,
     _RollingExpKwargs,
-    _MoveAxisToEndKwargs,
     total=False,
     closed=True,
 ):
@@ -680,7 +666,6 @@ class RollingExpDataKwargs(  # type: ignore[call-arg]
 class RollingExpValsKwargs(  # type: ignore[call-arg]
     _ValsCFKwargs,
     _RollingExpKwargs,
-    _MoveAxisToEndKwargs,
     total=False,
     closed=True,
 ):

@@ -26,6 +26,24 @@ def _do_test(func, *args, expected=None, match=None, **kwargs):
         assert func(*args, **kwargs) == expected
 
 
+# * MomParam
+def test_MomParams() -> None:
+    from cmomy.core.moment_params import MomParams
+
+    mom_params = MomParams(ndim=2, axes=(1, 2), dims=("a", "b"))
+
+    assert (
+        MomParamsArray.factory(mom_params=mom_params).asdict()
+        == MomParamsArray.factory(ndim=2, axes=(1, 2)).asdict()
+    )
+
+    assert (
+        MomParamsXArray.factory(mom_params=mom_params).asdict()
+        == MomParamsXArray.factory(ndim=2, dims=("a", "b")).asdict()
+    )
+
+
+# * MomParamsArray(Optional) --------------------------------------------------
 @pytest.mark.parametrize(
     ("kws", "expected"),
     [
@@ -63,6 +81,45 @@ def test_MomParamsArrayOptional_validated(kws, expected_ndim, expected_axes) -> 
     _do_test(_func, expected=expected_axes, key="_validated_axes", **kws)
 
 
+def test_MomParamsArrayOptional_from_other() -> None:
+    a = MomParamsArray.factory(ndim=2, axes=(1, 2))
+    b = MomParamsArrayOptional.factory(mom_params=a)
+
+    assert a is b
+
+
+def test_MomParamsArray_axes_to_end() -> None:
+    m = MomParamsArray.factory(axes=(1, 2))
+    assert m.axes_to_end().axes == m.axes_last
+
+
+@pytest.mark.parametrize(
+    "data", [xr.DataArray(np.random.default_rng().random((2, 3, 4)), dims=list("abc"))]
+)
+@pytest.mark.parametrize(
+    ("mom_axes", "expected_order"),
+    [
+        (-1, tuple("abc")),
+        (0, tuple("cab")),
+        (1, tuple("acb")),
+        ((0, 1), tuple("bca")),
+        ((-1, 0), tuple("cab")),
+    ],
+)
+def test_MomParamsArray_maybe_reorder_dataarray(data, mom_axes, expected_order) -> None:
+    m = MomParamsArray.factory(axes=mom_axes)
+
+    out = m.maybe_reorder_dataarray(data)
+
+    xr.testing.assert_equal(
+        out,
+        data.transpose(*expected_order),
+    )
+
+
+# * MomParamsXArray(Optional) -------------------------------------------------
+
+
 @pytest.mark.parametrize(
     ("kws", "expected_ndim", "expected_dims"),
     [
@@ -80,39 +137,11 @@ def test_MomParamsXArrayOptional_validated(kws, expected_ndim, expected_dims) ->
     _do_test(_func, expected=expected_dims, key="_validated_dims", **kws)
 
 
-def test_MomParamsArrayOptional_from_other() -> None:
-    a = MomParamsArray.factory(ndim=2, axes=(1, 2))
-    b = MomParamsArrayOptional.factory(mom_params=a)
-
-    assert a is b
-
-
 def test_MomParamsXArrayOptional_from_other() -> None:
     a = MomParamsXArray.factory(ndim=2, dims=list("ab"))
     b = MomParamsXArrayOptional.factory(mom_params=a)
 
     assert a is b
-
-
-def test_MomParams() -> None:
-    from cmomy.core.moment_params import MomParams
-
-    mom_params = MomParams(ndim=2, axes=(1, 2), dims=("a", "b"))
-
-    assert (
-        MomParamsArray.factory(mom_params=mom_params).asdict()
-        == MomParamsArray.factory(ndim=2, axes=(1, 2)).asdict()
-    )
-
-    assert (
-        MomParamsXArray.factory(mom_params=mom_params).asdict()
-        == MomParamsXArray.factory(ndim=2, dims=("a", "b")).asdict()
-    )
-
-
-def test_MomParamsArray_axes_to_end() -> None:
-    m = MomParamsArray.factory(axes=(1, 2))
-    assert m.axes_to_end().axes == m.axes_last
 
 
 def test_MomParamsXArray_axes_to_end() -> None:

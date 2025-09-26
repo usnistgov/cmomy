@@ -206,28 +206,40 @@ def reduce_vals(  # noqa: PLR0913
             dims=mom_dims,
             recast=False,
         )
-        mom_params = prep.mom_params
         dim, input_core_dims, xargs = prep.values_for_reduction(
             x,
             weight,
             *y,
             axis=axis,
             dim=dim,
-            narrays=mom_params.ndim + 1,
+            narrays=prep.mom_params.ndim + 1,
             dtype=dtype,
+        )
+
+        out, mom_params_axes = prep.optional_out_from_values(
+            out,
+            *xargs,
+            target=x,
+            dim=dim,
+            mom=mom,
+            axes_to_end=axes_to_end,
+            order=order,
+            dtype=dtype,
+            mom_axes=mom_axes,
+            mom_params=prep.mom_params,
         )
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_vals,
             *xargs,
             input_core_dims=input_core_dims,
-            output_core_dims=[mom_params.dims],
+            output_core_dims=[prep.mom_params.dims],
             kwargs={
                 "mom": mom,
                 "prep": prep.prepare_array,
                 "parallel": parallel,
                 "axis_neg": -1,
-                "out": None if is_dataset(x) else out,  # type: ignore[redundant-expr]
+                "out": out,
                 "dtype": dtype,
                 "casting": casting,
                 "order": order,
@@ -238,13 +250,13 @@ def reduce_vals(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={
-                    **dict(zip(mom_params.dims, mom_to_mom_shape(mom))),
+                    **dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
 
-        return xout
+        return mom_params_axes.maybe_reorder_dataarray(xout)
 
     # Numpy
     prep, mom = PrepareValsArray.factory_mom(
@@ -443,26 +455,25 @@ def reduce_data(  # noqa: PLR0913
             data=data,
             default_ndim=1,
         )
-        mom_params = prep.mom_params
 
         # Special case for dataset with multiple dimensions.
         # Can't do this with xr.apply_ufunc if variables have different
         # dimensions.  Use map in this case
         if is_dataset(data):
-            dims_check: tuple[Hashable, ...] = mom_params.dims
+            dims_check: tuple[Hashable, ...] = prep.mom_params.dims
             if dim is not None:
-                dim = mom_params.select_axis_dim_mult(data, axis=axis, dim=dim)[1]
+                dim = prep.mom_params.select_axis_dim_mult(data, axis=axis, dim=dim)[1]
                 dims_check = (*dim, *dims_check)  # type: ignore[misc, unused-ignore]  # unused in python3.12
 
             if not contains_dims(data, *dims_check):
-                msg = f"Dimensions {dim} and {mom_params.dims} not found in {tuple(data.dims)}"
+                msg = f"Dimensions {dim} and {prep.mom_params.dims} not found in {tuple(data.dims)}"
                 raise ValueError(msg)
 
             if (use_map is None or use_map) and (dim is None or len(dim) > 1):
                 return data.map(  # pyright: ignore[reportUnknownMemberType]
                     reduce_data,
                     keep_attrs=keep_attrs if keep_attrs is None else bool(keep_attrs),
-                    mom_params=mom_params,
+                    mom_params=prep.mom_params,
                     dim=dim,
                     dtype=dtype,
                     casting=casting,
@@ -475,7 +486,7 @@ def reduce_data(  # noqa: PLR0913
                 )
 
         if use_map:
-            if not contains_dims(data, *mom_params.dims):
+            if not contains_dims(data, *prep.mom_params.dims):
                 return data  # type: ignore[return-value, unused-ignore]  # used error in python3.12
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
@@ -483,7 +494,7 @@ def reduce_data(  # noqa: PLR0913
                 if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable, reportUnknownVariableType, reportUnknownArgumentType]
                     return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
 
-        axis, dim = mom_params.select_axis_dim_mult(
+        axis, dim = prep.mom_params.select_axis_dim_mult(
             data,
             axis=axis,
             dim=dim,  # pyright: ignore[reportUnknownArgumentType]
@@ -492,14 +503,16 @@ def reduce_data(  # noqa: PLR0913
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             _reduce_data,
             data,
-            input_core_dims=[mom_params.core_dims(*dim)],
+            input_core_dims=[prep.mom_params.core_dims(*dim)],
             output_core_dims=[
-                mom_params.core_dims(*dim) if keepdims else mom_params.dims
+                prep.mom_params.core_dims(*dim) if keepdims else prep.mom_params.dims
             ],
             exclude_dims=set(dim),
             kwargs={
                 "prep": prep.prepare_array,
-                "axis": tuple(range(-len(dim) - mom_params.ndim, -mom_params.ndim)),
+                "axis": tuple(
+                    range(-len(dim) - prep.mom_params.ndim, -prep.mom_params.ndim)
+                ),
                 "out": prep.optional_out_reduce(
                     target=data,
                     out=out,
@@ -533,7 +546,7 @@ def reduce_data(  # noqa: PLR0913
             )
         else:
             order_: tuple[Hashable, ...] = (
-                mom_params.core_dims(*dim) if keepdims else mom_params.dims
+                prep.mom_params.core_dims(*dim) if keepdims else prep.mom_params.dims
             )
             xout = xout.transpose(..., *order_, missing_dims="ignore")
 
@@ -593,10 +606,9 @@ def _reduce_data(
     if out is None:
         if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
             out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
-    elif keepdims:
+    elif keepdims:  # pylint: disable=confusing-consecutive-elif)
         out = np.squeeze(out, axis=axis)
 
-    # pylint: disable=unexpected-keyword-arg
     out = factory_reduce_data(
         mom_ndim=mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),

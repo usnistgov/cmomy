@@ -121,41 +121,9 @@ def test_prepare_data_out_sample(data, mom_axes, out, kws, expected) -> None:
         if kwargs["order"] is None:
             assert moveaxis(
                 out, kwargs["axis"], mom_params=prep.mom_params, axes_to_end=True
-            ).flags["C_CONTIGUOUS"]
+            ).flags.c_contiguous
         elif kwargs["order"] == "c":
-            assert out.flags["C_CONTIGUOUS"]
-
-
-@pytest.mark.parametrize(
-    ("shapes", "expected"),
-    [
-        ([(10, 2, 3)], (10, 2, 3)),
-        ([(10, 2, 3), (10,)], (10, 2, 3)),
-        ([(10, 2, 3), (4, 5, 10, 1, 1), (10,)], (4, 5, 10, 2, 3)),
-    ],
-)
-def test_prepare_values_get_axis_sample_out(shapes, expected) -> None:
-    assert (
-        prepare.PrepareValsArray.get_val_shape(*(np.empty(shape) for shape in shapes))
-        == expected
-    )
-
-
-@pytest.mark.parametrize(
-    ("mom_axes", "args", "axis_sample_out"),
-    [
-        # axis_neg, axis, axis_new_size, out_ndim
-        ((-2, -1), (-10, None, MISSING, 5), -12),
-        ((-2, -1), (-1, 2, MISSING, 5), -3),
-        ((1, 2), (-2, 1, 10, 5), 3),
-        ((1, 2), (-2, None, 10, 5), 3),
-        ((1, 3), (-2, 1, 10, 5), 2),
-        ((1, 3), (-2, 1, MISSING, 5), -4),
-    ],
-)
-def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
-    prep = prepare.PrepareValsArray.factory(axes=mom_axes)
-    assert prep.get_axis_sample_out(*args) == axis_sample_out
+            assert out.flags.c_contiguous
 
 
 @pytest.mark.parametrize(
@@ -170,7 +138,7 @@ def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
         "wshape2",
     ),
     [
-        # axes_to_end
+        # axes_to_end ---------------------------------------------------------
         (True, 0, (10, 2, 3), (2, 3, 10), (), (10,), (), (10,)),
         (
             True,
@@ -195,9 +163,7 @@ def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
         (True, -1, (2, 3, 10), (2, 3, 10), (1, 3, 10), (1, 3, 10), (10,), (10,)),
         # no axis
         (True, None, (2, 3, 10), "error", (1, 3, 10), (1, 3, 10), (10,), (10,)),
-        #
-        # no axes_to_end
-        #
+        # no axes_to_end ------------------------------------------------------
         (False, 0, (10, 2, 3), (10, 2, 3), (), (10,), (), (10,)),
         (
             False,
@@ -276,6 +242,38 @@ def test_prepare_values_values_for_reduction(
             assert xx.shape == ss
             assert xx.dtype == np.dtype(dtype or np.float64)
             np.testing.assert_allclose(xx, vv)
+
+
+@pytest.mark.parametrize(
+    ("shapes", "expected"),
+    [
+        ([(10, 2, 3)], (10, 2, 3)),
+        ([(10, 2, 3), (10,)], (10, 2, 3)),
+        ([(10, 2, 3), (4, 5, 10, 1, 1), (10,)], (4, 5, 10, 2, 3)),
+    ],
+)
+def test_prepare_values_get_axis_sample_out(shapes, expected) -> None:
+    assert (
+        prepare.PrepareValsArray.get_val_shape(*(np.empty(shape) for shape in shapes))
+        == expected
+    )
+
+
+@pytest.mark.parametrize(
+    ("mom_axes", "args", "axis_sample_out"),
+    [
+        # axis_neg, axis, axis_new_size, out_ndim
+        ((-2, -1), (-10, None, MISSING, 5), -12),
+        ((-2, -1), (-1, 2, MISSING, 5), -3),
+        ((1, 2), (-2, 1, 10, 5), 3),
+        ((1, 2), (-2, None, 10, 5), 3),
+        ((1, 3), (-2, 1, 10, 5), 2),
+        ((1, 3), (-2, 1, MISSING, 5), -4),
+    ],
+)
+def test_get_axis_sample_out(mom_axes, args, axis_sample_out) -> None:
+    prep = prepare.PrepareValsArray.factory(axes=mom_axes)
+    assert prep.get_axis_sample_out(*args) == axis_sample_out
 
 
 @dtype_mark
@@ -369,96 +367,94 @@ def test_prepare_values_out_from_values(
             out, axis_sample, -(ndim + 1), mom_params=prep.mom_params, axes_to_end=True
         )
 
-    assert check.flags["C_CONTIGUOUS"]
+    assert check.flags.c_contiguous
 
 
 # * xarray stuff
-@pytest.mark.parametrize(
-    ("target", "other"),
-    [
-        (xr.DataArray(np.ones((2, 3, 4))), np.full((3, 4), fill_value=2)),
-    ],
+# ** Data
+data_xarray_mark = pytest.mark.parametrize(
+    "data", [xr.DataArray(np.zeros((2, 3, 4, 5)))]
 )
-@pytest.mark.parametrize(
-    ("kws", "raises", "match"),
-    [
-        (
-            {"narrays": 3, "axis": None, "dim": "rec", "dtype": np.float32},
-            ValueError,
-            ".*Number of arrays.*",
-        ),
-        (
-            {
-                "narrays": 2,
-                "axis": MISSING,
-                "dim": MISSING,
-                "dtype": np.float32,
-            },
-            ValueError,
-            None,
-        ),
-        ({"narrays": 2, "axis": 0, "dim": None, "dtype": np.float32}, TypeError, None),
-    ],
-)
-def test_prepare_data_xarray_values_for_reduction_0(target, other, kws, raises, match):
-    prep = prepare.PrepareValsXArray.factory(ndim=2)
-    with pytest.raises(raises, match=match):
-        prep.values_for_reduction(target, other, **kws)
 
 
+@data_xarray_mark
 @pytest.mark.parametrize(
-    ("dim", "xshape", "xshape2", "yshape", "yshape2"),
+    ("mom_axes", "out", "axis", "kws", "expected"),
     [
-        ("dim_0", (2, 3, 4), (3, 4, 2), (2,), (2,)),
-        ("dim_1", (2, 3, 4), (2, 4, 3), (3, 4), (4, 3)),
-        ("dim_2", (2, 3, 4), (2, 3, 4), (4,), (4,)),
-        ("dim_0", (2, 3, 4), (3, 4, 2), (2, 3, 4), (3, 4, 2)),
+        (-1, None, (0,), {"axes_to_end": True}, None),
+        (-1, np.zeros((2, 3)), (0,), {"axes_to_end": True}, (2, 3)),
+        (-1, None, (0,), {"order": None}, None),
+        (-1, None, (0,), {"order": "c"}, (3, 4, 5)),
+        (1, None, (0,), {"order": "c"}, (4, 5, 3)),
+        (-1, None, (0,), {"order": "c", "keepdims": True}, (3, 4, 1, 5)),
+        (1, None, (0,), {"order": "c", "keepdims": True}, (4, 5, 1, 3)),
     ],
 )
-@dtype_mark
-def test_prepare_data_xarray_values_for_reduction_1(
-    dtype, dim, xshape, xshape2, yshape, yshape2
+def test_prepare_data_xarray_optional_out_reduce(
+    data, mom_axes, out, axis, kws, expected
 ) -> None:
-    target = xr.DataArray(np.ones(xshape, dtype=dtype))
-    other = np.ones(yshape, dtype=np.float32)
-    prep = prepare.PrepareValsXArray.factory(ndim=2, recast=True)
+    prep = prepare.PrepareDataXArray.factory(data=data, axes=mom_axes)
+    dim = tuple(data.dims[k] for k in axis)
 
-    dim_out, core_dims, (x, y) = prep.values_for_reduction(
-        target,
-        other,
-        narrays=2,
-        axis=MISSING,
-        dim=dim,
-        dtype=dtype,
-    )
+    kwargs = kws.copy()
+    for k, v in {
+        "keepdims": False,
+        "axes_to_end": False,
+        "order": None,
+        "dtype": np.float64,
+    }.items():
+        kwargs.setdefault(k, v)
 
-    assert dim_out == dim
-    assert core_dims == [[dim]] * 2
+    out = prep.optional_out_reduce(out, target=data, dim=dim, **kwargs)
 
-    assert x.shape == xshape2
-    assert y.shape == yshape2
-    assert x.dtype == np.dtype(dtype or target.dtype)
-    assert y.dtype == np.dtype(dtype or other.dtype)
+    if out is None:
+        assert expected is None
+    else:
+        assert out.shape == expected
 
-    if xshape == yshape:
-        # also do xr test
-        other = xr.DataArray(other)  # pylint: disable=redefined-variable-type
-        dim_out, core_dims, (x, y) = prep.values_for_reduction(
-            target,
-            other,
-            narrays=2,
-            axis=MISSING,
-            dim=dim,
-            dtype=dtype,
-        )
+        if kwargs["order"] == "c" and kwargs["keepdims"]:
+            assert moveaxis(
+                out,
+                (
+                    *range(-len(axis) - prep.mom_params.ndim, -prep.mom_params.ndim),
+                    *prep.mom_params.axes_last,
+                ),
+                (*axis, *prep.mom_params.get_axes(data)),
+            ).flags.c_contiguous
 
-        assert dim_out == dim
-        assert core_dims == [[dim]] * 2
 
-        assert x.shape == xshape2
-        assert y.shape == yshape2
-        assert x.dtype == np.dtype(dtype or target.dtype)
-        assert y.dtype == np.dtype(dtype or other.dtype)
+@data_xarray_mark
+@pytest.mark.parametrize(
+    ("mom_axes", "out", "kws", "expected"),
+    [
+        (-1, None, {"axes_to_end": True}, None),
+        (-1, np.zeros((2, 3)), {"axes_to_end": True}, (2, 3)),
+        (-1, None, {"order": "c"}, (2, 3, 4, 5)),
+        (0, None, {"order": "c"}, (3, 4, 5, 2)),
+    ],
+)
+def test_prepare_data_xarray_optional_out_transform(
+    data, mom_axes, out, kws, expected
+) -> None:
+    prep = prepare.PrepareDataXArray.factory(data=data, axes=mom_axes)
+
+    kwargs = kws.copy()
+    for k, v in {"axes_to_end": False, "order": None, "dtype": np.float64}.items():
+        kwargs.setdefault(k, v)
+
+    out = prep.optional_out_transform(out, target=data, **kwargs)
+
+    if out is None:
+        assert expected is None
+    else:
+        assert out.shape == expected
+
+        if kwargs["order"] == "c":
+            assert moveaxis(
+                out,
+                prep.mom_params.axes_last,
+                prep.mom_params.get_axes(data),
+            ).flags.c_contiguous
 
 
 @pytest.mark.parametrize(
@@ -564,7 +560,7 @@ def test_prepare_data_xarray_values_for_reduction_1(
         ),
     ],
 )
-def test_prepare_data_xarray_out_for_resample_data(
+def test_prepare_data_xarray_optional_out_sample(
     data, kws, mom_params_kws, expected
 ) -> None:
     from cmomy.core.moment_params import factory_mom_params
@@ -588,6 +584,97 @@ def test_prepare_data_xarray_out_for_resample_data(
             assert out.shape == expected
 
 
+# ** values
+@pytest.mark.parametrize(
+    ("target", "other"),
+    [
+        (xr.DataArray(np.ones((2, 3, 4))), np.full((3, 4), fill_value=2)),
+    ],
+)
+@pytest.mark.parametrize(
+    ("kws", "raises", "match"),
+    [
+        (
+            {"narrays": 3, "axis": None, "dim": "rec", "dtype": np.float32},
+            ValueError,
+            ".*Number of arrays.*",
+        ),
+        (
+            {
+                "narrays": 2,
+                "axis": MISSING,
+                "dim": MISSING,
+                "dtype": np.float32,
+            },
+            ValueError,
+            None,
+        ),
+        ({"narrays": 2, "axis": 0, "dim": None, "dtype": np.float32}, TypeError, None),
+    ],
+)
+def test_prepare_values_xarray_values_for_reduction_0(
+    target, other, kws, raises, match
+):
+    prep = prepare.PrepareValsXArray.factory(ndim=2)
+    with pytest.raises(raises, match=match):
+        prep.values_for_reduction(target, other, **kws)
+
+
+@pytest.mark.parametrize(
+    ("dim", "xshape", "xshape2", "yshape", "yshape2"),
+    [
+        ("dim_0", (2, 3, 4), (3, 4, 2), (2,), (2,)),
+        ("dim_1", (2, 3, 4), (2, 4, 3), (3, 4), (4, 3)),
+        ("dim_2", (2, 3, 4), (2, 3, 4), (4,), (4,)),
+        ("dim_0", (2, 3, 4), (3, 4, 2), (2, 3, 4), (3, 4, 2)),
+    ],
+)
+@dtype_mark
+def test_prepare_values_xarray_values_for_reduction_1(
+    dtype, dim, xshape, xshape2, yshape, yshape2
+) -> None:
+    target = xr.DataArray(np.ones(xshape, dtype=dtype))
+    other = np.ones(yshape, dtype=np.float32)
+    prep = prepare.PrepareValsXArray.factory(ndim=2, recast=True)
+
+    dim_out, core_dims, (x, y) = prep.values_for_reduction(
+        target,
+        other,
+        narrays=2,
+        axis=MISSING,
+        dim=dim,
+        dtype=dtype,
+    )
+
+    assert dim_out == dim
+    assert core_dims == [[dim]] * 2
+
+    assert x.shape == xshape2
+    assert y.shape == yshape2
+    assert x.dtype == np.dtype(dtype or target.dtype)
+    assert y.dtype == np.dtype(dtype or other.dtype)
+
+    if xshape == yshape:
+        # also do xr test
+        other = xr.DataArray(other)  # pylint: disable=redefined-variable-type
+        dim_out, core_dims, (x, y) = prep.values_for_reduction(
+            target,
+            other,
+            narrays=2,
+            axis=MISSING,
+            dim=dim,
+            dtype=dtype,
+        )
+
+        assert dim_out == dim
+        assert core_dims == [[dim]] * 2
+
+        assert x.shape == xshape2
+        assert y.shape == yshape2
+        assert x.dtype == np.dtype(dtype or target.dtype)
+        assert y.dtype == np.dtype(dtype or other.dtype)
+
+
 def test__prepare_secondary_value_for_reduction() -> None:
     ds = xr.Dataset({"a": xr.DataArray([1, 2, 3], dims="x")})
 
@@ -600,91 +687,6 @@ def test__prepare_secondary_value_for_reduction() -> None:
             nsamp=10,
             dtype=np.float64,
         )
-
-
-data_xarray_mark = pytest.mark.parametrize(
-    "data", [xr.DataArray(np.zeros((2, 3, 4, 5)))]
-)
-
-
-@data_xarray_mark
-@pytest.mark.parametrize(
-    ("mom_axes", "out", "axis", "kws", "expected"),
-    [
-        (-1, None, (0,), {"axes_to_end": True}, None),
-        (-1, np.zeros((2, 3)), (0,), {"axes_to_end": True}, (2, 3)),
-        (-1, None, (0,), {"order": None}, None),
-        (-1, None, (0,), {"order": "c"}, (3, 4, 5)),
-        (1, None, (0,), {"order": "c"}, (4, 5, 3)),
-        (-1, None, (0,), {"order": "c", "keepdims": True}, (3, 4, 1, 5)),
-        (1, None, (0,), {"order": "c", "keepdims": True}, (4, 5, 1, 3)),
-    ],
-)
-def test_prepare_data_xarray_optional_out_reduce(
-    data, mom_axes, out, axis, kws, expected
-) -> None:
-    prep = prepare.PrepareDataXArray.factory(data=data, axes=mom_axes)
-    dim = tuple(data.dims[k] for k in axis)
-
-    kwargs = kws.copy()
-    for k, v in {
-        "keepdims": False,
-        "axes_to_end": False,
-        "order": None,
-        "dtype": np.float64,
-    }.items():
-        kwargs.setdefault(k, v)
-
-    out = prep.optional_out_reduce(out, target=data, dim=dim, **kwargs)
-
-    if out is None:
-        assert expected is None
-    else:
-        assert out.shape == expected
-
-        if kwargs["order"] == "c" and kwargs["keepdims"]:
-            assert moveaxis(
-                out,
-                (
-                    *range(-len(axis) - prep.mom_params.ndim, -prep.mom_params.ndim),
-                    *prep.mom_params.axes_last,
-                ),
-                (*axis, *prep.mom_params.get_axes(data)),
-            ).flags["C_CONTIGUOUS"]
-
-
-@data_xarray_mark
-@pytest.mark.parametrize(
-    ("mom_axes", "out", "kws", "expected"),
-    [
-        (-1, None, {"axes_to_end": True}, None),
-        (-1, np.zeros((2, 3)), {"axes_to_end": True}, (2, 3)),
-        (-1, None, {"order": "c"}, (2, 3, 4, 5)),
-        (0, None, {"order": "c"}, (3, 4, 5, 2)),
-    ],
-)
-def test_prepare_data_xarray_optional_out_transform(
-    data, mom_axes, out, kws, expected
-) -> None:
-    prep = prepare.PrepareDataXArray.factory(data=data, axes=mom_axes)
-
-    kwargs = kws.copy()
-    for k, v in {"axes_to_end": False, "order": None, "dtype": np.float64}.items():
-        kwargs.setdefault(k, v)
-
-    out = prep.optional_out_transform(out, target=data, **kwargs)
-
-    if out is None:
-        assert expected is None
-    else:
-        assert out.shape == expected
-
-        if kwargs["order"] == "c":
-            assert moveaxis(
-                out,
-                prep.mom_params.axes_last,
-                prep.mom_params.get_axes(data),
-            ).flags["C_CONTIGUOUS"]
 
 
 @pytest.mark.parametrize(
@@ -755,6 +757,49 @@ def test_prepare_data_xarray_optional_out_transform(
             {"axes_to_end": False, "order": "c"},
             TypeError,
         ),
+        # mom_axes
+        (
+            None,
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c", "mom_axes": (0,)},
+            (3, 4, 5),
+        ),
+        # mom_axes
+        (
+            None,
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c", "mom_axes": (1,)},
+            (3, 4, 5),
+        ),
+        (
+            None,
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c", "mom_axes": (0,), "axis_new_size": 10},
+            (3, 4, 10, 5),
+        ),
+        # mom_axes
+        (
+            None,
+            (4,),
+            (
+                xr.DataArray(np.empty((3, 4, 10)), dims=["b", "c", "a"]),
+                np.empty(10),
+            ),
+            {"axes_to_end": False, "order": "c", "mom_axes": (1,), "axis_new_size": 10},
+            (3, 4, 10, 5),
+        ),
     ],
 )
 def test_prepare_values_xarray_optional_out_from_values(
@@ -774,6 +819,8 @@ def test_prepare_values_xarray_optional_out_from_values(
         "axes_to_end": False,
         "order": None,
         "dtype": np.float64,
+        "mom_axes": None,
+        "mom_params": None,
     }.items():
         kwargs.setdefault(k, v)
 
@@ -784,7 +831,7 @@ def test_prepare_values_xarray_optional_out_from_values(
             )
         return
 
-    out = prep.optional_out_from_values(out, *args, target=target, mom=mom, **kwargs)
+    out, _ = prep.optional_out_from_values(out, *args, target=target, mom=mom, **kwargs)
 
     if out is None:
         assert expected is None
@@ -799,4 +846,10 @@ def test_prepare_values_xarray_optional_out_from_values(
             else:
                 check = out
 
-            assert check.flags["C_CONTIGUOUS"]
+            mom_axes_last = range(-len(mom), 0)
+            mom_axes = kwargs.get("mom_axes", None)
+            if mom_axes is None:
+                mom_axes = mom_axes_last
+            check = np.moveaxis(check, mom_axes_last, mom_axes)
+
+            assert check.flags.c_contiguous
