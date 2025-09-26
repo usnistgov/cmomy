@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Index &#8212; cmomy 0.24.0 documentation</title>
+    <title>Index &#8212; cmomy v1.0.0 documentation</title>
   
   
   
@@ -15,34 +15,31 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!--
-    this give us a css class that will be invisible only if js is disabled
-  -->
-  <noscript>
-    <style>
-      .pst-js-only { display: none !important; }
-
-    </style>
-  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
-  <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=ae1d10b0"></script>
+    <script src="_static/documentation_options.js?v=8cd78353"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,8 +55,7 @@
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.24.0" />
-    <meta name="docbuild:last-update" content="2025-01-23"/>
+    <meta name="docbuild:last-update" content="2025-09-26"/>
   </head>
   
   
@@ -75,8 +71,19 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <dialog id="pst-search-dialog">
-    
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
 <form class="bd-search d-flex align-items-center"
       action="search.html"
       method="get">
@@ -84,6 +91,7 @@
   <input type="search"
          class="form-control"
          name="q"
+         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -91,8 +99,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form>
-  </dialog>
+</form></div>
+  </div>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -108,8 +116,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
-      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+      <div class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -134,16 +141,20 @@
   
   
   
-    <p class="title logo__title">cmomy 0.24.0 documentation</p>
+    <p class="title logo__title">cmomy v1.0.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
- <i class="fa-solid fa-magnifying-glass"></i>
- <span class="search-button__default-text">Search</span>
- <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-</button></div>
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -180,7 +191,7 @@
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
 
 
-<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code>)</a></li>
 
 
 
@@ -193,7 +204,10 @@
 
 
 
-<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.grouped.html"><code class="docutils literal notranslate"><span class="pre">block_by()</span></code></a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.grouped.html">Submodule to work with grouped data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">grouped</span></code>)</a></li>
+
+
 
 
 
@@ -228,7 +242,51 @@
 
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.options.html"><code class="docutils literal notranslate"><span class="pre">set_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -287,14 +345,9 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
-      <div class="sidebar-primary-item">
-<div id="ethical-ad-placement"
-      class="flat"
-      data-ea-publisher="readthedocs"
-      data-ea-type="readthedocs-sidebar"
-      data-ea-manual="true">
-</div></div>
   </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -390,16 +443,24 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
 
 
-<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-</button>
+  </button>
+`);
+</script>
 
 </div></div>
       
@@ -509,6 +570,12 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.confidence_interval.html#cmomy.confidence_interval.InstabilityWarning.add_note">add_note() (cmomy.confidence_interval.InstabilityWarning method)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ArrayOrderACF">ArrayOrderACF (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ArrayOrderCF">ArrayOrderCF (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ArrayOrderKACF">ArrayOrderKACF (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ArrayT">ArrayT (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.as_dict">as_dict() (cmomy.CentralMomentsData method)</a>
@@ -521,8 +588,6 @@
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.assign_coords">assign_coords() (cmomy.CentralMomentsData method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.assign_moment">assign_moment() (cmomy.CentralMomentsArray method)</a>
 
       <ul>
@@ -533,6 +598,8 @@
         <li><a href="reference/generated/cmomy.utils.html#cmomy.utils.assign_moment">(in module cmomy.utils)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.astype">astype() (cmomy.CentralMomentsArray method)</a>
 
       <ul>
@@ -542,6 +609,18 @@
 </li>
       </ul></li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.attrs">attrs (cmomy.CentralMomentsData property)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.Axes">Axes (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.AxesWrap">AxesWrap (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.AxisReduce">AxisReduce (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.AxisReduceMult">AxisReduceMult (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.AxisReduceMultWrap">AxisReduceMultWrap (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.AxisReduceWrap">AxisReduceWrap (in module cmomy.core.typing)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -561,13 +640,29 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.Casting">Casting (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.CentralMoments.html#cmomy.CentralMoments">CentralMoments (in module cmomy)</a>
 </li>
       <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC">CentralMomentsABC (class in cmomy.wrapper.wrap_abc)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray">CentralMomentsArray (class in cmomy)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CentralMomentsArrayAny">CentralMomentsArrayAny (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CentralMomentsArrayT">CentralMomentsArrayT (class in cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData">CentralMomentsData (class in cmomy)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CentralMomentsDataAny">CentralMomentsDataAny (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CentralMomentsDataArray">CentralMomentsDataArray (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CentralMomentsDataset">CentralMomentsDataset (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CentralMomentsDataT">CentralMomentsDataT (class in cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CentralMomentsT">CentralMomentsT (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.chunk">chunk() (cmomy.CentralMomentsData method)</a>
 </li>
@@ -622,6 +717,15 @@
 </li>
       </ul></li>
       <li>
+    cmomy.options
+
+      <ul>
+        <li><a href="reference/generated/cmomy.options.html#module-cmomy.options">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
     cmomy.random
 
       <ul>
@@ -635,8 +739,6 @@
         <li><a href="reference/generated/cmomy.reduction.html#module-cmomy.reduction">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     cmomy.resample
 
@@ -666,7 +768,11 @@
 </li>
       <li><a href="reference/generated/cmomy.rolling.html#cmomy.rolling.construct_rolling_window_array">construct_rolling_window_array() (in module cmomy.rolling)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ConvertStyle">ConvertStyle (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.coords">coords (cmomy.CentralMomentsData property)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.CoordsType">CoordsType (in module cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.copy">copy() (cmomy.CentralMomentsArray method)</a>
 
@@ -708,8 +814,14 @@
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.dims">dims (cmomy.CentralMomentsData property)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.Dims">Dims (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.DimsReduce">DimsReduce (in module cmomy.core.typing)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.DimsReduceMult">DimsReduceMult (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.drop_vars">drop_vars() (cmomy.CentralMomentsData method)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.dtype">dtype (cmomy.CentralMomentsArray property)</a>
@@ -720,6 +832,8 @@
         <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC.dtype">(cmomy.wrapper.wrap_abc.CentralMomentsABC property)</a>
 </li>
       </ul></li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.DTypeAny">DTypeAny (in module cmomy.core.typing)</a>
+</li>
   </ul></td>
 </tr></table>
 
@@ -736,11 +850,15 @@
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.fill">fill() (cmomy.CentralMomentsArray method)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.FloatDTypes">FloatDTypes (in module cmomy.core.typing)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.FloatingT">FloatingT (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.FloatT">FloatT (class in cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.resample.html#cmomy.resample.freq_to_index_start_end_scales">freq_to_index_start_end_scales() (in module cmomy.resample)</a>
 </li>
       <li><a href="reference/generated/cmomy.resample.html#cmomy.resample.freq_to_indices">freq_to_indices() (in module cmomy.resample)</a>
 </li>
@@ -766,6 +884,8 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.IndexAny">IndexAny (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.resample.html#cmomy.resample.IndexSampler">IndexSampler (class in cmomy.resample)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.IndexSamplerFromDataKwargs">IndexSamplerFromDataKwargs (class in cmomy.core.typing)</a>
@@ -775,6 +895,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.confidence_interval.html#cmomy.confidence_interval.InstabilityWarning">InstabilityWarning</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.IntDTypeT">IntDTypeT (in module cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.isel">isel() (cmomy.CentralMomentsData method)</a>
 </li>
@@ -825,6 +947,10 @@
       <li><a href="reference/generated/cmomy.compile.html#cmomy.compile.load_numba_modules">load_numba_modules() (in module cmomy.compile)</a>
 </li>
   </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.LongIntDType">LongIntDType (in module cmomy.core.typing)</a>
+</li>
+  </ul></td>
 </tr></table>
 
 <h2 id="M">M</h2>
@@ -856,6 +982,8 @@
 </li>
         <li><a href="reference/generated/cmomy.grouped.html#module-cmomy.grouped">cmomy.grouped</a>
 </li>
+        <li><a href="reference/generated/cmomy.options.html#module-cmomy.options">cmomy.options</a>
+</li>
         <li><a href="reference/generated/cmomy.random.html#module-cmomy.random">cmomy.random</a>
 </li>
         <li><a href="reference/generated/cmomy.reduction.html#module-cmomy.reduction">cmomy.reduction</a>
@@ -875,6 +1003,8 @@
         <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC.mom">(cmomy.wrapper.wrap_abc.CentralMomentsABC property)</a>
 </li>
       </ul></li>
+      <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.mom_axes">mom_axes (cmomy.CentralMomentsArray property)</a>
+</li>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.mom_dims">mom_dims (cmomy.CentralMomentsData property)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.mom_ndim">mom_ndim (cmomy.CentralMomentsArray property)</a>
@@ -885,8 +1015,6 @@
         <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC.mom_ndim">(cmomy.wrapper.wrap_abc.CentralMomentsABC property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.mom_params">mom_params (cmomy.CentralMomentsArray property)</a>
 
       <ul>
@@ -895,6 +1023,8 @@
         <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC.mom_params">(cmomy.wrapper.wrap_abc.CentralMomentsABC property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.mom_shape">mom_shape (cmomy.CentralMomentsArray property)</a>
 
       <ul>
@@ -903,6 +1033,14 @@
         <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC.mom_shape">(cmomy.wrapper.wrap_abc.CentralMomentsABC property)</a>
 </li>
       </ul></li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomAxes">MomAxes (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomAxesStrict">MomAxesStrict (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomDims">MomDims (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomDimsStrict">MomDimsStrict (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.utils.html#cmomy.utils.moment_indexer">moment_indexer() (in module cmomy.utils)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.Moments">Moments (in module cmomy.core.typing)</a>
@@ -919,13 +1057,21 @@
       </ul></li>
       <li><a href="reference/generated/cmomy.convert.html#cmomy.convert.moments_type">moments_type() (in module cmomy.convert)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomentsStrict">MomentsStrict (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomentsToComomentsKwargs">MomentsToComomentsKwargs (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomentsTypeKwargs">MomentsTypeKwargs (class in cmomy.core.typing)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomNDim">MomNDim (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.MomParams.html#cmomy.MomParams">MomParams (class in cmomy)</a>
 </li>
       <li><a href="reference/generated/cmomy.MomParamsDict.html#cmomy.MomParamsDict">MomParamsDict (class in cmomy)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomParamsInput">MomParamsInput (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.MomParamsT">MomParamsT (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.moveaxis">moveaxis() (cmomy.CentralMomentsArray method)</a>
 
@@ -947,6 +1093,18 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.name">name (cmomy.CentralMomentsData property)</a>
 </li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.NDArrayAny">NDArrayAny (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.NDArrayBool">NDArrayBool (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.NDArrayFloats">NDArrayFloats (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.NDArrayInt">NDArrayInt (in module cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.NDGeneric">NDGeneric (in module cmomy.core.typing)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.ndim">ndim (cmomy.CentralMomentsArray property)</a>
 
       <ul>
@@ -955,8 +1113,6 @@
         <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC.ndim">(cmomy.wrapper.wrap_abc.CentralMomentsABC property)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.new_like">new_like() (cmomy.CentralMomentsArray method)</a>
 
       <ul>
@@ -1053,11 +1209,19 @@
 </li>
       <li><a href="reference/generated/cmomy.reduction.html#cmomy.reduction.reduce_vals">reduce_vals() (in module cmomy.reduction)</a>
 </li>
+      <li><a href="reference/generated/cmomy.grouped.html#cmomy.grouped.reduce_vals_grouped">reduce_vals_grouped() (in module cmomy.grouped)</a>
+</li>
+      <li><a href="reference/generated/cmomy.grouped.html#cmomy.grouped.reduce_vals_indexed">reduce_vals_indexed() (in module cmomy.grouped)</a>
+</li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ReduceDataGroupedKwargs">ReduceDataGroupedKwargs (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ReduceDataIndexedKwargs">ReduceDataIndexedKwargs (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ReduceDataKwargs">ReduceDataKwargs (class in cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ReduceValsGroupedKwargs">ReduceValsGroupedKwargs (class in cmomy.core.typing)</a>
+</li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ReduceValsIndexedKwargs">ReduceValsIndexedKwargs (class in cmomy.core.typing)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ReduceValsKwargs">ReduceValsKwargs (class in cmomy.core.typing)</a>
 </li>
@@ -1077,8 +1241,6 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/generated/cmomy.resample.html#cmomy.resample.resample_data">resample_data() (in module cmomy.resample)</a>
 </li>
-      <li><a href="reference/generated/cmomy.grouped.html#cmomy.grouped.resample_data_indexed">resample_data_indexed() (in module cmomy.grouped)</a>
-</li>
       <li><a href="reference/generated/cmomy.resample.html#cmomy.resample.resample_vals">resample_vals() (in module cmomy.resample)</a>
 </li>
       <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.ResampleDataKwargs">ResampleDataKwargs (class in cmomy.core.typing)</a>
@@ -1097,6 +1259,8 @@
         <li><a href="reference/api-baseclasses.html#cmomy.wrapper.wrap_abc.CentralMomentsABC.rmom">(cmomy.wrapper.wrap_abc.CentralMomentsABC method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/generated/cmomy.core.typing.html#cmomy.core.typing.RngTypes">RngTypes (in module cmomy.core.typing)</a>
+</li>
       <li><a href="reference/generated/cmomy.rolling.html#cmomy.rolling.rolling_data">rolling_data() (in module cmomy.rolling)</a>
 </li>
       <li><a href="reference/generated/cmomy.rolling.html#cmomy.rolling.rolling_exp_data">rolling_exp_data() (in module cmomy.rolling)</a>
@@ -1148,6 +1312,8 @@
       <li><a href="reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.set_index">set_index() (cmomy.CentralMomentsData method)</a>
 </li>
       <li><a href="reference/generated/cmomy.random.html#cmomy.random.set_internal_rng">set_internal_rng() (in module cmomy.random)</a>
+</li>
+      <li><a href="reference/generated/cmomy.options.html#cmomy.options.set_options">set_options (class in cmomy.options)</a>
 </li>
       <li><a href="reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray.shape">shape (cmomy.CentralMomentsArray property)</a>
 
@@ -1385,7 +1551,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2025-01-23.
+  Last updated on 2025-09-26.
   <br/>
 </p>
   </div>
@@ -1403,8 +1569,8 @@ By William P. Krekelberg
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>

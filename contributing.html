@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Contributing &#8212; cmomy 0.24.0 documentation</title>
+    <title>Contributing &#8212; cmomy v1.0.0 documentation</title>
   
   
   
@@ -16,34 +16,31 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!--
-    this give us a css class that will be invisible only if js is disabled
-  -->
-  <noscript>
-    <style>
-      .pst-js-only { display: none !important; }
-
-    </style>
-  </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css?v=be8a1c11" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
-  <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=ae1d10b0"></script>
+    <script src="_static/documentation_options.js?v=8cd78353"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,8 +58,7 @@
     <link rel="prev" title="License" href="license.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.24.0" />
-    <meta name="docbuild:last-update" content="2025-01-23"/>
+    <meta name="docbuild:last-update" content="2025-09-26"/>
   </head>
   
   
@@ -78,8 +74,19 @@
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
   
-  <dialog id="pst-search-dialog">
-    
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
 <form class="bd-search d-flex align-items-center"
       action="search.html"
       method="get">
@@ -87,6 +94,7 @@
   <input type="search"
          class="form-control"
          name="q"
+         id="search-input"
          placeholder="Search..."
          aria-label="Search..."
          autocomplete="off"
@@ -94,8 +102,8 @@
          autocapitalize="off"
          spellcheck="false"/>
   <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
-</form>
-  </dialog>
+</form></div>
+  </div>
 
   <div class="pst-async-banner-revealer d-none">
   <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
@@ -111,8 +119,7 @@
       
       
       
-      <dialog id="pst-primary-sidebar-modal"></dialog>
-      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+      <div class="bd-sidebar-primary bd-sidebar">
         
 
   
@@ -137,16 +144,20 @@
   
   
   
-    <p class="title logo__title">cmomy 0.24.0 documentation</p>
+    <p class="title logo__title">cmomy v1.0.0 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
- <i class="fa-solid fa-magnifying-glass"></i>
- <span class="search-button__default-text">Search</span>
- <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
-</button></div>
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
         
@@ -183,7 +194,7 @@
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
 
 
-<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code>)</a></li>
 
 
 
@@ -196,7 +207,10 @@
 
 
 
-<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.grouped.html"><code class="docutils literal notranslate"><span class="pre">block_by()</span></code></a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.grouped.html">Submodule to work with grouped data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">grouped</span></code>)</a></li>
+
+
 
 
 
@@ -231,7 +245,51 @@
 
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.options.html"><code class="docutils literal notranslate"><span class="pre">set_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -290,14 +348,9 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
-      <div class="sidebar-primary-item">
-<div id="ethical-ad-placement"
-      class="flat"
-      data-ea-publisher="readthedocs"
-      data-ea-type="readthedocs-sidebar"
-      data-ea-manual="true">
-</div></div>
   </div>
+  
+  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -441,16 +494,24 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
 
 
-<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
-</button>
+  </button>
+`);
+</script>
 <button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
@@ -492,6 +553,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-environment-yaml-requirement-txt-files">Creating environment.yaml/requirement.txt files</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-just-as-task-runner">Using just as task runner</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ipykernel">ipykernel</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-the-docs">Building the docs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#testing-with-nox">Testing with nox</a></li>
@@ -530,7 +592,7 @@ helps, and credit will always be given.</p>
 <!-- prettier-ignore-end -->
 <section id="report-bugs">
 <h3>Report Bugs<a class="headerlink" href="#report-bugs" title="Link to this heading">#</a></h3>
-<p>Report bugs at <a class="reference external" href="https://github.com/usnistgov/cmomy/issues">here</a></p>
+<p><a class="reference external" href="https://github.com/usnistgov/cmomy/issues">Report bugs at here</a></p>
 <p>If you are reporting a bug, please include:</p>
 <ul class="simple">
 <li><p>Your operating system name and version.</p></li>
@@ -556,7 +618,7 @@ such.</p>
 </section>
 <section id="submit-feedback">
 <h3>Submit Feedback<a class="headerlink" href="#submit-feedback" title="Link to this heading">#</a></h3>
-<p>The best way to send feedback is to file an issue <a class="reference external" href="https://github.com/usnistgov/cmomy/issues">here</a>.</p>
+<p>The best way to send feedback is to <a class="reference external" href="https://github.com/usnistgov/cmomy/issues">file an issue</a>.</p>
 <p>If you are proposing a feature:</p>
 <ul class="simple">
 <li><p>Explain in detail how it would work.</p></li>
@@ -677,24 +739,20 @@ commit. Alternatively, you can run the hooks over all files using:</p>
 <h2>Shared <a class="reference external" href="https://github.com/numba/numba">numba</a> cache<a class="headerlink" href="#shared-numba-cache" title="Link to this heading">#</a></h2>
 <p>This project uses <a class="reference external" href="https://github.com/numba/numba">numba</a> to accelerate calculations. For development, we
 specify the environment variable <code class="docutils literal notranslate"><span class="pre">NUMBA_CACHE_DIR={project_root}/.numba_cache</span></code>
-relative to the project root. If using [zsh-autoenv], there is a recipe in the
-<code class="docutils literal notranslate"><span class="pre">Makefile</span></code> to create this environment variable on entering the repo directory.
-Also, <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> and the notebooks sets this environment variable. This should
-greatly speed up recompilation of <a class="reference external" href="https://github.com/numba/numba">numba</a> compiled functions during development.</p>
+relative to the project root using <code class="docutils literal notranslate"><span class="pre">pytest-env</span></code> (see <code class="docutils literal notranslate"><span class="pre">[tool.pytest_env]</span></code> section
+of <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>). This should greatly speed up recompilation of <a class="reference external" href="https://github.com/numba/numba">numba</a>
+compiled functions during development.</p>
 </section>
 <section id="using-nox">
 <h2>Using nox<a class="headerlink" href="#using-nox" title="Link to this heading">#</a></h2>
-<p>This project makes extensive use of <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> to automate testing, typing,
+<p>This project makes extensive use of <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> to automate testing, type checking,
 documentation creation, etc. One downside of using <a class="reference external" href="https://tox.wiki/en/latest/">tox</a> with this particular
-workflow is the need for multiple scripts/makefiles, while with <a class="reference external" href="https://github.com/wntrblm/nox">nox</a>, most
-everything is self contained in the file <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code>. <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> also allows for a
-mix of <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a> and <a class="reference external" href="https://virtualenv.pypa.io/en/latest/">virtualenv</a> environments. The default is for the development
-environment to use conda, while all other environments are virtualenvs. There
-are conda sessions for testing (<code class="docutils literal notranslate"><span class="pre">test-conda</span></code>), typing (<code class="docutils literal notranslate"><span class="pre">typing-conda</span></code>), docs
-(<code class="docutils literal notranslate"><span class="pre">docs-conda</span></code>), etc.</p>
+workflow is the need for multiple scripts, while with <a class="reference external" href="https://github.com/wntrblm/nox">nox</a>, most everything is
+self contained in the file <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code>. <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> also allows for a mix of <a class="reference external" href="https://docs.conda.io/en/latest/">conda</a>
+and <a class="reference external" href="https://virtualenv.pypa.io/en/latest/">virtualenv</a> environments.</p>
 <section id="installing-interpreters-for-virtualenv-creation">
 <h3>Installing interpreters for virtualenv creation<a class="headerlink" href="#installing-interpreters-for-virtualenv-creation" title="Link to this heading">#</a></h3>
-<p>If using virtualenvs across multiple python versions (e.g., <code class="docutils literal notranslate"><span class="pre">test</span></code>, <code class="docutils literal notranslate"><span class="pre">typing</span></code>,
+<p>If using virtualenvs across multiple python versions (e.g., <code class="docutils literal notranslate"><span class="pre">test</span></code>, <code class="docutils literal notranslate"><span class="pre">typecheck</span></code>,
 etc), you’ll need to install python interpreters for each version. If using
 <a class="reference external" href="https://github.com/pyenv/pyenv">pyenv</a>, you should be good to go.</p>
 <p>Instead of using <a class="reference external" href="https://github.com/pyenv/pyenv">pyenv</a>, I use <a class="reference external" href="https://github.com/astral-sh/uv">uv</a> to manage python versions. For example:</p>
@@ -706,9 +764,8 @@ to use only managed python:</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="n">python-preference</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;only-managed&quot;</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> is setup to automatically add the python interpreters installed
-by <a class="reference external" href="https://github.com/astral-sh/uv">uv</a> to the path. Note that the python version needs to be installed before
-it can be used with <a class="reference external" href="https://github.com/wntrblm/nox">nox</a></p>
+<p><a class="reference external" href="https://github.com/wntrblm/nox">nox</a> is setup to automatically work with <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>. Note that the python interpreter
+may need to be installed before it can be used with <a class="reference external" href="https://github.com/wntrblm/nox">nox</a></p>
 </section>
 <section id="nox-session-options">
 <h3>Nox session options<a class="headerlink" href="#nox-session-options" title="Link to this heading">#</a></h3>
@@ -737,7 +794,7 @@ open the documentation, run:</p>
 <h3>Creating environment.yaml/requirement.txt files<a class="headerlink" href="#creating-environment-yaml-requirement-txt-files" title="Link to this heading">#</a></h3>
 <p>The project is setup to create <code class="docutils literal notranslate"><span class="pre">environment.yaml</span></code> and <code class="docutils literal notranslate"><span class="pre">requirement.txt</span></code> files
 from <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>. This can be done using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span>requirements
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>just<span class="w"> </span>requirements
 </pre></div>
 </div>
 <p>This uses <a class="reference external" href="https://github.com/wpk-nist-gov/pyproject2conda">pyproject2conda</a> to create the requirement files. Note that all
@@ -746,18 +803,19 @@ requirement files are under something like
 <code class="docutils literal notranslate"><span class="pre">requirements/{env-name}.txt</span></code> (virtual environment).</p>
 <p>Additionally, requirement files for virtualenvs (e.g., <code class="docutils literal notranslate"><span class="pre">requirements.txt</span></code> like
 files) will be “locked” using <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">compile</span></code> from <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>. These files are placed
-under <code class="docutils literal notranslate"><span class="pre">requirements/lock</span></code>. Note the the session <code class="docutils literal notranslate"><span class="pre">requirements</span></code> automatically
-calls the session <code class="docutils literal notranslate"><span class="pre">lock</span></code>.</p>
-<p>To upgrade the dependencies in the lock, you’ll need to pass the option:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span>lock<span class="w"> </span>--<span class="w"> </span>+L/++lock-upgrade
-</pre></div>
-</div>
-<p>This will also update <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> if it’s being used.</p>
+under <code class="docutils literal notranslate"><span class="pre">requirements/lock</span></code>. This uses the script <code class="docutils literal notranslate"><span class="pre">tools/requirements_lock.py</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">uv.lock</span></code> file will also be updated. To upgrade locked requirements pass
+option <code class="docutils literal notranslate"><span class="pre">--upgrade/-U</span></code>.</p>
 </section>
+</section>
+<section id="using-just-as-task-runner">
+<h2>Using <a class="reference external" href="https://github.com/casey/just">just</a> as task runner<a class="headerlink" href="#using-just-as-task-runner" title="Link to this heading">#</a></h2>
+<p>The project includes a <code class="docutils literal notranslate"><span class="pre">justfile</span></code> to be invoked using <a class="reference external" href="https://github.com/casey/just">just</a> to simplify common
+tasks. Run <code class="docutils literal notranslate"><span class="pre">just</span></code> with no options to see available commands.</p>
 </section>
 <section id="ipykernel">
 <h2>ipykernel<a class="headerlink" href="#ipykernel" title="Link to this heading">#</a></h2>
-<p>The environments created by nox <code class="docutils literal notranslate"><span class="pre">dev</span></code>, or running <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">install-kernel</span></code>, will
+<p>The environments created by nox <code class="docutils literal notranslate"><span class="pre">dev</span></code>, or running <code class="docutils literal notranslate"><span class="pre">just</span> <span class="pre">install-kernel</span></code>, will
 try to add meaningful display names for ipykernel. These are installed at the
 user level. To cleanup the kernels (meaning, removing installed kernels that
 point to a removed environment), You can use the script
@@ -778,7 +836,6 @@ point to a removed environment), You can use the script
 <li><p>build/html : build html documentation</p></li>
 <li><p>spelling : check spelling</p></li>
 <li><p>linkcheck : check the links</p></li>
-<li><p>symlink : rebuild symlinks from <code class="docutils literal notranslate"><span class="pre">examples</span></code> to <code class="docutils literal notranslate"><span class="pre">docs/examples</span></code></p></li>
 <li><p>release : make pages branch for documentation hosting (using
 <a class="reference external" href="https://github.com/c-w/ghp-import">ghp-import</a>)</p></li>
 <li><p>livehtml : Live documentation updates</p></li>
@@ -849,7 +906,7 @@ create the final recipe.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span>testdist-conda<span class="w"> </span>--<span class="w"> </span>++version<span class="w"> </span><span class="o">[</span>version<span class="o">]</span>
 </pre></div>
 </div>
-<p>to to likewise from conda.</p>
+<p>to do likewise from conda.</p>
 </section>
 <section id="testing-notebooks-with-nbval">
 <h2>Testing notebooks with <a class="reference external" href="https://github.com/computationalmodelling/nbval">nbval</a><a class="headerlink" href="#testing-notebooks-with-nbval" title="Link to this heading">#</a></h2>
@@ -861,13 +918,12 @@ create the final recipe.</p>
 <section id="type-checking">
 <h2>Type checking<a class="headerlink" href="#type-checking" title="Link to this heading">#</a></h2>
 <p>Run:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span>typing<span class="w"> </span>--<span class="w"> </span>+m<span class="w"> </span><span class="o">[</span>commands<span class="o">]</span><span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nox<span class="w"> </span>-s<span class="w"> </span>typecheck<span class="w"> </span>--<span class="w"> </span>+m<span class="w"> </span><span class="o">[</span>commands<span class="o">]</span><span class="w"> </span><span class="o">[</span>options<span class="o">]</span>
 </pre></div>
 </div>
-<p>Use <code class="docutils literal notranslate"><span class="pre">typing-conda</span></code> to test typing in a conda environment.</p>
 <p>Note that the repo is setup to use a single install of <a class="reference external" href="https://github.com/python/mypy">mypy</a> and <a class="reference external" href="https://github.com/microsoft/pyright">pyright</a>. The
-script <code class="docutils literal notranslate"><span class="pre">tools/uvxrun.py</span></code> will run check if an appropriate version of the
-typecheckers is installed. If not, they will be run (and cached) using <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a>.</p>
+script <code class="docutils literal notranslate"><span class="pre">tools/typecheck.py</span></code> will run the checkers via <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> and point the
+checker to the appropriate python executable.</p>
 </section>
 <section id="setup-development-environment">
 <h2>Setup development environment<a class="headerlink" href="#setup-development-environment" title="Link to this heading">#</a></h2>
@@ -875,7 +931,7 @@ typecheckers is installed. If not, they will be run (and cached) using <a class=
 recommend installing some of these tools system wide. For this, we recommend
 using <a class="reference external" href="https://github.com/astral-sh/uv">uv</a> (or <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> or <a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a>). We mostly use <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>, but the choice is yours.
 For conda, we recommend actually using <a class="reference external" href="https://github.com/mamba-org/mamba">mamba</a>. Alternatively, you can setup
-<code class="docutils literal notranslate"><span class="pre">conda</span></code> to use the faster <code class="docutils literal notranslate"><span class="pre">mamba</span></code> solver. See <a class="reference external" href="https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community">here</a> for
+<code class="docutils literal notranslate"><span class="pre">conda</span></code> to use the faster <code class="docutils literal notranslate"><span class="pre">mamba</span></code> solver. <a class="reference external" href="https://www.anaconda.com/blog/a-faster-conda-for-a-growing-community">See here</a> for
 details.</p>
 <section id="create-development-environment-with-conda">
 <h3>Create development environment with conda<a class="headerlink" href="#create-development-environment-with-conda" title="Link to this heading">#</a></h3>
@@ -912,7 +968,7 @@ the above, you may have to run something like:</p>
 </div>
 <p>and use this requirement file in the commands above.</p>
 <p>If the project includes an ipython kernel, you can install it with:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>make<span class="w"> </span>install-kernel
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>just<span class="w"> </span>install-kernel
 </pre></div>
 </div>
 <p>Alternatively, you can simply use:</p>
@@ -927,37 +983,27 @@ activate the development environment when in the parent directory.</p>
 </section>
 <section id="development-tools">
 <h3>Development tools<a class="headerlink" href="#development-tools" title="Link to this heading">#</a></h3>
-<p>Additional tools are:</p>
+<p>The only required tool is <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>, but it highly recommended to also install
+<a class="reference external" href="https://github.com/casey/just">just</a>. Other tools used are:</p>
 <ul class="simple">
 <li><p><a class="reference external" href="https://pre-commit.com/">pre-commit</a></p></li>
-<li><p><a class="reference external" href="https://github.com/astral-sh/uv">uv</a> (optional, highly recommended)</p></li>
-<li><p><a class="reference external" href="https://github.com/nedbat/scriv">scriv</a> (optional)</p></li>
-<li><p><a class="reference external" href="https://github.com/microsoft/pyright">pyright</a> (optional)</p></li>
-<li><p><a class="reference external" href="https://github.com/cruft/cruft">cruft</a> (optional)</p></li>
-<li><p><a class="reference external" href="https://github.com/commitizen-tools/commitizen">commitizen</a> (optional)</p></li>
-<li><p><a class="reference external" href="https://github.com/nedbat/cog">cog</a> (optional)</p></li>
-<li><p><a class="reference external" href="https://github.com/nbQA-dev/nbQA">nbqa</a> (optional)</p></li>
+<li><p><a class="reference external" href="https://github.com/casey/just">just</a></p></li>
+<li><p><a class="reference external" href="https://github.com/nedbat/scriv">scriv</a></p></li>
+<li><p><a class="reference external" href="https://github.com/microsoft/pyright">pyright</a></p></li>
+<li><p><a class="reference external" href="https://github.com/cruft/cruft">cruft</a></p></li>
+<li><p><a class="reference external" href="https://github.com/commitizen-tools/commitizen">commitizen</a></p></li>
 </ul>
-<p>We recommend installing these tools with <a class="reference external" href="https://github.com/astral-sh/uv">uv</a>, but feel free to use <a class="reference external" href="https://github.com/pypa/pipx">pipx</a> or
-<a class="reference external" href="https://github.com/mariusvniekerk/condax">condax</a>.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">uv tool/condax/pipx install pre-commit</span>
-<span class="gp"># </span>optional<span class="w"> </span>packages
-<span class="go">uv tool/pipx install scriv</span>
-<span class="go">uv tool/condax/pipx install uv</span>
-<span class="go">uv tool/condax/pipx install pyright</span>
-<span class="go">uv tool/condax/pipx install cruft</span>
-<span class="go">uv tool/condax/pipx install commitizen</span>
-<span class="go">uv tool/condax/pipx install cogapp</span>
-<span class="go">uv tool/condax/pipx install nbqa</span>
+<p>which can be installed using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>tool<span class="w"> </span>install<span class="w"> </span>pre-commit
 </pre></div>
 </div>
 <p>Note that the repo is setup to automatically use <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> for many of these tools.
-Behind the scenes, the makefile and <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> will invoke <code class="docutils literal notranslate"><span class="pre">tools/uvxrun.py</span></code>.
-This will run the tool with <code class="docutils literal notranslate"><span class="pre">uvx</span> <span class="pre">tool..</span></code> with proper tool version. Note that if
-the tool is already installed with the proper version, <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> will use it. This
-prevents having to install a bunch of tooling in the “dev” environment, and also
-avoid creating a bunch of through away <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments. This is experimental,
-and I might change back to using small <a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments again in the future.</p>
+Behind the scenes, the <code class="docutils literal notranslate"><span class="pre">justfile</span></code> and <code class="docutils literal notranslate"><span class="pre">noxfile.py</span></code> will invoke <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> with
+constraints from <code class="docutils literal notranslate"><span class="pre">requirements/lock/uvx-tools.txt</span></code>. This will run the tool with
+with the proper version. Note that if the tool is already installed with the
+proper version, <a class="reference external" href="https://docs.astral.sh/uv/guides/tools/">uvx</a> will use it. This prevents having to install a bunch of
+tooling in the “dev” environment, and also avoid creating a bunch of throw away
+<a class="reference external" href="https://github.com/wntrblm/nox">nox</a> environments.</p>
 </section>
 </section>
 <section id="package-version">
@@ -1017,8 +1063,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
             
             
               
-                <dialog id="pst-secondary-sidebar-modal"></dialog>
-                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
   <div class="sidebar-secondary-item">
@@ -1045,6 +1090,7 @@ uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </s
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creating-environment-yaml-requirement-txt-files">Creating environment.yaml/requirement.txt files</a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#using-just-as-task-runner">Using just as task runner</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ipykernel">ipykernel</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#building-the-docs">Building the docs</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#testing-with-nox">Testing with nox</a></li>
@@ -1093,7 +1139,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2025-01-23.
+  Last updated on 2025-09-26.
   <br/>
 </p>
   </div>
@@ -1111,8 +1157,8 @@ By William P. Krekelberg
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
 
   <footer class="bd-footer">
   </footer>
