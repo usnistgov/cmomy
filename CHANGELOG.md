@@ -18,6 +18,12 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v1.0.1 — 2025-09-26
+
+### Changed
+
+- Default to `axes_to_end=False` in all cases.
+
 ## v1.0.0 — 2025-09-26
 
 ### Added
