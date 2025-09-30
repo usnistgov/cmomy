@@ -1,14 +1,14 @@
 [build-system]
-build-backend = "hatchling.build"
+build-backend = "uv_build"
 requires = [
-    "hatch-fancy-pypi-readme",
-    "hatch-vcs",
-    "hatchling",
+    "uv-build>=0.8.22,<0.9.0",
 ]
 
 [project]
 name = "cmomy"
+version = "1.0.1.dev0"
 description = "Central (co)moment calculation/manipulation"
+readme = "README.md"
 keywords = [
     "cmomy",
 ]
@@ -30,10 +30,6 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Topic :: Scientific/Engineering",
-]
-dynamic = [
-    "readme",
-    "version",
 ]
 dependencies = [
     "docstring-inheritance",
@@ -110,23 +106,6 @@ typecheck = [
     "pandas-stubs",
     { include-group = "pylint" },
     { include-group = "pytest" },
-]
-
-[tool.hatch.version]
-source = "vcs"
-raw-options = { local_scheme = "no-local-version" }
-
-[tool.hatch.build]
-exclude = [
-    ".*_cache",
-]
-
-[tool.hatch.metadata.hooks.fancy-pypi-readme]
-content-type = "text/markdown"
-fragments = [
-    { path = "README.md" },
-    { path = "CHANGELOG.md" },
-    { path = "LICENSE" },
 ]
 
 [tool.nbqa.exclude]
@@ -371,11 +350,6 @@ groups = [
 skip-package = true
 style = "requirements"
 
-[tool.pyproject2conda.envs.build]
-groups = "build-system.requires"
-skip-package = true
-style = "requirements"
-
 [tool.pyproject2conda.envs.test-extras]
 groups = [ "test-extras" ]
 skip-package = true
@@ -409,6 +383,35 @@ ipython.requires-python = ">=3.12"
 mypy.requires-python = ">=3.12"
 notebook.requires-python = ">=3.12"
 nox.requires-python = ">=3.12"
+
+[tool.uv.build-backend]
+source-include = [ "tests/**" ]
+# source-include = [
+#     "tests/**",
+#     "examples/usage/**",
+#     "docs/**",
+#     "tools/**",
+#     "requirements/**",
+#     "changelog.d/**",
+#     "*.md",
+#     "*.py",
+#     "ruff.toml",
+#     "uv.lock",
+#     "[jJ]ustfile",
+#     ".cruft.json",
+#     ".editorconfig",
+#     ".markdownlint.yaml",
+#     ".pre-commit-config.yaml",
+#     ".prettierignore",
+#     ".prettierrc.yaml",
+#     ".pylintrc.toml",
+#     ".python-version",
+# ]
+# source-exclude = [
+#     "_build",
+#     "docs/**/generated",
+#     "docs/example/usage",
+# ]
 
 # * Other tools ----------------------------------------------------------------
 

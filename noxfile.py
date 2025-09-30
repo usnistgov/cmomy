@@ -940,7 +940,7 @@ def typecheck(
 # ** Dist pypi
 # NOTE: you can skip having the build environment and
 # just use uv build, but faster to use environment ...
-USE_ENVIRONMENT_FOR_BUILD = True
+USE_ENVIRONMENT_FOR_BUILD = False
 _build_dec = nox.session(
     python=PYTHON_DEFAULT_VERSION if USE_ENVIRONMENT_FOR_BUILD else False
 )
