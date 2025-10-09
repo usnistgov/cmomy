@@ -58,6 +58,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from .core.moment_params import MomParamsInput
     from .core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -75,7 +76,6 @@ if TYPE_CHECKING:
         MomAxes,
         MomDims,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
     )
     from .core.typing_compat import TypeVar, Unpack

@@ -13,7 +13,8 @@ from cmomy.core.moment_params import (
     MomParamsArrayOptional,
     MomParamsXArrayOptional,
 )
-from cmomy.core.typing_compat import TypeVar, override
+from cmomy.core.typing import SamplerArrayT
+from cmomy.core.typing_compat import override
 from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
+    from cmomy.core.moment_params import MomParamsInput
     from cmomy.core.typing import (
         AxisReduceWrap,
         DataT,
@@ -42,7 +44,6 @@ if TYPE_CHECKING:
         MomAxes,
         MomDims,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
         NDArrayInt,
         RngTypes,
@@ -52,16 +53,6 @@ if TYPE_CHECKING:
     from cmomy.core.typing_kwargs import (
         IndexSamplerFromDataKwargs,
     )
-
-
-#: TypeVar of types wrapped by IndexSampler
-SamplerArrayT = TypeVar(
-    "SamplerArrayT",
-    "NDArrayAny",
-    xr.DataArray,
-    xr.Dataset,
-    "xr.DataArray | xr.Dataset",
-)
 
 
 # * Class interface -----------------------------------------------------------

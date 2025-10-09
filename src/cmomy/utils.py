@@ -49,6 +49,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from .core.moment_params import MomParamsInput
     from .core.typing import (
         ArrayLikeArg,
         AxesWrap,
@@ -62,7 +63,6 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
         SelectMoment,
     )

@@ -43,6 +43,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core.moment_params import MomParamsInput
     from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -63,7 +64,6 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
         NDArrayInt,
     )

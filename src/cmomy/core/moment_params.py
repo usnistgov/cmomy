@@ -42,13 +42,15 @@ if TYPE_CHECKING:
         MomDimsStrict,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
     )
-    from .typing_compat import Self, TypeVar
+    from .typing_compat import Self, TypeAlias, TypeVar
 
     _Axis = TypeVar("_Axis")
     _Dim = TypeVar("_Dim")
+
+#: Moment parameter input types
+MomParamsInput: TypeAlias = "MomParams | MomParamsBase | MomParamsDict | None"
 
 
 _docstring_local = """

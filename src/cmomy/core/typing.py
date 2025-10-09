@@ -29,11 +29,6 @@ from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
-    from .moment_params import (
-        MomParams,
-        MomParamsBase,
-        MomParamsDict,
-    )
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]
@@ -43,13 +38,6 @@ if TYPE_CHECKING:
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
 from .typing_kwargs import Sampler as Sampler  # noqa: PLC0414
-
-# * CentralMoments types ------------------------------------------------------
-
-# * MomParams
-#: Moment parameters input
-MomParamsInput = Union["MomParams", "MomParamsBase", "MomParamsDict", None]
-
 
 # * TypeVars ------------------------------------------------------------------
 #: DataArray or Dataset
@@ -63,6 +51,15 @@ FloatT = TypeVar(
     np.float32,
 )
 FloatT_ = TypeVar("FloatT_", np.float64, np.float32)
+
+#: TypeVar of types wrapped by IndexSampler
+SamplerArrayT = TypeVar(
+    "SamplerArrayT",
+    "NDArrayAny",
+    xr.DataArray,
+    xr.Dataset,
+    "xr.DataArray | xr.Dataset",
+)
 
 
 # * Numpy ---------------------------------------------------------------------

@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from .moment_params import MomParamsInput
     from .typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -47,7 +48,6 @@ if TYPE_CHECKING:
         MissingType,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
     )
     from .typing_compat import Self, TypeVar

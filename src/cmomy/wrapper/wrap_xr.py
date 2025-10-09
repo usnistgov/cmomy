@@ -53,6 +53,7 @@ if TYPE_CHECKING:
     from xarray.core import types as xr_types
     from xarray.core.coordinates import DataArrayCoordinates, DatasetCoordinates
 
+    from cmomy.core.moment_params import MomParamsInput
     from cmomy.core.typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -72,7 +73,6 @@ if TYPE_CHECKING:
         MomDimsStrict,
         Moments,
         MomNDim,
-        MomParamsInput,
         NameType,
         NDArrayAny,
     )

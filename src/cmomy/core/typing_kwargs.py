@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
     from cmomy.resample import IndexSampler
 
+    from .moment_params import MomParamsInput
     from .typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -41,7 +42,6 @@ if TYPE_CHECKING:
         MomDims,
         Moments,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
         RngTypes,
     )
