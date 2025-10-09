@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "cmomy"
-version = "1.0.1.dev0"
+version = "1.0.2.dev0"
 description = "Central (co)moment calculation/manipulation"
 readme = "README.md"
 keywords = [
@@ -107,6 +107,66 @@ typecheck = [
     { include-group = "pylint" },
     { include-group = "pytest" },
 ]
+
+# * uv -------------------------------------------------------------------------
+
+[tool.uv]
+managed = true
+default-groups = [ "dev", "numpy2" ]
+fork-strategy = "requires-python"
+conflicts = [
+    [
+        { group = "numpy1" },
+        { group = "numpy2" },
+    ],
+]
+required-version = ">=0.7.15"
+
+[tool.uv.pip]
+annotation-style = "line"
+generate-hashes = true
+
+[tool.uv.dependency-groups]
+dev.requires-python = ">=3.13"
+docs.requires-python = ">=3.13"
+docs-live.requires-python = ">=3.13"
+docs-spelling.requires-python = ">=3.13"
+# other tools
+ipython.requires-python = ">=3.13"
+mypy.requires-python = ">=3.13"
+notebook.requires-python = ">=3.13"
+nox.requires-python = ">=3.13"
+
+[tool.uv.build-backend]
+source-include = [ "tests/**" ]
+# source-include = [
+#     "tests/**",
+#     "examples/usage/**",
+#     "docs/**",
+#     "tools/**",
+#     "requirements/**",
+#     "changelog.d/**",
+#     "*.md",
+#     "*.py",
+#     "ruff.toml",
+#     "uv.lock",
+#     "[jJ]ustfile",
+#     ".cruft.json",
+#     ".editorconfig",
+#     ".markdownlint.yaml",
+#     ".pre-commit-config.yaml",
+#     ".prettierignore",
+#     ".prettierrc.yaml",
+#     ".pylintrc.toml",
+#     ".python-version",
+# ]
+# source-exclude = [
+#     "_build",
+#     "docs/**/generated",
+#     "docs/example/usage",
+# ]
+
+# * Checks ---------------------------------------------------------------------
 
 [tool.nbqa.exclude]
 codespell = "^examples/archived"
@@ -401,64 +461,6 @@ style = "requirements"
 groups = [ "test-extras" ]
 skip-package = true
 python = "all"
-
-# * uv -------------------------------------------------------------------------
-
-[tool.uv]
-managed = true
-default-groups = [ "dev", "numpy2" ]
-fork-strategy = "requires-python"
-conflicts = [
-    [
-        { group = "numpy1" },
-        { group = "numpy2" },
-    ],
-]
-required-version = ">=0.7.15"
-
-[tool.uv.pip]
-annotation-style = "line"
-generate-hashes = true
-
-[tool.uv.dependency-groups]
-dev.requires-python = ">=3.12"
-docs.requires-python = ">=3.12"
-docs-live.requires-python = ">=3.12"
-docs-spelling.requires-python = ">=3.12"
-# other tools
-ipython.requires-python = ">=3.12"
-mypy.requires-python = ">=3.12"
-notebook.requires-python = ">=3.12"
-nox.requires-python = ">=3.12"
-
-[tool.uv.build-backend]
-source-include = [ "tests/**" ]
-# source-include = [
-#     "tests/**",
-#     "examples/usage/**",
-#     "docs/**",
-#     "tools/**",
-#     "requirements/**",
-#     "changelog.d/**",
-#     "*.md",
-#     "*.py",
-#     "ruff.toml",
-#     "uv.lock",
-#     "[jJ]ustfile",
-#     ".cruft.json",
-#     ".editorconfig",
-#     ".markdownlint.yaml",
-#     ".pre-commit-config.yaml",
-#     ".prettierignore",
-#     ".prettierrc.yaml",
-#     ".pylintrc.toml",
-#     ".python-version",
-# ]
-# source-exclude = [
-#     "_build",
-#     "docs/**/generated",
-#     "docs/example/usage",
-# ]
 
 # * Other tools ----------------------------------------------------------------
 
