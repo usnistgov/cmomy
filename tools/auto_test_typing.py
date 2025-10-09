@@ -728,7 +728,7 @@ params_array = [
     ("any", None, None, "Any", "float64"),
 ]
 for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in [
-        (params_array, "cmomy.convert.concat", "data_", "reduce_out_", "{axis_dim}"),
+        (params_array, "cmomy.concat", "data_", "reduce_out_", "{axis_dim}"),
 ]:
     for (data_suffix, *args) in dtype_seq:
         d = data_prefix + data_suffix

@@ -7464,7 +7464,7 @@ def _check_typing_sampler(
 
     check(
         assert_type(
-            cmomy.convert.concat((data_float32, data_float32), axis=0),
+            cmomy.concat((data_float32, data_float32), axis=0),
             NDArray[float32],
         ),
         np.ndarray,
@@ -7473,7 +7473,7 @@ def _check_typing_sampler(
     )
     check(
         assert_type(
-            cmomy.convert.concat((data_float64, data_float64), axis=0),
+            cmomy.concat((data_float64, data_float64), axis=0),
             NDArray[float64],
         ),
         np.ndarray,
@@ -7482,7 +7482,7 @@ def _check_typing_sampler(
     )
     check(
         assert_type(
-            cmomy.convert.concat((data_arrayany, data_arrayany), axis=0),
+            cmomy.concat((data_arrayany, data_arrayany), axis=0),
             NDArray[Any],
         ),
         np.ndarray,
@@ -7491,7 +7491,7 @@ def _check_typing_sampler(
     )
     check(
         assert_type(
-            cmomy.convert.concat((data_any, data_any), axis=0),
+            cmomy.concat((data_any, data_any), axis=0),
             Any,
         ),
         np.ndarray,

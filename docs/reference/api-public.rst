@@ -99,8 +99,10 @@ Concatenation
 -------------
 
 .. autosummary::
+   :toctree: generated/
+   :template: autodocsumm/class-noinherit
 
-   ~convert.concat
+   concat
 
 Convert
 -------

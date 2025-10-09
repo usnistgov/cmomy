@@ -7,8 +7,8 @@ from . import (
     rolling,
     utils,
 )
+from ._concat import concat
 from .confidence_interval import bootstrap_confidence_interval
-from .convert import concat
 from .core import (
     MomParams,
     MomParamsDict,
