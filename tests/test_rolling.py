@@ -1,5 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, arg-type, index, assignment, call-overload"
-# pyright:  reportArgumentType=false, reportAssignmentType=false
 # pylint: disable=missing-class-docstring
 from __future__ import annotations
 
@@ -199,7 +197,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
 
     kws: RollingDict = {"window": window, "min_periods": min_periods, "center": center}
 
@@ -297,7 +295,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
         idx = [0, *range(5, 5 + window + 1), *list(idx)]
 
         data[idx, ...] = np.nan
-        data[(idx, ..., *(0,) * mom_ndim)] = 0.0  # pyright: ignore[reportCallIssue]
+        data[(idx, ..., *(0,) * mom_ndim)] = 0.0
 
     out = rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
     data_rolling = rolling.construct_rolling_window_array(
@@ -323,16 +321,16 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     # testing val
     mom_names: list[SelectMoment] = ["weight", "xave"]
     if mom_ndim == 2:
-        mom_names += ["yave"]
+        mom_names += ["yave"]  # pyright: ignore[reportAssignmentType]
 
     w, *xy = (select(data, name) for name in mom_names)
 
     mom = (3,) * mom_ndim
-    out = rolling.rolling_vals(*xy, weight=w, **kws, axis=0, mom=mom)  # pyright: ignore[reportCallIssue]
+    out = rolling.rolling_vals(*xy, weight=w, **kws, axis=0, mom=mom)
 
     wr, *xyr = (select(data_rolling, name) for name in mom_names)
 
-    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=0)  # pyright: ignore[reportCallIssue]
+    outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=0)
     count = (wr != 0.0).sum(axis=0)
 
     outc = np.where(
@@ -412,7 +410,7 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
     mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
 
     kws: RollingExpDict = {"alpha": alpha, "adjust": adjust, "min_periods": min_periods}
 
@@ -559,7 +557,7 @@ def test_rolling_exp_weight(
 ) -> None:
     axis = 0
     shape = (50, 2, 3)
-    mom: MomentsStrict = (3,) * mom_ndim
+    mom: MomentsStrict = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
 
     weight = rng.random(shape)
     xy = tuple(rng.random(shape) for _ in range(mom_ndim))
@@ -615,7 +613,7 @@ def test_rolling_exp_multiple_alpha(
 ) -> None:
     axis = 0
     shape = (50, 2)
-    mom: MomentsStrict = (3,) * mom_ndim
+    mom: MomentsStrict = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
 
     alphas = rng.random(shape)
     weight = rng.random(shape)

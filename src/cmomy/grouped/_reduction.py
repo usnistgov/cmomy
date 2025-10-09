@@ -44,7 +44,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from cmomy.core.typing import (
-        ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -67,12 +66,15 @@ if TYPE_CHECKING:
         MomParamsInput,
         NDArrayAny,
         NDArrayInt,
+    )
+    from cmomy.core.typing_compat import Unpack
+    from cmomy.core.typing_kwargs import (
+        ApplyUFuncKwargs,
         ReduceDataGroupedKwargs,
         ReduceDataIndexedKwargs,
         ReduceValsGroupedKwargs,
         ReduceValsIndexedKwargs,
     )
-    from cmomy.core.typing_compat import Unpack
 
 
 # * Utils
@@ -439,7 +441,7 @@ def _reduce_data_grouped(
     )
     out.fill(0.0)
 
-    factory_reduce_data_grouped(
+    _ = factory_reduce_data_grouped(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
@@ -1131,7 +1133,7 @@ def _reduce_vals_grouped(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_reduce_vals_grouped(
+    _ = factory_reduce_vals_grouped(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(
@@ -1461,7 +1463,7 @@ def _reduce_vals_indexed(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_reduce_vals_indexed(
+    _ = factory_reduce_vals_indexed(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(

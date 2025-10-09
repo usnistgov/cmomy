@@ -18,6 +18,7 @@ from cmomy.core.prepare import (
     prepare_xarray_values_for_reduction,
 )
 from cmomy.core.typing import DataT
+from cmomy.core.typing_compat import override
 from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
@@ -53,14 +54,11 @@ if TYPE_CHECKING:
     from xarray.core.coordinates import DataArrayCoordinates, DatasetCoordinates
 
     from cmomy.core.typing import (
-        ApplyUFuncKwargs,
         ArrayOrderCF,
         ArrayOrderKACF,
         AttrsType,
         AxisReduce,
         Casting,
-        CentralMomentsDataArray,
-        CentralMomentsDataset,
         CoordsPolicy,
         CoordsType,
         Dims,
@@ -78,8 +76,15 @@ if TYPE_CHECKING:
         NameType,
         NDArrayAny,
     )
-    from cmomy.core.typing_compat import Self
+    from cmomy.core.typing_compat import Self, TypeAlias
+    from cmomy.core.typing_kwargs import (
+        ApplyUFuncKwargs,
+    )
     from cmomy.wrapper.wrap_np import CentralMomentsArray
+
+    CentralMomentsDataArray: TypeAlias = "CentralMomentsData[xr.DataArray]"
+    CentralMomentsDataset: TypeAlias = "CentralMomentsData[xr.Dataset]"
+    CentralMomentsDataAny: TypeAlias = "CentralMomentsData[Any]"
 
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
@@ -249,6 +254,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         )
 
     # ** Create/copy/new ------------------------------------------------------
+    @override
     @docfiller_inherit_abc()
     def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
@@ -312,6 +318,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             fastpath=fastpath,
         )
 
+    @override
     @docfiller_inherit_abc()
     def copy(self, deep: bool = True) -> Self:
         """
@@ -326,6 +333,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             fastpath=True,
         )
 
+    @override
     @docfiller_inherit_abc()
     def astype(
         self,
@@ -351,6 +359,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         )
 
     # ** Utils ----------------------------------------------------------------
+    @override
     def _validate_dtype(self) -> None:
         if is_dataarray(self._obj):
             _ = validate_floating_dtype(self._obj)
@@ -367,6 +376,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             return self._obj.dtype
         return None
 
+    @override
     @docfiller_inherit_abc()
     def push_data(
         self,
@@ -422,6 +432,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         return self
 
+    @override
     @docfiller_inherit_abc()
     def push_datas(
         self,
@@ -487,6 +498,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         return self
 
+    @override
     @docfiller_inherit_abc()
     def push_val(
         self,
@@ -537,6 +549,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         return self
 
+    @override
     @docfiller_inherit_abc()
     def push_vals(
         self,
@@ -614,6 +627,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
     # ** Interface to modules -------------------------------------------------
     # *** .reduction ----------------------------------------------------------
+    @override
     @docfiller_inherit_abc()
     def reduce(  # noqa: PLR0913
         self,
@@ -825,6 +839,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         return self._new_like(data)
 
     # ** Constructors ----------------------------------------------------------
+    @override
     @classmethod
     @docfiller.decorate
     def zeros(  # type: ignore[override]  # pyright: ignore[reportIncompatibleMethodOverride]

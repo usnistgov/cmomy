@@ -58,7 +58,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from cmomy.core.typing import (
-        ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -69,8 +68,6 @@ if TYPE_CHECKING:
         DimsReduce,
         DTypeLikeArg,
         FloatT,
-        JackknifeDataKwargs,
-        JackknifeValsKwargs,
         KeepAttrs,
         MissingType,
         MomAxes,
@@ -80,11 +77,16 @@ if TYPE_CHECKING:
         MomNDim,
         MomParamsInput,
         NDArrayAny,
-        ResampleDataKwargs,
-        ResampleValsKwargs,
         Sampler,
     )
     from cmomy.core.typing_compat import Unpack
+    from cmomy.core.typing_kwargs import (
+        ApplyUFuncKwargs,
+        JackknifeDataKwargs,
+        JackknifeValsKwargs,
+        ResampleDataKwargs,
+        ResampleValsKwargs,
+    )
 
 
 # * Resample data
@@ -628,7 +630,7 @@ def _resample_vals(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_resample_vals(
+    _ = factory_resample_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(

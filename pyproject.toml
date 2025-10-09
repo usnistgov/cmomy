@@ -243,6 +243,34 @@ module = [
     "dask.*",
 ]
 
+[[tool.mypy.overrides]]
+strict = false
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+disallow_incomplete_defs = false
+module = [
+    "tests.*",
+]
+
+[[tool.mypy.overrides]]
+disable_error_code = [
+    "call-overload",
+    "assignment",
+    "arg-type",
+]
+module = [
+    "tests._dataarray_set_utils.*",
+    "tests.test_resample.*",
+    "tests.test_utils.*",
+    "tests.test_convert.*",
+    "tests.test_rolling.*",
+    "tests.test_xarray_support.*",
+    "tests.test_reduce_validate.*",
+    "tests.test_grouped.*",
+    "tests.test_parallel_support.*",
+    "tests.test_reduction.*",
+]
+
 # [[tool.mypy.overrides]]
 # ignore_errors = true
 # module = [  ]
@@ -269,7 +297,6 @@ exclude = [
     "**/.numba_cache",
     # "tools/auto_test_typing.py",
 ]
-# strict = ["src", "tests", "noxfile.py", "tools/*.py"]
 pythonVersion = "3.11"
 typeCheckingMode = "standard"
 strict = [
@@ -281,20 +308,40 @@ strict = [
     "noxfile.py",
     "tools/*.py",
 ]
-reportDuplicateImport = true
-reportInvalidStubStatement = true
 reportOverlappingOverload = true
 reportPropertyTypeMismatch = true
 reportUntypedClassDecorator = true
 reportUntypedFunctionDecorator = true
-reportUntypedNamedTuple = true
-reportUnusedImport = true
 # Extra flags
 enableTypeIgnoreComments = false
 reportUnnecessaryTypeIgnoreComment = true
 reportUnreachable = "warning"
+
+deprecateTypingAliases = true
+enableReachabilityAnalysis = false
+reportCallInDefaultInitializer = true
+reportImplicitOverride = true
+# reportImportCycles = true
+# reportMissingSuperCall = true
+reportUninitializedInstanceVariable = true
+reportUnusedCallResult = true
+
+# type-checkers should type-check; linters should lint
+reportImplicitStringConcatenation = false
+reportPrivateUsage = false                # dupe of PLC2701
+reportPrivateImportUsage = false          # dupe of PLC2701
+reportUnusedImport = false                # dupe of F401
+reportUnusedVariable = false              # dupe of F841
+
 # Needed for pep728 support for TypeDict(closed=...)
 enableExperimentalFeatures = true
+
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportCallIssue = false
+reportArgumentType = false
+reportMissingImports = false
+reportUnusedCallResult = false
 
 [tool.pytype]
 inputs = [

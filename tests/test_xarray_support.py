@@ -1,5 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment, arg-type"
-# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
 """
 Test that basic operations on DataArrays give same results and on np.ndarrays
 and that operations on datasets give same results as on dataarrays.
@@ -714,7 +712,7 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
 
 # * Chunking
 try:  # pylint: disable=too-many-try-statements
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]  # pylint: disable=unused-import
+    import dask  # noqa: F401
 
     HAS_DASK = True
 except ImportError:

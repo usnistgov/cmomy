@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import enum
 
+from .typing_compat import override
+
 
 # * Missing/no values ---------------------------------------------------------
 # taken from https://github.com/python-attrs/attrs/blob/main/src/attr/_make.py
@@ -16,6 +18,7 @@ class _Missing(enum.Enum):
 
     MISSING = enum.auto()
 
+    @override
     def __repr__(self) -> str:
         return "MISSING"  # pragma: no cover
 

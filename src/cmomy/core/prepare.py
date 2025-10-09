@@ -49,9 +49,10 @@ if TYPE_CHECKING:
         MomNDim,
         MomParamsInput,
         NDArrayAny,
-        ScalarT,
     )
-    from .typing_compat import Self
+    from .typing_compat import Self, TypeVar
+
+    _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
 # * Prepare classes
@@ -386,7 +387,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_reduce(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *,
         target: xr.DataArray | xr.Dataset,
         dim: tuple[Hashable, ...],
@@ -394,7 +395,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
         axes_to_end: bool,
         order: ArrayOrderKACF,
         dtype: DTypeLike,
-    ) -> NDArray[ScalarT] | None:
+    ) -> NDArray[_ScalarT] | None:
         """Prepare out for reduce_data"""
         if is_dataset(target):
             return None
@@ -432,13 +433,13 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_transform(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *,
         target: xr.DataArray | xr.Dataset,
         axes_to_end: bool,
         order: ArrayOrderKACF,
         dtype: DTypeLike,
-    ) -> NDArray[ScalarT] | None:
+    ) -> NDArray[_ScalarT] | None:
         """Prepare out for transform."""
         if is_dataset(target):
             return None
@@ -461,7 +462,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_sample(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *,
         data: xr.DataArray | xr.Dataset,
         axis: int,
@@ -469,7 +470,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
         axes_to_end: bool,
         order: ArrayOrderKACF,
         dtype: DTypeLike,
-    ) -> NDArray[ScalarT] | None:
+    ) -> NDArray[_ScalarT] | None:
         """Move axis to last dimensions before moment dimensions."""
         if is_dataset(data):
             return None
@@ -571,7 +572,7 @@ class PrepareValsXArray(_PrepareBaseXArray):
 
     def optional_out_from_values(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *args: NDArrayAny | xr.DataArray | xr.Dataset,
         target: xr.DataArray | xr.Dataset,
         dim: DimsReduce,
@@ -582,7 +583,7 @@ class PrepareValsXArray(_PrepareBaseXArray):
         dtype: DTypeLike,
         mom_axes: int | Sequence[int] | None,
         mom_params: MomParamsInput,
-    ) -> tuple[NDArray[ScalarT] | None, MomParamsArray]:
+    ) -> tuple[NDArray[_ScalarT] | None, MomParamsArray]:
         """Prepare out for resampling"""
         # NOTE: silently ignore out of datasets.
 

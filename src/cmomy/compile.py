@@ -20,6 +20,8 @@ from importlib import import_module
 from time import perf_counter
 from typing import TYPE_CHECKING
 
+from .core.typing_compat import override
+
 if TYPE_CHECKING:
     import argparse
     from collections.abc import Sequence
@@ -35,6 +37,13 @@ logger = logging.getLogger("cmomy.compile")
 
 class _Catchtime:
     # pylint: disable=attribute-defined-outside-init
+    start: float
+    time: float
+
+    def __init__(self) -> None:
+        self.start = 0
+        self.time = 0
+
     def __enter__(self) -> Self:
         self.start = perf_counter()
         return self
@@ -55,7 +64,7 @@ def _time_modules(
         for module in modules:
             logger.warning("loading mod %s", module)
             with _Catchtime() as t:
-                import_module(f"{prefix}{module}", package=package)
+                _ = import_module(f"{prefix}{module}", package=package)
             out.append((t.time, module))
     for time, module in sorted(out, key=itemgetter(0), reverse=True):
         logger.warning("%7.1E sec %s", time, module)
@@ -142,6 +151,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         ) -> None:
             super().__init__(option_strings, dest, nargs=0, **kwargs)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
 
+        @override
         def __call__(
             self,
             parser: ArgumentParser,  # noqa: ARG002
@@ -160,13 +170,13 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser = ArgumentParser(description="Load numba modules.")
     msg = "Load or ignore {name} routines.  Default is to include if not `--no-all`. "
 
-    parser.add_argument(
+    _ = parser.add_argument(
         "--no-all",
         dest="include_all",
         action="store_false",
         help="Load all numba modules",
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--cov",
         "--no-cov",
         dest="include_cov",
@@ -174,7 +184,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help=msg.format(name="comoment"),
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--parallel",
         "--no-parallel",
         dest="include_parallel",
@@ -182,7 +192,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help=msg.format(name="parallel"),
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--vec",
         "--no-vec",
         dest="include_vec",
@@ -190,7 +200,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help=msg.format(name="vector"),
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--resample",
         "--no-resample",
         dest="include_resample",
@@ -198,7 +208,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help=msg.format(name="resample"),
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--grouped",
         "--no-grouped",
         dest="include_grouped",
@@ -206,7 +216,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help=msg.format(name="grouped"),
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--rolling",
         "--no-rolling",
         dest="include_rolling",
@@ -214,7 +224,7 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         default=None,
         help=msg.format(name="rolling"),
     )
-    parser.add_argument(
+    _ = parser.add_argument(
         "--convert",
         "--no-convert",
         dest="include_convert",

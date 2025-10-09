@@ -13,9 +13,7 @@ from cmomy.core.moment_params import (
     MomParamsArrayOptional,
     MomParamsXArrayOptional,
 )
-from cmomy.core.typing import (
-    SamplerArrayT,
-)
+from cmomy.core.typing_compat import TypeVar, override
 from cmomy.core.validate import (
     is_dataarray,
     is_dataset,
@@ -40,7 +38,6 @@ if TYPE_CHECKING:
         AxisReduceWrap,
         DataT,
         DimsReduce,
-        IndexSamplerFromDataKwargs,
         MissingType,
         MomAxes,
         MomDims,
@@ -52,6 +49,19 @@ if TYPE_CHECKING:
         Sampler,
     )
     from cmomy.core.typing_compat import Unpack
+    from cmomy.core.typing_kwargs import (
+        IndexSamplerFromDataKwargs,
+    )
+
+
+#: TypeVar of types wrapped by IndexSampler
+SamplerArrayT = TypeVar(
+    "SamplerArrayT",
+    "NDArrayAny",
+    xr.DataArray,
+    xr.Dataset,
+    "xr.DataArray | xr.Dataset",
+)
 
 
 # * Class interface -----------------------------------------------------------
@@ -159,6 +169,7 @@ class IndexSampler(Generic[SamplerArrayT]):
     def nrep(self) -> int:
         return self._first.shape[0]
 
+    @override
     def __repr__(self) -> str:
         return f"<IndexSampler(nrep: {self.nrep}, ndat: {self.ndat})>"
 
@@ -750,7 +761,7 @@ def freq_to_indices(
         raise ValueError(msg)
 
     indices = np.empty((freq.shape[0], nsamp), dtype=np.int64)
-    factory_freq_to_indices(parallel=parallel_heuristic(parallel, size=freq.size))(
+    _ = factory_freq_to_indices(parallel=parallel_heuristic(parallel, size=freq.size))(
         freq,
         indices,
     )
@@ -814,7 +825,7 @@ def indices_to_freq(
     shape: tuple[int, ...] = (indices.shape[0], ndat_)
     freq: NDArrayInt = np.zeros(shape, dtype=np.int64)
 
-    factory_indices_to_freq(parallel=parallel_heuristic(parallel, size=freq.size))(
+    _ = factory_indices_to_freq(parallel=parallel_heuristic(parallel, size=freq.size))(
         indices, freq
     )
 

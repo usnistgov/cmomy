@@ -50,7 +50,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .core.typing import (
-        ApplyUFuncKwargs,
         ArrayLikeArg,
         AxesWrap,
         DataT,
@@ -65,17 +64,21 @@ if TYPE_CHECKING:
         MomNDim,
         MomParamsInput,
         NDArrayAny,
-        ScalarT,
         SelectMoment,
+    )
+    from .core.typing_compat import EllipsisType, TypeVar, Unpack
+    from .core.typing_kwargs import (
+        ApplyUFuncKwargs,
         SelectMomentKwargs,
         ValsToDataKwargs,
     )
-    from .core.typing_compat import EllipsisType, Unpack
+
+    _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
 # * moveaxis ------------------------------------------------------------------
 def moveaxis_order(
-    x: NDArray[ScalarT] | xr.DataArray,
+    x: NDArray[_ScalarT] | xr.DataArray,
     axis: AxesWrap | MissingType = MISSING,
     dest: AxesWrap | MissingType = MISSING,
     *,
@@ -166,7 +169,7 @@ def moveaxis_order(
 
 @overload
 def moveaxis(
-    x: NDArray[ScalarT],
+    x: NDArray[_ScalarT],
     axis: AxesWrap | MissingType = ...,
     dest: AxesWrap | MissingType = ...,
     *,
@@ -178,7 +181,7 @@ def moveaxis(
     mom_params: MomParamsInput = ...,
     axes_to_end: bool = ...,
     allow_select_mom_axes: bool = ...,
-) -> NDArray[ScalarT]: ...
+) -> NDArray[_ScalarT]: ...
 @overload
 def moveaxis(
     x: xr.DataArray,
@@ -198,7 +201,7 @@ def moveaxis(
 
 @docfiller.decorate
 def moveaxis(
-    x: NDArray[ScalarT] | xr.DataArray,
+    x: NDArray[_ScalarT] | xr.DataArray,
     axis: AxesWrap | MissingType = MISSING,
     dest: AxesWrap | MissingType = MISSING,
     *,
@@ -210,7 +213,7 @@ def moveaxis(
     mom_params: MomParamsInput = None,
     axes_to_end: bool = False,
     allow_select_mom_axes: bool = False,
-) -> NDArray[ScalarT] | xr.DataArray:
+) -> NDArray[_ScalarT] | xr.DataArray:
     """
     Generalized moveaxis for moments arrays.
 
@@ -377,15 +380,15 @@ def select_moment(
 ) -> DataT: ...
 @overload
 def select_moment(
-    data: NDArray[ScalarT],
+    data: NDArray[_ScalarT],
     name: SelectMoment,
     **kwargs: Unpack[SelectMomentKwargs],
-) -> NDArray[ScalarT]: ...
+) -> NDArray[_ScalarT]: ...
 
 
 @docfiller.decorate
 def select_moment(
-    data: NDArray[ScalarT] | DataT,
+    data: NDArray[_ScalarT] | DataT,
     name: SelectMoment,
     *,
     mom_ndim: MomNDim | None = None,
@@ -397,7 +400,7 @@ def select_moment(
     coords_combined: str | Sequence[Hashable] | None = None,
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArray[ScalarT] | DataT:
+) -> NDArray[_ScalarT] | DataT:
     """
     Select specific moments for a central moments array.
 
@@ -544,12 +547,12 @@ def select_moment(
 
 
 def _select_moment(
-    data: NDArray[ScalarT],
+    data: NDArray[_ScalarT],
     *,
     mom_params: MomParamsArray,
     name: SelectMoment,
     squeeze: bool,
-) -> NDArray[ScalarT]:
+) -> NDArray[_ScalarT]:
     if data.ndim < mom_params.ndim:
         msg = f"{data.ndim=} must be >= {mom_params.ndim=}"
         raise ValueError(msg)
@@ -578,7 +581,7 @@ def assign_moment(
 ) -> DataT: ...
 @overload
 def assign_moment(
-    data: NDArray[ScalarT],
+    data: NDArray[_ScalarT],
     moment: Mapping[SelectMoment, ArrayLike] | None = None,
     *,
     mom_ndim: MomNDim | None = ...,
@@ -591,13 +594,13 @@ def assign_moment(
     dim_combined: Hashable | None = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = ...,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
-) -> NDArray[ScalarT]: ...
+) -> NDArray[_ScalarT]: ...
 
 
 # TODO(wpk): dtype parameter?
 @docfiller.decorate
 def assign_moment(
-    data: NDArray[ScalarT] | DataT,
+    data: NDArray[_ScalarT] | DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
     mom_ndim: MomNDim | None = None,
@@ -610,7 +613,7 @@ def assign_moment(
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
     **moment_kwargs: ArrayLike | xr.DataArray | xr.Dataset,
-) -> NDArray[ScalarT] | DataT:
+) -> NDArray[_ScalarT] | DataT:
     r"""
     Update weights of moments array.
 
@@ -761,13 +764,13 @@ def assign_moment(
 
 
 def _assign_moment(
-    data: NDArray[ScalarT],
+    data: NDArray[_ScalarT],
     *values: ArrayLike | xr.DataArray | xr.Dataset,
     names: Iterable[SelectMoment],
     mom_params: MomParamsArray,
     squeeze: bool,
     copy: bool,
-) -> NDArray[ScalarT]:
+) -> NDArray[_ScalarT]:
     out = data.copy() if copy else data
 
     mom_params_end = mom_params.axes_to_end()

@@ -60,7 +60,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .core.typing import (
-        ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -82,13 +81,17 @@ if TYPE_CHECKING:
         MomNDim,
         MomParamsInput,
         NDArrayAny,
+    )
+    from .core.typing_compat import TypeVar, Unpack
+    from .core.typing_kwargs import (
+        ApplyUFuncKwargs,
         RollingDataKwargs,
         RollingExpDataKwargs,
         RollingExpValsKwargs,
         RollingValsKwargs,
-        ScalarT,
     )
-    from .core.typing_compat import Unpack
+
+    _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
 # * Moving average
@@ -293,8 +296,8 @@ def construct_rolling_window_array(
 
 # * Moving
 def _pad_along_axis(
-    data: NDArray[ScalarT], axis: int, shift: int, fill_value: float
-) -> NDArray[ScalarT]:
+    data: NDArray[_ScalarT], axis: int, shift: int, fill_value: float
+) -> NDArray[_ScalarT]:
     pads = [(0, 0)] * data.ndim
     pads[axis] = (0, -shift)
     return np.pad(
@@ -306,8 +309,8 @@ def _pad_along_axis(
 
 
 def _optional_zero_missing_weight(
-    data: NDArray[ScalarT], mom_axes: Iterable[int], zero_missing_weights: bool
-) -> NDArray[ScalarT]:
+    data: NDArray[_ScalarT], mom_axes: Iterable[int], zero_missing_weights: bool
+) -> NDArray[_ScalarT]:
     """Note that this modifies ``data`` inplace.  Pass in a copy if this is not what you want."""
     if zero_missing_weights:
         s: list[Any] = [slice(None)] * data.ndim
@@ -864,7 +867,7 @@ def _rolling_vals(
         *axes_args,
     ]
 
-    factory_rolling_vals(
+    _ = factory_rolling_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, args[0].size * prep.mom_params.ndim),
     )(
@@ -1499,7 +1502,7 @@ def _rolling_exp_vals(
     ]
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
-    factory_rolling_exp_vals(
+    _ = factory_rolling_exp_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, x.size * prep.mom_params.ndim),
     )(

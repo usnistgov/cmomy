@@ -29,17 +29,19 @@ if TYPE_CHECKING:
     from numpy.typing import NDArray
 
     from .core.typing import (
-        ApplyUFuncKwargs,
         AxisReduce,
         BootStrapMethod,
         DataT,
         DimsReduce,
         FloatDTypes,
-        FloatingT,
         KeepAttrs,
         MissingType,
         NDArrayAny,
     )
+    from .core.typing_compat import TypeVar
+    from .core.typing_kwargs import ApplyUFuncKwargs
+
+    _FloatingT = TypeVar("_FloatingT", bound="np.floating[Any]")
 
 
 @overload
@@ -59,7 +61,7 @@ def bootstrap_confidence_interval(
 ) -> DataT: ...
 @overload
 def bootstrap_confidence_interval(
-    theta_boot: NDArray[FloatingT],
+    theta_boot: NDArray[_FloatingT],
     theta_hat: float | FloatDTypes | NDArrayAny | None = ...,
     theta_jack: NDArrayAny | None = ...,
     *,
@@ -71,12 +73,12 @@ def bootstrap_confidence_interval(
     ci_dim: str = ...,
     keep_attrs: KeepAttrs = ...,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArray[FloatingT]: ...
+) -> NDArray[_FloatingT]: ...
 
 
 @docfiller.decorate
 def bootstrap_confidence_interval(
-    theta_boot: DataT | NDArray[FloatingT],
+    theta_boot: DataT | NDArray[_FloatingT],
     theta_hat: float | FloatDTypes | NDArrayAny | DataT | None = None,
     theta_jack: NDArrayAny | DataT | None = None,
     *,
@@ -88,7 +90,7 @@ def bootstrap_confidence_interval(
     ci_dim: str = "alpha",
     keep_attrs: KeepAttrs = None,
     apply_ufunc_kwargs: ApplyUFuncKwargs | None = None,
-) -> NDArray[FloatingT] | DataT:
+) -> NDArray[_FloatingT] | DataT:
     r"""
     Create the bootstrap confidence interval.
 
@@ -275,20 +277,20 @@ def bootstrap_confidence_interval(
 
 
 def _bootstrap_confidence_interval(
-    theta_boot: NDArray[FloatingT],
+    theta_boot: NDArray[_FloatingT],
     theta_hat: float | FloatDTypes | NDArrayAny | None = None,
     theta_jack: NDArrayAny | None = None,
     *,
     alphas: NDArrayAny,
     method: BootStrapMethod,
     axis: int,
-) -> NDArray[FloatingT]:
+) -> NDArray[_FloatingT]:
     dtype = theta_boot.dtype
     if (method_ := method.lower()) in {"basic", "bca"}:
         if theta_hat is None:
             msg = f"Must specify theta_hat for {method=}"
             raise ValueError(msg)
-        theta_hat_: NDArray[FloatingT] = np.array(
+        theta_hat_: NDArray[_FloatingT] = np.array(
             theta_hat, ndmin=1, dtype=dtype, copy=copy_if_needed(None)
         )
 
@@ -296,7 +298,7 @@ def _bootstrap_confidence_interval(
         if theta_hat_.ndim < theta_boot.ndim:
             theta_hat_ = np.expand_dims(theta_hat_, axis=axis)
 
-    ci: NDArray[FloatingT]
+    ci: NDArray[_FloatingT]
     if method_ == "bca":
         theta_jack = np.asarray(theta_jack, dtype=dtype)
 
@@ -324,13 +326,13 @@ class InstabilityWarning(UserWarning):
     def __init__(self, msg: str | None = None) -> None:  # pragma: no cover
         if msg is None:
             msg = "Data instability encountered; results may not be reliable."
-        self.args = (msg,)
+        super().__init__(msg)
 
 
 def _compute_a(
-    theta_jack: NDArray[FloatingT],
+    theta_jack: NDArray[_FloatingT],
     axis: int = -1,
-) -> FloatingT | NDArray[FloatingT]:
+) -> _FloatingT | NDArray[_FloatingT]:
     delta = theta_jack.mean(axis=axis, keepdims=True) - theta_jack
     num = (delta**3).sum(axis=axis)
     den = (delta**2).sum(axis=axis)
@@ -346,17 +348,17 @@ def _percentile_of_score(
 
 def _compute_z0(
     theta_hat: float | NDArrayAny,
-    theta_boot: NDArray[FloatingT],
+    theta_boot: NDArray[_FloatingT],
     axis: int = -1,
-) -> NDArray[FloatingT]:
+) -> NDArray[_FloatingT]:
     percentile = _percentile_of_score(theta_boot, theta_hat, axis=axis)
     return ndtri(percentile, dtype=theta_boot.dtype)
 
 
 # modified from scipy.stats._resampling._percentile_along_axis
 def _quantile_along_axis(
-    theta_boot: NDArray[FloatingT], alpha: NDArray[FloatingT], axis: int = -1
-) -> NDArray[FloatingT]:
+    theta_boot: NDArray[_FloatingT], alpha: NDArray[_FloatingT], axis: int = -1
+) -> NDArray[_FloatingT]:
     if axis != -1:
         theta_boot = np.moveaxis(theta_boot, axis, -1)
 

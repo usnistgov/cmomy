@@ -8,9 +8,14 @@ from typing import TYPE_CHECKING, overload
 import numpy as np
 
 if TYPE_CHECKING:
+    from typing import Any
+
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .typing import DTypeLikeArg, FloatingT, NDArrayAny
+    from .typing import DTypeLikeArg, NDArrayAny
+    from .typing_compat import TypeVar
+
+    _FloatingT = TypeVar("_FloatingT", bound=np.floating[Any])
 
 # so don't have to use scipy....
 _SQRT2 = sqrt(2)
@@ -27,7 +32,7 @@ del _ndtr_py
 
 
 @overload
-def ndtri(p: ArrayLike, *, dtype: DTypeLikeArg[FloatingT]) -> NDArray[FloatingT]: ...  # pyright: ignore[reportOverlappingOverload]
+def ndtri(p: ArrayLike, *, dtype: DTypeLikeArg[_FloatingT]) -> NDArray[_FloatingT]: ...  # pyright: ignore[reportOverlappingOverload]
 @overload
 def ndtri(p: ArrayLike, *, dtype: DTypeLike = ...) -> NDArray[np.float64]: ...
 

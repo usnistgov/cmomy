@@ -26,7 +26,6 @@ if TYPE_CHECKING:
 
     from .moment_params import MomParamsArrayOptional
     from .typing import (
-        ApplyUFuncKwargs,
         DataT,
         MissingCoreDimOptions,
         MomDims,
@@ -35,6 +34,9 @@ if TYPE_CHECKING:
         MomNDim,
     )
     from .typing_compat import EllipsisType
+    from .typing_kwargs import (
+        ApplyUFuncKwargs,
+    )
 
 
 # * apply_ufunc_kws

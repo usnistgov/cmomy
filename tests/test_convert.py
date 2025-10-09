@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
 from __future__ import annotations
 
 from functools import partial
@@ -72,7 +71,7 @@ def test_raw(data_and_kwargs) -> None:
     np.testing.assert_allclose(c.to_raw(weight=1), raw)
 
     # from raw
-    cr = cmomy.wrap_raw(raw, mom_ndim=len(kwargs["mom"]))  # pyright: ignore[reportArgumentType, reportCallIssue]
+    cr = cmomy.wrap_raw(raw, mom_ndim=len(kwargs["mom"]))
     np.testing.assert_allclose(cr, c.assign_moment(weight=1.0))
 
 

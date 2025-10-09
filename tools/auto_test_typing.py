@@ -186,7 +186,9 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike
 
     from cmomy.core.typing_compat import TypeVar
-    from cmomy.core.typing import NDArrayAny, CentralMomentsArrayAny, CentralMomentsDataAny
+    from cmomy.core.typing import NDArrayAny
+    from cmomy.wrapper.wrap_xr import CentralMomentsDataAny
+    from cmomy.wrapper.wrap_np import CentralMomentsArrayAny
 
     T = TypeVar("T")
 

@@ -27,12 +27,12 @@ if TYPE_CHECKING:
         AxesGUFunc,
         MomNDim,
         NDArrayAny,
-        ScalarT,
     )
     from .typing_compat import TypeIs, TypeVar
 
     _NDArrayT = TypeVar("_NDArrayT", bound=NDArray[Any])
     _T = TypeVar("_T")
+    _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
 # * Array order ---------------------------------------------------------------
@@ -262,11 +262,11 @@ def asarray_maybe_recast(
 
 
 def optional_keepdims(
-    x: NDArray[ScalarT],
+    x: NDArray[_ScalarT],
     *,
     axis: int | Sequence[int],
     keepdims: bool = False,
-) -> NDArray[ScalarT]:
+) -> NDArray[_ScalarT]:
     """Optional keep dimensions."""
     if keepdims:
         return np.expand_dims(x, axis)

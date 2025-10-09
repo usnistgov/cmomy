@@ -50,7 +50,6 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
     from .core.typing import (
-        ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -72,10 +71,13 @@ if TYPE_CHECKING:
         MomNDim,
         MomParamsInput,
         NDArrayAny,
+    )
+    from .core.typing_compat import Unpack
+    from .core.typing_kwargs import (
+        ApplyUFuncKwargs,
         ReduceDataKwargs,
         ReduceValsKwargs,
     )
-    from .core.typing_compat import Unpack
 
 
 # * Reduce vals ---------------------------------------------------------------
@@ -318,7 +320,7 @@ def _reduce_vals(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_reduce_vals(
+    _ = factory_reduce_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(

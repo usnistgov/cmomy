@@ -27,6 +27,7 @@ from cmomy.core.typing import (
     FloatT,
     MomAxesStrict,
 )
+from cmomy.core.typing_compat import override
 from cmomy.core.utils import mom_to_mom_shape
 from cmomy.core.validate import (
     is_ndarray,
@@ -54,7 +55,6 @@ if TYPE_CHECKING:
         AttrsType,
         AxisReduce,
         Casting,
-        CentralMomentsArrayAny,
         CoordsType,
         DimsType,
         DTypeLikeArg,
@@ -69,13 +69,17 @@ if TYPE_CHECKING:
         NameType,
         NDArrayAny,
         Sampler,
+    )
+    from cmomy.core.typing_compat import Self, TypeAlias, Unpack
+    from cmomy.core.typing_kwargs import (
         WrapNPReduceKwargs,
         WrapNPResampleAndReduceKwargs,
-        WrapNPTransform,
+        WrapNPTransformKwargs,
     )
-    from cmomy.core.typing_compat import Self, Unpack
 
     from .wrap_xr import CentralMomentsData
+
+    CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
 
 
 docfiller_abc = docfiller.factory_from_parent(CentralMomentsABC)
@@ -195,6 +199,7 @@ class CentralMomentsArray(
 
     # Reimplement to get dtype correct
     @property
+    @override
     @docfiller_abc()
     def dtype(self) -> np.dtype[FloatT]:
         return self._obj.dtype
@@ -213,6 +218,7 @@ class CentralMomentsArray(
         )
         return self._new_like(obj)
 
+    @override
     def to_numpy(self) -> NDArray[FloatT]:
         return self._obj
 
@@ -266,6 +272,7 @@ class CentralMomentsArray(
         fastpath: bool = ...,
     ) -> CentralMomentsArrayAny: ...
 
+    @override
     @docfiller_inherit_abc()
     def new_like(
         self,
@@ -352,6 +359,7 @@ class CentralMomentsArray(
         copy: bool = ...,
     ) -> CentralMomentsArrayAny: ...
 
+    @override
     @docfiller_abc()
     def astype(
         self,
@@ -367,10 +375,12 @@ class CentralMomentsArray(
         )
 
     # ** Utils ----------------------------------------------------------------
+    @override
     def _validate_dtype(self) -> None:
         _ = validate_floating_dtype(self._obj.dtype)
 
     # ** Pushing --------------------------------------------------------------
+    @override
     @docfiller_inherit_abc()
     def push_data(
         self,
@@ -422,6 +432,7 @@ class CentralMomentsArray(
             )
         return self
 
+    @override
     @docfiller_inherit_abc()
     def push_datas(
         self,
@@ -472,6 +483,7 @@ class CentralMomentsArray(
 
         return self
 
+    @override
     @docfiller_inherit_abc()
     def push_val(
         self,
@@ -529,6 +541,7 @@ class CentralMomentsArray(
         )
         return self
 
+    @override
     @docfiller_inherit_abc()
     def push_vals(
         self,
@@ -597,7 +610,7 @@ class CentralMomentsArray(
         *,
         out: None = ...,
         dtype: None = ...,
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> NDArray[FloatT]: ...
     @overload
     def cumulative(
@@ -605,7 +618,7 @@ class CentralMomentsArray(
         *,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> NDArray[FloatT_]: ...
     @overload
     def cumulative(
@@ -613,7 +626,7 @@ class CentralMomentsArray(
         *,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> NDArray[FloatT_]: ...
     @overload
     def cumulative(
@@ -621,9 +634,10 @@ class CentralMomentsArray(
         *,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> NDArrayAny: ...
 
+    @override
     @docfiller_inherit_abc()
     def cumulative(  # pyright: ignore[reportIncompatibleMethodOverride]  # pylint: disable=arguments-differ
         self,
@@ -671,6 +685,7 @@ class CentralMomentsArray(
         order: ArrayOrderCF = ...,
     ) -> CentralMomentsArrayAny: ...
 
+    @override
     @docfiller_inherit_abc()
     def moments_to_comoments(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
@@ -723,6 +738,7 @@ class CentralMomentsArray(
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
     ) -> CentralMomentsArrayAny: ...
 
+    @override
     @docfiller_inherit_abc()
     def resample_and_reduce(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
@@ -778,7 +794,7 @@ class CentralMomentsArray(
         data_reduced: ArrayLike | None = ...,
         out: None = ...,
         dtype: None = ...,
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> Self: ...
     @overload
     def jackknife_and_reduce(
@@ -787,7 +803,7 @@ class CentralMomentsArray(
         data_reduced: ArrayLike | None = ...,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def jackknife_and_reduce(
@@ -796,7 +812,7 @@ class CentralMomentsArray(
         data_reduced: ArrayLike | None = ...,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> CentralMomentsArray[FloatT_]: ...
     @overload
     def jackknife_and_reduce(
@@ -805,9 +821,10 @@ class CentralMomentsArray(
         data_reduced: ArrayLike | None = ...,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
-        **kwargs: Unpack[WrapNPTransform],
+        **kwargs: Unpack[WrapNPTransformKwargs],
     ) -> CentralMomentsArrayAny: ...
 
+    @override
     @docfiller_inherit_abc()
     def jackknife_and_reduce(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
@@ -866,6 +883,7 @@ class CentralMomentsArray(
         **kwargs: Unpack[WrapNPReduceKwargs],
     ) -> CentralMomentsArrayAny: ...
 
+    @override
     @docfiller_inherit_abc()
     def reduce(
         self,
@@ -947,6 +965,7 @@ class CentralMomentsArray(
         order: ArrayOrderCF = ...,
     ) -> CentralMomentsArrayAny: ...
 
+    @override
     @classmethod
     @docfiller_abc()
     def zeros(

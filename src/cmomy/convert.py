@@ -58,18 +58,14 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.core.typing import AxisReduceWrap
-
     from .core.typing import (
-        ApplyUFuncKwargs,
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
         AxisReduce,
+        AxisReduceWrap,
         Casting,
-        CentralMomentsT,
         ConvertStyle,
-        CumulativeKwargs,
         DataT,
         DimsReduce,
         DTypeLikeArg,
@@ -78,14 +74,21 @@ if TYPE_CHECKING:
         MissingType,
         MomAxes,
         MomDims,
-        MomentsToComomentsKwargs,
-        MomentsTypeKwargs,
         MomNDim,
         MomParamsInput,
         NDArrayAny,
-        NDArrayT,
     )
-    from .core.typing_compat import Unpack
+    from .core.typing_compat import TypeVar, Unpack
+    from .core.typing_kwargs import (
+        ApplyUFuncKwargs,
+        CumulativeKwargs,
+        MomentsToComomentsKwargs,
+        MomentsTypeKwargs,
+    )
+    from .wrapper.wrap_abc import CentralMomentsABC
+
+    _CentralMomentsT = TypeVar("_CentralMomentsT", bound=CentralMomentsABC[Any, Any])
+    _NDArrayT = TypeVar("_NDArrayT", bound="NDArray[Any]")
 
 
 # * Convert between raw and central moments
@@ -940,12 +943,12 @@ def comoments_to_moments(
 # * concat
 @overload
 def concat(
-    arrays: Iterable[CentralMomentsT],
+    arrays: Iterable[_CentralMomentsT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> CentralMomentsT: ...
+) -> _CentralMomentsT: ...
 @overload
 def concat(
     arrays: Iterable[DataT],
@@ -956,22 +959,22 @@ def concat(
 ) -> DataT: ...
 @overload
 def concat(
-    arrays: Iterable[NDArrayT],
+    arrays: Iterable[_NDArrayT],
     *,
     axis: AxisReduce | MissingType = ...,
     dim: DimsReduce | MissingType = ...,
     **kwargs: Any,
-) -> NDArrayT: ...
+) -> _NDArrayT: ...
 
 
 @docfiller.decorate
 def concat(
-    arrays: Iterable[NDArrayT] | Iterable[DataT] | Iterable[CentralMomentsT],
+    arrays: Iterable[_NDArrayT] | Iterable[DataT] | Iterable[_CentralMomentsT],
     *,
     axis: AxisReduce | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     **kwargs: Any,
-) -> NDArrayT | DataT | CentralMomentsT:
+) -> _NDArrayT | DataT | _CentralMomentsT:
     """
     Concatenate moments objects.
 
