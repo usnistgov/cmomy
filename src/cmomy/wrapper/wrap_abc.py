@@ -49,7 +49,6 @@ if TYPE_CHECKING:
         MomNDim,
         NDArrayAny,
         NDArrayInt,
-        Sampler,
         SelectMoment,
     )
     from cmomy.core.typing_compat import Self
@@ -57,6 +56,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
     )
     from cmomy.factory import Pusher
+    from cmomy.resample._typing import Sampler
 
 #: MomParams type variable
 MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")

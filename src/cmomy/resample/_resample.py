@@ -50,7 +50,7 @@ from cmomy.factory import (
     parallel_heuristic,
 )
 
-from ._sampler import (
+from ._factory_sampler import (
     factory_sampler,
 )
 
@@ -77,7 +77,6 @@ if TYPE_CHECKING:
         MomentsStrict,
         MomNDim,
         NDArrayAny,
-        Sampler,
     )
     from cmomy.core.typing_compat import Unpack
     from cmomy.core.typing_kwargs import (
@@ -87,6 +86,8 @@ if TYPE_CHECKING:
         ResampleDataKwargs,
         ResampleValsKwargs,
     )
+
+    from ._typing import Sampler
 
 
 # * Resample data

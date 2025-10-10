@@ -52,7 +52,6 @@ if TYPE_CHECKING:
         Moments,
         MomNDim,
         NDArrayAny,
-        Sampler,
     )
     from cmomy.core.typing_compat import TypeAlias, TypeVar, Unpack
     from cmomy.core.typing_kwargs import (
@@ -63,6 +62,7 @@ if TYPE_CHECKING:
         WrapRawKwargs,
         ZerosLikeKwargs,
     )
+    from cmomy.resample._typing import Sampler
 
     from .wrap_np import CentralMomentsArrayAny
     from .wrap_xr import (

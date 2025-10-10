@@ -8,11 +8,8 @@ Typed keyword arguments (:mod:`cmomy.core.typing_kwargs`)
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any
 
-import xarray as xr
-
-from .docstrings import docfiller
 from .typing_compat import TypedDict
 
 if TYPE_CHECKING:
@@ -21,7 +18,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from cmomy.resample import IndexSampler
+    from cmomy.resample._typing import Sampler
 
     from .moment_params import MomParamsInput
     from .typing import (
@@ -42,7 +39,6 @@ if TYPE_CHECKING:
         MomDims,
         Moments,
         MomNDim,
-        NDArrayAny,
         RngTypes,
     )
     from .typing_compat import TypeAlias
@@ -512,47 +508,3 @@ class IndexSamplerFromDataKwargs(  # type: ignore[call-arg]
     rng: RngTypes | None
     replace: bool
     parallel: bool | None
-
-
-@docfiller.decorate
-class FactoryIndexSamplerKwargs(  # type: ignore[call-arg]
-    TypedDict,
-    total=False,
-    closed=True,
-):
-    """
-    Extra parameters to :func:`.resample.factory_sampler`
-
-    Parameters
-    ----------
-    {indices}
-    {freq_xarray}
-    {ndat}
-    {nrep}
-    {nsamp}
-    {paired}
-    {rng}
-    {resample_replace}
-    {shuffle}
-    """
-
-    freq: NDArrayAny | xr.DataArray | xr.Dataset | None
-    indices: NDArrayAny | xr.DataArray | xr.Dataset | None
-    ndat: int | None
-    nrep: int | None
-    nsamp: int | None
-    paired: bool
-    rng: RngTypes | None
-    replace: bool
-    shuffle: bool
-
-
-#: IndexSampler or mapping which can be converted to IndexSampler
-Sampler: TypeAlias = Union[
-    int,
-    "NDArrayAny",
-    xr.DataArray,
-    xr.Dataset,
-    "IndexSampler[Any]",
-    FactoryIndexSamplerKwargs,
-]

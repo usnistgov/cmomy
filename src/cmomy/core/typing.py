@@ -37,8 +37,6 @@ if TYPE_CHECKING:
     # Missing value type
     MissingType: TypeAlias = Literal[_Missing.MISSING]
 
-from .typing_kwargs import Sampler as Sampler  # noqa: PLC0414
-
 # * TypeVars ------------------------------------------------------------------
 #: DataArray or Dataset
 DataT = TypeVar("DataT", xr.DataArray, xr.Dataset)

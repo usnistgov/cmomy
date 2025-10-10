@@ -68,7 +68,6 @@ if TYPE_CHECKING:
         MomNDim,
         NameType,
         NDArrayAny,
-        Sampler,
     )
     from cmomy.core.typing_compat import Self, TypeAlias, Unpack
     from cmomy.core.typing_kwargs import (
@@ -76,6 +75,7 @@ if TYPE_CHECKING:
         WrapNPResampleAndReduceKwargs,
         WrapNPTransformKwargs,
     )
+    from cmomy.resample._typing import Sampler
 
     from .wrap_xr import CentralMomentsData
 

@@ -80,9 +80,7 @@ if TYPE_CHECKING:
         MomentsToComomentsKwargs,
         MomentsTypeKwargs,
     )
-    from .wrapper.wrap_abc import CentralMomentsABC
 
-    _CentralMomentsT = TypeVar("_CentralMomentsT", bound=CentralMomentsABC[Any, Any])
     _NDArrayT = TypeVar("_NDArrayT", bound="NDArray[Any]")
 
 
