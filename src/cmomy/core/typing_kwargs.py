@@ -18,8 +18,6 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from cmomy.resample._typing import Sampler
-
     from .moment_params import MomParamsInput
     from .typing import (
         ArrayOrderCF,
@@ -104,10 +102,6 @@ class _KeepDimsKwargs(TypedDict, total=False):
     keepdims: bool
 
 
-class _RepDimKwargs(TypedDict, total=False):
-    rep_dim: str
-
-
 class _CoordsPolicyKwargs(TypedDict, total=False):
     coords_policy: CoordsPolicy
 
@@ -122,10 +116,6 @@ class _IndexedKwargs(TypedDict, total=False):
     group_start: Required[ArrayLike]
     group_end: Required[ArrayLike]
     scale: ArrayLike | None
-
-
-class _SamplerKwargs(TypedDict, total=False):
-    sampler: Required[Sampler]
 
 
 class _DataKwargs(
@@ -246,27 +236,6 @@ class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
     closed=True,
 ):
     """Extra parameters to :func:`.grouped.reduce_vals_indexed`"""
-
-
-# ** Resample
-class ResampleDataKwargs(  # type: ignore[call-arg]
-    _DataKACFKwargs,
-    _RepDimKwargs,
-    _SamplerKwargs,
-    total=False,
-    closed=True,
-):
-    """Extra parameters to :func:`.resample.resample_data`"""
-
-
-class ResampleValsKwargs(  # type: ignore[call-arg]
-    _ValsCFKwargs,
-    _RepDimKwargs,
-    _SamplerKwargs,
-    total=False,
-    closed=True,
-):
-    """Extra parameters for :func:`.resample.resample_vals`"""
 
 
 class JackknifeDataKwargs(  # type: ignore[call-arg]

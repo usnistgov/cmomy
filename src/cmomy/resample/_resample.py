@@ -83,11 +83,9 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
         JackknifeDataKwargs,
         JackknifeValsKwargs,
-        ResampleDataKwargs,
-        ResampleValsKwargs,
     )
 
-    from ._typing import Sampler
+    from .typing import ResampleDataKwargs, ResampleValsKwargs, Sampler
 
 
 # * Resample data

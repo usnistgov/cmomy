@@ -27,7 +27,7 @@ if TYPE_CHECKING:
         RngTypes,
     )
 
-    from ._typing import Sampler
+    from .typing import Sampler
 
 
 @docfiller.decorate

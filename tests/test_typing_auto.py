@@ -29,8 +29,7 @@ if TYPE_CHECKING:
 
     from cmomy.core.typing_compat import TypeVar
     from cmomy.core.typing import NDArrayAny
-    from cmomy.wrapper.wrap_xr import CentralMomentsDataAny
-    from cmomy.wrapper.wrap_np import CentralMomentsArrayAny
+    from cmomy.wrapper.typing import CentralMomentsArrayAny, CentralMomentsDataAny
 
     T = TypeVar("T")
 

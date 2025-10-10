@@ -25,8 +25,7 @@ from cmomy.core.validate import (
     validate_mom,
 )
 
-from .wrap_np import CentralMomentsArray
-from .wrap_xr import CentralMomentsData
+from ._wrapper import CentralMomentsArray, CentralMomentsData
 
 if TYPE_CHECKING:
     from typing import Any
@@ -57,15 +56,14 @@ if TYPE_CHECKING:
     from cmomy.core.typing_kwargs import (
         ApplyUFuncKwargs,
         ReduceValsKwargs,
-        ResampleValsKwargs,
         WrapKwargs,
         WrapRawKwargs,
         ZerosLikeKwargs,
     )
-    from cmomy.resample._typing import Sampler
+    from cmomy.resample.typing import ResampleValsKwargs, Sampler
 
-    from .wrap_np import CentralMomentsArrayAny
-    from .wrap_xr import (
+    from .typing import (
+        CentralMomentsArrayAny,
         CentralMomentsDataAny,
         CentralMomentsDataArray,
         CentralMomentsDataset,

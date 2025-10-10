@@ -6,4 +6,4 @@ Base Classes
    :toctree: generated/
    :template: autodocsumm/module-inherit.rst
 
-   cmomy.wrapper.wrap_abc
+   cmomy.wrapper._wrapper_abc

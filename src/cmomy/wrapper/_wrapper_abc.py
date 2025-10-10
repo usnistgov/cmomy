@@ -56,7 +56,7 @@ if TYPE_CHECKING:
         ApplyUFuncKwargs,
     )
     from cmomy.factory import Pusher
-    from cmomy.resample._typing import Sampler
+    from cmomy.resample.typing import Sampler
 
 #: MomParams type variable
 MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")

@@ -35,7 +35,7 @@ if TYPE_CHECKING:
         MissingType,
     )
     from .core.typing_compat import TypeVar
-    from .wrapper.wrap_abc import CentralMomentsABC
+    from .wrapper._wrapper_abc import CentralMomentsABC
 
     _CentralMomentsT = TypeVar("_CentralMomentsT", bound=CentralMomentsABC[Any, Any])
     _NDArrayT = TypeVar("_NDArrayT", bound=NDArray[Any])
