@@ -32,6 +32,9 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray  # noqa: F401
 
+    from cmomy.core._typing_kwargs import (
+        ApplyUFuncKwargs,
+    )
     from cmomy.core.moment_params import MomParamsArray, MomParamsXArray  # noqa: F401
     from cmomy.core.typing import (
         ArrayOrderCF,
@@ -52,9 +55,6 @@ if TYPE_CHECKING:
         SelectMoment,
     )
     from cmomy.core.typing_compat import Self
-    from cmomy.core.typing_kwargs import (
-        ApplyUFuncKwargs,
-    )
     from cmomy.factory import Pusher
     from cmomy.resample.typing import Sampler
 

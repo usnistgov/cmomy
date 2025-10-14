@@ -35,6 +35,9 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
+    from cmomy.core._typing_kwargs import (
+        IndexSamplerFromDataKwargs,
+    )
     from cmomy.core.moment_params import MomParamsInput
     from cmomy.core.typing import (
         AxisReduceWrap,
@@ -49,9 +52,6 @@ if TYPE_CHECKING:
         RngTypes,
     )
     from cmomy.core.typing_compat import Unpack
-    from cmomy.core.typing_kwargs import (
-        IndexSamplerFromDataKwargs,
-    )
 
 
 # * Class interface -----------------------------------------------------------

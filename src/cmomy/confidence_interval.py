@@ -28,6 +28,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import NDArray
 
+    from .core._typing_kwargs import ApplyUFuncKwargs
     from .core.typing import (
         AxisReduce,
         BootStrapMethod,
@@ -39,7 +40,6 @@ if TYPE_CHECKING:
         NDArrayAny,
     )
     from .core.typing_compat import TypeVar
-    from .core.typing_kwargs import ApplyUFuncKwargs
 
     _FloatingT = TypeVar("_FloatingT", bound="np.floating[Any]")
 

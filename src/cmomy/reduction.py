@@ -49,6 +49,11 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from .core._typing_kwargs import (
+        ApplyUFuncKwargs,
+        ReduceDataKwargs,
+        ReduceValsKwargs,
+    )
     from .core.moment_params import MomParamsInput
     from .core.typing import (
         ArrayLikeArg,
@@ -73,11 +78,6 @@ if TYPE_CHECKING:
         NDArrayAny,
     )
     from .core.typing_compat import Unpack
-    from .core.typing_kwargs import (
-        ApplyUFuncKwargs,
-        ReduceDataKwargs,
-        ReduceValsKwargs,
-    )
 
 
 # * Reduce vals ---------------------------------------------------------------

@@ -1,4 +1,7 @@
-"""Typing aliases from :mod:`cmomy.wrapper`"""
+"""
+Typing aliases (:mod:`cmomy.wrapper.typing`)
+============================================
+"""
 
 from __future__ import annotations
 

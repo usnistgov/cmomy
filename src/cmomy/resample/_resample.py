@@ -57,6 +57,11 @@ from ._factory_sampler import (
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core._typing_kwargs import (
+        ApplyUFuncKwargs,
+        JackknifeDataKwargs,
+        JackknifeValsKwargs,
+    )
     from cmomy.core.moment_params import MomParamsInput
     from cmomy.core.typing import (
         ArrayLikeArg,
@@ -79,13 +84,9 @@ if TYPE_CHECKING:
         NDArrayAny,
     )
     from cmomy.core.typing_compat import Unpack
-    from cmomy.core.typing_kwargs import (
-        ApplyUFuncKwargs,
-        JackknifeDataKwargs,
-        JackknifeValsKwargs,
-    )
 
-    from .typing import ResampleDataKwargs, ResampleValsKwargs, Sampler
+    from ._typing_kwargs import ResampleDataKwargs, ResampleValsKwargs
+    from .typing import Sampler
 
 
 # * Resample data

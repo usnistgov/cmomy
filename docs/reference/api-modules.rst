@@ -27,3 +27,5 @@ Modules
    :template: autodocsumm/module.rst
 
    cmomy.core.typing
+   cmomy.resample.typing
+   cmomy.wrapper.typing

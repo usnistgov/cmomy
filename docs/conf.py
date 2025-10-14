@@ -63,7 +63,6 @@ nitpick_ignore = [
 ]
 nitpick_ignore_regex = [
     (r"py:.*", r"numpy\._typing.*"),
-    (r"py:.*", r"cmomy\.core\.typing.*"),
     (r"py:.*", r"tuple.*"),
     (r"py:.*", r"cmomy\.core\.moment_params.*"),
     (r"py:.*", r"scipy\.stats\.bootstrap"),

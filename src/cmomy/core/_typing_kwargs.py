@@ -139,7 +139,7 @@ class _DataCFKwargs(
     pass
 
 
-class _DataKACFKwargs(
+class DataKACFKwargs(
     _DataKwargs,
     _OrderKACFKwargs,
     total=False,
@@ -160,7 +160,7 @@ class _ValsKwargs(
     pass
 
 
-class _ValsCFKwargs(
+class ValsCFKwargs(
     _ValsKwargs,
     _OrderCFKwargs,
     total=False,
@@ -189,7 +189,7 @@ class ReduceDataKwargs(  # type: ignore[call-arg]
 
 
 class ReduceValsKwargs(  # type: ignore[call-arg]
-    _ValsCFKwargs,
+    ValsCFKwargs,
     total=False,
     closed=True,
 ):
@@ -207,7 +207,7 @@ class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
 
 
 class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
-    _DataKACFKwargs,
+    DataKACFKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
     _CoordsPolicyKwargs,
@@ -218,7 +218,7 @@ class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
 
 
 class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
-    _ValsCFKwargs,
+    ValsCFKwargs,
     _GroupsKwargs,
     _CoordsPolicyKwargs,
     total=False,
@@ -228,7 +228,7 @@ class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
 
 
 class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
-    _ValsCFKwargs,
+    ValsCFKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
     _CoordsPolicyKwargs,
@@ -239,7 +239,7 @@ class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
 
 
 class JackknifeDataKwargs(  # type: ignore[call-arg]
-    _DataKACFKwargs,
+    DataKACFKwargs,
     total=False,
     closed=True,
 ):
@@ -250,7 +250,7 @@ class JackknifeDataKwargs(  # type: ignore[call-arg]
 
 
 class JackknifeValsKwargs(  # type: ignore[call-arg]
-    _ValsCFKwargs,
+    ValsCFKwargs,
     total=False,
     closed=True,
 ):
@@ -292,7 +292,7 @@ class MomentsTypeKwargs(  # type: ignore[call-arg]
 
 
 class CumulativeKwargs(  # type: ignore[call-arg]
-    _DataKACFKwargs,
+    DataKACFKwargs,
     total=False,
     closed=True,
 ):
@@ -356,7 +356,7 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
 
 
 class RollingDataKwargs(  # type: ignore[call-arg]
-    _DataKACFKwargs,
+    DataKACFKwargs,
     _RollingKwargs,
     total=False,
     closed=True,
@@ -365,7 +365,7 @@ class RollingDataKwargs(  # type: ignore[call-arg]
 
 
 class RollingValsKwargs(  # type: ignore[call-arg]
-    _ValsCFKwargs,
+    ValsCFKwargs,
     _RollingKwargs,
     total=False,
     closed=True,
@@ -374,7 +374,7 @@ class RollingValsKwargs(  # type: ignore[call-arg]
 
 
 class RollingExpDataKwargs(  # type: ignore[call-arg]
-    _DataKACFKwargs,
+    DataKACFKwargs,
     _RollingExpKwargs,
     total=False,
     closed=True,
@@ -385,7 +385,7 @@ class RollingExpDataKwargs(  # type: ignore[call-arg]
 
 
 class RollingExpValsKwargs(  # type: ignore[call-arg]
-    _ValsCFKwargs,
+    ValsCFKwargs,
     _RollingExpKwargs,
     total=False,
     closed=True,

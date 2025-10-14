@@ -43,6 +43,13 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from cmomy.core._typing_kwargs import (
+        ApplyUFuncKwargs,
+        ReduceDataGroupedKwargs,
+        ReduceDataIndexedKwargs,
+        ReduceValsGroupedKwargs,
+        ReduceValsIndexedKwargs,
+    )
     from cmomy.core.moment_params import MomParamsInput
     from cmomy.core.typing import (
         ArrayLikeArg,
@@ -68,13 +75,6 @@ if TYPE_CHECKING:
         NDArrayInt,
     )
     from cmomy.core.typing_compat import Unpack
-    from cmomy.core.typing_kwargs import (
-        ApplyUFuncKwargs,
-        ReduceDataGroupedKwargs,
-        ReduceDataIndexedKwargs,
-        ReduceValsGroupedKwargs,
-        ReduceValsIndexedKwargs,
-    )
 
 
 # * Utils

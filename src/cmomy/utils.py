@@ -49,6 +49,11 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from .core._typing_kwargs import (
+        ApplyUFuncKwargs,
+        SelectMomentKwargs,
+        ValsToDataKwargs,
+    )
     from .core.moment_params import MomParamsInput
     from .core.typing import (
         ArrayLikeArg,
@@ -67,11 +72,6 @@ if TYPE_CHECKING:
         SelectMoment,
     )
     from .core.typing_compat import EllipsisType, TypeVar, Unpack
-    from .core.typing_kwargs import (
-        ApplyUFuncKwargs,
-        SelectMomentKwargs,
-        ValsToDataKwargs,
-    )
 
     _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 

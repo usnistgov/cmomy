@@ -33,6 +33,13 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
     from xarray.core.types import DTypeLikeSave
 
+    from cmomy.core._typing_kwargs import (
+        ApplyUFuncKwargs,
+        ReduceValsKwargs,
+        WrapKwargs,
+        WrapRawKwargs,
+        ZerosLikeKwargs,
+    )
     from cmomy.core.moment_params import MomParamsInput
     from cmomy.core.typing import (
         ArrayLikeArg,
@@ -53,14 +60,8 @@ if TYPE_CHECKING:
         NDArrayAny,
     )
     from cmomy.core.typing_compat import TypeAlias, TypeVar, Unpack
-    from cmomy.core.typing_kwargs import (
-        ApplyUFuncKwargs,
-        ReduceValsKwargs,
-        WrapKwargs,
-        WrapRawKwargs,
-        ZerosLikeKwargs,
-    )
-    from cmomy.resample.typing import ResampleValsKwargs, Sampler
+    from cmomy.resample._typing_kwargs import ResampleValsKwargs
+    from cmomy.resample.typing import Sampler
 
     from .typing import (
         CentralMomentsArrayAny,
