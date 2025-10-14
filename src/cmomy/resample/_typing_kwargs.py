@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 
 
 class _SamplerKwargs(TypedDict, total=False):
+    """Sampler data."""
+
     sampler: Required[SamplerType]
     rep_dim: str
 
@@ -30,7 +32,7 @@ class ResampleDataKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.resample.resample_data`"""
 
 
-class ResampleValsKwargs(  # type: ignore[call-arg]
+class ResampleValsKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
     ValsCFKwargs,
     _SamplerKwargs,
     total=False,

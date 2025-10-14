@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "cmomy"
-version = "1.0.2.dev0"
+version = "1.0.2.dev1"
 description = "Central (co)moment calculation/manipulation"
 readme = "README.md"
 keywords = [
@@ -404,6 +404,10 @@ root = "tests"
 reportCallIssue = false
 reportArgumentType = false
 reportMissingImports = false
+reportUnusedCallResult = false
+
+[[tool.pyright.executionEnvironments]]
+root = "examples/usage"
 reportUnusedCallResult = false
 
 [tool.pytype]

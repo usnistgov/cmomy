@@ -3,7 +3,7 @@ Typing aliases (:mod:`cmomy.core.typing`)
 =========================================
 """
 # pyright: deprecateTypingAliases=false
-# pylint: disable=missing-class-docstring,consider-alternative-union-syntax,too-many-ancestors
+# pylint: disable=missing-class-docstring,consider-alternative-union-syntax
 
 from __future__ import annotations
 

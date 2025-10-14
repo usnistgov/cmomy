@@ -36,13 +36,9 @@ logger = logging.getLogger("cmomy.compile")
 
 
 class _Catchtime:
-    # pylint: disable=attribute-defined-outside-init
-    start: float
-    time: float
-
     def __init__(self) -> None:
-        self.start = 0
-        self.time = 0
+        self.start: float = 0
+        self.time: float = 0
 
     def __enter__(self) -> Self:
         self.start = perf_counter()

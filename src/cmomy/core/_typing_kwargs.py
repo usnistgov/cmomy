@@ -4,6 +4,7 @@ Typed keyword arguments (:mod:`cmomy.core.typing_kwargs`)
 """
 
 # pyright: deprecateTypingAliases=false
+# pylint: disable=missing-class-docstring, too-many-ancestors
 
 from __future__ import annotations
 
