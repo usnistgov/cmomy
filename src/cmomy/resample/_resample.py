@@ -62,7 +62,7 @@ if TYPE_CHECKING:
         JackknifeDataKwargs,
         JackknifeValsKwargs,
     )
-    from cmomy.core.moment_params import MomParamsInput
+    from cmomy.core.moment_params import MomParamsType
     from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -157,7 +157,7 @@ def resample_data(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -428,7 +428,7 @@ def resample_vals(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -720,7 +720,7 @@ def jackknife_data(  # noqa: PLR0913
     mom_axes: MomAxes | None = None,
     mom_axes_reduced: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str | None = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -1061,7 +1061,7 @@ def jackknife_vals(  # noqa: PLR0913
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
     mom_axes_reduced: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str | None = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,

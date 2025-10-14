@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .moment_params import MomParamsInput
+    from .moment_params import MomParamsType
     from .typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -64,7 +64,7 @@ class _PrepareBaseArray:
     @classmethod
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
@@ -84,7 +84,7 @@ class _PrepareBaseXArray:
     @classmethod
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
@@ -243,7 +243,7 @@ class PrepareValsArray(_PrepareBaseArray):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
         recast: bool = False,
@@ -516,7 +516,7 @@ class PrepareValsXArray(_PrepareBaseXArray):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
@@ -582,7 +582,7 @@ class PrepareValsXArray(_PrepareBaseXArray):
         order: ArrayOrderCF,
         dtype: DTypeLike,
         mom_axes: int | Sequence[int] | None,
-        mom_params: MomParamsInput,
+        mom_params: MomParamsType,
     ) -> tuple[NDArray[_ScalarT] | None, MomParamsArray]:
         """Prepare out for resampling"""
         # NOTE: silently ignore out of datasets.

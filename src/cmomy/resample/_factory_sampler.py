@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from cmomy.core.moment_params import MomParamsInput
+    from cmomy.core.moment_params import MomParamsType
     from cmomy.core.typing import (
         AxisReduceWrap,
         DimsReduce,
@@ -51,7 +51,7 @@ def factory_sampler(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str = "rep",
     parallel: bool | None = None,
 ) -> IndexSampler[Any]:

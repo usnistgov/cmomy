@@ -54,7 +54,7 @@ if TYPE_CHECKING:
         SelectMomentKwargs,
         ValsToDataKwargs,
     )
-    from .core.moment_params import MomParamsInput
+    from .core.moment_params import MomParamsType
     from .core.typing import (
         ArrayLikeArg,
         AxesWrap,
@@ -87,7 +87,7 @@ def moveaxis_order(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     axes_to_end: bool = False,
     allow_select_mom_axes: bool = False,
 ) -> list[int]:
@@ -178,7 +178,7 @@ def moveaxis(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     axes_to_end: bool = ...,
     allow_select_mom_axes: bool = ...,
 ) -> NDArray[_ScalarT]: ...
@@ -193,7 +193,7 @@ def moveaxis(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     axes_to_end: bool = ...,
     allow_select_mom_axes: bool = ...,
 ) -> xr.DataArray: ...
@@ -210,7 +210,7 @@ def moveaxis(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     axes_to_end: bool = False,
     allow_select_mom_axes: bool = False,
 ) -> NDArray[_ScalarT] | xr.DataArray:
@@ -394,7 +394,7 @@ def select_moment(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     squeeze: bool = True,
     dim_combined: str = "variable",
     coords_combined: str | Sequence[Hashable] | None = None,
@@ -571,7 +571,7 @@ def assign_moment(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -587,7 +587,7 @@ def assign_moment(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     squeeze: bool = ...,
     copy: bool = ...,
     keep_attrs: KeepAttrs = ...,
@@ -606,7 +606,7 @@ def assign_moment(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     squeeze: bool = True,
     copy: bool = True,
     dim_combined: Hashable | None = None,
@@ -866,7 +866,7 @@ def vals_to_data(
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     dtype: DTypeLike = None,
     out: NDArrayAny | xr.DataArray | None = None,
     keep_attrs: KeepAttrs = None,

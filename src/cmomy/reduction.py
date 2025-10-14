@@ -54,7 +54,7 @@ if TYPE_CHECKING:
         ReduceDataKwargs,
         ReduceValsKwargs,
     )
-    from .core.moment_params import MomParamsInput
+    from .core.moment_params import MomParamsType
     from .core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -153,7 +153,7 @@ def reduce_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -401,7 +401,7 @@ def reduce_data(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike
 
-    from .moment_params import MomParamsInput
+    from .moment_params import MomParamsType
     from .typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -73,7 +73,7 @@ class _MomKwargs(TypedDict, total=False):
 
 
 class _MomParamsKwargs(TypedDict, total=False):
-    mom_params: MomParamsInput
+    mom_params: MomParamsType
 
 
 class _AxisKwargs(TypedDict, total=False):

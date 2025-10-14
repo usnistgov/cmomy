@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     from cmomy.core._typing_kwargs import (
         IndexSamplerFromDataKwargs,
     )
-    from cmomy.core.moment_params import MomParamsInput
+    from cmomy.core.moment_params import MomParamsType
     from cmomy.core.typing import (
         AxisReduceWrap,
         DataT,
@@ -247,7 +247,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         mom_ndim: MomNDim | None = None,
         mom_axes: MomAxes | None = None,
         mom_dims: MomDims | None = None,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         rep_dim: str = "rep",
         paired: bool = True,
         rng: RngTypes | None = None,
@@ -405,7 +405,7 @@ def _randsamp_indices_dataarray_or_dataset(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rng: RngTypes | None = None,
     replace: bool = True,
 ) -> xr.DataArray | DataT:
@@ -452,7 +452,7 @@ def select_ndat(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
 ) -> int:
     """
     Determine ndat from array.

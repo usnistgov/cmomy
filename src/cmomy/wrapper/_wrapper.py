@@ -71,7 +71,7 @@ if TYPE_CHECKING:
         WrapNPResampleAndReduceKwargs,
         WrapNPTransformKwargs,
     )
-    from cmomy.core.moment_params import MomParamsInput
+    from cmomy.core.moment_params import MomParamsType
     from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderACF,
@@ -145,7 +145,7 @@ class CentralMomentsArray(
         copy: bool | None = ...,
         dtype: None = ...,
         order: ArrayOrderKACF = ...,
-        mom_params: MomParamsInput = ...,
+        mom_params: MomParamsType = ...,
         fastpath: bool = ...,
     ) -> None: ...
     @overload
@@ -158,7 +158,7 @@ class CentralMomentsArray(
         copy: bool | None = ...,
         dtype: DTypeLikeArg[FloatT],
         order: ArrayOrderKACF = ...,
-        mom_params: MomParamsInput = ...,
+        mom_params: MomParamsType = ...,
         fastpath: bool = ...,
     ) -> None: ...
     @overload
@@ -171,7 +171,7 @@ class CentralMomentsArray(
         copy: bool | None = ...,
         dtype: DTypeLike = ...,
         order: ArrayOrderKACF = ...,
-        mom_params: MomParamsInput = ...,
+        mom_params: MomParamsType = ...,
         fastpath: bool = ...,
     ) -> None: ...
 
@@ -184,7 +184,7 @@ class CentralMomentsArray(
         copy: bool | None = None,
         dtype: DTypeLike = None,
         order: ArrayOrderKACF = None,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         fastpath: bool = False,
     ) -> None:
         if fastpath:
@@ -1343,7 +1343,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         mom_ndim: MomNDim | None = None,
         mom_axes: MomAxes | None = None,
         mom_dims: MomDims | None = None,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         fastpath: bool = False,
     ) -> None:
         if not is_xarray(obj):

@@ -50,7 +50,7 @@ if TYPE_CHECKING:
         ReduceValsGroupedKwargs,
         ReduceValsIndexedKwargs,
     )
-    from cmomy.core.moment_params import MomParamsInput
+    from cmomy.core.moment_params import MomParamsType
     from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -215,7 +215,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -569,7 +569,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -924,7 +924,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -1225,7 +1225,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",

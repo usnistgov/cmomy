@@ -60,7 +60,7 @@ if TYPE_CHECKING:
         MomentsToComomentsKwargs,
         MomentsTypeKwargs,
     )
-    from .core.moment_params import MomParamsInput
+    from .core.moment_params import MomParamsType
     from .core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -147,7 +147,7 @@ def moments_type(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     to: ConvertStyle = "central",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -375,7 +375,7 @@ def cumulative(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     inverse: bool = False,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -643,7 +643,7 @@ def moments_to_comoments(
     mom: tuple[int, int],
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     mom_dims_out: MomDims | None = None,
     dtype: DTypeLike = None,
     order: ArrayOrderCF = None,
@@ -828,7 +828,7 @@ def comoments_to_moments(
     *,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     mom_dims_out: MomDims | None = None,
     dtype: DTypeLike = None,
     order: ArrayOrderCF = None,

@@ -291,6 +291,9 @@ enable_error_code = [
 always_true = [ "MYPY_ONLY" ]
 allow_redefinition_new = true
 local_partial_types = true
+# project specific
+sqlite_cache = true
+pretty = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true

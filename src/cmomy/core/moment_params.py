@@ -50,7 +50,7 @@ if TYPE_CHECKING:
     _Dim = TypeVar("_Dim")
 
 #: Moment parameter input types
-MomParamsInput: TypeAlias = "MomParams | MomParamsBase | MomParamsDict | None"
+MomParamsType: TypeAlias = "MomParams | MomParamsBase | MomParamsDict | None"
 
 
 _docstring_local = """
@@ -203,7 +203,7 @@ class MomParamsArrayOptional(MomParamsBase):
     @docfiller.decorate
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
@@ -343,7 +343,7 @@ class MomParamsArray(MomParamsArrayOptional):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> tuple[MomentsStrict, Self]:
@@ -402,7 +402,7 @@ class MomParamsXArrayOptional(MomParamsBase):
     @docfiller.decorate
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
@@ -672,7 +672,7 @@ class MomParamsXArray(MomParamsXArrayOptional):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
@@ -708,7 +708,7 @@ default_mom_params_xarray = MomParamsXArrayOptional(None, None)
 def factory_mom_params(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     target: xr.DataArray | xr.Dataset,
     *,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     ndim: int | None = ...,
     axes: int | Sequence[int] | None = ...,
     dims: Hashable | Sequence[Hashable] | None = ...,
@@ -719,7 +719,7 @@ def factory_mom_params(  # type: ignore[overload-overlap] # pyright: ignore[repo
 def factory_mom_params(
     target: object,
     *,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     ndim: int | None = ...,
     axes: int | Sequence[int] | None = ...,
     dims: Hashable | Sequence[Hashable] | None = ...,
@@ -732,7 +732,7 @@ def factory_mom_params(
 def factory_mom_params(
     target: object | xr.DataArray | xr.Dataset,
     *,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     ndim: int | None = None,
     axes: int | Sequence[int] | None = None,
     dims: Hashable | Sequence[Hashable] | None = None,

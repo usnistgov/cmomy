@@ -40,7 +40,7 @@ if TYPE_CHECKING:
         WrapRawKwargs,
         ZerosLikeKwargs,
     )
-    from cmomy.core.moment_params import MomParamsInput
+    from cmomy.core.moment_params import MomParamsType
     from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -125,7 +125,7 @@ def wrap(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     dtype: _DTypeMaybeMapping | None = None,
     copy: bool | None = False,
     fastpath: bool = False,
@@ -385,7 +385,7 @@ def wrap_reduce_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -539,7 +539,7 @@ def wrap_resample_vals(  # noqa: PLR0913
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -690,7 +690,7 @@ def wrap_raw(
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",

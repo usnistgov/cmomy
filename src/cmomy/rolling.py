@@ -66,7 +66,7 @@ if TYPE_CHECKING:
         RollingExpValsKwargs,
         RollingValsKwargs,
     )
-    from .core.moment_params import MomParamsInput
+    from .core.moment_params import MomParamsType
     from .core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
@@ -108,7 +108,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     # xarray specific
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
@@ -127,7 +127,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     # xarray specific
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
@@ -146,7 +146,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     # xarray specific
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
@@ -167,7 +167,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     # xarray specific
     window_dim: str | Sequence[str] | None = None,
     keep_attrs: bool | None = None,
@@ -387,7 +387,7 @@ def rolling_data(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
@@ -660,7 +660,7 @@ def rolling_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
@@ -964,7 +964,7 @@ def rolling_exp_data(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     alpha_axis: AxisReduceWrap | MissingType = MISSING,
     adjust: bool = True,
@@ -1295,7 +1295,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     adjust: bool = True,
     zero_missing_weights: bool = True,
