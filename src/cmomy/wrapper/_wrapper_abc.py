@@ -14,7 +14,7 @@ import numpy as np
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import factory_mom_params
-from cmomy.core.typing import GenArrayT, MomParamsT
+from cmomy.core.typing_compat import TypeVar, override
 from cmomy.core.validate import (
     is_dataset,
     raise_if_wrong_value,
@@ -30,10 +30,13 @@ if TYPE_CHECKING:
     )
 
     import xarray as xr
-    from numpy.typing import ArrayLike, DTypeLike
+    from numpy.typing import ArrayLike, DTypeLike, NDArray  # noqa: F401
 
-    from cmomy.core.typing import (
+    from cmomy.core._typing_kwargs import (
         ApplyUFuncKwargs,
+    )
+    from cmomy.core.moment_params import MomParamsArray, MomParamsXArray  # noqa: F401
+    from cmomy.core.typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
         AxisReduce,
@@ -49,11 +52,16 @@ if TYPE_CHECKING:
         MomNDim,
         NDArrayAny,
         NDArrayInt,
-        Sampler,
         SelectMoment,
     )
     from cmomy.core.typing_compat import Self
     from cmomy.factory import Pusher
+    from cmomy.resample.typing import SamplerType
+
+#: MomParams type variable
+MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
+#: Generic array type variable
+GenArrayT = TypeVar("GenArrayT", "NDArray[Any]", "xr.DataArray", "xr.Dataset")
 
 
 @docfiller.decorate  # noqa: PLR0904
@@ -177,6 +185,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             self._raise_notimplemented_for_dataset()
         return self.ndim - self.mom_ndim
 
+    @override
     def __repr__(self) -> str:
         """Repr for class."""
         name = self.__class__.__name__
@@ -279,7 +288,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         --------
         numpy.ndarray.astype
         """
-        validate_floating_dtype(dtype)
+        dtype = validate_floating_dtype(dtype)
         kwargs = {"order": order, "casting": casting, "subok": subok, "copy": copy}
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
@@ -867,7 +876,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     def resample_and_reduce(
         self,
         *,
-        sampler: Sampler,
+        sampler: SamplerType,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         rep_dim: str = "rep",

@@ -1,6 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment"
-# pyright: reportCallIssue=false, reportArgumentType=false
-
 from __future__ import annotations
 
 from functools import partial

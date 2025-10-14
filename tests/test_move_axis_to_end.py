@@ -1,5 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -11,7 +9,7 @@ import xarray as xr
 import cmomy
 from cmomy.core.moment_params import factory_mom_params
 from cmomy.core.validate import validate_mom_ndim
-from cmomy.wrapper.wrap_np import CentralMomentsArray
+from cmomy.wrapper import CentralMomentsArray
 
 from ._dataarray_set_utils import remove_axis_from_kwargs
 

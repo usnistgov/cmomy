@@ -25,8 +25,7 @@ from cmomy.core.validate import (
     validate_mom,
 )
 
-from .wrap_np import CentralMomentsArray
-from .wrap_xr import CentralMomentsData
+from ._wrapper import CentralMomentsArray, CentralMomentsData
 
 if TYPE_CHECKING:
     from typing import Any
@@ -34,19 +33,20 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
     from xarray.core.types import DTypeLikeSave
 
-    from cmomy.core.typing import (
+    from cmomy.core._typing_kwargs import (
         ApplyUFuncKwargs,
+        ReduceValsKwargs,
+        WrapKwargs,
+        WrapRawKwargs,
+        ZerosLikeKwargs,
+    )
+    from cmomy.core.moment_params import MomParamsType
+    from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
         AxisReduceWrap,
         Casting,
-        CentralMomentsArrayAny,
-        CentralMomentsArrayT,
-        CentralMomentsDataAny,
-        CentralMomentsDataArray,
-        CentralMomentsDataset,
-        CentralMomentsDataT,
         DataT,
         DimsReduce,
         DTypeLikeArg,
@@ -57,18 +57,27 @@ if TYPE_CHECKING:
         MomDims,
         Moments,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
-        ReduceValsKwargs,
-        ResampleValsKwargs,
-        Sampler,
-        WrapKwargs,
-        WrapRawKwargs,
-        ZerosLikeKwargs,
     )
-    from cmomy.core.typing_compat import TypeAlias, Unpack
+    from cmomy.core.typing_compat import TypeAlias, TypeVar, Unpack
+    from cmomy.resample._typing_kwargs import ResampleValsKwargs
+    from cmomy.resample.typing import SamplerType
 
-    DTypeMaybeMapping: TypeAlias = DTypeLikeSave | Mapping[Any, DTypeLikeSave]
+    from .typing import (
+        CentralMomentsArrayAny,
+        CentralMomentsDataAny,
+        CentralMomentsDataArray,
+        CentralMomentsDataset,
+    )
+
+    _DTypeMaybeMapping: TypeAlias = DTypeLikeSave | Mapping[Any, DTypeLikeSave]
+
+    _CentralMomentsArrayT = TypeVar(
+        "_CentralMomentsArrayT", bound=CentralMomentsArray[Any]
+    )
+    _CentralMomentsDataT = TypeVar(
+        "_CentralMomentsDataT", bound=CentralMomentsData[Any]
+    )
 
 
 # * General wrapper -----------------------------------------------------------
@@ -76,7 +85,7 @@ if TYPE_CHECKING:
 def wrap(  # pyright: ignore[reportOverlappingOverload]
     obj: DataT,
     *,
-    dtype: DTypeMaybeMapping | None = ...,
+    dtype: _DTypeMaybeMapping | None = ...,
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsData[DataT]: ...
 @overload
@@ -104,7 +113,7 @@ def wrap(
 def wrap(
     obj: ArrayLike | DataT,
     *,
-    dtype: DTypeMaybeMapping | None = ...,
+    dtype: _DTypeMaybeMapping | None = ...,
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]: ...
 
@@ -116,8 +125,8 @@ def wrap(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
-    dtype: DTypeMaybeMapping | None = None,
+    mom_params: MomParamsType = None,
+    dtype: _DTypeMaybeMapping | None = None,
     copy: bool | None = False,
     fastpath: bool = False,
 ) -> CentralMomentsArrayAny | CentralMomentsData[DataT]:
@@ -200,18 +209,18 @@ def wrap(
 # * Zeros like ----------------------------------------------------------------
 @overload
 def zeros_like(
-    c: CentralMomentsDataT,
+    c: _CentralMomentsDataT,
     *,
-    dtype: DTypeMaybeMapping | None = ...,
+    dtype: _DTypeMaybeMapping | None = ...,
     **kwargs: Unpack[ZerosLikeKwargs],
-) -> CentralMomentsDataT: ...
+) -> _CentralMomentsDataT: ...
 @overload
 def zeros_like(
-    c: CentralMomentsArrayT,
+    c: _CentralMomentsArrayT,
     *,
     dtype: None = ...,
     **kwargs: Unpack[ZerosLikeKwargs],
-) -> CentralMomentsArrayT: ...
+) -> _CentralMomentsArrayT: ...
 @overload
 def zeros_like(
     c: CentralMomentsArrayAny,
@@ -230,7 +239,7 @@ def zeros_like(
 def zeros_like(
     c: CentralMomentsArrayAny | CentralMomentsDataAny,
     *,
-    dtype: DTypeMaybeMapping | None = ...,
+    dtype: _DTypeMaybeMapping | None = ...,
     **kwargs: Unpack[ZerosLikeKwargs],
 ) -> CentralMomentsArrayAny | CentralMomentsDataAny: ...
 
@@ -239,7 +248,7 @@ def zeros_like(
 def zeros_like(
     c: CentralMomentsArrayAny | CentralMomentsDataArray | CentralMomentsDataset,
     *,
-    dtype: DTypeMaybeMapping | None = None,
+    dtype: _DTypeMaybeMapping | None = None,
     order: ArrayOrderKACF = None,
     subok: bool = True,
     chunks: Any = None,
@@ -376,7 +385,7 @@ def wrap_reduce_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -523,14 +532,14 @@ def wrap_resample_vals(
 def wrap_resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    sampler: Sampler,
+    sampler: SamplerType,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -681,7 +690,7 @@ def wrap_raw(
     *,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",

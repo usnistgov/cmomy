@@ -12,6 +12,7 @@ from module_utilities.docfiller import DocFiller
 from .array_utils import normalize_axis_index, normalize_axis_tuple
 from .docstrings import docfiller as _docfiller
 from .missing import MISSING
+from .typing_compat import override
 from .validate import (
     is_dataarray,
     is_dataset,
@@ -41,13 +42,15 @@ if TYPE_CHECKING:
         MomDimsStrict,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
     )
-    from .typing_compat import Self, TypeVar
+    from .typing_compat import Self, TypeAlias, TypeVar
 
     _Axis = TypeVar("_Axis")
     _Dim = TypeVar("_Dim")
+
+#: Moment parameter input types
+MomParamsType: TypeAlias = "MomParams | MomParamsBase | MomParamsDict | None"
 
 
 _docstring_local = """
@@ -181,7 +184,7 @@ class MomParamsBase(ABC, _MixinDataclass):
         # NOTE: Not an ideal solution, but get a bunch
         # of possible errors if don't do this.
         try:
-            self.get_mom(data)
+            _ = self.get_mom(data)
         except Exception as e:
             msg = f"{self} inconsistent with wrapped object"
             raise ValueError(msg) from e
@@ -200,7 +203,7 @@ class MomParamsArrayOptional(MomParamsBase):
     @docfiller.decorate
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
@@ -227,7 +230,7 @@ class MomParamsArrayOptional(MomParamsBase):
 
         if ndim is not None:
             mom_params["ndim"] = ndim
-        mom_params.setdefault("axes", axes)
+        _ = mom_params.setdefault("axes", axes)
         return cls.from_params(**mom_params, default_ndim=default_ndim)
 
     @classmethod
@@ -269,6 +272,7 @@ class MomParamsArrayOptional(MomParamsBase):
             raise ValueError(msg)
         return self.axes
 
+    @override
     def get_mom_shape(self, data: NDArrayAny) -> MomentsStrict:
         """Calculate moment shape from data shape"""
         try:
@@ -279,15 +283,18 @@ class MomParamsArrayOptional(MomParamsBase):
             msg = "Could not extract moment shape from data"
             raise ValueError(msg) from e
 
+    @override
     def axes_to_end(self) -> Self:
         """Create new object with ``self.axes`` at end."""
         return replace(self, axes=self.axes_last)
 
+    @override
     def get_mom(self, data: NDArrayAny) -> MomentsStrict:
         from .utils import mom_shape_to_mom
 
         return mom_shape_to_mom(data.shape[a] for a in self._validated_axes)
 
+    @override
     def get_val_shape(self, data: NDArrayAny) -> tuple[int, ...]:
         axes = self.normalize_axis_tuple(self._validated_axes, data.ndim)
         return tuple(s for i, s in enumerate(data.shape) if i not in axes)
@@ -322,10 +329,12 @@ class MomParamsArray(MomParamsArrayOptional):
     _OPTIONAL: ClassVar[bool] = False
 
     @property
+    @override
     def _validated_ndim(self) -> MomNDim:
         return self.ndim
 
     @property
+    @override
     def _validated_axes(self) -> MomAxesStrict:
         return self.axes
 
@@ -334,7 +343,7 @@ class MomParamsArray(MomParamsArrayOptional):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
     ) -> tuple[MomentsStrict, Self]:
@@ -393,7 +402,7 @@ class MomParamsXArrayOptional(MomParamsBase):
     @docfiller.decorate
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
@@ -424,8 +433,8 @@ class MomParamsXArrayOptional(MomParamsBase):
 
         if ndim is not None:
             mom_params["ndim"] = ndim
-        mom_params.setdefault("dims", dims)
-        mom_params.setdefault("axes", axes)
+        _ = mom_params.setdefault("dims", dims)
+        _ = mom_params.setdefault("axes", axes)
         return cls.from_params(**mom_params, data=data, default_ndim=default_ndim)
 
     @classmethod
@@ -463,6 +472,7 @@ class MomParamsXArrayOptional(MomParamsBase):
             raise ValueError(msg)
         return self.dims
 
+    @override
     def axes_to_end(self) -> Self:
         """Create new object with ``self.axes`` at end."""
         _ = self._validated_ndim
@@ -478,6 +488,7 @@ class MomParamsXArrayOptional(MomParamsBase):
             return self.axes_last
         return cast("MomAxesStrict", data.get_axis_num(self._validated_dims))
 
+    @override
     def get_mom_shape(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
         """Calculate moment shape from data shape"""
         try:
@@ -488,11 +499,13 @@ class MomParamsXArrayOptional(MomParamsBase):
             msg = "Could not extract moment shape from data"
             raise ValueError(msg) from e
 
+    @override
     def get_mom(self, data: xr.DataArray | xr.Dataset) -> MomentsStrict:
         from .utils import mom_shape_to_mom
 
         return mom_shape_to_mom(data.sizes[d] for d in self._validated_dims)
 
+    @override
     def get_val_shape(self, data: xr.DataArray) -> tuple[int, ...]:
         return tuple(data.sizes[d] for d in data.dims if d not in self._validated_dims)
 
@@ -646,10 +659,12 @@ class MomParamsXArray(MomParamsXArrayOptional):
     _OPTIONAL: ClassVar[bool] = False
 
     @property
+    @override
     def _validated_ndim(self) -> MomNDim:
         return self.ndim
 
     @property
+    @override
     def _validated_dims(self) -> MomDimsStrict:
         return self.dims
 
@@ -657,7 +672,7 @@ class MomParamsXArray(MomParamsXArrayOptional):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
@@ -693,7 +708,7 @@ default_mom_params_xarray = MomParamsXArrayOptional(None, None)
 def factory_mom_params(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     target: xr.DataArray | xr.Dataset,
     *,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     ndim: int | None = ...,
     axes: int | Sequence[int] | None = ...,
     dims: Hashable | Sequence[Hashable] | None = ...,
@@ -704,7 +719,7 @@ def factory_mom_params(  # type: ignore[overload-overlap] # pyright: ignore[repo
 def factory_mom_params(
     target: object,
     *,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     ndim: int | None = ...,
     axes: int | Sequence[int] | None = ...,
     dims: Hashable | Sequence[Hashable] | None = ...,
@@ -717,7 +732,7 @@ def factory_mom_params(
 def factory_mom_params(
     target: object | xr.DataArray | xr.Dataset,
     *,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     ndim: int | None = None,
     axes: int | Sequence[int] | None = None,
     dims: Hashable | Sequence[Hashable] | None = None,

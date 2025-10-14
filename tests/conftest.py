@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 from __future__ import annotations
 
 import numpy as np

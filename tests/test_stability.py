@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
 """Simple test for numerical stability"""
 
 import numpy as np

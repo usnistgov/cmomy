@@ -31,6 +31,7 @@
 [conda-link]: https://anaconda.org/conda-forge/cmomy
 [license-badge]: https://img.shields.io/pypi/l/cmomy?color=informational
 [license-link]: https://github.com/usnistgov/cmomy/blob/main/LICENSE
+[changelog-link]: https://github.com/usnistgov/cmomy/blob/main/CHANGELOG.md
 
 <!-- other links -->
 
@@ -149,6 +150,10 @@ variable `CMOMY_NUMBA_CACHE=0`.
 ## Documentation
 
 See the [documentation][docs-link] for a look at `cmomy` in action.
+
+## What's new?
+
+See [changelog][changelog-link].
 
 ## License
 

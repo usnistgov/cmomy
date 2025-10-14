@@ -1,5 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
 from __future__ import annotations
 
 from functools import partial
@@ -11,7 +9,7 @@ import xarray as xr
 import cmomy
 
 try:  # pylint: disable=too-many-try-statements
-    import dask  # noqa: F401  # pyright: ignore[reportUnusedImport]  # pylint: disable=unused-import
+    import dask  # noqa: F401
 
     HAS_DASK = True
 except ImportError:

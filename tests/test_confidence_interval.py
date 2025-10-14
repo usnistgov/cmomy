@@ -1,6 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false, reportMissingImports=false
-
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any

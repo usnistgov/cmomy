@@ -7,6 +7,13 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
-hatch-fancy-pypi-readme
-hatch-vcs
-hatchling
+name: py314-test-extras
+channels:
+  - conda-forge
+dependencies:
+  - python=3.14
+  - pytest
+  - pytest-cov
+  - pytest-env
+  - pytest-sugar
+  - pip

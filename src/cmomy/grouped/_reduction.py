@@ -43,8 +43,15 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.core.typing import (
+    from cmomy.core._typing_kwargs import (
         ApplyUFuncKwargs,
+        ReduceDataGroupedKwargs,
+        ReduceDataIndexedKwargs,
+        ReduceValsGroupedKwargs,
+        ReduceValsIndexedKwargs,
+    )
+    from cmomy.core.moment_params import MomParamsType
+    from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -64,13 +71,8 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
         NDArrayInt,
-        ReduceDataGroupedKwargs,
-        ReduceDataIndexedKwargs,
-        ReduceValsGroupedKwargs,
-        ReduceValsIndexedKwargs,
     )
     from cmomy.core.typing_compat import Unpack
 
@@ -213,7 +215,7 @@ def reduce_data_grouped(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -439,7 +441,7 @@ def _reduce_data_grouped(
     )
     out.fill(0.0)
 
-    factory_reduce_data_grouped(
+    _ = factory_reduce_data_grouped(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=data.size),
     )(
@@ -567,7 +569,7 @@ def reduce_data_indexed(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -922,7 +924,7 @@ def reduce_vals_grouped(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -1131,7 +1133,7 @@ def _reduce_vals_grouped(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_reduce_vals_grouped(
+    _ = factory_reduce_vals_grouped(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(
@@ -1223,7 +1225,7 @@ def reduce_vals_indexed(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -1461,7 +1463,7 @@ def _reduce_vals_indexed(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_reduce_vals_indexed(
+    _ = factory_reduce_vals_indexed(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(

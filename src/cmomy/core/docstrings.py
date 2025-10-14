@@ -131,7 +131,7 @@ def _dummy_docstrings() -> None:
         number of replicates), ``freq`` (frequency array), a
         :class:`~cmomy.resample.IndexSampler` object, or a mapping of parameters.
         The mapping can have form of
-        :class:`~cmomy.core.typing.FactoryIndexSamplerKwargs`. Allowable keys are
+        :class:`~cmomy.resample.typing.FactoryIndexSamplerKwargs`. Allowable keys are
         ``freq``, ``indices``, ``ndat``, ``nrep``, ``nsamp``, ``paired``,
         ``rng``, ``replace``, ``shuffle``.
     freq_xarray | freq : array-like, DataArray, or Dataset of int
