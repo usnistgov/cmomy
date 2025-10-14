@@ -1,4 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload"
 """
 Hammer out that reduce_vals gives same results as our "dumb" equations...
 """
@@ -38,7 +37,7 @@ rng = np.random.default_rng(14)
 @pytest.mark.parametrize("mom", [5])
 def test_reduce_1(x, weight, mom, axis: AxisReduceWrap) -> None:
     axis_ = int(axis.imag) if isinstance(axis, complex) else axis
-    expected = get_cmom(weight, x, mom, axis=axis_)  # pyright: ignore[reportArgumentType]
+    expected = get_cmom(weight, x, mom, axis=axis_)
 
     check = cmomy.reduce_vals(x, weight=weight, mom=mom, axis=axis)
     np.testing.assert_allclose(check, expected, atol=1e-16)
@@ -66,7 +65,7 @@ def test_reduce_1(x, weight, mom, axis: AxisReduceWrap) -> None:
 @pytest.mark.parametrize("mom", [(5, 5)])
 def test_reduce_2(x, y, weight, mom, axis: AxisReduceWrap) -> None:
     axis_ = int(axis.imag) if isinstance(axis, complex) else axis
-    expected = get_comom(weight, x, y, mom, axis=axis_)  # pyright: ignore[reportArgumentType]
+    expected = get_comom(weight, x, y, mom, axis=axis_)
 
     check = cmomy.reduce_vals(x, y, weight=weight, mom=mom, axis=axis)
     np.testing.assert_allclose(check, expected, atol=1e-16)

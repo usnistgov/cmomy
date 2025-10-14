@@ -18,6 +18,16 @@ See the fragment files in [changelog.d]
 
 <!-- scriv-insert-here -->
 
+## v1.0.2 — 2025-10-14
+
+### Changed
+
+- Using `uv_build` backend
+- Removed typing import cycles. This required adding `cmomy.resample.typing` and
+  `cmomy.wrapper.typing`.
+- `cmomy.core.typing.Sampler` -> `cmomy.resample.typing.SamplerType`
+- `cmomy.core.typing.MomParamsInput` -> `cmomy.core.mom_params.MomParamsType`
+
 ## v1.0.1 — 2025-09-26
 
 ### Changed

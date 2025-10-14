@@ -1,5 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false
 from __future__ import annotations
 
 import numpy as np

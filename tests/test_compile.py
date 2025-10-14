@@ -1,7 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call"
-# pyright: reportCallIssue=false, reportArgumentType=false
-
-
 import itertools
 from unittest.mock import call, patch
 

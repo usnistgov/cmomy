@@ -24,9 +24,11 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import DTypeLike
 
+    from ._typing_kwargs import (
+        ApplyUFuncKwargs,
+    )
     from .moment_params import MomParamsArrayOptional
     from .typing import (
-        ApplyUFuncKwargs,
         DataT,
         MissingCoreDimOptions,
         MomDims,

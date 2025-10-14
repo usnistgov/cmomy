@@ -83,6 +83,9 @@ Ready to contribute? Here's how to make a contribution.
   pre-commit install
   ```
 
+  Note that this is strictly optional. You can always use
+  `pre-commit run --all-files` without installing the pre-commit hooks.
+
   To update the recipe, periodically run:
 
   ```bash
@@ -94,6 +97,10 @@ Ready to contribute? Here's how to make a contribution.
   ```bash
   pre-commit gc
   ```
+
+  You can instead use [prek] (replacing all above `pre-commit` commands with
+  `prek` commands) which is written in rust, and faster than [pre-commit], but
+  is still under development.
 
 - Create a branch for local development:
 
@@ -161,7 +168,7 @@ Before you submit a pull request, check that it meets these guidelines:
 
 ## Using [pre-commit]
 
-It is highly recommended to enable [pre-commit]. See
+It is highly recommended to enable [pre-commit] or [prek]. See
 [](#setup-development-environment) for installation instructions. To install the
 pre-commit hooks, run:
 
@@ -363,16 +370,23 @@ nox -s conda-build -- ++conda-build-run "anaconda upload PATH-TO-TARBALL"
 
 ## Building distribution for pypi
 
-The basic command is:
+Set the package version by editing `project.version` in `pyproject.toml` (or use
+`uv version --bump`). To build the package, use:
 
 ```bash
-nox -s build
+just build
 ```
 
 To upload the pypi distribution:
 
 ```bash
-nox -s publish -- +p [release, test]
+just publish/uv-publish
+```
+
+You should first run a test with:
+
+```bash
+just publish-test/uv-publish-test
 ```
 
 - test : upload to testpypi
@@ -383,13 +397,13 @@ nox -s publish -- +p [release, test]
 Run:
 
 ```bash
-nox -s testdist-pypi -- ++version [version]
+nox -s testdist-pypi-{python-version} -- ++version [version]
 ```
 
 to test a specific version from pypi and
 
 ```bash
-nox -s testdist-conda -- ++version [version]
+nox -s testdist-conda-{python-version} -- ++version [version]
 ```
 
 to do likewise from conda.
@@ -511,28 +525,8 @@ tooling in the "dev" environment, and also avoid creating a bunch of throw away
 
 ## Package version
 
-[hatch-vcs]: https://github.com/ofek/hatch-vcs
-
-Versioning is handled with [hatch-vcs]. The package version is set by the git
-tag. For convenience, you can override the version with nox setting
-`++version ...`. This is useful for updating the docs, etc.
-
-Note that the version in a given environment/session can become stale. The
-easiest way to update the installed package version version is to reinstall the
-package. This can be done using the following:
-
-```bash
-# using pip
-pip install -e . --no-deps
-# using uv
-uv pip install -e . --no-deps
-```
-
-To do this in a given session, use:
-
-```bash
-nox -s {session} -- +P/++update-package
-```
+Versioning is handled by the `project.version` variable in `pyproject.toml`. Use
+`uv version --bump` to update the package version.
 
 [commitizen]: https://github.com/commitizen-tools/commitizen
 [conda-fast-setup]:
@@ -549,6 +543,7 @@ nox -s {session} -- +P/++update-package
 [nox]: https://github.com/wntrblm/nox
 [pipx]: https://github.com/pypa/pipx
 [pre-commit]: https://pre-commit.com/
+[prek]: https://github.com/j178/prek
 [pyenv]: https://github.com/pyenv/pyenv
 [pyproject2conda]: https://github.com/wpk-nist-gov/pyproject2conda
 [pyright]: https://github.com/microsoft/pyright

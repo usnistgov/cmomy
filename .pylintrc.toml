@@ -65,6 +65,7 @@ disable = [
     "use-implicit-booleaness-not-comparison-to-zero",
     "protected-access",
     "no-name-in-module",
+    "unused-import",
 ]
 
 [tool.pylint.reports]

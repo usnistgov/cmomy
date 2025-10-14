@@ -1,5 +1,3 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, assignment, arg-type"
-# pyright: reportCallIssue=false, reportArgumentType=false
 """
 Test that parallel=True and parallel=False give same answers...
 """

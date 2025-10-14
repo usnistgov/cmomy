@@ -49,8 +49,13 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .core.typing import (
+    from .core._typing_kwargs import (
         ApplyUFuncKwargs,
+        ReduceDataKwargs,
+        ReduceValsKwargs,
+    )
+    from .core.moment_params import MomParamsType
+    from .core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -70,10 +75,7 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
-        ReduceDataKwargs,
-        ReduceValsKwargs,
     )
     from .core.typing_compat import Unpack
 
@@ -151,7 +153,7 @@ def reduce_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",
@@ -318,7 +320,7 @@ def _reduce_vals(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_reduce_vals(
+    _ = factory_reduce_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(
@@ -399,7 +401,7 @@ def reduce_data(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
     casting: Casting = "same_kind",

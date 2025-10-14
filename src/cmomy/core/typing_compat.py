@@ -20,6 +20,12 @@ else:
     from typing_extensions import Required, Self, Unpack
 
 
+if sys.version_info >= (3, 12):
+    from typing import override
+else:
+    from typing_extensions import override
+
+
 if sys.version_info >= (3, 13):  # pragma: no cover
     from typing import TypeIs, TypeVar
 else:
@@ -36,4 +42,5 @@ __all__ = [
     "TypeVar",
     "TypedDict",
     "Unpack",
+    "override",
 ]

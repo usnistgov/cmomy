@@ -38,6 +38,7 @@ if TYPE_CHECKING:
     import xarray as xr
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
+    from .moment_params import MomParamsType
     from .typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -47,11 +48,11 @@ if TYPE_CHECKING:
         MissingType,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
-        ScalarT,
     )
-    from .typing_compat import Self
+    from .typing_compat import Self, TypeVar
+
+    _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
 # * Prepare classes
@@ -63,7 +64,7 @@ class _PrepareBaseArray:
     @classmethod
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
@@ -83,7 +84,7 @@ class _PrepareBaseXArray:
     @classmethod
     def factory(
         cls,
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         ndim: int | None = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
@@ -242,7 +243,7 @@ class PrepareValsArray(_PrepareBaseArray):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
         recast: bool = False,
@@ -386,7 +387,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_reduce(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *,
         target: xr.DataArray | xr.Dataset,
         dim: tuple[Hashable, ...],
@@ -394,7 +395,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
         axes_to_end: bool,
         order: ArrayOrderKACF,
         dtype: DTypeLike,
-    ) -> NDArray[ScalarT] | None:
+    ) -> NDArray[_ScalarT] | None:
         """Prepare out for reduce_data"""
         if is_dataset(target):
             return None
@@ -432,13 +433,13 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_transform(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *,
         target: xr.DataArray | xr.Dataset,
         axes_to_end: bool,
         order: ArrayOrderKACF,
         dtype: DTypeLike,
-    ) -> NDArray[ScalarT] | None:
+    ) -> NDArray[_ScalarT] | None:
         """Prepare out for transform."""
         if is_dataset(target):
             return None
@@ -461,7 +462,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
     def optional_out_sample(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *,
         data: xr.DataArray | xr.Dataset,
         axis: int,
@@ -469,7 +470,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
         axes_to_end: bool,
         order: ArrayOrderKACF,
         dtype: DTypeLike,
-    ) -> NDArray[ScalarT] | None:
+    ) -> NDArray[_ScalarT] | None:
         """Move axis to last dimensions before moment dimensions."""
         if is_dataset(data):
             return None
@@ -515,7 +516,7 @@ class PrepareValsXArray(_PrepareBaseXArray):
     def factory_mom(
         cls,
         mom: int | Sequence[int],
-        mom_params: MomParamsInput = None,
+        mom_params: MomParamsType = None,
         dims: Hashable | Sequence[Hashable] | None = None,
         axes: int | Sequence[int] | None = None,
         data: object = None,
@@ -571,7 +572,7 @@ class PrepareValsXArray(_PrepareBaseXArray):
 
     def optional_out_from_values(
         self,
-        out: NDArray[ScalarT] | None,
+        out: NDArray[_ScalarT] | None,
         *args: NDArrayAny | xr.DataArray | xr.Dataset,
         target: xr.DataArray | xr.Dataset,
         dim: DimsReduce,
@@ -581,8 +582,8 @@ class PrepareValsXArray(_PrepareBaseXArray):
         order: ArrayOrderCF,
         dtype: DTypeLike,
         mom_axes: int | Sequence[int] | None,
-        mom_params: MomParamsInput,
-    ) -> tuple[NDArray[ScalarT] | None, MomParamsArray]:
+        mom_params: MomParamsType,
+    ) -> tuple[NDArray[_ScalarT] | None, MomParamsArray]:
         """Prepare out for resampling"""
         # NOTE: silently ignore out of datasets.
 

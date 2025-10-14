@@ -1,3 +1,4 @@
+from ._factory_sampler import factory_sampler
 from ._resample import (
     jackknife_data,
     jackknife_vals,
@@ -6,7 +7,6 @@ from ._resample import (
 )
 from ._sampler import (
     IndexSampler,
-    factory_sampler,
     freq_to_indices,
     indices_to_freq,
     jackknife_freq,

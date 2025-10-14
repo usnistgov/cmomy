@@ -7,8 +7,8 @@ from . import (
     rolling,
     utils,
 )
+from ._concat import concat
 from .confidence_interval import bootstrap_confidence_interval
-from .convert import concat
 from .core import (
     MomParams,
     MomParamsDict,
@@ -39,6 +39,8 @@ from .wrapper import (
     CentralMoments,
     CentralMomentsArray,
     CentralMomentsData,
+    CentralMomentsDataArray,
+    CentralMomentsDataset,
     wrap,
     wrap_raw,
     wrap_reduce_vals,
@@ -53,6 +55,8 @@ __all__ = [
     "CentralMoments",
     "CentralMomentsArray",
     "CentralMomentsData",
+    "CentralMomentsDataArray",
+    "CentralMomentsDataset",
     "IndexSampler",
     "MomParams",
     "MomParamsDict",

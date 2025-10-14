@@ -50,15 +50,20 @@ from cmomy.factory import (
     parallel_heuristic,
 )
 
-from ._sampler import (
+from ._factory_sampler import (
     factory_sampler,
 )
 
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from cmomy.core.typing import (
+    from cmomy.core._typing_kwargs import (
         ApplyUFuncKwargs,
+        JackknifeDataKwargs,
+        JackknifeValsKwargs,
+    )
+    from cmomy.core.moment_params import MomParamsType
+    from cmomy.core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -69,8 +74,6 @@ if TYPE_CHECKING:
         DimsReduce,
         DTypeLikeArg,
         FloatT,
-        JackknifeDataKwargs,
-        JackknifeValsKwargs,
         KeepAttrs,
         MissingType,
         MomAxes,
@@ -78,13 +81,12 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
-        ResampleDataKwargs,
-        ResampleValsKwargs,
-        Sampler,
     )
     from cmomy.core.typing_compat import Unpack
+
+    from ._typing_kwargs import ResampleDataKwargs, ResampleValsKwargs
+    from .typing import SamplerType
 
 
 # * Resample data
@@ -149,13 +151,13 @@ def resample_data(
 def resample_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
-    sampler: Sampler,
+    sampler: SamplerType,
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -419,14 +421,14 @@ def resample_vals(
 def resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    sampler: Sampler,
+    sampler: SamplerType,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -628,7 +630,7 @@ def _resample_vals(
         *get_axes_from_values(*args, axis_neg=axis_neg),
     ]
 
-    factory_resample_vals(
+    _ = factory_resample_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, size=args[0].size * prep.mom_params.ndim),
     )(
@@ -718,7 +720,7 @@ def jackknife_data(  # noqa: PLR0913
     mom_axes: MomAxes | None = None,
     mom_axes_reduced: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str | None = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,
@@ -1059,7 +1061,7 @@ def jackknife_vals(  # noqa: PLR0913
     mom_dims: MomDims | None = None,
     mom_axes: MomAxes | None = None,
     mom_axes_reduced: MomAxes | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     rep_dim: str | None = "rep",
     out: NDArrayAny | None = None,
     dtype: DTypeLike = None,

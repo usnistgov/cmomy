@@ -63,7 +63,6 @@ nitpick_ignore = [
 ]
 nitpick_ignore_regex = [
     (r"py:.*", r"numpy\._typing.*"),
-    (r"py:.*", r"cmomy\.core\.typing.*"),
     (r"py:.*", r"tuple.*"),
     (r"py:.*", r"cmomy\.core\.moment_params.*"),
     (r"py:.*", r"scipy\.stats\.bootstrap"),
@@ -72,6 +71,7 @@ nitpick_ignore_regex = [
     (r"py:.*", r"MomParam.*"),
     (r"py:.*", r"CentralMoments.*"),
     (r"py:.*", r"types\.EllipsisType.*"),
+    (r"py:.*", r"typing.*"),
     (r"py:.*", r"typing_extensions.*"),
 ]
 
@@ -319,13 +319,7 @@ author = "William P. Krekelberg"
 # the built documents.
 #
 # The short X.Y version.
-def _get_version() -> str:
-    if (version := os.environ.get("SETUPTOOLS_SCM_PRETEND_VERSION")) is None:
-        version = cmomy.__version__
-    return version
-
-
-release = version = _get_version()
+release = version = cmomy.__version__
 
 
 # if always want to print "latest"

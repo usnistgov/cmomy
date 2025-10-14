@@ -59,8 +59,15 @@ if TYPE_CHECKING:
 
     from numpy.typing import ArrayLike, DTypeLike, NDArray
 
-    from .core.typing import (
+    from .core._typing_kwargs import (
         ApplyUFuncKwargs,
+        RollingDataKwargs,
+        RollingExpDataKwargs,
+        RollingExpValsKwargs,
+        RollingValsKwargs,
+    )
+    from .core.moment_params import MomParamsType
+    from .core.typing import (
         ArrayLikeArg,
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -80,15 +87,11 @@ if TYPE_CHECKING:
         Moments,
         MomentsStrict,
         MomNDim,
-        MomParamsInput,
         NDArrayAny,
-        RollingDataKwargs,
-        RollingExpDataKwargs,
-        RollingExpValsKwargs,
-        RollingValsKwargs,
-        ScalarT,
     )
-    from .core.typing_compat import Unpack
+    from .core.typing_compat import TypeVar, Unpack
+
+    _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
 # * Moving average
@@ -105,7 +108,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     # xarray specific
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
@@ -124,7 +127,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     # xarray specific
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
@@ -143,7 +146,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = ...,
     mom_axes: MomAxes | None = ...,
     mom_dims: MomDims | None = ...,
-    mom_params: MomParamsInput = ...,
+    mom_params: MomParamsType = ...,
     # xarray specific
     window_dim: str | Sequence[str] | None = ...,
     keep_attrs: bool | None = ...,
@@ -164,7 +167,7 @@ def construct_rolling_window_array(
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     # xarray specific
     window_dim: str | Sequence[str] | None = None,
     keep_attrs: bool | None = None,
@@ -293,8 +296,8 @@ def construct_rolling_window_array(
 
 # * Moving
 def _pad_along_axis(
-    data: NDArray[ScalarT], axis: int, shift: int, fill_value: float
-) -> NDArray[ScalarT]:
+    data: NDArray[_ScalarT], axis: int, shift: int, fill_value: float
+) -> NDArray[_ScalarT]:
     pads = [(0, 0)] * data.ndim
     pads[axis] = (0, -shift)
     return np.pad(
@@ -306,8 +309,8 @@ def _pad_along_axis(
 
 
 def _optional_zero_missing_weight(
-    data: NDArray[ScalarT], mom_axes: Iterable[int], zero_missing_weights: bool
-) -> NDArray[ScalarT]:
+    data: NDArray[_ScalarT], mom_axes: Iterable[int], zero_missing_weights: bool
+) -> NDArray[_ScalarT]:
     """Note that this modifies ``data`` inplace.  Pass in a copy if this is not what you want."""
     if zero_missing_weights:
         s: list[Any] = [slice(None)] * data.ndim
@@ -384,7 +387,7 @@ def rolling_data(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
@@ -657,7 +660,7 @@ def rolling_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     center: bool = False,
     zero_missing_weights: bool = True,
@@ -864,7 +867,7 @@ def _rolling_vals(
         *axes_args,
     ]
 
-    factory_rolling_vals(
+    _ = factory_rolling_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, args[0].size * prep.mom_params.ndim),
     )(
@@ -961,7 +964,7 @@ def rolling_exp_data(  # noqa: PLR0913
     mom_ndim: MomNDim | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     alpha_axis: AxisReduceWrap | MissingType = MISSING,
     adjust: bool = True,
@@ -1292,7 +1295,7 @@ def rolling_exp_vals(  # noqa: PLR0913
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     mom_axes: MomAxes | None = None,
     mom_dims: MomDims | None = None,
-    mom_params: MomParamsInput = None,
+    mom_params: MomParamsType = None,
     min_periods: int | None = None,
     adjust: bool = True,
     zero_missing_weights: bool = True,
@@ -1499,7 +1502,7 @@ def _rolling_exp_vals(
     ]
 
     min_periods = 1 if min_periods is None else max(1, min_periods)
-    factory_rolling_exp_vals(
+    _ = factory_rolling_exp_vals(
         mom_ndim=prep.mom_params.ndim,
         parallel=parallel_heuristic(parallel, x.size * prep.mom_params.ndim),
     )(
