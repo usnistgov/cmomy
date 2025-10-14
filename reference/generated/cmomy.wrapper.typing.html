@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Pre-compile numba based core routines (cmomy.compile) &#8212; cmomy 1.0.2 documentation</title>
+    <title>Typing aliases (cmomy.wrapper.typing) &#8212; cmomy 1.0.2 documentation</title>
   
   
   
@@ -46,7 +46,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.compile';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.wrapper.typing';</script>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
     <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
@@ -54,8 +54,8 @@
     <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="cmomy.options.html" />
-    <link rel="prev" title="Routines to calculate confidence intervals from resampled data (cmomy.confidence_interval)" href="cmomy.confidence_interval.html" />
+    <link rel="next" title="Base Classes" href="../api-baseclasses.html" />
+    <link rel="prev" title="Typing aliases (cmomy.resample.typing)" href="cmomy.resample.typing.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
     <meta name="docbuild:last-update" content="2025-10-14"/>
@@ -243,7 +243,7 @@
 <li class="toctree-l3"><a class="reference internal" href="cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
 
 
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
 <li class="toctree-l3"><a class="reference internal" href="cmomy.options.html"><code class="docutils literal notranslate"><span class="pre">set_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
@@ -288,7 +288,7 @@
 <li class="toctree-l3"><a class="reference internal" href="cmomy.resample.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
 
 
-<li class="toctree-l3"><a class="reference internal" href="cmomy.wrapper.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
 
 
 </ul>
@@ -381,7 +381,7 @@
       
       
       
-      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.compile.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.wrapper.typing.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -411,7 +411,7 @@
       
       
       
-      <li><a href="../../_sources/reference/generated/cmomy.compile.rst" target="_blank"
+      <li><a href="../../_sources/reference/generated/cmomy.wrapper.typing.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -495,7 +495,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Pre-compile numba based core routines (cmomy.compile)</h1>
+    <h1>Typing aliases (cmomy.wrapper.typing)</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -505,8 +505,9 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.compile.load_numba_modules"><code class="docutils literal notranslate"><span class="pre">load_numba_modules()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.wrapper.typing.CentralMomentsDataArray"><code class="docutils literal notranslate"><span class="pre">CentralMomentsDataArray</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.wrapper.typing.CentralMomentsDataset"><code class="docutils literal notranslate"><span class="pre">CentralMomentsDataset</span></code></a></li>
 </ul>
 
             </nav>
@@ -519,32 +520,21 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="pre-compile-numba-based-core-routines-cmomy-compile">
-<span id="module-cmomy.compile"></span><h1>Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<a class="reference internal" href="#module-cmomy.compile" title="cmomy.compile"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code></a>)<a class="headerlink" href="#pre-compile-numba-based-core-routines-cmomy-compile" title="Link to this heading">#</a></h1>
-<p>This can be called from python using :func:<code class="docutils literal notranslate"><span class="pre">load_numba_modules</span></code> or from
-the command line with</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m cmomy.compile [--help]</span>
-</pre></div>
-</div>
+  <section id="typing-aliases-cmomy-wrapper-typing">
+<span id="module-cmomy.wrapper.typing"></span><h1>Typing aliases (<a class="reference internal" href="#module-cmomy.wrapper.typing" title="cmomy.wrapper.typing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code></a>)<a class="headerlink" href="#typing-aliases-cmomy-wrapper-typing" title="Link to this heading">#</a></h1>
 </section>
-<p><strong>Functions:</strong></p>
-<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
-<tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.compile.load_numba_modules" title="cmomy.compile.load_numba_modules"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_numba_modules</span></code></a>([include_all, ...])</p></td>
-<td><p>Compile numba modules by loading them.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<dl class="py function">
-<dt class="sig sig-object py" id="cmomy.compile.load_numba_modules">
-<span class="sig-prename descclassname"><span class="pre">cmomy.compile.</span></span><span class="sig-name descname"><span class="pre">load_numba_modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_grouped</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_convert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_rolling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/compile.py#L70-L135"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.compile.load_numba_modules" title="Link to this definition">#</a></dt>
-<dd><p>Compile numba modules by loading them.</p>
-<p>Default is to include all submodules. To override, set
-<code class="docutils literal notranslate"><span class="pre">include_all=False</span></code>, and select other packages manually. For example, to
-only load resampling with with co-moments, use
-<code class="docutils literal notranslate"><span class="pre">load_numba_modules(include_all=False,</span> <span class="pre">include_cov=True,</span>
-<span class="pre">include_resample=True)</span></code>.</p>
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.wrapper.typing.CentralMomentsDataArray">
+<span class="sig-prename descclassname"><span class="pre">cmomy.wrapper.typing.</span></span><span class="sig-name descname"><span class="pre">CentralMomentsDataArray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.wrapper.typing.CentralMomentsDataArray" title="Link to this definition">#</a></dt>
+<dd><p><a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a> wrapping <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a></p>
+<p>alias of <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.wrapper._wrapper.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>[<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.wrapper.typing.CentralMomentsDataset">
+<span class="sig-prename descclassname"><span class="pre">cmomy.wrapper.typing.</span></span><span class="sig-name descname"><span class="pre">CentralMomentsDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.wrapper.typing.CentralMomentsDataset" title="Link to this definition">#</a></dt>
+<dd><p><a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a> wrapping <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a></p>
+<p>alias of <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.wrapper._wrapper.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>[<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>]</p>
 </dd></dl>
 
 
@@ -560,20 +550,20 @@ only load resampling with with co-moments, use
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cmomy.confidence_interval.html"
+       href="cmomy.resample.typing.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</p>
+        <p class="prev-next-title">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</p>
       </div>
     </a>
     <a class="right-next"
-       href="cmomy.options.html"
+       href="../api-baseclasses.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title">Base Classes</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -593,8 +583,9 @@ only load resampling with with co-moments, use
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.compile.load_numba_modules"><code class="docutils literal notranslate"><span class="pre">load_numba_modules()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.wrapper.typing.CentralMomentsDataArray"><code class="docutils literal notranslate"><span class="pre">CentralMomentsDataArray</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.wrapper.typing.CentralMomentsDataset"><code class="docutils literal notranslate"><span class="pre">CentralMomentsDataset</span></code></a></li>
 </ul>
 
   </nav></div>

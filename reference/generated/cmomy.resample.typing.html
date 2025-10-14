@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Pre-compile numba based core routines (cmomy.compile) &#8212; cmomy 1.0.2 documentation</title>
+    <title>Typing aliases (cmomy.resample.typing) &#8212; cmomy 1.0.2 documentation</title>
   
   
   
@@ -46,7 +46,7 @@
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
-    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.compile';</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.resample.typing';</script>
     <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
     <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
     <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
@@ -54,8 +54,8 @@
     <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="&lt;no title&gt;" href="cmomy.options.html" />
-    <link rel="prev" title="Routines to calculate confidence intervals from resampled data (cmomy.confidence_interval)" href="cmomy.confidence_interval.html" />
+    <link rel="next" title="Typing aliases (cmomy.wrapper.typing)" href="cmomy.wrapper.typing.html" />
+    <link rel="prev" title="Typing aliases (cmomy.core.typing)" href="cmomy.core.typing.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
     <meta name="docbuild:last-update" content="2025-10-14"/>
@@ -243,7 +243,7 @@
 <li class="toctree-l3"><a class="reference internal" href="cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
 
 
-<li class="toctree-l3 current active"><a class="current reference internal" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
 
 <li class="toctree-l3"><a class="reference internal" href="cmomy.options.html"><code class="docutils literal notranslate"><span class="pre">set_options</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
@@ -285,7 +285,7 @@
 
 
 
-<li class="toctree-l3"><a class="reference internal" href="cmomy.resample.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
 
 
 <li class="toctree-l3"><a class="reference internal" href="cmomy.wrapper.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
@@ -381,7 +381,7 @@
       
       
       
-      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.compile.html&body=Your%20issue%20content%20here." target="_blank"
+      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.resample.typing.html&body=Your%20issue%20content%20here." target="_blank"
    class="btn btn-sm btn-source-issues-button dropdown-item"
    title="Open an issue"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -411,7 +411,7 @@
       
       
       
-      <li><a href="../../_sources/reference/generated/cmomy.compile.rst" target="_blank"
+      <li><a href="../../_sources/reference/generated/cmomy.resample.typing.rst" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -495,7 +495,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Pre-compile numba based core routines (cmomy.compile)</h1>
+    <h1>Typing aliases (cmomy.resample.typing)</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -505,8 +505,9 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.compile.load_numba_modules"><code class="docutils literal notranslate"><span class="pre">load_numba_modules()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.resample.typing.FactoryIndexSamplerKwargs"><code class="docutils literal notranslate"><span class="pre">FactoryIndexSamplerKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.resample.typing.SamplerType"><code class="docutils literal notranslate"><span class="pre">SamplerType</span></code></a></li>
 </ul>
 
             </nav>
@@ -519,32 +520,62 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="pre-compile-numba-based-core-routines-cmomy-compile">
-<span id="module-cmomy.compile"></span><h1>Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<a class="reference internal" href="#module-cmomy.compile" title="cmomy.compile"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code></a>)<a class="headerlink" href="#pre-compile-numba-based-core-routines-cmomy-compile" title="Link to this heading">#</a></h1>
-<p>This can be called from python using :func:<code class="docutils literal notranslate"><span class="pre">load_numba_modules</span></code> or from
-the command line with</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">python -m cmomy.compile [--help]</span>
-</pre></div>
-</div>
+  <section id="typing-aliases-cmomy-resample-typing">
+<span id="module-cmomy.resample.typing"></span><h1>Typing aliases (<a class="reference internal" href="#module-cmomy.resample.typing" title="cmomy.resample.typing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code></a>)<a class="headerlink" href="#typing-aliases-cmomy-resample-typing" title="Link to this heading">#</a></h1>
 </section>
-<p><strong>Functions:</strong></p>
+<p><strong>Classes:</strong></p>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.compile.load_numba_modules" title="cmomy.compile.load_numba_modules"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_numba_modules</span></code></a>([include_all, ...])</p></td>
-<td><p>Compile numba modules by loading them.</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.resample.typing.FactoryIndexSamplerKwargs" title="cmomy.resample.typing.FactoryIndexSamplerKwargs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FactoryIndexSamplerKwargs</span></code></a></p></td>
+<td><p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.factory_sampler" title="cmomy.resample.factory_sampler"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.factory_sampler()</span></code></a></p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<dl class="py function">
-<dt class="sig sig-object py" id="cmomy.compile.load_numba_modules">
-<span class="sig-prename descclassname"><span class="pre">cmomy.compile.</span></span><span class="sig-name descname"><span class="pre">load_numba_modules</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_all</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_cov</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_parallel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_vec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_grouped</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_convert</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_rolling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/compile.py#L70-L135"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.compile.load_numba_modules" title="Link to this definition">#</a></dt>
-<dd><p>Compile numba modules by loading them.</p>
-<p>Default is to include all submodules. To override, set
-<code class="docutils literal notranslate"><span class="pre">include_all=False</span></code>, and select other packages manually. For example, to
-only load resampling with with co-moments, use
-<code class="docutils literal notranslate"><span class="pre">load_numba_modules(include_all=False,</span> <span class="pre">include_cov=True,</span>
-<span class="pre">include_resample=True)</span></code>.</p>
+<p><strong>Data:</strong></p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.resample.typing.SamplerType" title="cmomy.resample.typing.SamplerType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SamplerType</span></code></a></p></td>
+<td><p>Input type for sampler</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.resample.typing.FactoryIndexSamplerKwargs">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.resample.typing.</span></span><span class="sig-name descname"><span class="pre">FactoryIndexSamplerKwargs</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/resample/typing.py#L30-L60"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.resample.typing.FactoryIndexSamplerKwargs" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">TypedDict</span></code></p>
+<p>Extra parameters to <a class="reference internal" href="cmomy.resample.html#cmomy.resample.factory_sampler" title="cmomy.resample.factory_sampler"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample.factory_sampler()</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>indices</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array" title="(in NumPy v2.3)"><span class="xref std std-term">array</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Array of shape <code class="docutils literal notranslate"><span class="pre">(nrep,</span> <span class="pre">size)</span></code>.  If passed, create <cite>freq</cite> from indices.</p></li>
+<li><p><strong>freq</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.3)"><span class="xref std std-term">array-like</span></a>, <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>, or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Array of shape <code class="docutils literal notranslate"><span class="pre">(nrep,</span> <span class="pre">size)</span></code> where <cite>nrep</cite> is the number of
+replicates and <code class="docutils literal notranslate"><span class="pre">size</span> <span class="pre">=</span> <span class="pre">self.shape[axis]</span></code>. <cite>freq</cite> is the weight that
+each sample contributes to a replicate. If <code class="docutils literal notranslate"><span class="pre">freq</span></code> is an
+<a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2025.10.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object, it should have dimensions <code class="docutils literal notranslate"><span class="pre">rep_dim</span></code> and <code class="docutils literal notranslate"><span class="pre">dim</span></code>.</p></li>
+<li><p><strong>ndat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Size of data along resampled axis.</p></li>
+<li><p><strong>nrep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of resample replicates.</p></li>
+<li><p><strong>nsamp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Number of samples in a single resampled replicate. Defaults to size of
+data along sampled axis.</p></li>
+<li><p><strong>paired</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">False</span></code> and generating <code class="docutils literal notranslate"><span class="pre">freq</span></code> from <code class="docutils literal notranslate"><span class="pre">nrep</span></code> with <code class="docutils literal notranslate"><span class="pre">data</span></code> of type
+<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>, Generate unique <code class="docutils literal notranslate"><span class="pre">freq</span></code> for each variable in
+<code class="docutils literal notranslate"><span class="pre">data</span></code>. If <code class="docutils literal notranslate"><span class="pre">True</span></code>, treat all variables in <code class="docutils literal notranslate"><span class="pre">data</span></code> as paired, and
+use same <code class="docutils literal notranslate"><span class="pre">freq</span></code> for each.</p></li>
+<li><p><strong>rng</strong> – Random number generator object. Defaults to output of
+<a class="reference internal" href="cmomy.random.html#cmomy.random.default_rng" title="cmomy.random.default_rng"><code class="xref py py-func docutils literal notranslate"><span class="pre">default_rng()</span></code></a>. If pass in a seed value, create a new
+<a class="reference external" href="https://numpy.org/doc/stable/reference/random/generator.html#numpy.random.Generator" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Generator</span></code></a> object with this seed</p></li>
+<li><p><strong>resample_replace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If True, do resampling with replacement.</p></li>
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, shuffle <code class="docutils literal notranslate"><span class="pre">indices</span></code> created from <code class="docutils literal notranslate"><span class="pre">freq</span></code> for each row.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.resample.typing.SamplerType">
+<span class="sig-prename descclassname"><span class="pre">cmomy.resample.typing.</span></span><span class="sig-name descname"><span class="pre">SamplerType</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'int</span> <span class="pre">|</span> <span class="pre">NDArrayAny</span> <span class="pre">|</span> <span class="pre">xr.DataArray</span> <span class="pre">|</span> <span class="pre">xr.Dataset</span> <span class="pre">|</span> <span class="pre">IndexSampler[Any]</span> <span class="pre">|</span> <span class="pre">FactoryIndexSamplerKwargs'</span></em><a class="headerlink" href="#cmomy.resample.typing.SamplerType" title="Link to this definition">#</a></dt>
+<dd><p>Input type for sampler</p>
 </dd></dl>
 
 
@@ -560,20 +591,20 @@ only load resampling with with co-moments, use
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="cmomy.confidence_interval.html"
+       href="cmomy.core.typing.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</p>
+        <p class="prev-next-title">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</p>
       </div>
     </a>
     <a class="right-next"
-       href="cmomy.options.html"
+       href="cmomy.wrapper.typing.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">&lt;no title&gt;</p>
+        <p class="prev-next-title">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>
@@ -593,8 +624,9 @@ only load resampling with with co-moments, use
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
-<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.compile.load_numba_modules"><code class="docutils literal notranslate"><span class="pre">load_numba_modules()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.resample.typing.FactoryIndexSamplerKwargs"><code class="docutils literal notranslate"><span class="pre">FactoryIndexSamplerKwargs</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.resample.typing.SamplerType"><code class="docutils literal notranslate"><span class="pre">SamplerType</span></code></a></li>
 </ul>
 
   </nav></div>

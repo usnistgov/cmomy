@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Modules &#8212; cmomy v1.0.1 documentation</title>
+    <title>Modules &#8212; cmomy 1.0.2 documentation</title>
   
   
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=372b014e"></script>
+    <script src="../_static/documentation_options.js?v=5549cc85"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,10 +55,10 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Routines to perform central moments reduction (reduction)" href="generated/cmomy.reduction.html" />
-    <link rel="prev" title="cmomy.MomParamsDict" href="generated/cmomy.MomParamsDict.html" />
+    <link rel="prev" title="cmomy.concat" href="generated/cmomy.concat.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2025-09-26"/>
+    <meta name="docbuild:last-update" content="2025-10-14"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy v1.0.1 documentation</p>
+    <p class="title logo__title">cmomy 1.0.2 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -188,6 +188,7 @@
 <li class="toctree-l3"><a class="reference internal" href="generated/cmomy.zeros_like.html">cmomy.zeros_like</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/cmomy.MomParams.html">cmomy.MomParams</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generated/cmomy.MomParamsDict.html">cmomy.MomParamsDict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.concat.html">cmomy.concat</a></li>
 </ul>
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="current reference internal" href="#">Modules</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -223,7 +224,6 @@
 
 
 <li class="toctree-l3"><a class="reference internal" href="generated/cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
-
 
 
 
@@ -285,50 +285,20 @@
 
 
 
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.resample.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.wrapper.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
 
 
 </ul>
 </details></li>
-<li class="toctree-l2"><a class="reference internal" href="api-baseclasses.html">Base Classes</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="api-baseclasses.html">Base Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/cmomy.wrapper._wrapper_abc.html"><code class="docutils literal notranslate"><span class="pre">MomParamsT</span></code></a></li>
+
+
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1"><a class="reference internal" href="../license.html">License</a></li>
@@ -587,6 +557,12 @@ document.write(`
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.core.typing.html#module-cmomy.core.typing" title="cmomy.core.typing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code></a></p></td>
 <td><p>Typing aliases (cmomy.core.typing)</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/cmomy.resample.typing.html#module-cmomy.resample.typing" title="cmomy.resample.typing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code></a></p></td>
+<td><p>Typing aliases (cmomy.resample.typing)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/cmomy.wrapper.typing.html#module-cmomy.wrapper.typing" title="cmomy.wrapper.typing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code></a></p></td>
+<td><p>Typing aliases (cmomy.wrapper.typing)</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -604,12 +580,12 @@ document.write(`
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="generated/cmomy.MomParamsDict.html"
+       href="generated/cmomy.concat.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">cmomy.MomParamsDict</p>
+        <p class="prev-next-title">cmomy.concat</p>
       </div>
     </a>
     <a class="right-next"
@@ -656,7 +632,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2025-09-26.
+  Last updated on 2025-10-14.
   <br/>
 </p>
   </div>
