@@ -101,7 +101,7 @@ if TYPE_CHECKING:
         NDArrayAny,
     )
     from cmomy.core.typing_compat import Self, TypeAlias, Unpack
-    from cmomy.resample.typing import Sampler
+    from cmomy.resample.typing import SamplerType
 
     CentralMomentsArrayAny: TypeAlias = "CentralMomentsArray[Any]"
     CentralMomentsDataArray: TypeAlias = "CentralMomentsData[xr.DataArray]"
@@ -733,7 +733,7 @@ class CentralMomentsArray(
     def resample_and_reduce(
         self,
         *,
-        sampler: Sampler,
+        sampler: SamplerType,
         out: None = ...,
         dtype: None = ...,
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -742,7 +742,7 @@ class CentralMomentsArray(
     def resample_and_reduce(
         self,
         *,
-        sampler: Sampler,
+        sampler: SamplerType,
         out: NDArray[FloatT_],
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -751,7 +751,7 @@ class CentralMomentsArray(
     def resample_and_reduce(
         self,
         *,
-        sampler: Sampler,
+        sampler: SamplerType,
         out: None = ...,
         dtype: DTypeLikeArg[FloatT_],
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -760,7 +760,7 @@ class CentralMomentsArray(
     def resample_and_reduce(
         self,
         *,
-        sampler: Sampler,
+        sampler: SamplerType,
         out: NDArrayAny | None = ...,
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
@@ -772,7 +772,7 @@ class CentralMomentsArray(
         self,
         *,
         axis: AxisReduce | MissingType = -1,
-        sampler: Sampler,
+        sampler: SamplerType,
         axes_to_end: bool = False,
         out: NDArrayAny | None = None,
         dtype: DTypeLike = None,

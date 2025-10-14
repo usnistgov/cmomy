@@ -60,5 +60,5 @@ class FactoryIndexSamplerKwargs(  # type: ignore[call-arg]
     shuffle: bool
 
 
-#: IndexSampler or mapping which can be converted to IndexSampler
-Sampler: TypeAlias = "int | NDArrayAny | xr.DataArray | xr.Dataset | IndexSampler[Any] | FactoryIndexSamplerKwargs"
+#: Input type for sampler
+SamplerType: TypeAlias = "int | NDArrayAny | xr.DataArray | xr.Dataset | IndexSampler[Any] | FactoryIndexSamplerKwargs"

@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     )
     from cmomy.core.typing_compat import Self
     from cmomy.factory import Pusher
-    from cmomy.resample.typing import Sampler
+    from cmomy.resample.typing import SamplerType
 
 #: MomParams type variable
 MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
@@ -876,7 +876,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     def resample_and_reduce(
         self,
         *,
-        sampler: Sampler,
+        sampler: SamplerType,
         axis: AxisReduce | MissingType = MISSING,
         dim: DimsReduce | MissingType = MISSING,
         rep_dim: str = "rep",

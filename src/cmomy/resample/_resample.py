@@ -86,7 +86,7 @@ if TYPE_CHECKING:
     from cmomy.core.typing_compat import Unpack
 
     from ._typing_kwargs import ResampleDataKwargs, ResampleValsKwargs
-    from .typing import Sampler
+    from .typing import SamplerType
 
 
 # * Resample data
@@ -151,7 +151,7 @@ def resample_data(
 def resample_data(  # noqa: PLR0913
     data: ArrayLike | DataT,
     *,
-    sampler: Sampler,
+    sampler: SamplerType,
     axis: AxisReduceWrap | MissingType = MISSING,
     dim: DimsReduce | MissingType = MISSING,
     mom_ndim: MomNDim | None = None,
@@ -421,7 +421,7 @@ def resample_vals(
 def resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    sampler: Sampler,
+    sampler: SamplerType,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,

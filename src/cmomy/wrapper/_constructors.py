@@ -61,7 +61,7 @@ if TYPE_CHECKING:
     )
     from cmomy.core.typing_compat import TypeAlias, TypeVar, Unpack
     from cmomy.resample._typing_kwargs import ResampleValsKwargs
-    from cmomy.resample.typing import Sampler
+    from cmomy.resample.typing import SamplerType
 
     from .typing import (
         CentralMomentsArrayAny,
@@ -532,7 +532,7 @@ def wrap_resample_vals(
 def wrap_resample_vals(  # noqa: PLR0913
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
-    sampler: Sampler,
+    sampler: SamplerType,
     mom: Moments,
     weight: ArrayLike | xr.DataArray | DataT | None = None,
     axis: AxisReduceWrap | MissingType = MISSING,

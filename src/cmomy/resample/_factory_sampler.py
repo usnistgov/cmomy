@@ -27,12 +27,12 @@ if TYPE_CHECKING:
         RngTypes,
     )
 
-    from .typing import Sampler
+    from .typing import SamplerType
 
 
 @docfiller.decorate
 def factory_sampler(  # noqa: PLR0913
-    sampler: Sampler | None = None,
+    sampler: SamplerType | None = None,
     *,
     # factory sampler parameters
     freq: NDArrayAny | xr.DataArray | xr.Dataset | None = None,

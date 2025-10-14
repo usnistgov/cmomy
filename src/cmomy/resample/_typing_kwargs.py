@@ -13,11 +13,11 @@ if TYPE_CHECKING:
         Required,
     )
 
-    from .typing import Sampler
+    from .typing import SamplerType
 
 
 class _SamplerKwargs(TypedDict, total=False):
-    sampler: Required[Sampler]
+    sampler: Required[SamplerType]
     rep_dim: str
 
 
