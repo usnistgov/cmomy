@@ -1,3 +1,11 @@
+#!/usr/bin/env -S uv run --script
+
+# /// script
+# dependencies = [
+#     "nox>=2024.10.9",
+# ]
+# ///
+
 # pylint: disable=wrong-import-position
 """Config file for nox."""
 
@@ -46,11 +54,6 @@ if TYPE_CHECKING:
 
     from nox import Session
 
-
-# Should only use on python version > 3.10
-if sys.version_info < (3, 10):
-    msg = "python>=3.10 required"  # pyright: ignore[reportUnreachable]
-    raise RuntimeError(msg)
 
 # * Names ------------------------------------------------------------------------------
 
@@ -1044,3 +1047,7 @@ def _append_recipe(recipe_path: str | Path, append_path: str | Path) -> None:
 
     with recipe_path.open("w") as f:
         f.writelines([*recipe, "\n", *append])
+
+
+if __name__ == "__main__":
+    nox.main()
