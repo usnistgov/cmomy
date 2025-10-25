@@ -345,8 +345,6 @@ module = [
 # module = ["cmomy.*"]
 
 [tool.pyright]
-# Enable this option to pick out unused `# pyright: ignore[...]`
-# reportUnnecessaryTypeIgnoreComment = true
 defineConstant = { MYPY_ONLY = false }
 include = [
     "src",
