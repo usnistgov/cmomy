@@ -44,7 +44,7 @@ jobs:
           default_python_version = Path(".python-version").read_text().strip()
 
           # min max and default pythons
-          matrix_test_python = list({ python_versions[0], python_versions[-1], default_python_version, f"pypy-3.11" })
+          matrix_test_python = list({ python_versions[0], python_versions[-1], default_python_version, "3.14" })
 
           with open(os.getenv("GITHUB_OUTPUT"), "a") as f:
             f.write(f"{default_python_version=:s}\n")
@@ -94,7 +94,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - windows-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -142,11 +141,21 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache-dependency-path: uv.lock
 
+      # numba cache
+      - name: Numba cache
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        with:
+          path: |
+            ${{ github.workspace }}/.numba_cache
+          key:
+            prek-v1|${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation
+            }}|${{ hashFiles('uv.lock') }}
+
       - name: Test with nox
         env:
           python_version: ${{ matrix.python-version }}
         run: >-
-          $UVX_COMMAND nox -s test-"$python_version" -- ++installpkg dist/*.whl
+          $UVX_COMMAND nox -s test-"$python_version"
         shell: bash
 
       - name: Upload coverage data
