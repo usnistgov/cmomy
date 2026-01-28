@@ -236,7 +236,9 @@ def test_prepare_values_values_for_reduction(
             axes_to_end=axes_to_end,
         )
 
-        for xx, vv, ss in zip([x, y, w], [xv, yv, wv], [xshape2, yshape2, wshape2]):
+        for xx, vv, ss in zip(
+            [x, y, w], [xv, yv, wv], [xshape2, yshape2, wshape2], strict=True
+        ):
             assert xx.shape == ss
             assert xx.dtype == np.dtype(dtype or np.float64)
             np.testing.assert_allclose(xx, vv)

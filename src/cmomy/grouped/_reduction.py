@@ -1033,7 +1033,9 @@ def reduce_vals_grouped(  # noqa: PLR0913
                 dask="parallelized",
                 output_sizes={
                     dim: axis_new_size,
-                    **dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
+                    **dict(
+                        zip(prep.mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                    ),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
@@ -1343,7 +1345,9 @@ def reduce_vals_indexed(  # noqa: PLR0913
                 dask="parallelized",
                 output_sizes={
                     dim: len(group_start),
-                    **dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
+                    **dict(
+                        zip(prep.mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                    ),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),

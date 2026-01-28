@@ -21,9 +21,8 @@ dependencies:
   - nbclient
   - nbval
   - nox>=2025.5.1
-  - numba>=0.58
+  - numba<0.63,>=0.58
   - numpy>1.24
-  - orjson
   - pandas-stubs
   - pylint
   - pytest
@@ -31,6 +30,7 @@ dependencies:
   - pytest-env
   - pytest-sugar
   - scipy
+  - typecheck-runner>=0.1.0
   - typing-extensions>=4.10.0
   - xarray>=2023.9.0
   - pip

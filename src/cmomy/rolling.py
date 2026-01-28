@@ -267,12 +267,12 @@ def construct_rolling_window_array(
             raise ValueError(msg)
 
         xout = x.rolling(
-            dict(zip(dim, window)),
-            center=dict(zip(dim, center)),
+            dict(zip(dim, window, strict=True)),
+            center=dict(zip(dim, center, strict=True)),
             **kwargs,
         ).construct(
-            window_dim=dict(zip(dim, window_dim)),
-            stride=dict(zip(dim, stride)),
+            window_dim=dict(zip(dim, window_dim, strict=True)),
+            stride=dict(zip(dim, stride, strict=True)),
             fill_value=fill_value,
             keep_attrs=keep_attrs,
         )
@@ -771,7 +771,9 @@ def rolling_vals(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes=dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
+                output_sizes=dict(
+                    zip(prep.mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                ),
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )
@@ -844,7 +846,7 @@ def _rolling_vals(
     if (shift := (-window // 2) + 1 if center else None) is not None:
         args = tuple(
             _pad_along_axis(arg, axis=axes[0], shift=shift, fill_value=0.0)
-            for arg, axes in zip(args, axes_args)
+            for arg, axes in zip(args, axes_args, strict=True)
         )
 
     out, axis_sample_out = prep.out_from_values(
@@ -1407,7 +1409,9 @@ def rolling_exp_vals(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes=dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
+                output_sizes=dict(
+                    zip(prep.mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                ),
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )

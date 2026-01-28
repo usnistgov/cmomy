@@ -143,7 +143,7 @@ def reorder(
         raise ValueError(msg)
 
     out: list[int] | list[_T] = [x for n, x in enumerate(seq) if n not in source]
-    for dest, src in sorted(zip(destination, (seq[s] for s in source))):
+    for dest, src in sorted(zip(destination, (seq[s] for s in source), strict=True)):
         out.insert(dest, src)
     return out
 

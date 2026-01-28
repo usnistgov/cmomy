@@ -29,6 +29,9 @@ sys.path.insert(0, str(Path("../src").resolve()))
 
 import cmomy
 
+# enable docstring-inheritance
+os.environ["DOCSTRING_INHERITANCE_ENABLE"] = "1"
+
 # -- General configuration ---------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

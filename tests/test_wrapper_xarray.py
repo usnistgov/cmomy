@@ -101,7 +101,7 @@ def test_as_dict(c_dataset) -> None:
     c = c_dataset.assign(other=xr.DataArray(np.zeros(3), dims=["b"]))
     d = c.as_dict()
     assert list(d.keys()) == list(c.keys())
-    for k, x in zip(c.keys(), c.values()):
+    for k, x in zip(c.keys(), c.values(), strict=True):
         xr.testing.assert_allclose(x.obj, c[k].obj)
     for k, x in c.items():
         xr.testing.assert_allclose(x.obj, c[k].obj)  # noqa: PLR1733
@@ -128,7 +128,7 @@ def test_iter(c_dataset) -> None:
     assert list(c) == list(c.keys())
 
     ca = get_first(c_dataset)
-    for c, expected in zip(ca, ca.obj):
+    for c, expected in zip(ca, ca.obj, strict=True):
         xr.testing.assert_allclose(c.obj, expected)
 
     c = cmomy.wrap(xr.DataArray(np.zeros(3)))

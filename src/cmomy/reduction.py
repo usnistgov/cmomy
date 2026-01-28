@@ -252,7 +252,9 @@ def reduce_vals(  # noqa: PLR0913
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={
-                    **dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
+                    **dict(
+                        zip(prep.mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                    ),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
@@ -606,8 +608,8 @@ def _reduce_data(
     mom_axes = tuple(order_.index(a) for a in mom_params.axes)
 
     if out is None:
-        if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
-            out = np.empty(data.shape[:-1], dtype=dtype, order=_order_cf)
+        if (order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+            out = np.empty(data.shape[:-1], dtype=dtype, order=order_cf)
     elif keepdims:  # pylint: disable=confusing-consecutive-elif)
         out = np.squeeze(out, axis=axis)
 
