@@ -115,8 +115,8 @@ jobs:
           path: |
             ${{ github.workspace }}/.mypy_cache
           key:
-            ${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation }}|${{
-            hashFiles('uv.lock') }}
+            mypy-cache|${{ runner.os }}|${{ runner.arch }}|${{
+            env.pythonLocation }}|${{ hashFiles('uv.lock') }}
 
       - name: typecheck
         env:
@@ -220,8 +220,7 @@ jobs:
               ${{ needs.build-package.outputs.default-python-version }}
             os: ubuntu-latest
             session: "test-serial"
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
+          - python-version: "3.12"
             os: ubuntu-latest
             session: "test-numpy1"
           - python-version:
@@ -255,8 +254,8 @@ jobs:
           path: |
             ${{ github.workspace }}/.numba_cache
           key:
-            ${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation }}|${{
-            hashFiles('uv.lock') }}
+            numba-cache|${{ runner.os }}|${{ runner.arch }}|${{
+            env.pythonLocation }}|${{ hashFiles('uv.lock') }}
 
       - name: Numba cache (numpy1)
         uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
@@ -265,7 +264,7 @@ jobs:
           path: |
             ${{ github.workspace }}/.numba_cache
           key:
-            ${{ matrix.session }}|${{ runner.os }}|${{ runner.arch }}|${{
+            ${{ matrix.session }}-cache|${{ runner.os }}|${{ runner.arch }}|${{
             env.pythonLocation }}|${{ hashFiles('uv.lock') }}
 
       - name: Test with nox
