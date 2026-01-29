@@ -622,6 +622,21 @@ def test_typing(
     )
 
 
+@nox.session(name="test-run-slow", python=False)
+def test_run_slow(
+    session: Session,
+) -> None:
+    """Test typing"""
+    session.run(
+        "nox",
+        "-s",
+        f"test-{PYTHON_DEFAULT_VERSION}",
+        "--",
+        "++test-options",
+        "--run-slow",
+    )
+
+
 @nox.session(name="test-notebook", **DEFAULT_KWS)
 @add_opts
 def test_notebook(session: nox.Session, opts: SessionParams) -> None:

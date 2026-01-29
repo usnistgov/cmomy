@@ -124,10 +124,26 @@ jobs:
           - ubuntu-latest
         python-version:
           ${{ fromJson(needs.build-package.outputs.matrix-test-python) }}
+        session:
+          - test
         include:
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-run-slow"
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-serial test-typing"
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-numpy1"
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-notebook"
+          # windows
           - os: windows-latest
             python-version:
               ${{ needs.build-package.outputs.default-python-version }}
+            session: test
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -152,10 +168,19 @@ jobs:
             }}|${{ hashFiles('uv.lock') }}
 
       - name: Test with nox
+        if: matrix.session == 'test'
         env:
           python_version: ${{ matrix.python-version }}
         run: >-
           $UVX_COMMAND nox -s test-"$python_version"
+        shell: bash
+
+      - name: Test with nox (session)
+        if: matrix.session != 'test'
+        env:
+          session: ${{ matrix.session }}
+        run: >-
+          $UVX_COMMAND nox -s "$session"
         shell: bash
 
       - name: Upload coverage data
