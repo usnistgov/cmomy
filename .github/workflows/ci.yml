@@ -148,10 +148,6 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: Packages
-          path: dist
       - uses: ./.github/actions/setup-cached-uv-and-python
         with:
           python-version: ${{ matrix.python-version }}
@@ -168,7 +164,7 @@ jobs:
             }}|${{ hashFiles('uv.lock') }}
 
       - name: Test with nox
-        if: matrix.session == 'test'
+        if: ${{ matrix.session == 'test' }}
         env:
           python_version: ${{ matrix.python-version }}
         run: >-
@@ -176,7 +172,7 @@ jobs:
         shell: bash
 
       - name: Test with nox (session)
-        if: matrix.session != 'test'
+        if: ${{ matrix.session != 'test' }}
         env:
           session: ${{ matrix.session }}
         run: >-
