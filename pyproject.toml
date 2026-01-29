@@ -81,7 +81,7 @@ pytest = [ "pytest" ]
 pytest-accept = [ "pytest-accept" ]
 typecheck-runner = [ "typecheck-runner>=0.1.0; python_version>'3.9'" ]
 # other environments
-numpy1 = [ "numpy<2.0" ]
+numpy1 = [ "numpy<3.0" ]
 numpy2 = [ "numpy>2.0" ]
 docs-live = [
     "sphinx-autobuild",
