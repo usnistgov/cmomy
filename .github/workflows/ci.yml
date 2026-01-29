@@ -325,6 +325,8 @@ jobs:
         if: ${{ failure() }}
 
   docs:
+    permissions:
+      contents: write
     uses: ./.github/workflows/reusable-docs.yml
 
   pinact:
