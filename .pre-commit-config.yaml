@@ -198,7 +198,7 @@ repos:
     hooks:
       # Run the linter.
       - id: zizmor
-        alias: workflows
+        alias: actions
 
   # * auto-files
   - repo: local

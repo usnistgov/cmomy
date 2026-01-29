@@ -1,18 +1,10 @@
 name: Docs
+
 on:
-  workflow_dispatch:
-  release:
-    types: [published]
-  pull_request:
-  push:
-    branches: [main]
+  workflow_call:
 
 env:
   FORCE_COLOR: "3"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   build:
