@@ -541,6 +541,7 @@ def _test(
     test_no_pytest: bool,
     test_options: OPT_TYPE,
     no_cov: bool,
+    tag: str | None = None,
     **kws: Any,
 ) -> None:
     tmpdir = os.getenv("TMPDIR")
@@ -549,7 +550,8 @@ def _test(
     if not test_no_pytest:
         opts = combine_list_str(test_options or [])
         if not no_cov:
-            tag = os.getenv("COVERAGE_FILE_TAG", "")
+            if tag is None:
+                tag = os.getenv("COVERAGE_FILE_TAG", "")
 
             session.env["COVERAGE_FILE"] = str(
                 Path(session.create_tmp()) / f".coverage-{sys.platform}{tag}"
@@ -713,6 +715,7 @@ def test_numpy1(
         test_no_pytest=opts.test_no_pytest,
         test_options=test_options,
         no_cov=opts.no_cov,
+        tag="-numpy1",
     )
 
 
