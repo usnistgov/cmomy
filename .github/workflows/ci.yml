@@ -113,6 +113,80 @@ jobs:
         run: $UVX_COMMAND nox -s typecheck-"$python_version"
         shell: bash
 
+  # test:
+  #   name: Test package across pythons
+  #   needs: build-package
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os:
+  #         - ubuntu-latest
+  #       python-version:
+  #         ${{ fromJson(needs.build-package.outputs.matrix-test-python) }}
+  #       session:
+  #         - test
+  #       include:
+  #         - python-version:
+  #             ${{ needs.build-package.outputs.default-python-version }}
+  #           session: "test-run-slow"
+  #         - python-version:
+  #             ${{ needs.build-package.outputs.default-python-version }}
+  #           session: "test-serial test-typing"
+  #         - python-version:
+  #             ${{ needs.build-package.outputs.default-python-version }}
+  #           session: "test-numpy1"
+  #         - python-version:
+  #             ${{ needs.build-package.outputs.default-python-version }}
+  #           session: "test-notebook"
+  #         # windows
+  #         - os: windows-latest
+  #           python-version:
+  #             ${{ needs.build-package.outputs.default-python-version }}
+  #           session: test
+  #   steps:
+  #     - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+  #       with:
+  #         persist-credentials: false
+  #     - uses: ./.github/actions/setup-cached-uv-and-python
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+  #         cache-dependency-path: uv.lock
+
+  #     # numba cache
+  #     - name: Numba cache
+  #       uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+  #       with:
+  #         path: |
+  #           ${{ github.workspace }}/.numba_cache
+  #         key:
+  #           prek-v1|${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation
+  #           }}|${{ hashFiles('uv.lock') }}
+
+  #     - name: Test with nox
+  #       if: ${{ matrix.session == 'test' }}
+  #       env:
+  #         python_version: ${{ matrix.python-version }}
+  #       run: >-
+  #         $UVX_COMMAND nox -s test-"$python_version"
+  #       shell: bash
+
+  #     - name: Test with nox (session)
+  #       if: ${{ matrix.session != 'test' }}
+  #       env:
+  #         session: ${{ matrix.session }}
+  #       run: >-
+  #         $UVX_COMMAND nox -s "$session"
+  #       shell: bash
+
+  #     - name: Upload coverage data
+  #       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+  #       with:
+  #         name: coverage-data-${{ matrix.os }}-${{ matrix.python-version }}
+  #         path: .nox/test-*/tmp/.coverage*
+  #         include-hidden-files: true
+  #         if-no-files-found: ignore
+
   test:
     name: Test package across pythons
     needs: build-package
@@ -124,59 +198,28 @@ jobs:
           - ubuntu-latest
         python-version:
           ${{ fromJson(needs.build-package.outputs.matrix-test-python) }}
-        session:
-          - test
         include:
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
-            session: "test-run-slow"
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
-            session: "test-serial test-typing"
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
-            session: "test-numpy1"
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
-            session: "test-notebook"
-          # windows
           - os: windows-latest
             python-version:
               ${{ needs.build-package.outputs.default-python-version }}
-            session: test
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: Packages
+          path: dist
       - uses: ./.github/actions/setup-cached-uv-and-python
         with:
           python-version: ${{ matrix.python-version }}
           cache-dependency-path: uv.lock
 
-      # numba cache
-      - name: Numba cache
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
-        with:
-          path: |
-            ${{ github.workspace }}/.numba_cache
-          key:
-            prek-v1|${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation
-            }}|${{ hashFiles('uv.lock') }}
-
       - name: Test with nox
-        if: ${{ matrix.session == 'test' }}
         env:
           python_version: ${{ matrix.python-version }}
         run: >-
-          $UVX_COMMAND nox -s test-"$python_version"
-        shell: bash
-
-      - name: Test with nox (session)
-        if: ${{ matrix.session != 'test' }}
-        env:
-          session: ${{ matrix.session }}
-        run: >-
-          $UVX_COMMAND nox -s "$session"
+          $UVX_COMMAND nox -s test-"$python_version" -- ++installpkg dist/*.whl
         shell: bash
 
       - name: Upload coverage data
