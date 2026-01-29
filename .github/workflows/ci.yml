@@ -198,28 +198,38 @@ jobs:
           - ubuntu-latest
         python-version:
           ${{ fromJson(needs.build-package.outputs.matrix-test-python) }}
+        session:
+          - test
         include:
           - os: windows-latest
             python-version:
               ${{ needs.build-package.outputs.default-python-version }}
+            session: test
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: Packages
-          path: dist
       - uses: ./.github/actions/setup-cached-uv-and-python
         with:
           python-version: ${{ matrix.python-version }}
           cache-dependency-path: uv.lock
 
+      # numba cache
+      - name: Numba cache
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        with:
+          path: |
+            ${{ github.workspace }}/.numba_cache
+          key:
+            ${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation }}|${{
+            hashFiles('uv.lock') }}
+
       - name: Test with nox
+        if: ${{ matrix.session == 'test' }}
         env:
           python_version: ${{ matrix.python-version }}
         run: >-
-          $UVX_COMMAND nox -s test-"$python_version" -- ++installpkg dist/*.whl
+          $UVX_COMMAND nox -s test-"$python_version"
         shell: bash
 
       - name: Upload coverage data
