@@ -689,7 +689,7 @@ def test_notebook(session: nox.Session, opts: SessionParams) -> None:
     )
 
 
-@nox.session(name="test-numpy1", **DEFAULT_KWS)
+@nox.session(name="test-numpy1", python="3.12")
 @add_opts
 def test_numpy1(
     session: Session,
