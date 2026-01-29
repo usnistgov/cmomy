@@ -44,7 +44,8 @@ jobs:
           default_python_version = Path(".python-version").read_text().strip()
 
           # min max and default pythons
-          matrix_test_python = list({ python_versions[0], python_versions[-1], default_python_version, "3.14" })
+          # matrix_test_python = list({ python_versions[0], python_versions[-1], default_python_version, "3.14" })
+          matrix_test_python = list({ python_versions[0], python_versions[-1], default_python_version })
 
           with open(os.getenv("GITHUB_OUTPUT"), "a") as f:
             f.write(f"{default_python_version=:s}\n")
@@ -201,6 +202,18 @@ jobs:
         session:
           - test
         include:
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-run-slow"
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-serial test-typing"
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-numpy1"
+          - python-version:
+              ${{ needs.build-package.outputs.default-python-version }}
+            session: "test-notebook"
           - os: windows-latest
             python-version:
               ${{ needs.build-package.outputs.default-python-version }}
@@ -229,7 +242,15 @@ jobs:
         env:
           python_version: ${{ matrix.python-version }}
         run: >-
-          $UVX_COMMAND nox -s test-"$python_version"
+          $UVX_COMMAND nox -s test-"$python_version" -- ++test-options --compile
+        shell: bash
+
+      - name: Test with nox (session)
+        if: ${{ matrix.session != 'test' }}
+        env:
+          session: ${{ matrix.session }}
+        run: >-
+          $UVX_COMMAND nox -s "$session"
         shell: bash
 
       - name: Upload coverage data
