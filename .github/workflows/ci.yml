@@ -255,6 +255,13 @@ jobs:
           $UVX_COMMAND nox -s test-"$python_version" -- ++test-options --compile
         shell: bash
 
+      # for these other types of tests, use the build package
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        if: ${{ matrix.session != 'test' }}
+        with:
+          name: Packages
+          path: dist
+
       - name: Test with nox (session)
         if: ${{ matrix.session != 'test' }}
         env:

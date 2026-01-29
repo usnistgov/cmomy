@@ -439,6 +439,7 @@ deps = "pip"
 [tool.pyproject2conda.dependencies]
 pytest-accept = { pip = true }
 lazy-loader = { skip = true, packages = "lazy_loader" }
+numba = { skip = true, packages = "numba>=0.57" }
 
 [tool.pyproject2conda.envs.dev]
 groups = [ "dev" ]
