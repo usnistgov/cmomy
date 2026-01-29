@@ -28,14 +28,19 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
 ]
 dependencies = [
     "docstring-inheritance",
     "lazy-loader",
     "module-utilities>=0.10.1",
-    "numba>=0.57; sys_platform!='darwin'",
-    "numba>=0.58,<0.63; sys_platform=='darwin' and platform_machine=='x86_64'",
+    "numba>=0.58,<0.63; python_version<'3.14' and sys_platform=='darwin' and platform_machine=='x86_64'",
+    "numba>=0.58; python_version<'3.14' and sys_platform!='darwin' or platform_machine!='x86_64'",
+    # "numba>=0.57",
+    # "numba>=0.63; sys_platform!='darwin'",
+    # "numba>=0.58,<0.63; sys_platform=='darwin' and platform_machine=='x86_64'",
+    "numba>=0.63; python_version>='3.14'",
     "numpy>1.24",
     "typing-extensions>=4.10.0",
     "xarray>=2023.9.0",
@@ -124,6 +129,15 @@ conflicts = [
     ],
 ]
 required-version = ">=0.7.15"
+required-environments = [
+    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
+# environments = [
+#     "sys_platform == 'darwin' and platform_machine=='x86_64'",
+#     "sys_platform == 'darwin' and platform_machine=='arm64'",
+#     "sys_platform == 'linux'",
+#     "sys_platform == 'win32'",
+# ]
 
 [tool.uv.pip]
 annotation-style = "line"
@@ -201,7 +215,8 @@ package_omit = [
 ]
 
 [tool.pyproject-fmt]
-max_supported_python = "3.13"
+# limited to 3.13 for macos-intel
+# max_supported_python = "3.13"
 
 # * Testing --------------------------------------------------------------------
 
@@ -437,6 +452,7 @@ deps = "pip"
 [tool.pyproject2conda.dependencies]
 pytest-accept = { pip = true }
 lazy-loader = { skip = true, packages = "lazy_loader" }
+numba = { skip = true, packages = "numba>=0.57" }
 
 [tool.pyproject2conda.envs.dev]
 groups = [ "dev" ]

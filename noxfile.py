@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import os
+import platform
 import shlex
 import shutil
 import sys
@@ -79,9 +80,14 @@ UV_LOCK = True
 PYTHON_ALL_VERSIONS = nox.project.python_versions(
     nox.project.load_toml("pyproject.toml"),
 )
-PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS
-PYTHON_DEFAULT_VERSION = Path(".python-version").read_text(encoding="utf-8").strip()
 
+if sys.platform != "darwin" or platform.machine != "x86_64":
+    PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS
+else:
+    PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS.copy()
+    PYTHON_TEST_VERSIONS.remove("3.14")
+
+PYTHON_DEFAULT_VERSION = Path(".python-version").read_text(encoding="utf-8").strip()
 UVX_LOCK_CONSTRAINTS = "requirements/lock/uvx-tools.txt"
 UVX_MIN_CONSTRAINTS = "requirements/uvx-tools.txt"
 PIP_COMPILE_CONFIG = None
@@ -535,16 +541,20 @@ def _test(
     test_no_pytest: bool,
     test_options: OPT_TYPE,
     no_cov: bool,
+    tag: str | None = None,
     **kws: Any,
 ) -> None:
-    tmpdir = os.environ.get("TMPDIR", None)
+    tmpdir = os.getenv("TMPDIR")
 
     session_run_commands(session, run)
     if not test_no_pytest:
         opts = combine_list_str(test_options or [])
         if not no_cov:
+            if tag is None:
+                tag = os.getenv("COVERAGE_FILE_TAG", "")
+
             session.env["COVERAGE_FILE"] = str(
-                Path(session.create_tmp()) / f".coverage-{sys.platform}"
+                Path(session.create_tmp()) / f".coverage-{sys.platform}{tag}"
             )
 
             if not any(o.startswith("--cov") for o in opts):
@@ -601,7 +611,7 @@ def test_serial(
         f"test-{PYTHON_DEFAULT_VERSION}",
         "--",
         *session.posargs,
-        env={"CMOMY_NUMBA_PARALLEL": "false"},
+        env={"CMOMY_NUMBA_PARALLEL": "false", "COVERAGE_FILE_TAG": "-serial"},
     )
 
 
@@ -618,7 +628,7 @@ def test_typing(
         "++test-options",
         "--typing",
         "tests/test_typing_auto.py",
-        "++no-cov",
+        env={"COVERAGE_FILE_TAG": "-typing"},
     )
 
 
@@ -632,8 +642,10 @@ def test_run_slow(
         "-s",
         f"test-{PYTHON_DEFAULT_VERSION}",
         "--",
+        *session.posargs,
         "++test-options",
         "--run-slow",
+        env={"COVERAGE_FILE_TAG": "-run-slow"},
     )
 
 
@@ -677,7 +689,7 @@ def test_notebook(session: nox.Session, opts: SessionParams) -> None:
     )
 
 
-@nox.session(name="test-numpy1", **DEFAULT_KWS)
+@nox.session(name="test-numpy1", python="3.12")
 @add_opts
 def test_numpy1(
     session: Session,
@@ -703,6 +715,7 @@ def test_numpy1(
         test_no_pytest=opts.test_no_pytest,
         test_options=test_options,
         no_cov=opts.no_cov,
+        tag="-numpy1",
     )
 
 
