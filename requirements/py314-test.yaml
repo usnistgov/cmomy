@@ -7,11 +7,11 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
-name: py312-test
+name: py314-test
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
+  - python=3.14
   - docstring-inheritance
   - lazy_loader
   - module-utilities>=0.10.1

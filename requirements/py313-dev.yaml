@@ -21,7 +21,7 @@ dependencies:
   - nbclient
   - nbval
   - nox>=2025.5.1
-  - numba>=0.57
+  - numba<0.63,>=0.58
   - numpy>1.24
   - pandas-stubs
   - pylint

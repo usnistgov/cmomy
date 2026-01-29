@@ -7,20 +7,13 @@
 # You should not manually edit this file.
 # Instead edit the corresponding pyproject.toml file.
 #
-name: py312-test
+name: py314-test-extras
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
-  - docstring-inheritance
-  - lazy_loader
-  - module-utilities>=0.10.1
-  - numba<0.63,>=0.58
-  - numpy>1.24
+  - python=3.14
   - pytest
   - pytest-cov
   - pytest-env
   - pytest-sugar
-  - typing-extensions>=4.10.0
-  - xarray>=2023.9.0
   - pip
