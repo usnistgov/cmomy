@@ -219,7 +219,7 @@ jobs:
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
             os: ubuntu-latest
-            session: "test-serial test-typing"
+            session: "test-serial"
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
             os: ubuntu-latest
@@ -250,6 +250,7 @@ jobs:
       # numba cache
       - name: Numba cache
         uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        if: matrix.session != 'test-numpy1'
         with:
           path: |
             ${{ github.workspace }}/.numba_cache
@@ -257,26 +258,36 @@ jobs:
             ${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation }}|${{
             hashFiles('uv.lock') }}
 
+      - name: Numba cache (numpy1)
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        if: matrix.session == 'test-numpy1'
+        with:
+          path: |
+            ${{ github.workspace }}/.numba_cache
+          key:
+            ${{ matrix.session }}|${{ runner.os }}|${{ runner.arch }}|${{
+            env.pythonLocation }}|${{ hashFiles('uv.lock') }}
+
       - name: Test with nox
         if: ${{ matrix.session == 'test' }}
         env:
           python_version: ${{ matrix.python-version }}
         run: >-
           $UVX_COMMAND nox -s test-"$python_version" -- ++test-options --compile
+          --typing
         shell: bash
 
       # for these other types of tests, use the build package
-      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        if: ${{ matrix.session != 'test' }}
-        with:
-          name: Packages
-          path: dist
+      # - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+      #   if: ${{ matrix.session != 'test' }}
+      #   with:
+      #     name: Packages
+      #     path: dist
 
       - name: Test with nox (session)
         if: ${{ matrix.session != 'test' }}
         run: >-
-          $UVX_COMMAND nox -s ${{ matrix.session }} -- ++installpkg dist/*.whl
-          ++test-options --compile
+          $UVX_COMMAND nox -s ${{ matrix.session }}
         shell: bash
 
       - name: Display coverage files
@@ -286,7 +297,9 @@ jobs:
       - name: Upload coverage data
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          name: coverage-data-${{ matrix.os }}-${{ matrix.python-version }}
+          name:
+            coverage-data-${{ matrix.os }}-${{ matrix.python-version }}-${{
+            matrix.session }}
           path: .nox/test-*/tmp/.coverage*
           include-hidden-files: true
           if-no-files-found: ignore
