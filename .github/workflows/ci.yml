@@ -84,8 +84,7 @@ jobs:
       - name: Run prek
         run: >-
           $UVX_COMMAND prek run --show-diff-on-failure --color=always
-          --all-files --hook-stage=manual cog-readme requirements
-          validate-pyproject-schema-store sp-repo-review cruft actionlint
+          --all-files --hook-stage=manual
 
   typecheck:
     name: Typecheck package
@@ -108,6 +107,17 @@ jobs:
           python_version=$(cat .python-version)
           echo "python_version=${python_version}" >> "$GITHUB_ENV"
         shell: bash
+
+      # mypy cache
+      - name: Numba cache
+        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        with:
+          path: |
+            ${{ github.workspace }}/.mypy_cache
+          key:
+            ${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation }}|${{
+            hashFiles('uv.lock') }}
+
       - name: typecheck
         env:
           python_version: ${{ env.python_version }}
