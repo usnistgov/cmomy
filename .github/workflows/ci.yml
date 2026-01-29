@@ -260,7 +260,8 @@ jobs:
         env:
           session: ${{ matrix.session }}
         run: >-
-          $UVX_COMMAND nox -s "$session" -- ++installpgk dist/*.whl
+          $UVX_COMMAND nox -s "$session" -- ++installpkg dist/*.whl
+          ++test-options --compile
         shell: bash
 
       - name: Upload coverage data
