@@ -204,15 +204,19 @@ jobs:
         include:
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
+            os: ubuntu-latest
             session: "test-run-slow"
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
+            os: ubuntu-latest
             session: "test-serial test-typing"
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
+            os: ubuntu-latest
             session: "test-numpy1"
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
+            os: ubuntu-latest
             session: "test-notebook"
           - os: windows-latest
             python-version:
