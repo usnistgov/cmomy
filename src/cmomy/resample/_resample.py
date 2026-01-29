@@ -541,7 +541,9 @@ def resample_vals(  # noqa: PLR0913
                 dask="parallelized",
                 output_sizes={
                     rep_dim: sampler.nrep,
-                    **dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
+                    **dict(
+                        zip(prep.mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                    ),
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
@@ -1193,7 +1195,9 @@ def jackknife_vals(  # noqa: PLR0913
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes=dict(zip(prep.mom_params.dims, mom_to_mom_shape(mom))),
+                output_sizes=dict(
+                    zip(prep.mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                ),
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),
         )

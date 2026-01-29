@@ -261,10 +261,10 @@ def test_vals(rng, val_shape, mom, use_weight):
     c.zero()
 
     if weight is not None:
-        for *_xy, w in zip(*xy, weight):
-            c.push_val(*_xy, weight=w)
+        for *xy_, w in zip(*xy, weight, strict=True):
+            c.push_val(*xy_, weight=w)
     else:
-        for args in zip(*xy):
+        for args in zip(*xy, strict=True):
             c.push_val(*args)
     np.testing.assert_allclose(expected, c)
 

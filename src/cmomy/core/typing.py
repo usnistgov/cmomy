@@ -12,16 +12,15 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Literal,
-    Optional,
     Protocol,
     Union,
     runtime_checkable,
 )
 
 import numpy as np
+import pandas as pd  # noqa: F401
 
 # put outside to get autodoc typehints working...
-import pandas as pd
 import xarray as xr
 from numpy.typing import NDArray
 
@@ -31,7 +30,7 @@ if TYPE_CHECKING:
     from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
-        _NestedSequence,  # pyright: ignore[reportPrivateUsage]
+        _NestedSequence,  # pyright: ignore[reportPrivateUsage]  # noqa: F401
     )
 
     # Missing value type
@@ -40,7 +39,7 @@ if TYPE_CHECKING:
 # * TypeVars ------------------------------------------------------------------
 #: DataArray or Dataset
 DataT = TypeVar("DataT", xr.DataArray, xr.Dataset)
-DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound=Union[xr.DataArray, xr.Dataset])
+DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound="xr.DataArray | xr.Dataset")
 
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
 FloatT = TypeVar(
@@ -64,37 +63,36 @@ SamplerArrayT = TypeVar(
 # Axis/Dim reduction type
 # TODO(wpk): convert int -> SupportsIndex?
 #: Axes type
-Axes = Union[int, "tuple[int, ...]"]
+Axes: TypeAlias = int | tuple[int, ...]
 #: Axes type (with wrapping)
-AxesWrap = Union[complex, "tuple[complex, ...]"]
+AxesWrap: TypeAlias = complex | tuple[complex, ...]
 
 #: Reduction axes type
-AxisReduce: TypeAlias = Optional[int]
+AxisReduce: TypeAlias = int | None
 #: Reduction axes type (with wrapping)
-AxisReduceWrap: TypeAlias = Optional[complex]
+AxisReduceWrap: TypeAlias = complex | None
 
-AxesGUFunc: TypeAlias = "list[tuple[int, ...]]"
+AxesGUFunc: TypeAlias = list[tuple[int, ...]]
 
 #: Reduction axes type (multiple)
-AxisReduceMult: TypeAlias = Union[int, "tuple[int, ...]", None]
+AxisReduceMult: TypeAlias = int | tuple[int, ...] | None
 #: Reduction axes type (multiple, with wrapping)
-AxisReduceMultWrap: TypeAlias = Union[complex, "tuple[complex, ...]", None]
+AxisReduceMultWrap: TypeAlias = complex | tuple[complex, ...] | None
 
 #: Random number generator types
-RngTypes: TypeAlias = Union[
-    int,
-    Sequence[int],
-    np.random.SeedSequence,
-    np.random.BitGenerator,
-    np.random.Generator,
-]
-
+RngTypes: TypeAlias = (
+    int
+    | Sequence[int]
+    | np.random.SeedSequence
+    | np.random.BitGenerator
+    | np.random.Generator
+)
 
 # Types
 #: Any dtype
 DTypeAny: TypeAlias = Any
 #: Floating dtype
-FloatDTypes = Union[np.float32, np.float64]
+FloatDTypes: TypeAlias = np.float32 | np.float64
 #: Long integer dtype
 LongIntDType: TypeAlias = np.int64
 #: Array type (any dtype)
@@ -108,7 +106,7 @@ NDArrayBool = NDArray[np.bool_]
 #: Integer dtype
 IntDTypeT: TypeAlias = np.int64
 #: Float or array of float
-NDGeneric: TypeAlias = Union[FloatT, NDArray[FloatT]]
+NDGeneric: TypeAlias = FloatT | NDArray[FloatT]
 
 
 # ** Dtype
@@ -135,10 +133,10 @@ class _SupportsArray(Protocol[_DTypeT_co]):
     def __array__(self) -> np.ndarray[Any, _DTypeT_co]: ...  # noqa: PLW3201  # pragma: no cover
 
 
-ArrayLikeArg = Union[
-    "_SupportsArray[np.dtype[_ScalarT]]",
-    "_NestedSequence[_SupportsArray[np.dtype[_ScalarT]]]",
-]
+ArrayLikeArg: TypeAlias = (
+    _SupportsArray[np.dtype[_ScalarT]]
+    | "_NestedSequence[_SupportsArray[np.dtype[_ScalarT]]]"
+)
 
 
 # * Moments -------------------------------------------------------------------
@@ -146,9 +144,9 @@ ArrayLikeArg = Union[
 # Passing in integer or Sequence[int] will work in almost all cases,
 # but will be flagged by typechecker...
 #: Moments type
-Moments: TypeAlias = Union[int, "tuple[int]", "tuple[int, int]"]
+Moments: TypeAlias = int | tuple[int] | tuple[int, int]
 #: Strict moments type
-MomentsStrict: TypeAlias = Union["tuple[int]", "tuple[int, int]"]
+MomentsStrict: TypeAlias = tuple[int] | tuple[int, int]
 #: Number of moment dimensions
 MomNDim = Literal[1, 2]
 
@@ -160,42 +158,39 @@ MomAxesStrict = MomentsStrict
 # * Xarray specific stuff -----------------------------------------------------
 # fix if using autodoc typehints...
 #: Reduction dimension
-DimsReduce: TypeAlias = Optional[Hashable]
+DimsReduce: TypeAlias = Hashable | None
 #: Reduction dimension(s)
 DimsReduceMult: TypeAlias = Union[Hashable, "Collection[Hashable]", None]
 #: Dimensions
-Dims = Union[str, Collection[Hashable], EllipsisType, None]
+Dims: TypeAlias = str | Collection[Hashable] | EllipsisType | None
 
 #: Dimensions containing moment(s)
-MomDims = Union[Hashable, "tuple[Hashable]", "tuple[Hashable, Hashable]"]
+MomDims: TypeAlias = Hashable | tuple[Hashable] | tuple[Hashable, Hashable]
 #: Dimensions containing moment(s)
-MomDimsStrict = Union["tuple[Hashable]", "tuple[Hashable, Hashable]"]
+MomDimsStrict: TypeAlias = tuple[Hashable] | tuple[Hashable, Hashable]
 
 #: Index
 IndexAny: TypeAlias = "pd.Index[Any]"
 #: Coordinates
-CoordsType: TypeAlias = Union[
-    Mapping[Any, Any],
-    None,
-]
-AttrsType: TypeAlias = Optional[Mapping[Any, Any]]
-NameType: TypeAlias = Optional[Hashable]
-DimsType: TypeAlias = Union[str, Iterable[Hashable], None]
-KeepAttrs: TypeAlias = Union[
-    Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"],
-    bool,
-    None,
-]
-Groups: TypeAlias = Union[Sequence[Any], NDArrayAny, IndexAny, pd.MultiIndex]
+CoordsType: TypeAlias = Mapping[Any, Any] | None
+AttrsType: TypeAlias = Mapping[Any, Any] | None
+NameType: TypeAlias = Hashable | None
+DimsType: TypeAlias = str | Iterable[Hashable] | None
+KeepAttrs: TypeAlias = (
+    Literal["drop", "identical", "no_conflicts", "drop_conflicts", "override"]
+    | bool
+    | None
+)
+Groups: TypeAlias = "Sequence[Any] | NDArrayAny | IndexAny | pd.MultiIndex"
 
 
 # * Literals ------------------------------------------------------------------
 #: Order parameters
-ArrayOrderCF = Optional[Literal["C", "F"]]
+ArrayOrderCF: TypeAlias = Literal["C", "F"] | None
 #: Order parameters
-ArrayOrderACF = Optional[Literal["A", "C", "F"]]
+ArrayOrderACF: TypeAlias = Literal["A", "C", "F"] | None
 #: Order parameters
-ArrayOrderKACF = Optional[Literal["K", "A", "C", "F"]]
+ArrayOrderKACF: TypeAlias = Literal["K", "A", "C", "F"] | None
 #: Casting rules
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
 #: What to do if missing a core dimensions.
@@ -218,9 +213,7 @@ SelectMoment = Literal[
 ]
 #: Style to convert to
 ConvertStyle = Literal["central", "raw"]
-VerifyValuesStyles: TypeAlias = Literal["val", "vals", "data", "datas", "var", "vars"]
-CoordsPolicy: TypeAlias = Optional[Literal["first", "last", "group"]]
-BootStrapMethod: TypeAlias = Literal["percentile", "basic", "bca"]
-BlockByModes: TypeAlias = Literal[
-    "drop_first", "drop_last", "expand_first", "expand_last"
-]
+VerifyValuesStyles = Literal["val", "vals", "data", "datas", "var", "vars"]
+CoordsPolicy: TypeAlias = Literal["first", "last", "group"] | None
+BootStrapMethod = Literal["percentile", "basic", "bca"]
+BlockByModes = Literal["drop_first", "drop_last", "expand_first", "expand_last"]

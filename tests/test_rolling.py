@@ -66,13 +66,14 @@ def test_construct_rolling_window_array(shape, axis, window, center, as_dataarra
     axis_ = (axis,) if isinstance(axis, int) else axis
     window_ = (window,) * len(axis_) if isinstance(window, int) else window
     r = xdata.rolling(
-        {xdata.dims[a]: win for a, win in zip(axis_, window_)}, center=center
+        {xdata.dims[a]: win for a, win in zip(axis_, window_, strict=True)},
+        center=center,
     )
 
     window_dims = [f"_rolling_{a}" for a in axis_]
-    c = r.construct({xdata.dims[a]: w for a, w in zip(axis_, window_dims)}).transpose(
-        *window_dims, ...
-    )
+    c = r.construct(
+        {xdata.dims[a]: w for a, w in zip(axis_, window_dims, strict=True)}
+    ).transpose(*window_dims, ...)
 
     if as_dataarray:
         data = xdata

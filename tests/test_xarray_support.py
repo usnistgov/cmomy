@@ -50,7 +50,9 @@ def create_data(
             {
                 name: xr.DataArray(rng.random(shape), dims=dims)
                 for name, (shape, dims) in zip(
-                    [f"data{k}" for k in range(len(shapes_and_dims))], shapes_and_dims
+                    [f"data{k}" for k in range(len(shapes_and_dims))],
+                    shapes_and_dims,
+                    strict=True,
                 )
             }
         )

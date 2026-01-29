@@ -187,7 +187,7 @@ def concat(
                 first, axis=axis, dim=dim, default_axis=0
             )
         # otherwise, assume adding a new dimension...
-        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[type-var]  # pyright: ignore[reportCallIssue,reportArgumentType]
+        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue,reportArgumentType]
 
     return type(first)(  # type: ignore[call-arg, return-value]  # pyright: ignore[reportCallIssue]
         concat(

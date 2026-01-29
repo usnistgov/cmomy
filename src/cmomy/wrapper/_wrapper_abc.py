@@ -851,7 +851,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         See Also
         --------
         .convert.moments_to_comoments
-        """
+        """  # noqa: DOC102
         self._raise_if_not_mom_ndim_1()
         from cmomy import convert
 

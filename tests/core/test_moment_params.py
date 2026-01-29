@@ -220,7 +220,7 @@ def test_MomParamsXArray_other(args, expected) -> None:
         m = MomParamsXArray.factory(*args, **kwargs)
         return m.dims, m.ndim
 
-    kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args))
+    kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args, strict=False))
     _do_test(_func, expected=expected, **kws)
 
 
@@ -245,7 +245,7 @@ def test_MomParamsXArrayOptional(args, expected) -> None:
         m = MomParamsXArrayOptional.factory(*args, **kwargs)
         return m.dims, m.ndim
 
-    kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args))
+    kws = dict(zip(["dims", "ndim", "axes", "default_ndim"], args, strict=False))
     _do_test(_func, expected=expected, **kws)
 
 

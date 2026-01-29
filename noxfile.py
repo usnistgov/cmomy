@@ -6,8 +6,9 @@
 # ]
 # ///
 
-# pylint: disable=wrong-import-position
 """Config file for nox."""
+# pyright: reportUnusedCallResult=false
+# pylint: disable=wrong-import-position
 
 # * Imports ----------------------------------------------------------------------------
 from __future__ import annotations
@@ -75,11 +76,10 @@ nox.options.default_venv_backend = "uv"
 # if True, use uv lock/sync.  If False, use uv pip compile/sync...
 UV_LOCK = True
 
-PYTHON_ALL_VERSIONS = [
-    c.split()[-1]
-    for c in nox.project.load_toml("pyproject.toml")["project"]["classifiers"]
-    if c.startswith("Programming Language :: Python :: 3.")
-]
+PYTHON_ALL_VERSIONS = nox.project.python_versions(
+    nox.project.load_toml("pyproject.toml"),
+)
+PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS
 PYTHON_DEFAULT_VERSION = Path(".python-version").read_text(encoding="utf-8").strip()
 
 UVX_LOCK_CONSTRAINTS = "requirements/lock/uvx-tools.txt"
@@ -91,7 +91,7 @@ class SessionOptionsDict(TypedDict, total=False):
     """Dict for options to nox.session."""
 
     python: str | list[str]
-    venv_backend: str | Callable[..., CondaEnv]
+    venv_backend: str | None
 
 
 CONDA_DEFAULT_KWS: SessionOptionsDict = {
@@ -156,7 +156,9 @@ class SessionParams(DataclassParser):
     no_cov: bool = False
 
     # coverage
-    coverage: list[Literal["erase", "combine", "report", "html", "open"]] | None = None
+    coverage: (
+        list[Literal["erase", "combine", "report", "html", "open", "markdown"]] | None
+    ) = None
 
     # docs
     docs: (
@@ -403,7 +405,7 @@ def get_package_wheel(
     if reuse and getattr(get_package_wheel, "_called", False):
         session.log("Reuse isolated build")
     else:
-        shutil.rmtree(dist_location)
+        shutil.rmtree(dist_location, ignore_errors=True)
         session.run_always("uv", "build", f"--out-dir={dist_location}", "--wheel")
 
         # save that this was called:
@@ -470,7 +472,7 @@ def pre_commit_run(
 def test_all(session: Session) -> None:
     """Run all tests and coverage."""
     session.notify("coverage-erase")
-    for py in PYTHON_ALL_VERSIONS:
+    for py in PYTHON_TEST_VERSIONS:
         session.notify(f"test-{py}")
     session.notify("test-numpy1")
     session.notify("test-notebook")
@@ -541,7 +543,9 @@ def _test(
     if not test_no_pytest:
         opts = combine_list_str(test_options or [])
         if not no_cov:
-            session.env["COVERAGE_FILE"] = str(Path(session.create_tmp()) / ".coverage")
+            session.env["COVERAGE_FILE"] = str(
+                Path(session.create_tmp()) / f".coverage-{sys.platform}"
+            )
 
             if not any(o.startswith("--cov") for o in opts):
                 opts.append(f"--cov={IMPORT_NAME}")
@@ -582,7 +586,7 @@ def test(
     )
 
 
-nox.session(**ALL_KWS)(test)
+nox.session(python=PYTHON_TEST_VERSIONS)(test)
 nox.session(name="test-conda", **CONDA_ALL_KWS)(test)
 
 
@@ -615,6 +619,21 @@ def test_typing(
         "--typing",
         "tests/test_typing_auto.py",
         "++no-cov",
+    )
+
+
+@nox.session(name="test-run-slow", python=False)
+def test_run_slow(
+    session: Session,
+) -> None:
+    """Test typing"""
+    session.run(
+        "nox",
+        "-s",
+        f"test-{PYTHON_DEFAULT_VERSION}",
+        "--",
+        "++test-options",
+        "--run-slow",
     )
 
 
@@ -717,6 +736,15 @@ def coverage(
         elif c == "open":
             open_webpage(path="htmlcov/index.html")
 
+        elif c == "markdown":
+            with Path("coverage.md").open("w", encoding="utf-8") as f:
+                uvx_run(
+                    session,
+                    "coverage",
+                    "report",
+                    "--format=markdown",
+                    stdout=f,
+                )
         else:
             uvx_run(
                 session,
@@ -761,7 +789,7 @@ def testdist(
     )
 
 
-nox.session(name="testdist-pypi", **ALL_KWS)(testdist)
+nox.session(name="testdist-pypi", python=PYTHON_TEST_VERSIONS)(testdist)
 nox.session(name="testdist-conda", **CONDA_ALL_KWS)(testdist)
 
 
@@ -910,19 +938,14 @@ def typecheck(
         if c.endswith("-notebook"):
             session.run("just", c, external=True)
         elif c in {"mypy", "pyright", "basedpyright", "ty", "pyrefly"}:
+            checker = "mypy[faster-cache]" if c == "mypy" else c
             session.run(
-                "python",
-                "tools/typecheck.py",
+                "typecheck-runner",
                 *get_uvx_constraint_args(),
                 "--verbose",
-                f"--checker={c}",
+                f"--check={checker}",
                 "--allow-errors",
-                "--",
-                *(
-                    opts.typecheck_options
-                    or (["src", "tests"] if c in {"ty", "pyrefly"} else [])
-                ),
-                *(["--color-output"] if c == "mypy" else []),
+                external=False,
             )
         elif c == "pylint":
             session.run(

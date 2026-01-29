@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-    "uv-build>=0.8.22,<0.9.0",
+    "uv-build>=0.8.22,<0.10.0",
 ]
 
 [project]
@@ -17,14 +17,13 @@ license-files = [ "LICENSE" ]
 authors = [
     { name = "William P. Krekelberg", email = "wpk@nist.gov" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
     "Intended Audience :: Science/Research",
     "Operating System :: OS Independent",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -35,7 +34,8 @@ dependencies = [
     "docstring-inheritance",
     "lazy-loader",
     "module-utilities>=0.10.1",
-    "numba>=0.58",
+    "numba>=0.57; sys_platform!='darwin'",
+    "numba>=0.58,<0.63; sys_platform=='darwin' and platform_machine=='x86_64'",
     "numpy>1.24",
     "typing-extensions>=4.10.0",
     "xarray>=2023.9.0",
@@ -71,13 +71,15 @@ docs = [
     "sphinxcontrib-spelling",
 ]
 # other packages/tools
+basedpyright = [ "basedpyright>=1.31.3" ]
 ipython = [ "ipython" ]
-mypy = [ "mypy>=1.15.0", "orjson" ]
+mypy = [ "mypy[faster-cache]>=1.15.0" ]
 notebook = [ "ipykernel", "nbclient" ]
 nox = [ "nox>=2025.5.1" ]
 pylint = [ "pylint" ]
 pytest = [ "pytest" ]
 pytest-accept = [ "pytest-accept" ]
+typecheck-runner = [ "typecheck-runner>=0.1.0; python_version>'3.9'" ]
 # other environments
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
@@ -106,6 +108,7 @@ typecheck = [
     "pandas-stubs",
     { include-group = "pylint" },
     { include-group = "pytest" },
+    { include-group = "typecheck-runner" },
 ]
 
 # * uv -------------------------------------------------------------------------
@@ -173,11 +176,11 @@ codespell = "^examples/archived"
 
 [tool.repo-review]
 ignore = [
-    "GH",     # enable for actions
+    "PC111",  # use doccmd instead of blacken-docs
     "PC140",  # do this externally
+    "PC160",  # use typos
     "PC170",  # pygrep
     "PC901",  # ci message
-    "RTD",
     "NOX103", # I prefer using "nox.options.sessions"
 ]
 
@@ -225,7 +228,8 @@ markers = [
 ]
 minversion = "8"
 log_cli_level = "INFO"
-xfail_strict = true
+log_level = "INFO"
+strict_xfail = "true"
 filterwarnings = [
     "error",
     "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
@@ -344,9 +348,10 @@ module = [
 # disable_error_code = ["misc"]
 # module = ["cmomy.*"]
 
+[tool.pyrefly]
+project-includes = [ "src", "tests" ]
+
 [tool.pyright]
-# Enable this option to pick out unused `# pyright: ignore[...]`
-# reportUnnecessaryTypeIgnoreComment = true
 defineConstant = { MYPY_ONLY = false }
 include = [
     "src",
@@ -361,7 +366,6 @@ exclude = [
     "**/.numba_cache",
     # "tools/auto_test_typing.py",
 ]
-pythonVersion = "3.11"
 typeCheckingMode = "standard"
 strict = [
     "src/cmomy/*.py",
@@ -411,11 +415,12 @@ reportUnusedCallResult = false
 root = "examples/usage"
 reportUnusedCallResult = false
 
-[tool.pytype]
-inputs = [
-    "src",
-    "tests",
-]
+[tool.ty.analysis]
+# Disable support for `type: ignore` comments
+respect-type-ignore-comments = false
+
+[tool.ty.src]
+include = [ "src", "tests" ]
 
 # * Dependency creation --------------------------------------------------------
 
@@ -441,6 +446,11 @@ python = "default"
 groups = [ "test" ]
 python = "all"
 
+[tool.pyproject2conda.envs.test-extras]
+groups = [ "test-extras" ]
+skip-package = true
+python = "all"
+
 [tool.pyproject2conda.envs.uvx-tools]
 reqs = [
     # these used solely for specking tools to be used with uvx ...
@@ -453,22 +463,25 @@ reqs = [
     "prek",
     "pyrefly>=0.37.0",
     "pyright>=1.1.396",
-    "basedpyright>=1.31.3",
     "scriv",
     "twine>=5.0.0",
     "ty",
 ]
 groups = [
+    "basedpyright",
     "mypy",
     "nox",
+    "typecheck-runner",
 ]
 skip-package = true
 style = "requirements"
 
-[tool.pyproject2conda.envs.test-extras]
-groups = [ "test-extras" ]
+[tool.pyproject2conda.envs.pre-commit-additional-dependencies]
+reqs = [
+    "rust-just",
+]
 skip-package = true
-python = "all"
+style = "requirements"
 
 # * Other tools ----------------------------------------------------------------
 

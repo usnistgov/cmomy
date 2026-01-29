@@ -222,7 +222,7 @@ def test_parallel_push_val(method, data_and_kwargs):
     )
 
     if method == "push_data":
-        for d in zip(*data):
+        for d in zip(*data, strict=True):
             a.push_val(*d, parallel=False)
             b.push_val(*d, parallel=True)
 

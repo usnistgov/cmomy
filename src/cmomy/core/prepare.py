@@ -406,7 +406,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
 
         axis = target.get_axis_num(dim)
         if out is None:
-            if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+            if (order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
                 if keepdims:
                     shape = tuple(
                         1 if i in axis else s for i, s in enumerate(target.shape)
@@ -415,7 +415,7 @@ class PrepareDataXArray(_PrepareBaseXArray):
                     shape = tuple(
                         s for i, s in enumerate(target.shape) if i not in axis
                     )
-                out = np.empty(shape, dtype=dtype, order=_order_cf)
+                out = np.empty(shape, dtype=dtype, order=order_cf)
             else:
                 return None
 
@@ -449,8 +449,8 @@ class PrepareDataXArray(_PrepareBaseXArray):
             return out
 
         if out is None:
-            if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
-                out = np.empty(target.shape, dtype=dtype, order=_order_cf)
+            if (order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+                out = np.empty(target.shape, dtype=dtype, order=order_cf)
             else:
                 return None
 
@@ -480,13 +480,13 @@ class PrepareDataXArray(_PrepareBaseXArray):
             return out
 
         if out is None:
-            if (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
+            if (order_cf := arrayorder_to_arrayorder_cf(order)) is not None:
                 if axis_new_size is None:
                     axis_new_size = data.shape[axis]
                 out = np.empty(
                     (*data.shape[:axis], axis_new_size, *data.shape[axis + 1 :]),
                     dtype=dtype,
-                    order=_order_cf,
+                    order=order_cf,
                 )
             else:
                 return None

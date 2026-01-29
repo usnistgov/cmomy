@@ -291,14 +291,14 @@ def _moments_type(
     # out, by default, will be in calculation order.
     if (
         out is None
-        and (_order_cf := arrayorder_to_arrayorder_cf(order)) is not None
+        and (order_cf := arrayorder_to_arrayorder_cf(order)) is not None
         and axes_out != mom_params.axes_last
     ):
         shape = tuple(
             values_in.shape[o]
             for o in reorder(values_in.ndim, mom_params.axes, axes_out)
         )
-        out = np.empty(shape, dtype=dtype, order=_order_cf)
+        out = np.empty(shape, dtype=dtype, order=order_cf)
 
     return factory_convert(mom_ndim=mom_params.ndim, to=to)(
         values_in,
@@ -756,6 +756,7 @@ def moments_to_comoments(
                                 mom, data.sizes[mom_dim_in] - 1
                             )
                         ),
+                        strict=True,
                     )
                 ),
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]

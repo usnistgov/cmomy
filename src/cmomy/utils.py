@@ -129,7 +129,7 @@ def moveaxis_order(
                 dim=d,
                 allow_select_mom_axes=allow_select_mom_axes,
             )[0]
-            for a, d in zip((axis, dest), (dim, dest_dim))
+            for a, d in zip((axis, dest), (dim, dest_dim), strict=True)
         )
         return reorder(x.ndim, axes0, axes1, normalize=False)
 
@@ -777,7 +777,7 @@ def _assign_moment(
     if moved := mom_params.axes != mom_params_end.axes:
         out = np.moveaxis(out, mom_params.axes, mom_params_end.axes)
 
-    for name, value in zip(names, values):
+    for name, value in zip(names, values, strict=True):
         out[moment_indexer(name, mom_params.ndim, squeeze)] = value  # pyright: ignore[reportArgumentType]
 
     if moved:
@@ -989,7 +989,9 @@ def vals_to_data(
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_sizes=dict(zip(mom_params.dims, mom_to_mom_shape(mom)))
+                output_sizes=dict(
+                    zip(mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                )
                 if out is None  # type: ignore[redundant-expr,unused-ignore]
                 else None,
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]

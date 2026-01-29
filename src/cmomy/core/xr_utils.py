@@ -264,7 +264,7 @@ def _replace_coords_from_isel_dataset(
         if len(new_var.dims) != len(new_var.shape):  # pragma: no cover
             msg = "dims and shape have different size"
             raise ValueError(msg)
-        dims.update(zip(new_var.dims, new_var.shape))
+        dims.update(zip(new_var.dims, new_var.shape, strict=True))
 
     return template._construct_direct(  # pyright: ignore[reportUnknownMemberType]
         variables=variables,
