@@ -274,11 +274,13 @@ jobs:
 
       - name: Test with nox (session)
         if: ${{ matrix.session != 'test' }}
-        env:
-          session: ${{ matrix.session }}
         run: >-
-          $UVX_COMMAND nox -s "$session" -- ++installpkg dist/*.whl
+          $UVX_COMMAND nox -s ${{ matrix.session }} -- ++installpkg dist/*.whl
           ++test-options --compile
+        shell: bash
+
+      - name: Display coverage files
+        run: ls -a .nox/test-*/tmp/.coverage*
         shell: bash
 
       - name: Upload coverage data
