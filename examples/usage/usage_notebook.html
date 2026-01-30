@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Usage &#8212; cmomy 1.0.2 documentation</title>
+    <title>Usage &#8212; cmomy 1.0.3 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=5549cc85"></script>
+    <script src="../../_static/documentation_options.js?v=eeb54e98"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="Why cmomy?" href="motivation.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2025-10-14"/>
+    <meta name="docbuild:last-update" content="2026-01-30"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy 1.0.2 documentation</p>
+    <p class="title logo__title">cmomy 1.0.3 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -2073,7 +2073,7 @@ Dimensions without coordinates: dim, mom_0</pre><div class='xr-wrap' style='disp
 <p>Here, we’ve used the constructor <a class="reference internal" href="../../reference/generated/cmomy.wrap_reduce_vals.html#cmomy.wrap_reduce_vals" title="cmomy.wrap_reduce_vals"><code class="xref py py-meth docutils literal notranslate"><span class="pre">cmomy.wrap_reduce_vals()</span></code></a>.  There are a host of other constructors to create <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmomy.CentralMomentsData</span></code></a> and <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">cmomy.CentralMomentsArray</span></code></a> objects.  Take a look at the docs for further info.</p>
 <section id="dataset">
 <h2>Dataset<a class="headerlink" href="#dataset" title="Link to this heading">#</a></h2>
-<p>We can also wrap <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> objects.  This has some limitations, as the structure is more complicated.  In particular, methods that depend on a fixed array shape, like <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.shape" title="cmomy.CentralMomentsData.shape"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shape()</span></code></a>, etc, are not available for wrapped <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>.</p>
+<p>We can also wrap <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> objects.  This has some limitations, as the structure is more complicated.  In particular, methods that depend on a fixed array shape, like <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.shape" title="cmomy.CentralMomentsData.shape"><code class="xref py py-meth docutils literal notranslate"><span class="pre">shape()</span></code></a>, etc, are not available for wrapped <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ds</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">Dataset</span><span class="p">({</span><span class="s2">&quot;energy&quot;</span><span class="p">:</span> <span class="n">energy</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">:</span> <span class="n">position</span><span class="p">})</span>
@@ -5310,7 +5310,7 @@ dl.xr-attrs {
 array([1.    , 0.5531, 0.3923, 0.3068])
 Dimensions without coordinates: mom_0</pre><div class='xr-wrap' style='display:none'><div class='xr-header'><div class='xr-obj-type'>xarray.DataArray</div><div class='xr-array-name'></div><ul class='xr-dim-list'><li><span>mom_0</span>: 4</li></ul></div><ul class='xr-sections'><li class='xr-section-item'><div class='xr-array-wrap'><input id='section-b282e3b0-2fdc-4d4d-a552-ce9557f715d7' class='xr-array-in' type='checkbox' checked><label for='section-b282e3b0-2fdc-4d4d-a552-ce9557f715d7' title='Show/hide data repr'><svg class='icon xr-icon-database'><use xlink:href='#icon-database'></use></svg></label><div class='xr-array-preview xr-preview'><span>1.0 0.5531 0.3923 0.3068</span></div><div class='xr-array-data'><pre>array([1.    , 0.5531, 0.3923, 0.3068])</pre></div></div></li><li class='xr-section-item'><input id='section-f9596694-ebd3-4a3f-9281-f052db0f2916' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-f9596694-ebd3-4a3f-9281-f052db0f2916' class='xr-section-summary'  title='Expand/collapse section'>Coordinates: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-755f0320-1509-4518-8754-78d76ee518d9' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-755f0320-1509-4518-8754-78d76ee518d9' class='xr-section-summary'  title='Expand/collapse section'>Indexes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><ul class='xr-var-list'></ul></div></li><li class='xr-section-item'><input id='section-b8e1ae88-fb1b-4650-9751-a49874edbb4a' class='xr-section-summary-in' type='checkbox' disabled ><label for='section-b8e1ae88-fb1b-4650-9751-a49874edbb4a' class='xr-section-summary'  title='Expand/collapse section'>Attributes: <span>(0)</span></label><div class='xr-section-inline-details'></div><div class='xr-section-details'><dl class='xr-attrs'></dl></div></li></ul></div></div></div></div>
 </div>
-<p>Additionally, there are <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> like attributes</p>
+<p>Additionally, there are <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">xarray.DataArray</span></code></a> like attributes</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ce</span><span class="o">.</span><span class="n">coords</span>
@@ -5360,7 +5360,7 @@ Dimensions without coordinates: mom_0</pre><div class='xr-wrap' style='display:n
 </div>
 </div>
 </div>
-<p>To access the underlying data use <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.obj" title="cmomy.CentralMomentsData.obj"><code class="xref py py-meth docutils literal notranslate"><span class="pre">obj()</span></code></a> attribute to access the <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2025.10.1)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> style data, or <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.to_numpy" title="cmomy.CentralMomentsData.to_numpy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_numpy()</span></code></a> method to access the underlying <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>.</p>
+<p>To access the underlying data use <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.obj" title="cmomy.CentralMomentsData.obj"><code class="xref py py-meth docutils literal notranslate"><span class="pre">obj()</span></code></a> attribute to access the <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.1.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> style data, or <a class="reference internal" href="../../reference/generated/cmomy.CentralMomentsData.html#cmomy.CentralMomentsData.to_numpy" title="cmomy.CentralMomentsData.to_numpy"><code class="xref py py-meth docutils literal notranslate"><span class="pre">to_numpy()</span></code></a> method to access the underlying <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ce</span><span class="o">.</span><span class="n">obj</span>
@@ -10557,7 +10557,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2025-10-14.
+  Last updated on 2026-01-30.
   <br/>
 </p>
   </div>

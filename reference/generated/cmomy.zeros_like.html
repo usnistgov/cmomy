@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>cmomy.zeros_like &#8212; cmomy 1.0.2 documentation</title>
+    <title>cmomy.zeros_like &#8212; cmomy 1.0.3 documentation</title>
   
   
   
@@ -31,7 +31,7 @@
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
     <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
     <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
   
@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=5549cc85"></script>
+    <script src="../../_static/documentation_options.js?v=eeb54e98"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="cmomy.wrap_raw" href="cmomy.wrap_raw.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="2025-10-14"/>
+    <meta name="docbuild:last-update" content="2026-01-30"/>
   </head>
   
   
@@ -144,7 +144,7 @@
   
   
   
-    <p class="title logo__title">cmomy 1.0.2 documentation</p>
+    <p class="title logo__title">cmomy 1.0.3 documentation</p>
   
 </a></div>
         <div class="sidebar-primary-item">
@@ -527,8 +527,8 @@ document.write(`
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>c</strong> (<a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> or <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>) – Wrapped instance to create new object like.</p></li>
-<li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.3)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> for output data.</p></li>
-<li><p><strong>order</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;C&quot;,</span> <span class="pre">&quot;F&quot;,</span> <span class="pre">&quot;A&quot;,</span> <span class="pre">&quot;K&quot;}</span></code>, <em>optional</em>) – Order argument.  See <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.asarray.html#numpy.asarray" title="(in NumPy v2.3)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.asarray()</span></code></a>.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> for output data.</p></li>
+<li><p><strong>order</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;C&quot;,</span> <span class="pre">&quot;F&quot;,</span> <span class="pre">&quot;A&quot;,</span> <span class="pre">&quot;K&quot;}</span></code>, <em>optional</em>) – Order argument.  See <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.asarray.html#numpy.asarray" title="(in NumPy v2.4)"><code class="xref py py-func docutils literal notranslate"><span class="pre">numpy.asarray()</span></code></a>.</p></li>
 <li><p><strong>subok</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – If True, then sub-classes will be passed-through, otherwise the
 returned array will be forced to be a base-class array.</p></li>
 <li><p><strong>chunks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.14)"><span class="xref std std-term">mapping</span></a> of <code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code> to <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Chunk sizes along each dimension, e.g., <code class="docutils literal notranslate"><span class="pre">5</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;auto&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">(5,</span> <span class="pre">5)</span></code>
@@ -547,14 +547,14 @@ relied upon.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>wrapped</strong> (<a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> or <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>) – Wrapped object. If input data is an <a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2025.10.1)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object, then return
+<dd class="field-even"><p><strong>wrapped</strong> (<a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> or <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a>) – Wrapped object. If input data is an <a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2026.1.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object, then return
 <a class="reference internal" href="cmomy.CentralMomentsData.html#cmomy.CentralMomentsData" title="cmomy.CentralMomentsData"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsData</span></code></a> instance. Otherwise, return
 <a class="reference internal" href="cmomy.CentralMomentsArray.html#cmomy.CentralMomentsArray" title="cmomy.CentralMomentsArray"><code class="xref py py-class docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code></a> instance.</p>
 </dd>
 </dl>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
-<p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.zeros_like.html#numpy.zeros_like" title="(in NumPy v2.3)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.zeros_like</span></code></a>, <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.zeros_like.html#xarray.zeros_like" title="(in xarray v2025.10.1)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray.zeros_like</span></code></a></p>
+<p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.zeros_like.html#numpy.zeros_like" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.zeros_like</span></code></a>, <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.zeros_like.html#xarray.zeros_like" title="(in xarray v2026.1.0)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xarray.zeros_like</span></code></a></p>
 </div>
 </dd></dl>
 
@@ -639,7 +639,7 @@ By William P. Krekelberg
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on 2025-10-14.
+  Last updated on 2026-01-30.
   <br/>
 </p>
   </div>
