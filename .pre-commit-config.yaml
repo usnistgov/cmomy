@@ -53,7 +53,7 @@ repos:
   # * pyproject.toml
   # ** format
   - repo: https://github.com/tox-dev/pyproject-fmt
-    rev: v2.11.1
+    rev: v2.12.1
     hooks:
       - id: pyproject-fmt
         args: [--indent=4, --keep-full-version]
@@ -61,7 +61,7 @@ repos:
         types: [toml]
   # ** validate
   - repo: https://github.com/abravalheri/validate-pyproject
-    rev: v0.24.1
+    rev: v0.25
     hooks:
       - id: validate-pyproject
   # ** validate (schema-store)

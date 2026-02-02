@@ -132,17 +132,8 @@ required-version = ">=0.7.15"
 required-environments = [
     "sys_platform == 'darwin' and platform_machine == 'x86_64'",
 ]
-# environments = [
-#     "sys_platform == 'darwin' and platform_machine=='x86_64'",
-#     "sys_platform == 'darwin' and platform_machine=='arm64'",
-#     "sys_platform == 'linux'",
-#     "sys_platform == 'win32'",
-# ]
-
-[tool.uv.pip]
-annotation-style = "line"
-generate-hashes = true
-
+[tool.uv.build-backend]
+source-include = [ "tests/**" ]
 [tool.uv.dependency-groups]
 dev.requires-python = ">=3.13"
 docs.requires-python = ">=3.13"
@@ -154,8 +145,17 @@ mypy.requires-python = ">=3.13"
 notebook.requires-python = ">=3.13"
 nox.requires-python = ">=3.13"
 
-[tool.uv.build-backend]
-source-include = [ "tests/**" ]
+# environments = [
+#     "sys_platform == 'darwin' and platform_machine=='x86_64'",
+#     "sys_platform == 'darwin' and platform_machine=='arm64'",
+#     "sys_platform == 'linux'",
+#     "sys_platform == 'win32'",
+# ]
+
+[tool.uv.pip]
+annotation-style = "line"
+generate-hashes = true
+
 # source-include = [
 #     "tests/**",
 #     "examples/usage/**",
@@ -215,6 +215,15 @@ package_omit = [
 ]
 
 [tool.pyproject-fmt]
+
+[tool.typos.default]
+extend-ignore-identifiers-re = [ "NDArray.*" ]
+
+[tool.typos.default.extend-identifiers]
+NDGeneric = "NDGeneric"
+[tool.typos.default.extend-words]
+datas = "datas"
+
 # limited to 3.13 for macos-intel
 # max_supported_python = "3.13"
 
@@ -256,8 +265,11 @@ filterwarnings = [
 [tool.pytest_env]
 NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
 
-[tool.coverage.run]
-branch = true
+[tool.coverage.paths]
+source = [
+    "src/",
+    ".nox/**/site-packages/",
+]
 
 [tool.coverage.report]
 # show_missing = true
@@ -276,11 +288,8 @@ include = [
     "src/*",
 ]
 
-[tool.coverage.paths]
-source = [
-    "src/",
-    ".nox/**/site-packages/",
-]
+[tool.coverage.run]
+branch = true
 
 # * typecheck ---------------------------------------------------------------------
 
@@ -458,6 +467,13 @@ numba = { skip = true, packages = "numba>=0.57" }
 groups = [ "dev" ]
 python = "default"
 
+[tool.pyproject2conda.envs.pre-commit-additional-dependencies]
+reqs = [
+    "rust-just",
+]
+skip-package = true
+style = "requirements"
+
 [tool.pyproject2conda.envs.test]
 groups = [ "test" ]
 python = "all"
@@ -492,13 +508,6 @@ groups = [
 skip-package = true
 style = "requirements"
 
-[tool.pyproject2conda.envs.pre-commit-additional-dependencies]
-reqs = [
-    "rust-just",
-]
-skip-package = true
-style = "requirements"
-
 # * Other tools ----------------------------------------------------------------
 
 [tool.scriv]
@@ -510,12 +519,3 @@ new_fragment_template = "file: changelog.d/templates/new_fragment.md.j2"
 use_shortcuts = true
 
 [tool.cruft]
-
-[tool.typos.default.extend-words]
-datas = "datas"
-
-[tool.typos.default]
-extend-ignore-identifiers-re = [ "NDArray.*" ]
-
-[tool.typos.default.extend-identifiers]
-NDGeneric = "NDGeneric"
