@@ -73,7 +73,7 @@ jobs:
 
       # from https://github.com/j178/prek-action/blob/main/action.yaml
       - name: Setup prek cache
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: |
             ~/.cache/prek
@@ -110,7 +110,7 @@ jobs:
 
       # mypy cache
       - name: Numba cache
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         with:
           path: |
             ${{ github.workspace }}/.mypy_cache
@@ -174,7 +174,7 @@ jobs:
 
       # numba cache
       - name: Numba cache
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         if: matrix.session != 'test-numpy1'
         with:
           path: |
@@ -184,7 +184,7 @@ jobs:
             env.pythonLocation }}|${{ hashFiles('src/**/*.py') }}
 
       - name: Numba cache (numpy1)
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
         if: matrix.session == 'test-numpy1'
         with:
           path: |
@@ -280,7 +280,7 @@ jobs:
           persist-credentials: false
 
       - name: Pin actions
-        uses: suzuki-shunsuke/pinact-action@3d49c6412901042473ffa78becddab1aea46bbea # v1.3.1
+        uses: suzuki-shunsuke/pinact-action@1081f5ad49ac904b7d977784f338145150a32112 # v1.4.0
         with:
           skip_push: "true"
 
