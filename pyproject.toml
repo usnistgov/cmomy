@@ -77,17 +77,6 @@ docs = [
 ]
 # other packages/tools
 basedpyright = [ "basedpyright>=1.31.3" ]
-ipython = [ "ipython" ]
-mypy = [ "mypy[faster-cache]>=1.15.0" ]
-notebook = [ "ipykernel", "nbclient" ]
-nox = [ "nox>=2025.5.1" ]
-pylint = [ "pylint" ]
-pytest = [ "pytest" ]
-pytest-accept = [ "pytest-accept" ]
-typecheck-runner = [ "typecheck-runner>=0.1.0; python_version>'3.9'" ]
-# other environments
-numpy1 = [ "numpy<2.0" ]
-numpy2 = [ "numpy>2.0" ]
 docs-live = [
     "sphinx-autobuild",
     { include-group = "docs" },
@@ -97,6 +86,16 @@ docs-spelling = [
     "sphinxcontrib-spelling",
     { include-group = "docs" },
 ]
+ipython = [ "ipython" ]
+mypy = [ "mypy[faster-cache]>=1.15.0" ]
+notebook = [ "ipykernel", "nbclient" ]
+nox = [ "nox>=2025.5.1" ]
+# other environments
+numpy1 = [ "numpy<2.0" ]
+numpy2 = [ "numpy>2.0" ]
+pylint = [ "pylint" ]
+pytest = [ "pytest" ]
+pytest-accept = [ "pytest-accept" ]
 test-extras = [
     { include-group = "test" },
 ]
@@ -115,78 +114,99 @@ typecheck = [
     { include-group = "pytest" },
     { include-group = "typecheck-runner" },
 ]
+typecheck-runner = [ "typecheck-runner>=0.1.0; python_version>'3.9'" ]
 
 # * uv -------------------------------------------------------------------------
 
 [tool.uv]
-managed = true
+required-version = ">=0.7.15"
 default-groups = [ "dev", "numpy2" ]
+dependency-groups.dev.requires-python = ">=3.13"
+dependency-groups.docs-live.requires-python = ">=3.13"
+dependency-groups.docs-spelling.requires-python = ">=3.13"
+dependency-groups.docs.requires-python = ">=3.13"
+# other tools
+dependency-groups.ipython.requires-python = ">=3.13"
+dependency-groups.mypy.requires-python = ">=3.13"
+dependency-groups.notebook.requires-python = ">=3.13"
+dependency-groups.nox.requires-python = ">=3.13"
 fork-strategy = "requires-python"
+required-environments = [
+    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
+managed = true
 conflicts = [
     [
         { group = "numpy1" },
         { group = "numpy2" },
     ],
 ]
-required-version = ">=0.7.15"
-required-environments = [
-    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
-]
+build-backend.source-include = [ "tests/**" ]
 # environments = [
 #     "sys_platform == 'darwin' and platform_machine=='x86_64'",
 #     "sys_platform == 'darwin' and platform_machine=='arm64'",
 #     "sys_platform == 'linux'",
 #     "sys_platform == 'win32'",
 # ]
+pip.annotation-style = "line"
+pip.generate-hashes = true
 
-[tool.uv.pip]
-annotation-style = "line"
-generate-hashes = true
-
-[tool.uv.dependency-groups]
-dev.requires-python = ">=3.13"
-docs.requires-python = ">=3.13"
-docs-live.requires-python = ">=3.13"
-docs-spelling.requires-python = ">=3.13"
-# other tools
-ipython.requires-python = ">=3.13"
-mypy.requires-python = ">=3.13"
-notebook.requires-python = ">=3.13"
-nox.requires-python = ">=3.13"
-
-[tool.uv.build-backend]
-source-include = [ "tests/**" ]
+[tool.nbqa]
 # source-include = [
-#     "tests/**",
-#     "examples/usage/**",
-#     "docs/**",
-#     "tools/**",
-#     "requirements/**",
-#     "changelog.d/**",
-#     "*.md",
-#     "*.py",
-#     "ruff.toml",
-#     "uv.lock",
-#     "[jJ]ustfile",
-#     ".cruft.json",
-#     ".editorconfig",
-#     ".markdownlint.yaml",
-#     ".pre-commit-config.yaml",
-#     ".prettierignore",
-#     ".prettierrc.yaml",
-#     ".pylintrc.toml",
-#     ".python-version",
+
+# "tests/**",
+
+# "examples/usage/**",
+
+# "docs/**",
+
+# "tools/**",
+
+# "requirements/**",
+
+# "changelog.d/**",
+
+# "*.md",
+
+# "*.py",
+
+# "ruff.toml",
+
+# "uv.lock",
+
+# "[jJ]ustfile",
+
+# ".cruft.json",
+
+# ".editorconfig",
+
+# ".markdownlint.yaml",
+
+# ".pre-commit-config.yaml",
+
+# ".prettierignore",
+
+# ".prettierrc.yaml",
+
+# ".pylintrc.toml",
+
+# ".python-version",
+
 # ]
+
 # source-exclude = [
-#     "_build",
-#     "docs/**/generated",
-#     "docs/example/usage",
+
+# "_build",
+
+# "docs/**/generated",
+
+# "docs/example/usage",
+
 # ]
 
 # * Checks ---------------------------------------------------------------------
 
-[tool.nbqa.exclude]
-codespell = "^examples/archived"
+exclude.codespell = "^examples/archived"
 
 [tool.repo-review]
 ignore = [
@@ -215,13 +235,20 @@ package_omit = [
 ]
 
 [tool.pyproject-fmt]
+
+[tool.typos]
+default.extend-ignore-identifiers-re = [ "NDArray.*" ]
+default.extend-identifiers.NDGeneric = "NDGeneric"
+default.extend-words.datas = "datas"
+
+[tool.pytest]
 # limited to 3.13 for macos-intel
+
 # max_supported_python = "3.13"
 
 # * Testing --------------------------------------------------------------------
 
-[tool.pytest.ini_options]
-addopts = [
+ini_options.addopts = [
     "-ra",
     "--strict-config",
     "--strict-markers",
@@ -233,19 +260,19 @@ addopts = [
     # "-n",
     # "4",
 ]
-testpaths = [
+ini_options.testpaths = [
     "README.md",
     "cmomy",
     "tests",
 ]
-markers = [
+ini_options.markers = [
     "scipy: test scipy dependent code",
 ]
-minversion = "8"
-log_cli_level = "INFO"
-log_level = "INFO"
-strict_xfail = "true"
-filterwarnings = [
+ini_options.minversion = "8"
+ini_options.log_cli_level = "INFO"
+ini_options.log_level = "INFO"
+ini_options.strict_xfail = "true"
+ini_options.filterwarnings = [
     "error",
     "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
     "ignore: FNV hashing is not implemented in Numba:UserWarning",
@@ -256,30 +283,26 @@ filterwarnings = [
 [tool.pytest_env]
 NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
 
-[tool.coverage.run]
-branch = true
-
-[tool.coverage.report]
-# show_missing = true
-exclude_also = [
-    "if TYPE_CHECKING:",
-    "@overload",
+[tool.coverage]
+run.branch = true
+paths.source = [
+    "src/",
+    ".nox/**/site-packages/",
 ]
-omit = [
-    "*/vendored/*",
-    "*/options.py",
+# show_missing = true
+report.exclude_also = [
+    "@overload",
+    "if TYPE_CHECKING:",
+]
+report.include = [
+    "src/*",
+]
+report.omit = [
     # No great way to test coverage of guvectorized functions...
     "*/_lib/*.py",
     "*/core/typing_nested_sequence.py",
-]
-include = [
-    "src/*",
-]
-
-[tool.coverage.paths]
-source = [
-    "src/",
-    ".nox/**/site-packages/",
+    "*/options.py",
+    "*/vendored/*",
 ]
 
 # * typecheck ---------------------------------------------------------------------
@@ -321,7 +344,6 @@ module = [
     "numba.*",
     "scipy.*",
     "scipy.special.*",
-
     "scipy.stats.*",
     "dask.*",
 ]
@@ -399,7 +421,6 @@ reportUntypedFunctionDecorator = true
 enableTypeIgnoreComments = false
 reportUnnecessaryTypeIgnoreComment = true
 reportUnreachable = "warning"
-
 deprecateTypingAliases = true
 enableReachabilityAnalysis = false
 reportCallInDefaultInitializer = true
@@ -408,14 +429,12 @@ reportImportCycles = true
 # reportMissingSuperCall = true
 reportUninitializedInstanceVariable = true
 reportUnusedCallResult = true
-
 # type-checkers should type-check; linters should lint
 reportImplicitStringConcatenation = false
-reportPrivateUsage = false                # dupe of PLC2701
-reportPrivateImportUsage = false          # dupe of PLC2701
-reportUnusedImport = false                # dupe of F401
-reportUnusedVariable = false              # dupe of F841
-
+reportPrivateUsage = false  # dupe of PLC2701
+reportPrivateImportUsage = false  # dupe of PLC2701
+reportUnusedImport = false  # dupe of F401
+reportUnusedVariable = false  # dupe of F841
 # Needed for pep728 support for TypeDict(closed=...)
 enableExperimentalFeatures = true
 
@@ -430,12 +449,10 @@ reportUnusedCallResult = false
 root = "examples/usage"
 reportUnusedCallResult = false
 
-[tool.ty.analysis]
+[tool.ty]
 # Disable support for `type: ignore` comments
-respect-type-ignore-comments = false
-
-[tool.ty.src]
-include = [ "src", "tests" ]
+analysis.respect-type-ignore-comments = false
+src.include = [ "src", "tests" ]
 
 # * Dependency creation --------------------------------------------------------
 
@@ -448,27 +465,22 @@ python = "default"
 channels = "conda-forge"
 style = "yaml"
 deps = "pip"
-
-[tool.pyproject2conda.dependencies]
-pytest-accept = { pip = true }
-lazy-loader = { skip = true, packages = "lazy_loader" }
-numba = { skip = true, packages = "numba>=0.57" }
-
-[tool.pyproject2conda.envs.dev]
-groups = [ "dev" ]
-python = "default"
-
-[tool.pyproject2conda.envs.test]
-groups = [ "test" ]
-python = "all"
-
-[tool.pyproject2conda.envs.test-extras]
-groups = [ "test-extras" ]
-skip-package = true
-python = "all"
-
-[tool.pyproject2conda.envs.uvx-tools]
-reqs = [
+dependencies.pytest-accept = { pip = true }
+dependencies.lazy-loader = { skip = true, packages = "lazy_loader" }
+dependencies.numba = { skip = true, packages = "numba>=0.57" }
+envs.dev.groups = [ "dev" ]
+envs.dev.python = "default"
+envs.pre-commit-additional-dependencies.reqs = [
+    "rust-just",
+]
+envs.pre-commit-additional-dependencies.skip-package = true
+envs.pre-commit-additional-dependencies.style = "requirements"
+envs.test.groups = [ "test" ]
+envs.test.python = "all"
+envs.test-extras.groups = [ "test-extras" ]
+envs.test-extras.skip-package = true
+envs.test-extras.python = "all"
+envs.uvx-tools.reqs = [
     # these used solely for specking tools to be used with uvx ...
     "conda-lock>=2.5.5",
     "cruft",
@@ -483,21 +495,14 @@ reqs = [
     "twine>=5.0.0",
     "ty",
 ]
-groups = [
+envs.uvx-tools.groups = [
     "basedpyright",
     "mypy",
     "nox",
     "typecheck-runner",
 ]
-skip-package = true
-style = "requirements"
-
-[tool.pyproject2conda.envs.pre-commit-additional-dependencies]
-reqs = [
-    "rust-just",
-]
-skip-package = true
-style = "requirements"
+envs.uvx-tools.skip-package = true
+envs.uvx-tools.style = "requirements"
 
 # * Other tools ----------------------------------------------------------------
 
@@ -510,12 +515,3 @@ new_fragment_template = "file: changelog.d/templates/new_fragment.md.j2"
 use_shortcuts = true
 
 [tool.cruft]
-
-[tool.typos.default.extend-words]
-datas = "datas"
-
-[tool.typos.default]
-extend-ignore-identifiers-re = [ "NDArray.*" ]
-
-[tool.typos.default.extend-identifiers]
-NDGeneric = "NDGeneric"
