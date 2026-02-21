@@ -81,7 +81,7 @@ PYTHON_ALL_VERSIONS = nox.project.python_versions(
     nox.project.load_toml("pyproject.toml"),
 )
 
-if sys.platform != "darwin" or platform.machine != "x86_64":
+if sys.platform != "darwin" or platform.machine() != "x86_64":
     PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS
 else:
     PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS.copy()
