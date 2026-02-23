@@ -66,25 +66,32 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
+
+      # Not always needed but some hooks use it...
       - uses: ./.github/actions/setup-cached-uv-and-python
         with:
           python-version-file: ".python-version"
-          cache-dependency-path: .pre-commit-config.yaml
+          cache-dependency-path: uv.lock
 
-      # from https://github.com/j178/prek-action/blob/main/action.yaml
-      - name: Setup prek cache
-        uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5.0.2
+      - name: Get prek version
+        shell: bash
+        run: |
+          prek_version=$(grep prek "$UVX_CONSTRAINT" | cut -d " " -f1 | sed "s/prek==//")
+          echo "prek_version: ${prek_version}"
+          echo "prek_version=${prek_version}" >> "$GITHUB_ENV"
+
+      - name: Setup prek
+        uses: j178/prek-action@0bb87d7f00b0c99306c8bcb8b8beba1eb581c037 # v1.1.0
         with:
-          path: |
-            ~/.cache/prek
-            ~\AppData\Local\prek
-          key:
-            prek-v1|${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation
-            }}|${{ hashFiles('./**/.pre-commit-config.yaml') }}
+          prek-version: ${{ env.prek_version }}
+          install-only: true
+
       - name: Run prek
+        env:
+          SKIP: "typecheck"
         run: >-
-          $UVX_COMMAND prek run --show-diff-on-failure --color=always
-          --all-files --hook-stage=manual
+          prek run --show-diff-on-failure --color=always --all-files
+          --hook-stage=manual -v
 
   typecheck:
     name: Typecheck package
@@ -253,9 +260,12 @@ jobs:
           cache-dependency-path: requirements/lock/uvx-tools.txt
       - name: Run coverage
         run: |
-          $UVX_COMMAND nox -s coverage -- ++coverage combine html report markdown
+          $UVX_COMMAND nox -s coverage -- ++coverage combine html markdown
           cat coverage.md
           cat coverage.md >> "$GITHUB_STEP_SUMMARY"
+
+          # fail if under 100%
+          $UVX_COMMAND nox -s coverage -- ++coverage report ++coverage-options --fail-under=100
         shell: bash
       - name: Upload HTML report if check failed.
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
@@ -267,7 +277,9 @@ jobs:
   docs:
     permissions:
       contents: write
-    uses: ./.github/workflows/reusable-docs.yml
+    uses: ./.github/workflows/docs.yml
+    with:
+      deploy: false
 
   pinact:
     name: Pin actions
@@ -280,7 +292,7 @@ jobs:
           persist-credentials: false
 
       - name: Pin actions
-        uses: suzuki-shunsuke/pinact-action@3d49c6412901042473ffa78becddab1aea46bbea # v1.3.1
+        uses: suzuki-shunsuke/pinact-action@1081f5ad49ac904b7d977784f338145150a32112 # v1.4.0
         with:
           skip_push: "true"
 
@@ -291,6 +303,7 @@ jobs:
       - lint
       - typecheck
       - test
+      - coverage
       - pinact
       - docs
     runs-on: ubuntu-latest

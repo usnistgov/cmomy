@@ -9,9 +9,9 @@ defining-attr-methods = [
     "__init__",
     "__new__",
     "__post_init__",
-    "setUp",
-    "reset",
     "_reset",
+    "reset",
+    "setUp",
 ]
 
 [tool.pylint.design]
@@ -20,28 +20,30 @@ max-attributes = 40
 max-bool-expr = 5
 max-branches = 50
 max-locals = 50
+max-nested-blocks = 7
 max-parents = 12
 max-positional-arguments = 35
 max-public-methods = 500
 max-returns = 20
 max-statements = 150
 min-public-methods = 0
-max-nested-blocks = 7
 
 [tool.pylint."messages control"]
 enable = [
     # "useless-suppression",
     "all",
 ]
+# disable options
 disable = [
     # defer to ruff
     "line-too-long",
-    "missing-module-docstring",
     "missing-function-docstring",
-    "redefined-outer-name",
-    "unused-argument",
-    "too-complex",
+    "missing-module-docstring",
     "missing-param-doc",
+    "redefined-outer-name",
+    "too-complex",
+    "unused-argument",
+    "unused-import",
     # Silly
     "docstring-first-line-empty",
     "magic-value-comparison",
@@ -53,23 +55,23 @@ disable = [
     "superfluous-parens",
     "too-many-lines",
     # Messages that are noisy for now, eventually maybe we'll turn them on:
-    "invalid-name",
-    # "protected-access",
-    "unspecified-encoding",
+    "consider-using-f-string",
     "consider-using-f-string",
     "duplicate-code",
+    "invalid-name",
+    "unspecified-encoding",
     # "cyclic-import",
     # project specific
-    "consider-using-enumerate",
     "consider-using-assignment-expr",
-    "use-implicit-booleaness-not-comparison-to-zero",
-    "protected-access",
+    "consider-using-enumerate",
     "no-name-in-module",
+    "protected-access",
     "unused-import",
+    "use-implicit-booleaness-not-comparison-to-zero",
 ]
 
 [tool.pylint.reports]
 output-format = "colorized"
 
 [tool.pylint.dunder]
-good-dunder-names = [ "_repr_html_", "__array__" ]
+good-dunder-names = [ "__array__", "_repr_html_" ]

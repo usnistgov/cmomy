@@ -1,12 +1,12 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-    "uv-build>=0.8.22,<0.10.0",
+    "uv-build>=0.10.4,<0.11.0",
 ]
 
 [project]
 name = "cmomy"
-version = "1.0.3"
+version = "1.0.4.dev0"
 description = "Central (co)moment calculation/manipulation"
 readme = "README.md"
 keywords = [
@@ -198,6 +198,7 @@ keep_full_version = true
 extend-ignore-identifiers-re = [ "NDArray.*" ]
 
 [tool.typos.default.extend-identifiers]
+CPY = "CPY"
 NDGeneric = "NDGeneric"
 
 [tool.typos.default.extend-words]
@@ -215,6 +216,12 @@ addopts = [
     "--strict-markers",
     "-ra",
 ]
+testpaths = [
+    "README.md",
+    "cmomy",
+    "tests",
+]
+# options
 filterwarnings = [
     "error",
     "ignore: FNV hashing is not implemented in Numba:UserWarning",
@@ -229,11 +236,6 @@ markers = [
 ]
 minversion = "8"
 strict_xfail = "true"
-testpaths = [
-    "README.md",
-    "cmomy",
-    "tests",
-]
 
 [tool.pytest_env]
 NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
@@ -260,6 +262,7 @@ report.omit = [
     "*/options.py",
     "*/vendored/*",
 ]
+report.show_missing = true
 
 # * typecheck ---------------------------------------------------------------------
 
@@ -269,7 +272,7 @@ exclude = [
     ".nox",
     ".numba_cache",
     ".tox",
-    "doc",
+    ".venv",
     "docs",
 ]
 files = [
@@ -334,6 +337,7 @@ module = [
 ]
 
 [tool.pyrefly]
+enabled-ignores = [ "pyrefly" ]
 project-includes = [ "src", "tests" ]
 
 [tool.pyright]
@@ -443,17 +447,17 @@ python = "all"
 reqs = [
     # these used solely for specking tools to be used with uvx ...
     "conda-lock>=2.5.5",
+    "copier",
+    "copier-template-extensions>=0.3.1",
     "cruft",
     "grayskull>=2.5.3",
     "nbqa>=1.8.4",
-    "pre-commit-uv",
-    "pre-commit>=4.0.0",
     "prek",
     "pyrefly>=0.37.0",
     "pyright>=1.1.396",
     "scriv",
     "twine>=5.0.0",
-    "ty",
+    "ty>=0.0.14",
 ]
 groups = [
     "basedpyright",

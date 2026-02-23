@@ -243,7 +243,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # noqa: RUF069
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -306,7 +306,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # noqa: RUF069
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -332,7 +332,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     wr, *xyr = (select(data_rolling, name) for name in mom_names)
 
     outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=0)
-    count = (wr != 0.0).sum(axis=0)
+    count = (wr != 0.0).sum(axis=0)  # noqa: RUF069
 
     outc = np.where(
         count[(..., *((None,) * mom_ndim))]
@@ -379,7 +379,7 @@ def test_rolling_data_from_constructed_windows(
     out2 = cmomy.reduce_data(data_rolling, axis=0, mom_ndim=mom_ndim)
     # clean up counts...
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # noqa: RUF069
 
     out2 = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
