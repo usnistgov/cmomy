@@ -1,0 +1,15 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v0.6.0-61-gb366cb4
+_src_path: https://github.com/usnistgov/cookiecutter-nist-python.git
+command_line_interface: none
+conda_channel: conda-forge
+email: wpk@nist.gov
+full_name: William P. Krekelberg
+github_username: usnistgov
+project_name: cmomy
+project_short_description: Central (co)moment calculation/manipulation
+project_slug: cmomy
+pypi_username: wpk-nist
+sphinx_theme: sphinx_book_theme
+sphinx_use_autodocsumm: true
+year: '2020'
