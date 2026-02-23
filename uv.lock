@@ -521,7 +521,7 @@ test-scipy = [
     { name = "dask", marker = "python_full_version == '3.13.*' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "scipy", marker = "python_full_version == '3.13.*' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-typecheck = [
+type = [
     { name = "pandas-stubs" },
     { name = "pylint" },
     { name = "pytest" },
@@ -637,7 +637,7 @@ test-scipy = [
     { name = "dask", marker = "python_full_version == '3.13.*'" },
     { name = "scipy", marker = "python_full_version == '3.13.*'" },
 ]
-typecheck = [
+type = [
     { name = "pandas-stubs" },
     { name = "pylint" },
     { name = "pytest" },
