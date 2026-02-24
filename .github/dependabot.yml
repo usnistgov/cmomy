@@ -21,6 +21,12 @@ updates:
       interval: "weekly"
       day: "monday"
       time: "06:00"
+    allow:
+      - dependency-type: all
+    ignore:
+      # ignore 1.x update (need these for version numpy1
+      - dependency-name: numpy
+        update-types: ["version-update:semver-major"]
     cooldown:
       default-days: 7
     groups:
