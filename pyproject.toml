@@ -146,9 +146,6 @@ mypy.requires-python = ">=3.13"
 notebook.requires-python = ">=3.13"
 nox.requires-python = ">=3.13"
 
-[tool.nbqa]
-exclude.codespell = "^examples/archived"
-
 # * Checks ---------------------------------------------------------------------
 
 [tool.repo-review]
@@ -202,7 +199,11 @@ CPY = "CPY"
 NDGeneric = "NDGeneric"
 
 [tool.typos.default.extend-words]
+arange = "arange"
 datas = "datas"
+
+# [tool.typos.type.jupyter]
+# extend-ignore-re = ["\"id\": \".*\""]
 
 # * Testing --------------------------------------------------------------------
 
