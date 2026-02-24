@@ -4,6 +4,7 @@ import "tools/shared.just"
 import? "tools/notebook.just"
 
 set unstable := true
+set shell := ["bash", "-c"]
 
 # * Defaults
 _default:
@@ -155,7 +156,7 @@ requirements *options: (_requirements "--sync-or-lock" options)
 
 # * Typecheck ---------------------------------------------------------------------
 
-TYPECHECK_UVRUN_OPTS := "--only-group=typecheck"
+TYPECHECK_UVRUN_OPTS := "--only-group=type"
 
 _typecheck *check_options:
     {{ UVRUN }} {{ TYPECHECK_UVRUN_OPTS }} {{ TYPECHECK }} {{ UVX_OPTS }} {{ check_options }}
@@ -303,8 +304,8 @@ ipython *options:
 
 # update templates
 [group("tools")]
-cruft-update *options="--skip-apply-ask --checkout main":
-    {{ UVX_WITH_OPTS }} cruft update {{ options }}
+copier-update *options="-r main --trust -A":
+    {{ UVX_WITH_OPTS }} --with copier-template-extensions copier update {{ options }}
 
 # create changelog snippet with scriv
 [group("tools")]

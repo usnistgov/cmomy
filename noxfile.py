@@ -61,7 +61,6 @@ if TYPE_CHECKING:
 
 PACKAGE_NAME = "cmomy"
 IMPORT_NAME = "cmomy"
-KERNEL_NAME = "cmomy"
 
 # * nox options ------------------------------------------------------------------------
 
@@ -81,7 +80,7 @@ PYTHON_ALL_VERSIONS = nox.project.python_versions(
     nox.project.load_toml("pyproject.toml"),
 )
 
-if sys.platform != "darwin" or platform.machine != "x86_64":
+if sys.platform != "darwin" or platform.machine() != "x86_64":
     PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS
 else:
     PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS.copy()
@@ -165,6 +164,10 @@ class SessionParams(DataclassParser):
     coverage: (
         list[Literal["erase", "combine", "report", "html", "open", "markdown"]] | None
     ) = None
+
+    coverage_options: OPT_TYPE = add_option(
+        "--coverage-options", help="Options to coverage commands"
+    )
 
     # docs
     docs: (
@@ -487,53 +490,6 @@ def test_all(session: Session) -> None:
     session.notify("coverage")
 
 
-# ** dev
-@nox.session(name="dev", python=False)
-@add_opts
-def dev(
-    session: Session,
-    opts: SessionParams,
-) -> None:
-    """Create development environment."""
-    session.run("uv", "venv", ".venv", "--allow-existing", "--prompt", PACKAGE_NAME)
-
-    python_opt = "--python=.venv/bin/python"
-
-    install_dependencies(
-        session,
-        python_opt,
-        name="dev",
-        opts=opts,
-        python_version=PYTHON_DEFAULT_VERSION,
-        location=".venv",
-        no_dev=False,
-        include_editable_package=True,
-    )
-    session.notify("install-ipykernel")
-
-
-@nox.session(name="install-ipykernel", python=False)
-@add_opts
-def install_ipykernel(session: Session, opts: SessionParams) -> None:
-    """Install ipykernel for .venv"""
-    session.run(
-        "uv",
-        "run",
-        *opts.uv_sync_options,
-        "--python=.venv/bin/python",
-        "python",
-        "-m",
-        "ipykernel",
-        "install",
-        "--user",
-        "--name",
-        KERNEL_NAME,
-        "--display-name",
-        f"Python [venv: {KERNEL_NAME}]",
-        success_codes=[0, 1],
-    )
-
-
 # ** testing
 def _test(
     session: nox.Session,
@@ -736,6 +692,8 @@ def coverage(
                 session.log(f"removing {path}")
                 path.unlink()
 
+    coverage_options = combine_list_str(opts.coverage_options or [])
+
     for c in cmd:
         if c == "combine":
             uvx_run(
@@ -756,6 +714,7 @@ def coverage(
                     "coverage",
                     "report",
                     "--format=markdown",
+                    *coverage_options,
                     stdout=f,
                 )
         else:
@@ -763,6 +722,7 @@ def coverage(
                 session,
                 "coverage",
                 c,
+                *coverage_options,
             )
 
 
@@ -825,8 +785,10 @@ def docs(
     )
 
     install_dependencies(session, name=name, opts=opts, include_editable_package=True)
-
     session_run_commands(session, opts.docs_run)
+
+    # enable docstring-inheritance
+    session.env["DOCSTRING_INHERITANCE_ENABLE"] = "1"
 
     if open_page := "open" in cmd:
         cmd.remove("open")
@@ -919,9 +881,7 @@ def typecheck(
     opts: SessionParams,
 ) -> None:
     """Run type checkers (mypy, pyright, etc)."""
-    install_dependencies(
-        session, name="typecheck", opts=opts, include_editable_package=True
-    )
+    install_dependencies(session, name="type", opts=opts, include_editable_package=True)
     session_run_commands(session, opts.typecheck_run)
 
     cmd = opts.typecheck or []
@@ -929,7 +889,7 @@ def typecheck(
         cmd = ["mypy", "basedpyright"]
 
     if "all" in cmd:
-        cmd = ["mypy", "basedpyright", "pylint"]
+        cmd = ["mypy", "basedpyright", "pyrefly", "ty", "pylint"]
 
     # set the cache directory for mypy
     session.env["MYPY_CACHE_DIR"] = str(Path(session.create_tmp()) / ".mypy_cache")
