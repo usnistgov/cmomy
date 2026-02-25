@@ -27,6 +27,9 @@ supported-markers = [
     "python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
     "platform_machine != 'x86_64' or sys_platform != 'darwin'",
 ]
+required-markers = [
+    "platform_machine == 'x86_64' and sys_platform == 'darwin'",
+]
 conflicts = [[
     { package = "cmomy", group = "numpy1" },
     { package = "cmomy", group = "numpy2" },
