@@ -1899,6 +1899,12 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         {keep_attrs}
         {apply_ufunc_kwargs}
 
+        See Also
+        --------
+        reduction.reduce_data
+        grouped.reduce_data_grouped
+        grouped.reduce_data_indexed
+
         Notes
         -----
         This is a new feature, and subject to change. In particular, the
@@ -1906,12 +1912,6 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         dimensions, and is inconsistent with :meth:`xarray.DataArray.groupby`.
         It is up the the user to manipulate the dimensions/coordinates. output
         dimensions and coords simplistically.
-
-        See Also
-        --------
-        reduction.reduce_data
-        grouped.reduce_data_grouped
-        grouped.reduce_data_indexed
 
         Examples
         --------
@@ -2654,15 +2654,15 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         """
         Transpose dimensions of data.
 
-        Notes
-        -----
-        ``mom_dims`` will always be put at the end of the array.
-
         See Also
         --------
         pipe
         xarray.DataArray.transpose
         xarray.Dataset.transpose
+
+        Notes
+        -----
+        ``mom_dims`` will always be put at the end of the array.
         """
         # make sure dims are last
 

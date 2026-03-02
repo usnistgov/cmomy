@@ -242,14 +242,14 @@ def moveaxis(
     out : ndarray or DataArray
         Same type as ``x`` with moved axis.
 
+    See Also
+    --------
+    numpy.moveaxis
+
     Notes
     -----
     Must specify either ``axis`` or ``dim`` and either ``dest`` or
     ``dest_dim``.
-
-    See Also
-    --------
-    numpy.moveaxis
 
     Examples
     --------
