@@ -470,13 +470,13 @@ def resample_vals(  # noqa: PLR0913
         Resampled Central moments array. ``out.shape = (...,shape[axis-1], nrep, shape[axis+1], ...)``
         where ``shape = x.shape``. and ``nrep = sampler.nrep``.  This can be overridden by setting `axes_to_end`.
 
-    Notes
-    -----
-    {vals_resample_note}
-
     See Also
     --------
     .resample.factory_sampler
+
+    Notes
+    -----
+    {vals_resample_note}
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)

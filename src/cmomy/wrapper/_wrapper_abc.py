@@ -77,6 +77,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     fastpath : bool
         For internal use.
 
+    See Also
+    --------
+    cmomy.wrap
+    cmomy.wrap_reduce_vals
+    cmomy.wrap_resample_vals
+    cmomy.wrap_raw
+
     Notes
     -----
     Base data has the form
@@ -89,14 +96,6 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             \langle (x - \langle x \rangle^i) (y - \langle y \rangle^j)
             \rangle & i + j > 0
         \end{{cases}}
-
-
-    See Also
-    --------
-    cmomy.wrap
-    cmomy.wrap_reduce_vals
-    cmomy.wrap_resample_vals
-    cmomy.wrap_raw
     """
 
     __slots__ = ("_mom_params", "_obj")
@@ -278,15 +277,13 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             is set to False and the `dtype` requirement is satisfied, the input
             array is returned instead of a copy.
 
+        See Also
+        --------
+        numpy.ndarray.astype
 
         Notes
         -----
         Only ``numpy.float32`` and ``numpy.float64`` dtype are supported.
-
-
-        See Also
-        --------
-        numpy.ndarray.astype
         """
         dtype = validate_floating_dtype(dtype)
         kwargs = {"order": order, "casting": casting, "subok": subok, "copy": copy}

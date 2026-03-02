@@ -208,6 +208,10 @@ def construct_rolling_window_array(
     output : array
         Array of shape ``(window, *shape)``.
 
+    See Also
+    --------
+    xarray.DataArray.rolling
+
     Notes
     -----
     This function uses different syntax compared to
@@ -234,10 +238,6 @@ def construct_rolling_window_array(
            [ 0.,  1.,  2.,  3.,  4.],
            [ 1.,  2.,  3.,  4., nan]])
     Dimensions without coordinates: rolling_dim_0, dim_0
-
-    See Also
-    --------
-    xarray.DataArray.rolling
     """
     if is_xarray_typevar["DataT"].check(x):
         mom_params = MomParamsXArrayOptional.factory(
