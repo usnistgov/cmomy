@@ -130,7 +130,7 @@ repos:
           - "--command"
           - "ruff format"
         additional_dependencies:
-          - ruff==0.15.4
+          - ruff==0.15.5
 
   # * Spelling
   # ** typos
@@ -246,7 +246,7 @@ repos:
       - id: nbqa
         name: nbqa-typos
         alias: typos
-        additional_dependencies: &typos-deps
+        additional_dependencies:
           - typos==1.44.0
         # args: [typos, --nbqa-shell]
         # this can lead to errors, so use with care
