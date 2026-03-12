@@ -116,7 +116,6 @@ test-scipy = [
 typecheck-runner = [ "typecheck-runner>=0.1.0; python_version>'3.9'" ]
 
 # * uv -------------------------------------------------------------------------
-
 [tool.uv]
 required-version = ">=0.7.15"
 default-groups = [ "dev", "numpy2" ]
@@ -151,7 +150,6 @@ notebook.requires-python = ">=3.13"
 nox.requires-python = ">=3.13"
 
 # * Checks ---------------------------------------------------------------------
-
 [tool.repo-review]
 ignore = [
     "NOX103", # I prefer using "nox.options.sessions"
@@ -197,6 +195,8 @@ keep_full_version = true
 
 [tool.typos.default]
 extend-ignore-identifiers-re = [ "NDArray.*" ]
+# nbqa generated
+extend-ignore-re = [ "# %%NBQA-.*" ]
 
 [tool.typos.default.extend-identifiers]
 CPY = "CPY"
@@ -206,11 +206,11 @@ NDGeneric = "NDGeneric"
 arange = "arange"
 datas = "datas"
 
-# [tool.typos.type.jupyter]
-# extend-ignore-re = ["\"id\": \".*\""]
+[tool.typos.type.jupyter]
+# only check file name for notebooks.  Use nbaq for contents.
+check-file = false
 
 # * Testing --------------------------------------------------------------------
-
 [tool.pytest.ini_options]
 addopts = [
     "--cov-config=pyproject.toml",
@@ -247,10 +247,15 @@ NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set 
 
 [tool.coverage]
 run.branch = true
+run.source = [
+    "cmomy",
+]
 paths.source = [
     "src/",
     # needed for testing source if not editable install
     ".nox/**/site-packages/",
+    "*/.nox/**/site-packages",
+    "*/src",
 ]
 # show_missing = true
 report.exclude_also = [
@@ -270,7 +275,6 @@ report.omit = [
 report.show_missing = true
 
 # * typecheck ---------------------------------------------------------------------
-
 [tool.mypy]
 exclude = [
     ".eggs",
@@ -412,7 +416,6 @@ analysis.respect-type-ignore-comments = false
 src.include = [ "src", "tests" ]
 
 # * Dependency creation --------------------------------------------------------
-
 [tool.pyproject2conda]
 user-config = "config/userconfig.toml"
 template-python = "requirements/py{py}-{env}"
@@ -474,7 +477,6 @@ skip-package = true
 style = "requirements"
 
 # * Other tools ----------------------------------------------------------------
-
 [tool.scriv]
 format = "md"
 md_header_level = "2"
