@@ -194,12 +194,9 @@ indent = 4
 keep_full_version = true
 
 [tool.typos.default]
-<<<<<<< before updating
 extend-ignore-identifiers-re = [ "NDArray.*" ]
-=======
 # nbqa generated
 extend-ignore-re = [ "# %%NBQA-.*" ]
->>>>>>> after updating
 
 [tool.typos.default.extend-identifiers]
 CPY = "CPY"
@@ -208,9 +205,6 @@ NDGeneric = "NDGeneric"
 [tool.typos.default.extend-words]
 arange = "arange"
 datas = "datas"
-
-# [tool.typos.type.jupyter]
-# extend-ignore-re = ["\"id\": \".*\""]
 
 [tool.typos.type.jupyter]
 # only check file name for notebooks.  Use nbaq for contents.
@@ -323,7 +317,6 @@ module = [
     "scipy.stats.*",
 ]
 
-<<<<<<< before updating
 [[tool.mypy.overrides]]
 strict = false
 disallow_untyped_defs = false
@@ -352,16 +345,6 @@ module = [
     "tests.test_xarray_support.*",
 ]
 
-=======
-# [[tool.mypy.overrides]]
-# ignore_missing_imports = true
-# module = [  ]
-#
-# [[tool.mypy.overrides]]
-# ignore_errors = true
-# module = [  ]
-#
->>>>>>> after updating
 [tool.pyrefly]
 enabled-ignores = [ "pyrefly" ]
 project-includes = [ "src", "tests" ]

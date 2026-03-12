@@ -69,12 +69,6 @@ jobs:
           print("{minmax_default_python_versions=}")
           print("{all_python_version=}")
 
-<<<<<<< before updating
-          # min max and default pythons
-          # matrix_test_python = list({ python_versions[0], python_versions[-1], default_python_version, "3.14" })
-          matrix_test_python = list({ python_versions[0], python_versions[-1], default_python_version })
-=======
->>>>>>> after updating
 
           with open(os.getenv("GITHUB_OUTPUT"), "a") as f:
             f.write(f"{default_python_version=:s}\n")
@@ -159,10 +153,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-<<<<<<< before updating
-=======
           # - windows-latest
->>>>>>> after updating
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -206,15 +197,11 @@ jobs:
         os:
           - ubuntu-latest
         python-version:
-<<<<<<< before updating
-          ${{ fromJson(needs.build-package.outputs.matrix-test-python) }}
-        session:
-          - test
-=======
           ${{
           fromJson(needs.build-package.outputs.minmax-default-python-versions)
           }}
->>>>>>> after updating
+        session:
+          - test
         include:
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
