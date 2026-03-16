@@ -148,14 +148,14 @@ wheels = [
 
 [[package]]
 name = "basedpyright"
-version = "1.38.1"
+version = "1.38.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "nodejs-wheel-binaries", marker = "python_full_version < '3.14' or platform_machine != 'x86_64' or sys_platform != 'darwin' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/17/ea/4d45e3c66c609496f3069a7c9e5fbd1f9ba54097c41b89048af0d8021ea6/basedpyright-1.38.1.tar.gz", hash = "sha256:e4876aa3ef7c76569ffdcd908d4e260b8d1a1deaa8838f2486f91a10b60d68d6", size = 25267403, upload-time = "2026-02-18T09:20:45.563Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/a3/20aa7c4e83f2f614e0036300f3c352775dede0655c66814da16c37b661a9/basedpyright-1.38.2.tar.gz", hash = "sha256:b433b2b8ba745ed7520cdc79a29a03682f3fb00346d272ece5944e9e5e5daa92", size = 25277019, upload-time = "2026-02-26T11:18:43.594Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/92/42f4dc30a28c052a70c939d8dbb34102674b48c89369010442038d3c888b/basedpyright-1.38.1-py3-none-any.whl", hash = "sha256:24f21661d2754687b64f3bc35efcc78781e11b08c8b2310312ed92bf178ea627", size = 12311610, upload-time = "2026-02-18T09:20:50.09Z" },
+    { url = "https://files.pythonhosted.org/packages/ac/12/736cab83626fea3fe65cdafb3ef3d2ee9480c56723f2fd33921537289a5e/basedpyright-1.38.2-py3-none-any.whl", hash = "sha256:153481d37fd19f9e3adedc8629d1d071b10c5f5e49321fb026b74444b7c70e24", size = 12312475, upload-time = "2026-02-26T11:18:40.373Z" },
 ]
 
 [[package]]
@@ -1467,14 +1467,14 @@ wheels = [
 
 [[package]]
 name = "lazy-loader"
-version = "0.4"
+version = "0.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging", marker = "python_full_version < '3.14' or platform_machine != 'x86_64' or sys_platform != 'darwin' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6f/6b/c875b30a1ba490860c93da4cabf479e03f584eba06fe5963f6f6644653d8/lazy_loader-0.4.tar.gz", hash = "sha256:47c75182589b91a4e1a85a136c074285a5ad4d9f39c63e0d7fb76391c4574cd1", size = 15431, upload-time = "2024-04-05T13:03:12.261Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/ac/21a1f8aa3777f5658576777ea76bfb124b702c520bbe90edf4ae9915eafa/lazy_loader-0.5.tar.gz", hash = "sha256:717f9179a0dbed357012ddad50a5ad3d5e4d9a0b8712680d4e687f5e6e6ed9b3", size = 15294, upload-time = "2026-03-06T15:45:09.054Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/83/60/d497a310bde3f01cb805196ac61b7ad6dc5dcf8dce66634dc34364b20b4f/lazy_loader-0.4-py3-none-any.whl", hash = "sha256:342aa8e14d543a154047afb4ba8ef17f5563baad3fc610d7b15b213b0f119efc", size = 12097, upload-time = "2024-04-05T13:03:10.514Z" },
+    { url = "https://files.pythonhosted.org/packages/8a/a1/8d812e53a5da1687abb10445275d41a8b13adb781bbf7196ddbcf8d88505/lazy_loader-0.5-py3-none-any.whl", hash = "sha256:ab0ea149e9c554d4ffeeb21105ac60bed7f3b4fd69b1d2360a4add51b170b005", size = 8044, upload-time = "2026-03-06T15:45:07.668Z" },
 ]
 
 [[package]]
@@ -1863,7 +1863,7 @@ wheels = [
 
 [[package]]
 name = "myst-nb"
-version = "1.3.0"
+version = "1.4.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "importlib-metadata", marker = "(python_full_version >= '3.13' and platform_machine != 'x86_64') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version != '3.13.*' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.13' and sys_platform != 'darwin') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
@@ -1877,9 +1877,9 @@ dependencies = [
     { name = "sphinx", marker = "(python_full_version >= '3.13' and platform_machine != 'x86_64') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version != '3.13.*' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.13' and sys_platform != 'darwin') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "typing-extensions", marker = "(python_full_version >= '3.13' and platform_machine != 'x86_64') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version != '3.13.*' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.13' and sys_platform != 'darwin') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/21/83/a894bd8dea7a6e9f053502ee8413484dcbf75a219013d6a72e971c0fecfd/myst_nb-1.3.0.tar.gz", hash = "sha256:df3cd4680f51a5af673fd46b38b562be3559aef1475e906ed0f2e66e4587ce4b", size = 81963, upload-time = "2025-07-13T22:49:38.493Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bd/b4/ff1abeea67e8cfe0a8c033389f6d1d8b0bfecfd611befb5cbdeab884fce6/myst_nb-1.4.0.tar.gz", hash = "sha256:c145598de62446a6fd009773dd071a40d3b76106ace780de1abdfc6961f614c2", size = 82285, upload-time = "2026-03-02T21:14:56.95Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/a6/03d410c114b8c4856579b3d294dafc27626a7690a552625eec42b16dfa41/myst_nb-1.3.0-py3-none-any.whl", hash = "sha256:1f36af3c19964960ec4e51ac30949b6ed6df220356ffa8d60dd410885e132d7d", size = 82396, upload-time = "2025-07-13T22:49:37.019Z" },
+    { url = "https://files.pythonhosted.org/packages/94/93/0a378b48488879a1d925b42a804edfc6e0cd0ef854220f2dce738a46e7e9/myst_nb-1.4.0-py3-none-any.whl", hash = "sha256:0e2c86e7d3b82c3aa51383f82d6268f7714f3b772c23a796ab09538a8e68b4e4", size = 82555, upload-time = "2026-03-02T21:14:55.652Z" },
 ]
 
 [[package]]
@@ -2406,13 +2406,13 @@ version = "2.3.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version < '3.11' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
-    "(python_full_version < '3.11' and platform_machine != 'x86_64') or (python_full_version < '3.11' and sys_platform != 'darwin')",
     "python_full_version >= '3.14' and platform_machine != 'x86_64' and sys_platform == 'win32'",
     "python_full_version >= '3.14' and platform_machine != 'x86_64' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and platform_machine != 'x86_64' and sys_platform != 'emscripten' and sys_platform != 'win32'",
     "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'win32'",
     "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'emscripten'",
     "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform != 'darwin' and sys_platform != 'emscripten' and sys_platform != 'win32'",
+    "(python_full_version < '3.11' and platform_machine != 'x86_64') or (python_full_version < '3.11' and sys_platform != 'darwin')",
 ]
 dependencies = [
     { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.14' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1') or (python_full_version >= '3.14' and sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1') or (python_full_version < '3.11' and extra == 'group-5-cmomy-numpy1') or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
@@ -2640,7 +2640,7 @@ name = "pexpect"
 version = "4.9.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "ptyprocess", marker = "(python_full_version < '3.14' and sys_platform == 'darwin') or (python_full_version < '3.11' and sys_platform == 'emscripten') or (python_full_version >= '3.13' and sys_platform == 'emscripten') or (python_full_version < '3.11' and sys_platform == 'win32') or (python_full_version >= '3.13' and sys_platform == 'win32') or (platform_machine != 'x86_64' and sys_platform == 'darwin') or (sys_platform != 'darwin' and sys_platform != 'emscripten' and sys_platform != 'win32') or (sys_platform == 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform == 'emscripten' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform == 'win32' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
+    { name = "ptyprocess", marker = "(python_full_version < '3.14' and sys_platform == 'darwin') or (python_full_version < '3.11' and sys_platform == 'emscripten') or (python_full_version < '3.11' and sys_platform == 'win32') or (platform_machine != 'x86_64' and sys_platform == 'darwin') or (sys_platform != 'darwin' and sys_platform != 'emscripten' and sys_platform != 'win32') or (sys_platform == 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform == 'emscripten' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform == 'win32' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/42/92/cc564bf6381ff43ce1f4d06852fc19a2f11d180f23dc32d9588bee2f149d/pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f", size = 166450, upload-time = "2023-11-25T09:07:26.339Z" }
 wheels = [
@@ -2908,15 +2908,15 @@ wheels = [
 
 [[package]]
 name = "pytest-accept"
-version = "0.2.2"
+version = "0.2.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "astor", marker = "python_full_version < '3.14' or platform_machine != 'x86_64' or sys_platform != 'darwin' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "pytest", marker = "python_full_version < '3.14' or platform_machine != 'x86_64' or sys_platform != 'darwin' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/aa/33/747e2a41725d56f2f5b5740911db24c80eee6cf0a37cdd696396b13eb072/pytest_accept-0.2.2.tar.gz", hash = "sha256:dd8b8f4a43e0007913343c658f2666e176ef6502c39fdaea9177e9f82b6e5fff", size = 25366, upload-time = "2025-08-19T22:57:21.31Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/36/15/37f660ba2b40875324b41d343976962f09c8bef5ba668544236afb424bd7/pytest_accept-0.2.3.tar.gz", hash = "sha256:c747d92ef0bcac0dc20e46f3dfb73b8e9aee970de11b98985868560ca508d06e", size = 25990, upload-time = "2026-03-01T05:00:45.561Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/b5/c6d16467738532a1463f8747687a0066b1fec7eeb45e49ca5ed312561b19/pytest_accept-0.2.2-py3-none-any.whl", hash = "sha256:cf2b6efd14bfefbfb27d842a94a6037f62fb5257ecb1096cf080b19e388584c1", size = 34600, upload-time = "2025-08-19T22:57:19.817Z" },
+    { url = "https://files.pythonhosted.org/packages/27/29/50a8582f90c7d31a9df2ecafb345f6cd3f6a9eaad1b4a94a50ce83eb6ee2/pytest_accept-0.2.3-py3-none-any.whl", hash = "sha256:dad6934349fcd78d31d2f4e0daa372d47f2c11525c7c0802f12c3efe422c8d89", size = 35642, upload-time = "2026-03-01T05:00:44.047Z" },
 ]
 
 [[package]]
