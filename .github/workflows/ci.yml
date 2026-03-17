@@ -237,15 +237,12 @@ jobs:
             python-version:
               ${{ needs.build-package.outputs.default-python-version }}
             session: test
-<<<<<<< before updating
         exclude:
           # handled by run-slow
           - python-version:
               ${{ needs.build-package.outputs.default-python-version }}
             os: ubuntu-latest
             session: test
-=======
->>>>>>> after updating
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -280,18 +277,10 @@ jobs:
         if: ${{ matrix.session == 'test' }}
         env:
           python_version: ${{ matrix.python-version }}
-<<<<<<< before updating
         run: >-
           $UVX_COMMAND nox -s test-"$python_version" -- ++test-options --compile
           --typing
         shell: bash
-
-      # for these other types of tests, use the build package
-      # - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-      #   if: ${{ matrix.session != 'test' }}
-      #   with:
-      #     name: Packages
-      #     path: dist
 
       - name: Test with nox (session)
         if: ${{ matrix.session != 'test' }}
@@ -302,14 +291,6 @@ jobs:
       - name: Display coverage files
         run: ls -a .nox/test-*/tmp/.coverage*
         shell: bash
-=======
-          options: "++installpkg dist/*.whl"
-          session: ${{ matrix.session }}
-        run: |
-          # shellcheck disable=SC2086
-          $NOX_COMMAND -s "${session}-${python_version}" -- $options
-        shell: bash -euxo pipefail {0}
->>>>>>> after updating
 
       - name: Upload coverage data
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0

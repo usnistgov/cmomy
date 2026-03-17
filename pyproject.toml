@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "cmomy"
-version = "1.0.4.dev0"
+version = "1.0.3"
 description = "Central (co)moment calculation/manipulation"
 readme = "README.md"
 keywords = [
@@ -120,7 +120,6 @@ typecheck-runner = [ "typecheck-runner>=0.1.0; python_version>'3.9'" ]
 required-version = ">=0.7.15"
 default-groups = [ "dev", "numpy2" ]
 fork-strategy = "requires-python"
-<<<<<<< before updating
 environments = [
     "python_version<'3.14' and sys_platform=='darwin' and platform_machine=='x86_64'",
     "sys_platform!='darwin' or platform_machine!='x86_64'",
@@ -128,9 +127,7 @@ environments = [
 required-environments = [
     "sys_platform=='darwin' and platform_machine=='x86_64'",
 ]
-=======
 exclude-newer = "7 days"
->>>>>>> after updating
 managed = true
 conflicts = [
     [
@@ -214,73 +211,6 @@ datas = "datas"
 # only check file name for notebooks.  Use nbaq for contents.
 check-file = false
 
-<<<<<<< before updating
-# * Testing --------------------------------------------------------------------
-[tool.pytest.ini_options]
-addopts = [
-    "--cov-config=pyproject.toml",
-    "--doctest-glob=*.md",
-    "--doctest-modules",
-    "--pyargs",
-    "--strict-config",
-    "--strict-markers",
-    "-ra",
-]
-testpaths = [
-    "README.md",
-    "cmomy",
-    "tests",
-]
-# options
-filterwarnings = [
-    "error",
-    "ignore: FNV hashing is not implemented in Numba:UserWarning",
-    "ignore: Module cmomy was never imported:coverage.exceptions.CoverageWarning",       # test-notebook issue
-    "ignore: No data was collected:coverage.exceptions.CoverageWarning",                 # test-notebook issue
-    "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
-]
-log_cli_level = "INFO"
-log_level = "INFO"
-markers = [
-    "scipy: test scipy dependent code",
-]
-minversion = "8"
-strict_xfail = "true"
-
-[tool.pytest_env]
-NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
-
-[tool.coverage]
-run.branch = true
-run.source = [
-    "cmomy",
-]
-paths.source = [
-    "src/",
-    # needed for testing source if not editable install
-    ".nox/**/site-packages/",
-    "*/.nox/**/site-packages",
-    "*/src",
-]
-# show_missing = true
-report.exclude_also = [
-    "@overload",
-    "if TYPE_CHECKING:",
-]
-report.include = [
-    "src/*",
-]
-report.omit = [
-    # No great way to test coverage of guvectorized functions...
-    "*/_lib/*.py",
-    "*/core/typing_nested_sequence.py",
-    "*/options.py",
-    "*/vendored/*",
-]
-report.show_missing = true
-
-=======
->>>>>>> after updating
 # * typecheck ---------------------------------------------------------------------
 [tool.mypy]
 exclude = [
@@ -439,11 +369,23 @@ testpaths = [
     "tests",
 ]
 # options
-filterwarnings = [ "error" ]
+filterwarnings = [
+    "error",
+    "ignore: FNV hashing is not implemented in Numba:UserWarning",
+    "ignore: Module cmomy was never imported:coverage.exceptions.CoverageWarning",       # test-notebook issue
+    "ignore: No data was collected:coverage.exceptions.CoverageWarning",                 # test-notebook issue
+    "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
+]
 log_cli_level = "INFO"
 log_level = "INFO"
+markers = [
+    "scipy: test scipy dependent code",
+]
 minversion = "8"
 strict_xfail = "true"
+
+[tool.pytest_env]
+NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
 
 [tool.coverage]
 run.branch = true
@@ -457,6 +399,7 @@ paths.source = [
     "*/.nox/**/site-packages",
     "*/src",
 ]
+# show_missing = true
 report.exclude_also = [
     "@overload",
     "if TYPE_CHECKING:",
@@ -465,7 +408,10 @@ report.include = [
     "src/*",
 ]
 report.omit = [
-    "*/_typing.py",
+    # No great way to test coverage of guvectorized functions...
+    "*/_lib/*.py",
+    "*/core/typing_nested_sequence.py",
+    "*/options.py",
     "*/vendored/*",
 ]
 report.show_missing = true
