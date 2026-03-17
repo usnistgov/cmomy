@@ -1,15 +1,16 @@
+<<<<<<< before updating
 <!-- markdownlint-disable MD024 -->
 <!-- markdownlint-disable MD013 -->
 <!-- prettier-ignore-start -->
 
+=======
+>>>>>>> after updating
 # Changelog
 
-Changelog for `cmomy`
+<!-- markdownlint-disable-file -->
 
-## Unreleased
 
-[changelog.d]: https://github.com/usnistgov/cmomy/tree/main/changelog.d
-
+<<<<<<< before updating
 See the fragment files in [changelog.d]
 
 <!-- prettier-ignore-end -->
@@ -474,3 +475,8 @@ Full set of changes:
 
 Full set of changes:
 [`v0.0.3...v0.0.4`](https://github.com/usnistgov/cmomy/compare/v0.0.3...v0.0.4)
+=======
+Changelog for `cmomy`
+
+## Initial release
+>>>>>>> after updating
