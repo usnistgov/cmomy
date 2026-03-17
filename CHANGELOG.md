@@ -1,22 +1,9 @@
-<!-- markdownlint-disable MD024 -->
-<!-- markdownlint-disable MD013 -->
-<!-- prettier-ignore-start -->
-
 # Changelog
 
+<!-- markdownlint-disable-file -->
+
+
 Changelog for `cmomy`
-
-## Unreleased
-
-[changelog.d]: https://github.com/usnistgov/cmomy/tree/main/changelog.d
-
-See the fragment files in [changelog.d]
-
-<!-- prettier-ignore-end -->
-
-<!-- markdownlint-enable MD013 -->
-
-<!-- scriv-insert-here -->
 
 ## v1.0.2 — 2025-10-14
 
