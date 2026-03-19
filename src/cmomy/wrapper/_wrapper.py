@@ -1475,7 +1475,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         obj: xr.DataArray | xr.Dataset = self._obj[key]  # pyright: ignore[reportUnknownVariableType]
         if not contains_dims(obj, *self.mom_dims):  # pyright: ignore[reportUnknownArgumentType]
             msg = f"Cannot select object without {self.mom_dims}"
-            raise ValueError(msg)
+            raise KeyError(msg)
         self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))  # pyright: ignore[reportUnknownArgumentType]
 
         return type(self)(  # pyright: ignore[reportReturnType]

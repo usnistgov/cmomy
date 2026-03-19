@@ -8,8 +8,7 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy import CentralMomentsArray, CentralMomentsData
-from cmomy.core.array_utils import select_dtype
+import cmomy.core.array_utils
 
 from ._dataarray_set_utils import (
     do_wrap_method,
@@ -168,7 +167,7 @@ def _do_test(func, *args, expected, **kwargs):
             {"mom": 2, "axes_to_end": False, "sampler": {"nrep": 10}, "axis": 0},
             (10, 1, 2, 3),
         ),
-        (select_dtype, {"out": None}, (5, 1, 2)),
+        (cmomy.core.array_utils.select_dtype, {"out": None}, (5, 1, 2)),
     ],
 )
 def test_functions_with_out(
@@ -182,7 +181,7 @@ def test_functions_with_out(
     )
 
     if isinstance(func, str):
-        cls = CentralMomentsData if as_dataarray else CentralMomentsArray
+        cls = cmomy.CentralMomentsData if as_dataarray else cmomy.CentralMomentsArray
         func = getattr(cls, func)
 
     kwargs = {"dtype": dtype, **kws}
@@ -257,10 +256,12 @@ dtype_mark = pytest.mark.parametrize(
 )
 
 dtype_base_mark = pytest.mark.parametrize("dtype_base", [np.float32, np.float64])
-cls_mark = pytest.mark.parametrize("cls", [CentralMomentsArray, CentralMomentsData])
+cls_mark = pytest.mark.parametrize(
+    "cls", [cmomy.CentralMomentsArray, cmomy.CentralMomentsData]
+)
 use_out_mark = pytest.mark.parametrize("use_out", [False, True])
 
-cls_numpy_mark = pytest.mark.parametrize("cls", [CentralMomentsArray])
+cls_numpy_mark = pytest.mark.parametrize("cls", [cmomy.CentralMomentsArray])
 
 
 @dtype_base_mark
@@ -283,7 +284,7 @@ def test_zeros_dtype(cls, dtype, expected) -> None:
 @dtype_mark
 def test_init(cls, dtype_base, dtype, expected) -> None:
     data = np.zeros((2,), dtype=dtype_base)
-    if cls == CentralMomentsData:
+    if cls == cmomy.CentralMomentsData:
         data = xr.DataArray(data)  # pylint: disable=redefined-variable-type
 
     func = partial(cls, data, mom_ndim=1, dtype=dtype)
@@ -300,7 +301,7 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
     data_base = np.zeros((2, 3, 4), dtype=dtype_base)
 
     c = cls.zeros(mom=3, val_shape=(2, 3), dtype=dtype_base)
-    if cls == CentralMomentsData:
+    if cls == cmomy.CentralMomentsData:
         xdata = xr.DataArray(data, dims=c.dims)
 
     assert c.dtype.type == dtype_base
@@ -315,7 +316,7 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data, dtype=dtype).dtype.type == expected
         assert c.new_like(obj=data_base).dtype.type == dtype_base
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == dtype_base
-        if cls == CentralMomentsData:
+        if cls == cmomy.CentralMomentsData:
             assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
 
     else:
@@ -325,6 +326,6 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data, dtype=dtype).dtype.type == expected
         assert c.new_like(obj=data_base).dtype.type == dtype_base
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == expected
-        if cls == CentralMomentsData:
+        if cls == cmomy.CentralMomentsData:
             assert c.new_like(obj=xdata).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
             assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
