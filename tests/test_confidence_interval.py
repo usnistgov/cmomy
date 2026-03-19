@@ -345,7 +345,7 @@ def test_var(
     np.testing.assert_allclose(scipy_boot_var.confidence_interval.high, result[1, ...])
 
     with pytest.raises(TypeError):
-        result = bootstrap_confidence_interval(
+        _ = bootstrap_confidence_interval(
             theta_hat=theta_hat[..., 2],
             theta_boot=theta_boot[..., 2],
             theta_jack=theta_jack[..., 2],

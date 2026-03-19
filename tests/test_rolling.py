@@ -1,6 +1,7 @@
 # pylint: disable=missing-class-docstring
 from __future__ import annotations
 
+import contextlib
 from functools import partial
 from typing import TYPE_CHECKING
 
@@ -10,8 +11,7 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy import rolling
-from cmomy.core.validate import is_dataarray
+import cmomy.core.validate
 
 if TYPE_CHECKING:
     from typing import TypedDict
@@ -36,13 +36,17 @@ def test__optional_zero_missing_weights(mom_ndim) -> None:
     data[(..., *(0,) * mom_ndim)] = np.nan
 
     # no change
-    out = rolling._optional_zero_missing_weight(data.copy(), range(-mom_ndim, 0), False)
+    out = cmomy.rolling._optional_zero_missing_weight(
+        data.copy(), range(-mom_ndim, 0), False
+    )
     np.testing.assert_equal(out, data)
 
     # change
     check = data.copy()
     check[(..., *(0,) * mom_ndim)] = 0.0
-    out = rolling._optional_zero_missing_weight(data.copy(), range(-mom_ndim, 0), True)
+    out = cmomy.rolling._optional_zero_missing_weight(
+        data.copy(), range(-mom_ndim, 0), True
+    )
     np.testing.assert_allclose(out, check)
 
 
@@ -78,7 +82,7 @@ def test_construct_rolling_window_array(shape, axis, window, center, as_dataarra
     if as_dataarray:
         data = xdata
 
-    out = rolling.construct_rolling_window_array(
+    out = cmomy.rolling.construct_rolling_window_array(
         data, axis=axis, window=window, center=center
     )
 
@@ -86,7 +90,7 @@ def test_construct_rolling_window_array(shape, axis, window, center, as_dataarra
 
     if isinstance(window, tuple) and len(window) == 3:
         with pytest.raises(ValueError):
-            rolling.construct_rolling_window_array(
+            cmomy.rolling.construct_rolling_window_array(
                 data,
                 axis=axis,
                 window=window[:-1],
@@ -100,7 +104,7 @@ def test_construct_rolling_window_array_mom_ndim(as_dataarray) -> None:
     if as_dataarray:
         data = xr.DataArray(data)
 
-    func = rolling.construct_rolling_window_array
+    func = cmomy.rolling.construct_rolling_window_array
 
     axis = (0, 1)
     out = func(data, axis=axis, window=3)
@@ -161,7 +165,7 @@ def test_rolling_data(
         mom=3,
     )
 
-    out = rolling.rolling_data(
+    out = cmomy.rolling.rolling_data(
         data,
         axis=axis,
         mom_ndim=1,
@@ -175,7 +179,7 @@ def test_rolling_data(
         _do_test_select(out, name, 1, expected)
 
     # vals
-    out2 = rolling.rolling_vals(x, axis=axis, mom=3, axes_to_end=False, **kws)
+    out2 = cmomy.rolling.rolling_vals(x, axis=axis, mom=3, axes_to_end=False, **kws)
 
     np.testing.assert_allclose(
         out,
@@ -223,7 +227,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
         mom=mom,
     )
 
-    rolling.rolling_data(
+    cmomy.rolling.rolling_data(
         data,
         window=window,
         min_periods=min_periods,
@@ -231,12 +235,12 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
         axis=0,
         mom_ndim=mom_ndim,
     )
-    outd = rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
-    out = rolling.rolling_vals(*xy, **kws, axis=0, mom=mom, weight=w)
+    outd = cmomy.rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
+    out = cmomy.rolling.rolling_vals(*xy, **kws, axis=0, mom=mom, weight=w)
 
     np.testing.assert_allclose(out, outd, atol=1e-14)
     # just to make sure, we also use construct
-    data_rolling = rolling.construct_rolling_window_array(
+    data_rolling = cmomy.rolling.construct_rolling_window_array(
         data, axis=0, fill_value=0.0, mom_ndim=mom_ndim, **kws
     )
 
@@ -298,8 +302,8 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
         data[idx, ...] = np.nan
         data[(idx, ..., *(0,) * mom_ndim)] = 0.0
 
-    out = rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
-    data_rolling = rolling.construct_rolling_window_array(
+    out = cmomy.rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
+    data_rolling = cmomy.rolling.construct_rolling_window_array(
         data, axis=0, fill_value=0.0, mom_ndim=mom_ndim, **kws
     )
 
@@ -327,7 +331,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     w, *xy = (select(data, name) for name in mom_names)
 
     mom = (3,) * mom_ndim
-    out = rolling.rolling_vals(*xy, weight=w, **kws, axis=0, mom=mom)
+    out = cmomy.rolling.rolling_vals(*xy, weight=w, **kws, axis=0, mom=mom)
 
     wr, *xyr = (select(data_rolling, name) for name in mom_names)
 
@@ -364,7 +368,7 @@ def test_rolling_data_from_constructed_windows(
 ) -> None:
     data = rng.random(shape)
 
-    out = rolling.rolling_data(
+    out = cmomy.rolling.rolling_data(
         data,
         axis=axis,
         mom_ndim=mom_ndim,
@@ -373,7 +377,7 @@ def test_rolling_data_from_constructed_windows(
         center=center,
     )
 
-    data_rolling = rolling.construct_rolling_window_array(
+    data_rolling = cmomy.rolling.construct_rolling_window_array(
         data, axis=axis, window=window, center=center, fill_value=0.0, mom_ndim=mom_ndim
     )
     out2 = cmomy.reduce_data(data_rolling, axis=0, mom_ndim=mom_ndim)
@@ -396,7 +400,7 @@ def test_rolling_data_from_constructed_windows(
     np.testing.assert_allclose(out, out3)
 
 
-# * rolling exp
+# * cmomy.rolling exp
 @pytest.mark.parametrize("alpha", [0.2, 0.4])
 @pytest.mark.parametrize("adjust", [True, False])
 @pytest.mark.parametrize("missing", [True, False])
@@ -436,8 +440,8 @@ def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
         mom=mom,
     )
 
-    outd = rolling.rolling_exp_data(data, **kws, axis=0, mom_ndim=mom_ndim)
-    out = rolling.rolling_exp_vals(*xy, weight=w, **kws, axis=0, mom=mom)
+    outd = cmomy.rolling.rolling_exp_data(data, **kws, axis=0, mom_ndim=mom_ndim)
+    out = cmomy.rolling.rolling_exp_vals(*xy, weight=w, **kws, axis=0, mom=mom)
 
     np.testing.assert_allclose(out, outd, atol=1e-14)
 
@@ -475,7 +479,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
     dx = xr.DataArray(x)
     rolling_kws = {"window": {dx.dims[axis]: alpha}, "window_type": "alpha"}
 
-    out = rolling.rolling_exp_vals(
+    out = cmomy.rolling.rolling_exp_vals(
         x,
         alpha=alpha,
         mom=1,
@@ -487,7 +491,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         x,
         mom=1,
     )
-    outd = rolling.rolling_exp_data(
+    outd = cmomy.rolling.rolling_exp_data(
         data,
         alpha=alpha,
         mom_ndim=1,
@@ -498,17 +502,15 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
     np.testing.assert_allclose(out, outd)
 
     # if have numbagg, do this.
-    try:  # pylint: disable=too-many-try-statements
+    with contextlib.suppress(ImportError):
         np.testing.assert_allclose(out[..., 1], dx.rolling_exp(**rolling_kws).mean())
         x_count = (~np.isnan(x)).astype(x.dtype)
         np.testing.assert_allclose(
             out[..., 0], xr.DataArray(x_count).rolling_exp(**rolling_kws).sum()
         )
-    except ImportError:
-        pass
 
     # using xarray
-    xout = rolling.rolling_exp_vals(
+    xout = cmomy.rolling.rolling_exp_vals(
         dx,
         alpha=alpha,
         mom=1,
@@ -516,13 +518,13 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         adjust=adjust,
     ).transpose(*dx.dims, ...)
 
-    assert is_dataarray(xout)
+    assert cmomy.core.validate.is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
     # using full alphas
     xdata = xr.DataArray(data)
     alphas = xr.full_like(dx, fill_value=alpha)
-    xout = rolling.rolling_exp_data(
+    xout = cmomy.rolling.rolling_exp_data(
         xdata,
         alpha=alphas,
         mom_ndim=1,
@@ -530,11 +532,11 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         adjust=adjust,
     )
 
-    assert is_dataarray(xout)
+    assert cmomy.core.validate.is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
     # numpy alphas
-    xout = rolling.rolling_exp_data(
+    xout = cmomy.rolling.rolling_exp_data(
         xdata,
         alpha=alphas.to_numpy(),
         mom_ndim=1,
@@ -543,7 +545,7 @@ def test_rolling_exp_simple(rng, shape, axis, alpha, adjust) -> None:
         adjust=adjust,
     )
 
-    assert is_dataarray(xout)
+    assert cmomy.core.validate.is_dataarray(xout)
     np.testing.assert_allclose(out, xout)
 
 
@@ -588,7 +590,7 @@ def test_rolling_exp_weight(
 
         freq[k, : k + 1] = w
 
-    a = rolling.rolling_exp_vals(
+    a = cmomy.rolling.rolling_exp_vals(
         *xy, weight=weight, alpha=alphas, mom=mom, axis=axis, adjust=adjust
     )
     b = cmomy.resample_vals(
@@ -596,7 +598,7 @@ def test_rolling_exp_weight(
     )
     np.testing.assert_allclose(a, b)
 
-    c = rolling.rolling_exp_data(
+    c = cmomy.rolling.rolling_exp_data(
         data, alpha=alphas, mom_ndim=mom_ndim, axis=axis, adjust=adjust
     )
     np.testing.assert_allclose(
@@ -622,7 +624,7 @@ def test_rolling_exp_multiple_alpha(
 
     data = cmomy.utils.vals_to_data(*xy, weight=weight, mom=mom)
 
-    a = rolling.rolling_exp_vals(
+    a = cmomy.rolling.rolling_exp_vals(
         *xy,
         weight=weight,
         alpha=alphas,
@@ -631,7 +633,7 @@ def test_rolling_exp_multiple_alpha(
         adjust=adjust,
         axes_to_end=True,
     )
-    c = rolling.rolling_exp_data(
+    c = cmomy.rolling.rolling_exp_data(
         data,
         alpha=alphas,
         mom_ndim=mom_ndim,
@@ -646,7 +648,7 @@ def test_rolling_exp_multiple_alpha(
     )
 
     for k in range(shape[-1]):
-        b = rolling.rolling_exp_vals(
+        b = cmomy.rolling.rolling_exp_vals(
             *(_[..., k] for _ in xy),
             weight=weight[..., k],
             alpha=alphas[..., k],

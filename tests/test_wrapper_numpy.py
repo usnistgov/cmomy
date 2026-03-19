@@ -9,8 +9,7 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy import CentralMomentsArray
-from cmomy.core.moment_params import MomParamsArray
+import cmomy.core.moment_params
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -27,10 +26,10 @@ if TYPE_CHECKING:
         ((10, 3, 3), 2),
     ]
 )
-def wrapped(rng, request) -> CentralMomentsArray[np.float64]:
+def wrapped(rng, request) -> cmomy.CentralMomentsArray[np.float64]:
     shape, mom_ndim = request.param
     data = rng.random(shape)
-    return CentralMomentsArray(data, mom_ndim=mom_ndim)
+    return cmomy.CentralMomentsArray(data, mom_ndim=mom_ndim)
 
 
 @pytest.mark.parametrize(
@@ -49,7 +48,7 @@ def wrapped(rng, request) -> CentralMomentsArray[np.float64]:
 )
 def test_init_raises(kwargs, error, match) -> None:
     with pytest.raises(error, match=match):
-        CentralMomentsArray(**kwargs)
+        cmomy.CentralMomentsArray(**kwargs)
 
 
 def test_check_dtype(wrapped) -> None:
@@ -62,7 +61,7 @@ def test_mom(wrapped) -> None:
 
 def test_mom_params(wrapped) -> None:
     assert wrapped.mom_params.ndim == wrapped.mom_ndim
-    assert isinstance(wrapped.mom_params, MomParamsArray)
+    assert isinstance(wrapped.mom_params, cmomy.core.moment_params.MomParamsArray)
     assert wrapped.mom_params.axes == wrapped.mom_axes
 
 
@@ -159,13 +158,13 @@ def test_copy(wrapped) -> None:
     ],
 )
 def test_zeros(kwargs, mom_ndim, shape) -> None:
-    c = CentralMomentsArray.zeros(**kwargs)
+    c = cmomy.CentralMomentsArray.zeros(**kwargs)
     assert c.mom_ndim == mom_ndim
     assert c.obj.shape == shape
 
 
 def test__raises() -> None:
-    new = CentralMomentsArray.zeros(mom=(1, 1))
+    new = cmomy.CentralMomentsArray.zeros(mom=(1, 1))
     with pytest.raises(ValueError):
         new._raise_if_not_mom_ndim_1()
 
@@ -177,7 +176,7 @@ def test__raises() -> None:
 
 
 def test_to_dataarray() -> None:
-    c = CentralMomentsArray.zeros(mom=4, val_shape=(2, 3))
+    c = cmomy.CentralMomentsArray.zeros(mom=4, val_shape=(2, 3))
 
     assert isinstance(c.to_dataarray(), cmomy.CentralMomentsData)
 
@@ -253,7 +252,7 @@ def test_vals(rng, val_shape, mom, use_weight):
 
     expected = cmomy.reduce_vals(*xy, weight=weight, axis=0, mom=mom)
 
-    c = CentralMomentsArray.zeros(mom=mom, val_shape=val_shape[1:])
+    c = cmomy.CentralMomentsArray.zeros(mom=mom, val_shape=val_shape[1:])
 
     c.push_vals(*xy, weight=weight, axis=0)
     np.testing.assert_allclose(expected, c)
@@ -290,7 +289,7 @@ def test_vals(rng, val_shape, mom, use_weight):
     np.testing.assert_allclose(c, expected)
 
 
-@pytest.mark.parametrize("c", [CentralMomentsArray.zeros(mom=(3, 3))])
+@pytest.mark.parametrize("c", [cmomy.CentralMomentsArray.zeros(mom=(3, 3))])
 @pytest.mark.parametrize(
     "args",
     [
@@ -303,7 +302,7 @@ def test_push_val_wrong_numpy(c, args) -> None:
         c.push_val(*args)
 
 
-def test_push_data_simple(wrapped: CentralMomentsArray[Any]) -> None:
+def test_push_data_simple(wrapped: cmomy.CentralMomentsArray[Any]) -> None:
     new = wrapped.zeros_like()
     new.push_data(wrapped.obj)
     np.testing.assert_allclose(new, wrapped)
@@ -323,7 +322,7 @@ def test_push_data(rng, shape, mom_ndim) -> None:
 
     check = cmomy.reduce_data(data, axis=0, mom_ndim=mom_ndim)
 
-    c = CentralMomentsArray(np.zeros(shape[1:]), mom_ndim=mom_ndim)
+    c = cmomy.CentralMomentsArray(np.zeros(shape[1:]), mom_ndim=mom_ndim)
     c.push_datas(data, axis=0)
     np.testing.assert_allclose(c, check)
 
@@ -346,7 +345,7 @@ def test_push_data(rng, shape, mom_ndim) -> None:
 def test_cumulative(rng, shape, mom_ndim) -> None:
     data = rng.random(shape)
     check = cmomy.convert.cumulative(data, axis=0, mom_ndim=mom_ndim)
-    c = CentralMomentsArray(data, mom_ndim=mom_ndim)
+    c = cmomy.CentralMomentsArray(data, mom_ndim=mom_ndim)
     np.testing.assert_allclose(c.cumulative(axis=0), check)
 
 
@@ -356,7 +355,7 @@ def test_moments_to_comoments(rng, shape) -> None:
 
     check = cmomy.convert.moments_to_comoments(data, mom=(2, -1))
 
-    c = CentralMomentsArray(data, mom_ndim=1)
+    c = cmomy.CentralMomentsArray(data, mom_ndim=1)
 
     np.testing.assert_allclose(check, c.moments_to_comoments(mom=(2, -1)))
 
@@ -392,7 +391,7 @@ def test_moments_to_comoments(rng, shape) -> None:
     ],
 )
 def test_select_moment(
-    wrapped: CentralMomentsArray[Any], attr, name: str | Callable[..., Any]
+    wrapped: cmomy.CentralMomentsArray[Any], attr, name: str | Callable[..., Any]
 ) -> None:
     val = getattr(wrapped, attr)()
     data, mom_ndim = wrapped.obj, wrapped.mom_ndim
@@ -416,7 +415,7 @@ def test_select_moment(
 )
 def test_operators(rng, shape, mom_ndim) -> None:
     data = rng.random(shape)
-    c = CentralMomentsArray(data, mom_ndim=mom_ndim)
+    c = cmomy.CentralMomentsArray(data, mom_ndim=mom_ndim)
 
     # test addition
     check = c.reduce(axis=0)
@@ -456,8 +455,8 @@ def test_operators(rng, shape, mom_ndim) -> None:
 
 
 def test_operator_raises() -> None:
-    c0 = CentralMomentsArray.zeros(mom=3)
-    c1 = CentralMomentsArray.zeros(mom=4)
+    c0 = cmomy.CentralMomentsArray.zeros(mom=3)
+    c1 = cmomy.CentralMomentsArray.zeros(mom=4)
 
     with pytest.raises(TypeError):
         _ = c0 + 1  # type: ignore[operator]  # pyright: ignore[reportOperatorIssue]
@@ -478,7 +477,7 @@ def test_operator_raises() -> None:
 def test_moveaxis(rng, shape, mom_ndim, axis, dest) -> None:
     data = rng.random(shape)
     check = cmomy.moveaxis(data, axis, dest, mom_ndim=mom_ndim)
-    c = CentralMomentsArray(data, mom_ndim=mom_ndim)
+    c = cmomy.CentralMomentsArray(data, mom_ndim=mom_ndim)
 
     np.testing.assert_equal(check, c.moveaxis(axis, dest))
 

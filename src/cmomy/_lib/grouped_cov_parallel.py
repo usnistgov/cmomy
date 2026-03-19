@@ -172,8 +172,6 @@ def reduce_vals_indexed_fromzero(
         end = group_end[group]
         if end > start:
             # assume start from zero
-            s = index[start]
-            f = scale[start]
             for i in range(start, end):
                 s = index[i]
                 f = scale[i]

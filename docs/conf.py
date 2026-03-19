@@ -20,6 +20,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import sys
 from pathlib import Path
@@ -210,14 +211,6 @@ typehints_use_rtype = False
 typehints_defaults = "comma"
 # always_document_param_types = True
 # typehints_use_signature = True
-
-# def _typehints_formatter(ann, config):
-#     if isinstance(ann, str):
-#         return ", ".join(ann.split("|"))
-
-#     # print(type(ann), ann)
-#     return None
-
 
 # typehints_formatter = _typehints_formatter
 
@@ -548,11 +541,8 @@ def linkcode_resolve(domain: str, info: dict[str, Any]) -> str | None:
 
 
 # only set spelling stuff if installed:
-try:
+with contextlib.suppress(ImportError):
     import sphinxcontrib.spelling  # noqa: F401
 
     extensions += ["sphinxcontrib.spelling"]
     spelling_word_list_filename = "spelling_wordlist.txt"
-
-except ImportError:
-    pass

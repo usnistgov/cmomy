@@ -7,8 +7,7 @@ import pytest
 import xarray as xr
 
 import cmomy
-from cmomy import convert
-from cmomy.core.utils import mom_to_mom_shape
+import cmomy.core.utils
 
 
 # * Convert
@@ -24,7 +23,11 @@ def get_raw_moments(*xy, weight, mom, axis):
 
     assert len(xy) == len(mom) == 2
     x, y = xy
-    shape = (*x.shape[:axis], *x.shape[axis + 1 :], *mom_to_mom_shape(mom))
+    shape = (
+        *x.shape[:axis],
+        *x.shape[axis + 1 :],
+        *cmomy.core.utils.mom_to_mom_shape(mom),
+    )
     out = np.zeros(shape)
     for i in range(mom[0] + 1):
         for j in range(mom[1] + 1):
@@ -79,7 +82,7 @@ def test_raw(data_and_kwargs) -> None:
 @pytest.mark.parametrize("mom", [(1,), (1, 2, 3)])
 def test__validate_mom_moments_to_comoments_mom(mom):
     with pytest.raises(ValueError, match=r"Must supply length 2.*"):
-        convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=4)
+        cmomy.convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=4)
 
 
 @pytest.mark.parametrize(
@@ -100,11 +103,11 @@ def test__validate_mom_moments_to_comoments(mom_orig, mom, expected) -> None:
         with pytest.raises(
             ValueError, match=r".* inconsistent with original moments.*"
         ):
-            convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=mom_orig)
+            cmomy.convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=mom_orig)
 
     else:
         assert (
-            convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=mom_orig)
+            cmomy.convert._validate_mom_moments_to_comoments(mom=mom, mom_orig=mom_orig)
             == expected
         )
 
@@ -117,8 +120,8 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     data1 = cmomy.reduce_vals(x, axis=0, mom=3)
     data2 = cmomy.reduce_vals(x, x, axis=0, mom=(1, 2))
 
-    out1 = convert.comoments_to_moments(data2, dtype=dtype)
-    out2 = convert.moments_to_comoments(data1, mom=(1, -1), dtype=dtype)
+    out1 = cmomy.convert.comoments_to_moments(data2, dtype=dtype)
+    out2 = cmomy.convert.moments_to_comoments(data1, mom=(1, -1), dtype=dtype)
 
     if dtype is not None:
         assert out1.dtype.type == dtype
@@ -137,7 +140,7 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
     xr.testing.assert_allclose(
         cx.moments_to_comoments(mom=(1, -1), mom_dims_out=("a", "b")).obj, c2x.obj
     )
-    xr.testing.assert_allclose(convert.comoments_to_moments(c2x.obj), cx.obj)
+    xr.testing.assert_allclose(cmomy.convert.comoments_to_moments(c2x.obj), cx.obj)
 
     # same mom name as original
     xr.testing.assert_allclose(
@@ -145,7 +148,7 @@ def test_moments_to_comoments(rng, shape, dtype) -> None:
         c2x.obj.rename({"a": "mom_0", "b": "mom_1"}),
     )
     xr.testing.assert_allclose(
-        convert.comoments_to_moments(c2x.obj, mom_dims_out="a"),
+        cmomy.convert.comoments_to_moments(c2x.obj, mom_dims_out="a"),
         cx.obj.rename({"mom_0": "a"}),
     )
 
