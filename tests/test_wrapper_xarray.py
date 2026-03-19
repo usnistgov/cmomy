@@ -119,7 +119,7 @@ def test_getitem(c_dataset) -> None:
         d = c_dataset[k]
         xr.testing.assert_equal(d.obj, v)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(KeyError):
             _ = d[..., 0]
 
 
