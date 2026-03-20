@@ -26,6 +26,7 @@ Modules
    :toctree: generated/
    :template: autodocsumm/module.rst
 
+   cmomy.cache
    cmomy.core.typing
    cmomy.resample.typing
    cmomy.wrapper.typing

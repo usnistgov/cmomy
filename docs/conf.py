@@ -64,6 +64,7 @@ nitpick_ignore = [
     ("py:class", "Collection[Hashable]"),
     ("py:class", "ellipsis"),
     ("py:class", "typing_extensions.TypedDict"),
+    ("py:class", "numba.core.caching.UserProvidedCacheLocator"),
 ]
 nitpick_ignore_regex = [
     (r"py:.*", r"numpy\._typing.*"),
