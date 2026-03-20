@@ -69,11 +69,11 @@ class HashCacheLocator(UserProvidedCacheLocator):  # type: ignore[misc]
 
 
 class SharedHashCacheLocator(HashCacheLocator):
-    r"""
+    """
     Cache with file hash in (more) shareable location.
 
-    Like :class:`HashCacheLocator`, but location is calculated as
-    ``$NUMBA_CACHE_DIR / $directory-$magic-$package-$package_version-$system``
+    Like :class:`.HashCacheLocator`, but location is calculated as
+    ``NUMBA_CACHE_DIR / directory-magic-package-package_version-system``
     where ``system`` is a combination of the numba version, python version,
     platform, and machine.
 
