@@ -359,6 +359,7 @@ addopts = [
     "--doctest-glob=*.md",
     "--doctest-modules",
     "--pyargs",
+    "--pytest-env-verbose",
     "--strict-config",
     "--strict-markers",
     "-ra",
