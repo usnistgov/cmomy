@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import inspect
 from functools import partial
+from importlib.util import find_spec
 
 import numpy as np
 import pytest
@@ -713,14 +714,9 @@ def test_resample_vals_dataset(fixture_vals, paired, nrep, axes_to_end) -> None:
 
 
 # * Chunking
-try:  # pylint: disable=too-many-try-statements
-    import dask  # noqa: F401
-
-    HAS_DASK = True
-except ImportError:
-    HAS_DASK = False
-
-mark_dask_only = pytest.mark.skipif(not HAS_DASK, reason="dask not installed")
+mark_dask_only = pytest.mark.skipif(
+    find_spec("dask") is None, reason="dask not installed"
+)
 
 
 def _is_chunked(ds):

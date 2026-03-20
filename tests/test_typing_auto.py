@@ -14,7 +14,6 @@ import xarray as xr
 import pytest
 
 import cmomy
-from cmomy import CentralMomentsArray, CentralMomentsData
 
 MYPY_ONLY = True
 
@@ -47,7 +46,7 @@ def check(
     if dtype is not None:
         assert actual.dtype is np.dtype(dtype)  # pyright: ignore[reportAttributeAccessIssue]
 
-    if obj_class is None and klass is CentralMomentsArray:
+    if obj_class is None and klass is cmomy.CentralMomentsArray:
         obj_class = np.ndarray
 
     if obj_class is not None:
@@ -99,17 +98,17 @@ data_dataset_any: Any = cast("Any", data_dataset)
 data_dataarray_or_sdata: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", data_dataarray)
 
 
-central_float32 = CentralMomentsArray(data_float32)
-central_float64 = CentralMomentsArray(data_float64)
-central_arraylike: CentralMomentsArrayAny = CentralMomentsArray(data_arraylike)
-central_arrayany: CentralMomentsArrayAny = CentralMomentsArray(data_arrayany)
-central_any: Any = CentralMomentsArray(data_any)
+central_float32 = cmomy.CentralMomentsArray(data_float32)
+central_float64 = cmomy.CentralMomentsArray(data_float64)
+central_arraylike: CentralMomentsArrayAny = cmomy.CentralMomentsArray(data_arraylike)
+central_arrayany: CentralMomentsArrayAny = cmomy.CentralMomentsArray(data_arrayany)
+central_any: Any = cmomy.CentralMomentsArray(data_any)
 
-central_dataarray = CentralMomentsData(data_dataarray)
-central_dataset = CentralMomentsData(data_dataset)
-central_dataarray_any: CentralMomentsDataAny = CentralMomentsData(data_dataarray_any)
-central_dataset_any: CentralMomentsDataAny = CentralMomentsData(data_dataset_any)
-# ca_or_cs = cast("CentralMomentsData[xr.DataArray] | CentralMomentsData[xr.DataArray]", CentralMomentsData(data_dataarray_or_sdata))  # noqa: ERA001
+central_dataarray = cmomy.CentralMomentsData(data_dataarray)
+central_dataset = cmomy.CentralMomentsData(data_dataset)
+central_dataarray_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataarray_any)
+central_dataset_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataset_any)
+# ca_or_cs = cast("cmomy.CentralMomentsData[xr.DataArray] | cmomy.CentralMomentsData[xr.DataArray]", cmomy.CentralMomentsData(data_dataarray_or_sdata))  # noqa: ERA001
 
 freq = cmomy.random_freq(ndat=10, nrep=2)
 sampler = cmomy.resample.IndexSampler(freq=freq)
@@ -5222,36 +5221,36 @@ def test_cmomy_wrap() -> None:
     check(
         assert_type(
             cmomy.wrap(data_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap(data_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap(data_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap(data_arraylike),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -5260,25 +5259,25 @@ def test_cmomy_wrap() -> None:
             cmomy.wrap(data_any),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap(data_dataarray),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap(data_dataset),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5287,7 +5286,7 @@ def test_cmomy_wrap() -> None:
             cmomy.wrap(data_dataarray_any),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -5296,25 +5295,25 @@ def test_cmomy_wrap() -> None:
             cmomy.wrap(data_dataset_any),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.wrap(data_float32, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap(data_arraylike, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
@@ -5323,25 +5322,25 @@ def test_cmomy_wrap() -> None:
             cmomy.wrap(data_any, dtype=float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap(data_dataarray, dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap(data_dataset, dtype=float32),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5350,7 +5349,7 @@ def test_cmomy_wrap() -> None:
             cmomy.wrap(data_dataarray_any, dtype=float32),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -5360,36 +5359,36 @@ def test_cmomy_wrap_reduce_vals() -> None:
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_float32, axis=0, mom=2),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_float64, axis=0, mom=2),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_arrayany, axis=0, mom=2),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_arraylike, axis=0, mom=2),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -5398,25 +5397,25 @@ def test_cmomy_wrap_reduce_vals() -> None:
             cmomy.wrap_reduce_vals(vals_any, axis=0, mom=2),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_dataarray, dim="dim_0", mom=2),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_dataset, dim="dim_0", mom=2),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5425,7 +5424,7 @@ def test_cmomy_wrap_reduce_vals() -> None:
             cmomy.wrap_reduce_vals(vals_dataarray_any, dim="dim_0", mom=2),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -5434,25 +5433,25 @@ def test_cmomy_wrap_reduce_vals() -> None:
             cmomy.wrap_reduce_vals(vals_dataset_any, dim="dim_0", mom=2),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_float32, axis=0, mom=2, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_arraylike, axis=0, mom=2, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
@@ -5461,25 +5460,25 @@ def test_cmomy_wrap_reduce_vals() -> None:
             cmomy.wrap_reduce_vals(vals_any, axis=0, mom=2, dtype=float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_dataarray, dim="dim_0", mom=2, dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_dataset, dim="dim_0", mom=2, dtype=float32),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5488,43 +5487,43 @@ def test_cmomy_wrap_reduce_vals() -> None:
             cmomy.wrap_reduce_vals(vals_dataarray_any, dim="dim_0", mom=2, dtype=float32),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_float32, axis=0, mom=2, out=reduce_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_float64, axis=0, mom=2, out=reduce_out_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_arraylike, axis=0, mom=2, out=reduce_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_float32, axis=0, mom=2, out=reduce_out_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -5533,25 +5532,25 @@ def test_cmomy_wrap_reduce_vals() -> None:
             cmomy.wrap_reduce_vals(vals_any, axis=0, mom=2, out=reduce_out_float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_dataarray, dim="dim_0", mom=2, out=reduce_out_float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_reduce_vals(vals_dataarray, dim="dim_0", mom=2, out=reduce_out_arrayany),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -5560,7 +5559,7 @@ def test_cmomy_wrap_reduce_vals() -> None:
             cmomy.wrap_reduce_vals(vals_dataarray_any, dim="dim_0", mom=2, out=reduce_out_float32),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -5570,36 +5569,36 @@ def test_cmomy_wrap_resample_vals() -> None:
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_float64, axis=0, mom=2, sampler=sampler),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_arrayany, axis=0, mom=2, sampler=sampler),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -5608,25 +5607,25 @@ def test_cmomy_wrap_resample_vals() -> None:
             cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, sampler=sampler),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_dataset, dim="dim_0", mom=2, sampler=sampler),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5635,7 +5634,7 @@ def test_cmomy_wrap_resample_vals() -> None:
             cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -5644,25 +5643,25 @@ def test_cmomy_wrap_resample_vals() -> None:
             cmomy.wrap_resample_vals(vals_dataset_any, dim="dim_0", mom=2, sampler=sampler),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
@@ -5671,25 +5670,25 @@ def test_cmomy_wrap_resample_vals() -> None:
             cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, sampler=sampler, dtype=float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_dataset, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5698,43 +5697,43 @@ def test_cmomy_wrap_resample_vals() -> None:
             cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler, dtype=float32),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, out=group_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_float64, axis=0, mom=2, sampler=sampler, out=group_out_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_arraylike, axis=0, mom=2, sampler=sampler, out=group_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_float32, axis=0, mom=2, sampler=sampler, out=group_out_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -5743,25 +5742,25 @@ def test_cmomy_wrap_resample_vals() -> None:
             cmomy.wrap_resample_vals(vals_any, axis=0, mom=2, sampler=sampler, out=group_out_float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, out=group_out_float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_resample_vals(vals_dataarray, dim="dim_0", mom=2, sampler=sampler, out=group_out_arrayany),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -5770,7 +5769,7 @@ def test_cmomy_wrap_resample_vals() -> None:
             cmomy.wrap_resample_vals(vals_dataarray_any, dim="dim_0", mom=2, sampler=sampler, out=group_out_float32),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -5780,36 +5779,36 @@ def test_cmomy_wrap_raw() -> None:
     check(
         assert_type(
             cmomy.wrap_raw(data_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_arraylike),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -5818,25 +5817,25 @@ def test_cmomy_wrap_raw() -> None:
             cmomy.wrap_raw(data_any),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_dataarray),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_dataset),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5845,7 +5844,7 @@ def test_cmomy_wrap_raw() -> None:
             cmomy.wrap_raw(data_dataarray_any),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -5854,25 +5853,25 @@ def test_cmomy_wrap_raw() -> None:
             cmomy.wrap_raw(data_dataset_any),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_float32, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_arraylike, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
@@ -5881,25 +5880,25 @@ def test_cmomy_wrap_raw() -> None:
             cmomy.wrap_raw(data_any, dtype=float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_dataarray, dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_dataset, dtype=float32),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -5908,43 +5907,43 @@ def test_cmomy_wrap_raw() -> None:
             cmomy.wrap_raw(data_dataarray_any, dtype=float32),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_float32, out=transform_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_float64, out=transform_out_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_arraylike, out=transform_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_float32, out=transform_out_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -5953,25 +5952,25 @@ def test_cmomy_wrap_raw() -> None:
             cmomy.wrap_raw(data_any, out=transform_out_float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_dataarray, out=transform_out_float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.wrap_raw(data_dataarray, out=transform_out_arrayany),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -5980,7 +5979,7 @@ def test_cmomy_wrap_raw() -> None:
             cmomy.wrap_raw(data_dataarray_any, out=transform_out_float32),
             Any,
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -5990,63 +5989,63 @@ def test_cmomy_CentralMomentsArray() -> None:
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_any),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_float32, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_arraylike, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.CentralMomentsArray(data_any, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
@@ -6056,36 +6055,36 @@ def test_cmomy_CentralMomentsData() -> None:
     check(
         assert_type(
             cmomy.CentralMomentsData(data_dataarray),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.CentralMomentsData(data_dataset),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.CentralMomentsData(data_dataarray_any),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.CentralMomentsData(data_dataset_any),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -6094,46 +6093,46 @@ def test_cmomy_CentralMomentsData() -> None:
 def test_zeros() -> None:
     check(
         assert_type(
-            CentralMomentsArray.zeros(mom=2),
-            CentralMomentsArray[np.float64],
+            cmomy.CentralMomentsArray.zeros(mom=2),
+            cmomy.CentralMomentsArray[np.float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
-            CentralMomentsArray.zeros(mom=2, dtype=float32),
-            CentralMomentsArray[np.float32],
+            cmomy.CentralMomentsArray.zeros(mom=2, dtype=float32),
+            cmomy.CentralMomentsArray[np.float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
-            CentralMomentsArray.zeros(mom=2, dtype="f4"),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray.zeros(mom=2, dtype="f4"),
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
-            CentralMomentsData.zeros(mom=2),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData.zeros(mom=2),
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
-            CentralMomentsData.zeros(mom=2, dtype="f4"),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData.zeros(mom=2, dtype="f4"),
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -6143,36 +6142,36 @@ def test_cmomy_zeros_like() -> None:
     check(
         assert_type(
             cmomy.zeros_like(central_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_arraylike),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -6181,61 +6180,61 @@ def test_cmomy_zeros_like() -> None:
             cmomy.zeros_like(central_any),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_dataarray),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_dataset),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_dataarray_any),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_dataset_any),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_float32, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_arraylike, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
@@ -6244,34 +6243,34 @@ def test_cmomy_zeros_like() -> None:
             cmomy.zeros_like(central_any, dtype=float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_dataarray, dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_dataset, dtype=float32),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             cmomy.zeros_like(central_dataarray_any, dtype=float32),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -6281,45 +6280,45 @@ def test_astype() -> None:
     check(
         assert_type(
             central_float32.astype(None),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         None,
         None,
     )
     check(
         assert_type(
             central_float64.astype(None),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         None,
         None,
     )
     check(
         assert_type(
             central_float64.astype(float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_arraylike.astype(None),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         None,
         None,
     )
     check(
         assert_type(
             central_arraylike.astype(float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
@@ -6328,34 +6327,34 @@ def test_astype() -> None:
             central_any.astype(float32),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.astype(float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.astype(None),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.astype(float32),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -6365,18 +6364,18 @@ def test_assign_moment() -> None:
     check(
         assert_type(
             central_float64.assign_moment(weight=1),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.assign_moment(weight=1),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -6385,43 +6384,43 @@ def test_assign_moment() -> None:
             central_any.assign_moment(weight=1),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.assign_moment(weight=1),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.assign_moment(weight=1),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.assign_moment(weight=1),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset_any.assign_moment(weight=1),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -6431,18 +6430,18 @@ def test_moments_to_comoments() -> None:
     check(
         assert_type(
             central_float64.moments_to_comoments(mom=(1, -1)),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.moments_to_comoments(mom=(1, -1)),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -6451,79 +6450,79 @@ def test_moments_to_comoments() -> None:
             central_any.moments_to_comoments(mom=(1, -1)),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.moments_to_comoments(mom=(1, -1)),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.moments_to_comoments(mom=(1, -1)),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.moments_to_comoments(mom=(1, -1)),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset_any.moments_to_comoments(mom=(1, -1)),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_float32.moments_to_comoments(mom=(1, -1), dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float64.moments_to_comoments(mom=(1, -1), dtype="f4"),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_arraylike.moments_to_comoments(mom=(1, -1), dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.moments_to_comoments(mom=(1, -1), dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -6533,18 +6532,18 @@ def test_resample_and_reduce() -> None:
     check(
         assert_type(
             central_float64.resample_and_reduce(axis=0, sampler=sampler),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.resample_and_reduce(axis=0, sampler=sampler),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -6553,115 +6552,115 @@ def test_resample_and_reduce() -> None:
             central_any.resample_and_reduce(axis=0, sampler=sampler),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.resample_and_reduce(dim="dim_0", sampler=sampler),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.resample_and_reduce(dim="dim_0", sampler=sampler),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.resample_and_reduce(dim="dim_0", sampler=sampler),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset_any.resample_and_reduce(dim="dim_0", sampler=sampler),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_float32.resample_and_reduce(axis=0, sampler=sampler, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float64.resample_and_reduce(axis=0, sampler=sampler, dtype="f4"),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_arraylike.resample_and_reduce(axis=0, sampler=sampler, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.resample_and_reduce(dim="dim_0", sampler=sampler, dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             central_float32.resample_and_reduce(axis=0, sampler=sampler, out=group_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float32.resample_and_reduce(axis=0, sampler=sampler, out=group_out_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.resample_and_reduce(axis=0, sampler=sampler, dtype=float64, out=group_out_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.resample_and_reduce(dim="dim_0", sampler=sampler, out=group_out_float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -6671,18 +6670,18 @@ def test_jackknife_and_reduce() -> None:
     check(
         assert_type(
             central_float64.jackknife_and_reduce(axis=0),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.jackknife_and_reduce(axis=0),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -6691,115 +6690,115 @@ def test_jackknife_and_reduce() -> None:
             central_any.jackknife_and_reduce(axis=0),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.jackknife_and_reduce(dim="dim_0"),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.jackknife_and_reduce(dim="dim_0"),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.jackknife_and_reduce(dim="dim_0"),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset_any.jackknife_and_reduce(dim="dim_0"),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_float32.jackknife_and_reduce(axis=0, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float64.jackknife_and_reduce(axis=0, dtype="f4"),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_arraylike.jackknife_and_reduce(axis=0, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.jackknife_and_reduce(dim="dim_0", dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             central_float32.jackknife_and_reduce(axis=0, out=transform_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float32.jackknife_and_reduce(axis=0, out=transform_out_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.jackknife_and_reduce(axis=0, dtype=float64, out=transform_out_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.jackknife_and_reduce(dim="dim_0", out=transform_out_float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -6809,18 +6808,18 @@ def test_reduce() -> None:
     check(
         assert_type(
             central_float64.reduce(axis=0),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.reduce(axis=0),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -6829,115 +6828,115 @@ def test_reduce() -> None:
             central_any.reduce(axis=0),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.reduce(dim="dim_0"),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.reduce(dim="dim_0"),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.reduce(dim="dim_0"),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset_any.reduce(dim="dim_0"),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_float32.reduce(axis=0, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float64.reduce(axis=0, dtype="f4"),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_arraylike.reduce(axis=0, dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.reduce(dim="dim_0", dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             central_float32.reduce(axis=0, out=reduce_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float32.reduce(axis=0, out=reduce_out_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.reduce(axis=0, dtype=float64, out=reduce_out_float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.reduce(dim="dim_0", out=reduce_out_float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -6947,18 +6946,18 @@ def test_moveaxis() -> None:
     check(
         assert_type(
             central_float64.moveaxis(0, 0),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.moveaxis(0, 0),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -6967,25 +6966,25 @@ def test_moveaxis() -> None:
             central_any.moveaxis(0, 0),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.moveaxis(0, 0),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataarray_any.moveaxis(0, 0),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
@@ -6995,18 +6994,18 @@ def test_reshape() -> None:
     check(
         assert_type(
             central_float64.reshape((2, 5)),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.reshape((2, 5)),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -7015,7 +7014,7 @@ def test_reshape() -> None:
             central_any.reshape((2, 5)),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -7025,18 +7024,18 @@ def test_new_like() -> None:
     check(
         assert_type(
             central_float64.new_like(),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.new_like(),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
@@ -7045,115 +7044,115 @@ def test_new_like() -> None:
             central_any.new_like(),
             Any,
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.new_like(),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.new_like(),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.new_like(),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float64,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset_any.new_like(),
-            CentralMomentsData[Any],
+            cmomy.CentralMomentsData[Any],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_float32.new_like(dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float64.new_like(dtype="f4"),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_arraylike.new_like(dtype=float32),
-            CentralMomentsArray[float32],
+            cmomy.CentralMomentsArray[float32],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float32,
         None,
     )
     check(
         assert_type(
             central_dataarray.new_like(dtype=float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
     check(
         assert_type(
             central_float32.new_like(transform_out_float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_float32.new_like(transform_out_arrayany),
-            CentralMomentsArray[Any],
+            cmomy.CentralMomentsArray[Any],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_arraylike.new_like(transform_out_float32, dtype=float64),
-            CentralMomentsArray[float64],
+            cmomy.CentralMomentsArray[float64],
         ),
-        CentralMomentsArray,
+        cmomy.CentralMomentsArray,
         float64,
         None,
     )
     check(
         assert_type(
             central_dataarray.new_like(transform_out_float32),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         float32,
         xr.DataArray,
     )
@@ -7301,54 +7300,54 @@ def test_to_dataarray() -> None:
     check(
         assert_type(
             central_float64.to_dataarray(),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.DataArray,
     )
     check(
         assert_type(
             central_arraylike.to_dataarray(),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataarray.to_dataarray(),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataarray_any.to_dataarray(),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset.to_dataarray(),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.DataArray,
     )
     check(
         assert_type(
             central_dataset_any.to_dataarray(),
-            CentralMomentsData[xr.DataArray],
+            cmomy.CentralMomentsData[xr.DataArray],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.DataArray,
     )
@@ -7358,36 +7357,36 @@ def test_to_dataset() -> None:
     check(
         assert_type(
             central_dataarray.to_dataset(),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataarray_any.to_dataset(),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataset.to_dataset(),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
     check(
         assert_type(
             central_dataset_any.to_dataset(),
-            CentralMomentsData[xr.Dataset],
+            cmomy.CentralMomentsData[xr.Dataset],
         ),
-        CentralMomentsData,
+        cmomy.CentralMomentsData,
         None,
         xr.Dataset,
     )
@@ -7396,18 +7395,18 @@ def test_to_dataset() -> None:
 def test_iterators() -> None:
     from collections.abc import ItemsView, KeysView, ValuesView
 
-    assert_type(iter(central_float64), Iterator[CentralMomentsArray[np.float64]])
-    assert_type(iter(central_dataarray), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(iter(central_float64), Iterator[cmomy.CentralMomentsArray[np.float64]])
+    assert_type(iter(central_dataarray), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
     # TODO(wpk): problem with mypy and __iter__ overload....
     # assert_type(iter(central_dataset), Iterator[Hashable])  # noqa: ERA001
     # pylint: disable=unnecessary-dunder-call
-    assert_type(central_dataarray.__iter__(), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataarray.__iter__(), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.__iter__(), Iterator[Hashable])
-    assert_type(central_dataarray.iter(), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataarray.iter(), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.iter(), Iterator[Hashable])
     assert_type(central_dataset.keys(), KeysView[Hashable])
-    assert_type(central_dataset.values(), ValuesView[CentralMomentsData[xr.DataArray]])
-    assert_type(central_dataset.items(), ItemsView[Hashable, CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataset.values(), ValuesView[cmomy.CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataset.items(), ItemsView[Hashable, cmomy.CentralMomentsData[xr.DataArray]])
 
 
 

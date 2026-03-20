@@ -82,7 +82,7 @@ class GeneralTest:
             args = args.format_map(
                 {
                     "axis_dim": "axis=0"
-                    if klass in {"np.ndarray", "CentralMomentsArray"}
+                    if klass in {"np.ndarray", "cmomy.CentralMomentsArray"}
                     else 'dim="dim_0"'
                 }
             )
@@ -172,7 +172,6 @@ import xarray as xr
 import pytest
 
 import cmomy
-from cmomy import CentralMomentsArray, CentralMomentsData
 
 MYPY_ONLY = True
 
@@ -205,7 +204,7 @@ def check(
     if dtype is not None:
         assert actual.dtype is np.dtype(dtype)  # pyright: ignore[reportAttributeAccessIssue]
 
-    if obj_class is None and klass is CentralMomentsArray:
+    if obj_class is None and klass is cmomy.CentralMomentsArray:
         obj_class = np.ndarray
 
     if obj_class is not None:
@@ -257,17 +256,17 @@ data_dataset_any: Any = cast("Any", data_dataset)
 data_dataarray_or_sdata: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", data_dataarray)
 
 
-central_float32 = CentralMomentsArray(data_float32)
-central_float64 = CentralMomentsArray(data_float64)
-central_arraylike: CentralMomentsArrayAny = CentralMomentsArray(data_arraylike)
-central_arrayany: CentralMomentsArrayAny = CentralMomentsArray(data_arrayany)
-central_any: Any = CentralMomentsArray(data_any)
+central_float32 = cmomy.CentralMomentsArray(data_float32)
+central_float64 = cmomy.CentralMomentsArray(data_float64)
+central_arraylike: CentralMomentsArrayAny = cmomy.CentralMomentsArray(data_arraylike)
+central_arrayany: CentralMomentsArrayAny = cmomy.CentralMomentsArray(data_arrayany)
+central_any: Any = cmomy.CentralMomentsArray(data_any)
 
-central_dataarray = CentralMomentsData(data_dataarray)
-central_dataset = CentralMomentsData(data_dataset)
-central_dataarray_any: CentralMomentsDataAny = CentralMomentsData(data_dataarray_any)
-central_dataset_any: CentralMomentsDataAny = CentralMomentsData(data_dataset_any)
-# ca_or_cs = cast("CentralMomentsData[xr.DataArray] | CentralMomentsData[xr.DataArray]", CentralMomentsData(data_dataarray_or_sdata))  # noqa: ERA001
+central_dataarray = cmomy.CentralMomentsData(data_dataarray)
+central_dataset = cmomy.CentralMomentsData(data_dataset)
+central_dataarray_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataarray_any)
+central_dataset_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataset_any)
+# ca_or_cs = cast("cmomy.CentralMomentsData[xr.DataArray] | cmomy.CentralMomentsData[xr.DataArray]", cmomy.CentralMomentsData(data_dataarray_or_sdata))  # noqa: ERA001
 
 freq = cmomy.random_freq(ndat=10, nrep=2)
 sampler = cmomy.resample.IndexSampler(freq=freq)
@@ -378,21 +377,21 @@ out.extend(get_list(funcs_moveaxis, params_moveaxis))
 
 # * GenArray to wrapped
 params_genarraylike_to_wrapped_dtype = [
-    ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
-    ("dataarray", None, None, "CentralMomentsData[xr.DataArray]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", None, None, "Any", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset_any", None, None, "Any", None, "CentralMomentsData", "xr.Dataset"),
-    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
-    ("dataarray", "float32", None, "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
-    ("dataset", "float32", None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", "float32", None, "Any", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("float32", None, None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("float64", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arrayany", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("any", None, None, "Any", "float64", "cmomy.CentralMomentsArray"),
+    ("dataarray", None, None, "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", None, None, "Any", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset_any", None, None, "Any", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("float32", "float64", None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("any", "float32", None, "Any", "float32", "cmomy.CentralMomentsArray"),
+    ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", "float32", None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", "float32", None, "Any", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_genarraylike_to_wrapped_dtype = [
     ("cmomy.wrap", "data_", None, ""),
@@ -403,14 +402,14 @@ out.extend(get_list(funcs_genarraylike_to_wrapped_dtype, params_genarraylike_to_
 
 params_genarraylike_to_wrapped_dtype_out = [
     *params_genarraylike_to_wrapped_dtype,
-    ("float32", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("float64", None, "float32", "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("arraylike", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("any", None, "float32", "Any", "float32", "CentralMomentsArray"),
-    ("dataarray", None, "float32", "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
-    ("dataarray", None, "arrayany", "CentralMomentsData[xr.DataArray]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataarray_any", None, "float32", "Any", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("float32", None, "float64", "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("float64", None, "float32", "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("arraylike", None, "float64", "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("float32", None, "arrayany", "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("any", None, "float32", "Any", "float32", "cmomy.CentralMomentsArray"),
+    ("dataarray", None, "float32", "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray", None, "arrayany", "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_any", None, "float32", "Any", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 
 funcs_genarraylike_to_wrapped_dtype_out = [
@@ -422,17 +421,17 @@ funcs_genarraylike_to_wrapped_dtype_out = [
 out.extend(get_list(funcs_genarraylike_to_wrapped_dtype_out, params_genarraylike_to_wrapped_dtype_out))
 
 
-# * Arraylike to CentralMomentsArray
+# * Arraylike to cmomy.CentralMomentsArray
 params_arraylike_to_class = [
-    ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("float32", None, None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("float64", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arrayany", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
     # NOTE: This fails for mypy.  pretty sure it's a bug
-    # ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),  # noqa: ERA001
-    ("any", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("any", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
+    # ("arraylike", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),  # noqa: ERA001
+    ("any", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("float32", "float64", None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("any", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
 ]
 funcs_arraylike_to_class = [
     ("cmomy.CentralMomentsArray", "data_", None, ""),
@@ -440,12 +439,12 @@ funcs_arraylike_to_class = [
 out.extend(get_list(funcs_arraylike_to_class, params_arraylike_to_class))
 
 
-# * XArray to CentralMomentsData
+# * XArray to cmomy.CentralMomentsData
 params_xarray_to_class = [
-    ("dataarray", None, None, "CentralMomentsData[xr.DataArray]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", None, None, "CentralMomentsData[Any]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset_any", None, None, "CentralMomentsData[Any]", None, "CentralMomentsData", "xr.Dataset"),
+    ("dataarray", None, None, "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", None, None, "cmomy.CentralMomentsData[Any]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset_any", None, None, "cmomy.CentralMomentsData[Any]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
 ]
 funcs_xarray_to_class = [
     ("cmomy.CentralMomentsData", "data_", None, ""),
@@ -455,11 +454,11 @@ out.extend(get_list(funcs_xarray_to_class, params_xarray_to_class))
 
 # * Class zeros
 params_class_zeros = [
-    ("CentralMomentsArray", None, None, "CentralMomentsArray[np.float64]", "float64", "CentralMomentsArray"),
-    ("CentralMomentsArray", "float32", None, "CentralMomentsArray[np.float32]", "float32", "CentralMomentsArray"),
-    ("CentralMomentsArray", '"f4"', None, "CentralMomentsArray[Any]", "float32", "CentralMomentsArray"),
-    ("CentralMomentsData", None, None, "CentralMomentsData[xr.DataArray]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("CentralMomentsData", '"f4"', None, "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("cmomy.CentralMomentsArray", None, None, "cmomy.CentralMomentsArray[np.float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("cmomy.CentralMomentsArray", "float32", None, "cmomy.CentralMomentsArray[np.float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("cmomy.CentralMomentsArray", '"f4"', None, "cmomy.CentralMomentsArray[Any]", "float32", "cmomy.CentralMomentsArray"),
+    ("cmomy.CentralMomentsData", None, None, "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("cmomy.CentralMomentsData", '"f4"', None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_class_zeros = [
     ("zeros", "", None, "mom=2")
@@ -469,21 +468,21 @@ out.extend(get_list(funcs_class_zeros, params_class_zeros, method=True))
 
 # * class to class
 params_class_to_class = [
-    ("float32", None, None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arrayany", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
-    ("dataarray", None, None, "CentralMomentsData[xr.DataArray]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", None, None, "CentralMomentsData[Any]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset_any", None, None, "CentralMomentsData[Any]", None, "CentralMomentsData", "xr.Dataset"),
-    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
-    ("dataarray", "float32", None, "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
-    ("dataset", "float32", None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", "float32", None, "CentralMomentsData[Any]", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("float32", None, None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("float64", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arrayany", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("any", None, None, "Any", "float64", "cmomy.CentralMomentsArray"),
+    ("dataarray", None, None, "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", None, None, "cmomy.CentralMomentsData[Any]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset_any", None, None, "cmomy.CentralMomentsData[Any]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("float32", "float64", None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("any", "float32", None, "Any", "float32", "cmomy.CentralMomentsArray"),
+    ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", "float32", None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", "float32", None, "cmomy.CentralMomentsData[Any]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_class_to_class = [
     ("cmomy.zeros_like", "central_", None, ""),
@@ -495,15 +494,15 @@ out.extend(get_list(funcs_class_to_class, params_class_to_class))
 # ** to class
 # *** astype
 params_class_astype = [
-    ("float32", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("float64", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("arraylike", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("any", "float32", None, "Any", "float32", "CentralMomentsArray"),
-    ("dataarray", "float32", None, "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
-    ("dataset", "float32", None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", "float32", None, "CentralMomentsData[Any]", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("float32", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("float64", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("float64", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("arraylike", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("any", "float32", None, "Any", "float32", "cmomy.CentralMomentsArray"),
+    ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", "float32", None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", "float32", None, "cmomy.CentralMomentsData[Any]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_class_astype = [
     ("astype", "central_", None, "")
@@ -512,27 +511,27 @@ out.extend(get_list(funcs_class_astype, params_class_astype, method=True, astype
 
 # *** methods
 params_class_method = [
-    ("float64", None, None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("arraylike", None, None, "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("any", None, None, "Any", "float64", "CentralMomentsArray"),
-    ("dataarray", None, None, "CentralMomentsData[xr.DataArray]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", None, None, "CentralMomentsData[Any]", "float64", "CentralMomentsData", "xr.DataArray"),
-    ("dataset_any", None, None, "CentralMomentsData[Any]", None, "CentralMomentsData", "xr.Dataset"),
+    ("float64", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("any", None, None, "Any", "float64", "cmomy.CentralMomentsArray"),
+    ("dataarray", None, None, "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", None, None, "cmomy.CentralMomentsData[Any]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset_any", None, None, "cmomy.CentralMomentsData[Any]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
 ]
 params_class_method_dtype = [
     *params_class_method,
-    ("float32", "float64", None, "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("float64", '"f4"', None, "CentralMomentsArray[Any]", "float32", "CentralMomentsArray"),
-    ("arraylike", "float32", None, "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("dataarray", "float32", None, "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("float32", "float64", None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("float64", '"f4"', None, "cmomy.CentralMomentsArray[Any]", "float32", "cmomy.CentralMomentsArray"),
+    ("arraylike", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 params_class_method_dtype_out = [
     *params_class_method_dtype,
-    ("float32", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
-    ("arraylike", "float64", "float32", "CentralMomentsArray[float32]", "float32", "CentralMomentsArray"),
-    ("dataarray", None, "float32", "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("float32", None, "float64", "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("float32", None, "arrayany", "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
+    ("arraylike", "float64", "float32", "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
+    ("dataarray", None, "float32", "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 
 ]
 funcs_class_method = [
@@ -568,11 +567,11 @@ out.extend(get_list(funcs_class_method_reshape, params_class_method_reshape, met
 # *** new_like
 params_class_newlike = [
     *params_class_method_dtype,
-    ("float32", None, "float64", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("float32", None, "arrayany", "CentralMomentsArray[Any]", "float64", "CentralMomentsArray"),
+    ("float32", None, "float64", "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("float32", None, "arrayany", "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
     # This is different because out here is data input
-    ("arraylike", "float64", "float32", "CentralMomentsArray[float64]", "float64", "CentralMomentsArray"),
-    ("dataarray", None, "float32", "CentralMomentsData[xr.DataArray]", "float32", "CentralMomentsData", "xr.DataArray"),
+    ("arraylike", "float64", "float32", "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
+    ("dataarray", None, "float32", "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_class_newlike = [
     ("new_like", "central_", "transform_out_", ""),
@@ -617,12 +616,12 @@ out.extend(get_list(funcs_class_methodtoarray_dtype_out, params_class_methodtoar
 
 
 params_class_method_to_dataarray = [
-    ("float64", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
-    ("arraylike", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
-    ("dataarray", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
-    ("dataarray_any", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
-    ("dataset", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
-    ("dataset_any", None, None, "CentralMomentsData[xr.DataArray]", None, "CentralMomentsData", "xr.DataArray"),
+    ("float64", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("arraylike", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_any", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataset_any", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 func_class_method_to_dataarray = [
     ("to_dataarray", "central_", None, ""),
@@ -631,10 +630,10 @@ func_class_method_to_dataarray = [
 out.extend(get_list(func_class_method_to_dataarray, params_class_method_to_dataarray, method=True))
 
 params_class_method_to_dataset = [
-    ("dataarray", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataarray_any", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataset", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
-    ("dataset_any", None, None, "CentralMomentsData[xr.Dataset]", None, "CentralMomentsData", "xr.Dataset"),
+    ("dataarray", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_any", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataset_any", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
 ]
 func_class_method_to_dataset = [
     ("to_dataset", "central_", None, ""),
@@ -649,18 +648,18 @@ out.append("""
 def test_iterators() -> None:
     from collections.abc import ItemsView, KeysView, ValuesView
 
-    assert_type(iter(central_float64), Iterator[CentralMomentsArray[np.float64]])
-    assert_type(iter(central_dataarray), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(iter(central_float64), Iterator[cmomy.CentralMomentsArray[np.float64]])
+    assert_type(iter(central_dataarray), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
     # TODO(wpk): problem with mypy and __iter__ overload....
     # assert_type(iter(central_dataset), Iterator[Hashable])  # noqa: ERA001
     # pylint: disable=unnecessary-dunder-call
-    assert_type(central_dataarray.__iter__(), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataarray.__iter__(), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.__iter__(), Iterator[Hashable])
-    assert_type(central_dataarray.iter(), Iterator[CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataarray.iter(), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
     assert_type(central_dataset.iter(), Iterator[Hashable])
     assert_type(central_dataset.keys(), KeysView[Hashable])
-    assert_type(central_dataset.values(), ValuesView[CentralMomentsData[xr.DataArray]])
-    assert_type(central_dataset.items(), ItemsView[Hashable, CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataset.values(), ValuesView[cmomy.CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataset.items(), ItemsView[Hashable, cmomy.CentralMomentsData[xr.DataArray]])
 """)
 
 
