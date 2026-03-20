@@ -1,4 +1,5 @@
 from functools import lru_cache
+from pathlib import Path
 
 import pytest
 
@@ -60,15 +61,12 @@ def pytest_runtest_setup(item):
 @lru_cache
 def _is_default_version() -> bool:
     import sys
-    from pathlib import Path
 
-    return sys.version_info[:2] == tuple(
-        map(int, Path(".python-version").read_text(encoding="utf-8").strip().split("."))
-    )
+    return sys.version_info >= (3, 11)
 
 
 def pytest_ignore_collect(collection_path) -> bool:
     if not _is_default_version():
-        return "cmomy/tests" not in str(collection_path)
+        return str(Path("cmomy/tests")) not in str(collection_path)
 
     return False

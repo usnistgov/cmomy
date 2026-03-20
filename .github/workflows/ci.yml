@@ -266,7 +266,7 @@ jobs:
           fi
 
           if [ "session" != "test-notebook" ]; then
-            options="$options ++test-options README.md cmomy tests"
+            options="$options ++test-options"
           fi
 
           # shellcheck disable=SC2086
