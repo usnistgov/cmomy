@@ -265,6 +265,10 @@ jobs:
             session="${session}-${python_version}"
           fi
 
+          if [ "session" != "test-notebook" ]; then
+            options="$options ++test-options README.md cmomy tests"
+          fi
+
           # shellcheck disable=SC2086
           $UVX_COMMAND nox -s "$session" -- $options
         shell: bash -euxo pipefail {0}
