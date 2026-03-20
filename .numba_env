@@ -1,0 +1,3 @@
+NUMBA_CACHE_DIR=${PWD}/.numba_cache
+NUMBA_CACHE_LOCATOR_CLASSES=cmomy.cache.SharedHashCacheLocator
+NUMBA_CACHE_TOOLS_MAGIC=0

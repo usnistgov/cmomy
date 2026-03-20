@@ -133,6 +133,13 @@ Central moment array utilities (:mod:`.utils`)
    ~utils.vals_to_data
 
 
+Options (:mod:`.options`)
+-------------------------
+
+.. autosummary::
+
+    ~options.set_options
+
 
 Pre-loaded modules
 ------------------

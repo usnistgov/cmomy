@@ -19,6 +19,7 @@ from .grouped import (
     reduce_vals_grouped,
     reduce_vals_indexed,
 )
+from .options import set_options
 from .random import default_rng
 from .reduction import reduce_data, reduce_vals
 from .resample import (
@@ -84,6 +85,7 @@ __all__ = [
     "resample_vals",
     "rolling",
     "select_moment",
+    "set_options",
     "utils",
     "vals_to_data",
     "wrap",

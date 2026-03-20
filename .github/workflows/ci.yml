@@ -164,7 +164,6 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          # - windows-latest
         session:
           - typecheck
     steps:
@@ -212,36 +211,24 @@ jobs:
         os:
           - ubuntu-latest
         python-version:
-          ${{
-          fromJson(needs.build-package.outputs.minmax-default-python-versions)
-          }}
+          - ${{ needs.build-package.outputs.max-python-version }}
         session:
-          - test
+          - test-run-slow
+          - test-serial
+          - test-numpy1
+          - test-notebook
         include:
           - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
+              ${{ needs.build-package.outputs.min-python-version }}
             os: ubuntu-latest
-            session: "test-run-slow"
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
-            os: ubuntu-latest
-            session: "test-serial"
-          - python-version: "3.12"
-            os: ubuntu-latest
-            session: "test-numpy1"
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
-            os: ubuntu-latest
-            session: "test-notebook"
+            session: test
           - os: windows-latest
             python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
+              ${{ needs.build-package.outputs.max-python-version }}
             session: test
-        exclude:
-          # handled by run-slow
-          - python-version:
-              ${{ needs.build-package.outputs.default-python-version }}
-            os: ubuntu-latest
+          - os: macos-latest
+            python-version:
+              ${{ needs.build-package.outputs.max-python-version }}
             session: test
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -255,42 +242,28 @@ jobs:
       # numba cache
       - name: Numba cache
         uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
-        if: matrix.session != 'test-numpy1'
         with:
           path: |
             ${{ github.workspace }}/.numba_cache
+            ${{ github.workspace }}\.numba_cache
           key:
             numba-cache|${{ runner.os }}|${{ runner.arch }}|${{
-            env.pythonLocation }}|${{ hashFiles('src/**/*.py') }}
-
-      - name: Numba cache (numpy1)
-        uses: actions/cache@cdf6c1fa76f9f475f3d7449005a359c84ca0f306 # v5.0.3
-        if: matrix.session == 'test-numpy1'
-        with:
-          path: |
-            ${{ github.workspace }}/.numba_cache
-          key:
-            ${{ matrix.session }}-cache|${{ runner.os }}|${{ runner.arch }}|${{
-            env.pythonLocation }}|${{ hashFiles('src/**/*.py') }}
+            env.pythonLocation }}|${{ hashFiles('uv.lock') }}|${{
+            hashFiles('src/cmomy/_lib/*.py') }}
 
       - name: Test with nox
-        if: ${{ matrix.session == 'test' }}
         env:
+          session: ${{ matrix.session }}
           python_version: ${{ matrix.python-version }}
-        run: >-
-          $UVX_COMMAND nox -s test-"$python_version" -- ++test-options --compile
-          --typing
-        shell: bash
+          options: "++installpkg dist/*.whl"
+        run: |
+          if [ "$session" = "test" ]; then
+            session="${session}-${python_version}"
+          fi
 
-      - name: Test with nox (session)
-        if: ${{ matrix.session != 'test' }}
-        run: >-
-          $UVX_COMMAND nox -s ${{ matrix.session }}
-        shell: bash
-
-      - name: Display coverage files
-        run: ls -a .nox/test-*/tmp/.coverage*
-        shell: bash
+          # shellcheck disable=SC2086
+          $UVX_COMMAND nox -s "$session" -- $options
+        shell: bash -euxo pipefail {0}
 
       - name: Upload coverage data
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0

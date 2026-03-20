@@ -55,8 +55,6 @@ def pytest_configure(config) -> None:
 def pytest_runtest_setup(item):
     if "slow" in item.keywords and not item.config.getoption("--run-slow"):
         pytest.skip("need --run-slow option to run")
-    if "typing" in item.keywords and not item.config.getoption("--typing"):
-        pytest.skip("need --typing option to run")
 
 
 @lru_cache
