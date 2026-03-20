@@ -3,6 +3,7 @@
 # /// script
 # dependencies = [
 #     "nox>=2024.10.9",
+#     "dotenv>=0.9.0"
 # ]
 # ///
 
@@ -30,6 +31,7 @@ from typing import (
 )
 
 import nox
+from dotenv import load_dotenv
 from nox.virtualenv import CondaEnv
 
 sys.path.insert(0, ".")
@@ -73,6 +75,9 @@ nox.options.default_venv_backend = "uv"
 
 # * Options ---------------------------------------------------------------------------
 
+load_dotenv(".numba_env")
+os.environ["NUMBA_CACHE_DIR"] = str(ROOT / ".numba_cache")
+
 # if True, use uv lock/sync.  If False, use uv pip compile/sync...
 UV_LOCK = True
 
@@ -86,6 +91,7 @@ else:
     PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS.copy()
     PYTHON_TEST_VERSIONS.remove("3.14")
 
+PYTHON_MAX_VERSION = PYTHON_TEST_VERSIONS[-1]
 PYTHON_DEFAULT_VERSION = Path(".python-version").read_text(encoding="utf-8").strip()
 UVX_LOCK_CONSTRAINTS = "requirements/lock/uvx-tools.txt"
 UVX_MIN_CONSTRAINTS = "requirements/uvx-tools.txt"
@@ -159,6 +165,7 @@ class SessionParams(DataclassParser):
     )
     test_run: RUN_ANNO = None
     no_cov: bool = False
+    test_scipy: bool = False
 
     # coverage
     coverage: (
@@ -533,15 +540,9 @@ def test(
     opts: SessionParams,
 ) -> None:
     """Test environments with conda installs."""
-    if opts.installpkg:
-        install_dependencies(session, name="test", opts=opts)
-        install_package(
-            session, editable=False, update=True, installpkg=opts.installpkg
-        )
-    else:
-        install_dependencies(
-            session, name="test", opts=opts, include_editable_package=True
-        )
+    args = ["--group=test-scipy"] if session.python == PYTHON_MAX_VERSION else []
+    install_dependencies(session, *args, name="test", opts=opts)
+    install_package(session, editable=False, update=True, installpkg=opts.installpkg)
 
     _test(
         session=session,
@@ -564,27 +565,10 @@ def test_serial(
     session.run(
         "nox",
         "-s",
-        f"test-{PYTHON_DEFAULT_VERSION}",
+        f"test-{PYTHON_MAX_VERSION}",
         "--",
         *session.posargs,
         env={"CMOMY_NUMBA_PARALLEL": "false", "COVERAGE_FILE_TAG": "-serial"},
-    )
-
-
-@nox.session(name="test-typing", python=False)
-def test_typing(
-    session: Session,
-) -> None:
-    """Test typing"""
-    session.run(
-        "nox",
-        "-s",
-        f"test-{PYTHON_DEFAULT_VERSION}",
-        "--",
-        "++test-options",
-        "--typing",
-        "tests/test_typing_auto.py",
-        env={"COVERAGE_FILE_TAG": "-typing"},
     )
 
 
@@ -596,7 +580,7 @@ def test_run_slow(
     session.run(
         "nox",
         "-s",
-        f"test-{PYTHON_DEFAULT_VERSION}",
+        f"test-{PYTHON_MAX_VERSION}",
         "--",
         *session.posargs,
         "++test-options",
@@ -605,19 +589,12 @@ def test_run_slow(
     )
 
 
-@nox.session(name="test-notebook", **DEFAULT_KWS)
+@nox.session(name="test-notebook", python=PYTHON_MAX_VERSION)
 @add_opts
 def test_notebook(session: nox.Session, opts: SessionParams) -> None:
     """Run pytest --nbval."""
-    if opts.installpkg:
-        install_dependencies(session, name="test-notebook", opts=opts)
-        install_package(
-            session, editable=False, update=True, installpkg=opts.installpkg
-        )
-    else:
-        install_dependencies(
-            session, name="test-notebook", opts=opts, include_editable_package=True
-        )
+    install_dependencies(session, name="test-notebook", opts=opts)
+    install_package(session, editable=False, update=True, installpkg=opts.installpkg)
 
     test_nbval_opts = shlex.split(
         """
@@ -658,9 +635,8 @@ def test_numpy1(
         "--group=numpy1",
         name="test",
         opts=opts,
-        include_editable_package=True,
     )
-    # install_package(session, editable=False, update=True)  # noqa: ERA001
+    install_package(session, editable=False, update=True, installpkg=opts.installpkg)
 
     # only test tests for numpy1
     test_options = [*(opts.test_options or []), "tests"]

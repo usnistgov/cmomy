@@ -1,16 +1,21 @@
-"""Sets up optional values."""
+"""
+Sets up options (:mod:`cmomy.options`)
+======================================
+
+Options can be set temporaraliy with ``set_options`` or via environment variables.
+
+"""
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Mapping, Sequence
     from typing import Any
 
 # TODO(wpk): Add in environment variables for these things...
-# CMOMY_FASTMATH ->
-# see https://github.com/numbagg/numbagg/blob/main/numbagg/decorators.py
 
 NMAX = "nmax"
 FASTMATH = "fastmath"
@@ -18,21 +23,26 @@ PARALLEL = "parallel"
 CACHE = "cache"
 
 
-def _set_options_from_environment() -> dict[str, Any]:
-    import os
+def _get_options_from_mapping(env: Mapping[str, str]) -> dict[str, Any]:
+    def _get_boolean(keys: str | Sequence[str], default: bool) -> bool:
+        if isinstance(keys, str):
+            keys = [keys]
 
-    def _get_boolean(key: str, default: str) -> bool:
-        return os.environ.get(key, default).lower() in {"true", "t", "1"}
+        for key in keys:
+            if key in env:
+                return env[key].lower() not in {"false", "f", "0"}
+
+        return default
 
     return {
-        NMAX: int(os.environ.get("CMOMY_NMAX", "20")),
-        CACHE: _get_boolean("CMOMY_NUMBA_CACHE", "true"),
-        PARALLEL: _get_boolean("CMOMY_NUMBA_PARALLEL", "true"),
-        FASTMATH: _get_boolean("CMOMY_NUMBA_FASTMATH", "true"),
+        NMAX: int(env.get("CMOMY_NMAX", "20")),
+        CACHE: _get_boolean(["CMOMY_CACHE", "CMOMY_NUMBA_CACHE"], True),
+        PARALLEL: _get_boolean(["CMOMY_PARALLEL", "CMOMY_NUMBA_PARALLEL"], True),
+        FASTMATH: _get_boolean(["CMOMY_FASTMATH", "CMOMY_NUMBA_FASTMATH"], True),
     }
 
 
-OPTIONS: dict[str, Any] = _set_options_from_environment()
+OPTIONS: dict[str, Any] = _get_options_from_mapping(os.environ)
 
 
 def _isbool(x: Any) -> bool:
@@ -66,14 +76,14 @@ class set_options:  # noqa: N801
         [env var: CMOMY_NMAX]
     cache: bool, default=True
         If ``True``, cache numba functions.
-        [env var: CMOMY_NUMBA_CACHE]
+        [env: ``CMOMY_CACHE`` or ``CMOMY_NUMBA_CACHE``]
     fastmath: bool, default=True
         If ``True``, use `fastmath` option to numba.
-        [env var: CMOMY_NUMBA_FASTMATH]
+        [env: ``CMOMY_FASTMATH`` or ``CMOMY_NUMBA_FASTMATH``]
     parallel : bool, default=True
         If ``True``, allow parallel numba functions (can still be
         overridden in function calls.)
-        [env var: CMOMY_NUMBA_PARALLEL]
+        [env: ``CMOMY_PARALLEL`` or ``CMOMY_NUMBA_PARALLEL``]
 
 
     Notes

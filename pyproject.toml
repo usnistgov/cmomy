@@ -55,6 +55,7 @@ dev = [
     { include-group = "pytest-accept" },
     { include-group = "test" },
     { include-group = "test-notebook" },
+    { include-group = "test-scipy" },
     { include-group = "type" },
 ]
 test = [
@@ -62,7 +63,6 @@ test = [
     "pytest-env",
     "pytest-sugar",
     { include-group = "pytest" },
-    { include-group = "test-scipy" },
 ]
 type = [
     "pandas-stubs",
@@ -110,8 +110,8 @@ test-notebook = [
     { include-group = "test" },
 ]
 test-scipy = [
-    "dask; python_version=='3.13'",
-    "scipy; python_version=='3.13'",
+    "dask",
+    "scipy",
 ]
 typecheck-runner = [ "typecheck-runner>=0.1.0; python_version>'3.9'" ]
 
@@ -359,6 +359,7 @@ addopts = [
     "--doctest-glob=*.md",
     "--doctest-modules",
     "--pyargs",
+    "--pytest-env-verbose",
     "--strict-config",
     "--strict-markers",
     "-ra",
@@ -386,6 +387,9 @@ strict_xfail = "true"
 
 [tool.pytest_env]
 NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
+NUMBA_CACHE_LOCATOR_CLASSES = { value = "cmomy.cache.SharedHashCacheLocator", skip_if_set = true }
+NUMBA_CACHE_TOOLS_MAGIC = { value = "0", skip_if_set = true }
+env_files = [ ".numba_env" ]
 
 [tool.coverage]
 run.branch = true
