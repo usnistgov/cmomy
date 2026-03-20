@@ -226,7 +226,7 @@ def test_prepare_values_values_for_reduction(
             )
 
     else:
-        _, _, (x, y, w) = prep.values_for_reduction(
+        _, _, xyw = prep.values_for_reduction(
             target,
             y,
             w,
@@ -237,7 +237,7 @@ def test_prepare_values_values_for_reduction(
         )
 
         for xx, vv, ss in zip(
-            [x, y, w], [xv, yv, wv], [xshape2, yshape2, wshape2], strict=True
+            xyw, [xv, yv, wv], [xshape2, yshape2, wshape2], strict=True
         ):
             assert xx.shape == ss
             assert xx.dtype == np.dtype(dtype or np.float64)
