@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 FORMAT = "[%(name)s - %(levelname)s] %(message)s"
@@ -253,7 +254,7 @@ data_dataarray: xr.DataArray = xr.DataArray(data_float64, name="data")
 data_dataset: xr.Dataset = xr.Dataset({"data": data_dataarray})
 data_dataarray_any: Any = cast("Any", data_dataarray)
 data_dataset_any: Any = cast("Any", data_dataset)
-data_dataarray_or_sdata: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", data_dataarray)
+data_dataarray_or_set: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", data_dataarray)
 
 
 central_float32 = cmomy.CentralMomentsArray(data_float32)
@@ -266,7 +267,7 @@ central_dataarray = cmomy.CentralMomentsData(data_dataarray)
 central_dataset = cmomy.CentralMomentsData(data_dataset)
 central_dataarray_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataarray_any)
 central_dataset_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataset_any)
-# ca_or_cs = cast("cmomy.CentralMomentsData[xr.DataArray] | cmomy.CentralMomentsData[xr.DataArray]", cmomy.CentralMomentsData(data_dataarray_or_sdata))  # noqa: ERA001
+# ca_or_cs = cast("cmomy.CentralMomentsData[xr.DataArray] | cmomy.CentralMomentsData[xr.DataArray]", cmomy.CentralMomentsData(data_dataarray_or_set))  # noqa: ERA001
 
 freq = cmomy.random_freq(ndat=10, nrep=2)
 sampler = cmomy.resample.IndexSampler(freq=freq)
@@ -745,6 +746,6 @@ s = len(set(out))
 if s != len(out):
     logger.info("duplicate in out %s %s", s, len(out))
 
-with open("./tests/test_typing_auto.py", "w", encoding="utf-8") as f:  # noqa: PTH123
+with Path("./tests/test_typing_auto.py").open("w", encoding="utf-8") as f:
     f.write("\n".join(out))
     f.write("\n")
