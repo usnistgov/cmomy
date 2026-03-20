@@ -5,6 +5,18 @@
 
 Changelog for `cmomy`
 
+## 1.1.1
+
+Released on 2026-03-20.
+
+### Documentation
+
+- docs: add cmomy.cache to docs ([#58](https://github.com/usnistgov/cmomy/pull/58))
+
+### Contributors
+
+- [@wpk-nist-gov](https://github.com/wpk-nist-gov)
+
 ## 1.1.0
 
 Released on 2026-03-20.
