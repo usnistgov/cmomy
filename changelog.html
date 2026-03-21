@@ -1,0 +1,1438 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Changelog &#8212; cmomy 1.1.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=bee7790f"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'changelog';</script>
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
+    <script src="_static/js/leave_notice.js?v=133c5535"></script>
+    <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Indices and tables" href="navigation.html" />
+    <link rel="prev" title="Credits" href="authors.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.1.1" />
+    <meta name="docbuild:last-update" content="2026-03-21"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">cmomy 1.1.1 documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="index.html">
+                    cmomy
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="examples/index.html">User guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples/usage/motivation.html">Why <code class="docutils literal notranslate"><span class="pre">cmomy</span></code>?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples/usage/usage_notebook.html">Usage</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="reference/index.html">API reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.xCentralMoments.html">cmomy.xCentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap.html">cmomy.wrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.zeros_like.html">cmomy.zeros_like</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.MomParams.html">cmomy.MomParams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.MomParamsDict.html">cmomy.MomParamsDict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.concat.html">cmomy.concat</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/api-modules.html">Modules</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.grouped.html">Submodule to work with grouped data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">grouped</span></code>)</a></li>
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.rolling.html">Rolling and rolling exponential averages (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rolling</span></code>)</a></li>
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.utils.html">Interface to utility functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.options.html">Sets up options (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.options</span></code>)</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.cache.html">Numba caching tools</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.resample.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrapper.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
+
+
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="reference/api-baseclasses.html">Base Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="reference/generated/cmomy.wrapper._wrapper_abc.html"><code class="docutils literal notranslate"><span class="pre">MomParamsT</span></code></a></li>
+
+
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="authors.html">Credits</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Changelog</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="navigation.html">Indices and tables</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="genindex.html">Index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/usnistgov/cmomy" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Fchangelog.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/changelog.md" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.md</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Changelog</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.1.1</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Contributors</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v1-0-2-2025-10-14">v1.0.2 — 2025-10-14</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v1-0-1-2025-09-26">v1.0.1 — 2025-09-26</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v1-0-0-2025-09-26">v1.0.0 — 2025-09-26</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-24-0-2025-01-23">v0.24.0 — 2025-01-23</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-23-0-2024-10-30">v0.23.0 — 2024-10-30</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-22-0-2024-09-28">v0.22.0 — 2024-09-28</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-21-0-2024-09-25">v0.21.0 — 2024-09-25</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removed">Removed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-20-0-2024-09-21">v0.20.0 — 2024-09-21</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-19-0-2024-09-20">v0.19.0 — 2024-09-20</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-18-0-2024-09-18">v0.18.0 — 2024-09-18</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-17-0-2024-09-16">v0.17.0 — 2024-09-16</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-16-0-2024-08-06">v0.16.0 — 2024-08-06</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-15-0-2024-06-21">v0.15.0 — 2024-06-21</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-14-0-2024-06-20">v0.14.0 — 2024-06-20</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-13-0-2024-06-18">v0.13.0 — 2024-06-18</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id21">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-12-0-2024-06-13">v0.12.0 — 2024-06-13</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id22">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-11-0-2024-06-12">v0.11.0 — 2024-06-12</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id23">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deprecated">Deprecated</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-9-0-2024-04-10">v0.9.0 — 2024-04-10</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id24">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-8-0-2024-02-20">v0.8.0 — 2024-02-20</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id25">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id26">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-7-0-2023-08-11">v0.7.0 — 2023-08-11</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id27">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id28">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-5-0-2023-06-14">v0.5.0 — 2023-06-14</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id29">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id30">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-4-0-2023-05-02">v0.4.0 — 2023-05-02</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id31">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id32">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-3-0-2023-04-24">v0.3.0 - 2023-04-24</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-2-2-2023-04-05">v0.2.2 - 2023-04-05</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-2-1-2023-04-05">v0.2.1 - 2023-04-05</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-2-0-2023-03-22">v0.2.0 - 2023-03-22</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-9-2023-02-15">v0.1.9 - 2023-02-15</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-8-2022-12-02">v0.1.8 - 2022-12-02</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-7-2022-09-28">v0.1.7 - 2022-09-28</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-6-2022-09-27">v0.1.6 - 2022-09-27</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-5-2022-09-26">v0.1.5 - 2022-09-26</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-4-2022-09-15">v0.1.4 - 2022-09-15</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-3-2022-09-15">v0.1.3 - 2022-09-15</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-2-2022-09-13">v0.1.2 - 2022-09-13</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-1-2022-09-13">v0.1.1 - 2022-09-13</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-0-2022-09-13">v0.1.0 - 2022-09-13</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-0-7-2021-05-18">v0.0.7 - 2021-05-18</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-0-6-2021-02-03">v0.0.6 - 2021-02-03</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-0-4-2020-12-21">v0.0.4 - 2020-12-21</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <!-- markdownlint-disable MD041 -->
+<section class="tex2jax_ignore mathjax_ignore" id="changelog">
+<h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
+<!-- markdownlint-disable-file -->
+<p>Changelog for <code class="docutils literal notranslate"><span class="pre">cmomy</span></code></p>
+<section id="id1">
+<h2>1.1.1<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
+<p>Released on 2026-03-20.</p>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>docs: add cmomy.cache to docs (<a class="reference external" href="https://github.com/usnistgov/cmomy/pull/58">#58</a>)</p></li>
+</ul>
+</section>
+<section id="contributors">
+<h3>Contributors<a class="headerlink" href="#contributors" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/wpk-nist-gov">&#64;wpk-nist-gov</a></p></li>
+</ul>
+</section>
+</section>
+<section id="id2">
+<h2>1.1.0<a class="headerlink" href="#id2" title="Link to this heading">#</a></h2>
+<p>Released on 2026-03-20.</p>
+<section id="id3">
+<h3>Documentation<a class="headerlink" href="#id3" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>feat: add cmomy.cache module (<a class="reference external" href="https://github.com/usnistgov/cmomy/pull/55">#55</a>)</p></li>
+</ul>
+</section>
+<section id="id4">
+<h3>Contributors<a class="headerlink" href="#id4" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/wpk-nist-gov">&#64;wpk-nist-gov</a></p></li>
+</ul>
+</section>
+</section>
+<section id="v1-0-2-2025-10-14">
+<h2>v1.0.2 — 2025-10-14<a class="headerlink" href="#v1-0-2-2025-10-14" title="Link to this heading">#</a></h2>
+<section id="changed">
+<h3>Changed<a class="headerlink" href="#changed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Using <code class="docutils literal notranslate"><span class="pre">uv_build</span></code> backend</p></li>
+<li><p>Removed typing import cycles. This required adding <code class="docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code> and
+<code class="docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmomy.core.typing.Sampler</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">cmomy.resample.typing.SamplerType</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmomy.core.typing.MomParamsInput</span></code> -&gt; <code class="docutils literal notranslate"><span class="pre">cmomy.core.mom_params.MomParamsType</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="v1-0-1-2025-09-26">
+<h2>v1.0.1 — 2025-09-26<a class="headerlink" href="#v1-0-1-2025-09-26" title="Link to this heading">#</a></h2>
+<section id="id5">
+<h3>Changed<a class="headerlink" href="#id5" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Default to <code class="docutils literal notranslate"><span class="pre">axes_to_end=False</span></code> in all cases.</p></li>
+</ul>
+</section>
+</section>
+<section id="v1-0-0-2025-09-26">
+<h2>v1.0.0 — 2025-09-26<a class="headerlink" href="#v1-0-0-2025-09-26" title="Link to this heading">#</a></h2>
+<section id="added">
+<h3>Added<a class="headerlink" href="#added" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">reduce_vals_grouped</span></code> and <code class="docutils literal notranslate"><span class="pre">reduce_vals_indexed</span></code> to create grouped
+central moments from values.</p></li>
+<li><p>Added better typing fallbacks for unions of array-like or xarray objects.</p></li>
+<li><p>Value reduction (<code class="docutils literal notranslate"><span class="pre">reduce_vals</span></code> <code class="docutils literal notranslate"><span class="pre">resample_vals</span></code>, etc) now support <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code>
+parameter. This allows <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> to be placed where you like, with output in
+proper order</p></li>
+<li><p>Fully support output order (e.g., <code class="docutils literal notranslate"><span class="pre">order=&quot;C&quot;</span></code>) for xarray objects, including
+reordering <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> of value reduction (<code class="docutils literal notranslate"><span class="pre">reduce_vals</span></code>, etc) for <code class="docutils literal notranslate"><span class="pre">DataArray</span></code>
+objects.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">coords_policy</span></code> to <code class="docutils literal notranslate"><span class="pre">reduce_data/vals_grouped</span></code>.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">coords_policy</span></code> support to <code class="docutils literal notranslate"><span class="pre">Dataset</span></code> objects.</p></li>
+<li><p>Added testing coverage to default python version.</p></li>
+</ul>
+</section>
+<section id="id6">
+<h3>Changed<a class="headerlink" href="#id6" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Bug fix to numba decorator</p></li>
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">cmomy.core.prepare</span></code></p></li>
+<li><p>Rework <code class="docutils literal notranslate"><span class="pre">cmomy.core.moment_params</span></code> to better handle subclassing</p></li>
+<li><p>Programmatic import in <code class="docutils literal notranslate"><span class="pre">cmomy.factory</span></code> module</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">__init__.pyi</span></code> with <code class="docutils literal notranslate"><span class="pre">lazy_loader</span></code>.</p></li>
+<li><p>Cleanup core calculation in <code class="docutils literal notranslate"><span class="pre">_reduce_data</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="v0-24-0-2025-01-23">
+<h2>v0.24.0 — 2025-01-23<a class="headerlink" href="#v0-24-0-2025-01-23" title="Link to this heading">#</a></h2>
+<section id="id7">
+<h3>Added<a class="headerlink" href="#id7" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Python version 3.13 now supported.</p></li>
+</ul>
+</section>
+<section id="id8">
+<h3>Changed<a class="headerlink" href="#id8" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Moved grouped/indexed routines (e.g., <code class="docutils literal notranslate"><span class="pre">reduce_data_indexed</span></code>, <code class="docutils literal notranslate"><span class="pre">factor_by</span></code>, etc)
+to <code class="docutils literal notranslate"><span class="pre">cmomy.grouped</span></code> submodule. Main functions are still available at top level
+(<code class="docutils literal notranslate"><span class="pre">cmomy.reduce_data_grouped</span></code> is <code class="docutils literal notranslate"><span class="pre">cmomy.grouped.reduce_data_grouped</span></code>).</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-23-0-2024-10-30">
+<h2>v0.23.0 — 2024-10-30<a class="headerlink" href="#v0-23-0-2024-10-30" title="Link to this heading">#</a></h2>
+<section id="id9">
+<h3>Changed<a class="headerlink" href="#id9" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Routines now accept <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> parameter. This allows for moment axes to be in
+arbitrary location</p></li>
+<li><p>Routines now accept <code class="docutils literal notranslate"><span class="pre">mom_params</span></code> parameter. This object contains all the logic
+for working with moment arrays. This Also simplifies calling routines from
+other classes/routines.</p></li>
+<li><p>Update requirements, typing, and linting</p></li>
+<li><p>Routines now correctly respect the <code class="docutils literal notranslate"><span class="pre">order</span></code> parameter. Passing in <code class="docutils literal notranslate"><span class="pre">None</span></code> will
+lead to arrays that are <code class="docutils literal notranslate"><span class="pre">c</span></code> ordered when “normalized” (i.e., which have <code class="docutils literal notranslate"><span class="pre">axis</span></code>
+and <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> at the end), which is the default behavior of
+<code class="docutils literal notranslate"><span class="pre">numb.guvectorize</span></code>. Passing order <code class="docutils literal notranslate"><span class="pre">c</span></code> will lead to outputs that are <code class="docutils literal notranslate"><span class="pre">c</span></code>
+ordered regardless of <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> location.</p></li>
+<li><p>Negative axis/axes are now treated relative to the end of the array (just like
+python lists and numpy ndarray objects). To get the old behavior of counting
+relative to the <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>, pass in imaginary axis. For example, passing
+<code class="docutils literal notranslate"><span class="pre">axis=-1j</span></code> with <code class="docutils literal notranslate"><span class="pre">mom_ndim=1</span></code> is equivalent to passing <code class="docutils literal notranslate"><span class="pre">axis=-2</span></code>.</p></li>
+<li><p>renamed parameter <code class="docutils literal notranslate"><span class="pre">move_axes_to_end</span></code> to <code class="docutils literal notranslate"><span class="pre">axes_to_end</span></code>. This will lead to axes
+being in the form <code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">*mom_axes)</span></code> if <code class="docutils literal notranslate"><span class="pre">axes</span></code> are reduced or
+<code class="docutils literal notranslate"><span class="pre">(...,</span> <span class="pre">*axes,</span> <span class="pre">*mom_axes)</span></code> if <code class="docutils literal notranslate"><span class="pre">axes</span></code> are kept.</p></li>
+<li><p>Applying routines to <code class="docutils literal notranslate"><span class="pre">dataset</span></code> objects now keeps correct order if
+<code class="docutils literal notranslate"><span class="pre">axes_to_end</span></code> is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-22-0-2024-09-28">
+<h2>v0.22.0 — 2024-09-28<a class="headerlink" href="#v0-22-0-2024-09-28" title="Link to this heading">#</a></h2>
+<section id="id10">
+<h3>Changed<a class="headerlink" href="#id10" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>For xarray (DataArray and Dataset) central moments data, routines will infer
+<code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> from <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. For example, can calling
+<code class="docutils literal notranslate"><span class="pre">cmomy.reduce_data(data,</span> <span class="pre">mom_dims=(&quot;mom_0&quot;,</span> <span class="pre">&quot;mom_1&quot;),</span> <span class="pre">dim=&quot;a&quot;)</span></code> will infer
+<code class="docutils literal notranslate"><span class="pre">mom_ndim=1</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-21-0-2024-09-25">
+<h2>v0.21.0 — 2024-09-25<a class="headerlink" href="#v0-21-0-2024-09-25" title="Link to this heading">#</a></h2>
+<section id="removed">
+<h3>Removed<a class="headerlink" href="#removed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cmomy.randsamp_freq</span></code> has been replaced with <code class="docutils literal notranslate"><span class="pre">cmomy.factory_sampler</span></code></p></li>
+</ul>
+</section>
+<section id="id11">
+<h3>Added<a class="headerlink" href="#id11" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cmomy.factory_sampler</span></code> to create a sampler for resample routines.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmomy.IndexSampler</span></code> to wrap resample “indices” and “freq” table.</p></li>
+</ul>
+</section>
+<section id="id12">
+<h3>Changed<a class="headerlink" href="#id12" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">IndexSampler</span></code> class to handle resampling. This wraps either resampling
+<code class="docutils literal notranslate"><span class="pre">indices</span></code> or a “frequency” table <code class="docutils literal notranslate"><span class="pre">freq</span></code>, and can produce whichever is not
+provided.</p></li>
+<li><p>replace <code class="docutils literal notranslate"><span class="pre">randsamp_freq</span></code> with <code class="docutils literal notranslate"><span class="pre">factory_sampler</span></code> which creates <code class="docutils literal notranslate"><span class="pre">IndexSampler</span></code>
+from parameters or a mapping.</p></li>
+<li><p>Removed arguments <code class="docutils literal notranslate"><span class="pre">freq</span></code>, <code class="docutils literal notranslate"><span class="pre">nrep</span></code>, <code class="docutils literal notranslate"><span class="pre">rng</span></code>, <code class="docutils literal notranslate"><span class="pre">paired</span></code> from resampling routines
+(<code class="docutils literal notranslate"><span class="pre">resample_data</span></code>, etc). This was replaced by an arguments <code class="docutils literal notranslate"><span class="pre">sampler</span></code> which can
+be either an <code class="docutils literal notranslate"><span class="pre">IndexSampler</span></code> or a mapping which is passed to <code class="docutils literal notranslate"><span class="pre">factory_sampler</span></code>.
+This means that to call the resampling routines, you’ll have to pass a sampler
+or a dict of parameters. While this is a little annoying, it greatly cleans up
+a bunch of parameters that may not be used. For example, the call
+<code class="docutils literal notranslate"><span class="pre">cmomy.resample_data(data,</span> <span class="pre">axis=0,</span> <span class="pre">nrep=10,</span> <span class="pre">rng=0)</span></code> is now
+<code class="docutils literal notranslate"><span class="pre">cmomy.resampler_data(data,</span> <span class="pre">axis=0,</span> <span class="pre">sampler={&quot;nrep&quot;:</span> <span class="pre">10,</span> <span class="pre">&quot;rng&quot;:</span> <span class="pre">0})</span></code>. Plus,
+you can now pass <code class="docutils literal notranslate"><span class="pre">indices</span></code> with
+<code class="docutils literal notranslate"><span class="pre">cmomy.resample_data(data,</span> <span class="pre">axis=0,</span> <span class="pre">sampler={&quot;indices&quot;:</span> <span class="pre">indices})</span></code></p></li>
+<li><p>Removed parameter <code class="docutils literal notranslate"><span class="pre">on_missing_core_dim</span></code> from routines that call
+<code class="docutils literal notranslate"><span class="pre">xarray.apply_ufunc</span></code> behind the scenes. You can still pass this parameter
+using <code class="docutils literal notranslate"><span class="pre">apply_ufunc_kwargs</span></code>. For example,
+<code class="docutils literal notranslate"><span class="pre">cmomy.reduce_data(data,</span> <span class="pre">axis=0,</span> <span class="pre">apply_ufunc_kwargs={&quot;on_missing_core_dim&quot;:</span> <span class="pre">&quot;drop&quot;})</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-20-0-2024-09-21">
+<h2>v0.20.0 — 2024-09-21<a class="headerlink" href="#v0-20-0-2024-09-21" title="Link to this heading">#</a></h2>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Made <code class="docutils literal notranslate"><span class="pre">cmomy.resample.freq_to_indices</span></code> and <code class="docutils literal notranslate"><span class="pre">cmomy.resample.indices_to_freq</span></code>
+gufunc’s. Much faster than old code (<code class="docutils literal notranslate"><span class="pre">freq_to_indices</span></code> was a bottleneck).</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-19-0-2024-09-20">
+<h2>v0.19.0 — 2024-09-20<a class="headerlink" href="#v0-19-0-2024-09-20" title="Link to this heading">#</a></h2>
+<section id="id13">
+<h3>Added<a class="headerlink" href="#id13" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">cmomy.convert.comoments_to_moments</span></code> routine, which is the inverse of
+<code class="docutils literal notranslate"><span class="pre">cmomy.convert.moments_to_comoments</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-18-0-2024-09-18">
+<h2>v0.18.0 — 2024-09-18<a class="headerlink" href="#v0-18-0-2024-09-18" title="Link to this heading">#</a></h2>
+<section id="id14">
+<h3>Added<a class="headerlink" href="#id14" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cmomy.assign_moment</span></code> and <code class="docutils literal notranslate"><span class="pre">cmomy.select_moment</span></code> now accept options <code class="docutils literal notranslate"><span class="pre">xmom_0</span></code>,
+<code class="docutils literal notranslate"><span class="pre">xmom_1</span></code>, <code class="docutils literal notranslate"><span class="pre">ymom_0</span></code>, and <code class="docutils literal notranslate"><span class="pre">ymom_1</span></code>. These allow selecting/assigning to slices.
+Useful when converting values to central moments array.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-17-0-2024-09-16">
+<h2>v0.17.0 — 2024-09-16<a class="headerlink" href="#v0-17-0-2024-09-16" title="Link to this heading">#</a></h2>
+<section id="id15">
+<h3>Added<a class="headerlink" href="#id15" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Now fully support wrapping <code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> objects</p></li>
+<li><p>Complete rewrite of wrapper classes</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">wrapper</span></code> factory methods <code class="docutils literal notranslate"><span class="pre">cmomy.wrap</span></code>, <code class="docutils literal notranslate"><span class="pre">cmomy.wrap_reduce_vals</span></code>, etc.
+These automatically select from <code class="docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code> and
+<code class="docutils literal notranslate"><span class="pre">CentralMomentsData</span></code>.</p></li>
+<li><p>Renamed <code class="docutils literal notranslate"><span class="pre">CentralMoments</span></code> to <code class="docutils literal notranslate"><span class="pre">CentralMomentsArray</span></code> and <code class="docutils literal notranslate"><span class="pre">xCentralMoments</span></code> to
+<code class="docutils literal notranslate"><span class="pre">CentralMomentsData</span></code>. The former is parameterized across numpy arrays. The
+later is parameterized to work with either <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> or
+<code class="docutils literal notranslate"><span class="pre">xarray.Dataset</span></code> objects</p></li>
+<li><p>Full support <code class="docutils literal notranslate"><span class="pre">dask</span></code> backed <code class="docutils literal notranslate"><span class="pre">xarray</span></code> objects. This will be lazily evaluated.</p></li>
+<li><p>Removed <code class="docutils literal notranslate"><span class="pre">CentralMomentsArray/Data.block</span></code> method. Instead, there is a <code class="docutils literal notranslate"><span class="pre">block</span></code>
+keyword in <code class="docutils literal notranslate"><span class="pre">reduce</span></code> method.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">to_dataarray</span></code>, <code class="docutils literal notranslate"><span class="pre">to_dataset</span></code>, etc, method of <code class="docutils literal notranslate"><span class="pre">CentralMomentsArray/Data</span></code> now
+return a wrapped object instead of an <code class="docutils literal notranslate"><span class="pre">xarray</span></code> object. To access the
+underlying <code class="docutils literal notranslate"><span class="pre">xarray</span></code> object, use the <code class="docutils literal notranslate"><span class="pre">obj</span></code> attribute.</p></li>
+<li><p>Removed <code class="docutils literal notranslate"><span class="pre">values</span></code> and <code class="docutils literal notranslate"><span class="pre">data</span></code> attributes from <code class="docutils literal notranslate"><span class="pre">CentralMomentsArray/Data</span></code> wrapper
+classes. Now wrap either an array or <code class="docutils literal notranslate"><span class="pre">xarray</span></code> object directly (instead of only
+really wrapping <code class="docutils literal notranslate"><span class="pre">numpy</span></code> arrays in the old code). To access the wrapped object,
+now use <code class="docutils literal notranslate"><span class="pre">obj</span></code> attribute.</p></li>
+<li><p>Now include testing of typing (<code class="docutils literal notranslate"><span class="pre">mypy</span></code> and <code class="docutils literal notranslate"><span class="pre">pyright</span></code>) support.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-16-0-2024-08-06">
+<h2>v0.16.0 — 2024-08-06<a class="headerlink" href="#v0-16-0-2024-08-06" title="Link to this heading">#</a></h2>
+<section id="id16">
+<h3>Added<a class="headerlink" href="#id16" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">rolling</span></code> module for rolling mean and exponential rolling mean.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">bootstrap_confidence_interval</span></code> method to calculate confidence intervals</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">moveaxis</span></code> function to cleanly handle axes movement of central moments
+array</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">select_moment</span></code> method to select specific moments (weight, average, etc)
+from a central moments array</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">assign_moment</span></code> method to assign values to specific moments.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">vals_to_data</span></code> to simplify using <code class="docutils literal notranslate"><span class="pre">_data</span></code> methods for raw values.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">jackknife_</span></code> an routines to perform jackknife analysis.</p></li>
+<li><p>Update <code class="docutils literal notranslate"><span class="pre">_vals</span></code> routines to properly place the <code class="docutils literal notranslate"><span class="pre">axis</span></code> parameter in result.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">axes_to_end</span></code> option to most routines.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">keepdims</span></code> option from <code class="docutils literal notranslate"><span class="pre">reduce_data</span></code> and <code class="docutils literal notranslate"><span class="pre">reduce_vals</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="v0-15-0-2024-06-21">
+<h2>v0.15.0 — 2024-06-21<a class="headerlink" href="#v0-15-0-2024-06-21" title="Link to this heading">#</a></h2>
+<section id="id17">
+<h3>Added<a class="headerlink" href="#id17" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">cmomy.concat</span></code> method to concatenate moments objects.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">__getitem__</span></code> to <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments</span></code> objects. This method <strong>does not*</strong>
+allow changing the moments shape. If you want to do that, you’ll need to work
+directly with <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.to_values()</span></code></p></li>
+</ul>
+</section>
+</section>
+<section id="v0-14-0-2024-06-20">
+<h2>v0.14.0 — 2024-06-20<a class="headerlink" href="#v0-14-0-2024-06-20" title="Link to this heading">#</a></h2>
+<section id="id18">
+<h3>Added<a class="headerlink" href="#id18" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>added <code class="docutils literal notranslate"><span class="pre">cmomy.resample.select_ndat</span></code> to select data size along reduction
+dimension</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">cmomy.randsamp_freq</span></code> to top level api</p></li>
+</ul>
+</section>
+<section id="id19">
+<h3>Changed<a class="headerlink" href="#id19" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Updated <code class="docutils literal notranslate"><span class="pre">cmomy.resample.randsamp_freq</span></code> to select ndat from array</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-13-0-2024-06-18">
+<h2>v0.13.0 — 2024-06-18<a class="headerlink" href="#v0-13-0-2024-06-18" title="Link to this heading">#</a></h2>
+<section id="id20">
+<h3>Added<a class="headerlink" href="#id20" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">cmomy.convert.moments_to_comoments</span></code> (and
+<code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.moments_to_comoments</span></code>)to convert from single variable
+moments to comoments. This is useful in <code class="docutils literal notranslate"><span class="pre">thermoextrap</span></code>.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">cmomy.convert.assign_weight</span></code> (and <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.assign_weights</span></code>)
+to update weights (useful in <code class="docutils literal notranslate"><span class="pre">thermoextrap</span></code>).</p></li>
+<li><p>Added support for <code class="docutils literal notranslate"><span class="pre">numpy&gt;=2.0.0</span></code>. Because we still support older versions, we
+still use the old convention for the <code class="docutils literal notranslate"><span class="pre">copy</span></code> parameter to <code class="docutils literal notranslate"><span class="pre">numpy.array</span></code>. Will
+change this when minimum numpy is 2.0.</p></li>
+</ul>
+</section>
+<section id="id21">
+<h3>Changed<a class="headerlink" href="#id21" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Renamed <code class="docutils literal notranslate"><span class="pre">cmomy.convert</span></code> function to <code class="docutils literal notranslate"><span class="pre">cmomy.convert.moments_type</span></code>A bullet item
+for the Changed category.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-12-0-2024-06-13">
+<h2>v0.12.0 — 2024-06-13<a class="headerlink" href="#v0-12-0-2024-06-13" title="Link to this heading">#</a></h2>
+<section id="id22">
+<h3>Added<a class="headerlink" href="#id22" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Now supports python3.12</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-11-0-2024-06-12">
+<h2>v0.11.0 — 2024-06-12<a class="headerlink" href="#v0-11-0-2024-06-12" title="Link to this heading">#</a></h2>
+<section id="id23">
+<h3>Changed<a class="headerlink" href="#id23" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Switch to underlying numba functions using <code class="docutils literal notranslate"><span class="pre">guvectorize</span></code>. This significantly
+simplifies the code. Previously, we had separate functions for “vector” vs
+“scalar” moments. To handle arbitrary vector dimensions, the arrays were
+reshaped behind the scenes (to a single “meta” dimension). Now, this is all
+handled by the <code class="docutils literal notranslate"><span class="pre">gufunc</span></code> based library code.</p></li>
+<li><p>Typing support improved.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.astype</span></code></p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.</span></code></p></li>
+<li><p>Added alias <code class="docutils literal notranslate"><span class="pre">CentralMoments.to_x</span></code> which is the same as
+<code class="docutils literal notranslate"><span class="pre">CentralMoments.to_xcentralmoments</span></code>.</p></li>
+<li><p>Added alias <code class="docutils literal notranslate"><span class="pre">xCentralMoments.to_c</span></code> which is the same as
+<code class="docutils literal notranslate"><span class="pre">xCentralMoments.to_centralmoments</span></code>.</p></li>
+<li><p>Most constructors now accept <code class="docutils literal notranslate"><span class="pre">order</span></code> and <code class="docutils literal notranslate"><span class="pre">dtype</span></code> arguments.</p></li>
+<li><p>Most routines that process central moments accept a <code class="docutils literal notranslate"><span class="pre">parallel</span></code> parameter.</p></li>
+<li><p>Instead of complicated internal validation routines in <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments</span></code>,
+most of this is now handled by <code class="docutils literal notranslate"><span class="pre">cmomy.reduction</span></code> or similar routines.</p></li>
+<li><p>Now using <code class="docutils literal notranslate"><span class="pre">xr.apply_ufunc</span></code> for most of the <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> based
+calculations.</p></li>
+</ul>
+</section>
+<section id="deprecated">
+<h3>Deprecated<a class="headerlink" href="#deprecated" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Removed classmethod <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.from_raws</span></code>. Instead, use
+<code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.from_raw(...).reduce(...)</span></code>.</p></li>
+<li><p>Removed classmethod <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.from_datas</span></code>. Instead, use
+<code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.from_data(...).reduce(...)</span></code>.</p></li>
+<li><p>Removed classmethod <code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.from_data</span></code>. Instead, use
+<code class="docutils literal notranslate"><span class="pre">(x)CentralMoments(....)</span></code>.</p></li>
+<li><p>Removed ability to create <code class="docutils literal notranslate"><span class="pre">xCentralMoments</span></code> objects directly from
+<code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> objects. (e.g., passing in array-like to
+<code class="docutils literal notranslate"><span class="pre">xCentralmoments.from_vals</span></code> does not work anymore). Instead use
+<code class="docutils literal notranslate"><span class="pre">CentralMoments.from_vals(....).to_xcentralmoments(...)</span></code>, etc.</p></li>
+<li><p>Removed methods <code class="docutils literal notranslate"><span class="pre">push_stat</span></code>, <code class="docutils literal notranslate"><span class="pre">push_stats</span></code>, <code class="docutils literal notranslate"><span class="pre">from_stat</span></code>, <code class="docutils literal notranslate"><span class="pre">from_stats</span></code>. Instead
+use, for example, <code class="docutils literal notranslate"><span class="pre">numpy.concatenate</span></code>, to combine weights, average, and
+variance into a <code class="docutils literal notranslate"><span class="pre">data</span></code> array. A helper function may be added if called for.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.resample_and_reduce</span></code> and
+<code class="docutils literal notranslate"><span class="pre">(x)CentralMoments.from_resample_vals</span></code> no longer accept <code class="docutils literal notranslate"><span class="pre">nrep=...</span></code> or
+<code class="docutils literal notranslate"><span class="pre">indices=...</span></code>. They only accept <code class="docutils literal notranslate"><span class="pre">freq=...</span></code>.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-9-0-2024-04-10">
+<h2>v0.9.0 — 2024-04-10<a class="headerlink" href="#v0-9-0-2024-04-10" title="Link to this heading">#</a></h2>
+<section id="id24">
+<h3>Changed<a class="headerlink" href="#id24" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Can now resample with an arbitrary number of samples. Previously, it was
+assumed that resampling should be done with a shape <code class="docutils literal notranslate"><span class="pre">(nrep,</span> <span class="pre">ndat)</span></code>, where
+<code class="docutils literal notranslate"><span class="pre">nrep</span></code> is the number of replicates and <code class="docutils literal notranslate"><span class="pre">ndat</span></code> is the shape of the data along
+the resampled axis. Now you can pass sample with shape <code class="docutils literal notranslate"><span class="pre">(nrep,</span> <span class="pre">nsamp)</span></code> where
+<code class="docutils literal notranslate"><span class="pre">nsamp</span></code> is the specified number of samples in a replicate (defaulting to
+<code class="docutils literal notranslate"><span class="pre">ndat</span></code>). This allows users to do things like jackknife resampling, etc, with
+<code class="docutils literal notranslate"><span class="pre">resample_and_reduce</span></code> methods.</p></li>
+<li><p>Preliminary support for using type hints in generated documentation. The
+standard sphinx autodoc support does not quite work for <code class="docutils literal notranslate"><span class="pre">cmomy</span></code>, as it
+requires type hints to be accessible at run time, and not in <code class="docutils literal notranslate"><span class="pre">TYPE_CHECKING</span></code>
+blocks. Instead, we use
+<a class="reference external" href="https://github.com/tox-dev/sphinx-autodoc-typehints"><code class="docutils literal notranslate"><span class="pre">sphinx_autodoc_type</span></code></a>.
+This has the downside of expanding type aliases, but handles (most things)
+being in <code class="docutils literal notranslate"><span class="pre">TYPE_CHECKING</span></code> blocks. Over time, we’ll replace some of the explicit
+parameter type documentation with those from type hints.</p></li>
+<li><p>Fixed creation of templates in reduction routines of <code class="docutils literal notranslate"><span class="pre">xCentralMoments</span></code>.
+Previously, we build the template for the result using something like
+<code class="docutils literal notranslate"><span class="pre">da.isel(dim=0)</span></code>. This kept scalar coordinates of <code class="docutils literal notranslate"><span class="pre">da</span></code> with <code class="docutils literal notranslate"><span class="pre">dim</span></code>. Now we use
+<code class="docutils literal notranslate"><span class="pre">da.isel(dim=0,</span> <span class="pre">drop=True)</span></code> to drop these.</p></li>
+<li><p>Updated dependencies.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-8-0-2024-02-20">
+<h2>v0.8.0 — 2024-02-20<a class="headerlink" href="#v0-8-0-2024-02-20" title="Link to this heading">#</a></h2>
+<section id="id25">
+<h3>Added<a class="headerlink" href="#id25" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">to_values</span></code> method to access underlying array data. This should be
+preferred to <code class="docutils literal notranslate"><span class="pre">.values</span></code> attribute.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">to_numpy</span></code> method to access underlying <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>.</p></li>
+<li><p>Added <code class="docutils literal notranslate"><span class="pre">to_dataarray</span></code> method to access underlying <code class="docutils literal notranslate"><span class="pre">xarray.DataArray</span></code> in
+<code class="docutils literal notranslate"><span class="pre">xCentralMoment</span> <span class="pre">s</span></code></p></li>
+<li><p>Added submodule <code class="docutils literal notranslate"><span class="pre">cmomy.random</span></code> to handle random numbers generation. This uses
+<code class="docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> behind the scenes.</p></li>
+<li><p>Updated <code class="docutils literal notranslate"><span class="pre">ruff</span></code> linting rules</p></li>
+<li><p>Now using <code class="docutils literal notranslate"><span class="pre">hatchling</span></code> for package building</p></li>
+<li><p>Update repo template</p></li>
+</ul>
+</section>
+<section id="id26">
+<h3>Changed<a class="headerlink" href="#id26" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Now CentralMoments and xCentralMoments ensure that data/data_flat share
+memory. This may result in passed data not being the same as the internal
+data, if reshaping data creates a copy.</p></li>
+<li><p>Made little used arguments keyword only</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-7-0-2023-08-11">
+<h2>v0.7.0 — 2023-08-11<a class="headerlink" href="#v0-7-0-2023-08-11" title="Link to this heading">#</a></h2>
+<section id="id27">
+<h3>Added<a class="headerlink" href="#id27" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Now use <a class="reference external" href="https://github.com/scientific-python/lazy_loader">lazy_loader</a> to
+speed up initial load time.</p></li>
+<li><p>Now using <code class="docutils literal notranslate"><span class="pre">module_utilities</span> <span class="pre">&gt;=0.6</span></code>.</p></li>
+<li><p>Changed from <code class="docutils literal notranslate"><span class="pre">custom-inherit</span></code> to <code class="docutils literal notranslate"><span class="pre">docstring-inheritance</span></code></p></li>
+<li><p>Now fully supports typing (passing mypy –strict and pyright)</p></li>
+<li><p>Relocated numba functions to submodule <code class="docutils literal notranslate"><span class="pre">cmomy._lib</span></code>.</p></li>
+</ul>
+</section>
+<section id="id28">
+<h3>Changed<a class="headerlink" href="#id28" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Moved tests to top level of repo (<code class="docutils literal notranslate"><span class="pre">src/cmomy/tests</span></code> to <code class="docutils literal notranslate"><span class="pre">tests</span></code>)</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-5-0-2023-06-14">
+<h2>v0.5.0 — 2023-06-14<a class="headerlink" href="#v0-5-0-2023-06-14" title="Link to this heading">#</a></h2>
+<section id="id29">
+<h3>Added<a class="headerlink" href="#id29" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Package now available on conda-forge</p></li>
+<li><p>Bumped maximum python version to 3.11</p></li>
+</ul>
+<p><a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.4.1...v0.5.0"><code class="docutils literal notranslate"><span class="pre">v0.4.1...v0.5.0</span></code></a></p>
+</section>
+<section id="id30">
+<h3>Changed<a class="headerlink" href="#id30" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Testing now handled with nox.</p></li>
+</ul>
+</section>
+</section>
+<section id="v0-4-0-2023-05-02">
+<h2>v0.4.0 — 2023-05-02<a class="headerlink" href="#v0-4-0-2023-05-02" title="Link to this heading">#</a></h2>
+<section id="id31">
+<h3>Added<a class="headerlink" href="#id31" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Moved module <code class="docutils literal notranslate"><span class="pre">_docstrings_</span></code> to <code class="docutils literal notranslate"><span class="pre">docstrings</span></code>. This can be used by other
+modules.</p></li>
+</ul>
+</section>
+<section id="id32">
+<h3>Changed<a class="headerlink" href="#id32" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Update package layout</p></li>
+<li><p>New linters via pre-commit</p></li>
+<li><p>Development env now handled by tox</p></li>
+<li><p>Now use <code class="docutils literal notranslate"><span class="pre">module-utilities</span></code> to handle caching and docfiller.</p></li>
+</ul>
+<p><a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.3.0...v0.4.0"><code class="docutils literal notranslate"><span class="pre">v0.3.0...v0.4.0</span></code></a></p>
+</section>
+</section>
+<section id="v0-3-0-2023-04-24">
+<h2>v0.3.0 - 2023-04-24<a class="headerlink" href="#v0-3-0-2023-04-24" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.2.2...v0.3.0"><code class="docutils literal notranslate"><span class="pre">v0.2.2...v0.3.0</span></code></a></p>
+</section>
+<section id="v0-2-2-2023-04-05">
+<h2>v0.2.2 - 2023-04-05<a class="headerlink" href="#v0-2-2-2023-04-05" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.2.1...v0.2.2"><code class="docutils literal notranslate"><span class="pre">v0.2.1...v0.2.2</span></code></a></p>
+</section>
+<section id="v0-2-1-2023-04-05">
+<h2>v0.2.1 - 2023-04-05<a class="headerlink" href="#v0-2-1-2023-04-05" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.2.0...v0.2.1"><code class="docutils literal notranslate"><span class="pre">v0.2.0...v0.2.1</span></code></a></p>
+</section>
+<section id="v0-2-0-2023-03-22">
+<h2>v0.2.0 - 2023-03-22<a class="headerlink" href="#v0-2-0-2023-03-22" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.9...v0.2.0"><code class="docutils literal notranslate"><span class="pre">v0.1.9...v0.2.0</span></code></a></p>
+</section>
+<section id="v0-1-9-2023-02-15">
+<h2>v0.1.9 - 2023-02-15<a class="headerlink" href="#v0-1-9-2023-02-15" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.8...v0.1.9"><code class="docutils literal notranslate"><span class="pre">v0.1.8...v0.1.9</span></code></a></p>
+</section>
+<section id="v0-1-8-2022-12-02">
+<h2>v0.1.8 - 2022-12-02<a class="headerlink" href="#v0-1-8-2022-12-02" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.7...v0.1.8"><code class="docutils literal notranslate"><span class="pre">v0.1.7...v0.1.8</span></code></a></p>
+</section>
+<section id="v0-1-7-2022-09-28">
+<h2>v0.1.7 - 2022-09-28<a class="headerlink" href="#v0-1-7-2022-09-28" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.6...v0.1.7"><code class="docutils literal notranslate"><span class="pre">v0.1.6...v0.1.7</span></code></a></p>
+</section>
+<section id="v0-1-6-2022-09-27">
+<h2>v0.1.6 - 2022-09-27<a class="headerlink" href="#v0-1-6-2022-09-27" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.5...v0.1.6"><code class="docutils literal notranslate"><span class="pre">v0.1.5...v0.1.6</span></code></a></p>
+</section>
+<section id="v0-1-5-2022-09-26">
+<h2>v0.1.5 - 2022-09-26<a class="headerlink" href="#v0-1-5-2022-09-26" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.4...v0.1.5"><code class="docutils literal notranslate"><span class="pre">v0.1.4...v0.1.5</span></code></a></p>
+</section>
+<section id="v0-1-4-2022-09-15">
+<h2>v0.1.4 - 2022-09-15<a class="headerlink" href="#v0-1-4-2022-09-15" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.3...v0.1.4"><code class="docutils literal notranslate"><span class="pre">v0.1.3...v0.1.4</span></code></a></p>
+</section>
+<section id="v0-1-3-2022-09-15">
+<h2>v0.1.3 - 2022-09-15<a class="headerlink" href="#v0-1-3-2022-09-15" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.2...v0.1.3"><code class="docutils literal notranslate"><span class="pre">v0.1.2...v0.1.3</span></code></a></p>
+</section>
+<section id="v0-1-2-2022-09-13">
+<h2>v0.1.2 - 2022-09-13<a class="headerlink" href="#v0-1-2-2022-09-13" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.1...v0.1.2"><code class="docutils literal notranslate"><span class="pre">v0.1.1...v0.1.2</span></code></a></p>
+</section>
+<section id="v0-1-1-2022-09-13">
+<h2>v0.1.1 - 2022-09-13<a class="headerlink" href="#v0-1-1-2022-09-13" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.1.0...v0.1.1"><code class="docutils literal notranslate"><span class="pre">v0.1.0...v0.1.1</span></code></a></p>
+</section>
+<section id="v0-1-0-2022-09-13">
+<h2>v0.1.0 - 2022-09-13<a class="headerlink" href="#v0-1-0-2022-09-13" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.0.7...v0.1.0"><code class="docutils literal notranslate"><span class="pre">v0.0.7...v0.1.0</span></code></a></p>
+</section>
+<section id="v0-0-7-2021-05-18">
+<h2>v0.0.7 - 2021-05-18<a class="headerlink" href="#v0-0-7-2021-05-18" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.0.6...v0.0.7"><code class="docutils literal notranslate"><span class="pre">v0.0.6...v0.0.7</span></code></a></p>
+</section>
+<section id="v0-0-6-2021-02-03">
+<h2>v0.0.6 - 2021-02-03<a class="headerlink" href="#v0-0-6-2021-02-03" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.0.4...v0.0.6"><code class="docutils literal notranslate"><span class="pre">v0.0.4...v0.0.6</span></code></a></p>
+</section>
+<section id="v0-0-4-2020-12-21">
+<h2>v0.0.4 - 2020-12-21<a class="headerlink" href="#v0-0-4-2020-12-21" title="Link to this heading">#</a></h2>
+<p>Full set of changes:
+<a class="reference external" href="https://github.com/usnistgov/cmomy/compare/v0.0.3...v0.0.4"><code class="docutils literal notranslate"><span class="pre">v0.0.3...v0.0.4</span></code></a></p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="authors.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Credits</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="navigation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Indices and tables</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">1.1.1</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#documentation">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#contributors">Contributors</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">1.1.0</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id3">Documentation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id4">Contributors</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v1-0-2-2025-10-14">v1.0.2 — 2025-10-14</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v1-0-1-2025-09-26">v1.0.1 — 2025-09-26</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id5">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v1-0-0-2025-09-26">v1.0.0 — 2025-09-26</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id6">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-24-0-2025-01-23">v0.24.0 — 2025-01-23</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id7">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id8">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-23-0-2024-10-30">v0.23.0 — 2024-10-30</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id9">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-22-0-2024-09-28">v0.22.0 — 2024-09-28</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id10">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-21-0-2024-09-25">v0.21.0 — 2024-09-25</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#removed">Removed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id11">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id12">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-20-0-2024-09-21">v0.20.0 — 2024-09-21</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-19-0-2024-09-20">v0.19.0 — 2024-09-20</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id13">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-18-0-2024-09-18">v0.18.0 — 2024-09-18</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id14">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-17-0-2024-09-16">v0.17.0 — 2024-09-16</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id15">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-16-0-2024-08-06">v0.16.0 — 2024-08-06</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id16">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-15-0-2024-06-21">v0.15.0 — 2024-06-21</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id17">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-14-0-2024-06-20">v0.14.0 — 2024-06-20</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id18">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id19">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-13-0-2024-06-18">v0.13.0 — 2024-06-18</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id20">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id21">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-12-0-2024-06-13">v0.12.0 — 2024-06-13</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id22">Added</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-11-0-2024-06-12">v0.11.0 — 2024-06-12</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id23">Changed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#deprecated">Deprecated</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-9-0-2024-04-10">v0.9.0 — 2024-04-10</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id24">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-8-0-2024-02-20">v0.8.0 — 2024-02-20</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id25">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id26">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-7-0-2023-08-11">v0.7.0 — 2023-08-11</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id27">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id28">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-5-0-2023-06-14">v0.5.0 — 2023-06-14</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id29">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id30">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-4-0-2023-05-02">v0.4.0 — 2023-05-02</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id31">Added</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id32">Changed</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-3-0-2023-04-24">v0.3.0 - 2023-04-24</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-2-2-2023-04-05">v0.2.2 - 2023-04-05</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-2-1-2023-04-05">v0.2.1 - 2023-04-05</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-2-0-2023-03-22">v0.2.0 - 2023-03-22</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-9-2023-02-15">v0.1.9 - 2023-02-15</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-8-2022-12-02">v0.1.8 - 2022-12-02</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-7-2022-09-28">v0.1.7 - 2022-09-28</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-6-2022-09-27">v0.1.6 - 2022-09-27</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-5-2022-09-26">v0.1.5 - 2022-09-26</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-4-2022-09-15">v0.1.4 - 2022-09-15</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-3-2022-09-15">v0.1.3 - 2022-09-15</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-2-2022-09-13">v0.1.2 - 2022-09-13</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-1-2022-09-13">v0.1.1 - 2022-09-13</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-1-0-2022-09-13">v0.1.0 - 2022-09-13</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-0-7-2021-05-18">v0.0.7 - 2021-05-18</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-0-6-2021-02-03">v0.0.6 - 2021-02-03</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#v0-0-4-2020-12-21">v0.0.4 - 2020-12-21</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By William P. Krekelberg
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2020, William P. Krekelberg.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on 2026-03-21.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

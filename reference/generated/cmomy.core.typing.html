@@ -1,0 +1,966 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Typing aliases (cmomy.core.typing) &#8212; cmomy 1.1.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=bee7790f"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.core.typing';</script>
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
+    <script src="../../_static/js/leave_notice.js?v=133c5535"></script>
+    <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Typing aliases (cmomy.resample.typing)" href="cmomy.resample.typing.html" />
+    <link rel="prev" title="Numba caching tools" href="cmomy.cache.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.1.1" />
+    <meta name="docbuild:last-update" content="2026-03-21"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">cmomy 1.1.1 documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    cmomy
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../examples/index.html">User guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/usage/motivation.html">Why <code class="docutils literal notranslate"><span class="pre">cmomy</span></code>?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/usage/usage_notebook.html">Usage</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.xCentralMoments.html">cmomy.xCentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap.html">cmomy.wrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.zeros_like.html">cmomy.zeros_like</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.MomParams.html">cmomy.MomParams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.MomParamsDict.html">cmomy.MomParamsDict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.concat.html">cmomy.concat</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../api-modules.html">Modules</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.grouped.html">Submodule to work with grouped data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">grouped</span></code>)</a></li>
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.rolling.html">Rolling and rolling exponential averages (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rolling</span></code>)</a></li>
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.utils.html">Interface to utility functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.options.html">Sets up options (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.options</span></code>)</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.cache.html">Numba caching tools</a></li>
+
+
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.resample.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrapper.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
+
+
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-baseclasses.html">Base Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrapper._wrapper_abc.html"><code class="docutils literal notranslate"><span class="pre">MomParamsT</span></code></a></li>
+
+
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../navigation.html">Indices and tables</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../genindex.html">Index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../py-modindex.html">Module Index</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/usnistgov/cmomy" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.core.typing.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/reference/generated/cmomy.core.typing.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Typing aliases (cmomy.core.typing)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DataT"><code class="docutils literal notranslate"><span class="pre">DataT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SamplerArrayT"><code class="docutils literal notranslate"><span class="pre">SamplerArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Axes"><code class="docutils literal notranslate"><span class="pre">Axes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxesWrap"><code class="docutils literal notranslate"><span class="pre">AxesWrap</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduce"><code class="docutils literal notranslate"><span class="pre">AxisReduce</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduceWrap"><code class="docutils literal notranslate"><span class="pre">AxisReduceWrap</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduceMult"><code class="docutils literal notranslate"><span class="pre">AxisReduceMult</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduceMultWrap"><code class="docutils literal notranslate"><span class="pre">AxisReduceMultWrap</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.RngTypes"><code class="docutils literal notranslate"><span class="pre">RngTypes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DTypeAny"><code class="docutils literal notranslate"><span class="pre">DTypeAny</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatDTypes"><code class="docutils literal notranslate"><span class="pre">FloatDTypes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.LongIntDType"><code class="docutils literal notranslate"><span class="pre">LongIntDType</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayAny"><code class="docutils literal notranslate"><span class="pre">NDArrayAny</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayInt"><code class="docutils literal notranslate"><span class="pre">NDArrayInt</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayFloats"><code class="docutils literal notranslate"><span class="pre">NDArrayFloats</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayBool"><code class="docutils literal notranslate"><span class="pre">NDArrayBool</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.IntDTypeT"><code class="docutils literal notranslate"><span class="pre">IntDTypeT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDGeneric"><code class="docutils literal notranslate"><span class="pre">NDGeneric</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Moments"><code class="docutils literal notranslate"><span class="pre">Moments</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomentsStrict"><code class="docutils literal notranslate"><span class="pre">MomentsStrict</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomNDim"><code class="docutils literal notranslate"><span class="pre">MomNDim</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomAxes"><code class="docutils literal notranslate"><span class="pre">MomAxes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomAxesStrict"><code class="docutils literal notranslate"><span class="pre">MomAxesStrict</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DimsReduce"><code class="docutils literal notranslate"><span class="pre">DimsReduce</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DimsReduceMult"><code class="docutils literal notranslate"><span class="pre">DimsReduceMult</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Dims"><code class="docutils literal notranslate"><span class="pre">Dims</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomDims"><code class="docutils literal notranslate"><span class="pre">MomDims</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomDimsStrict"><code class="docutils literal notranslate"><span class="pre">MomDimsStrict</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.IndexAny"><code class="docutils literal notranslate"><span class="pre">IndexAny</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.CoordsType"><code class="docutils literal notranslate"><span class="pre">CoordsType</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayOrderCF"><code class="docutils literal notranslate"><span class="pre">ArrayOrderCF</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayOrderACF"><code class="docutils literal notranslate"><span class="pre">ArrayOrderACF</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayOrderKACF"><code class="docutils literal notranslate"><span class="pre">ArrayOrderKACF</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Casting"><code class="docutils literal notranslate"><span class="pre">Casting</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MissingCoreDimOptions"><code class="docutils literal notranslate"><span class="pre">MissingCoreDimOptions</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SelectMoment"><code class="docutils literal notranslate"><span class="pre">SelectMoment</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ConvertStyle"><code class="docutils literal notranslate"><span class="pre">ConvertStyle</span></code></a></li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="typing-aliases-cmomy-core-typing">
+<span id="module-cmomy.core.typing"></span><h1>Typing aliases (<a class="reference internal" href="#module-cmomy.core.typing" title="cmomy.core.typing"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code></a>)<a class="headerlink" href="#typing-aliases-cmomy-core-typing" title="Link to this heading">#</a></h1>
+</section>
+<p><strong>Classes:</strong></p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.DataT" title="cmomy.core.typing.DataT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataT</span></code></a></p></td>
+<td><p>DataArray or Dataset</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.core.typing.FloatT" title="cmomy.core.typing.FloatT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatT</span></code></a></p></td>
+<td><p>TypeVar of floating point precision (np.float32, np.float64, default=Any)</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.SamplerArrayT" title="cmomy.core.typing.SamplerArrayT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SamplerArrayT</span></code></a></p></td>
+<td><p>TypeVar of types wrapped by IndexSampler</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>Data:</strong></p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.core.typing.IndexAny" title="cmomy.core.typing.IndexAny"><code class="xref py py-obj docutils literal notranslate"><span class="pre">IndexAny</span></code></a></p></td>
+<td><p>Index</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.core.typing.DataT">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">DataT</span></span><a class="headerlink" href="#cmomy.core.typing.DataT" title="Link to this definition">#</a></dt>
+<dd><p>DataArray or Dataset</p>
+<p>alias of TypeVar(‘DataT’, ~xarray.core.dataarray.DataArray, ~xarray.core.dataset.Dataset)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.core.typing.FloatT">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">FloatT</span></span><a class="headerlink" href="#cmomy.core.typing.FloatT" title="Link to this definition">#</a></dt>
+<dd><p>TypeVar of floating point precision (np.float32, np.float64, default=Any)</p>
+<p>alias of TypeVar(‘FloatT’, ~numpy.float64, ~numpy.float32)</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="cmomy.core.typing.SamplerArrayT">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">SamplerArrayT</span></span><a class="headerlink" href="#cmomy.core.typing.SamplerArrayT" title="Link to this definition">#</a></dt>
+<dd><p>TypeVar of types wrapped by IndexSampler</p>
+<p>alias of TypeVar(‘SamplerArrayT’, NDArrayAny, ~xarray.core.dataarray.DataArray, ~xarray.core.dataset.Dataset, xr.DataArray | xr.Dataset)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.Axes">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">Axes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">int</span> <span class="pre">|</span> <span class="pre">tuple[int,</span> <span class="pre">...]</span></em><a class="headerlink" href="#cmomy.core.typing.Axes" title="Link to this definition">#</a></dt>
+<dd><p>Axes type</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.AxesWrap">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">AxesWrap</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">complex</span> <span class="pre">|</span> <span class="pre">tuple[complex,</span> <span class="pre">...]</span></em><a class="headerlink" href="#cmomy.core.typing.AxesWrap" title="Link to this definition">#</a></dt>
+<dd><p>Axes type (with wrapping)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.AxisReduce">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">AxisReduce</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">int</span> <span class="pre">|</span> <span class="pre">None</span></em><a class="headerlink" href="#cmomy.core.typing.AxisReduce" title="Link to this definition">#</a></dt>
+<dd><p>Reduction axes type</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.AxisReduceWrap">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">AxisReduceWrap</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">complex</span> <span class="pre">|</span> <span class="pre">None</span></em><a class="headerlink" href="#cmomy.core.typing.AxisReduceWrap" title="Link to this definition">#</a></dt>
+<dd><p>Reduction axes type (with wrapping)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.AxisReduceMult">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">AxisReduceMult</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">int</span> <span class="pre">|</span> <span class="pre">tuple[int,</span> <span class="pre">...]</span> <span class="pre">|</span> <span class="pre">None</span></em><a class="headerlink" href="#cmomy.core.typing.AxisReduceMult" title="Link to this definition">#</a></dt>
+<dd><p>Reduction axes type (multiple)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.AxisReduceMultWrap">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">AxisReduceMultWrap</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">complex</span> <span class="pre">|</span> <span class="pre">tuple[complex,</span> <span class="pre">...]</span> <span class="pre">|</span> <span class="pre">None</span></em><a class="headerlink" href="#cmomy.core.typing.AxisReduceMultWrap" title="Link to this definition">#</a></dt>
+<dd><p>Reduction axes type (multiple, with wrapping)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.RngTypes">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">RngTypes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">int</span> <span class="pre">|</span> <span class="pre">collections.abc.Sequence[int]</span> <span class="pre">|</span> <span class="pre">numpy.random.bit_generator.SeedSequence</span> <span class="pre">|</span> <span class="pre">numpy.random.bit_generator.BitGenerator</span> <span class="pre">|</span> <span class="pre">numpy.random._generator.Generator</span></em><a class="headerlink" href="#cmomy.core.typing.RngTypes" title="Link to this definition">#</a></dt>
+<dd><p>Random number generator types</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cmomy.core.typing.DTypeAny">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">DTypeAny</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/../../../../../../../opt/hostedtoolcache/Python/3.13.12/x64/lib/python3.13/typing.py#L598-L613"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.DTypeAny" title="Link to this definition">#</a></dt>
+<dd><p>Any dtype</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.FloatDTypes">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">FloatDTypes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">numpy.float32</span> <span class="pre">|</span> <span class="pre">numpy.float64</span></em><a class="headerlink" href="#cmomy.core.typing.FloatDTypes" title="Link to this definition">#</a></dt>
+<dd><p>Floating dtype</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cmomy.core.typing.LongIntDType">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">LongIntDType</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/../../.nox/docs/lib/python3.13/site-packages/numpy/__init__.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.LongIntDType" title="Link to this definition">#</a></dt>
+<dd><p>Long integer dtype</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.NDArrayAny">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">NDArrayAny</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.NDArrayAny" title="Link to this definition">#</a></dt>
+<dd><p>Array type (any dtype)</p>
+<p>alias of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>, …], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>]]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.NDArrayInt">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">NDArrayInt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.NDArrayInt" title="Link to this definition">#</a></dt>
+<dd><p>Array type (int dtype)</p>
+<p>alias of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>, …], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">int64</span></code>]]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.NDArrayFloats">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">NDArrayFloats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.NDArrayFloats" title="Link to this definition">#</a></dt>
+<dd><p>Array type (float dtype)</p>
+<p>alias of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>, …], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<code class="xref py py-class docutils literal notranslate"><span class="pre">float32</span></code> | <code class="xref py py-class docutils literal notranslate"><span class="pre">float64</span></code>]]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.NDArrayBool">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">NDArrayBool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.NDArrayBool" title="Link to this definition">#</a></dt>
+<dd><p>Array type (bool dtype)</p>
+<p>alias of <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>, …], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://numpy.org/doc/stable/reference/arrays.scalars.html#numpy.bool" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>]]</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cmomy.core.typing.IntDTypeT">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">IntDTypeT</span></span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/../../.nox/docs/lib/python3.13/site-packages/numpy/__init__.py"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.core.typing.IntDTypeT" title="Link to this definition">#</a></dt>
+<dd><p>Integer dtype</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.NDGeneric">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">NDGeneric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.NDGeneric" title="Link to this definition">#</a></dt>
+<dd><p>Float or array of float</p>
+<p>alias of <a class="reference internal" href="#cmomy.core.typing.FloatT" title="cmomy.core.typing.FloatT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatT</span></code></a> | <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Any</span></code></a>, …], <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference internal" href="#cmomy.core.typing.FloatT" title="cmomy.core.typing.FloatT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FloatT</span></code></a>]]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.Moments">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">Moments</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">int</span> <span class="pre">|</span> <span class="pre">tuple[int]</span> <span class="pre">|</span> <span class="pre">tuple[int,</span> <span class="pre">int]</span></em><a class="headerlink" href="#cmomy.core.typing.Moments" title="Link to this definition">#</a></dt>
+<dd><p>Moments type</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.MomentsStrict">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomentsStrict</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">tuple[int]</span> <span class="pre">|</span> <span class="pre">tuple[int,</span> <span class="pre">int]</span></em><a class="headerlink" href="#cmomy.core.typing.MomentsStrict" title="Link to this definition">#</a></dt>
+<dd><p>Strict moments type</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.MomNDim">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomNDim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.MomNDim" title="Link to this definition">#</a></dt>
+<dd><p>Number of moment dimensions</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[1, 2]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.MomAxes">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomAxes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">int</span> <span class="pre">|</span> <span class="pre">tuple[int]</span> <span class="pre">|</span> <span class="pre">tuple[int,</span> <span class="pre">int]</span></em><a class="headerlink" href="#cmomy.core.typing.MomAxes" title="Link to this definition">#</a></dt>
+<dd><p>Axes containing moment(s).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.MomAxesStrict">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomAxesStrict</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">tuple[int]</span> <span class="pre">|</span> <span class="pre">tuple[int,</span> <span class="pre">int]</span></em><a class="headerlink" href="#cmomy.core.typing.MomAxesStrict" title="Link to this definition">#</a></dt>
+<dd><p>Axes containing moment(s).</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.DimsReduce">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">DimsReduce</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">collections.abc.Hashable</span> <span class="pre">|</span> <span class="pre">None</span></em><a class="headerlink" href="#cmomy.core.typing.DimsReduce" title="Link to this definition">#</a></dt>
+<dd><p>Reduction dimension</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.DimsReduceMult">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">DimsReduceMult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.DimsReduceMult" title="Link to this definition">#</a></dt>
+<dd><p>Reduction dimension(s)</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Hashable" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></a> | <code class="xref py py-class docutils literal notranslate"><span class="pre">Collection[Hashable]</span></code> | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.Dims">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">Dims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">str</span> <span class="pre">|</span> <span class="pre">collections.abc.Collection[collections.abc.Hashable]</span> <span class="pre">|</span> <span class="pre">ellipsis</span> <span class="pre">|</span> <span class="pre">None</span></em><a class="headerlink" href="#cmomy.core.typing.Dims" title="Link to this definition">#</a></dt>
+<dd><p>Dimensions</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.MomDims">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomDims</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">collections.abc.Hashable</span> <span class="pre">|</span> <span class="pre">tuple[collections.abc.Hashable]</span> <span class="pre">|</span> <span class="pre">tuple[collections.abc.Hashable,</span> <span class="pre">collections.abc.Hashable]</span></em><a class="headerlink" href="#cmomy.core.typing.MomDims" title="Link to this definition">#</a></dt>
+<dd><p>Dimensions containing moment(s)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.MomDimsStrict">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MomDimsStrict</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">tuple[collections.abc.Hashable]</span> <span class="pre">|</span> <span class="pre">tuple[collections.abc.Hashable,</span> <span class="pre">collections.abc.Hashable]</span></em><a class="headerlink" href="#cmomy.core.typing.MomDimsStrict" title="Link to this definition">#</a></dt>
+<dd><p>Dimensions containing moment(s)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.IndexAny">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">IndexAny</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'pd.Index[Any]'</span></em><a class="headerlink" href="#cmomy.core.typing.IndexAny" title="Link to this definition">#</a></dt>
+<dd><p>Index</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.CoordsType">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">CoordsType</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">collections.abc.Mapping[typing.Any,</span> <span class="pre">typing.Any]</span> <span class="pre">|</span> <span class="pre">None</span></em><a class="headerlink" href="#cmomy.core.typing.CoordsType" title="Link to this definition">#</a></dt>
+<dd><p>Coordinates</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.ArrayOrderCF">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ArrayOrderCF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.ArrayOrderCF" title="Link to this definition">#</a></dt>
+<dd><p>Order parameters</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘C’, ‘F’] | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.ArrayOrderACF">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ArrayOrderACF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.ArrayOrderACF" title="Link to this definition">#</a></dt>
+<dd><p>Order parameters</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘A’, ‘C’, ‘F’] | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.ArrayOrderKACF">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ArrayOrderKACF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.ArrayOrderKACF" title="Link to this definition">#</a></dt>
+<dd><p>Order parameters</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘K’, ‘A’, ‘C’, ‘F’] | <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">None</span></code></a></p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.Casting">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">Casting</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.Casting" title="Link to this definition">#</a></dt>
+<dd><p>Casting rules</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘no’, ‘equiv’, ‘safe’, ‘same_kind’, ‘unsafe’]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.MissingCoreDimOptions">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">MissingCoreDimOptions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.MissingCoreDimOptions" title="Link to this definition">#</a></dt>
+<dd><p>What to do if missing a core dimensions.</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘raise’, ‘copy’, ‘drop’]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.SelectMoment">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">SelectMoment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.SelectMoment" title="Link to this definition">#</a></dt>
+<dd><p>Moment names.</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘weight’, ‘ave’, ‘cov’, ‘var’, ‘xave’, ‘yave’, ‘xvar’, ‘yvar’, ‘all’, ‘xmom_0’, ‘xmom_1’, ‘ymom_0’, ‘ymom_1’]</p>
+</dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="cmomy.core.typing.ConvertStyle">
+<span class="sig-prename descclassname"><span class="pre">cmomy.core.typing.</span></span><span class="sig-name descname"><span class="pre">ConvertStyle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cmomy.core.typing.ConvertStyle" title="Link to this definition">#</a></dt>
+<dd><p>Style to convert to</p>
+<p>alias of <a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Literal</span></code></a>[‘central’, ‘raw’]</p>
+</dd></dl>
+
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cmomy.cache.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Numba caching tools</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cmomy.resample.typing.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DataT"><code class="docutils literal notranslate"><span class="pre">DataT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatT"><code class="docutils literal notranslate"><span class="pre">FloatT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SamplerArrayT"><code class="docutils literal notranslate"><span class="pre">SamplerArrayT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Axes"><code class="docutils literal notranslate"><span class="pre">Axes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxesWrap"><code class="docutils literal notranslate"><span class="pre">AxesWrap</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduce"><code class="docutils literal notranslate"><span class="pre">AxisReduce</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduceWrap"><code class="docutils literal notranslate"><span class="pre">AxisReduceWrap</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduceMult"><code class="docutils literal notranslate"><span class="pre">AxisReduceMult</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.AxisReduceMultWrap"><code class="docutils literal notranslate"><span class="pre">AxisReduceMultWrap</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.RngTypes"><code class="docutils literal notranslate"><span class="pre">RngTypes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DTypeAny"><code class="docutils literal notranslate"><span class="pre">DTypeAny</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.FloatDTypes"><code class="docutils literal notranslate"><span class="pre">FloatDTypes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.LongIntDType"><code class="docutils literal notranslate"><span class="pre">LongIntDType</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayAny"><code class="docutils literal notranslate"><span class="pre">NDArrayAny</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayInt"><code class="docutils literal notranslate"><span class="pre">NDArrayInt</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayFloats"><code class="docutils literal notranslate"><span class="pre">NDArrayFloats</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDArrayBool"><code class="docutils literal notranslate"><span class="pre">NDArrayBool</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.IntDTypeT"><code class="docutils literal notranslate"><span class="pre">IntDTypeT</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.NDGeneric"><code class="docutils literal notranslate"><span class="pre">NDGeneric</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Moments"><code class="docutils literal notranslate"><span class="pre">Moments</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomentsStrict"><code class="docutils literal notranslate"><span class="pre">MomentsStrict</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomNDim"><code class="docutils literal notranslate"><span class="pre">MomNDim</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomAxes"><code class="docutils literal notranslate"><span class="pre">MomAxes</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomAxesStrict"><code class="docutils literal notranslate"><span class="pre">MomAxesStrict</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DimsReduce"><code class="docutils literal notranslate"><span class="pre">DimsReduce</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.DimsReduceMult"><code class="docutils literal notranslate"><span class="pre">DimsReduceMult</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Dims"><code class="docutils literal notranslate"><span class="pre">Dims</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomDims"><code class="docutils literal notranslate"><span class="pre">MomDims</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MomDimsStrict"><code class="docutils literal notranslate"><span class="pre">MomDimsStrict</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.IndexAny"><code class="docutils literal notranslate"><span class="pre">IndexAny</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.CoordsType"><code class="docutils literal notranslate"><span class="pre">CoordsType</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayOrderCF"><code class="docutils literal notranslate"><span class="pre">ArrayOrderCF</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayOrderACF"><code class="docutils literal notranslate"><span class="pre">ArrayOrderACF</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ArrayOrderKACF"><code class="docutils literal notranslate"><span class="pre">ArrayOrderKACF</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.Casting"><code class="docutils literal notranslate"><span class="pre">Casting</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.MissingCoreDimOptions"><code class="docutils literal notranslate"><span class="pre">MissingCoreDimOptions</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.SelectMoment"><code class="docutils literal notranslate"><span class="pre">SelectMoment</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.core.typing.ConvertStyle"><code class="docutils literal notranslate"><span class="pre">ConvertStyle</span></code></a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By William P. Krekelberg
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2020, William P. Krekelberg.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on 2026-03-21.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

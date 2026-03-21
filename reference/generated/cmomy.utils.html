@@ -1,0 +1,1104 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Interface to utility functions (cmomy.utils) &#8212; cmomy 1.1.1 documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/sphinx-book-theme.css?v=3c74b3bc" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.11b39860a7a0cbfd473a3ad8a317855267ff0bd372690045ca344a6b62be495e.css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/nist-header-footer/css/nist-combined.css" />
+    <link rel="stylesheet" type="text/css" href="https://pages.nist.gov/leaveNotice/css/jquery.leaveNotice.css" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="../../_static/documentation_options.js?v=bee7790f"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'reference/generated/cmomy.utils';</script>
+    <script src="https://code.jquery.com/jquery-3.6.2.min.js"></script>
+    <script src="https://pages.nist.gov/nist-header-footer/js/nist-header-footer.js"></script>
+    <script src="https://pages.nist.gov/leaveNotice/js/jquery.leaveNotice-nist.min.js"></script>
+    <script src="../../_static/js/leave_notice.js?v=133c5535"></script>
+    <script async="async" id="_fed_au_ua_tag" type="text/javascript" src="https://dap.digitalgov.gov/Universal-Federated-Analytics-Min.js?agency=NIST&subagency=github&pua=UA-66610693-1&yt=true&exts=ppsx,pps,f90,sch,rtf,wrl,txz,m1v,xlsm,msi,xsd,f,tif,eps,mpg,xml,pl,xlt,c"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Internal numpy.random.Generator (cmomy.random)" href="cmomy.random.html" />
+    <link rel="prev" title="Conversion routines (convert)" href="cmomy.convert.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="1.1.1" />
+    <meta name="docbuild:last-update" content="2026-03-21"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">cmomy 1.1.1 documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../../index.html">
+                    cmomy
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../examples/index.html">User guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/usage/motivation.html">Why <code class="docutils literal notranslate"><span class="pre">cmomy</span></code>?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../examples/usage/usage_notebook.html">Usage</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">API reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-public.html">Top level API (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy</span></code>)</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsArray.html">cmomy.CentralMomentsArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMomentsData.html">cmomy.CentralMomentsData</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.CentralMoments.html">cmomy.CentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.xCentralMoments.html">cmomy.xCentralMoments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap.html">cmomy.wrap</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_reduce_vals.html">cmomy.wrap_reduce_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_resample_vals.html">cmomy.wrap_resample_vals</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrap_raw.html">cmomy.wrap_raw</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.zeros_like.html">cmomy.zeros_like</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.MomParams.html">cmomy.MomParams</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.MomParamsDict.html">cmomy.MomParamsDict</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.concat.html">cmomy.concat</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../api-modules.html">Modules</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cmomy.reduction.html">Routines to perform central moments reduction (<code class="xref py py-mod docutils literal notranslate"><span class="pre">reduction</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.resample.html">Routine to perform resampling (<code class="xref py py-mod docutils literal notranslate"><span class="pre">resample</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.grouped.html">Submodule to work with grouped data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">grouped</span></code>)</a></li>
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.rolling.html">Rolling and rolling exponential averages (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rolling</span></code>)</a></li>
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.convert.html">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</a></li>
+
+
+
+
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Interface to utility functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.random.html">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</a></li>
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.confidence_interval.html">Routines to calculate confidence intervals from resampled data (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.confidence_interval</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.compile.html">Pre-compile <code class="docutils literal notranslate"><span class="pre">numba</span></code> based core routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.compile</span></code>)</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.options.html">Sets up options (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.options</span></code>)</a></li>
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.cache.html">Numba caching tools</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.core.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.core.typing</span></code>)</a></li>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.resample.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.resample.typing</span></code>)</a></li>
+
+
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrapper.typing.html">Typing aliases (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.wrapper.typing</span></code>)</a></li>
+
+
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../api-baseclasses.html">Base Classes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cmomy.wrapper._wrapper_abc.html"><code class="docutils literal notranslate"><span class="pre">MomParamsT</span></code></a></li>
+
+
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../license.html">License</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../authors.html">Credits</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../changelog.html">Changelog</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../navigation.html">Indices and tables</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../genindex.html">Index</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../py-modindex.html">Module Index</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/usnistgov/cmomy" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/usnistgov/cmomy/issues/new?title=Issue%20on%20page%20%2Freference/generated/cmomy.utils.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../_sources/reference/generated/cmomy.utils.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Interface to utility functions (cmomy.utils)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Interface to utility functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.moveaxis_order"><code class="docutils literal notranslate"><span class="pre">moveaxis_order()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.moveaxis"><code class="docutils literal notranslate"><span class="pre">moveaxis()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.moment_indexer"><code class="docutils literal notranslate"><span class="pre">moment_indexer()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.select_moment"><code class="docutils literal notranslate"><span class="pre">select_moment()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.assign_moment"><code class="docutils literal notranslate"><span class="pre">assign_moment()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.vals_to_data"><code class="docutils literal notranslate"><span class="pre">vals_to_data()</span></code></a></li>
+</ul>
+
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="interface-to-utility-functions-cmomy-utils">
+<span id="module-cmomy.utils"></span><h1>Interface to utility functions (<a class="reference internal" href="#module-cmomy.utils" title="cmomy.utils"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code></a>)<a class="headerlink" href="#interface-to-utility-functions-cmomy-utils" title="Link to this heading">#</a></h1>
+</section>
+<p><strong>Functions:</strong></p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.utils.moveaxis_order" title="cmomy.utils.moveaxis_order"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moveaxis_order</span></code></a>(x[, axis, dest, dim, ...])</p></td>
+<td><p>Get new integer order for transpose corresponding to <cite>moveaxis</cite> parameters.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.utils.moveaxis" title="cmomy.utils.moveaxis"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moveaxis</span></code></a>(x[, axis, dest, dim, dest_dim, ...])</p></td>
+<td><p>Generalized moveaxis for moments arrays.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.utils.moment_indexer" title="cmomy.utils.moment_indexer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">moment_indexer</span></code></a>(name, mom_ndim[, squeeze])</p></td>
+<td><p>Get indexer for moments</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.utils.select_moment" title="cmomy.utils.select_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_moment</span></code></a>(data, name, *[, mom_ndim, ...])</p></td>
+<td><p>Select specific moments for a central moments array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cmomy.utils.assign_moment" title="cmomy.utils.assign_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">assign_moment</span></code></a>(data[, moment, mom_ndim, ...])</p></td>
+<td><p>Update weights of moments array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cmomy.utils.vals_to_data" title="cmomy.utils.vals_to_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">vals_to_data</span></code></a>(x, *y, mom[, weight, mom_dims, ...])</p></td>
+<td><p>Convert <cite>values</cite> to <cite>central moments array</cite>.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<dl class="py function">
+<dt class="sig sig-object py" id="cmomy.utils.moveaxis_order">
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">moveaxis_order</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_to_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_select_mom_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L80-L167"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.moveaxis_order" title="Link to this definition">#</a></dt>
+<dd><p>Get new integer order for transpose corresponding to <cite>moveaxis</cite> parameters.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cmomy.utils.moveaxis">
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">moveaxis</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dest_dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">MISSING</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axes_to_end</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_select_mom_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L202-L312"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.moveaxis" title="Link to this definition">#</a></dt>
+<dd><p>Generalized moveaxis for moments arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>) – input data</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.14)"><span class="xref std std-term">sequence</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></a>) – Original positions of axes to move.  Complex values wrapped relative to <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>.</p></li>
+<li><p><strong>dest</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.14)"><span class="xref std std-term">sequence</span></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></a>) – Destination positions for each original axes.</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.14)"><span class="xref std std-term">sequence</span></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a>) – Original dimensions to move (for DataArray).</p></li>
+<li><p><strong>dest_dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.14)"><span class="xref std std-term">sequence</span></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a>) – Destination of each original dimension.</p></li>
+<li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>, <em>optional</em>) – If <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> is not <code class="docutils literal notranslate"><span class="pre">None</span></code>, then wrap axis relative to <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>.
+For Example, with mom_ndim=``2``, <code class="docutils literal notranslate"><span class="pre">axis</span> <span class="pre">=</span> <span class="pre">-1</span></code> will be transformed to <code class="docutils literal notranslate"><span class="pre">axis</span> <span class="pre">=</span> <span class="pre">-3</span></code>.
+If <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> is passed and data is an <a class="reference external" href="https://docs.xarray.dev/en/stable/index.html#module-xarray" title="(in xarray v2026.2.0)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">xarray</span></code></a> object, infer <code class="docutils literal notranslate"><span class="pre">mom_n=ndim</span></code> from <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>.</p></li>
+<li><p><strong>mom_axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Location of the moment dimensions. Default to <code class="docutils literal notranslate"><span class="pre">(-mom_ndim,</span>
+<span class="pre">-mom_ndim+1,</span> <span class="pre">...)</span></code>. If specified and <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> is None, set
+<code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> to <code class="docutils literal notranslate"><span class="pre">len(mom_axes)</span></code>. Note that if <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> is
+specified, negative values are relative to the end of the array. This
+is also the case for <code class="docutils literal notranslate"><span class="pre">axes</span></code> if <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> is specified.</p></li>
+<li><p><strong>mom_dims</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a>) – Name of moment dimensions. If specified, infer <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> from
+<code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If also pass <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>, check that <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> is
+consistent with <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If not specified, defaults to
+<code class="docutils literal notranslate"><span class="pre">data.dims[-mom_ndim:]</span></code>. This is primarily used if <code class="docutils literal notranslate"><span class="pre">data</span></code> is a
+<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>, or if <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> are not the last
+dimensions.</p></li>
+<li><p><strong>mom_params</strong> (<a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> or <a class="reference internal" href="cmomy.MomParamsDict.html#cmomy.MomParamsDict" title="cmomy.MomParamsDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParamsDict</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <em>optional</em>) – Moment parameters. You can set moment parameters <code class="docutils literal notranslate"><span class="pre">axes</span></code> and <code class="docutils literal notranslate"><span class="pre">dims</span></code>
+using this option. For example, passing <code class="docutils literal notranslate"><span class="pre">mom_params={&quot;dim&quot;:</span> <span class="pre">(&quot;a&quot;,</span>
+<span class="pre">&quot;b&quot;)}</span></code> is equivalent to passing <code class="docutils literal notranslate"><span class="pre">mom_dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;)</span></code>. You can also
+pass as a <a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> object with
+<code class="docutils literal notranslate"><span class="pre">mom_params=cmomy.MomParams(dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;))</span></code>.</p></li>
+<li><p><strong>axes_to_end</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code>, place sampled dimension (if exists in output) and moment dimensions at end of
+output. Otherwise, place sampled dimension (if exists in output) at same position as input
+<code class="docutils literal notranslate"><span class="pre">axis</span></code> and moment dimensions at same position as input (if input does
+not contain moment dimensions, place them at end of array).</p></li>
+<li><p><strong>allow_select_mom_axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – If True, allow moving moment axes.  Otherwise, raise <code class="docutils literal notranslate"><span class="pre">ValueError</span></code> if try to move <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>) – Same type as <code class="docutils literal notranslate"><span class="pre">x</span></code> with moved axis.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.moveaxis.html#numpy.moveaxis" title="(in NumPy v2.4)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">numpy.moveaxis</span></code></a></p>
+</div>
+<p class="rubric">Notes</p>
+<p>Must specify either <code class="docutils literal notranslate"><span class="pre">axis</span></code> or <code class="docutils literal notranslate"><span class="pre">dim</span></code> and either <code class="docutils literal notranslate"><span class="pre">dest</span></code> or
+<code class="docutils literal notranslate"><span class="pre">dest_dim</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(3, 4, 5, 2)</span>
+</pre></div>
+</div>
+<p>Specifying <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> will result in negative complex axis relative
+to the moments dimensions.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(3, 4, 2, 5)</span>
+</pre></div>
+</div>
+<p>Note that if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> is not specified, then complex axis are equivalent to
+integer axis.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(3, 4, 5, 2)</span>
+</pre></div>
+</div>
+<p>Multiple axes can also be specified.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="n">j</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="n">j</span><span class="p">),</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(4, 3, 2, 5)</span>
+</pre></div>
+</div>
+<p>This also works with dataarrays</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dx</span> <span class="o">=</span> <span class="n">xr</span><span class="o">.</span><span class="n">DataArray</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dims</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">,</span> <span class="s2">&quot;mom_0&quot;</span><span class="p">])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="o">=-</span><span class="mi">1</span><span class="n">j</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">dims</span>
+<span class="go">(&#39;b&#39;, &#39;c&#39;, &#39;a&#39;, &#39;mom_0&#39;)</span>
+</pre></div>
+</div>
+<p>All the routines in <code class="docutils literal notranslate"><span class="pre">cmomy</span></code> accept <cite>moment dimensions</cite> in arbitrary locations.  However, it is often easiest
+to work with these dimensions as the last dimensions in an array.  You can easily achieve this with <code class="docutils literal notranslate"><span class="pre">moveaxis</span></code> with the parameter <code class="docutils literal notranslate"><span class="pre">axes_to_end=True</span></code>.
+For example:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">mom_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">axes_to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(4, 5, 2, 3)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">mom_axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axes_to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2, 5, 3, 4)</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">moveaxis</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">2</span><span class="n">j</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">axes_to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(3, 2, 4, 5)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cmomy.utils.moment_indexer">
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">moment_indexer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L337-L372"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.moment_indexer" title="Link to this definition">#</a></dt>
+<dd><p>Get indexer for moments</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moment</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;weight&quot;,</span> <span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;,</span> <span class="pre">&quot;cov&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;xmom_0&quot;,</span> <span class="pre">&quot;xmom_1&quot;,</span> <span class="pre">&quot;ymom_0&quot;,</span> <span class="pre">&quot;ymom_1&quot;}</span></code>) – <p>Name of moment(s) to select.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;</span></code> : weights</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;</span></code> : Averages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code>: Variance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;cov&quot;</span></code>: Covariance if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>, or variance if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xave&quot;</span></code>: Average of first variable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xvar&quot;</span></code>: Variance of first variable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yave&quot;</span></code>: Average of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yvar&quot;</span></code>: Variance of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code>: All values.</p></li>
+</ul>
+<p>Names <code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;cov&quot;</span></code> imply shape
+<code class="docutils literal notranslate"><span class="pre">data.shape[:-mom_ndim]</span></code>. Names <code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;</span></code> imply shape
+<code class="docutils literal notranslate"><span class="pre">(*data.shape[:-mom_ndim],</span> <span class="pre">mom_ndim)</span></code>, unless <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code> and
+<code class="docutils literal notranslate"><span class="pre">squeeze</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p>
+</p></li>
+<li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>) – Value indicates if moments (<code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>) or comoments (<code class="docutils literal notranslate"><span class="pre">mom_ndim=2</span></code>).
+Defaults to <code class="docutils literal notranslate"><span class="pre">mom_ndim=1</span></code>.</p></li>
+<li><p><strong>squeeze</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – If True, squeeze last dimension if <code class="docutils literal notranslate"><span class="pre">name</span></code> is one of <code class="docutils literal notranslate"><span class="pre">ave</span></code> or <code class="docutils literal notranslate"><span class="pre">var</span></code> and <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>indexer</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cmomy.utils.select_moment">
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">select_moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'variable'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L389-L546"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.select_moment" title="Link to this definition">#</a></dt>
+<dd><p>Select specific moments for a central moments array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> or <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Moment collection array</p></li>
+<li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>) – Value indicates if moments (<code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>) or comoments (<code class="docutils literal notranslate"><span class="pre">mom_ndim=2</span></code>).
+Defaults to <code class="docutils literal notranslate"><span class="pre">mom_ndim=1</span></code>.</p></li>
+<li><p><strong>mom_axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Location of the moment dimensions. Default to <code class="docutils literal notranslate"><span class="pre">(-mom_ndim,</span>
+<span class="pre">-mom_ndim+1,</span> <span class="pre">...)</span></code>. If specified and <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> is None, set
+<code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> to <code class="docutils literal notranslate"><span class="pre">len(mom_axes)</span></code>. Note that if <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> is
+specified, negative values are relative to the end of the array. This
+is also the case for <code class="docutils literal notranslate"><span class="pre">axes</span></code> if <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> is specified.</p></li>
+<li><p><strong>mom_dims</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a>) – Name of moment dimensions. If specified, infer <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> from
+<code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If also pass <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>, check that <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> is
+consistent with <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If not specified, defaults to
+<code class="docutils literal notranslate"><span class="pre">data.dims[-mom_ndim:]</span></code>. This is primarily used if <code class="docutils literal notranslate"><span class="pre">data</span></code> is a
+<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>, or if <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> are not the last
+dimensions.</p></li>
+<li><p><strong>mom_params</strong> (<a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> or <a class="reference internal" href="cmomy.MomParamsDict.html#cmomy.MomParamsDict" title="cmomy.MomParamsDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParamsDict</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <em>optional</em>) – Moment parameters. You can set moment parameters <code class="docutils literal notranslate"><span class="pre">axes</span></code> and <code class="docutils literal notranslate"><span class="pre">dims</span></code>
+using this option. For example, passing <code class="docutils literal notranslate"><span class="pre">mom_params={&quot;dim&quot;:</span> <span class="pre">(&quot;a&quot;,</span>
+<span class="pre">&quot;b&quot;)}</span></code> is equivalent to passing <code class="docutils literal notranslate"><span class="pre">mom_dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;)</span></code>. You can also
+pass as a <a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> object with
+<code class="docutils literal notranslate"><span class="pre">mom_params=cmomy.MomParams(dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;))</span></code>.</p></li>
+<li><p><strong>moment</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;weight&quot;,</span> <span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;,</span> <span class="pre">&quot;cov&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;xmom_0&quot;,</span> <span class="pre">&quot;xmom_1&quot;,</span> <span class="pre">&quot;ymom_0&quot;,</span> <span class="pre">&quot;ymom_1&quot;}</span></code>) – <p>Name of moment(s) to select.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;</span></code> : weights</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;</span></code> : Averages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code>: Variance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;cov&quot;</span></code>: Covariance if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>, or variance if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xave&quot;</span></code>: Average of first variable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xvar&quot;</span></code>: Variance of first variable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yave&quot;</span></code>: Average of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yvar&quot;</span></code>: Variance of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code>: All values.</p></li>
+</ul>
+<p>Names <code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;cov&quot;</span></code> imply shape
+<code class="docutils literal notranslate"><span class="pre">data.shape[:-mom_ndim]</span></code>. Names <code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;</span></code> imply shape
+<code class="docutils literal notranslate"><span class="pre">(*data.shape[:-mom_ndim],</span> <span class="pre">mom_ndim)</span></code>, unless <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code> and
+<code class="docutils literal notranslate"><span class="pre">squeeze</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p>
+</p></li>
+<li><p><strong>squeeze</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – If True, squeeze last dimension if <code class="docutils literal notranslate"><span class="pre">name</span></code> is one of <code class="docutils literal notranslate"><span class="pre">ave</span></code> or <code class="docutils literal notranslate"><span class="pre">var</span></code> and <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p></li>
+<li><p><strong>dim_combined</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Name of dimension for options that produce multiple values (e.g., <code class="docutils literal notranslate"><span class="pre">name=&quot;ave&quot;</span></code>).</p></li>
+<li><p><strong>coords_combined</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> or <a class="reference external" href="https://docs.python.org/3/glossary.html#term-sequence" title="(in Python v3.14)"><span class="xref std std-term">sequence</span></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Coordinates to assign to <code class="docutils literal notranslate"><span class="pre">dim_combined</span></code>.  Defaults to names of moments dimension(s)</p></li>
+<li><p><strong>keep_attrs</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;drop&quot;,</span> <span class="pre">&quot;identical&quot;,</span> <span class="pre">&quot;no_conflicts&quot;,</span> <span class="pre">&quot;drop_conflicts&quot;,</span> <span class="pre">&quot;override&quot;}</span></code> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – <ul>
+<li><p>‘drop’ or False: empty attrs on returned xarray object.</p></li>
+<li><p>’identical’: all attrs must be the same on every object.</p></li>
+<li><p>’no_conflicts’: attrs from all objects are combined, any that have the same name must also have the same value.</p></li>
+<li><p>’drop_conflicts’: attrs from all objects are combined, any that have the same name but different values are dropped.</p></li>
+<li><p>’override’ or True: skip comparing and copy attrs from the first object to the result.</p></li>
+</ul>
+</p></li>
+<li><p><strong>apply_ufunc_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.14)"><span class="xref std std-term">dict-like</span></a>) – Extra parameters to <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.apply_ufunc.html#xarray.apply_ufunc" title="(in xarray v2026.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.apply_ufunc()</span></code></a>. One useful option is
+<code class="docutils literal notranslate"><span class="pre">on_missing_core_dim</span></code>, which can take the value <code class="docutils literal notranslate"><span class="pre">&quot;copy&quot;</span></code> (the
+default), <code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;drop&quot;</span></code> and controls what to do with
+variables of a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> missing core dimensions. Other
+options are <code class="docutils literal notranslate"><span class="pre">join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_fill_value</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">dask_gufunc_kwargs</span></code>. Unlisted options are handled internally.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>output</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>) – Same type as <code class="docutils literal notranslate"><span class="pre">data</span></code>. If <code class="docutils literal notranslate"><span class="pre">name</span></code> is <code class="docutils literal notranslate"><span class="pre">ave</span></code> or <code class="docutils literal notranslate"><span class="pre">var</span></code>, the last
+dimensions of <code class="docutils literal notranslate"><span class="pre">output</span></code> has shape <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> with each element
+corresponding to the <cite>ith</cite> variable. If <code class="docutils literal notranslate"><span class="pre">squeeze=True</span></code> and
+<cite>mom_ndim==1</cite>, this last dimension is removed. For all other <code class="docutils literal notranslate"><span class="pre">name</span></code>
+options, output has shape of input with moment dimensions removed.  In all cases, <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> or <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code>
+are first moved to the last dimensions.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span>
+<span class="go">array([[0, 1, 2],</span>
+<span class="go">       [3, 4, 5]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([0, 3])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;ave&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([1, 4])</span>
+</pre></div>
+</div>
+<p>Note that with <code class="docutils literal notranslate"><span class="pre">squeeze</span> <span class="pre">=</span> <span class="pre">False</span> <span class="pre">``,</span> <span class="pre">selecting</span> <span class="pre">``ave</span></code> and <code class="docutils literal notranslate"><span class="pre">var</span></code> will
+result in the last dimension having size <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>. If <code class="docutils literal notranslate"><span class="pre">squeeze</span> <span class="pre">=</span>
+<span class="pre">True</span></code> (the default) and <code class="docutils literal notranslate"><span class="pre">mom_ndim==1</span></code>, this dimension will be removed</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;ave&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">array([[1],</span>
+<span class="go">       [4]])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;xave&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array(3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;cov&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array(4)</span>
+</pre></div>
+</div>
+<p>Use options <code class="docutils literal notranslate"><span class="pre">&quot;xmom_0&quot;</span></code>, to select all values with first
+moment equal <code class="docutils literal notranslate"><span class="pre">0</span></code>, etc</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;xmom_0&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array([0, 1, 2])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">select_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;ymom_1&quot;</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="go">array([1, 4])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cmomy.utils.assign_moment">
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">assign_moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_ndim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_axes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">squeeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim_combined</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">moment_kwargs</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L601-L763"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.assign_moment" title="Link to this definition">#</a></dt>
+<dd><p>Update weights of moments array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>) – Moments array.</p></li>
+<li><p><strong>moment</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.14)"><span class="xref std std-term">mapping</span></a> of <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a> to <a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span class="xref std std-term">array-like</span></a>) – <p>Mapping from moment name to new value.  Allowed moment names are:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;</span></code> : weights</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;</span></code> : Averages.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code>: Variance.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;cov&quot;</span></code>: Covariance if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>, or variance if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xave&quot;</span></code>: Average of first variable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xvar&quot;</span></code>: Variance of first variable.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yave&quot;</span></code>: Average of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;yvar&quot;</span></code>: Variance of second variable (if <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">2</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;xmom_n&quot;,</span> <span class="pre">&quot;ymom_n&quot;</span></code>: All values with first (second) variable moment == n.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;all&quot;</span></code>: All values.</p></li>
+</ul>
+<p>Names <code class="docutils literal notranslate"><span class="pre">&quot;weight&quot;,</span> <span class="pre">&quot;xave&quot;,</span> <span class="pre">&quot;yave&quot;,</span> <span class="pre">&quot;xvar&quot;,</span> <span class="pre">&quot;yvar&quot;,</span> <span class="pre">&quot;cov&quot;</span></code> imply shape
+<code class="docutils literal notranslate"><span class="pre">data.shape[:-mom_ndim]</span></code>. Names <code class="docutils literal notranslate"><span class="pre">&quot;ave&quot;,</span> <span class="pre">&quot;var&quot;</span></code> imply shape
+<code class="docutils literal notranslate"><span class="pre">(*data.shape[:-mom_ndim],</span> <span class="pre">mom_ndim)</span></code>, unless <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code> and
+<code class="docutils literal notranslate"><span class="pre">squeeze</span> <span class="pre">=</span> <span class="pre">True</span></code>.</p>
+</p></li>
+<li><p><strong>mom_ndim</strong> (<code class="docutils literal notranslate"><span class="pre">{1,</span> <span class="pre">2}</span></code>) – Value indicates if moments (<code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">=</span> <span class="pre">1</span></code>) or comoments (<code class="docutils literal notranslate"><span class="pre">mom_ndim=2</span></code>).
+Defaults to <code class="docutils literal notranslate"><span class="pre">mom_ndim=1</span></code>.</p></li>
+<li><p><strong>mom_axes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>, <em>optional</em>) – Location of the moment dimensions. Default to <code class="docutils literal notranslate"><span class="pre">(-mom_ndim,</span>
+<span class="pre">-mom_ndim+1,</span> <span class="pre">...)</span></code>. If specified and <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> is None, set
+<code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> to <code class="docutils literal notranslate"><span class="pre">len(mom_axes)</span></code>. Note that if <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> is
+specified, negative values are relative to the end of the array. This
+is also the case for <code class="docutils literal notranslate"><span class="pre">axes</span></code> if <code class="docutils literal notranslate"><span class="pre">mom_axes</span></code> is specified.</p></li>
+<li><p><strong>mom_dims</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a>) – Name of moment dimensions. If specified, infer <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code> from
+<code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If also pass <code class="docutils literal notranslate"><span class="pre">mom_ndim</span></code>, check that <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> is
+consistent with <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code>. If not specified, defaults to
+<code class="docutils literal notranslate"><span class="pre">data.dims[-mom_ndim:]</span></code>. This is primarily used if <code class="docutils literal notranslate"><span class="pre">data</span></code> is a
+<a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>, or if <code class="docutils literal notranslate"><span class="pre">mom_dims</span></code> are not the last
+dimensions.</p></li>
+<li><p><strong>mom_params</strong> (<a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> or <a class="reference internal" href="cmomy.MomParamsDict.html#cmomy.MomParamsDict" title="cmomy.MomParamsDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParamsDict</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <em>optional</em>) – Moment parameters. You can set moment parameters <code class="docutils literal notranslate"><span class="pre">axes</span></code> and <code class="docutils literal notranslate"><span class="pre">dims</span></code>
+using this option. For example, passing <code class="docutils literal notranslate"><span class="pre">mom_params={&quot;dim&quot;:</span> <span class="pre">(&quot;a&quot;,</span>
+<span class="pre">&quot;b&quot;)}</span></code> is equivalent to passing <code class="docutils literal notranslate"><span class="pre">mom_dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;)</span></code>. You can also
+pass as a <a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> object with
+<code class="docutils literal notranslate"><span class="pre">mom_params=cmomy.MomParams(dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;))</span></code>.</p></li>
+<li><p><strong>squeeze</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#False" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">False</span></code></a>) – If True, squeeze last dimension if <code class="docutils literal notranslate"><span class="pre">name</span></code> is one of <code class="docutils literal notranslate"><span class="pre">ave</span></code> or <code class="docutils literal notranslate"><span class="pre">var</span></code> and <code class="docutils literal notranslate"><span class="pre">mom_ndim</span> <span class="pre">==</span> <span class="pre">1</span></code>.</p></li>
+<li><p><strong>copy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>default</em> <a class="reference external" href="https://docs.python.org/3/library/constants.html#True" title="(in Python v3.14)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">True</span></code></a>) – If <code class="docutils literal notranslate"><span class="pre">True</span></code> (the default), return new array with updated weights.
+Otherwise, return the original array with weights updated inplace.
+Note that a copy is always created for a <code class="docutils literal notranslate"><span class="pre">dask</span></code> backed object.</p></li>
+<li><p><strong>dim_combined</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <em>optional</em>) – Name of dimensions for multiple values. Must supply if passing in
+multiple values for <code class="docutils literal notranslate"><span class="pre">name=&quot;ave&quot;</span></code> etc.</p></li>
+<li><p><strong>keep_attrs</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;drop&quot;,</span> <span class="pre">&quot;identical&quot;,</span> <span class="pre">&quot;no_conflicts&quot;,</span> <span class="pre">&quot;drop_conflicts&quot;,</span> <span class="pre">&quot;override&quot;}</span></code> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – <ul>
+<li><p>‘drop’ or False: empty attrs on returned xarray object.</p></li>
+<li><p>’identical’: all attrs must be the same on every object.</p></li>
+<li><p>’no_conflicts’: attrs from all objects are combined, any that have the same name must also have the same value.</p></li>
+<li><p>’drop_conflicts’: attrs from all objects are combined, any that have the same name but different values are dropped.</p></li>
+<li><p>’override’ or True: skip comparing and copy attrs from the first object to the result.</p></li>
+</ul>
+</p></li>
+<li><p><strong>apply_ufunc_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.14)"><span class="xref std std-term">dict-like</span></a>) – Extra parameters to <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.apply_ufunc.html#xarray.apply_ufunc" title="(in xarray v2026.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.apply_ufunc()</span></code></a>. One useful option is
+<code class="docutils literal notranslate"><span class="pre">on_missing_core_dim</span></code>, which can take the value <code class="docutils literal notranslate"><span class="pre">&quot;copy&quot;</span></code> (the
+default), <code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;drop&quot;</span></code> and controls what to do with
+variables of a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> missing core dimensions. Other
+options are <code class="docutils literal notranslate"><span class="pre">join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_fill_value</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">dask_gufunc_kwargs</span></code>. Unlisted options are handled internally.</p></li>
+<li><p><strong>**moment_kwargs</strong> (<span class="sphinx_autodoc_typehints-type"><code class="xref py py-data docutils literal notranslate"><span class="pre">Union</span></code>[<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Buffer" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Buffer</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">_SupportsArray</span></code>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]], <code class="xref py py-class docutils literal notranslate"><span class="pre">_NestedSequence</span></code>[<code class="xref py py-class docutils literal notranslate"><span class="pre">_SupportsArray</span></code>[<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>[<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><code class="xref py py-data docutils literal notranslate"><span class="pre">Any</span></code></a>]]], <a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">_NestedSequence</span></code>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#complex" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">complex</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bytes</span></code></a> | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>], <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>, <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>]</span>) – Keyword argument form of <code class="docutils literal notranslate"><span class="pre">moment</span></code>.  Must provide either <code class="docutils literal notranslate"><span class="pre">moment</span></code> or <code class="docutils literal notranslate"><span class="pre">moment_kwargs</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>output</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>) – Same type as <code class="docutils literal notranslate"><span class="pre">data</span></code> with moment <code class="docutils literal notranslate"><span class="pre">name</span></code> updated to <code class="docutils literal notranslate"><span class="pre">value</span></code>.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="#cmomy.utils.select_moment" title="cmomy.utils.select_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">select_moment</span></code></a></p>
+</div>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">data</span>
+<span class="go">array([0, 1, 2])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assign_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([-1,  1,  2])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assign_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ave</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([ 0, -1,  2])</span>
+</pre></div>
+</div>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assign_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">var</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([ 0,  1, -1])</span>
+</pre></div>
+</div>
+<p>Note that you can chain these together.  Note that the order of evaluation
+is the order values are passed.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assign_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">ave</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">array([-1, -2,  2])</span>
+</pre></div>
+</div>
+<p>For multidimensional data, the passed <code class="docutils literal notranslate"><span class="pre">value</span></code> must conform to the
+selected data</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Selecting <code class="docutils literal notranslate"><span class="pre">ave</span></code> for this data with <code class="docutils literal notranslate"><span class="pre">mom_ndim=1</span></code> and <code class="docutils literal notranslate"><span class="pre">squeeze=False</span></code> would have shape <code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">1)</span></code>.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assign_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ave</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">squeeze</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="go">array([[0, 1, 2],</span>
+<span class="go">       [3, 1, 5]])</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">squeeze</span></code> parameter has the same meaning as for <a class="reference internal" href="#cmomy.utils.select_moment" title="cmomy.utils.select_moment"><code class="xref py py-func docutils literal notranslate"><span class="pre">select_moment()</span></code></a></p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">assign_moment</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ave</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">mom_ndim</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">squeeze</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="go">array([[0, 1, 2],</span>
+<span class="go">       [3, 1, 5]])</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="cmomy.utils.vals_to_data">
+<span class="sig-prename descclassname"><span class="pre">cmomy.utils.</span></span><span class="sig-name descname"><span class="pre">vals_to_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_dims</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mom_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_attrs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_ufunc_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference external" href="https://github.com/usnistgov/cmomy/blob/main/src/cmomy/utils.py#L862-L1010"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cmomy.utils.vals_to_data" title="Link to this definition">#</a></dt>
+<dd><p>Convert <cite>values</cite> to <cite>central moments array</cite>.</p>
+<p>This allows passing <cite>values</cite> based observations to <cite>data</cite> routines.
+See examples below for more details</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span class="xref std std-term">array-like</span></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>) – First value.</p></li>
+<li><p><strong>*y</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span class="xref std std-term">array-like</span></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>) – Secondary value (if comoments).</p></li>
+<li><p><strong>mom</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">int</span></code></a>) – Order or moments.  If integer or length one tuple, then moments are for
+a single variable.  If length 2 tuple, then comoments of two variables</p></li>
+<li><p><strong>weight</strong> (<a class="reference external" href="https://numpy.org/doc/stable/glossary.html#term-array_like" title="(in NumPy v2.4)"><span class="xref std std-term">array-like</span></a>, <em>optional</em>) – Optional weights. Can be scalar, 1d array of length
+<code class="docutils literal notranslate"><span class="pre">args[0].shape[axis]</span></code> or array of same form as <code class="docutils literal notranslate"><span class="pre">args[0]</span></code>.</p></li>
+<li><p><strong>mom_dims</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></a> of <a class="reference external" href="https://docs.python.org/3/glossary.html#term-hashable" title="(in Python v3.14)"><span class="xref std std-term">hashable</span></a>) – Name of moment dimensions. Defaults to <code class="docutils literal notranslate"><span class="pre">(&quot;mom_0&quot;,)</span></code> for
+<code class="docutils literal notranslate"><span class="pre">mom_ndim==1</span></code> and <code class="docutils literal notranslate"><span class="pre">(mom_0,</span> <span class="pre">mom_1)</span></code> for <code class="docutils literal notranslate"><span class="pre">mom_ndim==2</span></code></p></li>
+<li><p><strong>mom_params</strong> (<a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> or <a class="reference internal" href="cmomy.MomParamsDict.html#cmomy.MomParamsDict" title="cmomy.MomParamsDict"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParamsDict</span></code></a> or <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dict</span></code></a>, <em>optional</em>) – Moment parameters. You can set moment parameters <code class="docutils literal notranslate"><span class="pre">axes</span></code> and <code class="docutils literal notranslate"><span class="pre">dims</span></code>
+using this option. For example, passing <code class="docutils literal notranslate"><span class="pre">mom_params={&quot;dim&quot;:</span> <span class="pre">(&quot;a&quot;,</span>
+<span class="pre">&quot;b&quot;)}</span></code> is equivalent to passing <code class="docutils literal notranslate"><span class="pre">mom_dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;)</span></code>. You can also
+pass as a <a class="reference internal" href="cmomy.MomParams.html#cmomy.MomParams" title="cmomy.MomParams"><code class="xref py py-class docutils literal notranslate"><span class="pre">MomParams</span></code></a> object with
+<code class="docutils literal notranslate"><span class="pre">mom_params=cmomy.MomParams(dims=(&quot;a&quot;,</span> <span class="pre">&quot;b&quot;))</span></code>.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a>) – Optional <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.dtype.html#numpy.dtype" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">dtype</span></code></a> for output data.</p></li>
+<li><p><strong>out</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a>) – Optional output array. If specified, output will be a reference to this
+array. Note that if the output if method returns a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a>, then this
+option is ignored.</p></li>
+<li><p><strong>keep_attrs</strong> (<code class="docutils literal notranslate"><span class="pre">{&quot;drop&quot;,</span> <span class="pre">&quot;identical&quot;,</span> <span class="pre">&quot;no_conflicts&quot;,</span> <span class="pre">&quot;drop_conflicts&quot;,</span> <span class="pre">&quot;override&quot;}</span></code> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a>, <em>optional</em>) – <ul>
+<li><p>‘drop’ or False: empty attrs on returned xarray object.</p></li>
+<li><p>’identical’: all attrs must be the same on every object.</p></li>
+<li><p>’no_conflicts’: attrs from all objects are combined, any that have the same name must also have the same value.</p></li>
+<li><p>’drop_conflicts’: attrs from all objects are combined, any that have the same name but different values are dropped.</p></li>
+<li><p>’override’ or True: skip comparing and copy attrs from the first object to the result.</p></li>
+</ul>
+</p></li>
+<li><p><strong>apply_ufunc_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/glossary.html#term-mapping" title="(in Python v3.14)"><span class="xref std std-term">dict-like</span></a>) – Extra parameters to <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.apply_ufunc.html#xarray.apply_ufunc" title="(in xarray v2026.2.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">xarray.apply_ufunc()</span></code></a>. One useful option is
+<code class="docutils literal notranslate"><span class="pre">on_missing_core_dim</span></code>, which can take the value <code class="docutils literal notranslate"><span class="pre">&quot;copy&quot;</span></code> (the
+default), <code class="docutils literal notranslate"><span class="pre">&quot;raise&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;drop&quot;</span></code> and controls what to do with
+variables of a <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.Dataset.html#xarray.Dataset" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></a> missing core dimensions. Other
+options are <code class="docutils literal notranslate"><span class="pre">join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_join</span></code>, <code class="docutils literal notranslate"><span class="pre">dataset_fill_value</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">dask_gufunc_kwargs</span></code>. Unlisted options are handled internally.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>data</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ndarray</span></code></a> or <a class="reference external" href="https://docs.xarray.dev/en/stable/generated/xarray.DataArray.html#xarray.DataArray" title="(in xarray v2026.2.0)"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataArray</span></code></a>)</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Values <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">y</span></code> and <code class="docutils literal notranslate"><span class="pre">weight</span></code> must be broadcastable.</p>
+<p>Note that if input data is a chunked dask array, then <code class="docutils literal notranslate"><span class="pre">out</span></code> is ignored, and a new
+array is always created.</p>
+<p>Also, broadcasting is different here then <a class="reference internal" href="cmomy.reduction.html#cmomy.reduction.reduce_vals" title="cmomy.reduction.reduce_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">reduce_vals()</span></code></a>,
+<a class="reference internal" href="cmomy.resample.html#cmomy.resample.resample_vals" title="cmomy.resample.resample_vals"><code class="xref py py-func docutils literal notranslate"><span class="pre">resample_vals()</span></code></a>, etc. For these reduction functions, you
+can, for example, pass a <cite>1-D`</cite> array for <code class="docutils literal notranslate"><span class="pre">y</span></code> with <cite>N-D</cite> <code class="docutils literal notranslate"><span class="pre">x</span></code> regardless
+if the axis is not the last axis. This is because those reduction functions
+have a <code class="docutils literal notranslate"><span class="pre">axis</span></code> parameter that can be used to infer the intended shape of
+<code class="docutils literal notranslate"><span class="pre">y</span></code> (and <code class="docutils literal notranslate"><span class="pre">weight</span></code>). In this function, you have to specify <code class="docutils literal notranslate"><span class="pre">y</span></code> and
+<code class="docutils literal notranslate"><span class="pre">weight</span></code> such that they broadcast to <code class="docutils literal notranslate"><span class="pre">x</span></code>.</p>
+<p class="rubric">Examples</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">),</span> <span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">vals_to_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(1, 2, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">[[0.1 0.1]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">[[0.2 0.2]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mf">0.3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span> <span class="o">=</span> <span class="n">vals_to_data</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="n">w</span><span class="p">,</span> <span class="n">mom</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">out</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(2, 1, 2, 3, 3)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">[[[0.1 0.1]]</span>
+
+<span class="go"> [[0.1 0.1]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+<span class="go">[[[0.2 0.2]]</span>
+
+<span class="go"> [[0.2 0.2]]]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+<span class="go">[[[0.3 0.3]]</span>
+
+<span class="go"> [[0.3 0.3]]]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cmomy.convert.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Conversion routines (<code class="xref py py-mod docutils literal notranslate"><span class="pre">convert</span></code>)</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cmomy.random.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Internal <code class="xref py py-class docutils literal notranslate"><span class="pre">numpy.random.Generator</span></code> (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.random</span></code>)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#">Interface to utility functions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">cmomy.utils</span></code>)</a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.moveaxis_order"><code class="docutils literal notranslate"><span class="pre">moveaxis_order()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.moveaxis"><code class="docutils literal notranslate"><span class="pre">moveaxis()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.moment_indexer"><code class="docutils literal notranslate"><span class="pre">moment_indexer()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.select_moment"><code class="docutils literal notranslate"><span class="pre">select_moment()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.assign_moment"><code class="docutils literal notranslate"><span class="pre">assign_moment()</span></code></a></li>
+<li class="toc-h1 nav-item toc-entry"><a class="reference internal nav-link" href="#cmomy.utils.vals_to_data"><code class="docutils literal notranslate"><span class="pre">vals_to_data()</span></code></a></li>
+</ul>
+
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By William P. Krekelberg
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2020, William P. Krekelberg.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    <p class="last-updated">
+  Last updated on 2026-03-21.
+  <br/>
+</p>
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
