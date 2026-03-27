@@ -314,12 +314,10 @@ def test_select_axis_dim(data, kws, expected) -> None:
 @pytest.mark.parametrize(
     "data",
     [
-        xr.Dataset(
-            {
-                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
-                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
-            }
-        )
+        xr.Dataset({
+            "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+            "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+        })
     ],
 )
 @pytest.mark.parametrize(
@@ -391,12 +389,10 @@ def test_select_axis_dim_mult(data, kws, expected) -> None:
 @pytest.mark.parametrize(
     "data",
     [
-        xr.Dataset(
-            {
-                "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
-                "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
-            }
-        )
+        xr.Dataset({
+            "data0": xr.DataArray(np.zeros((1, 1, 1)), dims=("a", "b", "mom")),
+            "data1": xr.DataArray(np.zeros((1, 1)), dims=("a", "mom")),
+        })
     ],
 )
 @pytest.mark.parametrize(

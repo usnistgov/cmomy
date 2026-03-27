@@ -1635,6 +1635,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
                     signature=(out.dtype, out.dtype),
                 )
                 return out
+
         else:
 
             def func(out: NDArrayAny, data: NDArrayAny) -> NDArrayAny:

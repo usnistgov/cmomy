@@ -315,14 +315,12 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
     elif style == "dataarray":
         idx = xr.DataArray(indices)
     elif style == "dataset":
-        idx = xr.Dataset(
-            {
-                "x0": xr.DataArray(indices),
-                "x1": xr.DataArray(
-                    cmomy.random_indices(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng)
-                ),
-            }
-        )
+        idx = xr.Dataset({
+            "x0": xr.DataArray(indices),
+            "x1": xr.DataArray(
+                cmomy.random_indices(nrep=nrep, ndat=ndat, nsamp=nsamp, rng=rng)
+            ),
+        })
     else:
         raise ValueError
 
@@ -429,14 +427,12 @@ def test_factory_sampler() -> None:
         {"data": xr.Dataset({"x0": xr.DataArray(np.zeros((5, 2)))}), "dim": "dim_0"},
         # test that mom_ndim -> mom_dims removed x1
         {
-            "data": xr.Dataset(
-                {
-                    "x0": xr.DataArray(
-                        np.zeros((5, 2, 3, 3)), dims=["a", "b", "mom0", "mom1"]
-                    ),
-                    "x1": xr.DataArray(np.zeros(5), dims=["a"]),
-                }
-            ),
+            "data": xr.Dataset({
+                "x0": xr.DataArray(
+                    np.zeros((5, 2, 3, 3)), dims=["a", "b", "mom0", "mom1"]
+                ),
+                "x1": xr.DataArray(np.zeros(5), dims=["a"]),
+            }),
             "dim": "a",
             "mom_ndim": 2,
             "paired": False,
@@ -504,12 +500,10 @@ def test_indexresampler_raises() -> None:
 
 
 def test_indexresampler_dataset() -> None:
-    indices = xr.Dataset(
-        {
-            k: xr.DataArray(cmomy.random_freq(10, 5, rng=i), dims=["rep", "rec"])
-            for i, k in enumerate(["data0", "data1"])
-        }
-    )
+    indices = xr.Dataset({
+        k: xr.DataArray(cmomy.random_freq(10, 5, rng=i), dims=["rep", "rec"])
+        for i, k in enumerate(["data0", "data1"])
+    })
 
     sampler = cmomy.IndexSampler(indices=indices)
 
@@ -537,22 +531,18 @@ def test_factory_sampler_raises() -> None:
 def test_factroy_sampler_dataset() -> None:
     nrep = 10
     ndat = 5
-    data = xr.Dataset(
-        {
-            "data0": xr.DataArray(np.zeros(ndat), dims=["a"]),
-            "data1": xr.DataArray(np.zeros((ndat, 2, 3)), dims=["a", "mom_0", "mom_1"]),
-            "data2": xr.DataArray(np.zeros((ndat, 2, 3)), dims=["a", "mom_0", "mom_1"]),
-            "data3": xr.DataArray(np.zeros(3), dims=["b"]),
-        }
-    )
+    data = xr.Dataset({
+        "data0": xr.DataArray(np.zeros(ndat), dims=["a"]),
+        "data1": xr.DataArray(np.zeros((ndat, 2, 3)), dims=["a", "mom_0", "mom_1"]),
+        "data2": xr.DataArray(np.zeros((ndat, 2, 3)), dims=["a", "mom_0", "mom_1"]),
+        "data3": xr.DataArray(np.zeros(3), dims=["b"]),
+    })
 
     rng = np.random.default_rng(0)
-    expected = xr.Dataset(
-        {
-            k: xr.DataArray(cmomy.random_freq(nrep, ndat, rng=rng), dims=["rep", "a"])
-            for k in ("data1", "data2")
-        }
-    )
+    expected = xr.Dataset({
+        k: xr.DataArray(cmomy.random_freq(nrep, ndat, rng=rng), dims=["rep", "a"])
+        for k in ("data1", "data2")
+    })
 
     out = cmomy.factory_sampler(
         data=data,
@@ -596,14 +586,12 @@ def test_factroy_sampler_dataset() -> None:
         {"data": xr.Dataset({"x0": xr.DataArray(np.zeros((5, 2)))}), "dim": "dim_0"},
         # test that mom_ndim -> mom_dims removed x1
         {
-            "data": xr.Dataset(
-                {
-                    "x0": xr.DataArray(
-                        np.zeros((5, 2, 3, 3)), dims=["a", "b", "mom0", "mom1"]
-                    ),
-                    "x1": xr.DataArray(np.zeros(5), dims=["a"]),
-                }
-            ),
+            "data": xr.Dataset({
+                "x0": xr.DataArray(
+                    np.zeros((5, 2, 3, 3)), dims=["a", "b", "mom0", "mom1"]
+                ),
+                "x1": xr.DataArray(np.zeros(5), dims=["a"]),
+            }),
             "dim": "a",
             "mom_ndim": 2,
             "paired": False,

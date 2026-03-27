@@ -966,6 +966,7 @@ def vals_to_data(
 
             def _func(*args: Any, **kwargs: Any) -> Any:
                 return _vals_to_data(*args, out=None, **kwargs)
+
         else:
             args = [out, *args]
             input_core_dims = [mom_params.dims, *input_core_dims]

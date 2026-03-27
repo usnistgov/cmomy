@@ -47,16 +47,14 @@ def create_data(
         shape, dims = shapes_and_dims
         ds = xr.DataArray(rng.random(shape), dims=dims)
     else:
-        ds = xr.Dataset(
-            {
-                name: xr.DataArray(rng.random(shape), dims=dims)
-                for name, (shape, dims) in zip(
-                    [f"data{k}" for k in range(len(shapes_and_dims))],
-                    shapes_and_dims,
-                    strict=True,
-                )
-            }
-        )
+        ds = xr.Dataset({
+            name: xr.DataArray(rng.random(shape), dims=dims)
+            for name, (shape, dims) in zip(
+                [f"data{k}" for k in range(len(shapes_and_dims))],
+                shapes_and_dims,
+                strict=True,
+            )
+        })
 
     if dim:
         # coordinates along sampled dimension
@@ -529,19 +527,17 @@ def test_func_dataarray_and_dataset_push_vals(fixture_vals, as_dataarray) -> Non
 @pytest.mark.parametrize(
     "data",
     [
-        xr.Dataset(
-            {
-                "data0": xr.DataArray(
-                    np.zeros((2, 3, 4, 3, 3)), dims=["a", "b", "c", "mom0", "mom1"]
-                ),
-                "data1": xr.DataArray(
-                    np.zeros((2, 5, 3, 3)), dims=["a", "d", "momA", "momB"]
-                ),
-                "data2": xr.DataArray(
-                    np.zeros((2, 3, 3, 3)), dims=["a", "b", "mom0", "mom1"]
-                ),
-            }
-        )
+        xr.Dataset({
+            "data0": xr.DataArray(
+                np.zeros((2, 3, 4, 3, 3)), dims=["a", "b", "c", "mom0", "mom1"]
+            ),
+            "data1": xr.DataArray(
+                np.zeros((2, 5, 3, 3)), dims=["a", "d", "momA", "momB"]
+            ),
+            "data2": xr.DataArray(
+                np.zeros((2, 3, 3, 3)), dims=["a", "b", "mom0", "mom1"]
+            ),
+        })
     ],
 )
 @pytest.mark.parametrize(
@@ -583,17 +579,13 @@ def test_factory_sampler_dataset(
 
     if names:
         rng = get_zero_rng()
-        expected = xr.Dataset(
-            {
-                k: xr.DataArray(
-                    cmomy.resample.random_freq(
-                        ndat=data.sizes[dim], nrep=nrep, rng=rng
-                    ),
-                    dims=[rep_dim, dim],
-                )
-                for k in names
-            }
-        )
+        expected = xr.Dataset({
+            k: xr.DataArray(
+                cmomy.resample.random_freq(ndat=data.sizes[dim], nrep=nrep, rng=rng),
+                dims=[rep_dim, dim],
+            )
+            for k in names
+        })
     else:
         # Single dataarray
         expected = xr.DataArray(

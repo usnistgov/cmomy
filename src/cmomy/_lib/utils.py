@@ -14,11 +14,9 @@ if TYPE_CHECKING:
 
 
 # * resampling
-@myjit(
-    [
-        (nb.int64[:, :],),
-    ]
-)
+@myjit([
+    (nb.int64[:, :],),
+])
 def freq_to_index_start_end_scales(
     freq: NDArray[IntDTypeT],
 ) -> tuple[

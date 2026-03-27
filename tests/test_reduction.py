@@ -170,16 +170,12 @@ def test_reduce_data_axis_none(rng, mom_ndim) -> None:
 
 
 def test_reduce_data_dim_none(rng) -> None:
-    ds = xr.Dataset(
-        {
-            "data0": xr.DataArray(
-                rng.random((2, 3, 4, 5)), dims=["a", "b", "c", "mom"]
-            ),
-            "data1": xr.DataArray(rng.random((2, 3, 5)), dims=["a", "b", "mom"]),
-            "data2": xr.DataArray(rng.random((4, 5)), dims=["c", "mom"]),
-            "data3": xr.DataArray(rng.random((4,)), dims=["c"]),
-        }
-    )
+    ds = xr.Dataset({
+        "data0": xr.DataArray(rng.random((2, 3, 4, 5)), dims=["a", "b", "c", "mom"]),
+        "data1": xr.DataArray(rng.random((2, 3, 5)), dims=["a", "b", "mom"]),
+        "data2": xr.DataArray(rng.random((4, 5)), dims=["c", "mom"]),
+        "data3": xr.DataArray(rng.random((4,)), dims=["c"]),
+    })
 
     with pytest.raises(ValueError):
         cmomy.reduce_data(ds["data0"], mom_ndim=1, dim="d")
