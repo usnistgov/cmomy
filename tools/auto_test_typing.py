@@ -80,13 +80,11 @@ class GeneralTest:
 
         args = base_args
         if args is not None:
-            args = args.format_map(
-                {
-                    "axis_dim": "axis=0"
-                    if klass in {"np.ndarray", "cmomy.CentralMomentsArray"}
-                    else 'dim="dim_0"'
-                }
-            )
+            args = args.format_map({
+                "axis_dim": "axis=0"
+                if klass in {"np.ndarray", "cmomy.CentralMomentsArray"}
+                else 'dim="dim_0"'
+            })
         else:
             args = ""
 

@@ -114,9 +114,9 @@ def test_raise_if_dataset() -> None:
         (xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"]), ("c",), (3,)),
         (xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "mom"]), ("b", "a"), (2, 1)),
         (
-            xr.Dataset(
-                {"data0": xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"])}
-            ),
+            xr.Dataset({
+                "data0": xr.DataArray(np.zeros((1, 2, 3)), dims=["a", "b", "c"])
+            }),
             ("c", "b"),
             (3, 2),
         ),
@@ -129,13 +129,11 @@ def test_get_mom_shape(data, mom_dims, expected) -> None:
 @pytest.mark.parametrize(
     "data",
     [
-        xr.Dataset(
-            {
-                "a": xr.DataArray(np.zeros((1, 2, 3))),
-                "b": xr.DataArray(np.zeros((1, 2, 3))),
-                "c": xr.DataArray(np.zeros((1, 2, 3))),
-            }
-        ),
+        xr.Dataset({
+            "a": xr.DataArray(np.zeros((1, 2, 3))),
+            "b": xr.DataArray(np.zeros((1, 2, 3))),
+            "c": xr.DataArray(np.zeros((1, 2, 3))),
+        }),
         xr.DataArray(np.zeros((1, 2, 3))),
     ],
 )

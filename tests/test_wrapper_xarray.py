@@ -17,15 +17,13 @@ mark_dask_only = pytest.mark.skipif(
 @pytest.fixture
 def c_dataset() -> cmomy.CentralMomentsData[xr.Dataset]:
     return cmomy.CentralMomentsData(
-        xr.Dataset(
-            {
-                "a": xr.DataArray(
-                    cmomy.default_rng().random((2, 3, 4)),
-                    attrs={"hello": "there"},
-                    coords={"dim_0": range(2)},
-                ),
-            }
-        )
+        xr.Dataset({
+            "a": xr.DataArray(
+                cmomy.default_rng().random((2, 3, 4)),
+                attrs={"hello": "there"},
+                coords={"dim_0": range(2)},
+            ),
+        })
     )
 
 

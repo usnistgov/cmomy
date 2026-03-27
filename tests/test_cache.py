@@ -77,15 +77,13 @@ def test_sharedhashcachelocator() -> None:
 
     c = cmomy.cache.SharedHashCacheLocator(DUMMY_FUNC, DUMMY_FILE)
 
-    assert c.get_suitable_cache_subpath(DUMMY_FILE) == "-".join(
-        [
-            *("xarray", "core"),
-            cmomy.cache.config.magic,
-            "xarray",
-            xr.__version__,
-            *cmomy.cache.MACHINE_HASH,
-        ]
-    )
+    assert c.get_suitable_cache_subpath(DUMMY_FILE) == "-".join([
+        *("xarray", "core"),
+        cmomy.cache.config.magic,
+        "xarray",
+        xr.__version__,
+        *cmomy.cache.MACHINE_HASH,
+    ])
 
 
 def test_sharedhashcachelocator_no_find() -> None:

@@ -341,7 +341,8 @@ def _dummy_docstrings_xcentral() -> None:
 _docstrings = _dummy_docstrings.__doc__ or ""
 
 docfiller = (
-    DocFiller.from_docstring(_docstrings, combine_keys="parameters")
+    DocFiller
+    .from_docstring(_docstrings, combine_keys="parameters")
     .assign_combined_key(
         "xr_params", ["dims", "attrs", "coords", "name", "indexes", "template"]
     )
@@ -377,7 +378,8 @@ docfiller = (
 
 
 docfiller_central = (
-    docfiller.update(
+    docfiller
+    .update(
         DocFiller.from_docstring(
             _dummy_docstrings_central,
             combine_keys="parameters",
@@ -393,7 +395,8 @@ docfiller_central = (
 
 
 docfiller_xcentral = (
-    docfiller.update(
+    docfiller
+    .update(
         DocFiller.from_docstring(
             _dummy_docstrings_xcentral,
             combine_keys="parameters",
