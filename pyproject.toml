@@ -440,6 +440,7 @@ numba = { skip = true, packages = "numba>=0.57" }
 groups = [ "dev" ]
 python = "default"
 
+<<<<<<< before updating
 [tool.pyproject2conda.envs.pre-commit-additional-dependencies]
 reqs = [
     "rust-just",
@@ -447,6 +448,8 @@ reqs = [
 skip-package = true
 style = "requirements"
 
+=======
+>>>>>>> after updating
 [tool.pyproject2conda.envs.test]
 groups = [ "test" ]
 python = "all"
