@@ -20,7 +20,6 @@
 
 from __future__ import annotations
 
-import contextlib
 import os
 import sys
 from importlib.util import find_spec
@@ -543,12 +542,6 @@ def linkcode_resolve(domain: str, info: dict[str, Any]) -> str | None:
 
 
 # only set spelling stuff if installed:
-<<<<<<< before updating
-with contextlib.suppress(ImportError):
-    import sphinxcontrib.spelling  # noqa: F401
-
-=======
 if find_spec("sphinxcontrib.spelling") is not None:
->>>>>>> after updating
     extensions += ["sphinxcontrib.spelling"]
     spelling_word_list_filename = "spelling_wordlist.txt"
