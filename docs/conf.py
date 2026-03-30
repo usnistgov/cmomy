@@ -20,9 +20,9 @@
 
 from __future__ import annotations
 
-import contextlib
 import os
 import sys
+from importlib.util import find_spec
 from pathlib import Path
 from typing import Any
 
@@ -542,8 +542,6 @@ def linkcode_resolve(domain: str, info: dict[str, Any]) -> str | None:
 
 
 # only set spelling stuff if installed:
-with contextlib.suppress(ImportError):
-    import sphinxcontrib.spelling  # noqa: F401
-
+if find_spec("sphinxcontrib.spelling") is not None:
     extensions += ["sphinxcontrib.spelling"]
     spelling_word_list_filename = "spelling_wordlist.txt"
