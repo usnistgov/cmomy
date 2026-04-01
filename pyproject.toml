@@ -66,6 +66,7 @@ test = [
 ]
 type = [
     "pandas-stubs",
+    { include-group = "nox" },
     { include-group = "pylint" },
     { include-group = "pytest" },
     { include-group = "typecheck-runner" },
@@ -95,7 +96,7 @@ docs-spelling = [
 ipython = [ "ipython" ]
 mypy = [ "mypy[faster-cache]>=1.15.0" ]
 notebook = [ "ipykernel", "nbclient" ]
-nox = [ "nox>=2025.5.1" ]
+nox = [ "dotenv", "nox>=2025.5.1" ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
 pylint = [ "pylint" ]
@@ -186,8 +187,10 @@ expand_tables = [
     "project.urls",
     "tool.mypy.overrides",
     "tool.pyproject2conda",
+    "tool.pyrefly.sub-config",
     "tool.pyright.executionEnvironments",
     "tool.pytest",
+    "tool.ty.overrides",
     "tool.typos",
     "tool.uv.dependency-groups",
 ]
@@ -213,17 +216,12 @@ check-file = false
 
 # * typecheck ---------------------------------------------------------------------
 [tool.mypy]
-exclude = [
-    ".eggs",
-    ".nox",
-    ".numba_cache",
-    ".tox",
-    ".venv",
-    "docs",
-]
 files = [
     "src",
     "tests",
+    # tools
+    "noxfile.py",
+    "tools",
 ]
 strict = true
 # options
@@ -284,7 +282,24 @@ module = [
 
 [tool.pyrefly]
 enabled-ignores = [ "pyrefly" ]
-project-includes = [ "src", "tests" ]
+project-excludes = [ "**/test_typing_auto.py" ]
+project-includes = [
+    "src",
+    "tests",
+    # tools
+    "noxfile.py",
+    "tools",
+]
+search-path = [ "." ]
+
+[[tool.pyrefly.sub-config]]
+errors.missing-attribute = "ignore"
+matches = "examples/**"
+
+[[tool.pyrefly.sub-config]]
+errors.bad-argument-type = "ignore"
+errors.missing-attribute = "ignore"
+matches = "tests/**/*.py"
 
 [tool.pyright]
 defineConstant = { MYPY_ONLY = false }
@@ -300,6 +315,9 @@ exclude = [
 include = [
     "src",
     "tests",
+    # tools
+    "noxfile.py",
+    "tools",
 ]
 strict = [
     "noxfile.py",
@@ -350,7 +368,13 @@ root = "examples/usage"
 [tool.ty]
 # Disable support for `type: ignore` comments
 analysis.respect-type-ignore-comments = false
-src.include = [ "src", "tests" ]
+src.include = [
+    "src",
+    "tests",
+    # tools
+    "noxfile.py",
+    "tools",
+]
 
 # * Testing --------------------------------------------------------------------
 [tool.pytest.ini_options]

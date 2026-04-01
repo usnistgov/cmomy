@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 FORMAT = "[%(name)s - %(levelname)s] %(message)s"
 logging.basicConfig(level=logging.INFO, format=FORMAT)
@@ -53,6 +53,7 @@ class GeneralTest:
     second_klass: str = "None"
     template: str = field(default=TEMPLATE_GENERAL_TEST, repr=False)
 
+    @override
     def __str__(self) -> str:
         return self.template.format_map(self.__dict__)
 
@@ -79,14 +80,15 @@ class GeneralTest:
             template = TEMPLATE_METHOD_TEST if method else TEMPLATE_GENERAL_TEST
 
         args = base_args
-        if args is not None:
-            args = args.format_map({
+        args = (
+            args.format_map({
                 "axis_dim": "axis=0"
                 if klass in {"np.ndarray", "cmomy.CentralMomentsArray"}
                 else 'dim="dim_0"'
             })
-        else:
-            args = ""
+            if args is not None
+            else ""
+        )
 
         if astype:
             if dtype_arg is None:
@@ -357,16 +359,16 @@ params_genarraylike_to_genarray_dtype_out = [
 ]
 
 out = []
-for funcs, params in [
+for funcs, params in (
         (funcs_genarray_to_genarray, params_genarray_to_genarray),
         (funcs_genarraylike_to_genarray_dtype, params_genarraylike_to_genarray_dtype),
         (funcs_genarraylike_to_genarray_dtype_out, params_genarraylike_to_genarray_dtype_out),
-]:
-    out.extend(get_list(funcs, params))  # type: ignore[arg-type]
+):
+    out.extend(get_list(funcs, params))
 
 
 # * Move axis
-params_moveaxis = list(filter(lambda x: "dataset" not in x[0] and "arraylike" not in x[0] and x[1] is None, params_genarraylike_to_genarray_dtype))  # type: ignore[var-annotated,arg-type, operator]
+params_moveaxis = list(filter(lambda x: "dataset" not in x[0] and "arraylike" not in x[0] and x[1] is None, params_genarraylike_to_genarray_dtype))  # pylint: disable=bad-builtin
 funcs_moveaxis = [
     ("cmomy.moveaxis", "data_", None, "0, 1"),
 ]
@@ -549,14 +551,14 @@ out.extend(get_list(funcs_class_method_dtype, params_class_method_dtype, method=
 out.extend(get_list(funcs_class_method_dtype_out, params_class_method_dtype_out, method=True))
 
 # *** moveaxis
-params_class_method_moveaxis = list(filter(lambda x: "dataset" not in x[0], params_class_method))
+params_class_method_moveaxis = list(filter(lambda x: "dataset" not in x[0], params_class_method))  # pylint: disable=bad-builtin
 funcs_class_method_moveaxis = [
     ("moveaxis", "central_", None, "0, 0"),
 ]
 out.extend(get_list(funcs_class_method_moveaxis, params_class_method_moveaxis, method=True))
 
 # *** reshape
-params_class_method_reshape = list(filter(lambda x: "data" not in x[0], params_class_method))
+params_class_method_reshape = list(filter(lambda x: "data" not in x[0], params_class_method))  # pylint: disable=bad-builtin
 funcs_class_method_reshape = [
     ("reshape", "central_", None, "(2, 5)")
 ]
@@ -678,7 +680,7 @@ def _check_typing_sampler(
 ) -> None:
     from cmomy import IndexSampler
 
-    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayAny])  # pylint: disable=used-before-assignment
 
     assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayAny])
     assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
@@ -723,9 +725,9 @@ params_array = [
     ("arrayany", None, None, "NDArray[Any]", "float64"),
     ("any", None, None, "Any", "float64"),
 ]
-for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in [
+for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in (
         (params_array, "cmomy.concat", "data_", "reduce_out_", "{axis_dim}"),
-]:
+ ):
     for (data_suffix, *args) in dtype_seq:
         d = data_prefix + data_suffix
         out.append(str(
@@ -734,7 +736,7 @@ for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in [
                 f"({d}, {d})",
                 out_prefix,
                 base_args,
-                *args
+                *args  # pyrefly: ignore[bad-argument-type]
             )
         ))
 # fmt: on
@@ -745,5 +747,5 @@ if s != len(out):
     logger.info("duplicate in out %s %s", s, len(out))
 
 with Path("./tests/test_typing_auto.py").open("w", encoding="utf-8") as f:
-    f.write("\n".join(out))
-    f.write("\n")
+    _ = f.write("\n".join(out))
+    _ = f.write("\n")

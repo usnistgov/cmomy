@@ -567,13 +567,15 @@ def test_factory_sampler_dataset(
 ) -> None:
     nrep = 10
     rep_dim = "rep"
-    kwargs = {"nrep": nrep, "rep_dim": rep_dim, "paired": paired, **kws}
 
     # paired
     out = cmomy.resample.factory_sampler(
         data=data,
         dim=dim,
-        **kwargs,
+        nrep=nrep,
+        rep_dim=rep_dim,
+        paired=paired,
+        **kws,
         rng=0,
     )
 

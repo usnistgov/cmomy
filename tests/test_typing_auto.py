@@ -7423,7 +7423,7 @@ def _check_typing_sampler(
 ) -> None:
     from cmomy import IndexSampler
 
-    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayAny])
+    assert_type(IndexSampler.from_params(10, 20), IndexSampler[NDArrayAny])  # pylint: disable=used-before-assignment
 
     assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayAny])
     assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
