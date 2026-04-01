@@ -29,10 +29,11 @@ def _write_file(path_in: Path, path_out: Path) -> None:
     ):
         for line in f_in:
             match = parallel_line.match(line)
-            if match:
-                f_out.write(f"_PARALLEL = True  # Auto generated from {path_in.name}\n")
-            else:
-                f_out.write(line)
+            _ = f_out.write(
+                f"_PARALLEL = True  # Auto generated from {path_in.name}\n"
+                if match
+                else line
+            )
 
 
 if __name__ == "__main__":

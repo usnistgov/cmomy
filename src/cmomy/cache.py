@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
 import numba  # pyright: ignore[reportMissingTypeStubs]
-from numba.core.caching import (
-    UserProvidedCacheLocator,  # pyright: ignore[reportMissingTypeStubs]
+from numba.core.caching import (  # pyright: ignore[reportMissingTypeStubs]
+    UserProvidedCacheLocator,
 )
 
 from .core.typing_compat import override
@@ -36,6 +36,8 @@ MACHINE_HASH = [
 
 
 class _Config:
+    """Configuration class."""
+
     @cached_property
     def magic(self) -> str:
         magic = os.getenv("NUMBA_CACHE_TOOLS_MAGIC", "0")

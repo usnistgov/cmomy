@@ -14,6 +14,7 @@ dependencies:
   - python=3.13
   - dask
   - docstring-inheritance
+  - dotenv
   - ipykernel
   - lazy_loader
   - module-utilities>=0.10.1

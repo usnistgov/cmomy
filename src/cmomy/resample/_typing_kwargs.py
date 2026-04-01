@@ -32,7 +32,7 @@ class ResampleDataKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.resample.resample_data`"""
 
 
-class ResampleValsKwargs(  # type: ignore[call-arg]  # pylint: disable=duplicate-bases
+class ResampleValsKwargs(  # type: ignore[call-arg]
     ValsCFKwargs,
     _SamplerKwargs,
     total=False,

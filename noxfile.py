@@ -87,14 +87,14 @@ PYTHON_ALL_VERSIONS = nox.project.python_versions(
 if sys.platform != "darwin" or platform.machine() != "x86_64":
     PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS
 else:
-    PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS.copy()
+    PYTHON_TEST_VERSIONS = PYTHON_ALL_VERSIONS.copy()  # pyright: ignore[reportConstantRedefinition]
     PYTHON_TEST_VERSIONS.remove("3.14")
 
 PYTHON_MAX_VERSION = PYTHON_TEST_VERSIONS[-1]
 PYTHON_DEFAULT_VERSION = Path(".python-version").read_text(encoding="utf-8").strip()
 UVX_LOCK_CONSTRAINTS = "requirements/lock/uvx-tools.txt"
 UVX_MIN_CONSTRAINTS = "requirements/uvx-tools.txt"
-PIP_COMPILE_CONFIG = None
+PIP_COMPILE_CONFIG: str | None = None
 
 
 class SessionOptionsDict(TypedDict, total=False):
@@ -566,7 +566,6 @@ nox.session(python=PYTHON_TEST_VERSIONS)(test)
 nox.session(name="test-conda", **CONDA_ALL_KWS)(test)
 
 
-<<<<<<< before updating
 @nox.session(name="test-serial", python=False)
 def test_serial(
     session: Session,
@@ -599,10 +598,7 @@ def test_run_slow(
     )
 
 
-@nox.session(name="test-notebook", python=PYTHON_MAX_VERSION)
-=======
-@nox.session(name="test-notebook", python=[PYTHON_DEFAULT_VERSION])
->>>>>>> after updating
+@nox.session(name="test-notebook", python=[PYTHON_MAX_VERSION])
 @add_opts
 def test_notebook(session: nox.Session, opts: SessionParams) -> None:
     """Run pytest --nbval."""
@@ -887,8 +883,9 @@ def typecheck(  # noqa: PLR0912
         cmd = [
             "mypy",
             "basedpyright",
-            "pyrefly",
-            "ty",
+            # TODO(wpk): enable these when possible. See https://github.com/usnistgov/cmomy/issues/78  # noqa: FIX002
+            # "pyrefly",
+            # "ty",
             "pylint",
             "typecheck-notebook",
         ]
@@ -1017,9 +1014,8 @@ def conda_build(session: nox.Session, opts: SessionParams) -> None:
 
     if not run and not cmds:
         cmds = ["build", "clean"]
-
     if cmds is None:
-        cmds = []
+        cmds = []  # type: ignore[var-annotated]
 
     cmds = list(cmds)
     if "clean" in cmds:
