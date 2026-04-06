@@ -210,7 +210,7 @@ repos:
         name: nbqa-typos
         alias: typos
         additional_dependencies: &typos-deps
-          - typos==1.44.0
+          - typos==1.45.0
         args:
           - typos
           - --force-exclude
