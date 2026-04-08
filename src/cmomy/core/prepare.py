@@ -143,26 +143,27 @@ class PrepareDataArray(_PrepareBaseArray):
         dtype: DTypeLike,
     ) -> tuple[Self, tuple[int, ...], NDArrayAny]:
         data = asarray_maybe_recast(data, dtype=dtype, recast=self.recast)
+        axis_: tuple[int, ...]
         if axis is None:
             mom_axes = self.mom_params.normalize_axis_tuple(
                 self.mom_params.axes, data.ndim
             )
-            axis = tuple(i for i in range(data.ndim) if i not in mom_axes)
+            axis_ = tuple(i for i in range(data.ndim) if i not in mom_axes)
         else:
-            axis = self.mom_params.normalize_axis_tuple(
+            axis_ = self.mom_params.normalize_axis_tuple(
                 validate_axis_mult(axis), data.ndim
             )
 
         if axes_to_end:
             axis_out = tuple(
                 range(
-                    data.ndim - (self.mom_params.ndim + len(axis)),
+                    data.ndim - (self.mom_params.ndim + len(axis_)),
                     data.ndim - self.mom_params.ndim,
                 )
             )
             data = np.moveaxis(
                 data,
-                (*axis, *self.mom_params.axes),
+                (*axis_, *self.mom_params.axes),
                 (*axis_out, *self.mom_params.axes_last),
             )
             return (
@@ -170,7 +171,7 @@ class PrepareDataArray(_PrepareBaseArray):
                 axis_out,
                 data,
             )
-        return self, axis, data
+        return self, axis_, data
 
     @staticmethod
     def optional_out_sample(

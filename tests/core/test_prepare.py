@@ -111,17 +111,14 @@ def test_prepare_data_out_sample(data, mom_axes, out, kws, expected) -> None:
 
     out = prep.out_sample(out, data=data, **kwargs)
 
-    if out is None:
-        assert expected is None
-    else:
-        assert out.shape == expected
+    assert out.shape == expected
 
-        if kwargs["order"] is None:
-            assert moveaxis(
-                out, kwargs["axis"], mom_params=prep.mom_params, axes_to_end=True
-            ).flags.c_contiguous
-        elif kwargs["order"] == "c":
-            assert out.flags.c_contiguous
+    if kwargs["order"] is None:
+        assert moveaxis(
+            out, kwargs["axis"], mom_params=prep.mom_params, axes_to_end=True
+        ).flags.c_contiguous
+    elif kwargs["order"] == "c":
+        assert out.flags.c_contiguous
 
 
 @pytest.mark.parametrize(

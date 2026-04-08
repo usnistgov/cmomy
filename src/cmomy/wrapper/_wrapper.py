@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, cast, overload
+from typing import TYPE_CHECKING, Generic, overload
 
 import numpy as np
 import xarray as xr
@@ -98,7 +98,7 @@ if TYPE_CHECKING:
         MomNDim,
         NameType,
         NDArrayAny,
-        _FloatT,
+        _FloatT,  # pyright: ignore[reportPrivateUsage]
     )
     from cmomy.core.typing_compat import Self, TypeAlias, Unpack
     from cmomy.resample.typing import SamplerType
@@ -1521,10 +1521,8 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
-        obj_: DataT = (
-            cast("DataT", obj)
-            if type(self._obj) is type(obj)
-            else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        obj_: DataT = (  # pyright: ignore[reportAssignmentType]
+            obj if type(self._obj) is type(obj) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
 
         # minimal check on shape and that mom_dims are present....

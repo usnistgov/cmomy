@@ -1015,7 +1015,7 @@ def conda_build(session: nox.Session, opts: SessionParams) -> None:
     if not run and not cmds:
         cmds = ["build", "clean"]
     if cmds is None:
-        cmds = []  # type: ignore[var-annotated]
+        cmds = []
 
     cmds = list(cmds)
     if "clean" in cmds:

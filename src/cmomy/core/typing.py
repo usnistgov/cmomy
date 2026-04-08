@@ -27,7 +27,7 @@ from numpy.typing import NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
-    from .missing import Missing  # pyright: ignore[reportPrivateUsage]
+    from .missing import Missing
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]  # noqa: F401
