@@ -1,4 +1,7 @@
-"""Missing value sentinel."""
+"""
+Missing values (:mod:`cmomy.core.missing`)
+==========================================
+"""
 
 from __future__ import annotations
 
@@ -9,14 +12,17 @@ from .typing_compat import override
 
 # * Missing/no values ---------------------------------------------------------
 # taken from https://github.com/python-attrs/attrs/blob/main/src/attr/_make.py
-class _Missing(enum.Enum):
+class Missing(enum.Enum):
     """
-    Sentinel to indicate the lack of a value when ``None`` is ambiguous.
+    Enum to create sentinel.
 
     Use `cmomy.core.typing.MissingType` to type this value.
     """
 
     MISSING = enum.auto()
+    """
+    Sentinel to indicate the lack of a value when ``None`` is ambiguous.
+    """
 
     @override
     def __repr__(self) -> str:
@@ -26,7 +32,7 @@ class _Missing(enum.Enum):
         return False  # pragma: no cover
 
 
-MISSING = _Missing.MISSING
+MISSING = Missing.MISSING
 """
-Sentinel to indicate the lack of a value when ``None`` is ambiguous.
+Alias to :attr:`Missing.MISSING`
 """
