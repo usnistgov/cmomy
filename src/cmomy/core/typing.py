@@ -27,14 +27,14 @@ from numpy.typing import NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
-    from .missing import _Missing  # pyright: ignore[reportPrivateUsage]
+    from .missing import Missing  # pyright: ignore[reportPrivateUsage]
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
         _NestedSequence,  # pyright: ignore[reportPrivateUsage]  # noqa: F401
     )
 
     # Missing value type
-    MissingType: TypeAlias = Literal[_Missing.MISSING]
+    MissingType: TypeAlias = Literal[Missing.MISSING]
 
 # * TypeVars ------------------------------------------------------------------
 #: DataArray or Dataset
@@ -47,7 +47,8 @@ FloatT = TypeVar(
     np.float64,
     np.float32,
 )
-FloatT_ = TypeVar("FloatT_", np.float64, np.float32)
+#: TypeVar of floating point precision (Not bound to :class:`FloatT`)
+_FloatT = TypeVar("_FloatT", np.float64, np.float32)
 
 #: TypeVar of types wrapped by IndexSampler
 SamplerArrayT = TypeVar(

@@ -87,7 +87,6 @@ if TYPE_CHECKING:
         DimsReduce,
         DimsType,
         DTypeLikeArg,
-        FloatT_,
         Groups,
         KeepAttrs,
         MissingType,
@@ -99,6 +98,7 @@ if TYPE_CHECKING:
         MomNDim,
         NameType,
         NDArrayAny,
+        _FloatT,
     )
     from cmomy.core.typing_compat import Self, TypeAlias, Unpack
     from cmomy.resample.typing import SamplerType
@@ -258,14 +258,14 @@ class CentralMomentsArray(
     @overload
     def new_like(  # pylint: disable=signature-differs
         self,
-        obj: ArrayLikeArg[FloatT_],
+        obj: ArrayLikeArg[_FloatT],
         *,
         verify: bool = ...,
         copy: bool | None = ...,
         dtype: None = ...,
         order: ArrayOrderKACF = ...,
         fastpath: bool = ...,
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def new_like(
         self,
@@ -273,10 +273,10 @@ class CentralMomentsArray(
         *,
         verify: bool = ...,
         copy: bool | None = ...,
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         order: ArrayOrderKACF = ...,
         fastpath: bool = ...,
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def new_like(
         self,
@@ -359,13 +359,13 @@ class CentralMomentsArray(
     @overload
     def astype(
         self,
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         *,
         order: ArrayOrderKACF = ...,
         casting: Casting | None = ...,
         subok: bool | None = ...,
         copy: bool = ...,
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def astype(
         self,
@@ -644,18 +644,18 @@ class CentralMomentsArray(
     def cumulative(
         self,
         *,
-        out: NDArray[FloatT_],
+        out: NDArray[_FloatT],
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPTransformKwargs],
-    ) -> NDArray[FloatT_]: ...
+    ) -> NDArray[_FloatT]: ...
     @overload
     def cumulative(
         self,
         *,
         out: None = ...,
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         **kwargs: Unpack[WrapNPTransformKwargs],
-    ) -> NDArray[FloatT_]: ...
+    ) -> NDArray[_FloatT]: ...
     @overload
     def cumulative(
         self,
@@ -701,9 +701,9 @@ class CentralMomentsArray(
         self,
         *,
         mom: tuple[int, int],
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         order: ArrayOrderCF = ...,
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def moments_to_comoments(
         self,
@@ -743,19 +743,19 @@ class CentralMomentsArray(
         self,
         *,
         sampler: SamplerType,
-        out: NDArray[FloatT_],
+        out: NDArray[_FloatT],
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def resample_and_reduce(
         self,
         *,
         sampler: SamplerType,
         out: None = ...,
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         **kwargs: Unpack[WrapNPResampleAndReduceKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def resample_and_reduce(
         self,
@@ -829,19 +829,19 @@ class CentralMomentsArray(
         self,
         *,
         data_reduced: ArrayLike | None = ...,
-        out: NDArray[FloatT_],
+        out: NDArray[_FloatT],
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPTransformKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def jackknife_and_reduce(
         self,
         *,
         data_reduced: ArrayLike | None = ...,
         out: None = ...,
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         **kwargs: Unpack[WrapNPTransformKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def jackknife_and_reduce(
         self,
@@ -890,18 +890,18 @@ class CentralMomentsArray(
     def reduce(
         self,
         *,
-        out: NDArray[FloatT_],
+        out: NDArray[_FloatT],
         dtype: DTypeLike = ...,
         **kwargs: Unpack[WrapNPReduceKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def reduce(
         self,
         *,
         out: None = ...,
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         **kwargs: Unpack[WrapNPReduceKwargs],
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     def reduce(
         self,
@@ -979,9 +979,9 @@ class CentralMomentsArray(
         *,
         mom: Moments,
         val_shape: int | Sequence[int] | None = ...,
-        dtype: DTypeLikeArg[FloatT_],
+        dtype: DTypeLikeArg[_FloatT],
         order: ArrayOrderCF = ...,
-    ) -> CentralMomentsArray[FloatT_]: ...
+    ) -> CentralMomentsArray[_FloatT]: ...
     @overload
     @classmethod
     def zeros(

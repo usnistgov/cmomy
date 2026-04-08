@@ -30,3 +30,4 @@ Modules
    cmomy.core.typing
    cmomy.resample.typing
    cmomy.wrapper.typing
+   cmomy.core.missing
