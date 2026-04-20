@@ -36,7 +36,7 @@ conflicts = [[
 ]]
 
 [options]
-exclude-newer = "2026-04-13T03:14:47.615834503Z"
+exclude-newer = "2026-04-13T17:43:00.639644Z"
 exclude-newer-span = "P7D"
 
 [[package]]
@@ -574,10 +574,10 @@ dev = [
     { name = "dask", extras = ["diagnostics"], marker = "python_full_version >= '3.13'" },
     { name = "dotenv", marker = "python_full_version >= '3.13'" },
     { name = "ipykernel", marker = "python_full_version >= '3.13'" },
-    { name = "mypy", extras = ["faster-cache"], marker = "python_full_version >= '3.13'", specifier = ">=1.20.0" },
+    { name = "mypy", extras = ["faster-cache"], marker = "python_full_version >= '3.13'", specifier = ">=1.20.1" },
     { name = "nbclient", marker = "python_full_version >= '3.13'" },
     { name = "nbval", marker = "python_full_version >= '3.13'" },
-    { name = "nox", marker = "python_full_version >= '3.13'", specifier = ">=2025.5.1" },
+    { name = "nox", marker = "python_full_version >= '3.13'", specifier = ">=2026.4.10" },
     { name = "pandas-stubs", marker = "python_full_version >= '3.13'" },
     { name = "pylint", marker = "python_full_version >= '3.13'" },
     { name = "pytest", marker = "python_full_version >= '3.13'" },
@@ -586,7 +586,7 @@ dev = [
     { name = "pytest-env", marker = "python_full_version >= '3.13'" },
     { name = "pytest-sugar", marker = "python_full_version >= '3.13'" },
     { name = "scipy", marker = "python_full_version >= '3.13'" },
-    { name = "typecheck-runner", marker = "python_full_version >= '3.13'", specifier = ">=0.1.6" },
+    { name = "typecheck-runner", marker = "python_full_version >= '3.13'", specifier = ">=0.2.0" },
 ]
 docs = [
     { name = "autodocsumm", marker = "python_full_version >= '3.13'" },
@@ -620,14 +620,14 @@ docs-spelling = [
     { name = "sphinxcontrib-spelling", marker = "python_full_version >= '3.13'" },
 ]
 ipython = [{ name = "ipython", marker = "python_full_version >= '3.13'" }]
-mypy = [{ name = "mypy", extras = ["faster-cache"], marker = "python_full_version >= '3.13'", specifier = ">=1.20.0" }]
+mypy = [{ name = "mypy", extras = ["faster-cache"], marker = "python_full_version >= '3.13'", specifier = ">=1.20.1" }]
 notebook = [
     { name = "ipykernel", marker = "python_full_version >= '3.13'" },
     { name = "nbclient", marker = "python_full_version >= '3.13'" },
 ]
 nox = [
     { name = "dotenv", marker = "python_full_version >= '3.13'" },
-    { name = "nox", marker = "python_full_version >= '3.13'", specifier = ">=2025.5.1" },
+    { name = "nox", marker = "python_full_version >= '3.13'", specifier = ">=2026.4.10" },
 ]
 numpy1 = [{ name = "numpy", specifier = "<2.0" }]
 numpy2 = [{ name = "numpy", specifier = ">2.0" }]
@@ -660,13 +660,13 @@ test-scipy = [
 ]
 type = [
     { name = "dotenv", marker = "python_full_version >= '3.13'" },
-    { name = "nox", marker = "python_full_version >= '3.13'", specifier = ">=2025.5.1" },
+    { name = "nox", marker = "python_full_version >= '3.13'", specifier = ">=2026.4.10" },
     { name = "pandas-stubs" },
     { name = "pylint" },
     { name = "pytest" },
-    { name = "typecheck-runner", marker = "python_full_version >= '3.10'", specifier = ">=0.1.6" },
+    { name = "typecheck-runner", marker = "python_full_version >= '3.10'", specifier = ">=0.2.0" },
 ]
-typecheck-runner = [{ name = "typecheck-runner", marker = "python_full_version >= '3.10'", specifier = ">=0.1.6" }]
+typecheck-runner = [{ name = "typecheck-runner", marker = "python_full_version >= '3.10'", specifier = ">=0.2.0" }]
 
 [[package]]
 name = "colorama"
@@ -3605,14 +3605,14 @@ wheels = [
 
 [[package]]
 name = "sphinx-autodoc-typehints"
-version = "3.10.0"
+version = "3.10.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "sphinx", marker = "(python_full_version >= '3.13' and platform_machine != 'x86_64') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version != '3.13.*' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.13' and sys_platform != 'darwin') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/58/2f/6152d2e409ffaab18b397ac1cde0920dc071f9afb76125a2d496c80b9976/sphinx_autodoc_typehints-3.10.0.tar.gz", hash = "sha256:7b821a123852176b2ed4f2cb9da8db06531a15b8098a4c7350c68febb7669bd0", size = 72801, upload-time = "2026-04-09T18:05:16.389Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/92/71/f9375ce1ef3548c3b1fe42ed0706d8a86a96f34cd04de0507eda05488a9b/sphinx_autodoc_typehints-3.10.1.tar.gz", hash = "sha256:2c750dcab949098eb46e17171abbdf3a19bd2581709efa091b4590da99e68346", size = 73190, upload-time = "2026-04-13T16:05:39.985Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/78/e9/b75897138c5611213472b5726dbb6106ac6192dd31f219cd154bacefa498/sphinx_autodoc_typehints-3.10.0-py3-none-any.whl", hash = "sha256:2176424f9e1ce3054d9016ac16b51d4b9febffd8cad8ece3b7912b2c4646759f", size = 38703, upload-time = "2026-04-09T18:05:14.923Z" },
+    { url = "https://files.pythonhosted.org/packages/65/f9/eddd31fa106c022645dbd238959844c9db820781fd513754ecadde1e90ef/sphinx_autodoc_typehints-3.10.1-py3-none-any.whl", hash = "sha256:0ac4ee9e1f264517b7e163cf7beabf5a3c55dbd6c6fe25c0b12f3707f3d3eb95", size = 38839, upload-time = "2026-04-13T16:05:38.511Z" },
 ]
 
 [[package]]
