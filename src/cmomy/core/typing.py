@@ -30,7 +30,7 @@ if TYPE_CHECKING:
     from .missing import Missing
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
-        _NestedSequence,  # pyright: ignore[reportPrivateUsage]  # noqa: F401
+        _NestedSequence,  # noqa: F401
     )
 
     # Missing value type
