@@ -574,7 +574,7 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-basedpyright = [{ name = "basedpyright", specifier = ">=1.31.3" }]
+basedpyright = [{ name = "basedpyright", specifier = ">=1.39.3" }]
 dev = [
     { name = "dask", marker = "python_full_version >= '3.13'" },
     { name = "dask", extras = ["diagnostics"], marker = "python_full_version >= '3.13'" },
