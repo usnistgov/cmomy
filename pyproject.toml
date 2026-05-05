@@ -118,13 +118,8 @@ typecheck-runner = [ "typecheck-runner>=0.2.0; python_version>'3.9'" ]
 
 # * uv -------------------------------------------------------------------------
 [tool.uv]
-<<<<<<< before updating
-required-version = ">=0.7.15"
-default-groups = [ "dev", "numpy2" ]
-=======
 required-version = ">=0.11.8"
-default-groups = [ "dev" ]
->>>>>>> after updating
+default-groups = [ "dev", "numpy2" ]
 fork-strategy = "requires-python"
 environments = [
     "python_version<'3.14' and sys_platform=='darwin' and platform_machine=='x86_64'",
