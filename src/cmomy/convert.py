@@ -79,9 +79,7 @@ if TYPE_CHECKING:
         MomNDim,
         NDArrayAny,
     )
-    from .core.typing_compat import TypeVar, Unpack
-
-    _NDArrayT = TypeVar("_NDArrayT", bound="NDArray[Any]")
+    from .core.typing_compat import Unpack
 
 
 # * Convert between raw and central moments

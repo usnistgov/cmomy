@@ -30,7 +30,6 @@ if TYPE_CHECKING:
     )
     from .typing_compat import TypeIs, TypeVar
 
-    _NDArrayT = TypeVar("_NDArrayT", bound=NDArray[Any])
     _T = TypeVar("_T")
     _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 

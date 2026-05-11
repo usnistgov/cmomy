@@ -17,16 +17,16 @@ from typing import (
     runtime_checkable,
 )
 
-import numpy as np
-import pandas as pd  # noqa: F401
-
 # put outside to get autodoc typehints working...
+import numpy as np
 import xarray as xr
 from numpy.typing import NDArray
 
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
+    import pandas as pd  # noqa: F401
+
     from .missing import Missing
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
@@ -62,7 +62,11 @@ SamplerArrayT = TypeVar(
 
 # * Numpy ---------------------------------------------------------------------
 # Axis/Dim reduction type
-# TODO(wpk): convert int -> SupportsIndex?
+# TODO(wpk): consider replacing `int` with `SupportsIndex` for axis annotations
+# to better represent integer-like inputs (for example, NumPy integer scalars).
+# Check compatibility with downstream type checkers/users first, since widening
+# these public aliases may change static-type expectations even if runtime
+# behavior remains unchanged.
 #: Axes type
 Axes: TypeAlias = int | tuple[int, ...]
 #: Axes type (with wrapping)
@@ -151,10 +155,11 @@ MomentsStrict: TypeAlias = tuple[int] | tuple[int, int]
 #: Number of moment dimensions
 MomNDim = Literal[1, 2]
 
-#: Axes containing moment(s).
+#: Axes containing moment(s); accepts a single axis ``int`` or tuple forms.
 MomAxes = Moments
-#: Axes containing moment(s).
+#: Axes containing moment(s) in strict tuple form only (no bare ``int``).
 MomAxesStrict = MomentsStrict
+
 
 # * Xarray specific stuff -----------------------------------------------------
 # fix if using autodoc typehints...
