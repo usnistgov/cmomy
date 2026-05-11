@@ -99,11 +99,11 @@ LongIntDType: TypeAlias = np.int64
 #: Array type (any dtype)
 NDArrayAny: TypeAlias = NDArray[DTypeAny]
 #: Array type (int dtype)
-NDArrayInt = NDArray[np.int64]
+NDArrayInt: TypeAlias = NDArray[np.int64]
 #: Array type (float dtype)
-NDArrayFloats = NDArray[FloatDTypes]
+NDArrayFloats: TypeAlias = NDArray[FloatDTypes]
 #: Array type (bool dtype)
-NDArrayBool = NDArray[np.bool_]
+NDArrayBool: TypeAlias = NDArray[np.bool_]
 #: Integer dtype
 IntDTypeT: TypeAlias = np.int64
 #: Float or array of float
