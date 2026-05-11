@@ -17,10 +17,9 @@ from typing import (
     runtime_checkable,
 )
 
+# put outside to get autodoc typehints working...
 import numpy as np
 import pandas as pd  # noqa: F401
-
-# put outside to get autodoc typehints working...
 import xarray as xr
 from numpy.typing import NDArray
 
