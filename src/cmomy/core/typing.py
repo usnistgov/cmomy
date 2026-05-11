@@ -195,7 +195,7 @@ Groups: TypeAlias = "Sequence[Any] | NDArrayAny | IndexAny | pd.MultiIndex"
 ArrayOrderCF: TypeAlias = Literal["C", "F"] | None
 #: Order parameters
 ArrayOrderACF: TypeAlias = Literal["A", "C", "F"] | None
-#: NumPy order parameters: K=keep input layout, A=Fortran if possible else C, C=row-major, F=column-major
+#: NumPy order parameters. K=keep input layout, A=Fortran if possible else C, C=row-major, F=column-major
 ArrayOrderKACF: TypeAlias = Literal["K", "A", "C", "F"] | None
 #: Casting rules
 Casting = Literal["no", "equiv", "safe", "same_kind", "unsafe"]
@@ -220,7 +220,7 @@ SelectMoment = Literal[
 #: Style to convert to
 ConvertStyle = Literal["central", "raw"]
 VerifyValuesStyles = Literal["val", "vals", "data", "datas", "var", "vars"]
-#: Coordinate selection policy: ``"first"`` keeps first, ``"last"`` keeps last, ``"group"`` keeps grouped coordinates, ``None`` uses default behavior.
+#: Coordinate selection policy. ``"first"`` keeps first, ``"last"`` keeps last, ``"group"`` keeps grouped coordinates, ``None`` uses default behavior.
 CoordsPolicy: TypeAlias = Literal["first", "last", "group"] | None
 BootStrapMethod = Literal["percentile", "basic", "bca"]
 BlockByModes = Literal["drop_first", "drop_last", "expand_first", "expand_last"]
