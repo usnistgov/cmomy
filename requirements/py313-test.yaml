@@ -13,7 +13,7 @@ channels:
 dependencies:
   - python=3.13
   - docstring-inheritance
-  - lazy_loader
+  - lazy-loader
   - module-utilities>=0.10.1
   - numba>=0.57
   - numpy>1.24
