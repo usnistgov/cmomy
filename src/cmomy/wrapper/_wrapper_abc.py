@@ -497,7 +497,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             raise TypeError(msg)
         self._raise_if_wrong_mom_shape(other.mom_shape)
 
-    def __iadd__(self, other: Self) -> Self:  # noqa: PYI034
+    def __iadd__(self, other: Self) -> Self:
         """Self adder."""
         self._check_other(other)
         return self.push_data(other.obj)
@@ -507,7 +507,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         self._check_other(other)
         return self.copy().push_data(other.obj)
 
-    def __isub__(self, other: Self) -> Self:  # noqa: PYI034
+    def __isub__(self, other: Self) -> Self:
         """Inplace subtraction."""
         self._check_other(other)
         return self.push_data(other.obj, scale=-1.0)
@@ -521,7 +521,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """New object with weight scaled by scale."""  # D401
         return self.assign_moment(weight=self.weight() * scale, copy=True)
 
-    def __imul__(self, scale: float) -> Self:  # noqa: PYI034
+    def __imul__(self, scale: float) -> Self:
         """Inplace multiply."""
         # do this to make sure things work with dask...
         self._obj = self.assign_moment(weight=self.weight() * scale, copy=False)._obj
