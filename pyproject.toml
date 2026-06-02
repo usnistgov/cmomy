@@ -83,12 +83,8 @@ docs = [
     "sphinxcontrib-spelling",
 ]
 # other groups
-<<<<<<< before updating
-basedpyright = [ "basedpyright>=1.39.4" ]
-=======
 basedpyright = [ "basedpyright>=1.39.6" ]
 cog = [ "cogapp" ]
->>>>>>> after updating
 docs-live = [
     "sphinx-autobuild",
     { include-group = "docs" },
