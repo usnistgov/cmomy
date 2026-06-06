@@ -224,30 +224,25 @@ files = [
     "tests",
     "tools",
 ]
-# options
-allow_redefinition_new = true
 always_true = [ "MYPY_ONLY" ]
 check_untyped_defs = true
 warn_unused_ignores = true
 warn_return_any = true
 warn_unreachable = true
+allow_redefinition_new = true
+local_partial_types = true
 enable_error_code = [
     "ignore-without-code",
     "redundant-expr",
     "truthy-bool",
 ]
-<<<<<<< before updating
-local_partial_types = true
-warn_return_any = true
-warn_unreachable = true
-warn_unused_configs = true
-warn_unused_ignores = true
+strict = true
 # project specific
 pretty = true
 sqlite_cache = true
+warn_unused_configs = true
 
 [[tool.mypy.overrides]]
-ignore_missing_imports = true
 module = [
     "dask.*",
     "numba.*",
@@ -255,22 +250,18 @@ module = [
     "scipy.special.*",
     "scipy.stats.*",
 ]
+ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-strict = false
-disallow_untyped_defs = false
-disallow_untyped_calls = false
-disallow_incomplete_defs = false
 module = [
     "tests.*",
 ]
+disallow_untyped_calls = false
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+strict = false
 
 [[tool.mypy.overrides]]
-disable_error_code = [
-    "arg-type",
-    "assignment",
-    "call-overload",
-]
 module = [
     "tests._dataarray_set_utils.*",
     "tests.test_convert.*",
@@ -283,20 +274,12 @@ module = [
     "tests.test_utils.*",
     "tests.test_xarray_support.*",
 ]
+disable_error_code = [
+    "arg-type",
+    "assignment",
+    "call-overload",
+]
 
-=======
-strict = true
-warn_unused_configs = true
-
-# [[tool.mypy.overrides]]
-# module = [  ]
-# ignore_missing_imports = true
-#
-# [[tool.mypy.overrides]]
-# module = [  ]
-# ignore_errors = true
-#
->>>>>>> after updating
 [tool.pyrefly]
 enabled-ignores = [ "pyrefly" ]
 project-excludes = [ "**/test_typing_auto.py" ]
@@ -318,35 +301,7 @@ errors.missing-attribute = "ignore"
 matches = "tests/**/*.py"
 
 [tool.pyright]
-<<<<<<< before updating
-defineConstant = { MYPY_ONLY = false }
-=======
-typeCheckingMode = "strict"
-# typeCheckingMode= "standard"
-include = [
-    "noxfile.py",
-    "src",
-    "tests",
-    "tools",
-]
->>>>>>> after updating
-exclude = [
-    "**/.mypy_cache",
-    "**/.numba_cache",
-    "**/__pycache__",
-    ".nox/**",
-    ".tox/**",
-    ".venv/**",
-    # "tools/auto_test_typing.py",
-]
-<<<<<<< before updating
-include = [
-    "src",
-    "tests",
-    # tools
-    "noxfile.py",
-    "tools",
-]
+typeCheckingMode = "standard"
 strict = [
     "noxfile.py",
     "src/cmomy/*.py",
@@ -356,19 +311,28 @@ strict = [
     "src/cmomy/wrapper/*.py",
     "tools/*.py",
 ]
-typeCheckingMode = "standard"
-=======
+include = [
+    "noxfile.py",
+    "src",
+    "tests",
+    "tools",
+]
+exclude = [
+    "**/.mypy_cache",
+    "**/.numba_cache",
+    "**/__pycache__",
+    ".nox/**",
+    ".tox/**",
+    ".venv/**",
+    # "tools/auto_test_typing.py",
+]
+# Needed for pep728 support for TypeDict(closed=...)
+enableExperimentalFeatures = true
 enableTypeIgnoreComments = false
-# strict = [
-#     "src",
-#     "tests",
-#     "noxfile.py",
-#     "tools/*.py",
-# ]
->>>>>>> after updating
 # options
 # reportMissingSuperCall = true
 deprecateTypingAliases = true
+defineConstant = { MYPY_ONLY = false }
 reportCallInDefaultInitializer = true
 reportImplicitOverride = true
 reportImplicitStringConcatenation = false
@@ -385,12 +349,7 @@ reportUntypedFunctionDecorator = true
 reportUnusedCallResult = true
 reportUnusedImport = false
 reportUnusedVariable = false
-<<<<<<< before updating
-# Needed for pep728 support for TypeDict(closed=...)
-enableExperimentalFeatures = true
-=======
 enableReachabilityAnalysis = false
->>>>>>> after updating
 
 [[tool.pyright.executionEnvironments]]
 reportArgumentType = false
