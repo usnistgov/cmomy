@@ -1,6 +1,10 @@
 # mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, var-annotated, arg-type, operator"
 # pyright: reportCallIssue=false, reportArgumentType=false
 """Create test_typing_auto.py file"""
+# /// script
+# requires-python = ">=3.11"
+# ]
+# ///
 
 from __future__ import annotations
 
