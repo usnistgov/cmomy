@@ -483,9 +483,6 @@ dependencies = [
 basedpyright = [
     { name = "basedpyright", marker = "python_full_version < '3.14' or platform_machine != 'x86_64' or sys_platform != 'darwin' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-cog = [
-    { name = "cogapp", marker = "python_full_version < '3.14' or platform_machine != 'x86_64' or sys_platform != 'darwin' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
-]
 dev = [
     { name = "dask", extra = ["diagnostics"], marker = "(python_full_version >= '3.13' and platform_machine != 'x86_64') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version != '3.13.*' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.13' and sys_platform != 'darwin') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "dotenv", marker = "(python_full_version >= '3.13' and platform_machine != 'x86_64') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version != '3.13.*' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.13' and sys_platform != 'darwin') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
@@ -618,7 +615,6 @@ requires-dist = [
 
 [package.metadata.requires-dev]
 basedpyright = [{ name = "basedpyright", specifier = ">=1.39.7" }]
-cog = [{ name = "cogapp" }]
 dev = [
     { name = "dask", marker = "python_full_version >= '3.13'" },
     { name = "dask", extras = ["diagnostics"], marker = "python_full_version >= '3.13'" },
@@ -717,15 +713,6 @@ type = [
     { name = "typecheck-runner", marker = "python_full_version >= '3.10'", specifier = ">=0.2.0" },
 ]
 typecheck-runner = [{ name = "typecheck-runner", marker = "python_full_version >= '3.10'", specifier = ">=0.2.0" }]
-
-[[package]]
-name = "cogapp"
-version = "3.6.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/64/ea/4ffa8095e0b675e9961cbdcad002c09d35d4ab76ff99d61a014e9e6bcd53/cogapp-3.6.0.tar.gz", hash = "sha256:ec2a9170bfa644bf0d91996fdb5576c13d7e5e848bb2378a6f92727b48f92604", size = 59742, upload-time = "2025-09-21T15:54:13.553Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/05/1c/23b5110b7cb305f0fe3a5d6809d6804c1cb57d57b59516dbb5e24aaf95fc/cogapp-3.6.0-py3-none-any.whl", hash = "sha256:6ea11c63221f92978d37d8d76208eadeae2a6e4641d323f165738a5464a19d32", size = 30550, upload-time = "2025-09-21T15:54:12.205Z" },
-]
 
 [[package]]
 name = "colorama"
