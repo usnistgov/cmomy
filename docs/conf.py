@@ -332,7 +332,7 @@ language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-# This patterns also effect to html_static_path and html_extra_path
+# These patterns also affect to html_static_path and html_extra_path
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -471,7 +471,7 @@ texinfo_documents = [
         "cmomy Documentation",
         author,
         "cmomy",
-        "One line description of project.",
+        "Central (co)moment calculation/manipulation",
         "Miscellaneous",
     ),
 ]
@@ -527,6 +527,8 @@ def linkcode_resolve(domain: str, info: dict[str, Any]) -> str | None:
     if not fn:
         return None
 
+    source: list[str] = []
+    lineno: int | None = None
     try:
         source, lineno = inspect.getsourcelines(obj)
     except OSError:
