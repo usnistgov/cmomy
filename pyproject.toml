@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-    "uv-build>=0.11.19,<0.12.0",
+    "uv-build>=0.11.21,<0.12.0",
 ]
 
 [project]
@@ -83,7 +83,7 @@ docs = [
     "sphinxcontrib-spelling",
 ]
 # other groups
-basedpyright = [ "basedpyright>=1.39.7" ]
+basedpyright = [ "basedpyright>=1.39.8" ]
 docs-live = [
     "sphinx-autobuild",
     { include-group = "docs" },
@@ -100,7 +100,7 @@ nox = [ "dotenv", "nox>=2026.4.10" ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
 pylint = [ "pylint" ]
-pytest = [ "pytest" ]
+pytest = [ "pytest!=9.1.0" ]
 pytest-accept = [ "pytest-accept" ]
 test-extras = [
     { include-group = "test" },
@@ -474,15 +474,15 @@ pip-deps = [
     # these used solely for specking tools to be run via uvx ...
     "conda-lock>=4.0.0",
     "copier-template-extensions>=0.3.3",
-    "copier>=9.15.1",
+    "copier>=9.15.2",
     "grayskull>=3.1.1",
     "nbqa>=1.9.1",
-    "prek>=0.4.4",
+    "prek>=0.4.5",
     "pyrefly>=1.0.0",
     "pyright>=1.1.410",
     "rooster>=0.1.1",
     "twine>=6.2.0",
-    "ty>=0.0.46",
+    "ty>=0.0.49",
 ]
 groups = [
     "basedpyright",
