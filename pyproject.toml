@@ -100,7 +100,7 @@ nox = [ "dotenv", "nox>=2026.4.10" ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
 pylint = [ "pylint" ]
-pytest = [ "pytest" ]
+pytest = [ "pytest!=9.1.0" ]
 pytest-accept = [ "pytest-accept" ]
 test-extras = [
     { include-group = "test" },
