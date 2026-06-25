@@ -241,7 +241,6 @@ pretty = true
 sqlite_cache = true
 warn_unused_configs = true
 
-<<<<<<< before updating
 [[tool.mypy.overrides]]
 module = [
     "dask.*",
@@ -280,12 +279,6 @@ disable_error_code = [
     "call-overload",
 ]
 
-=======
-## [[tool.mypy.overrides]]
-## module = [ "module.submodule.*" ]
-## ignore_missing_imports = true
-## ignore_errors = true
->>>>>>> after updating
 [tool.pyrefly]
 enabled-ignores = [ "pyrefly" ]
 project-excludes = [ "**/test_typing_auto.py" ]
@@ -307,7 +300,6 @@ errors.missing-attribute = "ignore"
 matches = "tests/**/*.py"
 
 [tool.pyright]
-<<<<<<< before updating
 typeCheckingMode = "standard"
 strict = [
     "noxfile.py",
@@ -318,9 +310,6 @@ strict = [
     "src/cmomy/wrapper/*.py",
     "tools/*.py",
 ]
-=======
-typeCheckingMode = "strict"
->>>>>>> after updating
 include = [
     "noxfile.py",
     "src",
@@ -339,18 +328,12 @@ exclude = [
 # Needed for pep728 support for TypeDict(closed=...)
 enableExperimentalFeatures = true
 enableTypeIgnoreComments = false
-<<<<<<< before updating
-# options
-# reportMissingSuperCall = true
-=======
->>>>>>> after updating
 deprecateTypingAliases = true
 defineConstant = { MYPY_ONLY = false }
 reportCallInDefaultInitializer = true
 reportImplicitOverride = true
 reportImplicitStringConcatenation = false
 reportImportCycles = true
-# options
 # reportMissingSuperCall = true
 reportOverlappingOverload = true
 reportPrivateImportUsage = false
@@ -366,12 +349,6 @@ reportUnusedImport = false
 reportUnusedVariable = false
 enableReachabilityAnalysis = false
 
-# strict = [
-#     "src",
-#     "tests",
-#     "noxfile.py",
-#     "tools/*.py",
-# ]
 [[tool.pyright.executionEnvironments]]
 reportArgumentType = false
 reportCallIssue = false
@@ -443,7 +420,6 @@ paths.source = [
     "*/.nox/**/site-packages",
     "*/src",
 ]
-# show_missing = true
 report.exclude_also = [
     "@overload",
     "if TYPE_CHECKING:",
@@ -500,11 +476,7 @@ pip-deps = [
     "grayskull>=3.1.1",
     "nbqa>=1.9.1",
     "prek>=0.4.5",
-<<<<<<< before updating
-    "pyrefly>=1.0.0",
-=======
     "pyrefly>=1.1.0",
->>>>>>> after updating
     "pyright>=1.1.410",
     "rooster>=0.1.1",
     "twine>=6.2.0",
