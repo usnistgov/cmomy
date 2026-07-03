@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 
-@pytest.fixture(autouse=True)  # noqa: RUF076
+@pytest.fixture(autouse=True)
 def add_standard_imports(doctest_namespace) -> None:
     import numpy as np
     import pandas as pd
