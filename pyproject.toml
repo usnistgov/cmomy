@@ -300,7 +300,6 @@ errors.missing-attribute = "ignore"
 matches = "tests/**/*.py"
 
 [tool.pyright]
-<<<<<<< before updating
 typeCheckingMode = "standard"
 strict = [
     "noxfile.py",
@@ -311,15 +310,6 @@ strict = [
     "src/cmomy/wrapper/*.py",
     "tools/*.py",
 ]
-=======
-typeCheckingMode = "strict"
-# strict = [
-#     "noxfile.py",
-#     "src",
-#     "tests",
-#     "tools/*.py",
-# ]
->>>>>>> after updating
 include = [
     "noxfile.py",
     "src",
