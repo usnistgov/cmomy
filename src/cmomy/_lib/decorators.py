@@ -1,3 +1,5 @@
+# pyright: reportUnnecessaryTypeIgnoreComment=false
+
 from __future__ import annotations
 
 import itertools
@@ -100,7 +102,7 @@ def myguvectorize(
 
     return cast(
         "Callable[[FuncT], FuncT]",
-        guvectorize(
+        guvectorize(  # type: ignore[no-untyped-call, unused-ignore]
             *args,
             nopython=nopython,
             target=target,
@@ -136,7 +138,7 @@ def myjit(
 
     return cast(
         "Callable[[FuncT], FuncT]",
-        njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),
+        njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),  # type: ignore[call-overload, unused-ignore]  # pyright: ignore[reportCallIssue, reportArgumentType]
     )
 
 
