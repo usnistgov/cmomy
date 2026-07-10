@@ -1,3 +1,5 @@
+#:tombi schema.strict = false
+
 [build-system]
 build-backend = "uv_build"
 requires = [
@@ -250,6 +252,7 @@ module = [
     "scipy.stats.*",
 ]
 ignore_missing_imports = true
+disallow_untyped_calls = false
 
 [[tool.mypy.overrides]]
 module = [

@@ -2,6 +2,7 @@
 Numba caching tools
 ===================
 """
+# pyright: reportMissingTypeStubs=false
 
 from __future__ import annotations
 
@@ -14,8 +15,8 @@ from importlib import import_module
 from pathlib import Path
 from typing import TYPE_CHECKING, cast
 
-import numba  # pyright: ignore[reportMissingTypeStubs]
-from numba.core.caching import (  # pyright: ignore[reportMissingTypeStubs]
+import numba
+from numba.core.caching import (
     UserProvidedCacheLocator,
 )
 
@@ -49,7 +50,7 @@ class _Config:
 config = _Config()
 
 
-class HashCacheLocator(UserProvidedCacheLocator):  # type: ignore[misc]
+class HashCacheLocator(UserProvidedCacheLocator):  # type: ignore[misc, unused-ignore]
     """
     Cache with file hash
 

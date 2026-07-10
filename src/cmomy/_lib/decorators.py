@@ -36,7 +36,7 @@ def is_in_unsafe_thread_pool() -> bool:
 def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
-        from numba.np.ufunc import (  # pylint: disable=unused-import
+        from numba.np.ufunc import (  # type: ignore[attr-defined, unused-ignore] # pylint: disable=unused-import
             tbbpool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[unresolved-import]
         )
     except ImportError:
@@ -45,7 +45,7 @@ def _thread_backend() -> str | None:
         return "tbb"
 
     try:
-        from numba.np.ufunc import (  # pylint: disable=unused-import
+        from numba.np.ufunc import (  # type: ignore[attr-defined, unused-ignore] # pylint: disable=unused-import
             omppool,  # noqa: F401  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[unresolved-import]
         )
     except ImportError:
@@ -154,7 +154,7 @@ def _get_target(parallel: bool) -> str:
 def _get_signatures(
     signature: Iterable[Sequence[NumbaType]] | None,
     signature_generator: Iterable[NumbaType | Sequence[NumbaType]] | None,
-) -> list[tuple[NumbaType, ...]]:
+) -> Any:
     signatures = [] if signature is None else [tuple(x) for x in signature]
 
     if signature_generator is not None:
