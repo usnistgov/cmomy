@@ -171,7 +171,7 @@ class ValsCFKwargs(
 
 # ** Reduction
 # NOTE: special case with multiple axes
-class ReduceDataKwargs(  # type: ignore[call-arg]
+class ReduceDataKwargs(
     _MomParamsKwargs,
     _MomNDimKwargs,
     _AxisMultKwargs,
@@ -189,7 +189,7 @@ class ReduceDataKwargs(  # type: ignore[call-arg]
     use_map: bool | None
 
 
-class ReduceValsKwargs(  # type: ignore[call-arg]
+class ReduceValsKwargs(
     ValsCFKwargs,
     total=False,
     closed=True,
@@ -197,7 +197,7 @@ class ReduceValsKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.reduction.reduce_vals`"""
 
 
-class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
+class ReduceDataGroupedKwargs(
     _DataCFKwargs,
     _GroupsKwargs,
     _CoordsPolicyKwargs,
@@ -207,7 +207,7 @@ class ReduceDataGroupedKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.grouped.reduce_data_grouped`"""
 
 
-class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
+class ReduceDataIndexedKwargs(
     DataKACFKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
@@ -218,7 +218,7 @@ class ReduceDataIndexedKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.grouped.reduce_data_indexed`"""
 
 
-class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
+class ReduceValsGroupedKwargs(
     ValsCFKwargs,
     _GroupsKwargs,
     _CoordsPolicyKwargs,
@@ -228,7 +228,7 @@ class ReduceValsGroupedKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.grouped.reduce_vals_grouped`"""
 
 
-class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
+class ReduceValsIndexedKwargs(
     ValsCFKwargs,
     _GroupsKwargs,
     _IndexedKwargs,
@@ -239,7 +239,7 @@ class ReduceValsIndexedKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.grouped.reduce_vals_indexed`"""
 
 
-class JackknifeDataKwargs(  # type: ignore[call-arg]
+class JackknifeDataKwargs(
     DataKACFKwargs,
     total=False,
     closed=True,
@@ -250,7 +250,7 @@ class JackknifeDataKwargs(  # type: ignore[call-arg]
     mom_axes_reduced: MomAxes | None
 
 
-class JackknifeValsKwargs(  # type: ignore[call-arg]
+class JackknifeValsKwargs(
     ValsCFKwargs,
     total=False,
     closed=True,
@@ -273,7 +273,7 @@ class _WrapRawKwargs(
     pass
 
 
-class WrapRawKwargs(  # type: ignore[call-arg]
+class WrapRawKwargs(
     _WrapRawKwargs,
     total=False,
     closed=True,
@@ -281,7 +281,7 @@ class WrapRawKwargs(  # type: ignore[call-arg]
     """Extra parameters for :func:`.wrap_raw`"""
 
 
-class MomentsTypeKwargs(  # type: ignore[call-arg]
+class MomentsTypeKwargs(
     _WrapRawKwargs,
     _MoveAxisToEndKwargs,
     total=False,
@@ -292,7 +292,7 @@ class MomentsTypeKwargs(  # type: ignore[call-arg]
     to: ConvertStyle
 
 
-class CumulativeKwargs(  # type: ignore[call-arg]
+class CumulativeKwargs(
     DataKACFKwargs,
     total=False,
     closed=True,
@@ -302,7 +302,7 @@ class CumulativeKwargs(  # type: ignore[call-arg]
     inverse: bool
 
 
-class MomentsToComomentsKwargs(  # type: ignore[call-arg]
+class MomentsToComomentsKwargs(
     _MomDimsAndApplyUFuncKwargs,
     _OrderCFKwargs,
     _MomAxesKwargs,
@@ -316,7 +316,7 @@ class MomentsToComomentsKwargs(  # type: ignore[call-arg]
 
 
 # ** Utils
-class SelectMomentKwargs(  # type: ignore[call-arg]
+class SelectMomentKwargs(
     _MomNDimKwargs,
     _MomDimsAndApplyUFuncKwargs,
     _MomAxesKwargs,
@@ -331,7 +331,7 @@ class SelectMomentKwargs(  # type: ignore[call-arg]
     coords_combined: str | Sequence[Hashable] | None
 
 
-class ValsToDataKwargs(  # type: ignore[call-arg]
+class ValsToDataKwargs(
     _MomKwargs,
     _MomDimsAndApplyUFuncKwargs,
     _MomParamsKwargs,
@@ -356,7 +356,7 @@ class _RollingExpKwargs(_RollingCommonKwargs, total=False):
     adjust: bool
 
 
-class RollingDataKwargs(  # type: ignore[call-arg]
+class RollingDataKwargs(
     DataKACFKwargs,
     _RollingKwargs,
     total=False,
@@ -365,7 +365,7 @@ class RollingDataKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.rolling.rolling_data`"""
 
 
-class RollingValsKwargs(  # type: ignore[call-arg]
+class RollingValsKwargs(
     ValsCFKwargs,
     _RollingKwargs,
     total=False,
@@ -374,7 +374,7 @@ class RollingValsKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.rolling.rolling_vals`"""
 
 
-class RollingExpDataKwargs(  # type: ignore[call-arg]
+class RollingExpDataKwargs(
     DataKACFKwargs,
     _RollingExpKwargs,
     total=False,
@@ -385,7 +385,7 @@ class RollingExpDataKwargs(  # type: ignore[call-arg]
     alpha_axis: AxisReduceWrap | MissingType
 
 
-class RollingExpValsKwargs(  # type: ignore[call-arg]
+class RollingExpValsKwargs(
     ValsCFKwargs,
     _RollingExpKwargs,
     total=False,
@@ -395,7 +395,7 @@ class RollingExpValsKwargs(  # type: ignore[call-arg]
 
 
 # ** Wrap
-class WrapKwargs(  # type: ignore[call-arg]
+class WrapKwargs(
     _MomNDimKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,
@@ -409,7 +409,7 @@ class WrapKwargs(  # type: ignore[call-arg]
     fastpath: bool
 
 
-class ZerosLikeKwargs(  # type: ignore[call-arg]
+class ZerosLikeKwargs(
     _OrderKACFKwargs,
     total=False,
     closed=True,
@@ -433,7 +433,7 @@ class _WrapNPTransformKwargs(
     casting: Casting
 
 
-class WrapNPTransformKwargs(  # type: ignore[call-arg]
+class WrapNPTransformKwargs(
     _WrapNPTransformKwargs,
     total=False,
     closed=True,
@@ -441,7 +441,7 @@ class WrapNPTransformKwargs(  # type: ignore[call-arg]
     """Extra parameters to :meth:`.CentralMomentsArray.cumulative`"""
 
 
-class WrapNPResampleAndReduceKwargs(  # type: ignore[call-arg]
+class WrapNPResampleAndReduceKwargs(
     _WrapNPTransformKwargs,
     total=False,
     closed=True,
@@ -449,7 +449,7 @@ class WrapNPResampleAndReduceKwargs(  # type: ignore[call-arg]
     """Extra parameters to :meth:`.CentralMomentsArray.resample_and_reduce`"""
 
 
-class WrapNPReduceKwargs(  # type: ignore[call-arg]
+class WrapNPReduceKwargs(
     _WrapNPTransformKwargs,
     _KeepDimsKwargs,
     total=False,
@@ -461,7 +461,7 @@ class WrapNPReduceKwargs(  # type: ignore[call-arg]
     block: int
 
 
-class IndexSamplerFromDataKwargs(  # type: ignore[call-arg]
+class IndexSamplerFromDataKwargs(
     _AxisKwargs,
     _MomAxesKwargs,
     _MomParamsKwargs,

@@ -23,7 +23,7 @@ class _SamplerKwargs(TypedDict, total=False):
     rep_dim: str
 
 
-class ResampleDataKwargs(  # type: ignore[call-arg]
+class ResampleDataKwargs(
     DataKACFKwargs,
     _SamplerKwargs,
     total=False,
@@ -32,7 +32,7 @@ class ResampleDataKwargs(  # type: ignore[call-arg]
     """Extra parameters to :func:`.resample.resample_data`"""
 
 
-class ResampleValsKwargs(  # type: ignore[call-arg]
+class ResampleValsKwargs(
     ValsCFKwargs,
     _SamplerKwargs,
     total=False,
