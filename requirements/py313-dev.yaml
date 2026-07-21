@@ -18,7 +18,7 @@ dependencies:
   - ipykernel
   - lazy-loader
   - module-utilities>=0.10.1
-  - mypy>=2.1.0
+  - mypy>=2.3.0
   - nbclient
   - nbval
   - nox>=2026.4.10

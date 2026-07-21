@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 
 @docfiller.decorate
-class FactoryIndexSamplerKwargs(  # type: ignore[call-arg]
+class FactoryIndexSamplerKwargs(
     TypedDict,
     total=False,
     closed=True,
