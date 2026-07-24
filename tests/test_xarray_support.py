@@ -41,7 +41,7 @@ def create_data(
     rng,
     shapes_and_dims,
     dim,
-    **kwargs,  # noqa: ARG001
+    **kwargs,  # ruff:ignore[unused-function-argument]
 ) -> xr.Dataset | xr.DataArray:
     if isinstance(shapes_and_dims, tuple):
         shape, dims = shapes_and_dims
@@ -328,7 +328,7 @@ def fixture_vals(rng, as_dataarray, request):
 
     for k, v in request.param.items():
         if "_reshape" in k:
-            out[k] = v  # noqa: PERF403
+            out[k] = v  # ruff:ignore[manual-dict-comprehension]
     return out
 
 
@@ -854,7 +854,7 @@ def test_func_data_chunking_out_parameter(
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
     # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
-    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001
+    # assert np.shares_memory(res_chunk.compute(), out)  # ruff:ignore[commented-out-code]
 
 
 @pytest.mark.slow
@@ -876,7 +876,7 @@ def test_func_data_chunking_out_parameter(
             None,
         ),
         (cmomy.resample.jackknife_vals, None),
-        # (cmomy.utils.vals_to_data, remove_dim_from_kwargs),  # noqa: ERA001
+        # (cmomy.utils.vals_to_data, remove_dim_from_kwargs),  # ruff:ignore[commented-out-code]
         (partial(cmomy.rolling.rolling_vals, window=2), None),
         (partial(cmomy.rolling.rolling_exp_vals, alpha=0.2), None),
     ],
@@ -902,4 +902,4 @@ def test_func_vals_chunking_out_parameter(rng, func, kwargs_callback, dim, mom, 
     xr.testing.assert_allclose(res, res_chunk)
     assert _is_chunked(res_chunk)
     # NOTE: dask>=2025.2.0 no longer allows shared memory after compute (see https://github.com/dask/dask/pull/11697)
-    # assert np.shares_memory(res_chunk.compute(), out)  # noqa: ERA001
+    # assert np.shares_memory(res_chunk.compute(), out)  # ruff:ignore[commented-out-code]

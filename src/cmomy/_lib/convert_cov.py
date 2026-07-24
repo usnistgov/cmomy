@@ -32,7 +32,7 @@ def central_to_raw(central: NDArray[FloatT], raw: NDArray[FloatT]) -> None:
     ave0 = central[1, 0]
     ave1 = central[0, 1]
 
-    for n in range(central.shape[0]):  # noqa: PLR1702
+    for n in range(central.shape[0]):  # ruff:ignore[too-many-nested-blocks]
         for m in range(central.shape[1]):
             nm = n + m
             if nm <= 1:
@@ -75,7 +75,7 @@ def raw_to_central(raw: NDArray[FloatT], central: NDArray[FloatT]) -> None:
     ave0 = raw[1, 0]
     ave1 = raw[0, 1]
 
-    for n in range(raw.shape[0]):  # noqa: PLR1702
+    for n in range(raw.shape[0]):  # ruff:ignore[too-many-nested-blocks]
         for m in range(raw.shape[1]):
             nm = n + m
             if nm <= 1:

@@ -1,4 +1,4 @@
-# ruff: noqa: SLF001
+# ruff:file-ignore[private-member-access]
 # pyright: reportPrivateUsage=false
 """Utilities to work with xr.DataArray objects."""
 
@@ -137,7 +137,7 @@ def transpose_like(
     remove_: set[Hashable] = (
         set()
         if remove is None
-        else set([remove])  # noqa: C405
+        else set([remove])  # ruff:ignore[unnecessary-literal-set]
         if isinstance(remove, str)
         else set(remove)
     )

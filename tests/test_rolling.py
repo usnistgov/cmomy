@@ -193,7 +193,7 @@ def test_rolling_data(
 @pytest.mark.parametrize("center", [False, True])
 @pytest.mark.parametrize("missing", [True, False])
 @pytest.mark.parametrize("mom_ndim", [1, 2])
-def test_rolling_data_vals_missing(  # noqa: PLR0914
+def test_rolling_data_vals_missing(  # ruff:ignore[too-many-locals]
     rng: np.random.Generator,
     window: int,
     min_periods: int | None,
@@ -247,7 +247,7 @@ def test_rolling_data_vals_missing(  # noqa: PLR0914
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # noqa: RUF069
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # ruff:ignore[float-equality-comparison]
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -310,7 +310,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     outc = cmomy.reduce_data(data_rolling, mom_ndim=mom_ndim, axis=0)
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
 
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # noqa: RUF069
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # ruff:ignore[float-equality-comparison]
 
     outc = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -336,7 +336,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     wr, *xyr = (select(data_rolling, name) for name in mom_names)
 
     outc = cmomy.reduce_vals(*xyr, weight=wr, mom=mom, axis=0)
-    count = (wr != 0.0).sum(axis=0)  # noqa: RUF069
+    count = (wr != 0.0).sum(axis=0)  # ruff:ignore[float-equality-comparison]
 
     outc = np.where(
         count[(..., *((None,) * mom_ndim))]
@@ -383,7 +383,7 @@ def test_rolling_data_from_constructed_windows(
     out2 = cmomy.reduce_data(data_rolling, axis=0, mom_ndim=mom_ndim)
     # clean up counts...
     select = partial(cmomy.select_moment, mom_ndim=mom_ndim)
-    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # noqa: RUF069
+    count = (select(data_rolling, "weight") != 0.0).sum(axis=0)  # ruff:ignore[float-equality-comparison]
 
     out2 = np.where(
         np.expand_dims(count, list(range(-mom_ndim, 0)))
@@ -406,7 +406,7 @@ def test_rolling_data_from_constructed_windows(
 @pytest.mark.parametrize("missing", [True, False])
 @pytest.mark.parametrize("min_periods", [None, 3])
 @pytest.mark.parametrize("mom_ndim", [1, 2])
-def test_rolling_exp_data_vals_missing(  # noqa: PLR0914
+def test_rolling_exp_data_vals_missing(  # ruff:ignore[too-many-locals]
     rng: np.random.Generator,
     alpha: float,
     adjust: bool,

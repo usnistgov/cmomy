@@ -511,8 +511,8 @@ def _reduce_block(data, axis, block, **kwargs):
             cmomy.resample_data,
             lambda: {"sampler": {"nrep": 10, "rng": 0}},
         ),
-        ("jackknife_and_reduce", cmomy.resample.jackknife_data, lambda: {}),  # noqa: PIE807
-        ("reduce", cmomy.reduce_data, lambda: {}),  # noqa: PIE807
+        ("jackknife_and_reduce", cmomy.resample.jackknife_data, lambda: {}),  # ruff:ignore[reimplemented-container-builtin]
+        ("reduce", cmomy.reduce_data, lambda: {}),  # ruff:ignore[reimplemented-container-builtin]
         ("reduce", _reduce_block, lambda: {"block": 2}),
     ],
 )

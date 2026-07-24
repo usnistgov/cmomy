@@ -13,7 +13,7 @@ from .typing import CentralMomentsDataArray, CentralMomentsDataset
 #: Alias to :class:`cmomy.CentralMomentsArray`
 CentralMoments = CentralMomentsArray
 #: Alias to :class:`cmomy.CentralMomentsData`
-xCentralMoments = CentralMomentsData  # noqa: N816
+xCentralMoments = CentralMomentsData  # ruff:ignore[mixed-case-variable-in-global-scope]
 
 
 __all__ = [

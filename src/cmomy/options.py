@@ -63,7 +63,7 @@ _VALIDATORS: dict[str, Callable[[Any], bool]] = {
 _SETTERS: dict[str, Callable[[Any], Any]] = {}
 
 
-class set_options:  # noqa: N801
+class set_options:  # ruff:ignore[invalid-class-name]
     """
     Set options for xarray in a controlled context.
 
@@ -116,5 +116,5 @@ class set_options:  # noqa: N801
     def __enter__(self) -> None:
         return
 
-    def __exit__(self, type: object, value: object, traceback: object) -> None:  # noqa: A002 # pylint: disable=redefined-builtin)
+    def __exit__(self, type: object, value: object, traceback: object) -> None:  # ruff:ignore[builtin-argument-shadowing] # pylint: disable=redefined-builtin)
         self._apply_update(self.old)

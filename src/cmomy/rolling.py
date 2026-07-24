@@ -378,7 +378,7 @@ def rolling_data(
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def rolling_data(  # noqa: PLR0913
+def rolling_data(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     *,
     window: int,
@@ -650,7 +650,7 @@ def rolling_vals(
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def rolling_vals(  # noqa: PLR0913
+def rolling_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
@@ -957,7 +957,7 @@ def rolling_exp_data(
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def rolling_exp_data(  # noqa: PLR0913
+def rolling_exp_data(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
@@ -1105,7 +1105,7 @@ def rolling_exp_data(  # noqa: PLR0913
     )
 
     # prepare alpha
-    assert not is_xarray(alpha)  # noqa: S101
+    assert not is_xarray(alpha)  # ruff:ignore[assert]
     alpha_axis, alpha = _prepare_alpha_array(
         alpha,
         alpha_axis,
@@ -1287,7 +1287,7 @@ def rolling_exp_vals(
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def rolling_exp_vals(  # noqa: PLR0913
+def rolling_exp_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     alpha: ArrayLike | xr.DataArray | DataT,

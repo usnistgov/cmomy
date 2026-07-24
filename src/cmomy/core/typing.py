@@ -25,12 +25,12 @@ from numpy.typing import NDArray
 from .typing_compat import EllipsisType, TypeVar
 
 if TYPE_CHECKING:
-    import pandas as pd  # noqa: F401
+    import pandas as pd  # ruff:ignore[unused-import]
 
     from .missing import Missing
     from .typing_compat import TypeAlias
     from .typing_nested_sequence import (
-        _NestedSequence,  # noqa: F401
+        _NestedSequence,  # ruff:ignore[unused-import]
     )
 
     # Missing value type
@@ -135,7 +135,7 @@ DTypeLikeArg = Union[
 # ** ArrayLike
 @runtime_checkable
 class _SupportsArray(Protocol[_DTypeT_co]):
-    def __array__(self) -> np.ndarray[Any, _DTypeT_co]: ...  # noqa: PLW3201  # pragma: no cover
+    def __array__(self) -> np.ndarray[Any, _DTypeT_co]: ...  # ruff:ignore[bad-dunder-method-name]  # pragma: no cover
 
 
 ArrayLikeArg: TypeAlias = (

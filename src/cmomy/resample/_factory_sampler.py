@@ -31,7 +31,7 @@ if TYPE_CHECKING:
 
 
 @docfiller.decorate
-def factory_sampler(  # noqa: PLR0913
+def factory_sampler(  # ruff:ignore[too-many-arguments]
     sampler: SamplerType | None = None,
     *,
     # factory sampler parameters

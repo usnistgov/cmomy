@@ -98,7 +98,7 @@ def test_as_dict(c_dataset) -> None:
     for k, x in zip(c.keys(), c.values(), strict=True):
         xr.testing.assert_allclose(x.obj, c[k].obj)
     for k, x in c.items():
-        xr.testing.assert_allclose(x.obj, c[k].obj)  # noqa: PLR1733
+        xr.testing.assert_allclose(x.obj, c[k].obj)  # ruff:ignore[unnecessary-dict-index-lookup]
 
     c = get_first(c_dataset)
     with pytest.raises(NotImplementedError):

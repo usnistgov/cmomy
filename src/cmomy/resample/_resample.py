@@ -148,7 +148,7 @@ def resample_data(
 
 # ** Public api
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def resample_data(  # noqa: PLR0913
+def resample_data(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     *,
     sampler: SamplerType,
@@ -290,7 +290,7 @@ def resample_data(  # noqa: PLR0913
         dtype=dtype,
     )
     freq = sampler.freq
-    assert is_ndarray(freq)  # noqa: S101
+    assert is_ndarray(freq)  # ruff:ignore[assert]
 
     return _resample_data(
         data,
@@ -418,7 +418,7 @@ def resample_vals(
 
 # ** public api
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def resample_vals(  # noqa: PLR0913
+def resample_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     sampler: SamplerType,
@@ -712,7 +712,7 @@ def jackknife_data(
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def jackknife_data(  # noqa: PLR0913
+def jackknife_data(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     data_reduced: ArrayLike | DataT | None = None,
     *,
@@ -853,7 +853,7 @@ def jackknife_data(  # noqa: PLR0913
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
     if is_xarray_typevar["DataT"].check(data):
-        assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
+        assert isinstance(mom_params, MomParamsXArray)  # ruff:ignore[assert]
         prep = PrepareDataXArray(mom_params=mom_params, recast=False)
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = mom_params.core_dims(dim)
@@ -906,8 +906,8 @@ def jackknife_data(  # noqa: PLR0913
         return xout
 
     # numpy
-    assert isinstance(mom_params, MomParamsArray)  # noqa: S101
-    assert is_ndarray(data_reduced)  # noqa: S101
+    assert isinstance(mom_params, MomParamsArray)  # ruff:ignore[assert]
+    assert is_ndarray(data_reduced)  # ruff:ignore[assert]
 
     prep, axis, data = PrepareDataArray(
         mom_params=mom_params,
@@ -1052,7 +1052,7 @@ def jackknife_vals(
 
 
 @docfiller.decorate
-def jackknife_vals(  # noqa: PLR0913
+def jackknife_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     data_reduced: ArrayLike | DataT | None = None,
@@ -1219,7 +1219,7 @@ def jackknife_vals(  # noqa: PLR0913
         return xout
 
     # Numpy
-    assert is_ndarray(data_reduced)  # noqa: S101
+    assert is_ndarray(data_reduced)  # ruff:ignore[assert]
     prep, mom = PrepareValsArray.factory_mom(
         mom=mom, axes=mom_axes, mom_params=mom_params, recast=False
     )

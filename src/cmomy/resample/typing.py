@@ -13,7 +13,7 @@ from cmomy.core.typing_compat import TypedDict
 
 if TYPE_CHECKING:
     from typing import (
-        Any,  # noqa: F401
+        Any,  # ruff:ignore[unused-import]
     )
 
     import xarray as xr
@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     )
     from cmomy.core.typing_compat import TypeAlias
 
-    from ._sampler import IndexSampler  # noqa: F401
+    from ._sampler import IndexSampler  # ruff:ignore[unused-import]
 
 
 @docfiller.decorate

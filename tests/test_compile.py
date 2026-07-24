@@ -58,7 +58,7 @@ def import_module():
 )
 @pytest.mark.parametrize("cov", [True, False, None])
 @pytest.mark.parametrize("others", [True, False, None])
-def test__parser(args, expected, cov, others, import_module) -> None:  # noqa: PLR0914
+def test__parser(args, expected, cov, others, import_module) -> None:  # ruff:ignore[too-many-locals]
     from cmomy.compile import _main, _parser_args
 
     args, expected = _add_parameter(cov, "cov", args, expected)

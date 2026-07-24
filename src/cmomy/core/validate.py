@@ -56,7 +56,7 @@ def is_xarray(x: object) -> TypeIs[xr.Dataset | xr.DataArray]:
 
 # NOTE: got this way to make sure DataT is bound
 @final
-class is_xarray_typevar(Generic[DataT]):  # noqa: N801
+class is_xarray_typevar(Generic[DataT]):  # ruff:ignore[invalid-class-name]
     """Class based typeis for DataT TypeVar"""
 
     @staticmethod
