@@ -206,7 +206,7 @@ def reduce_data_grouped(
 
 # *** public
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]  # error with python3.13.  Flags passed != expected, but they're the same...
-def reduce_data_grouped(  # noqa: PLR0913
+def reduce_data_grouped(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     by: ArrayLike,
     *,
@@ -557,7 +557,7 @@ def reduce_data_indexed(
 
 # *** public
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_data_indexed(  # noqa: PLR0913
+def reduce_data_indexed(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     *,
     index: ArrayLike,
@@ -914,7 +914,7 @@ def reduce_vals_grouped(
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_vals_grouped(  # noqa: PLR0913
+def reduce_vals_grouped(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     by: ArrayLike,
@@ -1214,7 +1214,7 @@ def reduce_vals_indexed(
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_vals_indexed(  # noqa: PLR0913
+def reduce_vals_indexed(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     index: ArrayLike,

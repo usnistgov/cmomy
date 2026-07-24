@@ -281,7 +281,7 @@ def install_dependencies(
 ) -> None:
     """General dependencies installer."""
     if python_version is None:
-        assert isinstance(session.python, str)  # noqa: S101
+        assert isinstance(session.python, str)  # ruff:ignore[assert]
         python_version = session.python
 
     lock = lock if lock is not None else opts.lock
@@ -868,7 +868,7 @@ def lint(
 # ** type checking
 @nox.session(name="typecheck", **ALL_KWS)
 @add_opts
-def typecheck(  # noqa: PLR0912
+def typecheck(  # ruff:ignore[too-many-branches]
     session: nox.Session,
     opts: SessionParams,
 ) -> None:
@@ -884,7 +884,7 @@ def typecheck(  # noqa: PLR0912
         cmd = [
             "mypy",
             "basedpyright",
-            # TODO(wpk): enable these when possible. See https://github.com/usnistgov/cmomy/issues/78  # noqa: FIX002
+            # TODO(wpk): enable these when possible. See https://github.com/usnistgov/cmomy/issues/78  # ruff:ignore[line-contains-todo]
             # "pyrefly",
             # "ty",
             "pylint",
@@ -1001,7 +1001,7 @@ def conda_recipe(
                 session.log(f"cat {path}:")
                 with path.open() as f:
                     for line in f:
-                        print(line, end="")  # noqa: T201
+                        print(line, end="")  # ruff:ignore[print]
 
 
 @nox.session(name="conda-build", **CONDA_DEFAULT_KWS)

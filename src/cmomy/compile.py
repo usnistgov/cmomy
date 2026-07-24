@@ -150,9 +150,9 @@ def _parser_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         @override
         def __call__(
             self,
-            parser: ArgumentParser,  # noqa: ARG002
+            parser: ArgumentParser,  # ruff:ignore[unused-method-argument]
             namespace: Namespace,
-            values: object,  # noqa: ARG002
+            values: object,  # ruff:ignore[unused-method-argument]
             option_string: str | None = None,
         ) -> None:
             setattr(

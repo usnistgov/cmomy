@@ -228,7 +228,7 @@ def select_dtype(
     If pass in a Dataset, return dtype
     """
     if fastpath:
-        assert dtype in _ALLOWED_FLOAT_DTYPES  # noqa: S101
+        assert dtype in _ALLOWED_FLOAT_DTYPES  # ruff:ignore[assert]
         return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]
 
     if is_dataset(x):

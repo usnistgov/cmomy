@@ -77,7 +77,7 @@ def repr_html_wrapper(x):
             v = getattr(x, k)
             if len(v) > 0:  # pragma: no cover
                 attrs[k] = tuple_to_str(v)
-        except Exception:  # noqa: BLE001, S110, PERF203  # pylint: disable=broad-exception-caught
+        except Exception:  # ruff:ignore[blind-except, try-except-pass, try-except-in-loop]  # pylint: disable=broad-exception-caught
             pass
 
     dims = {}

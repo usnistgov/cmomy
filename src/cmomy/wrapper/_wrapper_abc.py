@@ -30,12 +30,15 @@ if TYPE_CHECKING:
     )
 
     import xarray as xr
-    from numpy.typing import ArrayLike, DTypeLike, NDArray  # noqa: F401
+    from numpy.typing import ArrayLike, DTypeLike, NDArray  # ruff:ignore[unused-import]
 
     from cmomy.core._typing_kwargs import (
         ApplyUFuncKwargs,
     )
-    from cmomy.core.moment_params import MomParamsArray, MomParamsXArray  # noqa: F401
+    from cmomy.core.moment_params import (  # ruff:ignore[unused-import]
+        MomParamsArray,
+        MomParamsXArray,
+    )
     from cmomy.core.typing import (
         ArrayOrderCF,
         ArrayOrderKACF,
@@ -64,7 +67,7 @@ MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
 GenArrayT = TypeVar("GenArrayT", "NDArray[Any]", "xr.DataArray", "xr.Dataset")
 
 
-@docfiller.decorate  # noqa: PLR0904
+@docfiller.decorate  # ruff:ignore[too-many-public-methods]
 class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     r"""
     Wrapper to calculate central moments.
@@ -191,14 +194,14 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         s = f"<{name}(mom_ndim={self.mom_ndim})>\n"
         return s + repr(self._obj)
 
-    def _repr_html_(self) -> str:  # noqa: PLW3201
+    def _repr_html_(self) -> str:  # ruff:ignore[bad-dunder-method-name]
         from cmomy.core.formatting import (
             repr_html_wrapper,  # pyright: ignore[reportUnknownVariableType]
         )
 
         return repr_html_wrapper(self)  # type: ignore[no-any-return,no-untyped-call]  # pyright: ignore[reportUnknownVariableType]
 
-    def __array__(  # noqa: PLW3201
+    def __array__(  # ruff:ignore[bad-dunder-method-name]
         self, dtype: DTypeLike = None, copy: bool | None = None
     ) -> NDArrayAny:
         """Used by np.array(self)."""  # D401
@@ -848,7 +851,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         See Also
         --------
         .convert.moments_to_comoments
-        """  # noqa: DOC102
+        """  # ruff:ignore[docstring-extraneous-parameter]
         self._raise_if_not_mom_ndim_1()
         from cmomy import convert
 

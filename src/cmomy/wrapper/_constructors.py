@@ -196,7 +196,7 @@ def wrap(
             fastpath=fastpath,
         )
 
-    assert not isinstance(dtype, Mapping)  # noqa: S101
+    assert not isinstance(dtype, Mapping)  # ruff:ignore[assert]
     return CentralMomentsArray(
         obj=obj,
         mom_params=mom_params,
@@ -305,7 +305,7 @@ def zeros_like(
             mom_params=c.mom_params,
         )
 
-    assert not isinstance(dtype, Mapping)  # noqa: S101
+    assert not isinstance(dtype, Mapping)  # ruff:ignore[assert]
     out: CentralMomentsArrayAny = wrap(
         np.zeros_like(
             c.obj,
@@ -376,7 +376,7 @@ def wrap_reduce_vals(
 
 
 @docfiller.decorate
-def wrap_reduce_vals(  # noqa: PLR0913
+def wrap_reduce_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     mom: Moments,
@@ -529,7 +529,7 @@ def wrap_resample_vals(
 
 
 @docfiller.decorate
-def wrap_resample_vals(  # noqa: PLR0913
+def wrap_resample_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     sampler: SamplerType,

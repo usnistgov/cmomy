@@ -103,7 +103,7 @@ def test_resample_data_0(data_and_kwargs, nrep):
 
 @pytest.mark.parametrize("data_and_kwargs", vals_params, indirect=True)
 @pytest.mark.parametrize("nrep", [10])
-def test_resample_vals_0(data_and_kwargs, nrep):  # noqa: PLR0914
+def test_resample_vals_0(data_and_kwargs, nrep):  # ruff:ignore[too-many-locals]
     data, kwargs = data_and_kwargs
     axis, mom = (kwargs[k] for k in ("axis", "mom"))
     ndat = cmomy.resample.select_ndat(data[0], axis=axis)

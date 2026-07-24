@@ -365,7 +365,7 @@ def cumulative(
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
-def cumulative(  # noqa: PLR0913
+def cumulative(  # ruff:ignore[too-many-arguments]
     values_in: ArrayLike | DataT,
     *,
     axis: AxisReduceWrap | MissingType = MISSING,

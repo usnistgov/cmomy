@@ -350,7 +350,7 @@ params_genarraylike_to_genarray_dtype_out = [
     ("arraylike", None, "float64", "NDArray[float64]", "float64"),
     ("any", None, "float32", "Any", "float32"),
     ("float32", None, "arrayany", "NDArray[Any]", "float64"),
-    # ("float32", None, "any", "NDArray[Any]", "float64"),  # noqa: ERA001
+    # ("float32", None, "any", "NDArray[Any]", "float64"),  # ruff:ignore[commented-out-code]
     ("dataarray", None, "float32", "xr.DataArray", "float32", "xr.DataArray"),
     ("dataarray_any", None, "float32", "Any", "float32", "xr.DataArray"),
     # with out and dtype
@@ -432,7 +432,7 @@ params_arraylike_to_class = [
     ("float64", None, None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
     ("arrayany", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
     # NOTE: This fails for mypy.  pretty sure it's a bug
-    # ("arraylike", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),  # noqa: ERA001
+    # ("arraylike", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),  # ruff:ignore[commented-out-code]
     ("any", None, None, "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
     ("float32", "float64", None, "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
     ("arraylike", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
@@ -615,8 +615,8 @@ funcs_class_methodtoarray_dtype = [
 funcs_class_methodtoarray_dtype_out = [
     ("cumulative", "central_", "transform_out_", "{axis_dim}")
 ]
-# out.extend(get_list(funcs_class_methodtoarray, params_class_methodtoarray, method=True))  # noqa: ERA001
-# out.extend(get_list(funcs_class_methodtoarray_dtype, params_class_methodtoarray_dtype, method=True))  # noqa: ERA001
+# out.extend(get_list(funcs_class_methodtoarray, params_class_methodtoarray, method=True))  # ruff:ignore[commented-out-code]
+# out.extend(get_list(funcs_class_methodtoarray_dtype, params_class_methodtoarray_dtype, method=True))  # ruff:ignore[commented-out-code]
 out.extend(get_list(funcs_class_methodtoarray_dtype_out, params_class_methodtoarray_dtype_out, method=True))
 
 

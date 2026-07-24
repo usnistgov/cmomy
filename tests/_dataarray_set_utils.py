@@ -121,7 +121,7 @@ def do_wrap_resample_vals(*args, sampler=None, **kwargs):
     return cmomy.wrap_resample_vals(*args, sampler=sampler, **kwargs).obj
 
 
-def do_moveaxis(data, **kwargs):  # noqa: ARG001
+def do_moveaxis(data, **kwargs):  # ruff:ignore[unused-function-argument]
     return cmomy.moveaxis(data, 0, 0)
 
 

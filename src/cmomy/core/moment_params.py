@@ -220,7 +220,7 @@ class MomParamsArrayOptional(MomParamsBase):
         """
         if isinstance(mom_params, cls):
             if ndim is not None:
-                assert mom_params.ndim == ndim  # noqa: S101
+                assert mom_params.ndim == ndim  # ruff:ignore[assert]
             return mom_params
 
         if isinstance(mom_params, (MomParams, MomParamsBase)):
@@ -239,7 +239,7 @@ class MomParamsArrayOptional(MomParamsBase):
         ndim: int | None = None,
         axes: int | Sequence[int] | None = None,
         default_ndim: MomNDim | None = None,
-        dims: Any = None,  # noqa: ARG003  # in case pass dims parameter, it will be ignored.
+        dims: Any = None,  # ruff:ignore[unused-class-method-argument]  # in case pass dims parameter, it will be ignored.
     ) -> Self:
         """Create from parameters."""
         if cls._OPTIONAL and ndim is None and axes is None and default_ndim is None:
@@ -423,7 +423,7 @@ class MomParamsXArrayOptional(MomParamsBase):
         """
         if isinstance(mom_params, cls):
             if ndim is not None:
-                assert mom_params.ndim == ndim  # noqa: S101
+                assert mom_params.ndim == ndim  # ruff:ignore[assert]
             return mom_params
 
         if isinstance(mom_params, (MomParams, MomParamsBase)):
@@ -544,7 +544,7 @@ class MomParamsXArrayOptional(MomParamsBase):
             raise ValueError(msg)
         return axis, dim  # pyright: ignore[reportReturnType]
 
-    def select_axis_dim_mult(  # noqa: C901
+    def select_axis_dim_mult(  # ruff:ignore[complex-structure]
         self,
         data: xr.DataArray | xr.Dataset,
         axis: AxisReduceMultWrap | MissingType = MISSING,

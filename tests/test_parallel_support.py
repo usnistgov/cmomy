@@ -117,7 +117,7 @@ def test_parallel_freq_to_indices(nrep, ndat, nsamp) -> None:
     indirect=True,
 )
 @pytest.mark.parametrize("repeat", range(10))
-def test_parallel_data_rolling(func, kwargs_callback, data_and_kwargs, repeat):  # noqa: ARG001
+def test_parallel_data_rolling(func, kwargs_callback, data_and_kwargs, repeat):  # ruff:ignore[unused-function-argument]
     data, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
     np.testing.assert_allclose(*(func(data, **kws, parallel=p) for p in (False, True)))
@@ -160,7 +160,7 @@ def test_parallel_vals(func, kwargs_callback, data_and_kwargs):
     indirect=True,
 )
 @pytest.mark.parametrize("repeat", range(10))
-def test_parallel_vals_rolling(func, kwargs_callback, data_and_kwargs, repeat):  # noqa: ARG001
+def test_parallel_vals_rolling(func, kwargs_callback, data_and_kwargs, repeat):  # ruff:ignore[unused-function-argument]
     xy, kwargs = data_and_kwargs
     kws = kwargs_callback(kwargs.copy()) if kwargs_callback else kwargs
 

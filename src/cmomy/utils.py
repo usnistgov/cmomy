@@ -21,10 +21,10 @@ from .core.moment_params import (
     MomParamsXArrayOptional,
 )
 from .core.utils import (  # pylint: disable=useless-import-alias,unused-import
-    mom_shape_to_mom as mom_shape_to_mom,  # noqa: PLC0414
+    mom_shape_to_mom as mom_shape_to_mom,  # ruff:ignore[useless-import-alias]
 )
 from .core.utils import (  # pylint: disable=useless-import-alias
-    mom_to_mom_shape as mom_to_mom_shape,  # noqa: PLC0414
+    mom_to_mom_shape as mom_to_mom_shape,  # ruff:ignore[useless-import-alias]
 )
 from .core.validate import (
     is_dataarray,
@@ -529,7 +529,7 @@ def select_moment(
             )
         return xout
 
-    assert isinstance(data, np.ndarray)  # noqa: S101
+    assert isinstance(data, np.ndarray)  # ruff:ignore[assert]
     mom_params = MomParamsArray.factory(
         mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
     )
@@ -750,7 +750,7 @@ def assign_moment(
         )
         return xout
 
-    assert isinstance(data, np.ndarray)  # noqa: S101
+    assert isinstance(data, np.ndarray)  # ruff:ignore[assert]
     return _assign_moment(
         data,
         *moment_kwargs.values(),

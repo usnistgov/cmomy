@@ -191,7 +191,7 @@ class CentralMomentsArray(
             if not is_ndarray(obj):
                 msg = f"Must pass ndarray as data.  Not {type(obj)=}"
                 raise TypeError(msg)
-            assert isinstance(mom_params, MomParamsArray)  # noqa: S101
+            assert isinstance(mom_params, MomParamsArray)  # ruff:ignore[assert]
 
         else:
             obj = np.array(
@@ -1322,7 +1322,7 @@ docfiller_data_inherit_abc = docfiller_data.factory_inherit_from_parent(
 )
 
 
-@docfiller_data.inherit(CentralMomentsABC)  # noqa: PLR0904
+@docfiller_data.inherit(CentralMomentsABC)  # ruff:ignore[too-many-public-methods]
 class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     """
     Central moments wrapper of {DataArray} or {Dataset} objects.
@@ -1351,7 +1351,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             raise TypeError(msg)
 
         if fastpath:
-            assert isinstance(mom_params, MomParamsXArray)  # noqa: S101
+            assert isinstance(mom_params, MomParamsXArray)  # ruff:ignore[assert]
         else:
             mom_params = MomParamsXArray.factory(
                 mom_params=mom_params,
@@ -1425,7 +1425,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     def iter(self) -> Any: ...
 
     def iter(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
-        """Need this for proper typing with mypy..."""  # noqa: DOC402
+        """Need this for proper typing with mypy..."""  # ruff:ignore[docstring-missing-yields]
         if is_dataarray(self._obj):
             if self.ndim <= self.mom_ndim:
                 msg = "Can only iterate over wrapped DataArray with extra dimension."
@@ -1859,7 +1859,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     # *** .reduction ----------------------------------------------------------
     @override
     @docfiller_data_inherit_abc()
-    def reduce(  # noqa: PLR0913
+    def reduce(  # ruff:ignore[too-many-arguments]
         self,
         dim: DimsReduce | MissingType = MISSING,
         *,
