@@ -26,6 +26,7 @@ from .core.prepare import (
     PrepareDataArray,
     PrepareDataXArray,
 )
+from .core.typing import DataT
 from .core.utils import (
     mom_to_mom_shape,
 )
@@ -68,7 +69,6 @@ if TYPE_CHECKING:
         AxisReduceWrap,
         Casting,
         ConvertStyle,
-        DataT,
         DimsReduce,
         DTypeLikeArg,
         FloatT,
@@ -84,7 +84,7 @@ if TYPE_CHECKING:
 
 # * Convert between raw and central moments
 @overload
-def moments_type(  # pyright: ignore[reportOverlappingOverload]
+def moments_type(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -129,7 +129,7 @@ def moments_type(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def moments_type(
+def moments_type(  # pyrefly: ignore [inconsistent-overload]
     values_in: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -213,7 +213,7 @@ def moments_type(
     """
     # TODO(wpk): add axes_to_end like parameter...
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray_typevar["DataT"].check(values_in):
+    if is_xarray_typevar[DataT].check(values_in):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -310,7 +310,7 @@ def _moments_type(
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(  # pyright: ignore[reportOverlappingOverload]
+def cumulative(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -355,7 +355,7 @@ def cumulative(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def cumulative(
+def cumulative(  # pyrefly: ignore [inconsistent-overload]
     values_in: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -439,7 +439,7 @@ def cumulative(  # ruff:ignore[too-many-arguments]
 
     """
     dtype = select_dtype(values_in, out=out, dtype=dtype)
-    if is_xarray_typevar["DataT"].check(values_in):
+    if is_xarray_typevar[DataT].check(values_in):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -589,7 +589,7 @@ def _validate_mom_moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
+def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     *,
     mom: tuple[int, int],
@@ -625,7 +625,7 @@ def moments_to_comoments(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def moments_to_comoments(
+def moments_to_comoments(  # pyrefly: ignore [inconsistent-overload]
     data: ArrayLike | DataT,
     *,
     mom: tuple[int, int],
@@ -726,7 +726,7 @@ def moments_to_comoments(
 
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray_typevar["DataT"].check(data):
+    if is_xarray_typevar[DataT].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=1, dims=mom_dims, axes=mom_axes, data=data
         )
@@ -781,7 +781,7 @@ def moments_to_comoments(
 
 
 @overload
-def comoments_to_moments(  # pyright: ignore[reportOverlappingOverload]
+def comoments_to_moments(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     *,
     dtype: DTypeLike = ...,
@@ -813,7 +813,7 @@ def comoments_to_moments(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def comoments_to_moments(
+def comoments_to_moments(  # pyrefly: ignore [inconsistent-overload]
     data: ArrayLike | DataT,
     *,
     dtype: DTypeLike = ...,
@@ -882,7 +882,7 @@ def comoments_to_moments(
     array([10.    ,  0.5505,  0.1014, -0.0178])
     """
     dtype = select_dtype(data, out=None, dtype=dtype)
-    if is_xarray_typevar["DataT"].check(data):
+    if is_xarray_typevar[DataT].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params, ndim=2, axes=mom_axes, dims=mom_dims, data=data
         )

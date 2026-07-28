@@ -75,7 +75,7 @@ def move_mom_dims_to_end(
 ) -> xr.DataArray:
     """Move moment dimensions to end"""
     if mom_dims is not None:
-        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        mom_dims = (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
 
         if mom_ndim is not None and len(mom_dims) != mom_ndim:
             msg = f"len(mom_dims)={len(mom_dims)} not equal to mom_ndim={mom_ndim}"
@@ -108,7 +108,7 @@ def astype_dtype_dict(
     """Get a dtype dict for obj."""
     if isinstance(dtype, Mapping):
         if is_dataset(obj):
-            return dict(obj.dtypes, **dtype)  # type: ignore[arg-type, return-value]  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
+            return dict(obj.dtypes, **dtype)  # type: ignore[arg-type, return-value]  # pyright: ignore[reportCallIssue, reportUnknownVariableType]  # pyrefly: ignore [bad-unpacking]
 
         msg = "Passing a mapping for `dtype` only allowed for Dataset."
         raise ValueError(msg)
@@ -160,8 +160,8 @@ def transpose_like(
         template=template,
         replace=replace,
         remove=remove_,
-        prepend=prepend,
-        append=append,
+        prepend=prepend,  # pyrefly: ignore [bad-argument-type]
+        append=append,  # pyrefly: ignore [bad-argument-type]
     )
 
     if mom_params_axes is not None:
@@ -307,11 +307,11 @@ def replace_coords_from_isel(
         raise ValueError(msg)
 
     if is_dataset(template) and is_dataset(selected):  # type: ignore[redundant-expr]
-        return _replace_coords_from_isel_dataset(
+        return _replace_coords_from_isel_dataset(  # pyrefly: ignore [bad-return]
             template=template, selected=selected, indexers=indexers, drop=drop
         )
     if is_dataarray(template) and is_dataarray(selected):  # type: ignore[redundant-expr]
-        return _replace_coords_from_isel_dataarray(
+        return _replace_coords_from_isel_dataarray(  # pyrefly: ignore [bad-return]
             template=template, selected=selected, indexers=indexers, drop=drop
         )
     msg = "template and selected must have same type."

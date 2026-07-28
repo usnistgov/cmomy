@@ -459,6 +459,7 @@ def test_operator_raises() -> None:
     c1 = cmomy.CentralMomentsArray.zeros(mom=4)
 
     with pytest.raises(TypeError):
+        # pyrefly: ignore [unsupported-operation]
         _ = c0 + 1  # type: ignore[operator]  # pyright: ignore[reportOperatorIssue]
 
     with pytest.raises(ValueError):

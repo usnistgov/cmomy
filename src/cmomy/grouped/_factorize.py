@@ -92,7 +92,7 @@ def factor_by(
         )
     )
 
-    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]
+    codes, groups = factorize(by_, sort=sort)  # type: ignore[arg-type]  # pyrefly: ignore [no-matching-overload]
 
     codes = codes.astype(np.int64)
     if isinstance(by_, (pd.Index, pd.MultiIndex)):

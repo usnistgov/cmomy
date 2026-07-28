@@ -20,6 +20,7 @@ from .core.moment_params import (
     MomParamsXArray,
     MomParamsXArrayOptional,
 )
+from .core.typing import DataT
 from .core.utils import (  # pylint: disable=useless-import-alias,unused-import
     mom_shape_to_mom as mom_shape_to_mom,  # ruff:ignore[useless-import-alias]
 )
@@ -58,7 +59,6 @@ if TYPE_CHECKING:
     from .core.typing import (
         ArrayLikeArg,
         AxesWrap,
-        DataT,
         DTypeLikeArg,
         FloatT,
         KeepAttrs,
@@ -373,7 +373,7 @@ def moment_indexer(
 
 
 @overload
-def select_moment(
+def select_moment(  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     name: SelectMoment,
     **kwargs: Unpack[SelectMomentKwargs],
@@ -463,7 +463,7 @@ def select_moment(
     array([1, 4])
 
     """
-    if is_xarray_typevar["DataT"].check(data):
+    if is_xarray_typevar[DataT].check(data):
         if name == "all":
             return data
 
@@ -564,7 +564,7 @@ def _select_moment(
 # NOTE: Can't do kwargs trick used elsewhere, because want to be
 # able to use **moments_kwargs....
 @overload
-def assign_moment(
+def assign_moment(  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
@@ -691,13 +691,13 @@ def assign_moment(
 
     """
     # get names and values
-    moment_kwargs = either_dict_or_kwargs(  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
+    moment_kwargs = either_dict_or_kwargs(  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]  # pyrefly: ignore [bad-assignment]
         moment if moment is None else dict(moment),
-        moment_kwargs,
+        moment_kwargs,  # pyrefly: ignore [bad-argument-type]
         "assign_moment",
     )
 
-    if is_xarray_typevar["DataT"].check(data):
+    if is_xarray_typevar[DataT].check(data):
         mom_params = MomParamsXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -754,7 +754,7 @@ def assign_moment(
     return _assign_moment(
         data,
         *moment_kwargs.values(),
-        names=moment_kwargs.keys(),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        names=moment_kwargs.keys(),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
         mom_params=MomParamsArray.factory(
             mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
         ),
@@ -778,7 +778,7 @@ def _assign_moment(
         out = np.moveaxis(out, mom_params.axes, mom_params_end.axes)
 
     for name, value in zip(names, values, strict=True):
-        out[moment_indexer(name, mom_params.ndim, squeeze)] = value  # pyright: ignore[reportArgumentType]
+        out[moment_indexer(name, mom_params.ndim, squeeze)] = value  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [unsupported-operation]
 
     if moved:
         out = np.moveaxis(out, mom_params_end.axes, mom_params.axes)
@@ -788,7 +788,7 @@ def _assign_moment(
 # * Vals -> Data --------------------------------------------------------------
 # TODO(wpk): move this to convert?
 @overload
-def vals_to_data(  # pyright: ignore[reportOverlappingOverload]
+def vals_to_data(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -847,16 +847,6 @@ def vals_to_data(
     out: NDArrayAny | None = ...,
     **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArrayAny: ...
-# arraylike or DataT
-@overload
-def vals_to_data(
-    x: ArrayLike | DataT,
-    *y: ArrayLike | xr.DataArray | DataT,
-    weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    dtype: DTypeLike = ...,
-    out: NDArrayAny | None = ...,
-    **kwargs: Unpack[ValsToDataKwargs],
-) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type,unused-ignore]
@@ -951,7 +941,7 @@ def vals_to_data(
     weight = 1.0 if weight is None else weight
     args: list[Any] = [x, weight, *y]
 
-    if is_xarray_typevar["DataT"].check(x):
+    if is_xarray_typevar[DataT].check(x):
         mom, mom_params = MomParamsXArray.factory_mom(
             mom_params=mom_params, mom=mom, dims=mom_dims, data=out
         )
@@ -1001,7 +991,7 @@ def vals_to_data(
 
     mom, mom_params = MomParamsArray.factory_mom(mom=mom, mom_params=mom_params)
     _check_y(mom_params.ndim)
-    return _vals_to_data(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
+    return _vals_to_data(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
         *args,
         mom=mom,
         mom_params=mom_params,

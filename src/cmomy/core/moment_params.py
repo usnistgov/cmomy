@@ -577,7 +577,7 @@ class MomParamsXArrayOptional(MomParamsBase):
             if dim is None:
                 dim_ = _get_dim_none()
             else:
-                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
                 _check_dim(dim_)
             return (), dim_
 
@@ -589,7 +589,7 @@ class MomParamsXArrayOptional(MomParamsBase):
             dim_ = _get_dim_none()
             axis_ = data.get_axis_num(dim_)
         elif dim is not MISSING:
-            dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            dim_ = (dim,) if isinstance(dim, str) else tuple(dim)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
             axis_ = data.get_axis_num(dim_)
         elif axis is not MISSING:
             axis_ = self.normalize_axis_tuple(

@@ -611,7 +611,7 @@ class PrepareValsXArray(_PrepareBaseXArray):
 
         axis_neg = positive_to_negative_index(target.get_axis_num(dim), target.ndim)
         val_shape = reorder(
-            prep_array.get_val_shape(*args),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            prep_array.get_val_shape(*args),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
             -1,
             axis_neg,
         )

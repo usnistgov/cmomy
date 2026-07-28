@@ -226,6 +226,7 @@ def test_vals_order(
     kwargs,
     kwargs_callback,
 ) -> None:
+    # pyrefly: ignore [bad-assignment]
     mom_ndim: MomNDim = len(mom)  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]
 
     xy, w = get_params(rng, xshape, yshape, wshape, axis, mom_ndim, as_dataarray=False)

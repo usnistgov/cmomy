@@ -229,7 +229,7 @@ def select_dtype(
     """
     if fastpath:
         assert dtype in _ALLOWED_FLOAT_DTYPES  # ruff:ignore[assert]
-        return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]
+        return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
 
     if is_dataset(x):
         if dtype is None:

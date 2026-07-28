@@ -283,7 +283,9 @@ disable_error_code = [
 ]
 
 [tool.pyrefly]
+errors.unused-ignore = "error"
 enabled-ignores = [ "pyrefly" ]
+legacy-overload-expansion = true
 project-excludes = [ "**/test_typing_auto.py" ]
 project-includes = [
     "examples/usage/*.ipynb",
@@ -293,6 +295,7 @@ project-includes = [
     "tools",
 ]
 search-path = [ "." ]
+spec-compliant-overloads = true
 
 [[tool.pyrefly.sub-config]]
 errors.missing-attribute = "ignore"
@@ -301,6 +304,7 @@ matches = "examples/**"
 [[tool.pyrefly.sub-config]]
 errors.bad-argument-type = "ignore"
 errors.missing-attribute = "ignore"
+errors.no-matching-overload = "ignore"
 matches = "tests/**/*.py"
 
 [tool.pyright]

@@ -326,6 +326,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     # testing val
     mom_names: list[SelectMoment] = ["weight", "xave"]
     if mom_ndim == 2:
+        # pyrefly: ignore [bad-assignment]
         mom_names += ["yave"]  # pyright: ignore[reportAssignmentType]
 
     w, *xy = (select(data, name) for name in mom_names)
