@@ -373,10 +373,10 @@ src.exclude = [
     "tests",
 ]
 src.include = [
-    "src",
-    "tests",
     "examples/usage/*.ipynb",
     "noxfile.py",
+    "src",
+    "tests",
     "tools",
 ]
 analysis.respect-type-ignore-comments = false
