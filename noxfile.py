@@ -4,10 +4,7 @@
 # requires-python = ">=3.12"
 # dependencies = [
 #     "nox>=2026.7.11",
-<<<<<<< before updating
 #     "dotenv>=0.9.9"
-=======
->>>>>>> after updating
 # ]
 # ///
 
