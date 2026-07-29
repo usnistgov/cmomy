@@ -13,7 +13,7 @@ from cmomy.core.moment_params import (
     MomParamsArrayOptional,
     MomParamsXArrayOptional,
 )
-from cmomy.core.typing import SamplerArrayT
+from cmomy.core.typing import DataT, SamplerArrayT
 from cmomy.core.typing_compat import override
 from cmomy.core.validate import (
     is_dataarray,
@@ -41,7 +41,6 @@ if TYPE_CHECKING:
     from cmomy.core.moment_params import MomParamsType
     from cmomy.core.typing import (
         AxisReduceWrap,
-        DataT,
         DimsReduce,
         MissingType,
         MomAxes,
@@ -118,7 +117,7 @@ class IndexSampler(Generic[SamplerArrayT]):
     def freq(self) -> SamplerArrayT:
         if self._freq is None:
             # TODO(wpk): need these ignores for mypy with python3.12.  Figure out if can remove...
-            self._freq = indices_to_freq(  # type: ignore[assignment, unused-ignore]
+            self._freq = indices_to_freq(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [no-matching-overload]
                 self.indices, ndat=self.ndat, parallel=self._parallel
             )
         return self._freq  # type: ignore[return-value, unused-ignore]
@@ -126,7 +125,7 @@ class IndexSampler(Generic[SamplerArrayT]):
     @property
     def indices(self) -> SamplerArrayT:
         if self._indices is None:
-            self._indices = freq_to_indices(  # type: ignore[assignment, unused-ignore]
+            self._indices = freq_to_indices(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [no-matching-overload]
                 self.freq, shuffle=self._shuffle, rng=self._rng, parallel=self._parallel
             )
         return self._indices  # type: ignore[return-value, unused-ignore]
@@ -135,13 +134,13 @@ class IndexSampler(Generic[SamplerArrayT]):
     def _first_indices(self) -> NDArrayAny | xr.DataArray:
         if is_dataset(self.indices):
             return next(iter(self.indices.values()))
-        return self.indices
+        return self.indices  # pyrefly: ignore [bad-return]
 
     @property
     def _first_freq(self) -> NDArrayAny | xr.DataArray:
         if is_dataset(self.freq):
             return next(iter(self.freq.values()))
-        return self.freq
+        return self.freq  # pyrefly: ignore [bad-return]
 
     @property
     def _first(self) -> NDArrayAny | xr.DataArray:
@@ -300,7 +299,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         )
 
         indices: NDArrayAny | xr.DataArray | xr.Dataset = (
-            _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]
+            _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]  # pyrefly: ignore [bad-specialization]
                 data=data,  # pyright: ignore[reportArgumentType]
                 nrep=nrep,
                 axis=axis,
@@ -439,7 +438,7 @@ def _randsamp_indices_dataarray_or_dataset(
     if len(out) == 1:
         # return just a dataarray in this case
         return next(iter(out.values()))
-    return xr.Dataset(out)  # pyright: ignore[reportReturnType]
+    return xr.Dataset(out)  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
 
 
 # * select ndat ---------------------------------------------------------------
@@ -518,7 +517,7 @@ def select_ndat(
 
 # * Convert -------------------------------------------------------------------
 @overload
-def freq_to_indices(  # pyright: ignore[reportOverlappingOverload]
+def freq_to_indices(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     freq: DataT,
     *,
     shuffle: bool = ...,
@@ -564,7 +563,7 @@ def freq_to_indices(
         Indices array of shape ``(nrep, nsamp)`` where ``nsamp = freq[k,
         :].sum()`` where `k` is any row.
     """
-    if is_xarray_typevar["DataT"].check(freq):
+    if is_xarray_typevar[DataT].check(freq):
         rep_dim, dim = freq.dims
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             freq_to_indices,
@@ -597,7 +596,7 @@ def freq_to_indices(
 
 
 @overload
-def indices_to_freq(  # pyright: ignore[reportOverlappingOverload]
+def indices_to_freq(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     indices: DataT,
     *,
     ndat: int | None = ...,
@@ -624,7 +623,7 @@ def indices_to_freq(
     It is assumed that ``indices.shape == (nrep, nsamp)`` with ``nsamp ==
     ndat``. For cases that ``nsamp != ndat``, pass in ``ndat`` explicitly.
     """
-    if is_xarray_typevar["DataT"].check(indices):
+    if is_xarray_typevar[DataT].check(indices):
         # assume dims are in order (rep, dim)
         rep_dim, dim = indices.dims
         ndat = ndat or indices.sizes[dim]

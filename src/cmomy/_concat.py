@@ -10,6 +10,7 @@ from .core.missing import MISSING
 from .core.moment_params import (
     default_mom_params_xarray,
 )
+from .core.typing import DataT
 from .core.utils import (
     peek_at,
 )
@@ -30,7 +31,6 @@ if TYPE_CHECKING:
 
     from .core.typing import (
         AxisReduce,
-        DataT,
         DimsReduce,
         MissingType,
     )
@@ -50,7 +50,7 @@ def concat(
     **kwargs: Any,
 ) -> _CentralMomentsT: ...
 @overload
-def concat(
+def concat(  # pyrefly: ignore [inconsistent-overload]
     arrays: Iterable[DataT],
     *,
     axis: AxisReduce | MissingType = ...,
@@ -174,24 +174,24 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
+        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue, reportUnknownVariableType]  # pyrefly: ignore [no-matching-overload]
             tuple(arrays_iter),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis=axis,
             dtype=first.dtype,
             **kwargs,
         )
 
-    if is_xarray_typevar["DataT"].check(first):
+    if is_xarray_typevar[DataT].check(first):
         if dim is MISSING or dim is None or dim in first.dims:
             axis, dim = default_mom_params_xarray.select_axis_dim(
                 first, axis=axis, dim=dim, default_axis=0
             )
         # otherwise, assume adding a new dimension...
-        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue,reportArgumentType]
+        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue,reportArgumentType]  # pyrefly: ignore [no-matching-overload]
 
     return type(first)(  # type: ignore[call-arg, return-value]  # pyright: ignore[reportCallIssue]
         concat(
-            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue, reportUnknownArgumentType, reportUnknownMemberType]
+            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue, reportUnknownArgumentType, reportUnknownMemberType]  # pyrefly: ignore [missing-attribute]
             axis=axis,
             dim=dim,
             **kwargs,

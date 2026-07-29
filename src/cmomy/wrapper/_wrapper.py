@@ -689,7 +689,7 @@ class CentralMomentsArray(
         )
 
     @overload  # type: ignore[override]
-    def moments_to_comoments(
+    def moments_to_comoments(  # pyrefly: ignore [bad-override]
         self,
         *,
         mom: tuple[int, int],
@@ -867,7 +867,7 @@ class CentralMomentsArray(
         parallel: bool | None = None,
     ) -> Self | CentralMomentsArrayAny:
         return super().jackknife_and_reduce(
-            data_reduced=data_reduced,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            data_reduced=data_reduced,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
             axis=axis,
             axes_to_end=axes_to_end,
             out=out,
@@ -1089,7 +1089,7 @@ class CentralMomentsArray(
         shape = (shape,) if isinstance(shape, int) else shape
         new_shape = (*shape, *self.mom_shape)  # type: ignore[misc]
         obj = self._obj.reshape(new_shape, order=order)
-        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
 
     @docfiller_array.decorate
     def resample(
@@ -1138,7 +1138,7 @@ class CentralMomentsArray(
         indices = np.asarray(indices, dtype=np.int64)
         obj = np.take(obj, indices, axis=axis)
 
-        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
 
     def fill(self, value: Any = 0) -> Self:
         """
@@ -1270,7 +1270,7 @@ class CentralMomentsArray(
                     mom_dims = (mom_dims,)
                 else:
                     # try to convert to tuple
-                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
 
                 raise_if_wrong_value(
                     len(mom_dims),
@@ -1433,7 +1433,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             for obj in self._obj:
                 yield self.new_like(obj)
         else:
-            yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]
+            yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]  # pyrefly: ignore [bad-argument-type]
 
     @overload
     def __iter__(
@@ -1478,7 +1478,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             raise KeyError(msg)
         self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))  # pyright: ignore[reportUnknownArgumentType]
 
-        return type(self)(  # pyright: ignore[reportReturnType]
+        return type(self)(  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return, bad-specialization]
             obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportUnknownArgumentType]
             mom_params=self._mom_params,
             fastpath=True,
@@ -1487,7 +1487,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     # ** Create/copy/new ------------------------------------------------------
     @override
     @docfiller_data_inherit_abc()
-    def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ  # pyright: ignore[reportIncompatibleMethodOverride]
+    def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ  # pyright: ignore[reportIncompatibleMethodOverride]  # pyrefly: ignore [bad-override]
         self,
         obj: ArrayLike | DataT | Mapping[Any, Any] | None = None,
         *,
@@ -1514,7 +1514,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             # TODO(wpk): different type for dtype in xarray (can be a mapping...)
             # Also can probably speed this up by validating dtype here...
             return type(self)(
-                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue, reportUnknownArgumentType, reportArgumentType]
+                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue, reportUnknownArgumentType, reportArgumentType]  # pyrefly: ignore [no-matching-overload]
                 mom_params=self._mom_params,
                 fastpath=fastpath,
             )
@@ -1522,7 +1522,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
         obj_: DataT = (  # pyright: ignore[reportAssignmentType]
-            obj if type(self._obj) is type(obj) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            obj if type(self._obj) is type(obj) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type, bad-assignment]
         )
 
         # minimal check on shape and that mom_dims are present....
@@ -1692,7 +1692,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             )
             return out
 
-        if is_xarray_typevar["DataT"].check(datas):
+        if is_xarray_typevar[DataT].check(datas):
             axis, dim = self._mom_params.select_axis_dim(
                 datas,
                 axis=axis,
@@ -1801,7 +1801,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         """
         weight = 1.0 if weight is None else weight
         xargs: Sequence[ArrayLike | xr.DataArray | xr.Dataset]
-        if is_xarray_typevar["DataT"].check(x):
+        if is_xarray_typevar[DataT].check(x):
             dim, input_core_dims, xargs = prepare_xarray_values_for_reduction(
                 x,
                 weight,
@@ -2011,7 +2011,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         """
         if by is None and block is not None:
             by = self._block_by(block, axis=axis, dim=dim)
-            groups = groups or range(by.max() + 1)
+            groups = groups or range(by.max() + 1)  # pyrefly: ignore [not-callable]
 
         if by is None:
             from cmomy.reduction import reduce_data
@@ -2072,7 +2072,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     @override
     @classmethod
     @docfiller_data.decorate
-    def zeros(  # type: ignore[override]  # pyright: ignore[reportIncompatibleMethodOverride]
+    def zeros(  # type: ignore[override]  # pyright: ignore[reportIncompatibleMethodOverride]  # pyrefly: ignore [bad-override]
         cls,
         *,
         mom: Moments,
@@ -2158,7 +2158,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         xarray.DataArray.to_dataset
         """
         if is_dataset(self._obj):
-            return self  # pyright: ignore[reportReturnType]
+            return self  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
@@ -2201,7 +2201,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         xarray.Dataset.to_dataarray
         """
         if is_dataarray(self._obj):
-            return self  # pyright: ignore[reportReturnType]
+            return self  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
 
         obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)
         return type(self)(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
@@ -2291,7 +2291,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     ) -> Self:
         """Rename object."""
         return self._new_like(
-            self._obj.rename(new_name_or_name_dict, **names)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            self._obj.rename(new_name_or_name_dict, **names)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
         )
 
     def stack(

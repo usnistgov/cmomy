@@ -884,9 +884,8 @@ def typecheck(  # ruff:ignore[too-many-branches]
         cmd = [
             "mypy",
             "basedpyright",
-            # TODO(wpk): enable these when possible. See https://github.com/usnistgov/cmomy/issues/78  # ruff:ignore[line-contains-todo]
-            # "pyrefly",
-            # "ty",
+            "pyrefly",
+            "ty",
             "pylint",
             "mypy-notebook",
             "pylint-notebook",

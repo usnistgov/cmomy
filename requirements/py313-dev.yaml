@@ -31,6 +31,7 @@ dependencies:
   - pytest-env
   - pytest-sugar
   - scipy
+  - scipy-stubs
   - typecheck-runner>=0.2.0
   - typing-extensions>=4.10.0
   - xarray>=2023.9.0

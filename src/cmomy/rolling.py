@@ -28,6 +28,7 @@ from .core.prepare import (
     PrepareValsArray,
     PrepareValsXArray,
 )
+from .core.typing import DataT
 from .core.utils import (
     mom_to_mom_shape,
 )
@@ -75,7 +76,6 @@ if TYPE_CHECKING:
         AxisReduceMultWrap,
         AxisReduceWrap,
         Casting,
-        DataT,
         DimsReduce,
         DimsReduceMult,
         DTypeLikeArg,
@@ -96,7 +96,7 @@ if TYPE_CHECKING:
 
 # * Moving average
 @overload
-def construct_rolling_window_array(
+def construct_rolling_window_array(  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     window: int | Sequence[int],
     *,
@@ -239,7 +239,7 @@ def construct_rolling_window_array(
            [ 1.,  2.,  3.,  4., nan]])
     Dimensions without coordinates: rolling_dim_0, dim_0
     """
-    if is_xarray_typevar["DataT"].check(x):
+    if is_xarray_typevar[DataT].check(x):
         mom_params = MomParamsXArrayOptional.factory(
             mom_params, ndim=mom_ndim, dims=mom_dims, axes=mom_axes, data=x
         )
@@ -279,7 +279,7 @@ def construct_rolling_window_array(
 
         # for safety, move window_dim to front...
         # this avoids it being placed after any moment dimensions...
-        return xout.transpose(*window_dim, ...)
+        return xout.transpose(*window_dim, ...)  # pyrefly: ignore [bad-return]
 
     return construct_rolling_window_array(
         x=xr.DataArray(x),
@@ -323,7 +323,7 @@ def _optional_zero_missing_weight(
 
 # ** Data
 @overload
-def rolling_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_data(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -366,15 +366,6 @@ def rolling_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArrayAny: ...
-# arraylike or DataT
-@overload
-def rolling_data(
-    data: ArrayLike | DataT,
-    *,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[RollingDataKwargs],
-) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -433,7 +424,7 @@ def rolling_data(  # ruff:ignore[too-many-arguments]
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray_typevar["DataT"].check(data):
+    if is_xarray_typevar[DataT].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -589,7 +580,7 @@ def _rolling_data(
 
 # * Vals
 @overload
-def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_vals(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -637,16 +628,6 @@ def rolling_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArrayAny: ...
-# arraylike or DataT
-@overload
-def rolling_vals(
-    x: ArrayLike | DataT,
-    *y: ArrayLike | xr.DataArray | DataT,
-    weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[RollingValsKwargs],
-) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -719,7 +700,7 @@ def rolling_vals(  # ruff:ignore[too-many-arguments]
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
 
-    if is_xarray_typevar["DataT"].check(x):
+    if is_xarray_typevar[DataT].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )
@@ -896,7 +877,7 @@ def _rolling_vals(
 # * Move Exponential
 # ** Data
 @overload
-def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
@@ -944,16 +925,6 @@ def rolling_exp_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArrayAny: ...
-# arraylike or DataT
-@overload
-def rolling_exp_data(
-    data: ArrayLike | DataT,
-    alpha: ArrayLike | xr.DataArray | xr.Dataset,
-    *,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[RollingExpDataKwargs],
-) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -1022,7 +993,7 @@ def rolling_exp_data(  # ruff:ignore[too-many-arguments]
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
 
-    if is_xarray_typevar["DataT"].check(data):
+    if is_xarray_typevar[DataT].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -1220,7 +1191,7 @@ def _rolling_exp_data(
 
 # ** Vals
 @overload
-def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     alpha: ArrayLike | xr.DataArray | DataT,
@@ -1273,17 +1244,6 @@ def rolling_exp_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArrayAny: ...
-# arraylike or DataT
-@overload
-def rolling_exp_vals(
-    x: ArrayLike | DataT,
-    *y: ArrayLike | xr.DataArray | DataT,
-    alpha: ArrayLike | xr.DataArray | DataT,
-    weight: ArrayLike | xr.DataArray | DataT | None = ...,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[RollingExpValsKwargs],
-) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
@@ -1357,7 +1317,7 @@ def rolling_exp_vals(  # ruff:ignore[too-many-arguments]
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
-    if is_xarray_typevar["DataT"].check(x):
+    if is_xarray_typevar[DataT].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom=mom, mom_params=mom_params, dims=mom_dims, recast=False
         )

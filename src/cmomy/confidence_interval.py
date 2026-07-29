@@ -19,6 +19,7 @@ from .core.compat import copy_if_needed
 from .core.docstrings import docfiller
 from .core.missing import MISSING
 from .core.prob import ndtr, ndtri
+from .core.typing import DataT
 from .core.validate import is_xarray, is_xarray_typevar, validate_axis
 from .core.xr_utils import factory_apply_ufunc_kwargs
 
@@ -32,7 +33,6 @@ if TYPE_CHECKING:
     from .core.typing import (
         AxisReduce,
         BootStrapMethod,
-        DataT,
         DimsReduce,
         FloatDTypes,
         KeepAttrs,
@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
 
 @overload
-def bootstrap_confidence_interval(
+def bootstrap_confidence_interval(  # pyrefly: ignore [inconsistent-overload]
     theta_boot: DataT,
     theta_hat: DataT | None = ...,
     theta_jack: DataT | None = ...,
@@ -205,11 +205,13 @@ def bootstrap_confidence_interval(
         dtype=dtype,
     )
 
-    check_datat = is_xarray_typevar["DataT"].check
+    check_datat = is_xarray_typevar[DataT].check
 
     if check_datat(theta_boot):
         axis, dim = default_mom_params_xarray.select_axis_dim(
-            theta_boot, axis=axis, dim=dim
+            theta_boot,
+            axis=axis,  # pyrefly: ignore [bad-argument-type]
+            dim=dim,
         )
 
         if is_xarray(theta_jack):
@@ -304,7 +306,7 @@ def _bootstrap_confidence_interval(
         theta_jack = np.asarray(theta_jack, dtype=dtype)
 
         a = _compute_a(theta_jack, axis)
-        z0 = _compute_z0(theta_hat_, theta_boot, axis)  # pyright: ignore[reportPossiblyUnboundVariable]
+        z0 = _compute_z0(theta_hat_, theta_boot, axis)  # pyright: ignore[reportPossiblyUnboundVariable]  # pyrefly: ignore [unbound-name]
 
         z0_expanded = np.expand_dims(z0, -1)
         a_expanded = np.expand_dims(a, -1)
@@ -315,7 +317,7 @@ def _bootstrap_confidence_interval(
     else:
         ci = np.quantile(theta_boot, alphas, axis=axis).astype(dtype, copy=False)
         if method_ == "basic":
-            ci = 2 * np.squeeze(theta_hat_, axis=axis) - ci[-1::-1, ...]  # pyright: ignore[reportAssignmentType, reportPossiblyUnboundVariable]
+            ci = 2 * np.squeeze(theta_hat_, axis=axis) - ci[-1::-1, ...]  # pyright: ignore[reportAssignmentType, reportPossiblyUnboundVariable]  # pyrefly: ignore [unbound-name]
 
     return ci
 

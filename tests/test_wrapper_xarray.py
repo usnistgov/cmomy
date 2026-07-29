@@ -36,6 +36,7 @@ def test_init_error() -> None:
         cmomy.xCentralMoments(xr.DataArray([1, 2, 3]), mom_dims=("a", "b"))
 
     with pytest.raises(TypeError):
+        # pyrefly: ignore [bad-specialization]
         cmomy.CentralMomentsData(np.zeros(3))  # type: ignore[type-var]
 
 

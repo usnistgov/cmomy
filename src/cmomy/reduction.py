@@ -25,6 +25,7 @@ from .core.prepare import (
     PrepareValsArray,
     PrepareValsXArray,
 )
+from .core.typing import DataT
 from .core.utils import mom_to_mom_shape
 from .core.validate import (
     is_dataarray,
@@ -63,7 +64,6 @@ if TYPE_CHECKING:
         AxisReduceMultWrap,
         AxisReduceWrap,
         Casting,
-        DataT,
         DimsReduce,
         DimsReduceMult,
         DTypeLikeArg,
@@ -83,7 +83,7 @@ if TYPE_CHECKING:
 # * Reduce vals ---------------------------------------------------------------
 # ** overloads
 @overload
-def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
+def reduce_vals(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -131,9 +131,9 @@ def reduce_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> NDArrayAny: ...
-# arraylike or DataT
+# super fallback
 @overload
-def reduce_vals(
+def reduce_vals(  # pyrefly: ignore [inconsistent-overload]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -201,7 +201,7 @@ def reduce_vals(  # ruff:ignore[too-many-arguments]
     """
     weight = 1.0 if weight is None else weight
     dtype = select_dtype(x, out=out, dtype=dtype)
-    if is_xarray_typevar["DataT"].check(x):
+    if is_xarray_typevar[DataT].check(x):
         prep, mom = PrepareValsXArray.factory_mom(
             mom_params=mom_params,
             mom=mom,
@@ -340,7 +340,7 @@ def _reduce_vals(
 # * Reduce data ---------------------------------------------------------------
 # ** overload
 @overload
-def reduce_data(  # pyright: ignore[reportOverlappingOverload]
+def reduce_data(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -382,15 +382,6 @@ def reduce_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArrayAny: ...
-# Arraylike or DataT
-@overload
-def reduce_data(
-    data: ArrayLike | DataT,
-    *,
-    out: NDArrayAny | None = ...,
-    dtype: DTypeLike = ...,
-    **kwargs: Unpack[ReduceDataKwargs],
-) -> NDArrayAny | DataT: ...
 
 
 # ** public
@@ -450,7 +441,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]
         Same type as input ``data``.
     """
     dtype = select_dtype(data, out=out, dtype=dtype)
-    if is_xarray_typevar["DataT"].check(data):
+    if is_xarray_typevar[DataT].check(data):
         prep = PrepareDataXArray.factory(
             mom_params=mom_params,
             ndim=mom_ndim,
@@ -495,7 +486,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
                 dim = (dim,) if isinstance(dim, str) else dim  # type: ignore[redundant-expr, unused-ignore]
-                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable, reportUnknownVariableType, reportUnknownArgumentType]
+                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable, reportUnknownVariableType, reportUnknownArgumentType]  # pyrefly: ignore [not-iterable]
                     return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
 
         axis, dim = prep.mom_params.select_axis_dim_mult(

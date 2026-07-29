@@ -161,7 +161,7 @@ def validate_floating_dtype(
 
     dtype = np.dtype(dtype)
     if dtype.type in {np.float32, np.float64}:
-        return dtype  # type: ignore[return-value]
+        return dtype  # type: ignore[return-value]  # pyrefly: ignore [bad-return]
 
     msg = f"{dtype=} not supported for {name}.  dtype must be conformable to float32 or float64."
     raise ValueError(msg)
@@ -293,7 +293,7 @@ def validate_mom_dims_and_mom_ndim(
     if mom_dims is not None:
         mom_dims = cast(
             "MomDimsStrict",
-            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
         )
         mom_ndim = validate_mom_ndim(len(mom_dims), mom_axes)
         return mom_dims, mom_ndim
