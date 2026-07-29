@@ -367,6 +367,7 @@ reportUnusedExpression = false
 root = "examples/usage"
 
 [tool.ty]
+# TODO(wpk): remove these excludes when possible.  See #220
 src.exclude = [
     "src",
     "tests",
