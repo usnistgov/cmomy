@@ -740,7 +740,7 @@ for (dtype_seq, func_name, data_prefix, out_prefix, base_args) in (
                 f"({d}, {d})",
                 out_prefix,
                 base_args,
-                *args  # pyrefly: ignore[bad-argument-type]
+                *args  # pyrefly: ignore[bad-argument-type]  # ty:ignore[invalid-argument-type]
             )
         ))
 # fmt: on

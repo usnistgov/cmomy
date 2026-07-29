@@ -68,6 +68,7 @@ test = [
 ]
 type = [
     "pandas-stubs",
+    "scipy-stubs",
     { include-group = "nox" },
     { include-group = "pylint" },
     { include-group = "pytest" },
@@ -247,9 +248,6 @@ warn_unused_configs = true
 module = [
     "dask.*",
     "numba.*",
-    "scipy.*",
-    "scipy.special.*",
-    "scipy.stats.*",
 ]
 ignore_missing_imports = true
 disallow_untyped_calls = false
@@ -285,7 +283,6 @@ disable_error_code = [
 [tool.pyrefly]
 errors.unused-ignore = "error"
 enabled-ignores = [ "pyrefly" ]
-legacy-overload-expansion = true
 project-excludes = [ "**/test_typing_auto.py" ]
 project-includes = [
     "examples/usage/*.ipynb",
@@ -332,7 +329,6 @@ exclude = [
     ".nox/**",
     ".tox/**",
     ".venv/**",
-    # "tools/auto_test_typing.py",
 ]
 # Needed for pep728 support for TypeDict(closed=...)
 enableExperimentalFeatures = true
@@ -361,7 +357,7 @@ enableReachabilityAnalysis = false
 [[tool.pyright.executionEnvironments]]
 reportArgumentType = false
 reportCallIssue = false
-reportMissingImports = false
+reportMissingModuleSource = false
 reportUnusedCallResult = false
 root = "tests"
 
@@ -371,11 +367,15 @@ reportUnusedExpression = false
 root = "examples/usage"
 
 [tool.ty]
-src.include = [
-    "examples/usage/*.ipynb",
-    "noxfile.py",
+src.exclude = [
     "src",
     "tests",
+]
+src.include = [
+    "src",
+    "tests",
+    "examples/usage/*.ipynb",
+    "noxfile.py",
     "tools",
 ]
 analysis.respect-type-ignore-comments = false

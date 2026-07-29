@@ -803,20 +803,23 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """
         from cmomy.convert import cumulative
 
-        return cumulative(  # pyrefly: ignore [bad-return]
-            self._obj,
-            axis=axis,
-            dim=dim,
-            mom_params=self._mom_params,
-            inverse=False,
-            axes_to_end=axes_to_end,
-            out=out,
-            dtype=dtype,
-            casting=casting,
-            order=order,
-            parallel=parallel,
-            keep_attrs=keep_attrs,
-            apply_ufunc_kwargs=apply_ufunc_kwargs,
+        return cast(
+            "GenArrayT",
+            cumulative(
+                self._obj,
+                axis=axis,
+                dim=dim,
+                mom_params=self._mom_params,
+                inverse=False,
+                axes_to_end=axes_to_end,
+                out=out,
+                dtype=dtype,
+                casting=casting,
+                order=order,
+                parallel=parallel,
+                keep_attrs=keep_attrs,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
+            ),
         )
 
     @docfiller.decorate
