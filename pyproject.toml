@@ -98,9 +98,13 @@ docs-spelling = [
 ipython = [ "ipython" ]
 mypy = [ "mypy[faster-cache]>=2.3.0" ]
 notebook = [ "ipykernel", "nbclient" ]
+<<<<<<< before updating
 nox = [ "dotenv", "nox>=2026.4.10" ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
+=======
+nox = [ "nox>=2026.7.11" ]
+>>>>>>> after updating
 pylint = [ "pylint" ]
 pytest = [ "pytest!=9.1.0" ]
 pytest-accept = [ "pytest-accept" ]
@@ -286,6 +290,7 @@ disable_error_code = [
 enabled-ignores = [ "pyrefly" ]
 project-excludes = [ "**/test_typing_auto.py" ]
 project-includes = [
+    "examples/usage/*.ipynb",
     "noxfile.py",
     "src",
     "tests",
@@ -314,6 +319,7 @@ strict = [
     "tools/*.py",
 ]
 include = [
+    "examples/usage/*.ipynb",
     "noxfile.py",
     "src",
     "tests",
@@ -365,6 +371,7 @@ root = "examples/usage"
 
 [tool.ty]
 src.include = [
+    "examples/usage/*.ipynb",
     "noxfile.py",
     "src",
     "tests",
@@ -488,6 +495,7 @@ pip-deps = [
 groups = [
     "basedpyright",
     "mypy",
+    "nox",
     "typecheck-runner",
 ]
 skip-package = true
@@ -499,7 +507,11 @@ scripts = [
     "noxfile.py",
     "tools/check_dist_version.py",
     "tools/clean_kernelspec.py",
+<<<<<<< before updating
     "tools/sync_pyproject_min_versions.py",
+=======
+    "tools/cog_runner.py",
+>>>>>>> after updating
 ]
 
 [[tool.uv-locker.requirements]]
