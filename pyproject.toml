@@ -133,16 +133,13 @@ required-environments = [
 ]
 exclude-newer = "7 days"
 managed = true
-<<<<<<< before updating
 conflicts = [
     [
         { group = "numpy1" },
         { group = "numpy2" },
     ],
 ]
-=======
 build-backend.source-exclude = [ ".*cache" ]
->>>>>>> after updating
 build-backend.source-include = [ "tests/**" ]
 pip.annotation-style = "line"
 pip.generate-hashes = true
@@ -167,6 +164,8 @@ extend-exclude = [
     ".numba_cache",
     ".venv",
     "dist-conda",
+    "examples/archived",
+    "tests/test_typing_auto.py",
 ]
 fix = true
 # unsafe-fixes = true
@@ -222,15 +221,41 @@ ruff.strictly-empty-init-modules = false
 
 # Project specific ignores
 [tool.ruff.lint.per-file-ignores]
-"**/*.ipynb" = [
-    # "B018",  # - Don't remove useless expressions in notebooks
-    # "D100",  # - undocumented-public-module
-    # "INP001",
+"src/**/*.py" = [
+    "D102",
+    "FIX002",
+    "PLR2004",
+    "TD003",
 ]
 "tests/**/*.py" = [
-    "D",    # - Don't need to document tests
-    "S101", # - Assert is fine with tests
+    "ANN",
+    "D",       # - Don't need to document tests
+    "FIX002",
+    "N802",
+    "N806",
+    "PLC2701",
+    "PLR2004",
+    "PT011",
+    "S101",    # - Assert is fine with tests
+    "SLF001",
+    "TD003",
 ]
+"**/*.ipynb" = [
+    "ANN",
+    "B018",    # - Don't remove useless expressions in notebooks
+    "D103",
+    "E302",
+    "E305",
+    "PD013",
+    "PLR2004",
+    "T201",
+]
+"src/**/_lib/*.py" = [
+    "PLR0914",
+    "RUF069",
+    "S101",
+]
+"**/__init__.py" = [ "RUF067" ]
 
 # * Checks ---------------------------------------------------------------------
 [tool.repo-review]
@@ -273,13 +298,10 @@ expand_tables = [
     "tool.pyrefly.sub-config",
     "tool.pyright.executionEnvironments",
     "tool.pytest",
-<<<<<<< before updating
-    "tool.ty.overrides",
-=======
     "tool.ruff.format",
     "tool.ruff.lint",
     "tool.ruff.lint.per-file-ignores",
->>>>>>> after updating
+    "tool.ty.overrides",
     "tool.typos",
     "tool.uv.dependency-groups",
     "tool.uv.exclude-newer-package",

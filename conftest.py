@@ -1,3 +1,5 @@
+# ruff:file-ignore[undocumented-public-function,missing-type-function-argument, undocumented-public-module]
+
 from functools import lru_cache
 from pathlib import Path
 
@@ -53,7 +55,7 @@ def pytest_configure(config) -> None:
         load_numba_modules()
 
 
-def pytest_runtest_setup(item):
+def pytest_runtest_setup(item):  # ruff: ignore[missing-return-type-undocumented-public-function]
     if "slow" in item.keywords and not item.config.getoption("--run-slow"):
         pytest.skip("need --run-slow option to run")
 

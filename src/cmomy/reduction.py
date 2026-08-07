@@ -386,7 +386,7 @@ def reduce_data(
 
 # ** public
 @docfiller.decorate  # type: ignore[arg-type, unused-ignore]
-def reduce_data(  # ruff:ignore[too-many-arguments]
+def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-structure]
     data: ArrayLike | DataT,
     *,
     axis: AxisReduceMultWrap | MissingType = MISSING,

@@ -1,5 +1,6 @@
 """Interface to routines in this submodule."""
 # pylint: disable=missing-class-docstring
+# ruff:file-ignore[undocumented-public-function,undocumented-public-class]
 
 from __future__ import annotations
 
