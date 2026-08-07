@@ -2,6 +2,7 @@
 # pylint: disable=file-ignored
 # pylint: skip-file
 # pyright: standard, reportPrivateImportUsage=false
+# ruff:file-ignore[private-member-access,missing-type-function-argument,missing-return-type-undocumented-public-function,missing-type-args,undocumented-public-function,missing-type-kwargs]
 """pretty formatting for notebook."""
 
 from typing import TYPE_CHECKING
