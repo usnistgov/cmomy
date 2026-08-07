@@ -11,6 +11,10 @@
 """Config file for nox."""
 # pyright: reportUnusedCallResult=false
 # pylint: disable=wrong-import-position
+<<<<<<< before updating
+=======
+# ruff:file-ignore[complex-structure,function-call-in-dataclass-default-argument]
+>>>>>>> after updating
 
 # * Imports ----------------------------------------------------------------------------
 from __future__ import annotations
