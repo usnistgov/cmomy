@@ -3,7 +3,7 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-    "uv-build>=0.12.0,<0.13.0",
+    "uv-build>=0.12.1,<0.13.0",
 ]
 
 [project]
@@ -221,28 +221,28 @@ ruff.strictly-empty-init-modules = false
 
 # Project specific ignores
 [tool.ruff.lint.per-file-ignores]
-"src/**/*.py" = [
+"src/**" = [
     "D102",
     "FIX002",
     "PLR2004",
     "TD003",
 ]
-"tests/**/*.py" = [
-    "ANN",
+"tests/**" = [
     "D",       # - Don't need to document tests
+    "S101",    # - Assert is fine with tests
+    "ANN",
     "FIX002",
     "N802",
     "N806",
     "PLC2701",
     "PLR2004",
     "PT011",
-    "S101",    # - Assert is fine with tests
     "SLF001",
     "TD003",
 ]
-"**/*.ipynb" = [
-    "ANN",
+"examples/**" = [
     "B018",    # - Don't remove useless expressions in notebooks
+    "ANN",
     "D103",
     "E302",
     "E305",
@@ -593,8 +593,8 @@ pip-deps = [
     "copier>=9.17.0",
     "grayskull>=3.1.1",
     "nbqa>=1.9.1",
-    "prek>=0.4.11",
-    "pyrefly>=1.1.1",
+    "prek>=0.4.12",
+    "pyrefly>=1.2.0",
     "pyright>=1.1.411",
     "rooster>=0.1.1",
     "twine>=7.0.0",
