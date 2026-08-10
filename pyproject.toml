@@ -218,7 +218,6 @@ ruff.strictly-empty-init-modules = false
 
 [tool.ruff.lint.per-file-ignores]
 "src/**" = [
-<<<<<<< before updating
     "D102",
     "FIX002",
     "PLR2004",
@@ -253,20 +252,6 @@ ruff.strictly-empty-init-modules = false
     "S101",
 ]
 "**/__init__.py" = [ "RUF067" ]
-=======
-    "NPY", # - not using numpy?
-    "PD",  # - not using pandas?
-]
-"tests/**" = [
-    "D",    # - Don't need to document tests
-    "S101", # - Assert is fine with tests
-]
-"examples/**" = [
-    # "B018",  # - Don't remove useless expressions in notebooks
-    # "D100",  # - undocumented-public-module
-    # "INP001",
-]
->>>>>>> after updating
 
 # * Checks ---------------------------------------------------------------------
 [tool.repo-review]
