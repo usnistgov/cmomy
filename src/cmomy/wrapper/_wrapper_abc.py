@@ -692,7 +692,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """
         from cmomy.utils import select_moment
 
-        return select_moment(  # pyrefly: ignore [no-matching-overload]
+        return select_moment(  # pyrefly: ignore [bad-return]
             self._obj,
             name=name,
             mom_params=self._mom_params,
@@ -744,7 +744,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         --------
         .utils.assign_moment
         """
-        obj = assign_moment(  # pyrefly: ignore [no-matching-overload]
+        obj = assign_moment(
             data=self._obj,
             moment=moment,
             mom_ndim=None,
@@ -758,7 +758,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             **moment_kwargs,
         )
-        return self._new_like(obj=obj)
+        return self._new_like(obj=obj)  # pyrefly: ignore [bad-argument-type]
 
     # *** .convert ------------------------------------------------------------
     @docfiller.decorate
@@ -1154,7 +1154,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         -------
         output : ndarray or DataArray
         """
-        return assign_moment(  # pyrefly: ignore [no-matching-overload]
+        return assign_moment(  # pyrefly: ignore [bad-return]
             self._obj,
             {"weight": 1, "ave": 0},
             mom_params=self._mom_params,
