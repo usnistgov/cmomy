@@ -163,7 +163,7 @@ def _get_signatures(
         signatures.extend(
             itertools.product(
                 *(
-                    (x,) if isinstance(x, (nb.types.Integer, nb.types.Array)) else x
+                    (x,) if isinstance(x, (nb.types.Integer, nb.types.Array)) else x  # pyright: ignore[reportAttributeAccessIssue]
                     for x in signature_generator
                 )
             )
