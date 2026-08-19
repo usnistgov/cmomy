@@ -99,9 +99,13 @@ docs-spelling = [
 ipython = [ "ipython" ]
 mypy = [ "mypy[faster-cache]>=2.3.0" ]
 notebook = [ "ipykernel", "nbclient" ]
+<<<<<<< before updating
 nox = [ "dotenv", "nox>=2026.8.10" ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
+=======
+nox = [ "nox>=2026.8.10" ]
+>>>>>>> after updating
 pylint = [ "pylint" ]
 pytest = [ "pytest!=9.1.0" ]
 pytest-accept = [ "pytest-accept" ]
