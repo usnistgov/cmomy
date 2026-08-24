@@ -3,11 +3,7 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-<<<<<<< before updating
-    "uv-build>=0.12.4,<0.13.0",
-=======
     "uv-build>=0.12.5,<0.13.0",
->>>>>>> after updating
 ]
 
 [project]
@@ -598,11 +594,7 @@ pip-deps = [
     "pyright>=1.1.411",
     "rooster>=0.1.1",
     "twine>=7.0.0",
-<<<<<<< before updating
-    "ty>=0.0.71",
-=======
     "ty>=0.0.72",
->>>>>>> after updating
 ]
 groups = [
     "basedpyright",
