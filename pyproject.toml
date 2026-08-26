@@ -99,7 +99,7 @@ docs-spelling = [
 ipython = [ "ipython" ]
 mypy = [ "mypy[faster-cache]>=2.3.1" ]
 notebook = [ "ipykernel", "nbclient" ]
-nox = [ "dotenv", "nox>=2026.8.10" ]
+nox = [ "dotenv", "nox>=2026.8.17" ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
 pylint = [ "pylint" ]
