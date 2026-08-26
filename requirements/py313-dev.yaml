@@ -21,7 +21,7 @@ dependencies:
   - mypy>=2.3.1
   - nbclient
   - nbval
-  - nox>=2026.8.10
+  - nox>=2026.8.17
   - numba>=0.57
   - numpy>1.24
   - pandas-stubs
