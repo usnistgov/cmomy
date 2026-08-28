@@ -99,13 +99,9 @@ docs-spelling = [
 ipython = [ "ipython" ]
 mypy = [ "mypy[faster-cache]>=2.3.1" ]
 notebook = [ "ipykernel", "nbclient" ]
-<<<<<<< before updating
 nox = [ "dotenv", "nox>=2026.8.17" ]
 numpy1 = [ "numpy<2.0" ]
 numpy2 = [ "numpy>2.0" ]
-=======
-nox = [ "nox>=2026.8.17" ]
->>>>>>> after updating
 pylint = [ "pylint" ]
 pytest = [ "pytest!=9.1.0" ]
 pytest-accept = [ "pytest-accept" ]
@@ -136,7 +132,7 @@ required-environments = [
     "sys_platform=='darwin' and platform_machine=='x86_64'",
 ]
 exclude-newer = "7 days"
-# Needed until prek>=0.5.0 is 7 days old
+# Needed until prek>=0.5.0 is 7 days old (also requirements/uv.toml)
 exclude-newer-package = { prek = "0 days" }
 managed = true
 conflicts = [
