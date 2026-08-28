@@ -2,6 +2,8 @@
 # change name to uv.toml to use with just sync
 
 exclude-newer = "7 days"
+# Needed until prek>=0.5.0 is 7 days old (also requirements/uv.toml)
+exclude-newer-package = { prek = "0 days" }
 fork-strategy = "requires-python"
 pip.annotation-style = "line"
 pip.generate-hashes = true
