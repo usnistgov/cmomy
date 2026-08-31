@@ -3,7 +3,6 @@
 """Create test_typing_auto.py file"""
 # /// script
 # requires-python = ">=3.11"
-# ]
 # ///
 
 from __future__ import annotations
