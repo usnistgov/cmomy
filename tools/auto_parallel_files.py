@@ -11,7 +11,6 @@ _PARALLEL = True  # !!!PARALLEL_TRUE!!!
 """
 # /// script
 # requires-python = ">=3.11"
-# ]
 # ///
 
 from __future__ import annotations
