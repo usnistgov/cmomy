@@ -3,11 +3,7 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-<<<<<<< before updating
-    "uv-build>=0.12.6,<0.13.0",
-=======
     "uv-build>=0.12.8,<0.13.0",
->>>>>>> after updating
 ]
 
 [project]
@@ -182,18 +178,40 @@ docstring-code-format = true
 
 [tool.ruff.lint.per-file-ignores]
 "src/**" = [
-    "NPY", # - not using numpy?
-    "PD",  # - not using pandas?
+    "line-contains-todo",
+    "magic-value-comparison",
+    "missing-todo-link",
+    "undocumented-public-method",
 ]
 "tests/**" = [
-    "assert", # - Assert is fine with tests
-    "D",      # - Don't need to document tests
+    "ANN",
+    "assert",                             # - Assert is fine with tests
+    "D",                                  # - Don't need to document tests
+    "import-private-name",
+    "invalid-function-name",
+    "line-contains-todo",
+    "magic-value-comparison",
+    "missing-todo-link",
+    "non-lowercase-variable-in-function",
+    "private-member-access",
+    "pytest-raises-too-broad",
 ]
 "examples/**" = [
-    # "useless-expression",         # - Don't remove useless expressions in notebooks
-    # "undocumented-public-module", # - undocumented-public-module
-    # "implicit-namespace-package",
+    "ANN",
+    "blank-lines-after-function-or-class",
+    "blank-lines-top-level",
+    "magic-value-comparison",
+    "pandas-use-of-dot-stack",
+    "print",
+    "undocumented-public-function",
+    "useless-expression",                  # - Don't remove useless expressions in notebooks
 ]
+"src/**/_lib/*.py" = [
+    "assert",
+    "float-equality-comparison",
+    "too-many-locals",
+]
+"**/__init__.py" = [ "non-empty-init-module" ]
 
 [tool.ruff.lint]
 select = [
@@ -237,46 +255,6 @@ pylint.max-public-methods = 30
 preview = true
 ruff.strictly-empty-init-modules = false
 
-<<<<<<< before updating
-[tool.ruff.lint.per-file-ignores]
-"src/**" = [
-    "undocumented-public-method",
-    "line-contains-todo",
-    "magic-value-comparison",
-    "missing-todo-link",
-]
-"tests/**" = [
-    "D",                                  # - Don't need to document tests
-    "assert",                             # - Assert is fine with tests
-    "ANN",
-    "line-contains-todo",
-    "invalid-function-name",
-    "non-lowercase-variable-in-function",
-    "import-private-name",
-    "magic-value-comparison",
-    "pytest-raises-too-broad",
-    "private-member-access",
-    "missing-todo-link",
-]
-"examples/**" = [
-    "useless-expression",                  # - Don't remove useless expressions in notebooks
-    "ANN",
-    "undocumented-public-function",
-    "blank-lines-top-level",
-    "blank-lines-after-function-or-class",
-    "pandas-use-of-dot-stack",
-    "magic-value-comparison",
-    "print",
-]
-"src/**/_lib/*.py" = [
-    "too-many-locals",
-    "float-equality-comparison",
-    "assert",
-]
-"**/__init__.py" = [ "non-empty-init-module" ]
-
-=======
->>>>>>> after updating
 # * Checks ---------------------------------------------------------------------
 [tool.repo-review]
 ignore = [
@@ -407,12 +385,6 @@ disable_error_code = [
 ]
 
 [tool.pyrefly]
-<<<<<<< before updating
-errors.unused-ignore = "error"
-enabled-ignores = [ "pyrefly" ]
-project-excludes = [ "**/test_typing_auto.py" ]
-=======
->>>>>>> after updating
 project-includes = [
     "examples/usage/*.ipynb",
     "noxfile.py",
@@ -420,8 +392,10 @@ project-includes = [
     "tests",
     "tools",
 ]
+project-excludes = [ "**/test_typing_auto.py" ]
 search-path = [ "." ]
-<<<<<<< before updating
+errors.unused-ignore = "error"
+enabled-ignores = [ "pyrefly" ]
 spec-compliant-overloads = true
 
 [[tool.pyrefly.sub-config]]
@@ -433,9 +407,6 @@ errors.bad-argument-type = "ignore"
 errors.missing-attribute = "ignore"
 errors.no-matching-overload = "ignore"
 matches = "tests/**/*.py"
-=======
-enabled-ignores = [ "pyrefly" ]
->>>>>>> after updating
 
 [tool.pyright]
 typeCheckingMode = "standard"
@@ -500,17 +471,17 @@ reportUnusedExpression = false
 root = "examples/usage"
 
 [tool.ty]
-# TODO(wpk): remove these excludes when possible.  See #220
-src.exclude = [
-    "src",
-    "tests",
-]
 src.include = [
     "examples/usage/*.ipynb",
     "noxfile.py",
     "src",
     "tests",
     "tools",
+]
+# TODO(wpk): remove these excludes when possible.  See #220
+src.exclude = [
+    "src",
+    "tests",
 ]
 analysis.respect-type-ignore-comments = false
 
@@ -532,8 +503,10 @@ addopts = [
     "--strict-markers",
     "-ra",
 ]
+markers = [
+    "scipy: test scipy dependent code",
+]
 # options
-<<<<<<< before updating
 filterwarnings = [
     "error",
     "ignore: FNV hashing is not implemented in Numba:UserWarning",
@@ -541,17 +514,8 @@ filterwarnings = [
     "ignore: No data was collected:coverage.exceptions.CoverageWarning",                 # test-notebook issue
     "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
 ]
-log_cli_level = "INFO"
-log_level = "INFO"
-markers = [
-    "scipy: test scipy dependent code",
-]
-minversion = "8"
-=======
-filterwarnings = [ "error" ]
 log_level = "INFO"
 log_cli_level = "INFO"
->>>>>>> after updating
 strict_xfail = "true"
 
 [tool.pytest_env]
@@ -624,19 +588,15 @@ pip-deps = [
     # these used solely for specking tools to be run via uvx ...
     "conda-lock>=4.0.2",
     "copier-template-extensions>=0.3.3",
-    "copier>=9.18.1",
+    "copier>=9.17.2",
     "grayskull>=3.1.1",
     "nbqa>=1.9.1",
-<<<<<<< before updating
     "prek>=0.5.1",
-=======
-    "prek>=0.5.2",
->>>>>>> after updating
     "pyrefly>=1.2.0",
     "pyright>=1.1.411",
     "rooster>=0.1.1",
     "twine>=7.0.0",
-    "ty>=0.0.77",
+    "ty>=0.0.74",
 ]
 groups = [
     "basedpyright",
@@ -653,11 +613,7 @@ scripts = [
     "noxfile.py",
     "tools/check_dist_version.py",
     "tools/clean_kernelspec.py",
-<<<<<<< before updating
-=======
-    "tools/cog_runner.py",
     "tools/get_version_from_pre_commit_config.py",
->>>>>>> after updating
 ]
 
 [[tool.uv-locker.requirements]]
