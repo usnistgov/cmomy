@@ -3,7 +3,7 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-    "uv-build>=0.12.6,<0.13.0",
+    "uv-build>=0.12.8,<0.13.0",
 ]
 
 [project]
@@ -173,41 +173,77 @@ fix = true
 # unsafe-fixes = true
 
 [tool.ruff.format]
-docstring-code-format = true
 preview = true  # needed for markdown support
+docstring-code-format = true
+
+[tool.ruff.lint.per-file-ignores]
+"src/**" = [
+    "line-contains-todo",
+    "magic-value-comparison",
+    "missing-todo-link",
+    "undocumented-public-method",
+]
+"tests/**" = [
+    "ANN",
+    "assert",                             # - Assert is fine with tests
+    "D",                                  # - Don't need to document tests
+    "import-private-name",
+    "invalid-function-name",
+    "line-contains-todo",
+    "magic-value-comparison",
+    "missing-todo-link",
+    "non-lowercase-variable-in-function",
+    "private-member-access",
+    "pytest-raises-too-broad",
+]
+"examples/**" = [
+    "ANN",
+    "blank-lines-after-function-or-class",
+    "blank-lines-top-level",
+    "magic-value-comparison",
+    "pandas-use-of-dot-stack",
+    "print",
+    "undocumented-public-function",
+    "useless-expression",                  # - Don't remove useless expressions in notebooks
+]
+"src/**/_lib/*.py" = [
+    "assert",
+    "float-equality-comparison",
+    "too-many-locals",
+]
+"**/__init__.py" = [ "non-empty-init-module" ]
 
 [tool.ruff.lint]
-preview = true
 select = [
     "ALL",
-]
-# fixable = [ "ALL" ]
-unfixable = [
-    "non-augmented-assignment",
-    "ERA",
-    "T",
 ]
 ignore = [
     "any-type",                             # - Any ok sometimes
     "COM",                                  # - flake8-commas, formatter should take care of this?
     "CPY",                                  # - Don't require copyright
-    "undocumented-magic-method",            # - Missing magic method docstring
-    "undocumented-public-init",             # - Missing docstring in __init__
-    "incorrect-blank-line-before-class",    # - 1 blank line required before class docstring
-    "missing-blank-line-after-summary",     # - blank line after summary
-    "multi-line-summary-first-line",        # - Multi-line docstring summary should start at the first line
-    "missing-trailing-period",              # - First line should end with a period
-    "non-imperative-mood",                  # - First line of docstring should be in imperative mood: "{first_line}"
-    "docstring-missing-returns",            # - Missing return from documentation
     "docstring-missing-exception",          # - Missing raises from documentation
-    "line-too-long",                        # - line too long - let formatter fix this
-    "lambda-assignment",                    # - do not assign a lambda expression, use a def
+    "docstring-missing-returns",            # - Missing return from documentation
     "FBT",                                  # - bools are ok
     "import-outside-top-level",             # - import should be at top level (leads to issues with imports in func?)
-    "suspicious-subprocess-import",         # - Want to use subprocess sometimes
-    "subprocess-without-shell-equals-true", # - subprocess-without-shell-equals-true
-    "start-process-with-partial-path",      # - start-process-with-partial-path
+    "incorrect-blank-line-before-class",    # - 1 blank line required before class docstring
+    "lambda-assignment",                    # - do not assign a lambda expression, use a def
+    "line-too-long",                        # - line too long - let formatter fix this
+    "missing-blank-line-after-summary",     # - blank line after summary
+    "missing-trailing-period",              # - First line should end with a period
+    "multi-line-summary-first-line",        # - Multi-line docstring summary should start at the first line
+    "non-imperative-mood",                  # - First line of docstring should be in imperative mood: "{first_line}"
     "relative-imports",                     # - Allow relative imports
+    "start-process-with-partial-path",      # - start-process-with-partial-path
+    "subprocess-without-shell-equals-true", # - subprocess-without-shell-equals-true
+    "suspicious-subprocess-import",         # - Want to use subprocess sometimes
+    "undocumented-magic-method",            # - Missing magic method docstring
+    "undocumented-public-init",             # - Missing docstring in __init__
+]
+# fixable = [ "ALL" ]
+unfixable = [
+    "ERA",
+    "non-augmented-assignment",
+    "T",
 ]
 isort.known-first-party = [
     "cmomy",
@@ -216,44 +252,8 @@ pydocstyle.convention = "numpy"
 pylint.max-args = 15
 pylint.max-positional-args = 15
 pylint.max-public-methods = 30
+preview = true
 ruff.strictly-empty-init-modules = false
-
-[tool.ruff.lint.per-file-ignores]
-"src/**" = [
-    "undocumented-public-method",
-    "line-contains-todo",
-    "magic-value-comparison",
-    "missing-todo-link",
-]
-"tests/**" = [
-    "D",                                  # - Don't need to document tests
-    "assert",                             # - Assert is fine with tests
-    "ANN",
-    "line-contains-todo",
-    "invalid-function-name",
-    "non-lowercase-variable-in-function",
-    "import-private-name",
-    "magic-value-comparison",
-    "pytest-raises-too-broad",
-    "private-member-access",
-    "missing-todo-link",
-]
-"examples/**" = [
-    "useless-expression",                  # - Don't remove useless expressions in notebooks
-    "ANN",
-    "undocumented-public-function",
-    "blank-lines-top-level",
-    "blank-lines-after-function-or-class",
-    "pandas-use-of-dot-stack",
-    "magic-value-comparison",
-    "print",
-]
-"src/**/_lib/*.py" = [
-    "too-many-locals",
-    "float-equality-comparison",
-    "assert",
-]
-"**/__init__.py" = [ "non-empty-init-module" ]
 
 # * Checks ---------------------------------------------------------------------
 [tool.repo-review]
@@ -385,9 +385,6 @@ disable_error_code = [
 ]
 
 [tool.pyrefly]
-errors.unused-ignore = "error"
-enabled-ignores = [ "pyrefly" ]
-project-excludes = [ "**/test_typing_auto.py" ]
 project-includes = [
     "examples/usage/*.ipynb",
     "noxfile.py",
@@ -395,7 +392,10 @@ project-includes = [
     "tests",
     "tools",
 ]
+project-excludes = [ "**/test_typing_auto.py" ]
 search-path = [ "." ]
+errors.unused-ignore = "error"
+enabled-ignores = [ "pyrefly" ]
 spec-compliant-overloads = true
 
 [[tool.pyrefly.sub-config]]
@@ -471,11 +471,6 @@ reportUnusedExpression = false
 root = "examples/usage"
 
 [tool.ty]
-# TODO(wpk): remove these excludes when possible.  See #220
-src.exclude = [
-    "src",
-    "tests",
-]
 src.include = [
     "examples/usage/*.ipynb",
     "noxfile.py",
@@ -483,10 +478,21 @@ src.include = [
     "tests",
     "tools",
 ]
+# TODO(wpk): remove these excludes when possible.  See #220
+src.exclude = [
+    "src",
+    "tests",
+]
 analysis.respect-type-ignore-comments = false
 
 # * Testing --------------------------------------------------------------------
 [tool.pytest.ini_options]
+minversion = "8"
+testpaths = [
+    "README.md",
+    "cmomy",
+    "tests",
+]
 addopts = [
     "--cov-config=pyproject.toml",
     "--doctest-glob=*.md",
@@ -497,10 +503,8 @@ addopts = [
     "--strict-markers",
     "-ra",
 ]
-testpaths = [
-    "README.md",
-    "cmomy",
-    "tests",
+markers = [
+    "scipy: test scipy dependent code",
 ]
 # options
 filterwarnings = [
@@ -510,12 +514,8 @@ filterwarnings = [
     "ignore: No data was collected:coverage.exceptions.CoverageWarning",                 # test-notebook issue
     "ignore: __array__ implementation doesn't accept a copy keyword:DeprecationWarning",
 ]
-log_cli_level = "INFO"
 log_level = "INFO"
-markers = [
-    "scipy: test scipy dependent code",
-]
-minversion = "8"
+log_cli_level = "INFO"
 strict_xfail = "true"
 
 [tool.pytest_env]
@@ -613,6 +613,7 @@ scripts = [
     "noxfile.py",
     "tools/check_dist_version.py",
     "tools/clean_kernelspec.py",
+    "tools/get_version_from_pre_commit_config.py",
 ]
 
 [[tool.uv-locker.requirements]]
