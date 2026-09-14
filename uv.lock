@@ -71,15 +71,15 @@ wheels = [
 
 [[package]]
 name = "anyio"
-version = "4.15.0"
+version = "4.15.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "idna", marker = "(python_full_version >= '3.13' and platform_machine != 'x86_64') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version != '3.13.*' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.13' and sys_platform != 'darwin') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "typing-extensions", marker = "(python_full_version >= '3.13' and python_full_version < '3.15' and platform_machine != 'x86_64') or (python_full_version >= '3.13' and python_full_version < '3.15' and sys_platform != 'darwin') or (python_full_version == '3.13.*' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.13' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.15' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version < '3.13' and sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.15' and sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (platform_machine == 'x86_64' and sys_platform == 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/ea/9a/c15a60547004a3f3cea20296c934f827ddd7bdba225a2e7e9fcb5ec48c80/anyio-4.15.0.tar.gz", hash = "sha256:b5c620ed540725e2579c31b17bb995b3bf02c9281c9cace04c7d186380bab85e", size = 276504, upload-time = "2026-09-02T21:46:36.957Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/d2/f4d173e22df740bc37b1db102b386ba719b66e95b0f0d751f556b387e6d2/anyio-4.15.1.tar.gz", hash = "sha256:9f28306018cbd6d329e64a36d58256edff76dd996fe423bc957326e578b82a94", size = 276966, upload-time = "2026-09-05T10:42:39.44Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/21/a6/2b21ce5ebe4d8938a247c9b0dbb7271566ae559b01795c83ea4bb2660ed7/anyio-4.15.0-py3-none-any.whl", hash = "sha256:7ecd9937369ffce8bba0b5ccb9b3a9507b101b0ed50256aecfbab27e6c2acb99", size = 131908, upload-time = "2026-09-02T21:46:35.485Z" },
+    { url = "https://files.pythonhosted.org/packages/12/b8/4bd346e22b28902df4d651910f5242c28d84e4a5c2435ca5c3f797ed7e2e/anyio-4.15.1-py3-none-any.whl", hash = "sha256:6152fdbbf9a77fdec97731721bebf7c4c44f7c29b424b0065826173efc7ed101", size = 132079, upload-time = "2026-09-05T10:42:37.923Z" },
 ]
 
 [[package]]
@@ -5180,11 +5180,11 @@ wheels = [
 
 [[package]]
 name = "xyzservices"
-version = "2026.3.0"
+version = "2026.9.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/f6/08/3cb9f67a8d48021aca2a02292cc26eecd71d949ae70ad66420a8730cc302/xyzservices-2026.3.0.tar.gz", hash = "sha256:d226866a5d8e9fef337034d8da37a8298f0a1d9d1489b4018e69579eb321fea4", size = 1135736, upload-time = "2026-03-30T14:42:25.596Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/bd/b75d5c2312caec607ec995200fa1eb8453225fd869947ec743919c279544/xyzservices-2026.9.1.tar.gz", hash = "sha256:8d1a39bf6b192940cc5db5264eeefc1b20dd184f8b83b1303b078743744f5943", size = 1134047, upload-time = "2026-09-04T10:35:41.399Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a8/a9/d23012099dc88ec69a29c6407b41d89681cb674c2043cd5b467c7e299c08/xyzservices-2026.3.0-py3-none-any.whl", hash = "sha256:503183d4b322bfebc3c50cdd21192aa3e81e36c5efbf9133d54ae82143e0576b", size = 94101, upload-time = "2026-03-30T14:42:24.608Z" },
+    { url = "https://files.pythonhosted.org/packages/a8/71/9219fe65ef32bddc0b5d14e1d98dfefe9d2c9c1b1d1e93efca1f29fcbd4d/xyzservices-2026.9.1-py3-none-any.whl", hash = "sha256:af4fddac0f1fa5f7951834e2c58e10109e722be548cb1fe4f1a8e8b18cef4c09", size = 98829, upload-time = "2026-09-04T10:35:40.08Z" },
 ]
 
 [[package]]
