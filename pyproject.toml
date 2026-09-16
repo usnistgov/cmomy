@@ -293,13 +293,14 @@ expand_tables = [
     "project.urls",
     "tool.mypy.overrides",
     "tool.pyproject2conda",
-    "tool.pyrefly.sub-config",
+    "tool.pyrefly",
     "tool.pyright.executionEnvironments",
     "tool.pytest",
     "tool.ruff.format",
     "tool.ruff.lint",
     "tool.ruff.lint.per-file-ignores",
     "tool.ty.overrides",
+    "tool.ty.rules",
     "tool.typos",
     "tool.uv.dependency-groups",
     "tool.uv.exclude-newer-package",
@@ -394,9 +395,11 @@ project-includes = [
 ]
 project-excludes = [ "**/test_typing_auto.py" ]
 search-path = [ "." ]
-errors.unused-ignore = "error"
 enabled-ignores = [ "pyrefly" ]
 spec-compliant-overloads = true
+
+[tool.pyrefly.errors]
+unused-ignore = "error"
 
 [[tool.pyrefly.sub-config]]
 errors.missing-attribute = "ignore"
@@ -407,6 +410,10 @@ errors.bad-argument-type = "ignore"
 errors.missing-attribute = "ignore"
 errors.no-matching-overload = "ignore"
 matches = "tests/**/*.py"
+
+[[tool.pyrefly.sub-config]]
+matches = "tools/get_version_from_pre_commit_config.py"
+ignore-missing-imports = [ "yaml.*" ]
 
 [tool.pyright]
 typeCheckingMode = "standard"
@@ -484,6 +491,9 @@ src.exclude = [
     "tests",
 ]
 analysis.respect-type-ignore-comments = false
+
+[tool.ty.rules]
+unused-ignore-comment = "error"
 
 # * Testing --------------------------------------------------------------------
 [tool.pytest.ini_options]
