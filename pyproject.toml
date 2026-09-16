@@ -396,6 +396,8 @@ project-includes = [
 project-excludes = [ "**/test_typing_auto.py" ]
 search-path = [ "." ]
 enabled-ignores = [ "pyrefly" ]
+min-severity = "warn"
+# preset = "strict"
 spec-compliant-overloads = true
 
 [tool.pyrefly.errors]
@@ -414,6 +416,7 @@ matches = "tests/**/*.py"
 [[tool.pyrefly.sub-config]]
 matches = "tools/get_version_from_pre_commit_config.py"
 ignore-missing-imports = [ "yaml.*" ]
+errors.untyped-import = "ignore"
 
 [tool.pyright]
 typeCheckingMode = "standard"
