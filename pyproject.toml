@@ -411,6 +411,10 @@ errors.missing-attribute = "ignore"
 errors.no-matching-overload = "ignore"
 matches = "tests/**/*.py"
 
+[[tool.pyrefly.sub-config]]
+matches = "tools/get_version_from_pre_commit_config.py"
+ignore-missing-imports = [ "yaml.*" ]
+
 [tool.pyright]
 typeCheckingMode = "standard"
 strict = [

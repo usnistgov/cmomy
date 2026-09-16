@@ -5,6 +5,7 @@
 # ]
 # ///
 """Get repo version for repo from .pre-commit-config.yaml"""
+# pyright: reportMissingModuleSource=false
 
 from __future__ import annotations
 
@@ -16,7 +17,7 @@ if TYPE_CHECKING:
 
 
 def _get_version(path: Path, url: str) -> str:
-    import yaml  # type: ignore[import-untyped] # pyright: ignore[reportMissingModuleSource] # ty: ignore[unresolved-import] # pylint: disable=import-error
+    import yaml  # type: ignore[import-untyped] # ty: ignore[unresolved-import] # pylint: disable=import-error
 
     with path.open("r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
