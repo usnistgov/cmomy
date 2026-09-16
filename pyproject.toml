@@ -396,7 +396,12 @@ project-includes = [
 project-excludes = [ "**/test_typing_auto.py" ]
 search-path = [ "." ]
 enabled-ignores = [ "pyrefly" ]
+<<<<<<< before updating
 spec-compliant-overloads = true
+=======
+min-severity = "warn"
+preset = "strict"
+>>>>>>> after updating
 
 [tool.pyrefly.errors]
 unused-ignore = "error"
