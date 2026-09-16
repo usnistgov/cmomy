@@ -1022,15 +1022,8 @@ def conda_build(session: nox.Session, opts: SessionParams) -> None:
 
     if not run and not cmds:
         cmds = ["build", "clean"]
-<<<<<<< before updating
-    if cmds is None:
-        cmds = []
-
-    cmds = list(cmds)
-=======
 
     cmds = [] if cmds is None else list(cmds)
->>>>>>> after updating
     if "clean" in cmds:
         cmds.remove("clean")
         session.log("removing directory dist-conda/build")
