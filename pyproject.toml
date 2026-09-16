@@ -293,11 +293,7 @@ expand_tables = [
     "project.urls",
     "tool.mypy.overrides",
     "tool.pyproject2conda",
-<<<<<<< before updating
-    "tool.pyrefly.sub-config",
-=======
     "tool.pyrefly",
->>>>>>> after updating
     "tool.pyright.executionEnvironments",
     "tool.pytest",
     "tool.ruff.format",
@@ -399,10 +395,11 @@ project-includes = [
 ]
 project-excludes = [ "**/test_typing_auto.py" ]
 search-path = [ "." ]
-errors.unused-ignore = "error"
 enabled-ignores = [ "pyrefly" ]
-<<<<<<< before updating
 spec-compliant-overloads = true
+
+[tool.pyrefly.errors]
+unused-ignore = "error"
 
 [[tool.pyrefly.sub-config]]
 errors.missing-attribute = "ignore"
@@ -413,12 +410,6 @@ errors.bad-argument-type = "ignore"
 errors.missing-attribute = "ignore"
 errors.no-matching-overload = "ignore"
 matches = "tests/**/*.py"
-=======
-min-severity = "warn"
-
-[tool.pyrefly.errors]
-unused-ignore = "error"
->>>>>>> after updating
 
 [tool.pyright]
 typeCheckingMode = "standard"
