@@ -401,22 +401,41 @@ min-severity = "warn"
 spec-compliant-overloads = true
 
 [tool.pyrefly.errors]
+# NOTE: overlap between below and strict mode
+implicit-abstract-class = "error"
+implicit-any = "error"
+implicitly-defined-attribute = "error"
+missing-override-decorator = "error"
+missing-source = "ignore"
+not-required-key-access = "error"
+open-unpacking = "error"
+unannotated-attribute = "error"
+unannotated-parameter = "error"
+unannotated-return = "error"
+untyped-import = "error"
 unused-ignore = "error"
+variance-mismatch = "error"
 
 [[tool.pyrefly.sub-config]]
-errors.missing-attribute = "ignore"
 matches = "examples/**"
+errors.implicit-any-parameter = "ignore"
+errors.missing-attribute = "ignore"
+errors.unannotated-return = "ignore"
 
 [[tool.pyrefly.sub-config]]
+matches = "tests/**"
 errors.bad-argument-type = "ignore"
+errors.implicit-any-empty-container = "ignore"
+errors.implicit-any-lambda = "ignore"
+errors.implicit-any-parameter = "ignore"
 errors.missing-attribute = "ignore"
 errors.no-matching-overload = "ignore"
-matches = "tests/**/*.py"
+errors.unannotated-return = "ignore"
 
 [[tool.pyrefly.sub-config]]
-matches = "tools/get_version_from_pre_commit_config.py"
-ignore-missing-imports = [ "yaml.*" ]
-errors.untyped-import = "ignore"
+matches = "src/cmomy/core/formatting.py"
+errors.implicit-any-parameter = "ignore"
+errors.unannotated-return = "ignore"
 
 [tool.pyright]
 typeCheckingMode = "standard"
@@ -496,6 +515,10 @@ src.exclude = [
 analysis.respect-type-ignore-comments = false
 
 [tool.ty.rules]
+division-by-zero = "error"
+possibly-missing-import = "error"
+possibly-unresolved-reference = "error"
+unsupported-dynamic-base = "error"
 unused-ignore-comment = "error"
 
 # * Testing --------------------------------------------------------------------
@@ -608,6 +631,7 @@ pip-deps = [
     "pyrefly>=1.2.0",
     "pyright>=1.1.411",
     "rooster>=0.1.1",
+    "rust-just>=1.58.0",
     "twine>=7.0.0",
     "ty>=0.0.79",
 ]
@@ -626,7 +650,6 @@ scripts = [
     "noxfile.py",
     "tools/check_dist_version.py",
     "tools/clean_kernelspec.py",
-    "tools/get_version_from_pre_commit_config.py",
 ]
 
 [[tool.uv-locker.requirements]]
