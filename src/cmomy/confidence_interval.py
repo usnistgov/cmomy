@@ -45,7 +45,7 @@ if TYPE_CHECKING:
 
 
 @overload
-def bootstrap_confidence_interval(  # pyrefly: ignore [inconsistent-overload]
+def bootstrap_confidence_interval(
     theta_boot: DataT,
     theta_hat: DataT | None = ...,
     theta_jack: DataT | None = ...,
