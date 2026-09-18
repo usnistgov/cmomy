@@ -368,7 +368,7 @@ def rolling_data(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def rolling_data(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     *,
@@ -629,7 +629,7 @@ def rolling_vals(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def rolling_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -926,7 +926,7 @@ def rolling_exp_data(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def rolling_exp_data(  # ruff:ignore[too-many-arguments]
     data: ArrayLike | DataT,
     alpha: ArrayLike | xr.DataArray | xr.Dataset,
@@ -1245,7 +1245,7 @@ def rolling_exp_vals(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def rolling_exp_vals(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,

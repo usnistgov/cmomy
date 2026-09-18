@@ -912,7 +912,7 @@ def reduce_vals_grouped(
 ) -> NDArrayAny | DataT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def reduce_vals_grouped(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -1212,7 +1212,7 @@ def reduce_vals_indexed(
 ) -> NDArrayAny | DataT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def reduce_vals_indexed(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,

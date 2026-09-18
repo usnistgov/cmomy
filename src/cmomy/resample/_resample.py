@@ -273,7 +273,7 @@ def resample_data(  # ruff:ignore[too-many-arguments]
             )
 
         if not axes_to_end and is_dataarray(data):
-            dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index,unused-ignore]
+            dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index]
             return xout.transpose(*dims_order)
         return xout
 

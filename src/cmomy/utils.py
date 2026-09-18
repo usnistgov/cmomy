@@ -848,7 +848,7 @@ def vals_to_data(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
+@docfiller.decorate
 def vals_to_data(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -984,7 +984,7 @@ def vals_to_data(
                     output_sizes=dict(
                         zip(mom_params.dims, mom_to_mom_shape(mom), strict=True)
                     )
-                    if out is None  # type: ignore[redundant-expr,unused-ignore]
+                    if out is None  # type: ignore[redundant-expr]
                     else None,
                     output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
                 ),

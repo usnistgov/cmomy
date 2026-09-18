@@ -50,7 +50,7 @@ class _Config:
 config = _Config()
 
 
-class HashCacheLocator(UserProvidedCacheLocator):  # type: ignore[misc, unused-ignore]
+class HashCacheLocator(UserProvidedCacheLocator):
     """
     Cache with file hash
 

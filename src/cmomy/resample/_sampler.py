@@ -510,7 +510,7 @@ def select_ndat(
     axis = mom_params.normalize_axis_index(validate_axis(axis), data.ndim)
     mom_params.raise_if_in_mom_axes(axis)
 
-    return data.shape[axis]  # type: ignore[no-any-return,unused-ignore]
+    return data.shape[axis]  # type: ignore[no-any-return]
 
 
 # * Convert -------------------------------------------------------------------
@@ -532,7 +532,7 @@ def freq_to_indices(
 ) -> NDArrayAny: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def freq_to_indices(
     freq: ArrayLike | SamplerArrayT,
     *,
