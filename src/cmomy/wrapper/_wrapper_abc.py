@@ -14,6 +14,7 @@ import numpy as np
 from cmomy.core.docstrings import docfiller
 from cmomy.core.missing import MISSING
 from cmomy.core.moment_params import factory_mom_params
+from cmomy.core.typing import GenArrayT
 from cmomy.core.typing_compat import TypeVar, override
 from cmomy.core.validate import (
     is_dataset,
@@ -61,7 +62,6 @@ if TYPE_CHECKING:
     from cmomy.factory import Pusher
     from cmomy.resample.typing import SamplerType
 
-from cmomy.core.typing import GenArrayT
 
 #: MomParams type variable
 MomParamsT = TypeVar("MomParamsT", "MomParamsArray", "MomParamsXArray")
