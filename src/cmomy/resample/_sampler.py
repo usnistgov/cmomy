@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, overload
+from typing import TYPE_CHECKING, Generic, cast, overload
 
 import numpy as np
 import xarray as xr
@@ -116,19 +116,18 @@ class IndexSampler(Generic[SamplerArrayT]):
     @property
     def freq(self) -> SamplerArrayT:
         if self._freq is None:
-            # TODO(wpk): need these ignores for mypy with python3.12.  Figure out if can remove...
-            self._freq = indices_to_freq(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [bad-assignment]
+            self._freq = indices_to_freq(  # type: ignore[assignment] # pyrefly: ignore [no-matching-overload]
                 self.indices, ndat=self.ndat, parallel=self._parallel
             )
-        return self._freq  # type: ignore[return-value, unused-ignore]  # pyrefly: ignore [bad-return]
+        return self._freq  # type: ignore[return-value]
 
     @property
     def indices(self) -> SamplerArrayT:
         if self._indices is None:
-            self._indices = freq_to_indices(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [bad-assignment]
+            self._indices = freq_to_indices(  # type: ignore[assignment] # pyrefly: ignore [no-matching-overload]
                 self.freq, shuffle=self._shuffle, rng=self._rng, parallel=self._parallel
             )
-        return self._indices  # type: ignore[return-value, unused-ignore]  # pyrefly: ignore [bad-return]
+        return self._indices  # type: ignore[return-value]
 
     @property
     def _first_indices(self) -> NDArrayAny | xr.DataArray:
@@ -299,8 +298,8 @@ class IndexSampler(Generic[SamplerArrayT]):
         )
 
         indices: NDArrayAny | xr.DataArray | xr.Dataset = (
-            _randsamp_indices_dataarray_or_dataset(  # type: ignore[type-var]  # pyrefly: ignore [bad-specialization]
-                data=data,  # pyright: ignore[reportArgumentType]
+            _randsamp_indices_dataarray_or_dataset(
+                data=data,
                 nrep=nrep,
                 axis=axis,
                 dim=dim,
@@ -426,7 +425,7 @@ def _randsamp_indices_dataarray_or_dataset(
             dims=[rep_dim, dim],
         )
 
-    if is_dataarray(data) or paired:  # type: ignore[redundant-expr]
+    if is_dataarray(data) or paired:
         return _get_unique_indices()
 
     # generate non-paired dataset
@@ -438,7 +437,7 @@ def _randsamp_indices_dataarray_or_dataset(
     if len(out) == 1:
         # return just a dataarray in this case
         return next(iter(out.values()))
-    return xr.Dataset(out)  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+    return cast("DataT", xr.Dataset(out))
 
 
 # * select ndat ---------------------------------------------------------------

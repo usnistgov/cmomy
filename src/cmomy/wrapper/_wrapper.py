@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Generic, overload
+from typing import TYPE_CHECKING, Generic, cast, overload
 
 import numpy as np
 import xarray as xr
@@ -116,7 +116,7 @@ docfiller_array_inherit_abc = docfiller_array.factory_inherit_from_parent(
 
 @docfiller_array.inherit(CentralMomentsABC)
 class CentralMomentsArray(
-    CentralMomentsABC[NDArray[FloatT], MomParamsArray],  # type: ignore[type-var]
+    CentralMomentsABC[NDArray[FloatT], MomParamsArray],
     Generic[FloatT],
 ):
     r"""
@@ -1323,7 +1323,7 @@ docfiller_data_inherit_abc = docfiller_data.factory_inherit_from_parent(
 
 
 @docfiller_data.inherit(CentralMomentsABC)  # ruff:ignore[too-many-public-methods]
-class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
+class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[DataT]):
     """
     Central moments wrapper of {DataArray} or {Dataset} objects.
 
@@ -1347,7 +1347,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         fastpath: bool = False,
     ) -> None:
         if not is_xarray(obj):
-            msg = "obj must be a DataArray or Dataset, not {type(obj)}"  # pyright: ignore[reportUnreachable]
+            msg = "obj must be a DataArray or Dataset, not {type(obj)}"  # type: ignore[unreachable] # pyright: ignore[reportUnreachable]
             raise TypeError(msg)
 
         if fastpath:
@@ -1365,7 +1365,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             mom_params.check_data(obj)
 
         # NOTE: Why this ignore?
-        super().__init__(obj=obj, mom_params=mom_params, fastpath=fastpath)  # type: ignore[arg-type]
+        super().__init__(obj=obj, mom_params=mom_params, fastpath=fastpath)
 
     # ** Properties ------------------------------------------------------------
     @property
@@ -1382,7 +1382,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         contain ``mom_dims``.  That is, non central moment arrays will
         be dropped.
         """
-        if is_dataarray(self._obj):
+        if is_dataarray(self._obj):  # type: ignore[unreachable]
             self._raise_not_implemented("dict view")
         return {  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
             k: type(self)(  # type: ignore[misc]
@@ -1433,7 +1433,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             for obj in self._obj:
                 yield self.new_like(obj)
         else:
-            yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]  # pyrefly: ignore [bad-argument-type]
+            yield from cast("CentralMomentsDataset", self).keys()
 
     @overload
     def __iter__(
@@ -1445,7 +1445,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     def __iter__(self) -> Any: ...
 
     def __iter__(self) -> Iterator[Hashable] | Iterator[CentralMomentsDataArray]:
-        return self.iter()
+        yield from self.iter()
 
     @overload
     def __getitem__(
@@ -1463,7 +1463,9 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         key: Any,
     ) -> CentralMomentsDataset: ...
 
-    def __getitem__(self, key: Any) -> CentralMomentsDataArray | CentralMomentsDataset:
+    def __getitem__(
+        self, key: Hashable
+    ) -> CentralMomentsDataArray | CentralMomentsDataset:
         """
         Access variables or coordinates of this wrapped dataset as a DataArray or a
         subset of variables or a indexed dataset.
@@ -1472,16 +1474,19 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         The selection is wrapped with ``CentralMomentsData``.
         """
-        obj: xr.DataArray | xr.Dataset = self._obj[key]  # pyright: ignore[reportUnknownVariableType]
-        if not contains_dims(obj, *self.mom_dims):  # pyright: ignore[reportUnknownArgumentType]
+        obj: xr.DataArray | xr.Dataset = self._obj[key]
+        if not contains_dims(obj, *self.mom_dims):
             msg = f"Cannot select object without {self.mom_dims}"
             raise KeyError(msg)
-        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))  # pyright: ignore[reportUnknownArgumentType]
+        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj))
 
-        return type(self)(  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return, bad-specialization]
-            obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportUnknownArgumentType]
-            mom_params=self._mom_params,
-            fastpath=True,
+        return cast(
+            "CentralMomentsDataArray | CentralMomentsDataset",
+            type(self)(
+                obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                mom_params=self._mom_params,
+                fastpath=True,
+            ),
         )
 
     # ** Create/copy/new ------------------------------------------------------
@@ -1514,15 +1519,16 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             # TODO(wpk): different type for dtype in xarray (can be a mapping...)
             # Also can probably speed this up by validating dtype here...
             return type(self)(
-                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue, reportUnknownArgumentType, reportArgumentType]  # pyrefly: ignore [no-matching-overload]
+                obj=cast("DataT", xr.zeros_like(self._obj, dtype=dtype)),  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue, reportArgumentType]  # pyrefly: ignore [no-matching-overload]
                 mom_params=self._mom_params,
                 fastpath=fastpath,
             )
 
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
-        obj_: DataT = (  # pyright: ignore[reportAssignmentType]
-            obj if type(self._obj) is type(obj) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type, bad-assignment]
+        obj_ = cast(
+            "DataT",
+            obj if isinstance(obj, type(self._obj)) else self._obj.copy(data=obj),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
 
         # minimal check on shape and that mom_dims are present....
@@ -1536,13 +1542,14 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         if not fastpath:
             copy = False if copy is None else copy
+
             if dtype:
                 obj_ = obj_.astype(astype_dtype_dict(self._obj, dtype), copy=copy)  # pyright: ignore[reportUnknownMemberType]
             elif copy:
                 obj_ = obj_.copy(deep=deep)
 
         return type(self)(
-            obj=obj_,
+            obj=obj_,  # type: ignore[arg-type]
             mom_params=self._mom_params,
             fastpath=fastpath,
         )
@@ -1557,7 +1564,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             Parameters to :meth:`xarray.DataArray.copy` or `xarray.Dataset.copy`
         """
         return type(self)(
-            obj=self._obj.copy(deep=deep),
+            obj=self._obj.copy(deep=deep),  # type: ignore[arg-type]
             mom_params=self._mom_params,
             fastpath=True,
         )
@@ -1843,7 +1850,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
             func,
             self._obj,
             *xargs,
-            input_core_dims=[self.mom_dims, *input_core_dims],  # type: ignore[has-type]
+            input_core_dims=[self.mom_dims, *input_core_dims],
             output_core_dims=[self.mom_dims],
             keep_attrs=keep_attrs,
             **factory_apply_ufunc_kwargs(
@@ -2158,14 +2165,14 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         xarray.DataArray.to_dataset
         """
         if is_dataset(self._obj):
-            return self  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+            return cast("CentralMomentsDataset", self)
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
         ).transpose(..., *self.mom_dims)
 
-        return type(self)(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
-            obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        return type(cast("CentralMomentsDataset", self))(
+            obj=obj,
             mom_params=self._mom_params,
             fastpath=True,
         )
@@ -2201,7 +2208,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         xarray.Dataset.to_dataarray
         """
         if is_dataarray(self._obj):
-            return self  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+            return cast("CentralMomentsDataArray", self)
 
         obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)
         return type(self)(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
@@ -2254,15 +2261,15 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
     def compute(self, **kwargs: Any) -> Self:
         """Interface to :meth:`xarray.DataArray.compute` and :meth:`xarray.Dataset.compute`"""
-        return self._new_like(self._obj.compute(**kwargs))  # pyright: ignore[reportUnknownMemberType]
+        return self._new_like(self._obj.compute(**kwargs))  # type: ignore[arg-type] # pyright: ignore[reportUnknownMemberType]
 
     def chunk(self, *args: Any, **kwargs: Any) -> Self:
         """Interface to :meth:`xarray.DataArray.chunk` and :meth:`xarray.Dataset.chunk`"""
-        return self._new_like(self._obj.chunk(*args, **kwargs))  # pyright: ignore[reportUnknownMemberType]
+        return self._new_like(self._obj.chunk(*args, **kwargs))  # type: ignore[arg-type] # pyright: ignore[reportUnknownMemberType]
 
     def as_numpy(self) -> Self:
         """Coerces wrapped data and coordinates into numpy arrays."""
-        return self._new_like(self._obj.as_numpy())
+        return self._new_like(self._obj.as_numpy())  # type: ignore[arg-type]
 
     def assign(
         self, variables: Mapping[Any, Any] | None = None, **variables_kwargs: Any
@@ -2275,13 +2282,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
     def assign_coords(self, coords: CoordsType = None, **coords_kwargs: Any) -> Self:
         """Assign coordinates to data and return new object."""
         return self._new_like(
-            self._obj.assign_coords(coords, **coords_kwargs),  # pyright: ignore[reportUnknownMemberType]
+            self._obj.assign_coords(coords, **coords_kwargs),  # type: ignore[arg-type] # pyright: ignore[reportUnknownMemberType]
         )
 
     def assign_attrs(self, *args: Any, **kwargs: Any) -> Self:
         """Assign attributes to data and return new object."""
         return self._new_like(
-            self._obj.assign_attrs(*args, **kwargs),
+            self._obj.assign_attrs(*args, **kwargs),  # type: ignore[arg-type]
         )
 
     def rename(
@@ -2667,7 +2674,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
 
         dims = tuple(d for d in dims if d not in self.mom_dims) + self.mom_dims
         kws: dict[str, bool] = (
-            {"transpose_coords": transpose_coords} if is_dataarray(self._obj) else {}  # type: ignore[redundant-expr]
+            {"transpose_coords": transpose_coords} if is_dataarray(self._obj) else {}
         )
 
         return self.pipe(

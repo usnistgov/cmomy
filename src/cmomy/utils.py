@@ -5,7 +5,7 @@ Interface to utility functions (:mod:`cmomy.utils`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import xarray as xr
@@ -373,7 +373,7 @@ def moment_indexer(
 
 
 @overload
-def select_moment(  # pyrefly: ignore [inconsistent-overload]
+def select_moment(
     data: DataT,
     name: SelectMoment,
     **kwargs: Unpack[SelectMomentKwargs],
@@ -518,13 +518,11 @@ def select_moment(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes=output_sizes,
-                output_dtypes=data.dtype
-                if is_dataarray(data)  # type: ignore[redundant-expr]
-                else np.float64,
+                output_dtypes=data.dtype if is_dataarray(data) else np.float64,
             ),
         )
         if coords_combined is not None and dim_combined in xout.dims:
-            xout = xout.assign_coords(  # pyright: ignore[reportUnknownMemberType]
+            xout = xout.assign_coords(  # type: ignore[assignment] # pyright: ignore[reportUnknownMemberType]
                 {dim_combined: (dim_combined, list(coords_combined))}
             )
         return xout
@@ -564,7 +562,7 @@ def _select_moment(
 # NOTE: Can't do kwargs trick used elsewhere, because want to be
 # able to use **moments_kwargs....
 @overload
-def assign_moment(  # pyrefly: ignore [inconsistent-overload]
+def assign_moment(
     data: DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
@@ -691,10 +689,13 @@ def assign_moment(
 
     """
     # get names and values
-    moment_kwargs = either_dict_or_kwargs(  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]  # pyrefly: ignore [bad-assignment]
-        moment if moment is None else dict(moment),
-        moment_kwargs,
-        "assign_moment",
+    moment_kwargs = cast(
+        "dict[str, Any]",
+        either_dict_or_kwargs(
+            None if moment is None else dict(moment),
+            moment_kwargs,  # pyrefly: ignore [bad-argument-type]
+            "assign_moment",
+        ),
     )
 
     if is_xarray_typevar[DataT].check(data):
@@ -743,9 +744,7 @@ def assign_moment(
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=data.dtype
-                if is_dataarray(data)  # type: ignore[redundant-expr]
-                else np.float64,
+                output_dtypes=data.dtype if is_dataarray(data) else np.float64,
             ),
         )
         return xout
@@ -950,7 +949,7 @@ def vals_to_data(
         # Explicitly select type depending o out
         # This is needed to make apply_ufunc work with dask data
         # can't pass None value in that case...
-        out = None if is_dataset(x) else out  # type: ignore[redundant-expr]
+        out = None if is_dataset(x) else out
         input_core_dims: list[Sequence[Hashable]] = [[]] * (mom_params.ndim + 1)
         if out is None:
 
@@ -965,27 +964,30 @@ def vals_to_data(
                 out_, *args_ = args
                 return _vals_to_data(*args_, out=out_, **kwargs)
 
-        return xr.apply_ufunc(  # type: ignore[no-any-return]  # pyright: ignore[reportUnknownMemberType]
-            _func,
-            *args,
-            input_core_dims=input_core_dims,
-            output_core_dims=[mom_params.dims],
-            kwargs={
-                "mom": mom,
-                "mom_params": mom_params.to_array(),
-                "dtype": dtype,
-                "fastpath": False,
-            },
-            keep_attrs=keep_attrs,
-            **factory_apply_ufunc_kwargs(
-                apply_ufunc_kwargs,
-                dask="parallelized",
-                output_sizes=dict(
-                    zip(mom_params.dims, mom_to_mom_shape(mom), strict=True)
-                )
-                if out is None  # type: ignore[redundant-expr,unused-ignore]
-                else None,
-                output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
+        return cast(
+            "DataT",
+            xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
+                _func,
+                *args,
+                input_core_dims=input_core_dims,
+                output_core_dims=[mom_params.dims],
+                kwargs={
+                    "mom": mom,
+                    "mom_params": mom_params.to_array(),
+                    "dtype": dtype,
+                    "fastpath": False,
+                },
+                keep_attrs=keep_attrs,
+                **factory_apply_ufunc_kwargs(
+                    apply_ufunc_kwargs,
+                    dask="parallelized",
+                    output_sizes=dict(
+                        zip(mom_params.dims, mom_to_mom_shape(mom), strict=True)
+                    )
+                    if out is None  # type: ignore[redundant-expr,unused-ignore]
+                    else None,
+                    output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
+                ),
             ),
         )
 

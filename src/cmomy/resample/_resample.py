@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, overload
+from typing import TYPE_CHECKING, cast, overload
 
 import numpy as np
 import xarray as xr
@@ -274,7 +274,7 @@ def resample_data(  # ruff:ignore[too-many-arguments]
 
         if not axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index,unused-ignore]
-            xout = xout.transpose(*dims_order)
+            return cast("DataT", xout.transpose(*dims_order))  # pyrefly: ignore [redundant-cast]
         return xout
 
     # Numpy
@@ -522,7 +522,7 @@ def resample_vals(  # ruff:ignore[too-many-arguments]
             _resample_vals,
             *xargs,
             sampler.freq,
-            input_core_dims=[*input_core_dims, [rep_dim, dim]],  # type: ignore[has-type]
+            input_core_dims=[*input_core_dims, [rep_dim, dim]],
             output_core_dims=[prep.mom_params.core_dims(rep_dim)],
             kwargs={
                 "mom": mom,
@@ -558,11 +558,14 @@ def resample_vals(  # ruff:ignore[too-many-arguments]
                 mom_params_axes=mom_params_axes,
             )
         if is_dataset(x):
-            return xout.transpose(
-                ...,
-                rep_dim,
-                *prep.mom_params.dims,
-                missing_dims="ignore",
+            return cast(
+                "DataT",
+                xout.transpose(  # pyrefly: ignore [redundant-cast]
+                    ...,
+                    rep_dim,
+                    *prep.mom_params.dims,
+                    missing_dims="ignore",
+                ),
             )
         return xout
 
@@ -853,8 +856,8 @@ def jackknife_data(  # ruff:ignore[too-many-arguments]
         data_reduced = asarray_maybe_recast(data_reduced, dtype=dtype, recast=False)
 
     if is_xarray_typevar[DataT].check(data):
-        assert isinstance(mom_params, MomParamsXArray)  # ruff:ignore[assert]
-        prep = PrepareDataXArray(mom_params=mom_params, recast=False)
+        assert isinstance(mom_params, MomParamsXArray)  # type: ignore[unreachable] # ruff:ignore[assert]
+        prep = PrepareDataXArray(mom_params=mom_params, recast=False)  # type: ignore[unreachable]
         axis, dim = mom_params.select_axis_dim(data, axis=axis, dim=dim)
         core_dims = mom_params.core_dims(dim)
 
@@ -1177,7 +1180,7 @@ def jackknife_vals(  # ruff:ignore[too-many-arguments]
             _jackknife_vals,
             *xargs,
             data_reduced,
-            input_core_dims=[*input_core_dims, prep.mom_params.dims],  # type: ignore[has-type]
+            input_core_dims=[*input_core_dims, prep.mom_params.dims],
             output_core_dims=[prep.mom_params.core_dims(dim)],
             kwargs={
                 "mom": mom,
@@ -1210,8 +1213,11 @@ def jackknife_vals(  # ruff:ignore[too-many-arguments]
                 mom_params_axes=mom_params_axes,
             )
         elif is_dataset(x):
-            xout = xout.transpose(
-                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
+            xout = cast(
+                "DataT",
+                xout.transpose(  # pyrefly: ignore [redundant-cast]
+                    ..., dim, *prep.mom_params.dims, missing_dims="ignore"
+                ),
             )
 
         if rep_dim is not None:

@@ -771,7 +771,7 @@ def moments_to_comoments(
 
     mom = _validate_mom_moments_to_comoments(mom, data.shape[-1] - 1)
     out = np.empty(
-        (*data.shape[:-1], *mom_to_mom_shape(mom)),  # type: ignore[union-attr]
+        (*data.shape[:-1], *mom_to_mom_shape(mom)),
         dtype=dtype,
         order=order,
     )
