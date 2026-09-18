@@ -313,7 +313,7 @@ class MomParamsArrayOptional(MomParamsBase):
 
     def maybe_reorder_dataarray(self, x: DataT) -> DataT:
         """Reorder DataArray mom_axes_last to mom_axes."""
-        if is_dataarray(x) and self._validated_axes != self.axes_last:
+        if is_dataarray(x) and self._validated_axes != self.axes_last:  # type: ignore[redundant-expr]
             from .array_utils import reorder
 
             return x.transpose(*reorder(x.dims, self.axes_last, self._validated_axes))

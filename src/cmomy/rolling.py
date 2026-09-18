@@ -5,7 +5,7 @@ Rolling and rolling exponential averages (:mod:`~cmomy.rolling`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
@@ -96,7 +96,7 @@ if TYPE_CHECKING:
 
 # * Moving average
 @overload
-def construct_rolling_window_array(
+def construct_rolling_window_array(  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     window: int | Sequence[int],
     *,
@@ -279,7 +279,7 @@ def construct_rolling_window_array(
 
         # for safety, move window_dim to front...
         # this avoids it being placed after any moment dimensions...
-        return cast("DataT", xout.transpose(*window_dim, ...))
+        return xout.transpose(*window_dim, ...)  # pyrefly: ignore [bad-return]
 
     return construct_rolling_window_array(
         x=xr.DataArray(x),
@@ -476,13 +476,9 @@ def rolling_data(  # ruff:ignore[too-many-arguments]
                 template=data,
             )
         elif is_dataset(data):
-            return cast(
-                "DataT",
-                xout.transpose(  # pyrefly: ignore [redundant-cast]
-                    ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-                ),
+            return xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
             )
-
         return xout
 
     # Numpy
@@ -769,11 +765,8 @@ def rolling_vals(  # ruff:ignore[too-many-arguments]
                 mom_params_axes=mom_params_axes,
             )
         if is_dataset(x):
-            return cast(
-                "DataT",
-                xout.transpose(  # pyrefly: ignore [redundant-cast]
-                    ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-                ),
+            return xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
             )
         return xout
 
@@ -1065,11 +1058,8 @@ def rolling_exp_data(  # ruff:ignore[too-many-arguments]
                 template=data,
             )
         elif is_dataset(data):
-            return cast(
-                "DataT",
-                xout.transpose(  # pyrefly: ignore [redundant-cast]
-                    ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-                ),
+            return xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
             )
 
         return xout
@@ -1343,7 +1333,7 @@ def rolling_exp_vals(  # ruff:ignore[too-many-arguments]
 
         out, mom_params_axes = prep.optional_out_from_values(
             out,
-            *(*xargs[:2], *xargs[3:]),
+            *(*xargs[:2], *xargs[3:]),  # type: ignore[has-type]
             target=x,
             dim=dim,
             mom=mom,
@@ -1393,11 +1383,8 @@ def rolling_exp_vals(  # ruff:ignore[too-many-arguments]
                 mom_params_axes=mom_params_axes,
             )
         if is_dataset(x):
-            return cast(
-                "DataT",
-                xout.transpose(  # pyrefly: ignore [redundant-cast]
-                    ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-                ),
+            return xout.transpose(
+                ..., dim, *prep.mom_params.dims, missing_dims="ignore"
             )
 
         return xout

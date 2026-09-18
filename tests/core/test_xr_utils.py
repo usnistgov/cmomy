@@ -211,7 +211,7 @@ def test_replace_coords_form_isel_error() -> None:
     da = xr.DataArray([1, 2, 3], dims="a")
     ds = da.to_dataset(name="hello")
     with pytest.raises(TypeError, match=r"template and selected.*"):
-        _ = xr_utils.replace_coords_from_isel(
+        _ = xr_utils.replace_coords_from_isel(  # type: ignore[type-var]
             da,
             ds,
             {"a": [0]},
