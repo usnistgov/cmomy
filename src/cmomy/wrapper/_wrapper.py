@@ -1433,7 +1433,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             for obj in self._obj:
                 yield self.new_like(obj)
         else:
-            yield from self.keys()  # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue]  # pyrefly: ignore [bad-argument-type]
+            yield from cast("CentralMomentsDataset", self).keys()  # type: ignore[redundant-cast]
 
     @overload
     def __iter__(
@@ -1482,7 +1482,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
 
         return cast(
             "CentralMomentsDataArray | CentralMomentsDataset",
-            type(self)(  # pyrefly: ignore [bad-specialization]
+            type(self)(
                 obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
                 mom_params=self._mom_params,
                 fastpath=True,
@@ -1545,7 +1545,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             elif copy:
                 obj_ = obj_.copy(deep=deep)
 
-        return type(self)(  # pyrefly: ignore [bad-specialization]
+        return type(self)(
             obj=obj_,
             mom_params=self._mom_params,
             fastpath=fastpath,
@@ -2162,7 +2162,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         xarray.DataArray.to_dataset
         """
         if is_dataset(self._obj):
-            return self  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+            return cast("CentralMomentsDataset", self)  # type:ignore[redundant-cast]
 
         obj = self._obj.to_dataset(
             dim=dim, name=name, promote_attrs=promote_attrs
@@ -2205,7 +2205,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         xarray.Dataset.to_dataarray
         """
         if is_dataarray(self._obj):
-            return self  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+            return cast("CentralMomentsDataArray", self)  # type:ignore[redundant-cast]
 
         obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)
         return type(self)(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]

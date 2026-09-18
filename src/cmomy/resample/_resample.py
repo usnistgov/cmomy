@@ -92,7 +92,7 @@ if TYPE_CHECKING:
 # * Resample data
 # ** overloads
 @overload
-def resample_data(  # pyright: ignore[reportOverlappingOverload]
+def resample_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -356,7 +356,7 @@ def _resample_data(
 # * Resample vals
 # ** overloads
 @overload
-def resample_vals(  # pyright: ignore[reportOverlappingOverload]
+def resample_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -651,7 +651,7 @@ def _resample_vals(
 # * Jackknife data
 # ** overloads
 @overload
-def jackknife_data(  # pyright: ignore[reportOverlappingOverload]
+def jackknife_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     data_reduced: ArrayLike | DataT | None = ...,
     *,
@@ -985,7 +985,7 @@ def _jackknife_data(
 # ** overloads
 # xarray
 @overload
-def jackknife_vals(  # pyright: ignore[reportOverlappingOverload]
+def jackknife_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     data_reduced: ArrayLike | DataT | None = ...,

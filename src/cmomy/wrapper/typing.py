@@ -21,3 +21,5 @@ CentralMomentsDataAny: TypeAlias = CentralMomentsData[Any]
 CentralMomentsDataArray: TypeAlias = CentralMomentsData[xr.DataArray]
 #: :class:`~.CentralMomentsData` wrapping :class:`~xarray.Dataset`
 CentralMomentsDataset: TypeAlias = CentralMomentsData[xr.Dataset]
+#: :class:`~.CentralMomentsData` wrapping :class:`~xarray.DataArray` or :class:`~xarray.Dataset`
+CentralMomentsDataArrayOrSet: TypeAlias = CentralMomentsData[xr.DataArray | xr.Dataset]

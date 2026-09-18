@@ -38,11 +38,13 @@ if TYPE_CHECKING:
 
 # * TypeVars ------------------------------------------------------------------
 #: DataArray or Dataset
-DataT = TypeVar("DataT", xr.DataArray, xr.Dataset)
+DataT = TypeVar("DataT", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset")
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound="xr.DataArray | xr.Dataset")
 
 #: NDArray or DataArray or Dataset
-GenArrayT = TypeVar("GenArrayT", "NDArrayAny", xr.DataArray, xr.Dataset)
+GenArrayT = TypeVar(
+    "GenArrayT", "NDArrayAny", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset"
+)
 
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
 FloatT = TypeVar(

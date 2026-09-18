@@ -52,7 +52,7 @@ def concat(
     **kwargs: Any,
 ) -> _CentralMomentsT: ...
 @overload
-def concat(  # pyrefly: ignore [inconsistent-overload]
+def concat(
     arrays: Iterable[DataT],
     *,
     axis: AxisReduce | MissingType = ...,
@@ -192,7 +192,7 @@ def concat(
                 first, axis=axis, dim=dim, default_axis=0
             )
         # otherwise, assume adding a new dimension...
-        return cast(
+        return cast(  # type: ignore[redundant-cast]
             "DataT",
             xr.concat(
                 cast(
@@ -204,7 +204,7 @@ def concat(
             ),
         )
 
-    first = cast("_CentralMomentsT", first)  # pyrefly: ignore [redundant-cast]
+    first = cast("_CentralMomentsT", first)  # type: ignore[redundant-cast]  # pyrefly: ignore [redundant-cast]
     return type(first)(
         concat(
             (c.obj for c in cast("Iterable[_CentralMomentsT]", arrays_iter)),

@@ -66,8 +66,8 @@ if TYPE_CHECKING:
     from .typing import (
         CentralMomentsArrayAny,
         CentralMomentsDataAny,
-        CentralMomentsDataArray,
-        CentralMomentsDataset,
+        # CentralMomentsDataArray,
+        # CentralMomentsDataset,
     )
 
     _DTypeMaybeMapping: TypeAlias = DTypeLikeSave | Mapping[Any, DTypeLikeSave]
@@ -82,7 +82,7 @@ if TYPE_CHECKING:
 
 # * General wrapper -----------------------------------------------------------
 @overload
-def wrap(  # pyright: ignore[reportOverlappingOverload]
+def wrap(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     obj: DataT,
     *,
     dtype: _DTypeMaybeMapping | None = ...,
@@ -246,7 +246,7 @@ def zeros_like(
 
 @docfiller.decorate
 def zeros_like(
-    c: CentralMomentsArrayAny | CentralMomentsDataArray | CentralMomentsDataset,
+    c: CentralMomentsArrayAny | _CentralMomentsDataT,
     *,
     dtype: _DTypeMaybeMapping | None = None,
     order: ArrayOrderKACF = None,
@@ -254,7 +254,7 @@ def zeros_like(
     chunks: Any = None,
     chunked_array_type: str | None = None,
     from_array_kwargs: dict[str, Any] | None = None,
-) -> CentralMomentsArrayAny | CentralMomentsDataArray | CentralMomentsDataset:
+) -> CentralMomentsArrayAny | _CentralMomentsDataT:
     r"""
     Create new wrapped object with zeros like given wrapped object.
 
@@ -294,8 +294,8 @@ def zeros_like(
     xarray.zeros_like
     """
     if isinstance(c, CentralMomentsData):
-        return wrap(
-            xr.zeros_like(
+        return wrap(  # type: ignore[no-any-return] # pyright: ignore[reportUnknownVariableType]
+            xr.zeros_like(  # pyright: ignore[reportUnknownArgumentType]
                 c.obj,
                 dtype=dtype,
                 chunks=chunks,
@@ -320,7 +320,7 @@ def zeros_like(
 
 # * From vals -----------------------------------------------------------------
 @overload
-def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
+def wrap_reduce_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -472,7 +472,7 @@ def wrap_reduce_vals(  # ruff:ignore[too-many-arguments]
 
 # * resample vals -------------------------------------------------------------
 @overload
-def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
+def wrap_resample_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -634,7 +634,7 @@ def wrap_resample_vals(  # ruff:ignore[too-many-arguments]
 
 # * From raw -----------------------------------------------------------------
 @overload
-def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
+def wrap_raw(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     raw: DataT,
     *,
     out: NDArrayAny | None = ...,
