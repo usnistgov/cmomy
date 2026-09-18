@@ -7,7 +7,7 @@ Idea is to Wrap ndarray, xr.DataArray, and xr.Dataset objects...
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, Generic, cast
+from typing import TYPE_CHECKING, Any, Generic
 
 import numpy as np
 
@@ -640,7 +640,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             self._raise_notimplemented_for_dataset()
 
         obj = moveaxis(  # pyrefly: ignore [no-matching-overload]
-            self._obj,  # type: ignore[arg-type]
+            self._obj,
             axis=axis,
             dest=dest,
             dim=dim,
@@ -650,7 +650,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         )
 
         return self.new_like(
-            obj=obj,  # type: ignore[arg-type]
+            obj=obj,
         )
 
     @docfiller.decorate
@@ -692,7 +692,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """
         from cmomy.utils import select_moment
 
-        return select_moment(  # type: ignore[type-var] # pyrefly: ignore [no-matching-overload]
+        return select_moment(  # pyrefly: ignore [bad-return]
             self._obj,
             name=name,
             mom_params=self._mom_params,
@@ -744,7 +744,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         --------
         .utils.assign_moment
         """
-        obj = assign_moment(  # type: ignore[type-var] # pyrefly: ignore [no-matching-overload]
+        obj = assign_moment(
             data=self._obj,
             moment=moment,
             mom_ndim=None,
@@ -758,7 +758,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             **moment_kwargs,
         )
-        return self._new_like(obj=obj)
+        return self._new_like(obj=obj)  # pyrefly: ignore [bad-argument-type]
 
     # *** .convert ------------------------------------------------------------
     @docfiller.decorate
@@ -803,23 +803,20 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """
         from cmomy.convert import cumulative
 
-        return cast(
-            "GenArrayT",
-            cumulative(
-                self._obj,
-                axis=axis,
-                dim=dim,
-                mom_params=self._mom_params,
-                inverse=False,
-                axes_to_end=axes_to_end,
-                out=out,
-                dtype=dtype,
-                casting=casting,
-                order=order,
-                parallel=parallel,
-                keep_attrs=keep_attrs,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            ),
+        return cumulative(  # type: ignore[no-any-return]  # pyrefly: ignore [bad-return]
+            self._obj,
+            axis=axis,
+            dim=dim,
+            mom_params=self._mom_params,
+            inverse=False,
+            axes_to_end=axes_to_end,
+            out=out,
+            dtype=dtype,
+            casting=casting,
+            order=order,
+            parallel=parallel,
+            keep_attrs=keep_attrs,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
 
     @docfiller.decorate
@@ -861,18 +858,15 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         mom_params_out = factory_mom_params(target=self._obj, ndim=2, dims=mom_dims_out)
 
         return type(self)(
-            cast(
-                "GenArrayT",
-                convert.moments_to_comoments(
-                    self._obj,
-                    mom=mom,
-                    mom_params=self._mom_params,
-                    mom_dims_out=mom_dims_out,
-                    dtype=dtype,
-                    order=order,
-                    keep_attrs=keep_attrs,
-                    apply_ufunc_kwargs=apply_ufunc_kwargs,
-                ),
+            convert.moments_to_comoments(  # pyrefly: ignore [bad-argument-type]
+                self._obj,
+                mom=mom,
+                mom_params=self._mom_params,
+                mom_dims_out=mom_dims_out,
+                dtype=dtype,
+                order=order,
+                keep_attrs=keep_attrs,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
             ),
             mom_params=mom_params_out,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
@@ -962,25 +956,22 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         from cmomy.resample import resample_data
 
         return self._new_like(
-            obj=cast(
-                "GenArrayT",
-                resample_data(
-                    self._obj,
-                    mom_params=self._mom_params,
-                    sampler=sampler,
-                    axis=axis,
-                    dim=dim,
-                    rep_dim=rep_dim,
-                    axes_to_end=axes_to_end,
-                    dtype=dtype,
-                    out=out,
-                    casting=casting,
-                    order=order,
-                    parallel=parallel,
-                    keep_attrs=keep_attrs,
-                    apply_ufunc_kwargs=apply_ufunc_kwargs,
-                ),
-            )
+            obj=resample_data(  # pyrefly: ignore [bad-argument-type]
+                self._obj,
+                mom_params=self._mom_params,
+                sampler=sampler,
+                axis=axis,
+                dim=dim,
+                rep_dim=rep_dim,
+                axes_to_end=axes_to_end,
+                dtype=dtype,
+                out=out,
+                casting=casting,
+                order=order,
+                parallel=parallel,
+                keep_attrs=keep_attrs,
+                apply_ufunc_kwargs=apply_ufunc_kwargs,
+            ),
         )
 
     @docfiller.decorate
@@ -1036,26 +1027,23 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
 
         from cmomy.resample import jackknife_data
 
-        obj = cast(
-            "GenArrayT",
-            jackknife_data(  # pyright: ignore[reportCallIssue]  # pyrefly: ignore [no-matching-overload]
-                self._obj,
-                mom_params=self._mom_params,
-                axis=axis,
-                dim=dim,
-                data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
-                rep_dim=rep_dim,
-                axes_to_end=axes_to_end,
-                out=out,
-                dtype=dtype,
-                casting=casting,
-                order=order,
-                parallel=parallel,
-                keep_attrs=keep_attrs,
-                apply_ufunc_kwargs=apply_ufunc_kwargs,
-            ),
+        obj = jackknife_data(  # pyright: ignore[reportCallIssue, reportUnknownVariableType]  # pyrefly: ignore [no-matching-overload]
+            self._obj,  # pyright: ignore[reportArgumentType]
+            mom_params=self._mom_params,
+            axis=axis,
+            dim=dim,
+            data_reduced=data_reduced,  # pyright: ignore[reportArgumentType]
+            rep_dim=rep_dim,
+            axes_to_end=axes_to_end,
+            out=out,
+            dtype=dtype,
+            casting=casting,
+            order=order,
+            parallel=parallel,
+            keep_attrs=keep_attrs,
+            apply_ufunc_kwargs=apply_ufunc_kwargs,
         )
-        return self._new_like(obj=obj)
+        return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]
 
     # *** .reduction ----------------------------------------------------------
     def _block_by(
@@ -1137,7 +1125,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Standard deviation (ddof=0)."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return cast("GenArrayT", np.sqrt(self.var(squeeze=squeeze)))
+        return np.sqrt(self.var(squeeze=squeeze))  # type: ignore[return-value]
 
     def cov(self) -> GenArrayT:
         """Covariance (or variance if ``mom_ndim==1``)."""
@@ -1163,7 +1151,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         -------
         output : ndarray or DataArray
         """
-        return assign_moment(  # type: ignore[type-var]  # pyrefly: ignore [no-matching-overload]
+        return assign_moment(  # pyrefly: ignore [bad-return]
             self._obj,
             {"weight": 1, "ave": 0},
             mom_params=self._mom_params,
@@ -1203,7 +1191,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             out = assign_moment(
                 out, weight=weight, mom_params=self._mom_params, copy=False
             )
-        return cast("GenArrayT", out)
+        return out  # pyrefly: ignore [bad-return]
 
     def rmom(self) -> GenArrayT:
         r"""

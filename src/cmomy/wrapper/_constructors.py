@@ -9,7 +9,7 @@ from __future__ import annotations
 from collections.abc import (
     Mapping,
 )
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
@@ -191,7 +191,7 @@ def wrap(
                 obj = obj.copy(deep=True)
 
         return CentralMomentsData(
-            obj=obj,  # type: ignore[arg-type]
+            obj=obj,
             mom_params=mom_params,
             fastpath=fastpath,
         )
@@ -294,18 +294,15 @@ def zeros_like(
     xarray.zeros_like
     """
     if isinstance(c, CentralMomentsData):
-        return cast(
-            "CentralMomentsDataArray | CentralMomentsDataset",
-            wrap(
-                xr.zeros_like(
-                    c.obj,
-                    dtype=dtype,
-                    chunks=chunks,
-                    chunked_array_type=chunked_array_type,
-                    from_array_kwargs=from_array_kwargs,
-                ),
-                mom_params=c.mom_params,
+        return wrap(
+            xr.zeros_like(
+                c.obj,
+                dtype=dtype,
+                chunks=chunks,
+                chunked_array_type=chunked_array_type,
+                from_array_kwargs=from_array_kwargs,
             ),
+            mom_params=c.mom_params,
         )
 
     assert not isinstance(dtype, Mapping)  # ruff:ignore[assert]

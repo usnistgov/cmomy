@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
@@ -100,7 +100,7 @@ def _apply_coords_policy_indexed(
             drop=False,
         )
     if coords_policy == "group" and groups is not None:
-        return cast("DataT", selected.assign_coords({dim: groups}))  # pyright: ignore[reportUnknownMemberType]
+        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
     return selected
 
 
@@ -114,7 +114,7 @@ def _apply_coords_policy_grouped(
     groups: Groups | None,
 ) -> DataT:
     if coords_policy == "group" and groups is not None:
-        return cast("DataT", selected.assign_coords({dim: groups}))  # pyright: ignore[reportUnknownMemberType]
+        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
 
     from ._factorize import factor_by_to_index
 
@@ -136,7 +136,7 @@ def _optional_group_dim(
     data: DataT, dim: Hashable, group_dim: str | None = None
 ) -> DataT:
     if group_dim:
-        return cast("DataT", data.rename({dim: group_dim}))
+        return data.rename({dim: group_dim})
     return data
 
 
@@ -1011,7 +1011,7 @@ def reduce_vals_grouped(  # ruff:ignore[too-many-arguments]
             _reduce_vals_grouped,
             *xargs,
             by,
-            input_core_dims=[*input_core_dims, [dim]],
+            input_core_dims=[*input_core_dims, [dim]],  # type: ignore[has-type]
             output_core_dims=[prep.mom_params.core_dims(dim)],
             exclude_dims={dim},
             kwargs={
@@ -1057,14 +1057,11 @@ def reduce_vals_grouped(  # ruff:ignore[too-many-arguments]
                 mom_params_axes=mom_params_axes,
             )
         elif is_dataset(x):
-            xout = cast(
-                "DataT",
-                xout.transpose(  # pyrefly: ignore [redundant-cast]
-                    ...,
-                    dim,
-                    *prep.mom_params.dims,
-                    missing_dims="ignore",
-                ),
+            xout = xout.transpose(
+                ...,
+                dim,
+                *prep.mom_params.dims,
+                missing_dims="ignore",
             )
 
         return _optional_group_dim(xout, dim, group_dim)
@@ -1374,14 +1371,11 @@ def reduce_vals_indexed(  # ruff:ignore[too-many-arguments]
                 mom_params_axes=mom_params_axes,
             )
         elif is_dataset(x):
-            xout = cast(
-                "DataT",
-                xout.transpose(  # pyrefly: ignore [redundant-cast]
-                    ...,
-                    dim,
-                    *prep.mom_params.dims,
-                    missing_dims="ignore",
-                ),
+            xout = xout.transpose(
+                ...,
+                dim,
+                *prep.mom_params.dims,
+                missing_dims="ignore",
             )
 
         return _optional_group_dim(xout, dim, group_dim)

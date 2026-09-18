@@ -192,7 +192,7 @@ def _transpose_like(
     if (order := [*prepend, *order, *append]) != list(
         data_out.dims
     ):  # pragma: no cover
-        return cast("DataT", data_out.transpose(*order, missing_dims="ignore"))  # pyrefly: ignore [redundant-cast]
+        return data_out.transpose(*order, missing_dims="ignore")
     return data_out
 
 
@@ -306,12 +306,12 @@ def replace_coords_from_isel(
         msg = "no fancy indexers for this"
         raise ValueError(msg)
 
-    if is_dataset(template) and is_dataset(selected):
-        return _replace_coords_from_isel_dataset(  # type: ignore[return-value] # pyrefly: ignore [bad-return]
+    if is_dataset(template) and is_dataset(selected):  # type: ignore[redundant-expr]
+        return _replace_coords_from_isel_dataset(  # pyrefly: ignore [bad-return]
             template=template, selected=selected, indexers=indexers, drop=drop
         )
-    if is_dataarray(template) and is_dataarray(selected):
-        return _replace_coords_from_isel_dataarray(  # type: ignore[return-value] # pyrefly: ignore [bad-return]
+    if is_dataarray(template) and is_dataarray(selected):  # type: ignore[redundant-expr]
+        return _replace_coords_from_isel_dataarray(  # pyrefly: ignore [bad-return]
             template=template, selected=selected, indexers=indexers, drop=drop
         )
     msg = "template and selected must have same type."

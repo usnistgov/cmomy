@@ -19,7 +19,7 @@ from typing import (
 
 # put outside to get autodoc typehints working...
 import numpy as np
-import xarray as xr  # ruff: ignore[unused-import]
+import xarray as xr
 from numpy.typing import NDArray
 
 from .typing_compat import EllipsisType, TypeVar
@@ -38,10 +38,11 @@ if TYPE_CHECKING:
 
 # * TypeVars ------------------------------------------------------------------
 #: DataArray or Dataset
-DataT = TypeVar("DataT", bound="xr.DataArray | xr.Dataset")
+DataT = TypeVar("DataT", xr.DataArray, xr.Dataset)
+DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound="xr.DataArray | xr.Dataset")
 
 #: NDArray or DataArray or Dataset
-GenArrayT = TypeVar("GenArrayT", bound="NDArray[Any] | xr.DataArray | xr.Dataset")
+GenArrayT = TypeVar("GenArrayT", "NDArrayAny", xr.DataArray, xr.Dataset)
 
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
 FloatT = TypeVar(
@@ -54,8 +55,7 @@ _FloatT = TypeVar("_FloatT", np.float64, np.float32)
 
 #: TypeVar of types wrapped by IndexSampler
 SamplerArrayT = TypeVar(
-    "SamplerArrayT",
-    bound="NDArrayAny | xr.DataArray | xr.Dataset",
+    "SamplerArrayT", "NDArrayAny", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset"
 )
 
 

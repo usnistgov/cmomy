@@ -373,7 +373,7 @@ def moment_indexer(
 
 
 @overload
-def select_moment(
+def select_moment(  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     name: SelectMoment,
     **kwargs: Unpack[SelectMomentKwargs],
@@ -518,11 +518,11 @@ def select_moment(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes=output_sizes,
-                output_dtypes=data.dtype if is_dataarray(data) else np.float64,
+                output_dtypes=data.dtype if is_dataarray(data) else np.float64,  # type: ignore[redundant-expr]
             ),
         )
         if coords_combined is not None and dim_combined in xout.dims:
-            xout = xout.assign_coords(  # type: ignore[assignment] # pyright: ignore[reportUnknownMemberType]
+            xout = xout.assign_coords(  # pyright: ignore[reportUnknownMemberType]
                 {dim_combined: (dim_combined, list(coords_combined))}
             )
         return xout
@@ -562,7 +562,7 @@ def _select_moment(
 # NOTE: Can't do kwargs trick used elsewhere, because want to be
 # able to use **moments_kwargs....
 @overload
-def assign_moment(
+def assign_moment(  # pyrefly: ignore [inconsistent-overload]
     data: DataT,
     moment: Mapping[SelectMoment, ArrayLike | xr.DataArray | DataT] | None = None,
     *,
@@ -744,7 +744,7 @@ def assign_moment(
             **factory_apply_ufunc_kwargs(
                 apply_ufunc_kwargs,
                 dask="parallelized",
-                output_dtypes=data.dtype if is_dataarray(data) else np.float64,
+                output_dtypes=data.dtype if is_dataarray(data) else np.float64,  # type: ignore[redundant-expr]
             ),
         )
         return xout
@@ -949,7 +949,7 @@ def vals_to_data(
         # Explicitly select type depending o out
         # This is needed to make apply_ufunc work with dask data
         # can't pass None value in that case...
-        out = None if is_dataset(x) else out
+        out = None if is_dataset(x) else out  # type: ignore[redundant-expr]
         input_core_dims: list[Sequence[Hashable]] = [[]] * (mom_params.ndim + 1)
         if out is None:
 

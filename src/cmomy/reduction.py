@@ -5,7 +5,7 @@ Routines to perform central moments reduction (:mod:`~cmomy.reduction`)
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, cast, overload
+from typing import TYPE_CHECKING, overload
 
 import numpy as np
 import xarray as xr
@@ -465,7 +465,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
                 raise ValueError(msg)
 
             if (use_map is None or use_map) and (dim is None or len(dim) > 1):
-                return data.map(  # type: ignore[return-value] # pyright: ignore[reportUnknownMemberType]
+                return data.map(  # pyright: ignore[reportUnknownMemberType]
                     reduce_data,
                     keep_attrs=keep_attrs if keep_attrs is None else bool(keep_attrs),
                     mom_params=prep.mom_params,
@@ -543,7 +543,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
             order_: tuple[Hashable, ...] = (
                 prep.mom_params.core_dims(*dim) if keepdims else prep.mom_params.dims
             )
-            return cast("DataT", xout.transpose(..., *order_, missing_dims="ignore"))  # pyrefly: ignore [redundant-cast]
+            return xout.transpose(..., *order_, missing_dims="ignore")
 
         return xout
 
