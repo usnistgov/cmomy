@@ -92,7 +92,7 @@ if TYPE_CHECKING:
 # * Resample data
 # ** overloads
 @overload
-def resample_data(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def resample_data(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -137,7 +137,7 @@ def resample_data(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def resample_data(  # pyrefly: ignore [inconsistent-overload]
+def resample_data(
     data: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -356,7 +356,7 @@ def _resample_data(
 # * Resample vals
 # ** overloads
 @overload
-def resample_vals(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -406,7 +406,7 @@ def resample_vals(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def resample_vals(  # pyrefly: ignore [inconsistent-overload]
+def resample_vals(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -651,7 +651,7 @@ def _resample_vals(
 # * Jackknife data
 # ** overloads
 @overload
-def jackknife_data(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def jackknife_data(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     data_reduced: ArrayLike | DataT | None = ...,
     *,
@@ -701,7 +701,7 @@ def jackknife_data(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def jackknife_data(  # pyrefly: ignore [inconsistent-overload]
+def jackknife_data(
     data: ArrayLike | DataT,
     data_reduced: ArrayLike | None = ...,
     *,
@@ -1123,7 +1123,7 @@ def jackknife_vals(  # ruff:ignore[too-many-arguments]
     if data_reduced is None:
         from cmomy.reduction import reduce_vals
 
-        data_reduced = reduce_vals(  # pyrefly: ignore [bad-assignment]
+        data_reduced = reduce_vals(
             x,
             *y,
             mom=mom,

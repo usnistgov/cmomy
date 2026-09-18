@@ -408,7 +408,7 @@ implicitly-defined-attribute = "error"
 missing-override-decorator = "error"
 missing-source = "ignore"
 not-required-key-access = "error"
-open-unpacking = "error"
+open-unpacking = "ignore"
 unannotated-attribute = "error"
 unannotated-parameter = "error"
 unannotated-return = "error"
@@ -417,7 +417,10 @@ unused-ignore = "error"
 variance-mismatch = "error"
 
 [[tool.pyrefly.sub-config]]
-<<<<<<< before updating
+matches = "noxfile.py"
+errors.open-unpacking = "ignore"
+
+[[tool.pyrefly.sub-config]]
 matches = "examples/**"
 errors.implicit-any-parameter = "ignore"
 errors.missing-attribute = "ignore"
@@ -437,10 +440,6 @@ errors.unannotated-return = "ignore"
 matches = "src/cmomy/core/formatting.py"
 errors.implicit-any-parameter = "ignore"
 errors.unannotated-return = "ignore"
-=======
-matches = "noxfile.py"
-errors.open-unpacking = "ignore"
->>>>>>> after updating
 
 [tool.pyright]
 typeCheckingMode = "standard"

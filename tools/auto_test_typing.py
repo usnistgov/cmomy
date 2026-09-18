@@ -371,7 +371,7 @@ for funcs, params in (
 
 
 # * Move axis
-params_moveaxis = list(filter(lambda x: "dataset" not in x[0] and "arraylike" not in x[0] and x[1] is None, params_genarraylike_to_genarray_dtype))  # pylint: disable=bad-builtin  # pyrefly: ignore [implicit-any-lambda]
+params_moveaxis = list(filter(lambda x: "dataset" not in x[0] and "arraylike" not in x[0] and x[1] is None, params_genarraylike_to_genarray_dtype))  # pylint: disable=bad-builtin
 funcs_moveaxis = [
     ("cmomy.moveaxis", "data_", None, "0, 1"),
 ]
@@ -554,14 +554,14 @@ out.extend(get_list(funcs_class_method_dtype, params_class_method_dtype, method=
 out.extend(get_list(funcs_class_method_dtype_out, params_class_method_dtype_out, method=True))
 
 # *** moveaxis
-params_class_method_moveaxis = list(filter(lambda x: "dataset" not in x[0], params_class_method))  # pylint: disable=bad-builtin  # pyrefly: ignore [implicit-any-lambda]
+params_class_method_moveaxis = list(filter(lambda x: "dataset" not in x[0], params_class_method))  # pylint: disable=bad-builtin
 funcs_class_method_moveaxis = [
     ("moveaxis", "central_", None, "0, 0"),
 ]
 out.extend(get_list(funcs_class_method_moveaxis, params_class_method_moveaxis, method=True))
 
 # *** reshape
-params_class_method_reshape = list(filter(lambda x: "data" not in x[0], params_class_method))  # pylint: disable=bad-builtin  # pyrefly: ignore [implicit-any-lambda]
+params_class_method_reshape = list(filter(lambda x: "data" not in x[0], params_class_method))  # pylint: disable=bad-builtin
 funcs_class_method_reshape = [
     ("reshape", "central_", None, "(2, 5)")
 ]

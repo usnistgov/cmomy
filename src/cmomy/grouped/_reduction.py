@@ -144,7 +144,7 @@ def _optional_group_dim(
 # * Data ----------------------------------------------------------------------
 # ** Grouped
 @overload
-def reduce_data_grouped(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def reduce_data_grouped(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     by: ArrayLike,
     *,
@@ -194,7 +194,7 @@ def reduce_data_grouped(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def reduce_data_grouped(  # pyrefly: ignore [inconsistent-overload]
+def reduce_data_grouped(
     data: ArrayLike | DataT,
     by: ArrayLike,
     *,
@@ -501,7 +501,7 @@ def _validate_index(
 
 
 @overload
-def reduce_data_indexed(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def reduce_data_indexed(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -546,7 +546,7 @@ def reduce_data_indexed(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def reduce_data_indexed(  # pyrefly: ignore [inconsistent-overload]
+def reduce_data_indexed(
     data: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -847,7 +847,7 @@ def _reduce_data_indexed(
 # * Vals
 # ** Grouped
 @overload
-def reduce_vals_grouped(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def reduce_vals_grouped(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     by: ArrayLike,
@@ -902,7 +902,7 @@ def reduce_vals_grouped(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def reduce_vals_grouped(  # pyrefly: ignore [inconsistent-overload]
+def reduce_vals_grouped(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     by: ArrayLike,
@@ -1153,7 +1153,7 @@ def _reduce_vals_grouped(
 
 # ** Indexed
 @overload
-def reduce_vals_indexed(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def reduce_vals_indexed(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -1203,7 +1203,7 @@ def reduce_vals_indexed(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def reduce_vals_indexed(  # pyrefly: ignore [inconsistent-overload]
+def reduce_vals_indexed(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,

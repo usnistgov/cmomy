@@ -84,7 +84,7 @@ if TYPE_CHECKING:
 
 # * Convert between raw and central moments
 @overload
-def moments_type(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def moments_type(  # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -129,7 +129,7 @@ def moments_type(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def moments_type(  # pyrefly: ignore [inconsistent-overload]
+def moments_type(
     values_in: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -310,7 +310,7 @@ def _moments_type(
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def cumulative(  # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -355,7 +355,7 @@ def cumulative(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def cumulative(  # pyrefly: ignore [inconsistent-overload]
+def cumulative(
     values_in: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -589,7 +589,7 @@ def _validate_mom_moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     mom: tuple[int, int],
@@ -625,7 +625,7 @@ def moments_to_comoments(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def moments_to_comoments(  # pyrefly: ignore [inconsistent-overload]
+def moments_to_comoments(
     data: ArrayLike | DataT,
     *,
     mom: tuple[int, int],
@@ -781,7 +781,7 @@ def moments_to_comoments(
 
 
 @overload
-def comoments_to_moments(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def comoments_to_moments(  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     dtype: DTypeLike = ...,
@@ -813,7 +813,7 @@ def comoments_to_moments(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def comoments_to_moments(  # pyrefly: ignore [inconsistent-overload]
+def comoments_to_moments(
     data: ArrayLike | DataT,
     *,
     dtype: DTypeLike = ...,

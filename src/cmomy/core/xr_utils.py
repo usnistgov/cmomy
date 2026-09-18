@@ -160,8 +160,8 @@ def transpose_like(
         template=template,
         replace=replace,
         remove=remove_,
-        prepend=prepend,  # pyrefly: ignore [bad-argument-type]
-        append=append,  # pyrefly: ignore [bad-argument-type]
+        prepend=prepend,
+        append=append,
     )
 
     if mom_params_axes is not None:

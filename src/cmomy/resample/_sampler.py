@@ -117,18 +117,18 @@ class IndexSampler(Generic[SamplerArrayT]):
     def freq(self) -> SamplerArrayT:
         if self._freq is None:
             # TODO(wpk): need these ignores for mypy with python3.12.  Figure out if can remove...
-            self._freq = indices_to_freq(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [no-matching-overload]
+            self._freq = indices_to_freq(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [bad-assignment]
                 self.indices, ndat=self.ndat, parallel=self._parallel
             )
-        return self._freq  # type: ignore[return-value, unused-ignore]
+        return self._freq  # type: ignore[return-value, unused-ignore]  # pyrefly: ignore [bad-return]
 
     @property
     def indices(self) -> SamplerArrayT:
         if self._indices is None:
-            self._indices = freq_to_indices(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [no-matching-overload]
+            self._indices = freq_to_indices(  # type: ignore[assignment, unused-ignore]  # pyrefly: ignore [bad-assignment]
                 self.freq, shuffle=self._shuffle, rng=self._rng, parallel=self._parallel
             )
-        return self._indices  # type: ignore[return-value, unused-ignore]
+        return self._indices  # type: ignore[return-value, unused-ignore]  # pyrefly: ignore [bad-return]
 
     @property
     def _first_indices(self) -> NDArrayAny | xr.DataArray:
@@ -517,7 +517,7 @@ def select_ndat(
 
 # * Convert -------------------------------------------------------------------
 @overload
-def freq_to_indices(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def freq_to_indices(  # pyright: ignore[reportOverlappingOverload]
     freq: DataT,
     *,
     shuffle: bool = ...,
@@ -596,7 +596,7 @@ def freq_to_indices(
 
 
 @overload
-def indices_to_freq(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def indices_to_freq(  # pyright: ignore[reportOverlappingOverload]
     indices: DataT,
     *,
     ndat: int | None = ...,

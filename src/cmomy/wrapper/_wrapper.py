@@ -1384,9 +1384,9 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray]):
         """
         if is_dataarray(self._obj):
             self._raise_not_implemented("dict view")
-        return {  # pyright: ignore[reportReturnType]
+        return {  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
             k: type(self)(  # type: ignore[misc]
-                obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
                 mom_params=self._mom_params,
                 fastpath=True,
             )
