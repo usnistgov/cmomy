@@ -216,3 +216,35 @@ def test_replace_coords_form_isel_error() -> None:
             ds,
             {"a": [0]},
         )
+
+
+@pytest.mark.parametrize(
+    ("dims", "dims_template", "kwargs", "dims_out"),
+    [
+        (("a", "b", "c"), ("a", "b", "c"), {}, ("a", "b", "c")),
+        (("b", "a", "c"), ("a", "b", "c"), {}, ("a", "b", "c")),
+        (("a", "c"), ("a", "b", "c"), {}, ("a", "c")),
+        (("c", "a"), ("a", "b", "c"), {}, ("a", "c")),
+        (("new_c", "a"), ("a", "b", "c"), {"replace": {"c": "new_c"}}, ("a", "new_c")),
+        (
+            ("c", "b", "a"),
+            ("a", "b", "c"),
+            {"remove": {"c"}, "prepend": [...]},
+            ("c", "a", "b"),
+        ),
+    ],
+)
+def test__transpose_like_datarray(dims, dims_template, kwargs, dims_out) -> None:
+    a = xr.DataArray(np.zeros([1] * len(dims)), dims=dims)
+    b = xr.DataArray(np.zeros([1] * len(dims_template)), dims=dims_template)
+
+    kwargs = {"replace": {}, "remove": set(), "prepend": [], "append": [], **kwargs}
+
+    assert (
+        xr_utils._transpose_like(
+            a,
+            template=b,
+            **kwargs,
+        ).dims
+        == dims_out
+    )
