@@ -58,7 +58,8 @@ _FloatT = TypeVar("_FloatT", np.float64, np.float32)
 # SamplerArrayT = TypeVar(  # ruff: ignore[commented-out-code]
 #     "SamplerArrayT", "NDArrayAny", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset"
 # )  # ruff: ignore[commented-out-code]
-# : TypeVar of types wrapped by IndexSampler
+
+#: TypeVar of types wrapped by IndexSampler
 SamplerArrayT = TypeVar("SamplerArrayT", bound="NDArrayAny | xr.DataArray | xr.Dataset")
 
 
