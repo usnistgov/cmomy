@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, replace
 from functools import cached_property
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 
@@ -605,13 +605,17 @@ class PrepareValsXArray(_PrepareBaseXArray):
             # out is None and order is None -> defer to PrepareValsArray
             return out, mom_params
 
-        if any(is_dataset(_) for _ in args):
-            msg = "Passed secondary dataset"
-            raise TypeError(msg)
+        def _validate_args(
+            *args: NDArrayAny | xr.DataArray | xr.Dataset,
+        ) -> tuple[NDArrayAny | xr.DataArray, ...]:
+            if any(is_dataset(_) for _ in args):
+                msg = "Passed secondary dataset"
+                raise TypeError(msg)
+            return cast("tuple[NDArrayAny | xr.DataArray, ...]", args)
 
         axis_neg = positive_to_negative_index(target.get_axis_num(dim), target.ndim)
         val_shape = reorder(
-            prep_array.get_val_shape(*args),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+            prep_array.get_val_shape(*_validate_args(*args)),
             -1,
             axis_neg,
         )

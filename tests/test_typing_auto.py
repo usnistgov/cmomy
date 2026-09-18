@@ -8040,13 +8040,15 @@ def _check_typing_sampler(
     idx_array: NDArrayAny,
     idx_dataarray: xr.DataArray,
     idx_dataset: xr.Dataset,
+    idx_dataarray_or_set: xr.DataArray | xr.Dataset,
     freq_array: NDArrayAny,
     freq_dataarray: xr.DataArray,
     freq_dataset: xr.Dataset,
+    freq_dataarray_or_set: xr.DataArray | xr.Dataset,
     data_array: NDArrayAny,
     data_dataarray: xr.DataArray,
     data_dataset: xr.Dataset,
-    # data_dataarray_or_set: xr.DataArray | xr.Dataset,
+    data_dataarray_or_set: xr.DataArray | xr.Dataset,
 ) -> None:
     from cmomy import IndexSampler
 
@@ -8055,10 +8057,12 @@ def _check_typing_sampler(
     assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayAny])
     assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
     assert_type(IndexSampler(indices=idx_dataset), IndexSampler[xr.Dataset])
+    # assert_type(IndexSampler(indices=idx_dataarray_or_set), IndexSampler[xr.DataArray | xr.Dataset])
 
     assert_type(IndexSampler(freq=freq_array), IndexSampler[NDArrayAny])
     assert_type(IndexSampler(freq=freq_dataarray), IndexSampler[xr.DataArray])
     assert_type(IndexSampler(freq=freq_dataset), IndexSampler[xr.Dataset])
+    # assert_type(IndexSampler(freq=freq_dataarray_or_set), IndexSampler[xr.DataArray | xr.Dataset])
 
     a = IndexSampler(indices=idx_array)
     assert_type(a.freq, NDArrayAny)
@@ -8079,9 +8083,16 @@ def _check_typing_sampler(
     assert_type(
         IndexSampler.from_data(data_dataset, nrep=100), IndexSampler[xr.DataArray]
     )
-    # assert_type(
-    #     IndexSampler.from_data(data_dataarray_or_set, nrep=100), IndexSampler[xr.DataArray | xr.Dataset]
-    # )
+    assert_type(
+        IndexSampler.from_data(data_dataarray_or_set, nrep=100), IndexSampler[xr.DataArray]
+    )
+
+    assert_type(
+        IndexSampler.from_data(data_dataset, nrep=100, paired=False), IndexSampler[xr.DataArray | xr.Dataset]
+    )
+    assert_type(
+        IndexSampler.from_data(data_dataarray_or_set, nrep=100, paired=False), IndexSampler[xr.DataArray | xr.Dataset]
+    )
 
     d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)
     assert_type(d, IndexSampler["xr.DataArray | xr.Dataset"])

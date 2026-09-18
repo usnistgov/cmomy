@@ -205,9 +205,9 @@ class IndexSampler(Generic[SamplerArrayT]):
     ) -> IndexSampler[xr.DataArray]: ...
     @overload
     @classmethod
-    def from_data(  # pyright: ignore[reportOverlappingOverload]
+    def from_data(
         cls: type[IndexSampler[Any]],
-        data: xr.Dataset,
+        data: xr.DataArray | xr.Dataset,
         *,
         paired: Literal[True] = ...,
         **kwargs: Unpack[IndexSamplerFromDataKwargs],
@@ -216,7 +216,7 @@ class IndexSampler(Generic[SamplerArrayT]):
     @classmethod
     def from_data(
         cls: type[IndexSampler[Any]],
-        data: xr.Dataset,
+        data: xr.DataArray | xr.Dataset,
         *,
         paired: bool = ...,
         **kwargs: Unpack[IndexSamplerFromDataKwargs],
@@ -515,7 +515,7 @@ def select_ndat(
 
 # * Convert -------------------------------------------------------------------
 @overload
-def freq_to_indices(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def freq_to_indices(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     freq: SamplerArrayT,
     *,
     shuffle: bool = ...,
@@ -594,7 +594,7 @@ def freq_to_indices(
 
 
 @overload
-def indices_to_freq(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def indices_to_freq(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
     indices: SamplerArrayT,
     *,
     ndat: int | None = ...,
