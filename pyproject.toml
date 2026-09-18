@@ -3,7 +3,7 @@
 [build-system]
 build-backend = "uv_build"
 requires = [
-    "uv-build>=0.12.11,<0.13.0",
+    "uv-build>=0.12.13,<0.13.0",
 ]
 
 [project]
@@ -86,7 +86,7 @@ docs = [
     "sphinxcontrib-spelling",
 ]
 # other groups
-basedpyright = [ "basedpyright>=1.40.0" ]
+basedpyright = [ "basedpyright>=1.40.1" ]
 docs-live = [
     "sphinx-autobuild",
     { include-group = "docs" },
@@ -417,6 +417,7 @@ unused-ignore = "error"
 variance-mismatch = "error"
 
 [[tool.pyrefly.sub-config]]
+<<<<<<< before updating
 matches = "examples/**"
 errors.implicit-any-parameter = "ignore"
 errors.missing-attribute = "ignore"
@@ -436,6 +437,10 @@ errors.unannotated-return = "ignore"
 matches = "src/cmomy/core/formatting.py"
 errors.implicit-any-parameter = "ignore"
 errors.unannotated-return = "ignore"
+=======
+matches = "noxfile.py"
+errors.open-unpacking = "ignore"
+>>>>>>> after updating
 
 [tool.pyright]
 typeCheckingMode = "standard"
@@ -628,12 +633,12 @@ pip-deps = [
     "grayskull>=3.2.0",
     "nbqa>=1.9.1",
     "prek>=0.5.3",
-    "pyrefly>=1.2.0",
-    "pyright>=1.1.411",
+    "pyrefly>=1.3.0",
+    "pyright>=1.1.414",
     "rooster>=0.1.1",
     "rust-just>=1.58.0",
     "twine>=7.0.0",
-    "ty>=0.0.79",
+    "ty>=0.0.80",
 ]
 groups = [
     "basedpyright",
