@@ -1526,26 +1526,26 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
 
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
-        obj_ = obj if isinstance(obj, type(self._obj)) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+        obj_ = obj if isinstance(obj, type(self._obj)) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
 
         # minimal check on shape and that mom_dims are present....
-        if not contains_dims(obj_, *self.mom_dims):
+        if not contains_dims(obj_, *self.mom_dims):  # pyrefly: ignore [bad-argument-type]
             msg = f"Cannot create new from object without {self.mom_dims}"
             raise ValueError(msg)
-        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj_))
+        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj_))  # pyrefly: ignore [bad-argument-type]
 
         if verify:
-            raise_if_wrong_value(obj_.sizes, self._obj.sizes, "Wrong `obj.sizes`.")
+            raise_if_wrong_value(obj_.sizes, self._obj.sizes, "Wrong `obj.sizes`.")  # pyrefly: ignore [missing-attribute]
 
         if not fastpath:
             copy = False if copy is None else copy
 
             if dtype:
-                obj_ = obj_.astype(astype_dtype_dict(self._obj, dtype), copy=copy)  # pyright: ignore[reportUnknownMemberType]
+                obj_ = obj_.astype(astype_dtype_dict(self._obj, dtype), copy=copy)  # pyright: ignore[reportUnknownMemberType]  # pyrefly: ignore [missing-attribute]
             elif copy:
-                obj_ = obj_.copy(deep=deep)
+                obj_ = obj_.copy(deep=deep)  # pyrefly: ignore [missing-attribute]
 
-        return type(self)(
+        return type(self)(  # pyrefly: ignore [bad-specialization]
             obj=obj_,
             mom_params=self._mom_params,
             fastpath=fastpath,

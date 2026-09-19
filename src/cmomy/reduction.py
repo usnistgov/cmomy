@@ -83,7 +83,7 @@ if TYPE_CHECKING:
 # * Reduce vals ---------------------------------------------------------------
 # ** overloads
 @overload
-def reduce_vals(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def reduce_vals(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,

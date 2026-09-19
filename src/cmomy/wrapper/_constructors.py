@@ -82,7 +82,7 @@ if TYPE_CHECKING:
 
 # * General wrapper -----------------------------------------------------------
 @overload
-def wrap(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     obj: DataT,
     *,
     dtype: _DTypeMaybeMapping | None = ...,
@@ -320,7 +320,7 @@ def zeros_like(
 
 # * From vals -----------------------------------------------------------------
 @overload
-def wrap_reduce_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap_reduce_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -472,7 +472,7 @@ def wrap_reduce_vals(  # ruff:ignore[too-many-arguments]
 
 # * resample vals -------------------------------------------------------------
 @overload
-def wrap_resample_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap_resample_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -634,7 +634,7 @@ def wrap_resample_vals(  # ruff:ignore[too-many-arguments]
 
 # * From raw -----------------------------------------------------------------
 @overload
-def wrap_raw(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap_raw(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     raw: DataT,
     *,
     out: NDArrayAny | None = ...,

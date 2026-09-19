@@ -693,7 +693,7 @@ def assign_moment(
         "dict[str, Any]",
         either_dict_or_kwargs(
             None if moment is None else dict(moment),
-            moment_kwargs,  # pyrefly: ignore [bad-argument-type]
+            moment_kwargs,
             "assign_moment",
         ),
     )

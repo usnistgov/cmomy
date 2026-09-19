@@ -138,7 +138,7 @@ def myjit(
 
     return cast(
         "Callable[[FuncT], FuncT]",
-        njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),  # type: ignore[call-overload]  # pyright: ignore[reportCallIssue, reportArgumentType]
+        njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),  # type: ignore[call-overload]  # pyright: ignore[reportCallIssue, reportArgumentType]  # pyrefly: ignore [no-matching-overload]
     )
 
 

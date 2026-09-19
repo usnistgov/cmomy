@@ -84,7 +84,7 @@ if TYPE_CHECKING:
 
 # * Convert between raw and central moments
 @overload
-def moments_type(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def moments_type(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -310,7 +310,7 @@ def _moments_type(
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def cumulative(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -589,7 +589,7 @@ def _validate_mom_moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def moments_to_comoments(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     mom: tuple[int, int],
@@ -781,7 +781,7 @@ def moments_to_comoments(
 
 
 @overload
-def comoments_to_moments(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def comoments_to_moments(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     dtype: DTypeLike = ...,
