@@ -93,7 +93,7 @@ def _apply_coords_policy_indexed(
         # in case we passed in index, group_start, group_end as non-arrays
         dim_select = index[group_end - 1 if coords_policy == "last" else group_start]
 
-        return replace_coords_from_isel(  # type: ignore[assignment, unused-ignore]  # error with python3.12
+        return replace_coords_from_isel(
             template=template,
             selected=selected,
             indexers={dim: dim_select},
@@ -101,7 +101,6 @@ def _apply_coords_policy_indexed(
         )
     if coords_policy == "group" and groups is not None:
         return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]
-
     return selected
 
 
@@ -144,7 +143,7 @@ def _optional_group_dim(
 # * Data ----------------------------------------------------------------------
 # ** Grouped
 @overload
-def reduce_data_grouped(  # pyright: ignore[reportOverlappingOverload]
+def reduce_data_grouped(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     by: ArrayLike,
     *,
@@ -501,7 +500,7 @@ def _validate_index(
 
 
 @overload
-def reduce_data_indexed(  # pyright: ignore[reportOverlappingOverload]
+def reduce_data_indexed(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -847,7 +846,7 @@ def _reduce_data_indexed(
 # * Vals
 # ** Grouped
 @overload
-def reduce_vals_grouped(  # pyright: ignore[reportOverlappingOverload]
+def reduce_vals_grouped(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     by: ArrayLike,
@@ -913,7 +912,7 @@ def reduce_vals_grouped(
 ) -> NDArrayAny | DataT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def reduce_vals_grouped(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
@@ -1153,7 +1152,7 @@ def _reduce_vals_grouped(
 
 # ** Indexed
 @overload
-def reduce_vals_indexed(  # pyright: ignore[reportOverlappingOverload]
+def reduce_vals_indexed(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -1213,7 +1212,7 @@ def reduce_vals_indexed(
 ) -> NDArrayAny | DataT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def reduce_vals_indexed(  # ruff:ignore[too-many-arguments]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,

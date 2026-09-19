@@ -38,7 +38,7 @@ def is_in_unsafe_thread_pool() -> bool:
 def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
-        from numba.np.ufunc import (  # type: ignore[attr-defined, unused-ignore] # pylint: disable=unused-import
+        from numba.np.ufunc import (  # type: ignore[attr-defined] # pylint: disable=unused-import
             tbbpool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[unresolved-import]  # pyrefly: ignore [missing-module-attribute]
         )
     except ImportError:
@@ -47,7 +47,7 @@ def _thread_backend() -> str | None:
         return "tbb"
 
     try:
-        from numba.np.ufunc import (  # type: ignore[attr-defined, unused-ignore] # pylint: disable=unused-import
+        from numba.np.ufunc import (  # type: ignore[attr-defined] # pylint: disable=unused-import
             omppool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[unresolved-import]  # pyrefly: ignore [missing-module-attribute]
         )
     except ImportError:
@@ -102,7 +102,7 @@ def myguvectorize(
 
     return cast(
         "Callable[[FuncT], FuncT]",
-        guvectorize(  # type: ignore[no-untyped-call, unused-ignore]
+        guvectorize(  # type: ignore[no-untyped-call]
             *args,
             nopython=nopython,
             target=target,
@@ -138,7 +138,7 @@ def myjit(
 
     return cast(
         "Callable[[FuncT], FuncT]",
-        njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),  # type: ignore[call-overload, unused-ignore]  # pyright: ignore[reportCallIssue, reportArgumentType]  # pyrefly: ignore [no-matching-overload]
+        njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),  # type: ignore[call-overload]  # pyright: ignore[reportCallIssue, reportArgumentType]  # pyrefly: ignore [no-matching-overload]
     )
 
 
@@ -167,7 +167,7 @@ def _get_signatures(
                     if isinstance(
                         x,
                         (
-                            nb.types.Integer,  # type: ignore[attr-defined,unused-ignore] # pyright: ignore[reportAttributeAccessIssue]
+                            nb.types.Integer,  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
                             nb.types.Array,
                         ),
                     )

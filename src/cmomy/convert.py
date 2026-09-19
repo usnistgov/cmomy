@@ -84,7 +84,7 @@ if TYPE_CHECKING:
 
 # * Convert between raw and central moments
 @overload
-def moments_type(  # pyright: ignore[reportOverlappingOverload]
+def moments_type(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -100,7 +100,7 @@ def moments_type(
     dtype: None = ...,
     **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
-# out
+# 3 out
 @overload
 def moments_type(
     values_in: ArrayLike,
@@ -109,7 +109,7 @@ def moments_type(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
-# dtype
+# 4 dtype
 @overload
 def moments_type(
     values_in: ArrayLike,
@@ -118,7 +118,7 @@ def moments_type(
     dtype: DTypeLikeArg[FloatT],
     **kwargs: Unpack[MomentsTypeKwargs],
 ) -> NDArray[FloatT]: ...
-# fallback
+# 5 fallback
 @overload
 def moments_type(
     values_in: ArrayLike,
@@ -310,7 +310,7 @@ def _moments_type(
 
 # * Moments to Cumulative moments
 @overload
-def cumulative(  # pyright: ignore[reportOverlappingOverload]
+def cumulative(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     values_in: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -364,7 +364,7 @@ def cumulative(
 ) -> NDArrayAny | DataT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
+@docfiller.decorate
 def cumulative(  # ruff:ignore[too-many-arguments]
     values_in: ArrayLike | DataT,
     *,
@@ -589,7 +589,7 @@ def _validate_mom_moments_to_comoments(
 
 
 @overload
-def moments_to_comoments(  # pyright: ignore[reportOverlappingOverload]
+def moments_to_comoments(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     mom: tuple[int, int],
@@ -634,7 +634,7 @@ def moments_to_comoments(
 ) -> NDArrayAny | DataT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
+@docfiller.decorate
 def moments_to_comoments(
     data: ArrayLike | DataT,
     *,
@@ -781,7 +781,7 @@ def moments_to_comoments(
 
 
 @overload
-def comoments_to_moments(  # pyright: ignore[reportOverlappingOverload]
+def comoments_to_moments(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     dtype: DTypeLike = ...,
@@ -821,7 +821,7 @@ def comoments_to_moments(
 ) -> NDArrayAny | DataT: ...
 
 
-@docfiller.decorate  # type: ignore[arg-type,unused-ignore]
+@docfiller.decorate
 def comoments_to_moments(
     data: ArrayLike | DataT,
     *,

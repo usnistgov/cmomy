@@ -128,8 +128,8 @@ def factory_sampler(  # ruff:ignore[too-many-arguments]
     if sampler is None:
         if indices is not None or freq is not None:
             return IndexSampler(
-                indices=indices,  # pyright: ignore[reportArgumentType]
-                freq=freq,  # pyright: ignore[reportArgumentType]
+                indices=indices,
+                freq=freq,
                 ndat=ndat,
                 parallel=parallel,
                 shuffle=False,
@@ -170,7 +170,7 @@ def factory_sampler(  # ruff:ignore[too-many-arguments]
     if isinstance(sampler, (np.ndarray, xr.DataArray, xr.Dataset)):
         # fallback to freq
         return IndexSampler(
-            freq=sampler,  # pyright: ignore[reportArgumentType]
+            freq=sampler,
             ndat=ndat,
             parallel=parallel,
             shuffle=shuffle,

@@ -192,7 +192,7 @@ def _transpose_like(
     if (order := [*prepend, *order, *append]) != list(
         data_out.dims
     ):  # pragma: no cover
-        data_out = data_out.transpose(*order, missing_dims="ignore")
+        return data_out.transpose(*order, missing_dims="ignore")
     return data_out
 
 
@@ -307,11 +307,11 @@ def replace_coords_from_isel(
         raise ValueError(msg)
 
     if is_dataset(template) and is_dataset(selected):  # type: ignore[redundant-expr]
-        return _replace_coords_from_isel_dataset(  # pyrefly: ignore [bad-return]
+        return _replace_coords_from_isel_dataset(  # pyrefly: ignore [bad-return]  # pyright: ignore[reportReturnType]
             template=template, selected=selected, indexers=indexers, drop=drop
         )
     if is_dataarray(template) and is_dataarray(selected):  # type: ignore[redundant-expr]
-        return _replace_coords_from_isel_dataarray(  # pyrefly: ignore [bad-return]
+        return _replace_coords_from_isel_dataarray(  # pyrefly: ignore [bad-return]  # pyright: ignore[reportReturnType]
             template=template, selected=selected, indexers=indexers, drop=drop
         )
     msg = "template and selected must have same type."

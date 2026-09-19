@@ -83,7 +83,7 @@ if TYPE_CHECKING:
 # * Reduce vals ---------------------------------------------------------------
 # ** overloads
 @overload
-def reduce_vals(  # pyright: ignore[reportOverlappingOverload]
+def reduce_vals(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -385,7 +385,7 @@ def reduce_data(
 
 
 # ** public
-@docfiller.decorate  # type: ignore[arg-type, unused-ignore]
+@docfiller.decorate
 def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-structure]
     data: ArrayLike | DataT,
     *,
@@ -458,7 +458,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
             dims_check: tuple[Hashable, ...] = prep.mom_params.dims
             if dim is not None:
                 dim = prep.mom_params.select_axis_dim_mult(data, axis=axis, dim=dim)[1]
-                dims_check = (*dim, *dims_check)  # type: ignore[misc, unused-ignore]  # unused in python3.12
+                dims_check = (*dim, *dims_check)  # type: ignore[misc]
 
             if not contains_dims(data, *dims_check):
                 msg = f"Dimensions {dim} and {prep.mom_params.dims} not found in {tuple(data.dims)}"
@@ -482,12 +482,12 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
 
         if use_map:
             if not contains_dims(data, *prep.mom_params.dims):
-                return data  # type: ignore[return-value, unused-ignore]  # used error in python3.12
+                return data
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
-                dim = (dim,) if isinstance(dim, str) else dim  # type: ignore[redundant-expr, unused-ignore]
+                dim = (dim,) if isinstance(dim, str) else dim  # type:ignore[redundant-expr]
                 if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable, reportUnknownVariableType, reportUnknownArgumentType]  # pyrefly: ignore [not-iterable]
-                    return data  # type: ignore[return-value , unused-ignore] # used error in python3.12
+                    return data
 
         axis, dim = prep.mom_params.select_axis_dim_mult(
             data,
@@ -543,7 +543,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
             order_: tuple[Hashable, ...] = (
                 prep.mom_params.core_dims(*dim) if keepdims else prep.mom_params.dims
             )
-            xout = xout.transpose(..., *order_, missing_dims="ignore")
+            return xout.transpose(..., *order_, missing_dims="ignore")
 
         return xout
 

@@ -64,7 +64,7 @@ def normalize_axis_index(
             ndim -= mom_ndim
 
     # normalize will catch if try to pass a float
-    return np_normalize_axis_index(axis, ndim, msg_prefix)  # type: ignore[no-any-return,unused-ignore]  # pyright: ignore[reportUnknownVariableType]
+    return np_normalize_axis_index(axis, ndim, msg_prefix)  # pyright: ignore[reportUnknownVariableType]
 
 
 def normalize_axis_tuple(

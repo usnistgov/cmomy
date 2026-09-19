@@ -249,9 +249,9 @@ group_out_any = cast("Any", np.zeros_like(group_out_float64))
 
 vals_dataarray = xr.DataArray(vals_float64, name="x")
 vals_dataset = xr.Dataset({"x": vals_dataarray})
-vals_dataarray_or_set: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", vals_dataarray)
 vals_dataarray_any: Any = cast("Any", vals_dataarray)
 vals_dataset_any: Any = cast("Any", vals_dataset)
+vals_dataarray_or_set: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", vals_dataarray)
 
 data_dataarray: xr.DataArray = xr.DataArray(data_float64, name="data")
 data_dataset: xr.Dataset = xr.Dataset({"data": data_dataarray})
@@ -268,6 +268,7 @@ central_any: Any = cmomy.CentralMomentsArray(data_any)
 
 central_dataarray = cmomy.CentralMomentsData(data_dataarray)
 central_dataset = cmomy.CentralMomentsData(data_dataset)
+central_dataarray_or_set = cmomy.CentralMomentsData(data_dataarray_or_set)
 central_dataarray_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataarray_any)
 central_dataset_any: CentralMomentsDataAny = cmomy.CentralMomentsData(data_dataset_any)
 # ca_or_cs = cast("cmomy.CentralMomentsData[xr.DataArray] | cmomy.CentralMomentsData[xr.DataArray]", cmomy.CentralMomentsData(data_dataarray_or_set))  # noqa: ERA001
@@ -340,6 +341,8 @@ params_genarraylike_to_genarray_dtype = [
     ("dataarray", "float32", None, "xr.DataArray", "float32", "xr.DataArray"),
     ("dataset", "float32", None, "xr.Dataset", None, "xr.Dataset"),
     ("dataarray_any", "float32", None, "Any", "float32", "xr.DataArray"),
+    ("dataarray_any", "float32", None, "Any", "float32", "xr.DataArray"),
+    ("dataarray_or_set", "float32", None, "xr.DataArray | xr.Dataset", "float32", "xr.DataArray")
 ]
 
 params_genarraylike_to_genarray_dtype_out = [
@@ -396,6 +399,7 @@ params_genarraylike_to_wrapped_dtype = [
     ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset", "float32", None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
     ("dataarray_any", "float32", None, "Any", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_or_set", "float32", None, "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_genarraylike_to_wrapped_dtype = [
     ("cmomy.wrap", "data_", None, ""),
@@ -414,6 +418,7 @@ params_genarraylike_to_wrapped_dtype_out = [
     ("dataarray", None, "float32", "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataarray", None, "arrayany", "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataarray_any", None, "float32", "Any", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_or_set", None, "float32", "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 
 funcs_genarraylike_to_wrapped_dtype_out = [
@@ -447,6 +452,7 @@ out.extend(get_list(funcs_arraylike_to_class, params_arraylike_to_class))
 params_xarray_to_class = [
     ("dataarray", None, None, "cmomy.CentralMomentsData[xr.DataArray]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_or_set", None, None, "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataarray_any", None, None, "cmomy.CentralMomentsData[Any]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset_any", None, None, "cmomy.CentralMomentsData[Any]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
 ]
@@ -486,6 +492,7 @@ params_class_to_class = [
     ("any", "float32", None, "Any", "float32", "cmomy.CentralMomentsArray"),
     ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset", "float32", None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_or_set", "float32", None, "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataarray_any", "float32", None, "cmomy.CentralMomentsData[Any]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_class_to_class = [
@@ -507,6 +514,7 @@ params_class_astype = [
     ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset", "float32", None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
     ("dataarray_any", "float32", None, "cmomy.CentralMomentsData[Any]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_or_set", "float32", None, "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_class_astype = [
     ("astype", "central_", None, "")
@@ -522,6 +530,7 @@ params_class_method = [
     ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
     ("dataarray_any", None, None, "cmomy.CentralMomentsData[Any]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset_any", None, None, "cmomy.CentralMomentsData[Any]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_or_set", None, None, "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float64", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 params_class_method_dtype = [
     *params_class_method,
@@ -529,6 +538,7 @@ params_class_method_dtype = [
     ("float64", '"f4"', None, "cmomy.CentralMomentsArray[Any]", "float32", "cmomy.CentralMomentsArray"),
     ("arraylike", "float32", None, "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
     ("dataarray", "float32", None, "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_or_set", "float32", None, "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 params_class_method_dtype_out = [
     *params_class_method_dtype,
@@ -536,6 +546,7 @@ params_class_method_dtype_out = [
     ("float32", None, "arrayany", "cmomy.CentralMomentsArray[Any]", "float64", "cmomy.CentralMomentsArray"),
     ("arraylike", "float64", "float32", "cmomy.CentralMomentsArray[float32]", "float32", "cmomy.CentralMomentsArray"),
     ("dataarray", None, "float32", "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_or_set", None, "float32", "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 
 ]
 funcs_class_method = [
@@ -576,6 +587,7 @@ params_class_newlike = [
     # This is different because out here is data input
     ("arraylike", "float64", "float32", "cmomy.CentralMomentsArray[float64]", "float64", "cmomy.CentralMomentsArray"),
     ("dataarray", None, "float32", "cmomy.CentralMomentsData[xr.DataArray]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_or_set", None, "float32", "cmomy.CentralMomentsData[xr.DataArray | xr.Dataset]", "float32", "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 funcs_class_newlike = [
     ("new_like", "central_", "transform_out_", ""),
@@ -592,6 +604,7 @@ params_class_methodtoarray = [
     ("dataset", None, None, "xr.Dataset", None, "xr.Dataset"),
     ("dataarray_any", None, None, "Any", "float64", "xr.DataArray"),
     ("dataset_any", None, None, "Any", None, "xr.Dataset"),
+    ("dataarray_or_set", None, None, "xr.DataArray | xr.Dataset", "float64", "xr.DataArray"),
 ]
 params_class_methodtoarray_dtype = [
     *params_class_methodtoarray,
@@ -599,6 +612,7 @@ params_class_methodtoarray_dtype = [
     ("float64", '"f4"', None, "NDArray[Any]", "float32"),
     ("arraylike", "float32", None, "NDArray[float32]", "float32"),
     ("dataarray", "float32", None, "xr.DataArray", "float32", "xr.DataArray"),
+    ("dataarray_or_set", "float32", None, "xr.DataArray | xr.Dataset", "float32", "xr.DataArray"),
 ]
 params_class_methodtoarray_dtype_out = [
     *params_class_methodtoarray_dtype,
@@ -606,6 +620,7 @@ params_class_methodtoarray_dtype_out = [
     ("float32", None, "arrayany", "NDArray[Any]", "float64"),
     ("arraylike", "float64", "float32", "NDArray[float32]", "float32"),
     ("dataarray", None, "float32", "xr.DataArray", "float32", "xr.DataArray"),
+    ("dataarray_or_set", None, "float32", "xr.DataArray | xr.Dataset", "float32", "xr.DataArray"),
 ]
 funcs_class_methodtoarray = [  # pyrefly: ignore [implicit-any-empty-container]
 ]
@@ -626,6 +641,7 @@ params_class_method_to_dataarray = [
     ("dataarray_any", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
     ("dataset_any", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
+    ("dataarray_or_set", None, None, "cmomy.CentralMomentsData[xr.DataArray]", None, "cmomy.CentralMomentsData", "xr.DataArray"),
 ]
 func_class_method_to_dataarray = [
     ("to_dataarray", "central_", None, ""),
@@ -638,6 +654,7 @@ params_class_method_to_dataset = [
     ("dataarray_any", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
     ("dataset", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
     ("dataset_any", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
+    ("dataarray_or_set", None, None, "cmomy.CentralMomentsData[xr.Dataset]", None, "cmomy.CentralMomentsData", "xr.Dataset"),
 ]
 func_class_method_to_dataset = [
     ("to_dataset", "central_", None, ""),
@@ -658,8 +675,12 @@ def test_iterators() -> None:
     # assert_type(iter(central_dataset), Iterator[Hashable])  # noqa: ERA001
     # pylint: disable=unnecessary-dunder-call
     assert_type(central_dataarray.__iter__(), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
-    assert_type(central_dataset.__iter__(), Iterator[Hashable])
     assert_type(central_dataarray.iter(), Iterator[cmomy.CentralMomentsData[xr.DataArray]])
+
+    assert_type(central_dataarray_or_set.__iter__(), Iterator[Hashable] | Iterator[cmomy.CentralMomentsData[xr.DataArray]])
+    assert_type(central_dataarray_or_set.iter(), Iterator[Hashable] | Iterator[cmomy.CentralMomentsData[xr.DataArray]])
+
+    assert_type(central_dataset.__iter__(), Iterator[Hashable])
     assert_type(central_dataset.iter(), Iterator[Hashable])
     assert_type(central_dataset.keys(), KeysView[Hashable])
     assert_type(central_dataset.values(), ValuesView[cmomy.CentralMomentsData[xr.DataArray]])
@@ -674,12 +695,15 @@ def _check_typing_sampler(
     idx_array: NDArrayAny,
     idx_dataarray: xr.DataArray,
     idx_dataset: xr.Dataset,
+    idx_dataarray_or_set: xr.DataArray | xr.Dataset,
     freq_array: NDArrayAny,
     freq_dataarray: xr.DataArray,
     freq_dataset: xr.Dataset,
+    freq_dataarray_or_set: xr.DataArray | xr.Dataset,
     data_array: NDArrayAny,
     data_dataarray: xr.DataArray,
     data_dataset: xr.Dataset,
+    data_dataarray_or_set: xr.DataArray | xr.Dataset,
 ) -> None:
     from cmomy import IndexSampler
 
@@ -688,10 +712,12 @@ def _check_typing_sampler(
     assert_type(IndexSampler(indices=idx_array), IndexSampler[NDArrayAny])
     assert_type(IndexSampler(indices=idx_dataarray), IndexSampler[xr.DataArray])
     assert_type(IndexSampler(indices=idx_dataset), IndexSampler[xr.Dataset])
+    # assert_type(IndexSampler(indices=idx_dataarray_or_set), IndexSampler[xr.DataArray | xr.Dataset])
 
     assert_type(IndexSampler(freq=freq_array), IndexSampler[NDArrayAny])
     assert_type(IndexSampler(freq=freq_dataarray), IndexSampler[xr.DataArray])
     assert_type(IndexSampler(freq=freq_dataset), IndexSampler[xr.Dataset])
+    # assert_type(IndexSampler(freq=freq_dataarray_or_set), IndexSampler[xr.DataArray | xr.Dataset])
 
     a = IndexSampler(indices=idx_array)
     assert_type(a.freq, NDArrayAny)
@@ -711,6 +737,16 @@ def _check_typing_sampler(
     )
     assert_type(
         IndexSampler.from_data(data_dataset, nrep=100), IndexSampler[xr.DataArray]
+    )
+    assert_type(
+        IndexSampler.from_data(data_dataarray_or_set, nrep=100), IndexSampler[xr.DataArray]
+    )
+
+    assert_type(
+        IndexSampler.from_data(data_dataset, nrep=100, paired=False), IndexSampler[xr.DataArray | xr.Dataset]
+    )
+    assert_type(
+        IndexSampler.from_data(data_dataarray_or_set, nrep=100, paired=False), IndexSampler[xr.DataArray | xr.Dataset]
     )
 
     d = IndexSampler.from_data(data_dataset, nrep=100, paired=False)

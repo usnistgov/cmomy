@@ -35,9 +35,11 @@ if TYPE_CHECKING:
         MissingType,
     )
     from .core.typing_compat import TypeVar
-    from .wrapper._wrapper_abc import CentralMomentsABC
+    from .wrapper._wrapper import CentralMomentsArray, CentralMomentsData  # ruff: ignore[unused-import]
 
-    _CentralMomentsT = TypeVar("_CentralMomentsT", bound=CentralMomentsABC[Any, Any])
+    _CentralMomentsT = TypeVar(
+        "_CentralMomentsT", bound="CentralMomentsArray[Any] | CentralMomentsData[Any]"
+    )
     _NDArrayT = TypeVar("_NDArrayT", bound=NDArray[Any])
 
 
@@ -50,7 +52,7 @@ def concat(
     **kwargs: Any,
 ) -> _CentralMomentsT: ...
 @overload
-def concat(  # pyrefly: ignore [inconsistent-overload]
+def concat(
     arrays: Iterable[DataT],
     *,
     axis: AxisReduce | MissingType = ...,
@@ -174,11 +176,14 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
-            tuple(arrays_iter),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
-            axis=axis,
-            dtype=first.dtype,
-            **kwargs,
+        return cast(
+            "_NDArrayT",
+            np.concatenate(  # pylint: disable=unexpected-keyword-arg
+                tuple(cast("Iterable[_NDArrayT]", arrays_iter)),
+                axis=axis,
+                dtype=first.dtype,
+                **kwargs,
+            ),
         )
 
     if is_xarray_typevar[DataT].check(first):
@@ -187,14 +192,25 @@ def concat(
                 first, axis=axis, dim=dim, default_axis=0
             )
         # otherwise, assume adding a new dimension...
-        return cast("DataT", xr.concat(tuple(arrays_iter), dim=dim, **kwargs))  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue,reportArgumentType]  # pyrefly: ignore [no-matching-overload]
+        return cast(  # type: ignore[redundant-cast]
+            "DataT",
+            xr.concat(
+                cast(
+                    "tuple[xr.DataArray, ...] | tuple[xr.Dataset, ...]",
+                    tuple(arrays_iter),
+                ),
+                dim=dim,
+                **kwargs,
+            ),
+        )
 
-    return type(first)(  # type: ignore[call-arg, return-value]  # pyright: ignore[reportCallIssue]
+    first = cast("_CentralMomentsT", first)  # type: ignore[redundant-cast]  # pyrefly: ignore [redundant-cast]
+    return type(first)(
         concat(
-            (c.obj for c in arrays_iter),  # type: ignore[attr-defined]  # pyright: ignore[reportAttributeAccessIssue, reportUnknownArgumentType, reportUnknownMemberType]  # pyrefly: ignore [missing-attribute]
+            (c.obj for c in cast("Iterable[_CentralMomentsT]", arrays_iter)),
             axis=axis,
             dim=dim,
             **kwargs,
         ),
-        mom_ndim=first.mom_ndim,  # type: ignore[attr-defined]  # pyright: ignore[reportCallIssue]
+        mom_ndim=first.mom_ndim,
     )

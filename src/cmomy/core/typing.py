@@ -38,8 +38,13 @@ if TYPE_CHECKING:
 
 # * TypeVars ------------------------------------------------------------------
 #: DataArray or Dataset
-DataT = TypeVar("DataT", xr.DataArray, xr.Dataset)
+DataT = TypeVar("DataT", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset")
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound="xr.DataArray | xr.Dataset")
+
+#: NDArray or DataArray or Dataset
+GenArrayT = TypeVar(
+    "GenArrayT", "NDArrayAny", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset"
+)
 
 #: TypeVar of floating point precision (np.float32, np.float64, default=Any)
 FloatT = TypeVar(
@@ -50,14 +55,12 @@ FloatT = TypeVar(
 #: TypeVar of floating point precision (Not bound to :class:`FloatT`)
 _FloatT = TypeVar("_FloatT", np.float64, np.float32)
 
+# SamplerArrayT = TypeVar(  # ruff: ignore[commented-out-code]
+#     "SamplerArrayT", "NDArrayAny", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset"
+# )  # ruff: ignore[commented-out-code]
+
 #: TypeVar of types wrapped by IndexSampler
-SamplerArrayT = TypeVar(
-    "SamplerArrayT",
-    "NDArrayAny",
-    xr.DataArray,
-    xr.Dataset,
-    "xr.DataArray | xr.Dataset",
-)
+SamplerArrayT = TypeVar("SamplerArrayT", bound="NDArrayAny | xr.DataArray | xr.Dataset")
 
 
 # * Numpy ---------------------------------------------------------------------
