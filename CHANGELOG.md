@@ -5,6 +5,18 @@
 
 Changelog for `cmomy`
 
+## 1.2.0
+
+Released on 2026-09-19.
+
+### Documentation
+
+- feat: update typing to handle union of dataset and dataarray ([#269](https://github.com/usnistgov/cmomy/pull/269))
+
+### Contributors
+
+- [@wpk-nist-gov](https://github.com/wpk-nist-gov)
+
 ## 1.1.1
 
 Released on 2026-03-20.
