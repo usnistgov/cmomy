@@ -217,7 +217,7 @@ class PrepareDataArray(_PrepareBaseArray):
         if axis_new_size is None:
             axis_new_size = data.shape[axis]
 
-        shape: tuple[int, ...] = (
+        shape: tuple[int, ...] = (  # pyrefly: ignore [bad-assignment]
             *data.shape[:axis],
             axis_new_size,  # pyright: ignore[reportAssignmentType]
             *data.shape[axis + 1 :],

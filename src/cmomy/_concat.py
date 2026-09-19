@@ -174,7 +174,7 @@ def concat(
 
     if is_ndarray(first):
         axis = 0 if axis is MISSING else axis
-        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue, reportUnknownVariableType]  # pyrefly: ignore [no-matching-overload]
+        return np.concatenate(  # type: ignore[return-value]  # pylint: disable=unexpected-keyword-arg  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
             tuple(arrays_iter),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
             axis=axis,
             dtype=first.dtype,

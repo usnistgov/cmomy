@@ -82,7 +82,7 @@ if TYPE_CHECKING:
 
 # * General wrapper -----------------------------------------------------------
 @overload
-def wrap(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap(  # pyright: ignore[reportOverlappingOverload]
     obj: DataT,
     *,
     dtype: _DTypeMaybeMapping | None = ...,
@@ -110,7 +110,7 @@ def wrap(
     **kwargs: Unpack[WrapKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
-def wrap(  # pyrefly: ignore [inconsistent-overload]
+def wrap(
     obj: ArrayLike | DataT,
     *,
     dtype: _DTypeMaybeMapping | None = ...,
@@ -320,7 +320,7 @@ def zeros_like(
 
 # * From vals -----------------------------------------------------------------
 @overload
-def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap_reduce_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -365,7 +365,7 @@ def wrap_reduce_vals(
     **kwargs: Unpack[ReduceValsKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
-def wrap_reduce_vals(  # pyrefly: ignore [inconsistent-overload]
+def wrap_reduce_vals(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -463,7 +463,7 @@ def wrap_reduce_vals(  # ruff:ignore[too-many-arguments]
         keep_attrs=keep_attrs,
         apply_ufunc_kwargs=apply_ufunc_kwargs,
     )
-    return wrap(  # pyrefly: ignore [bad-return]
+    return wrap(
         obj=obj,
         mom_params=mom_params.axes_to_end() if axes_to_end else mom_params,
         fastpath=True,
@@ -472,7 +472,7 @@ def wrap_reduce_vals(  # ruff:ignore[too-many-arguments]
 
 # * resample vals -------------------------------------------------------------
 @overload
-def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap_resample_vals(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -517,7 +517,7 @@ def wrap_resample_vals(
     **kwargs: Unpack[ResampleValsKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
-def wrap_resample_vals(  # pyrefly: ignore [inconsistent-overload]
+def wrap_resample_vals(
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -625,7 +625,7 @@ def wrap_resample_vals(  # ruff:ignore[too-many-arguments]
         casting=casting,
         order=order,
     )
-    return wrap(  # pyrefly: ignore [bad-return]
+    return wrap(
         obj=obj,
         mom_params=mom_params.axes_to_end() if axes_to_end else mom_params,
         fastpath=True,
@@ -634,7 +634,7 @@ def wrap_resample_vals(  # ruff:ignore[too-many-arguments]
 
 # * From raw -----------------------------------------------------------------
 @overload
-def wrap_raw(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def wrap_raw(  # pyright: ignore[reportOverlappingOverload]
     raw: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -674,7 +674,7 @@ def wrap_raw(
     **kwargs: Unpack[WrapRawKwargs],
 ) -> CentralMomentsArrayAny: ...
 @overload
-def wrap_raw(  # pyrefly: ignore [inconsistent-overload]
+def wrap_raw(
     raw: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -784,7 +784,7 @@ def wrap_raw(
         default_ndim=1,
     )
 
-    return wrap(  # pyrefly: ignore [bad-return]
+    return wrap(
         obj=convert.moments_type(
             raw,
             mom_params=mom_params,

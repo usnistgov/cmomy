@@ -693,7 +693,7 @@ def assign_moment(
     # get names and values
     moment_kwargs = either_dict_or_kwargs(  # type: ignore[assignment]  # pyright: ignore[reportAssignmentType]  # pyrefly: ignore [bad-assignment]
         moment if moment is None else dict(moment),
-        moment_kwargs,  # pyrefly: ignore [bad-argument-type]
+        moment_kwargs,
         "assign_moment",
     )
 
@@ -778,7 +778,7 @@ def _assign_moment(
         out = np.moveaxis(out, mom_params.axes, mom_params_end.axes)
 
     for name, value in zip(names, values, strict=True):
-        out[moment_indexer(name, mom_params.ndim, squeeze)] = value  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [unsupported-operation]
+        out[moment_indexer(name, mom_params.ndim, squeeze)] = value  # pyright: ignore[reportArgumentType]
 
     if moved:
         out = np.moveaxis(out, mom_params_end.axes, mom_params.axes)
@@ -788,7 +788,7 @@ def _assign_moment(
 # * Vals -> Data --------------------------------------------------------------
 # TODO(wpk): move this to convert?
 @overload
-def vals_to_data(  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore [inconsistent-overload]
+def vals_to_data(  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,

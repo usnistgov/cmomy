@@ -861,7 +861,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         mom_params_out = factory_mom_params(target=self._obj, ndim=2, dims=mom_dims_out)
 
         return type(self)(
-            convert.moments_to_comoments(  # pyrefly: ignore [bad-argument-type]
+            convert.moments_to_comoments(
                 self._obj,
                 mom=mom,
                 mom_params=self._mom_params,
@@ -1030,7 +1030,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
 
         from cmomy.resample import jackknife_data
 
-        obj: GenArrayT = jackknife_data(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]  # pyrefly: ignore [no-matching-overload]
+        obj: GenArrayT = jackknife_data(  # pyright: ignore[reportUnknownVariableType, reportCallIssue]  # pyrefly: ignore [bad-assignment]
             self._obj,  # pyright: ignore[reportArgumentType]
             mom_params=self._mom_params,
             axis=axis,
