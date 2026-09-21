@@ -787,7 +787,7 @@ def _assign_moment(
 # * Vals -> Data --------------------------------------------------------------
 # TODO(wpk): move this to convert?
 @overload
-def vals_to_data(  # pyright: ignore[reportOverlappingOverload]
+def vals_to_data(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -846,6 +846,15 @@ def vals_to_data(
     out: NDArrayAny | None = ...,
     **kwargs: Unpack[ValsToDataKwargs],
 ) -> NDArrayAny: ...
+@overload
+def vals_to_data(
+    x: ArrayLike | DataT,
+    *y: ArrayLike,
+    weight: ArrayLike | None = ...,
+    dtype: DTypeLike = ...,
+    out: NDArrayAny | None = ...,
+    **kwargs: Unpack[ValsToDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate

@@ -15,7 +15,7 @@ import pytest
 
 import cmomy
 
-MYPY_ONLY = True
+MYPY_ONLY = False
 
 if sys.version_info < (3, 11):
     from typing_extensions import assert_type
@@ -90,12 +90,14 @@ vals_dataset = xr.Dataset({"x": vals_dataarray})
 vals_dataarray_any: Any = cast("Any", vals_dataarray)
 vals_dataset_any: Any = cast("Any", vals_dataset)
 vals_dataarray_or_set: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", vals_dataarray)
+vals_arraylike_or_dataarray_or_set: ArrayLike | xr.DataArray | xr.Dataset = cast("ArrayLike | xr.DataArray | xr.Dataset", vals_float64)
 
 data_dataarray: xr.DataArray = xr.DataArray(data_float64, name="data")
 data_dataset: xr.Dataset = xr.Dataset({"data": data_dataarray})
 data_dataarray_any: Any = cast("Any", data_dataarray)
 data_dataset_any: Any = cast("Any", data_dataset)
 data_dataarray_or_set: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", data_dataarray)
+data_arraylike_or_dataarray_or_set: ArrayLike | xr.DataArray | xr.Dataset = cast("ArrayLike | xr.DataArray | xr.Dataset", data_float64)
 
 
 central_float32 = cmomy.CentralMomentsArray(data_float32)

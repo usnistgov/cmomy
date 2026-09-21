@@ -393,7 +393,7 @@ project-includes = [
     "tests",
     "tools",
 ]
-project-excludes = [ "**/test_typing_auto.py" ]
+# project-excludes = [ "**/test_typing_auto.py" ]
 search-path = [ "." ]
 enabled-ignores = [ "pyrefly" ]
 min-severity = "warn"
