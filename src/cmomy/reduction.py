@@ -340,7 +340,7 @@ def _reduce_vals(
 # * Reduce data ---------------------------------------------------------------
 # ** overload
 @overload
-def reduce_data(  # pyright: ignore[reportOverlappingOverload]
+def reduce_data(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -382,6 +382,14 @@ def reduce_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArrayAny: ...
+@overload
+def reduce_data(
+    data: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[ReduceDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 # ** public

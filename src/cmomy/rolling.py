@@ -323,7 +323,7 @@ def _optional_zero_missing_weight(
 
 # ** Data
 @overload
-def rolling_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -366,6 +366,14 @@ def rolling_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArrayAny: ...
+@overload
+def rolling_data(
+    data: ArrayLike | DataT,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate
@@ -579,7 +587,7 @@ def _rolling_data(
 
 # * Vals
 @overload
-def rolling_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_vals(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -627,6 +635,15 @@ def rolling_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArrayAny: ...
+@overload
+def rolling_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingValsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate
@@ -876,7 +893,7 @@ def _rolling_vals(
 # * Move Exponential
 # ** Data
 @overload
-def rolling_exp_data(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_data(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]
     data: DataT,
     alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
@@ -924,6 +941,15 @@ def rolling_exp_data(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArrayAny: ...
+@overload
+def rolling_exp_data(
+    data: ArrayLike | DataT,
+    alpha: ArrayLike | xr.DataArray | xr.Dataset,
+    *,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingExpDataKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate
@@ -1190,7 +1216,7 @@ def _rolling_exp_data(
 
 # ** Vals
 @overload
-def rolling_exp_vals(  # pyright: ignore[reportOverlappingOverload]
+def rolling_exp_vals(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     alpha: ArrayLike | xr.DataArray | DataT,
@@ -1243,6 +1269,16 @@ def rolling_exp_vals(
     dtype: DTypeLike = ...,
     **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArrayAny: ...
+@overload
+def rolling_exp_vals(
+    x: ArrayLike | DataT,
+    *y: ArrayLike | xr.DataArray | DataT,
+    alpha: ArrayLike | xr.DataArray | DataT,
+    weight: ArrayLike | xr.DataArray | DataT | None = ...,
+    out: NDArrayAny | None = ...,
+    dtype: DTypeLike = ...,
+    **kwargs: Unpack[RollingExpValsKwargs],
+) -> NDArrayAny | DataT: ...
 
 
 @docfiller.decorate

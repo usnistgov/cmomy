@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, var-annotated, arg-type, operator"
+# mypy: disable-error-code="no-untyped-def, no-untyped-c348ggall, call-overload, var-annotated, arg-type, operator"
 # pyright: reportCallIssue=false, reportArgumentType=false
 """Create test_typing_auto.py file"""
 # /// script
@@ -252,12 +252,14 @@ vals_dataset = xr.Dataset({"x": vals_dataarray})
 vals_dataarray_any: Any = cast("Any", vals_dataarray)
 vals_dataset_any: Any = cast("Any", vals_dataset)
 vals_dataarray_or_set: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", vals_dataarray)
+vals_arraylike_or_dataarray_or_set: ArrayLike | xr.DataArray | xr.Dataset = cast("ArrayLike | xr.DataArray | xr.Dataset", vals_float64)
 
 data_dataarray: xr.DataArray = xr.DataArray(data_float64, name="data")
 data_dataset: xr.Dataset = xr.Dataset({"data": data_dataarray})
 data_dataarray_any: Any = cast("Any", data_dataarray)
 data_dataset_any: Any = cast("Any", data_dataset)
 data_dataarray_or_set: xr.DataArray | xr.Dataset = cast("xr.DataArray | xr.Dataset", data_dataarray)
+data_arraylike_or_dataarray_or_set: ArrayLike | xr.DataArray | xr.Dataset = cast("ArrayLike | xr.DataArray | xr.Dataset", data_float64)
 
 
 central_float32 = cmomy.CentralMomentsArray(data_float32)
@@ -342,7 +344,9 @@ params_genarraylike_to_genarray_dtype = [
     ("dataset", "float32", None, "xr.Dataset", None, "xr.Dataset"),
     ("dataarray_any", "float32", None, "Any", "float32", "xr.DataArray"),
     ("dataarray_any", "float32", None, "Any", "float32", "xr.DataArray"),
-    ("dataarray_or_set", "float32", None, "xr.DataArray | xr.Dataset", "float32", "xr.DataArray")
+    ("dataarray_or_set", "float32", None, "xr.DataArray | xr.Dataset", "float32", "xr.DataArray"),
+    # TODO(wpk): works with pyright and pyrefly, not mypy  # ruff: ignore[line-contains-todo, missing-todo-link]
+    # ("arraylike_or_dataarray_or_set", "float32", None, "NDArrayAny | xr.DataArray | xr.Dataset", "float32"),  # ruff: ignore[commented-out-code]
 ]
 
 params_genarraylike_to_genarray_dtype_out = [
