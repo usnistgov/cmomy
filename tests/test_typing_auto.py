@@ -15,7 +15,7 @@ import pytest
 
 import cmomy
 
-MYPY_ONLY = True
+MYPY_ONLY = False
 
 if sys.version_info < (3, 11):
     from typing_extensions import assert_type

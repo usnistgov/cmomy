@@ -1,4 +1,4 @@
-# mypy: disable-error-code="no-untyped-def, no-untyped-c348ggall, call-overload, var-annotated, arg-type, operator"
+# mypy: disable-error-code="no-untyped-def, no-untyped-call, call-overload, var-annotated, arg-type, operator"
 # pyright: reportCallIssue=false, reportArgumentType=false
 """Create test_typing_auto.py file"""
 # /// script
@@ -43,6 +43,33 @@ TEMPLATE_METHOD_TEST = """\
 """
 
 
+TEMPLATE_GENERAL_TEST_NOT_MYPY = """\
+    if not MYPY_ONLY:
+        check(
+            assert_type(
+                {func_name}({data}{args}),
+                {type_},
+            ),
+            {klass},
+            {dtype},
+            {second_klass},
+        )\
+"""
+
+TEMPLATE_METHOD_TEST_NOT_MYPY = """\
+    if not MYPY_ONLY:
+        check(
+            assert_type(
+                {data}.{func_name}({args}),
+                {type_},
+            ),
+            {klass},
+            {dtype},
+            {second_klass},
+        )\
+"""
+
+
 @dataclass
 class GeneralTest:
     """General test creation"""
@@ -73,6 +100,7 @@ class GeneralTest:
         dtype: str,
         klass: str = "np.ndarray",
         second_klass: str = "None",
+        mypy_only: bool | None = None,
         method: bool = False,
         astype: bool = False,
         newlike: bool = False,
@@ -80,7 +108,17 @@ class GeneralTest:
     ) -> GeneralTest:
         """Create object from params."""
         if template is None:
-            template = TEMPLATE_METHOD_TEST if method else TEMPLATE_GENERAL_TEST
+            if mypy_only is None:
+                template = TEMPLATE_METHOD_TEST if method else TEMPLATE_GENERAL_TEST
+            elif mypy_only:
+                msg = "Not yet implemented"
+                raise NotImplementedError(msg)
+            else:
+                template = (
+                    TEMPLATE_METHOD_TEST_NOT_MYPY
+                    if method
+                    else TEMPLATE_GENERAL_TEST_NOT_MYPY
+                )
 
         args = base_args
         args = (
@@ -177,7 +215,7 @@ import pytest
 
 import cmomy
 
-MYPY_ONLY = True
+MYPY_ONLY = False
 
 if sys.version_info < (3, 11):
     from typing_extensions import assert_type
@@ -345,8 +383,8 @@ params_genarraylike_to_genarray_dtype = [
     ("dataarray_any", "float32", None, "Any", "float32", "xr.DataArray"),
     ("dataarray_any", "float32", None, "Any", "float32", "xr.DataArray"),
     ("dataarray_or_set", "float32", None, "xr.DataArray | xr.Dataset", "float32", "xr.DataArray"),
-    # TODO(wpk): works with pyright and pyrefly, not mypy  # ruff: ignore[line-contains-todo, missing-todo-link]
-    # ("arraylike_or_dataarray_or_set", "float32", None, "NDArrayAny | xr.DataArray | xr.Dataset", "float32"),  # ruff: ignore[commented-out-code]
+    # TODO(wpk): works with pyright but not mypy  # ruff: ignore[line-contains-todo, missing-todo-link]
+    # ("arraylike_or_dataarray_or_set", "float32", None, "NDArrayAny | xr.DataArray | xr.Dataset", "float32", "None", "None", False),  # ruff: ignore[commented-out-code]
 ]
 
 params_genarraylike_to_genarray_dtype_out = [
