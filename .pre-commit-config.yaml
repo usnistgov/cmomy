@@ -69,7 +69,7 @@ repos:
       - id: pyproject-fmt
   # ** validate (schema-store)
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-    rev: "2026.09.24"
+    rev: "2026.09.25"
     hooks:
       - id: validate-pyproject
         name: validate-pyproject-schema-store
@@ -127,11 +127,12 @@ repos:
   # * Spelling
   # ** typos
   - repo: https://github.com/adhtruong/mirrors-typos
-    rev: "v1.50.2"
+    rev: "v1.50.3"
     hooks:
       - id: typos
         exclude_types: [jupyter]
-        exclude: ^uv[.]lock$|^requirements|^\.copier-answers\.ya?ml$|^examples/archived
+        exclude: 
+          ^uv[.]lock$|^requirements|^\.copier-answers\.ya?ml$|^examples/archived
 
   # * Dependencies
   # ** pyproject2conda
@@ -184,8 +185,7 @@ repos:
           - "-ignore"
           - 'specifying action "\$/.+" in invalid format because ref is missing'
           - "-ignore"
-          - 'reusable workflow call "\$/.+" at "uses" is not following the
-            format'
+          - 'reusable workflow call "\$/.+" at "uses" is not following the format'
         language: golang # means renovate will also update `additional_dependencies`
         additional_dependencies:
           # actionlint has a shellcheck integration which extracts shell scripts in `run:` steps from GitHub Actions
@@ -209,13 +209,8 @@ repos:
     rev: "0.9.1"
     hooks:
       - id: nbstripout
-        args:
-          [
-            "--keep-output",
-            "--keep-count",
-            "--extra-keys",
-            "metadata.kernelspec metadata.kernel_spec",
-          ]
+        args: ["--keep-output", "--keep-count", "--extra-keys", "metadata.kernelspec
+              metadata.kernel_spec"]
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: "1.9.1"
@@ -225,7 +220,7 @@ repos:
         name: nbqa-typos
         alias: typos
         additional_dependencies: &typos-deps
-          - typos==1.50.2
+          - typos==1.50.3
         args:
           - typos
           - --force-exclude
