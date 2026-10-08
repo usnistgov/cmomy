@@ -178,7 +178,7 @@ def concat(
         axis = 0 if axis is MISSING else axis
         return cast(
             "_NDArrayT",
-            np.concatenate(  # pylint: disable=unexpected-keyword-arg
+            np.concatenate(
                 tuple(cast("Iterable[_NDArrayT]", arrays_iter)),
                 axis=axis,
                 dtype=first.dtype,
