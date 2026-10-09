@@ -1,5 +1,3 @@
-# pyright: reportUnnecessaryTypeIgnoreComment=false
-
 from __future__ import annotations
 
 import itertools
@@ -167,7 +165,7 @@ def _get_signatures(
                     if isinstance(
                         x,
                         (
-                            nb.types.Integer,  # type: ignore[attr-defined] # pyright: ignore[reportAttributeAccessIssue]
+                            nb.types.Integer,
                             nb.types.Array,
                         ),
                     )
