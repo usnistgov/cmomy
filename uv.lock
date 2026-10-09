@@ -628,14 +628,15 @@ version = "1.2.0"
 source = { editable = "." }
 default-groups = ["dev", "numpy2"]
 dependencies = [
-    { name = "docstring-inheritance" },
     { name = "lazy-loader" },
-    { name = "module-utilities" },
+    { name = "module-utilities", extra = ["inherit"] },
     { name = "numba", version = "0.62.1", source = { registry = "https://pypi.org/simple" }, marker = "(platform_machine == 'x86_64' and sys_platform == 'darwin') or (platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "numba", version = "0.67.0", source = { registry = "https://pypi.org/simple" }, marker = "platform_machine != 'x86_64' or sys_platform != 'darwin' or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "numpy", version = "1.26.4", source = { registry = "https://pypi.org/simple" }, marker = "extra == 'group-5-cmomy-numpy1'" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin' and extra != 'group-5-cmomy-numpy1') or (python_full_version < '3.11' and extra != 'group-5-cmomy-numpy1') or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "numpy", version = "2.3.5", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.14' and extra != 'group-5-cmomy-numpy1') or (python_full_version >= '3.11' and platform_machine != 'x86_64' and extra != 'group-5-cmomy-numpy1') or (python_full_version >= '3.11' and sys_platform != 'darwin' and extra != 'group-5-cmomy-numpy1') or (extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
+    { name = "pandas", version = "2.3.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version >= '3.14' and platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1') or (python_full_version >= '3.14' and sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1') or (python_full_version < '3.14' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
+    { name = "pandas", version = "3.0.6", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.14') or (python_full_version >= '3.14' and platform_machine != 'x86_64' and extra != 'group-5-cmomy-numpy1') or (python_full_version >= '3.14' and sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.14' and sys_platform != 'darwin' and extra != 'group-5-cmomy-numpy1') or (python_full_version < '3.11' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.14' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "typing-extensions" },
     { name = "xarray", version = "2025.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11' or (python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.14' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (platform_machine != 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
     { name = "xarray", version = "2026.9.0", source = { registry = "https://pypi.org/simple" }, marker = "(python_full_version >= '3.11' and python_full_version < '3.14') or (python_full_version >= '3.11' and platform_machine != 'x86_64') or (python_full_version >= '3.14' and platform_machine == 'x86_64' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (python_full_version >= '3.11' and sys_platform != 'darwin') or (python_full_version < '3.11' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2') or (sys_platform != 'darwin' and extra == 'group-5-cmomy-numpy1' and extra == 'group-5-cmomy-numpy2')" },
@@ -781,13 +782,13 @@ type = ">=3.14"
 
 [package.metadata]
 requires-dist = [
-    { name = "docstring-inheritance" },
     { name = "lazy-loader" },
-    { name = "module-utilities", specifier = ">=0.10.1" },
+    { name = "module-utilities", extras = ["inherit"], specifier = ">=0.10.1" },
     { name = "numba", marker = "python_full_version >= '3.14'", specifier = ">=0.63" },
     { name = "numba", marker = "python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'", specifier = ">=0.58,<0.63" },
     { name = "numba", marker = "(python_full_version < '3.14' and sys_platform != 'darwin') or platform_machine != 'x86_64'", specifier = ">=0.58" },
-    { name = "numpy", specifier = ">1.24" },
+    { name = "numpy", specifier = ">=1.24" },
+    { name = "pandas", specifier = ">=2.3.3" },
     { name = "typing-extensions", specifier = ">=4.10.0" },
     { name = "xarray", specifier = ">=2023.9.0" },
 ]
@@ -2156,6 +2157,11 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/a4/d0/d05603f10b18fcd9a734676b98352f669055994d660baa63b2e84807c654/module_utilities-0.11.0.tar.gz", hash = "sha256:72ad7e0802fadcf8cce1affd431ff749046c2ea4f14a3eaeab2b1173c4e4ee78", size = 220426, upload-time = "2025-07-21T19:01:17.862Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0b/eb/7ad99515e443423225d65f0f42ece8db78161afa68f7888c5fd72ff30047/module_utilities-0.11.0-py3-none-any.whl", hash = "sha256:4b6c999bddcdaf03229af8ee35fa0650b6b449c6f2c46a15bd4d0288dbfd8d90", size = 31850, upload-time = "2025-07-21T19:01:16.628Z" },
+]
+
+[package.optional-dependencies]
+inherit = [
+    { name = "docstring-inheritance" },
 ]
 
 [[package]]
