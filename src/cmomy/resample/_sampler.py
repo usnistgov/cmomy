@@ -52,7 +52,7 @@ if TYPE_CHECKING:
     from cmomy.core.typing_compat import Unpack
 
 
-# * Class interface -----------------------------------------------------------
+# * Class interface --------------------------------------------------------------------
 @docfiller.decorate
 class IndexSampler(Generic[SamplerArrayT]):
     """
@@ -325,7 +325,7 @@ class IndexSampler(Generic[SamplerArrayT]):
         return cls(indices=indices, ndat=ndat, parallel=parallel, fastpath=True)
 
 
-# * Create random indices -----------------------------------------------------
+# * Create random indices --------------------------------------------------------------
 @docfiller.decorate
 def random_indices(
     nrep: int,
@@ -388,7 +388,7 @@ def random_freq(
     )
 
 
-# * DataArray/set of indices --------------------------------------------------
+# * DataArray/set of indices -----------------------------------------------------------
 def _randsamp_indices_dataarray_or_dataset(
     data: DataT,
     *,
@@ -439,7 +439,7 @@ def _randsamp_indices_dataarray_or_dataset(
     return xr.Dataset(out)  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
 
 
-# * select ndat ---------------------------------------------------------------
+# * select ndat ------------------------------------------------------------------------
 @docfiller.decorate
 def select_ndat(
     data: ArrayLike | xr.DataArray | xr.Dataset,
@@ -513,7 +513,7 @@ def select_ndat(
     return data.shape[axis]  # type: ignore[no-any-return]
 
 
-# * Convert -------------------------------------------------------------------
+# * Convert ----------------------------------------------------------------------------
 @overload
 def freq_to_indices(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
     freq: SamplerArrayT,

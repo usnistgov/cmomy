@@ -10,7 +10,7 @@ import enum
 from .typing_compat import override
 
 
-# * Missing/no values ---------------------------------------------------------
+# * Missing/no values ------------------------------------------------------------------
 # taken from https://github.com/python-attrs/attrs/blob/main/src/attr/_make.py
 class Missing(enum.Enum):
     """

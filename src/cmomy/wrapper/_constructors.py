@@ -80,7 +80,7 @@ if TYPE_CHECKING:
     )
 
 
-# * General wrapper -----------------------------------------------------------
+# * General wrapper --------------------------------------------------------------------
 @overload
 def wrap(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     obj: DataT,
@@ -206,7 +206,7 @@ def wrap(
     )
 
 
-# * Zeros like ----------------------------------------------------------------
+# * Zeros like -------------------------------------------------------------------------
 @overload
 def zeros_like(
     c: _CentralMomentsDataT,
@@ -318,7 +318,7 @@ def zeros_like(
     return out
 
 
-# * From vals -----------------------------------------------------------------
+# * From vals --------------------------------------------------------------------------
 @overload
 def wrap_reduce_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
@@ -470,7 +470,7 @@ def wrap_reduce_vals(  # ruff:ignore[too-many-arguments]
     )
 
 
-# * resample vals -------------------------------------------------------------
+# * resample vals ----------------------------------------------------------------------
 @overload
 def wrap_resample_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     x: DataT,
@@ -632,7 +632,7 @@ def wrap_resample_vals(  # ruff:ignore[too-many-arguments]
     )
 
 
-# * From raw -----------------------------------------------------------------
+# * From raw ---------------------------------------------------------------------------
 @overload
 def wrap_raw(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
     raw: DataT,

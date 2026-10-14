@@ -74,11 +74,7 @@ repos:
       - id: pyproject-fmt
   # ** validate (schema-store)
   - repo: https://github.com/henryiii/validate-pyproject-schema-store
-<<<<<<< before updating
-    rev: "2026.10.02"
-=======
     rev: "2026.10.06"
->>>>>>> after updating
     hooks:
       - id: validate-pyproject
         name: validate-pyproject-schema-store
@@ -142,7 +138,7 @@ repos:
   # * Spelling
   # ** typos
   - repo: https://github.com/adhtruong/mirrors-typos
-    rev: "v1.50.3"
+    rev: "v1.51.1"
     hooks:
       - id: typos
         exclude_types: [jupyter]
@@ -172,27 +168,11 @@ repos:
 
   # * Commit message
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: "v4.19.1"
+    rev: "v4.19.2"
     hooks:
       - id: commitizen
         stages: [commit-msg]
 
-<<<<<<< before updating
-=======
-  # * Cog
-  - repo: local
-    hooks:
-      - id: cog-readme
-        name: cog-readme
-        alias: cog
-        entry: >-
-          uv run tools/cog_runner.py --format=prettier --lint=markdownlint-cli2 --
-        # if need package, prefix with uv run --no-dev --isolated
-        language: python
-        files: ^README\.md$
-        stages: [manual]
-
->>>>>>> after updating
   # * Actions
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: "0.38.2"
@@ -239,13 +219,7 @@ repos:
     rev: "0.9.1"
     hooks:
       - id: nbstripout
-        args:
-          [
-            "--keep-output",
-            "--keep-count",
-            "--extra-keys",
-            "metadata.kernelspec metadata.kernel_spec",
-          ]
+        args: ["--keep-output", "--keep-count", "--extra-keys", "metadata.kernelspec metadata.kernel_spec"]
 
   - repo: https://github.com/nbQA-dev/nbQA
     rev: "1.9.1"
@@ -255,7 +229,7 @@ repos:
         name: nbqa-typos
         alias: typos
         additional_dependencies: &typos-deps
-          - typos==1.50.3
+          - typos==1.51.1
         args:
           - typos
           - --force-exclude
@@ -286,8 +260,7 @@ repos:
         files: ^docs/examples/.*\.md$
         pass_filenames: false
 
-<<<<<<< before updating
-  # * Other tools --------------------------------------------------------------
+  # * Other tools ----------------------------------------------------------------------------------
   # * auto-files
   - repo: local
     hooks:
@@ -306,6 +279,3 @@ repos:
         language: python
         files: ^tools/auto_test_typing.py$
         pass_filenames: false
-=======
-  # * Other tools ----------------------------------------------------------------------------------
->>>>>>> after updating

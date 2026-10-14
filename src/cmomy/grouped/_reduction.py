@@ -140,7 +140,7 @@ def _optional_group_dim(
     return data
 
 
-# * Data ----------------------------------------------------------------------
+# * Data -------------------------------------------------------------------------------
 # ** Grouped
 @overload
 def reduce_data_grouped(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]

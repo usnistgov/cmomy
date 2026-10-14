@@ -126,7 +126,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
 
         self._validate_dtype()
 
-    # ** Properties -----------------------------------------------------------
+    # ** Properties --------------------------------------------------------------------
     @property
     def obj(self) -> GenArrayT:
         """Underlying object."""
@@ -211,7 +211,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Coerce wrapped data to :class:`~numpy.ndarray` if possible."""
         return np.asarray(self)
 
-    # ** Create/copy/new ------------------------------------------------------
+    # ** Create/copy/new ---------------------------------------------------------------
     def _new_like(self, obj: GenArrayT) -> Self:
         """Create new object with same properties (mom_ndim, etc) as self with no checks and fastpath"""
         return type(self)(
@@ -335,7 +335,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             copy=True,
         )
 
-    # ** Utils ----------------------------------------------------------------
+    # ** Utils -------------------------------------------------------------------------
     def _raise_if_not_mom_ndim_1(self) -> None:
         if self.mom_ndim != 1:
             msg = "Only implemented for `mom_ndim==1`"
@@ -363,7 +363,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             len(y), mom_ndim - 1, "`len(y)` must equal `mom_ndim - 1`."
         )
 
-    # ** Pushing --------------------------------------------------------------
+    # ** Pushing -----------------------------------------------------------------------
     def _pusher(self, parallel: bool | None = None, size: int | None = None) -> Pusher:
         return factory_pusher(
             mom_ndim=self.mom_ndim, parallel=parallel_heuristic(parallel, size=size)
@@ -492,7 +492,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             Same object with pushed data.
         """
 
-    # ** Operators ------------------------------------------------------------
+    # ** Operators ---------------------------------------------------------------------
     def _check_other(self, other: Self) -> None:
         """Check other object."""
         if type(self) is not type(other):
@@ -530,7 +530,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         self._obj = self.assign_moment(weight=self.weight() * scale, copy=False)._obj
         return self
 
-    # ** Pipe -----------------------------------------------------------------
+    # ** Pipe --------------------------------------------------------------------------
     def pipe(  # pylint: disable=useless-type-doc,useless-param-doc
         self,
         func_or_method: Callable[..., Any] | str,
@@ -598,8 +598,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             fastpath=_fastpath,
         )
 
-    # ** Interface to modules -------------------------------------------------
-    # *** .utils --------------------------------------------------------------
+    # ** Interface to modules ----------------------------------------------------------
+    # *** .utils -----------------------------------------------------------------------
     @docfiller.decorate
     def moveaxis(
         self,
@@ -760,7 +760,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         )
         return self._new_like(obj=obj)  # pyrefly: ignore [bad-argument-type]
 
-    # *** .convert ------------------------------------------------------------
+    # *** .convert ---------------------------------------------------------------------
     @docfiller.decorate
     def cumulative(
         self,
@@ -871,7 +871,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             mom_params=mom_params_out,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
         )
 
-    # *** .resample -----------------------------------------------------------
+    # *** .resample --------------------------------------------------------------------
     @docfiller.decorate
     def resample_and_reduce(
         self,
@@ -1045,7 +1045,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         )
         return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]  # pyrefly: ignore [bad-argument-type]
 
-    # *** .reduction ----------------------------------------------------------
+    # *** .reduction -------------------------------------------------------------------
     def _block_by(
         self,
         block: int,
@@ -1108,7 +1108,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         ~.grouped.block_by
         """
 
-    # ** Access to underlying statistics --------------------------------------
+    # ** Access to underlying statistics -----------------------------------------------
     def weight(self) -> GenArrayT:
         """Weight data."""
         return self.select_moment("weight")
@@ -1218,7 +1218,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """
         return self.to_raw(weight=1.0)
 
-    # ** Constructors ---------------------------------------------------------
+    # ** Constructors ------------------------------------------------------------------
     @classmethod
     @abstractmethod
     @docfiller.decorate

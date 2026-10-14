@@ -69,7 +69,7 @@ def factory_apply_ufunc_kwargs(
     return out
 
 
-# * Select axis/dim -----------------------------------------------------------
+# * Select axis/dim --------------------------------------------------------------------
 def move_mom_dims_to_end(
     x: xr.DataArray, mom_dims: MomDims, mom_ndim: MomNDim | None = None
 ) -> xr.DataArray:
@@ -121,7 +121,7 @@ def contains_dims(data: xr.DataArray | xr.Dataset, *dims: Hashable) -> bool:
     return all(d in data.dims for d in dims)
 
 
-# * Transpose like ------------------------------------------------------------
+# * Transpose like ---------------------------------------------------------------------
 def transpose_like(
     data_out: DataT,
     template: xr.DataArray | xr.Dataset,
@@ -196,7 +196,7 @@ def _transpose_like(
     return data_out
 
 
-# * Assign coords to selected -------------------------------------------------
+# * Assign coords to selected ----------------------------------------------------------
 def _replace_coords_from_isel_dataarray(
     template: xr.DataArray,
     selected: xr.DataArray,

@@ -9,7 +9,7 @@ import xarray as xr
 import cmomy
 
 
-# * reduce_vals -----------------------------------------------------------------
+# * reduce_vals ------------------------------------------------------------------------
 def test_reduce_vals_broadcast(rng: np.random.Generator) -> None:
     func = partial(cmomy.reduce_vals, axis=-1, mom=(2, 2))
 
@@ -46,7 +46,7 @@ def test_reduce_vals_axis(rng, shape, axis) -> None:
     np.testing.assert_allclose(a, b)
 
 
-# * reduce_data ---------------------------------------------------------------
+# * reduce_data ------------------------------------------------------------------------
 @pytest.mark.parametrize(
     ("shape", "axis", "mom_ndim"),
     [

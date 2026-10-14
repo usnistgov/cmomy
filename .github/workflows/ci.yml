@@ -180,9 +180,7 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/.mypy_cache
-          key:
-            mypy-cache|${{ runner.os }}|${{ runner.arch }}|${{
-            env.pythonLocation }}|${{ hashFiles('uv.lock') }}
+          key: mypy-cache|${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation }}|${{ hashFiles('uv.lock') }}
 
       - name: typecheck
         env:
@@ -203,33 +201,22 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-<<<<<<< before updating
         python-version:
           - ${{ needs.build-package.outputs.max-python-version }}
-=======
-        python-version: ${{ fromJson(needs.build-package.outputs.minmax-default-python-versions) }}
->>>>>>> after updating
         session:
           - test-run-slow
           - test-serial
           - test-numpy1
           - test-notebook
         include:
-          - python-version:
-              ${{ needs.build-package.outputs.min-python-version }}
+          - python-version: ${{ needs.build-package.outputs.min-python-version }}
             os: ubuntu-latest
             session: test
           - os: windows-latest
-<<<<<<< before updating
-            python-version:
-              ${{ needs.build-package.outputs.max-python-version }}
+            python-version: ${{ needs.build-package.outputs.max-python-version }}
             session: test
           - os: macos-latest
-            python-version:
-              ${{ needs.build-package.outputs.max-python-version }}
-=======
-            python-version: ${{ needs.build-package.outputs.default-python-version }}
->>>>>>> after updating
+            python-version: ${{ needs.build-package.outputs.max-python-version }}
             session: test
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -251,10 +238,7 @@ jobs:
           path: |
             ${{ github.workspace }}/.numba_cache
             ${{ github.workspace }}\.numba_cache
-          key:
-            numba-cache|${{ runner.os }}|${{ runner.arch }}|${{
-            env.pythonLocation }}|${{ hashFiles('uv.lock') }}|${{
-            hashFiles('src/cmomy/_lib/*.py') }}
+          key: numba-cache|${{ runner.os }}|${{ runner.arch }}|${{ env.pythonLocation }}|${{ hashFiles('uv.lock') }}|${{ hashFiles('src/cmomy/_lib/*.py') }}
 
       - name: Test with nox
         env:

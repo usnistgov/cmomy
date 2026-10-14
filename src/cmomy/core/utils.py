@@ -27,7 +27,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
 
-# * peek at iterable ----------------------------------------------------------
+# * peek at iterable -------------------------------------------------------------------
 def peek_at(iterable: Iterable[T]) -> tuple[T, Iterator[T]]:
     """Returns the first value from iterable, as well as a new iterator with
     the same content as the original iterable

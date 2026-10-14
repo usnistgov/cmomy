@@ -41,7 +41,7 @@ def test_MomParams() -> None:
     )
 
 
-# * MomParamsArray(Optional) --------------------------------------------------
+# * MomParamsArray(Optional) -----------------------------------------------------------
 @pytest.mark.parametrize(
     ("kws", "expected"),
     [
@@ -115,7 +115,7 @@ def test_MomParamsArray_maybe_reorder_dataarray(data, mom_axes, expected_order) 
     )
 
 
-# * MomParamsXArray(Optional) -------------------------------------------------
+# * MomParamsXArray(Optional) ----------------------------------------------------------
 
 
 @pytest.mark.parametrize(

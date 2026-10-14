@@ -322,7 +322,7 @@ def _bootstrap_confidence_interval(
     return ci
 
 
-# * Utilities -----------------------------------------------------------------
+# * Utilities --------------------------------------------------------------------------
 class InstabilityWarning(UserWarning):
     """Issued when results may be unstable."""
 
