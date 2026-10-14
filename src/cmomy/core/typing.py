@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     # Missing value type
     MissingType: TypeAlias = Literal[Missing.MISSING]
 
-# * TypeVars ------------------------------------------------------------------
+# * TypeVars ---------------------------------------------------------------------------
 #: DataArray or Dataset
 DataT = TypeVar("DataT", xr.DataArray, xr.Dataset, "xr.DataArray | xr.Dataset")
 DataArrayOrSetT = TypeVar("DataArrayOrSetT", bound="xr.DataArray | xr.Dataset")
@@ -63,7 +63,7 @@ _FloatT = TypeVar("_FloatT", np.float64, np.float32)
 SamplerArrayT = TypeVar("SamplerArrayT", bound="NDArrayAny | xr.DataArray | xr.Dataset")
 
 
-# * Numpy ---------------------------------------------------------------------
+# * Numpy ------------------------------------------------------------------------------
 # Axis/Dim reduction type
 # TODO(wpk): consider replacing `int` with `SupportsIndex` for axis annotations
 # to better represent integer-like inputs (for example, NumPy integer scalars).
@@ -147,7 +147,7 @@ ArrayLikeArg: TypeAlias = (
 )
 
 
-# * Moments -------------------------------------------------------------------
+# * Moments ----------------------------------------------------------------------------
 # NOTE: using the strict form for Moments
 # Passing in integer or Sequence[int] will work in almost all cases,
 # but will be flagged by typechecker...
@@ -164,7 +164,7 @@ MomAxes = Moments
 MomAxesStrict = MomentsStrict
 
 
-# * Xarray specific stuff -----------------------------------------------------
+# * Xarray specific stuff --------------------------------------------------------------
 # fix if using autodoc typehints...
 #: Reduction dimension
 DimsReduce: TypeAlias = Hashable | None
@@ -193,7 +193,7 @@ KeepAttrs: TypeAlias = (
 Groups: TypeAlias = "Sequence[Any] | NDArrayAny | IndexAny | pd.MultiIndex"
 
 
-# * Literals ------------------------------------------------------------------
+# * Literals ---------------------------------------------------------------------------
 #: Order parameters
 ArrayOrderCF: TypeAlias = Literal["C", "F"] | None
 #: Order parameters

@@ -80,7 +80,7 @@ if TYPE_CHECKING:
     from .core.typing_compat import Unpack
 
 
-# * Reduce vals ---------------------------------------------------------------
+# * Reduce vals ------------------------------------------------------------------------
 # ** overloads
 @overload
 def reduce_vals(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
@@ -337,7 +337,7 @@ def _reduce_vals(
     return out
 
 
-# * Reduce data ---------------------------------------------------------------
+# * Reduce data ------------------------------------------------------------------------
 # ** overload
 @overload
 def reduce_data(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]

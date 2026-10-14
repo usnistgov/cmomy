@@ -43,7 +43,7 @@ if TYPE_CHECKING:
     from .typing_compat import TypeAlias
 
 
-# * Keyword args --------------------------------------------------------------
+# * Keyword args -----------------------------------------------------------------------
 ApplyUFuncKwargs: TypeAlias = Mapping[str, Any]
 
 

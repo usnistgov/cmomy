@@ -34,7 +34,7 @@ if TYPE_CHECKING:
     _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
-# * Array order ---------------------------------------------------------------
+# * Array order ------------------------------------------------------------------------
 def arrayorder_to_arrayorder_cf(order: ArrayOrderKACF) -> ArrayOrderCF:
     """Convert general array order to C/F/None"""
     if order is None:
@@ -46,7 +46,7 @@ def arrayorder_to_arrayorder_cf(order: ArrayOrderKACF) -> ArrayOrderCF:
     return None
 
 
-# * Axis normalizer -----------------------------------------------------------
+# * Axis normalizer --------------------------------------------------------------------
 def normalize_axis_index(
     axis: complex,
     ndim: int,

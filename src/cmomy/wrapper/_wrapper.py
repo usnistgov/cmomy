@@ -219,7 +219,7 @@ class CentralMomentsArray(
             fastpath=fastpath,
         )
 
-    # ** Properties ------------------------------------------------------------
+    # ** Properties --------------------------------------------------------------------
     @property
     def mom_axes(self) -> MomAxesStrict:
         """Axes index corresponding to moment(s)."""
@@ -254,7 +254,7 @@ class CentralMomentsArray(
         for k in range(self._obj.shape[0]):
             yield self[k]
 
-    # ** Create/copy/new ------------------------------------------------------
+    # ** Create/copy/new ---------------------------------------------------------------
     @overload
     def new_like(  # pylint: disable=signature-differs
         self,
@@ -402,12 +402,12 @@ class CentralMomentsArray(
             dtype=dtype, order=order, casting=casting, subok=subok, copy=copy
         )
 
-    # ** Utils ----------------------------------------------------------------
+    # ** Utils -------------------------------------------------------------------------
     @override
     def _validate_dtype(self) -> None:
         _ = validate_floating_dtype(self._obj.dtype)
 
-    # ** Pushing --------------------------------------------------------------
+    # ** Pushing -----------------------------------------------------------------------
     @override
     @docfiller_array_inherit_abc()
     def push_data(
@@ -630,8 +630,8 @@ class CentralMomentsArray(
         )
         return self
 
-    # ** Interface to modules -------------------------------------------------
-    # *** .convert ------------------------------------------------------------
+    # ** Interface to modules ----------------------------------------------------------
+    # *** .convert ---------------------------------------------------------------------
     @overload  # type: ignore[override]
     def cumulative(
         self,
@@ -728,7 +728,7 @@ class CentralMomentsArray(
             order=order,
         )
 
-    # *** .resample -----------------------------------------------------------
+    # *** .resample --------------------------------------------------------------------
     @overload  # type: ignore[override]
     def resample_and_reduce(
         self,
@@ -877,7 +877,7 @@ class CentralMomentsArray(
             parallel=parallel,
         )
 
-    # *** .reduction ----------------------------------------------------------
+    # *** .reduction -------------------------------------------------------------------
     @overload
     def reduce(
         self,
@@ -961,7 +961,7 @@ class CentralMomentsArray(
             )
         return self._new_like(obj)
 
-    # ** Constructors ----------------------------------------------------------
+    # ** Constructors ------------------------------------------------------------------
     @overload
     @classmethod
     def zeros(
@@ -1024,7 +1024,7 @@ class CentralMomentsArray(
 
         return cls(np.zeros(shape, dtype=dtype, order=order), mom_params=mom_params)
 
-    # ** Custom for this class -------------------------------------------------
+    # ** Custom for this class ---------------------------------------------------------
     def _raise_if_scalar(self, message: str | None = None) -> None:
         if self._obj.ndim <= self.mom_ndim:
             if message is None:  # pragma: no cover
@@ -1174,7 +1174,7 @@ class CentralMomentsArray(
         """
         return self.fill(value=0.0)
 
-    # ** To/from xarray ------------------------------------------------------------
+    # ** To/from xarray ----------------------------------------------------------------
     @docfiller_array.decorate
     def to_dataarray(
         self,
@@ -1367,7 +1367,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         # NOTE: Why this ignore?
         super().__init__(obj=obj, mom_params=mom_params, fastpath=fastpath)  # type: ignore[arg-type]
 
-    # ** Properties ------------------------------------------------------------
+    # ** Properties --------------------------------------------------------------------
     @property
     def mom_dims(self) -> MomDimsStrict:
         """Moments dimension names."""
@@ -1489,7 +1489,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             ),
         )
 
-    # ** Create/copy/new ------------------------------------------------------
+    # ** Create/copy/new ---------------------------------------------------------------
     @override
     @docfiller_data_inherit_abc()
     def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ  # pyright: ignore[reportIncompatibleMethodOverride]  # pyrefly: ignore [bad-override]
@@ -1591,7 +1591,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             )
         )
 
-    # ** Utils ----------------------------------------------------------------
+    # ** Utils -------------------------------------------------------------------------
     @override
     def _validate_dtype(self) -> None:
         if is_dataarray(self._obj):
@@ -1602,7 +1602,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             if contains_dims(val, *self.mom_dims):
                 _ = validate_floating_dtype(val, name=name)
 
-    # ** Pushing --------------------------------------------------------------
+    # ** Pushing -----------------------------------------------------------------------
     @property
     def _dtype(self) -> np.dtype[Any] | None:
         if is_dataarray(self._obj):
@@ -1859,8 +1859,8 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
 
         return self
 
-    # ** Interface to modules -------------------------------------------------
-    # *** .reduction ----------------------------------------------------------
+    # ** Interface to modules ----------------------------------------------------------
+    # *** .reduction -------------------------------------------------------------------
     @override
     @docfiller_data_inherit_abc()
     def reduce(  # ruff:ignore[too-many-arguments]
@@ -2072,7 +2072,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
 
         return self._new_like(data)
 
-    # ** Constructors ----------------------------------------------------------
+    # ** Constructors ------------------------------------------------------------------
     @override
     @classmethod
     @docfiller_data.decorate
@@ -2128,7 +2128,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             template=template,
         )
 
-    # ** Xarray specific stuff ------------------------------------------------
+    # ** Xarray specific stuff ---------------------------------------------------------
     def to_dataset(
         self,
         dim: Hashable | None = None,
@@ -2685,7 +2685,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             _fastpath=_fastpath,
         )
 
-    # ** To/from CentralMomentsArray ------------------------------------------
+    # ** To/from CentralMomentsArray ---------------------------------------------------
     def to_array(self, copy: bool = False) -> CentralMomentsArray[Any]:
         """Convert to :class:`cmomy.CentralMomentsArray` object if possible."""
         if is_dataset(self.obj):

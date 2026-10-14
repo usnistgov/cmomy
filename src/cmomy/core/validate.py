@@ -33,7 +33,7 @@ if TYPE_CHECKING:
     T = TypeVar("T")
 
 
-# * TypeGuards ----------------------------------------------------------------
+# * TypeGuards -------------------------------------------------------------------------
 def is_ndarray(x: Any) -> TypeIs[NDArray[Any]]:
     """Typeguard ndarray."""
     return isinstance(x, np.ndarray)
@@ -64,7 +64,7 @@ class is_xarray_typevar(Generic[DataT]):  # ruff:ignore[invalid-class-name]
         return isinstance(x, (xr.DataArray, xr.Dataset))
 
 
-# * Raises --------------------------------------------------------------------
+# * Raises -----------------------------------------------------------------------------
 def raise_if_wrong_value(value: T, expected: T, message: str | None = None) -> None:
     """Raise error if value != expected_value"""
     if value != expected:
@@ -73,7 +73,7 @@ def raise_if_wrong_value(value: T, expected: T, message: str | None = None) -> N
         raise ValueError(msg)
 
 
-# * Moment validation ---------------------------------------------------------
+# * Moment validation ------------------------------------------------------------------
 def is_mom_ndim(mom_ndim: int | None) -> TypeIs[MomNDim]:
     """Validate mom_ndim."""
     return mom_ndim in {1, 2}
@@ -133,7 +133,7 @@ def validate_mom_axes(mom_axes: int | Iterable[int]) -> MomAxesStrict:
     raise ValueError(msg)
 
 
-# * Validate type -------------------------------------------------------------
+# * Validate type ----------------------------------------------------------------------
 @docfiller.decorate
 def validate_floating_dtype(
     dtype: DTypeLike,
@@ -200,7 +200,7 @@ def validate_mom_ndim_and_mom_axes(
     return cast("MomNDim", mom_ndim), mom_axes
 
 
-# * Validate Axis -------------------------------------------------------------
+# * Validate Axis ----------------------------------------------------------------------
 @overload
 def validate_axis(axis: int | MissingType | None) -> int: ...  # type: ignore[overload-overlap]
 @overload
@@ -241,7 +241,7 @@ def validate_axis_mult(
     return (axis,)
 
 
-# * DataArray -----------------------------------------------------------------
+# * DataArray --------------------------------------------------------------------------
 def validate_mom_dims(
     mom_dims: Hashable | Sequence[Hashable] | None,
     mom_ndim: MomNDim,

@@ -76,7 +76,7 @@ if TYPE_CHECKING:
     _ScalarT = TypeVar("_ScalarT", bound=np.generic)
 
 
-# * moveaxis ------------------------------------------------------------------
+# * moveaxis ---------------------------------------------------------------------------
 def moveaxis_order(
     x: NDArray[_ScalarT] | xr.DataArray,
     axis: AxesWrap | MissingType = MISSING,
@@ -312,7 +312,7 @@ def moveaxis(
     return x.transpose(order)
 
 
-# * Selecting subsets of data -------------------------------------------------
+# * Selecting subsets of data ----------------------------------------------------------
 # pylint: disable=consider-using-namedtuple-or-dataclass
 _MOMENT_INDEXER_1: dict[str, tuple[int | slice, ...]] = {
     "weight": (0,),
@@ -558,7 +558,7 @@ def _select_moment(
     return data[idx]
 
 
-# * Assign value(s) -----------------------------------------------------------
+# * Assign value(s) --------------------------------------------------------------------
 # NOTE: Can't do kwargs trick used elsewhere, because want to be
 # able to use **moments_kwargs....
 @overload
@@ -784,7 +784,7 @@ def _assign_moment(
     return out
 
 
-# * Vals -> Data --------------------------------------------------------------
+# * Vals -> Data -----------------------------------------------------------------------
 # TODO(wpk): move this to convert?
 @overload
 def vals_to_data(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]

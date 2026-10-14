@@ -9,7 +9,7 @@ import xarray as xr
 import cmomy
 
 
-# * utils ---------------------------------------------------------------------
+# * utils ------------------------------------------------------------------------------
 @pytest.mark.parametrize(
     ("kwargs", "expected"),
     [
@@ -79,7 +79,7 @@ def test__validate_index() -> None:
         _ = _validate_index(4, index, group_start, [10])
 
 
-# * grouped -------------------------------------------------------------------
+# * grouped ----------------------------------------------------------------------------
 @pytest.mark.parametrize(
     ("shape", "mom_ndim"),
     [
