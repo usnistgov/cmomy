@@ -569,7 +569,7 @@ strict_xfail = "true"
 NUMBA_CACHE_DIR = { value = "{PWD}/.numba_cache", transform = true, skip_if_set = true }
 NUMBA_CACHE_LOCATOR_CLASSES = { value = "cmomy.cache.SharedHashCacheLocator", skip_if_set = true }
 NUMBA_CACHE_TOOLS_MAGIC = { value = "0", skip_if_set = true }
-env_files = [ ".numba_env" ]
+env_files = [ "config/.numba_env" ]
 
 [tool.coverage]
 run.source = [

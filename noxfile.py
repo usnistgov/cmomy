@@ -80,7 +80,7 @@ nox.options.default_venv_backend = "uv"
 
 # * Options ----------------------------------------------------------------------------
 
-load_dotenv(".numba_env")
+load_dotenv("config/.numba_env")
 os.environ["NUMBA_CACHE_DIR"] = str(ROOT / ".numba_cache")
 
 # if True, use uv lock/sync.  If False, use uv pip compile/sync...
