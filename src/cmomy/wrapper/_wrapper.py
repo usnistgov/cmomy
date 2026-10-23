@@ -256,7 +256,7 @@ class CentralMomentsArray(
 
     # ** Create/copy/new ---------------------------------------------------------------
     @overload
-    def new_like(  # pylint: disable=signature-differs
+    def new_like(
         self,
         obj: ArrayLikeArg[_FloatT],
         *,
@@ -1529,23 +1529,23 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         obj_ = obj if isinstance(obj, type(self._obj)) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
 
         # minimal check on shape and that mom_dims are present....
-        if not contains_dims(obj_, *self.mom_dims):  # pyrefly: ignore [bad-argument-type]
+        if not contains_dims(obj_, *self.mom_dims):
             msg = f"Cannot create new from object without {self.mom_dims}"
             raise ValueError(msg)
-        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj_))  # pyrefly: ignore [bad-argument-type]
+        self._raise_if_wrong_mom_shape(self._mom_params.get_mom_shape(obj_))
 
         if verify:
-            raise_if_wrong_value(obj_.sizes, self._obj.sizes, "Wrong `obj.sizes`.")  # pyrefly: ignore [missing-attribute]
+            raise_if_wrong_value(obj_.sizes, self._obj.sizes, "Wrong `obj.sizes`.")
 
         if not fastpath:
             copy = False if copy is None else copy
 
             if dtype:
-                obj_ = obj_.astype(astype_dtype_dict(self._obj, dtype), copy=copy)  # pyright: ignore[reportUnknownMemberType]  # pyrefly: ignore [missing-attribute]
+                obj_ = obj_.astype(astype_dtype_dict(self._obj, dtype), copy=copy)  # pyright: ignore[reportUnknownMemberType]
             elif copy:
-                obj_ = obj_.copy(deep=deep)  # pyrefly: ignore [missing-attribute]
+                obj_ = obj_.copy(deep=deep)
 
-        return type(self)(  # pyrefly: ignore [bad-specialization]
+        return type(self)(
             obj=obj_,
             mom_params=self._mom_params,
             fastpath=fastpath,
