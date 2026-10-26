@@ -33,7 +33,7 @@ dependencies:
   - pytest-sugar
   - scipy
   - scipy-stubs
-  - typecheck-runner>=0.2.0
+  - typecheck-runner>=0.2.2
   - typing-extensions>=4.10.0
   - xarray>=2023.9.0
   - pip
