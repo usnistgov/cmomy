@@ -138,6 +138,8 @@ DTypeLikeArg = Union[
 # ** ArrayLike
 @runtime_checkable
 class _SupportsArray(Protocol[_DTypeT_co]):
+    """Type that supports arrays."""
+
     def __array__(self) -> np.ndarray[Any, _DTypeT_co]: ...  # ruff:ignore[bad-dunder-method-name]  # pragma: no cover
 
 

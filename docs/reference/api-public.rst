@@ -49,7 +49,6 @@ Moment parameters
 
 .. autosummary::
    :toctree: generated/
-   :template: autodocsumm/class-noinherit.rst
 
    MomParams
    MomParamsDict

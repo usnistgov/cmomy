@@ -1,6 +1,6 @@
 """
-Typed keyword arguments (:mod:`cmomy.core.typing_kwargs`)
-=========================================================
+Typed keyword arguments (:mod:`cmomy.core._typing_kwargs`)
+==========================================================
 """
 
 # pyright: deprecateTypingAliases=false

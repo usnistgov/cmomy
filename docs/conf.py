@@ -65,7 +65,6 @@ nitpick_ignore = [
     ("py:class", "Collection[Hashable]"),
     ("py:class", "ellipsis"),
     ("py:class", "typing_extensions.TypedDict"),
-    ("py:class", "numba.core.caching.UserProvidedCacheLocator"),
 ]
 nitpick_ignore_regex = [
     (r"py:.*", r"numpy\._typing.*"),
@@ -80,6 +79,11 @@ nitpick_ignore_regex = [
     (r"py:.*", r"typing.*"),
     (r"py:.*", r"typing_extensions.*"),
     (r"py:.*", r"NDArrayAny.*"),
+    (r"py:.*", r"xr\.Data.*"),
+    (r"py:.*", r"np\.dtype"),
+    (r"py:.*", r"numba\.core\.caching.*"),
+    (r"py:class", r"None\.  Update D from mapping.*"),  # error with typeddict
+    (r"py:class", r"v\, remove specified key and return the corresponding value.*"),
 ]
 
 # -- myst stuff ---------------------------------------------------------
@@ -257,6 +261,8 @@ napoleon_type_aliases = {
     # objects without namespace: xarray
     "DataArray": "~xarray.DataArray",
     "Dataset": "~xarray.Dataset",
+    "xr.DataArray": "~xarray.DataArray",
+    "xr.Dataset": "~xarray.Dataset",
     "Variable": "~xarray.Variable",
     "DatasetGroupBy": "~xarray.core.groupby.DatasetGroupBy",
     "DataArrayGroupBy": "~xarray.core.groupby.DataArrayGroupBy",
