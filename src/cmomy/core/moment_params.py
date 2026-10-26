@@ -1,4 +1,7 @@
-"""Helper class to work with moment parameters."""
+"""
+Helper class to work with moment parameters. (:mod:`cmomy.core.moment_params`)
+==============================================================================
+"""
 
 # pylint: disable=missing-class-docstring
 from __future__ import annotations
@@ -73,24 +76,20 @@ docfiller = _docfiller.append(
 
 @docfiller.decorate
 class MomParamsDict(TypedDict, total=False):
-    """
-    Input dict for moment parameters.
+    """Input dict for moment parameters."""
 
-    Parameters
-    ----------
-    {axes}
-    {dims}
-    {ndim}
-    """
-
+    #: Number of moment dimensions
     ndim: int | None
+    #: Moment axes
     axes: int | Sequence[int] | None
+    #: Moment dimensions
     dims: Hashable | Sequence[Hashable] | None
 
 
 @dataclass(frozen=True)
 class _MixinDataclass:
     def asdict(self) -> MomParamsDict:
+        """Convert to dictionary."""
         return cast("MomParamsDict", asdict(self))
 
     def new_like(self, **kwargs: Any) -> Self:
@@ -101,18 +100,13 @@ class _MixinDataclass:
 @dataclass(frozen=True)
 @docfiller.decorate
 class MomParams(_MixinDataclass):
-    """
-    Dataclass for moment parameters input
+    """Dataclass for moment parameters input"""
 
-    Parameters
-    ----------
-    {ndim}
-    {axes}
-    {ndim}
-    """
-
+    #: Number of moment dimensions
     ndim: int | None = None
+    #: Moment axes
     axes: int | Sequence[int] | None = None
+    #: Moment dimensions
     dims: Hashable | Sequence[Hashable] | None = None
 
 
@@ -705,7 +699,7 @@ class MomParamsXArray(MomParamsXArrayOptional):
         return MomParamsArray(ndim=self.ndim, axes=self.get_axes(data))
 
     def core_dims(self, *dims: Hashable) -> tuple[Hashable, ...]:
-        """Core dimensions (*dims, *self.dims)"""
+        """Core dimensions."""
         return (*dims, *self.dims)
 
 

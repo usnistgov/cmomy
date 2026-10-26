@@ -7,3 +7,6 @@ Base Classes
    :template: autodocsumm/module-inherit.rst
 
    cmomy.wrapper._wrapper_abc
+
+
+.. autoclass:: cmomy.core.typing._SupportsArray

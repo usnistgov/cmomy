@@ -31,3 +31,12 @@ Modules
    cmomy.resample.typing
    cmomy.wrapper.typing
    cmomy.core.missing
+
+
+.. autosummary::
+   :toctree: generated/
+   :template: autodocsumm/module-noinherit.rst
+
+   cmomy.core.moment_params
+   cmomy.core._typing_kwargs
+   cmomy.resample._typing_kwargs
