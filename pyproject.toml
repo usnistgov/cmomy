@@ -113,15 +113,11 @@ test-notebook = [
     "nbval",
     { include-group = "test" },
 ]
-<<<<<<< before updating
 test-scipy = [
     "dask",
     "scipy",
 ]
-typecheck-runner = [ "typecheck-runner>=0.2.0; python_version>'3.9'" ]
-=======
 typecheck-runner = [ "typecheck-runner>=0.2.2; python_version>'3.9'" ]
->>>>>>> after updating
 
 # * uv ---------------------------------------------------------------------------------------------
 [tool.uv]
