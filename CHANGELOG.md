@@ -5,6 +5,18 @@
 
 Changelog for `cmomy`
 
+## 1.2.1
+
+Released on 2026-11-12.
+
+### Bug fixes
+
+- fix: raise an error for moment orders above the binomial table limit ([#328](https://github.com/usnistgov/cmomy/pull/328))
+
+### Contributors
+
+- [@arpitjain099](https://github.com/arpitjain099)
+
 ## 1.2.0
 
 Released on 2026-09-19.
