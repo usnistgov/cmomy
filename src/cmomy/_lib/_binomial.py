@@ -35,3 +35,6 @@ def factory_binomial(order: int, dtype: DTypeLike = np.float64) -> NDArrayAny:
 
 
 BINOMIAL_FACTOR = factory_binomial(OPTIONS["nmax"])
+# Highest moment order the table above can be indexed with.  Note that this is
+# fixed at import time, so ``set_options(nmax=...)`` does not change it.
+MOM_MAX: int = BINOMIAL_FACTOR.shape[0] - 1
