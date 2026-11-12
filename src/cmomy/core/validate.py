@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Generic, cast, final, overload
 import numpy as np
 import xarray as xr
 
+from .._lib._binomial import MOM_MAX
 from .docstrings import docfiller
 from .missing import MISSING
 from .typing import DataT
@@ -98,13 +99,16 @@ def validate_mom_ndim(
     raise ValueError(msg)
 
 
-def validate_mom(mom: int | Iterable[int]) -> MomentsStrict:
+def validate_mom(mom: int | Iterable[int], check_max: bool = True) -> MomentsStrict:
     """
     Convert to MomentsStrict.
 
     Raise ValueError mom invalid.
 
     Integers to length 1 tuple
+
+    Orders above ``MOM_MAX`` index ``BINOMIAL_FACTOR`` out of bounds in the
+    numba pushers, so they are rejected unless ``check_max`` is ``False``.
     """
     if isinstance(mom, int):
         mom = (mom,)
@@ -112,6 +116,13 @@ def validate_mom(mom: int | Iterable[int]) -> MomentsStrict:
         mom = tuple(mom)
 
     if is_mom_tuple(mom):
+        if check_max and any(m > MOM_MAX for m in mom):
+            msg = (
+                f"{mom=} is greater than the maximum order {MOM_MAX}. "
+                "Set the environment variable CMOMY_NMAX before importing "
+                "cmomy to raise this limit."
+            )
+            raise ValueError(msg)
         return mom
 
     msg = f"{mom=} must be an integer, or tuple of length 1 or 2, with positive values."

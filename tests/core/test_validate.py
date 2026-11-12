@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 import xarray as xr
 
+import cmomy
+from cmomy._lib._binomial import MOM_MAX
 from cmomy.core import validate
 from cmomy.core.missing import MISSING
 
@@ -81,6 +83,25 @@ def test_validate_mom_ndim(arg, expected, match) -> None:
 )
 def test_validate_mom(arg, expected) -> None:
     _do_test(validate.validate_mom, arg, expected=expected)
+
+
+def test_validate_mom_max_order() -> None:
+    assert validate.validate_mom(MOM_MAX) == (MOM_MAX,)
+    assert validate.validate_mom((MOM_MAX, MOM_MAX)) == (MOM_MAX, MOM_MAX)
+
+    match = r".*is greater than the maximum order.*"
+    for mom in (MOM_MAX + 1, (MOM_MAX + 1,), (1, MOM_MAX + 1), (MOM_MAX + 1, 1)):
+        with pytest.raises(ValueError, match=match):
+            validate.validate_mom(mom)
+
+
+def test_reduce_vals_above_max_order() -> None:
+    # orders above MOM_MAX index BINOMIAL_FACTOR out of bounds and return
+    # garbage, so they must be rejected instead.
+    x = np.arange(10, dtype=np.float64)
+    assert cmomy.reduce_vals(x, mom=MOM_MAX, axis=0).shape == (MOM_MAX + 1,)
+    with pytest.raises(ValueError, match=r".*is greater than the maximum order.*"):
+        cmomy.reduce_vals(x, mom=MOM_MAX + 1, axis=0)
 
 
 @pytest.mark.parametrize(

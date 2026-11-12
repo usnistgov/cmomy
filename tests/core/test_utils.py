@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from cmomy._lib._binomial import MOM_MAX
 from cmomy.core import utils
 from cmomy.core.validate import validate_mom
 
@@ -70,3 +71,9 @@ def test_select_mom_ndim(kws, expected) -> None:
 def test_mom_to_mom_shape(mom, mom_shape) -> None:
     assert utils.mom_to_mom_shape(mom) == mom_shape
     assert utils.mom_shape_to_mom(mom_shape) == validate_mom(mom)
+
+
+def test_mom_shape_to_mom_max_order() -> None:
+    # a moments array at the limit must still round trip
+    assert utils.mom_shape_to_mom(MOM_MAX + 1) == (MOM_MAX,)
+    assert utils.mom_shape_to_mom((MOM_MAX + 1, MOM_MAX + 1)) == (MOM_MAX, MOM_MAX)

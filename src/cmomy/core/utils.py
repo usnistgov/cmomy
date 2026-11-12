@@ -91,4 +91,6 @@ def mom_to_mom_shape(mom: int | Iterable[int]) -> MomentsStrict:
 @docfiller.decorate
 def mom_shape_to_mom(mom_shape: int | Iterable[int]) -> MomentsStrict:
     """Convert moments shape to moments"""
-    return cast("MomentsStrict", tuple(m - 1 for m in validate_mom(mom_shape)))
+    # a moments shape comes from an existing array, so do not limit the order
+    mom = validate_mom(mom_shape, check_max=False)
+    return cast("MomentsStrict", tuple(m - 1 for m in mom))
