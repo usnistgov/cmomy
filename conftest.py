@@ -64,7 +64,7 @@ def pytest_runtest_setup(item):  # ruff: ignore[missing-return-type-public-funct
 def _is_default_version() -> bool:
     import sys
 
-    return sys.version_info >= (3, 11)
+    return sys.version_info >= (3, 12)
 
 
 def pytest_ignore_collect(collection_path) -> bool:
