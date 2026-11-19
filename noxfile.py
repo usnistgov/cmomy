@@ -910,7 +910,7 @@ def typecheck(  # ruff:ignore[too-many-branches]
             "pyrefly",
             "ty",
             "pylint",
-            "mypy-notebook",
+            "typecheck-notebook",
             "pylint-notebook",
         ]
 

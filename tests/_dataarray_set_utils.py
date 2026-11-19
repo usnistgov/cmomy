@@ -118,7 +118,7 @@ def do_wrap_reduce_vals(*args, **kwargs):
 
 def do_wrap_resample_vals(*args, sampler=None, **kwargs):
     sampler = sampler or {"nrep": 20, "rng": 0}
-    return cmomy.wrap_resample_vals(*args, sampler=sampler, **kwargs).obj
+    return cmomy.wrap_resample_vals(*args, sampler=sampler, **kwargs).obj  # ty: ignore[no-matching-overload]
 
 
 def do_moveaxis(data, **kwargs):  # ruff:ignore[unused-function-argument]

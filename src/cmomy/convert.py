@@ -734,7 +734,7 @@ def moments_to_comoments(
         if (mom_dim_in := mom_params.dims[0]) in mom_params_out.dims:
             # give this a temporary name for simplicity:
             old_name, mom_dim_in = mom_dim_in, f"_tmp_{mom_dim_in}"
-            data = data.rename({old_name: mom_dim_in})
+            data = data.rename({old_name: mom_dim_in})  # ty: ignore[invalid-assignment]
 
         xout: DataT = xr.apply_ufunc(  # pyright: ignore[reportUnknownMemberType]
             moments_to_comoments,
@@ -751,7 +751,8 @@ def moments_to_comoments(
                         mom_params_out.dims,
                         mom_to_mom_shape(
                             _validate_mom_moments_to_comoments(
-                                mom, data.sizes[mom_dim_in] - 1
+                                mom,
+                                data.sizes[mom_dim_in] - 1,  # ty: ignore[missing-union-attribute]
                             )
                         ),
                         strict=True,
@@ -890,7 +891,7 @@ def comoments_to_moments(
         if (mom_dim_out := mom_params_out.dims[0]) in mom_params.dims:
             # give this a temporary name for simplicity:
             new_name = f"_tmp_{mom_dim_out}"
-            data = data.rename({mom_dim_out: new_name})
+            data = data.rename({mom_dim_out: new_name})  # ty: ignore[invalid-assignment]
             mom_params = mom_params.new_like(
                 dims=tuple(new_name if d == mom_dim_out else d for d in mom_params.dims)
             )
@@ -906,7 +907,7 @@ def comoments_to_moments(
                 apply_ufunc_kwargs,
                 dask="parallelized",
                 output_sizes={
-                    mom_dim_out: sum(data.sizes[k] for k in mom_params.dims) - 1
+                    mom_dim_out: sum(data.sizes[k] for k in mom_params.dims) - 1  # ty: ignore[missing-union-attribute]
                 },
                 output_dtypes=dtype if dtype is not None else np.float64,  # type: ignore[redundant-expr]
             ),

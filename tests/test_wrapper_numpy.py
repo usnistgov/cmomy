@@ -460,7 +460,7 @@ def test_operator_raises() -> None:
 
     with pytest.raises(TypeError):
         # pyrefly: ignore [unsupported-operation]
-        _ = c0 + 1  # type: ignore[operator]  # pyright: ignore[reportOperatorIssue]
+        _ = c0 + 1  # type: ignore[operator]  # pyright: ignore[reportOperatorIssue]  # ty: ignore[unsupported-operator]
 
     with pytest.raises(ValueError):
         _ = c0 + c1

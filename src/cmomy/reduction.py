@@ -494,7 +494,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
             # if specified dims, only keep those in current dataarray
             if dim not in {None, MISSING}:
                 dim = (dim,) if isinstance(dim, str) else dim  # type:ignore[redundant-expr]
-                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable, reportUnknownVariableType, reportUnknownArgumentType]  # pyrefly: ignore [not-iterable]
+                if not (dim := tuple(d for d in dim if contains_dims(data, d))):  # type: ignore[union-attr]  # pyright: ignore[reportGeneralTypeIssues, reportOptionalIterable, reportUnknownVariableType, reportUnknownArgumentType]  # pyrefly: ignore [not-iterable]  # ty: ignore[not-iterable]
                     return data
 
         axis, dim = prep.mom_params.select_axis_dim_mult(
@@ -551,7 +551,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
             order_: tuple[Hashable, ...] = (
                 prep.mom_params.core_dims(*dim) if keepdims else prep.mom_params.dims
             )
-            return xout.transpose(..., *order_, missing_dims="ignore")
+            return xout.transpose(..., *order_, missing_dims="ignore")  # ty: ignore[invalid-return-type]
 
         return xout
 

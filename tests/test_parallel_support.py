@@ -25,7 +25,7 @@ func_params_data = [
     (cmomy.reduce_data, None),
     (do_reduce_data_grouped, None),
     (do_reduce_data_indexed, None),
-    (partial(cmomy.resample_data, sampler={"nrep": 10, "rng": 0}), None),
+    (partial(cmomy.resample_data, sampler={"nrep": 10, "rng": 0}), None),  # ty: ignore[invalid-argument-type]
     (cmomy.resample.jackknife_data, None),
     (cmomy.convert.cumulative, None),
     *func_params_data_rolling,
@@ -40,7 +40,7 @@ func_params_vals_rolling = [
 
 func_params_vals = [
     (cmomy.reduce_vals, None),
-    (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),
+    (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),  # ty: ignore[invalid-argument-type]
     (do_reduce_vals_grouped, None),
     (do_reduce_vals_indexed, None),
     (cmomy.resample.jackknife_vals, None),
@@ -96,10 +96,10 @@ def test_parallel_freq_to_indices(nrep, ndat, nsamp) -> None:
         cmomy.resample.indices_to_freq(indices, ndat=ndat, parallel=p)
         for p in (True, False)
     ]
-    np.testing.assert_equal(*freqs)
+    np.testing.assert_equal(*freqs)  # ty: ignore[invalid-argument-type]
 
     idxs = [cmomy.resample.freq_to_indices(freqs[0], parallel=p) for p in (True, False)]
-    np.testing.assert_equal(*idxs)
+    np.testing.assert_equal(*idxs)  # ty: ignore[invalid-argument-type]
 
     # make sure round trip is ok
     np.testing.assert_allclose(np.sort(indices, axis=-1), idxs[0])

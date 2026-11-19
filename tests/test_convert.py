@@ -74,7 +74,7 @@ def test_raw(data_and_kwargs) -> None:
     np.testing.assert_allclose(c.to_raw(weight=1), raw)
 
     # from raw
-    cr = cmomy.wrap_raw(raw, mom_ndim=len(kwargs["mom"]))
+    cr = cmomy.wrap_raw(raw, mom_ndim=len(kwargs["mom"]))  # ty: ignore[no-matching-overload]
     np.testing.assert_allclose(cr, c.assign_moment(weight=1.0))
 
 

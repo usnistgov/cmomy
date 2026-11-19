@@ -188,7 +188,7 @@ def test_jackknife_data_0(data_and_kwargs, pass_reduced, as_dataarray):
         mom_axes = tuple(range(mom_ndim))
         data_reduced = cmomy.moveaxis(
             kws["data_reduced"], range(-mom_ndim, 0), mom_axes
-        )
+        )  # ty: ignore[no-matching-overload]
         np.testing.assert_allclose(
             cmomy.resample.jackknife_data(
                 data,
@@ -196,7 +196,7 @@ def test_jackknife_data_0(data_and_kwargs, pass_reduced, as_dataarray):
                 mom_ndim=mom_ndim,
                 data_reduced=np.asarray(data_reduced),
                 mom_axes_reduced=mom_axes,
-            ),
+            ),  # ty: ignore[no-matching-overload]
             expected,
         )
 
@@ -336,7 +336,7 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
     freq0 = cmomy.resample.indices_to_freq(idx, ndat=ndat)
     freq1 = cmomy.factory_sampler(indices=idx, ndat=ndat).freq
 
-    assert_allclose(freq0, freq1)
+    assert_allclose(freq0, freq1)  # ty: ignore[no-matching-overload]
 
     # round trip
     idx1 = cmomy.resample.freq_to_indices(freq0, shuffle=False)
@@ -347,16 +347,16 @@ def test_freq_to_indices_types(rng, nrep, ndat, nsamp, style) -> None:
         is (np.ndarray if style == "array-like" else type(idx))
     )
     if cmomy.core.validate.is_dataset(idx):
-        assert_allclose(idx1, idx.map(np.sort, axis=-1))
+        assert_allclose(idx1, idx.map(np.sort, axis=-1))  # ty: ignore[no-matching-overload]
     else:
-        np.testing.assert_allclose(idx1, np.sort(idx, axis=-1))
-    assert_allclose(freq0, cmomy.resample.indices_to_freq(idx1, ndat=ndat))
+        np.testing.assert_allclose(idx1, np.sort(idx, axis=-1))  # ty: ignore[no-matching-overload]
+    assert_allclose(freq0, cmomy.resample.indices_to_freq(idx1, ndat=ndat))  # ty: ignore[no-matching-overload]
 
     idx2 = cmomy.resample.freq_to_indices(freq0, shuffle=True)
     if cmomy.core.validate.is_dataset(idx):
-        assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # type: ignore[union-attr] # pyright: ignore[reportAttributeAccessIssue]
+        assert_allclose(idx1.map(np.sort, axis=-1), idx2.map(np.sort, axis=-1))  # type: ignore[union-attr] # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[missing-union-attribute, no-matching-overload]
     else:
-        np.testing.assert_allclose(idx1, np.sort(idx2, axis=-1))
+        np.testing.assert_allclose(idx1, np.sort(idx2, axis=-1))  # ty: ignore[no-matching-overload]
 
 
 def test_central_factory_sampler():
@@ -550,7 +550,7 @@ def test_factroy_sampler_dataset() -> None:
         dim="a",
         rng=0,
         paired=False,
-        mom_dims=["mom_0", "mom_1"],
+        mom_dims=["mom_0", "mom_1"],  # ty: ignore[invalid-argument-type]
     )
 
     xr.testing.assert_equal(expected, out.freq)

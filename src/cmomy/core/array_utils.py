@@ -64,7 +64,7 @@ def normalize_axis_index(
             ndim -= mom_ndim
 
     # normalize will catch if try to pass a float
-    return np_normalize_axis_index(axis, ndim, msg_prefix)  # pyright: ignore[reportUnknownVariableType]
+    return np_normalize_axis_index(axis, ndim, msg_prefix)  # pyright: ignore[reportUnknownVariableType]  # ty: ignore[invalid-argument-type]
 
 
 def normalize_axis_tuple(
@@ -229,7 +229,7 @@ def select_dtype(
     """
     if fastpath:
         assert dtype in _ALLOWED_FLOAT_DTYPES  # ruff:ignore[assert]
-        return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]
+        return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]  # ty: ignore[invalid-return-type]
 
     if is_dataset(x):
         if dtype is None:

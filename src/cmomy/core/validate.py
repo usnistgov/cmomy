@@ -204,11 +204,11 @@ def validate_mom_ndim_and_mom_axes(
 
     mom_axes = validate_mom_axes(mom_axes)
     if mom_ndim is None:
-        mom_ndim = cast("MomNDim", len(mom_axes))
+        mom_ndim = cast("MomNDim", len(mom_axes))  # ty: ignore[redundant-cast]
     elif len(mom_axes) != mom_ndim:
         msg = f"{len(mom_axes)=} != {mom_ndim=}"
         raise ValueError(msg)
-    return cast("MomNDim", mom_ndim), mom_axes
+    return cast("MomNDim", mom_ndim), mom_axes  # ty: ignore[redundant-cast]
 
 
 # * Validate Axis ----------------------------------------------------------------------
@@ -304,7 +304,7 @@ def validate_mom_dims_and_mom_ndim(
     if mom_dims is not None:
         mom_dims = cast(
             "MomDimsStrict",
-            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+            (mom_dims,) if isinstance(mom_dims, str) else tuple(mom_dims),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
         )
         mom_ndim = validate_mom_ndim(len(mom_dims), mom_axes)
         return mom_dims, mom_ndim

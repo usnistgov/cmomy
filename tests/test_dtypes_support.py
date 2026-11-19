@@ -318,7 +318,7 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == dtype_base
         if cls == cmomy.CentralMomentsData:
             # pyrefly: ignore [unbound-name]
-            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]  # ty: ignore[possibly-unresolved-reference]
 
     else:
         assert c.new_like().dtype.type == dtype_base
@@ -329,5 +329,5 @@ def test_new_like(cls, dtype_base, dtype, expected) -> None:
         assert c.new_like(obj=data_base, dtype=dtype).dtype.type == expected
         if cls == cmomy.CentralMomentsData:
             # pyrefly: ignore [unbound-name]
-            assert c.new_like(obj=xdata).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
-            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]
+            assert c.new_like(obj=xdata).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]  # ty: ignore[possibly-unresolved-reference]
+            assert c.new_like(obj=xdata, dtype=dtype).dtype.type == expected  # pyright: ignore[reportPossiblyUnboundVariable]  # ty: ignore[possibly-unresolved-reference]

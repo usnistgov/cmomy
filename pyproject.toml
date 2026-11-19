@@ -517,8 +517,9 @@ src.include = [
 ]
 # TODO(wpk): remove these excludes when possible.  See #220
 src.exclude = [
-    "src",
-    "tests",
+    "tests/test_typing_auto.py",
+    "tests/test_move_axis_to_end.py", # slow
+    "tests/test_dtypes_support.py",   # slow
 ]
 analysis.respect-type-ignore-comments = false
 

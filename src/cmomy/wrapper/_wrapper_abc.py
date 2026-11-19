@@ -145,12 +145,12 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
     @property
     def mom_shape(self) -> MomentsStrict:
         """Shape of moments dimensions."""
-        return self._mom_params.get_mom_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+        return self._mom_params.get_mom_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
 
     @property
     def mom(self) -> MomentsStrict:
         """Moments tuple."""
-        return self._mom_params.get_mom(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+        return self._mom_params.get_mom(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
 
     @property
     def dtype(self) -> np.dtype[Any]:
@@ -171,7 +171,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Shape of values dimensions."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return self._mom_params.get_val_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+        return self._mom_params.get_val_shape(self._obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
 
     @property
     def ndim(self) -> int:
@@ -293,7 +293,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         kwargs = {k: v for k, v in kwargs.items() if v is not None}
 
         return self._new_like(
-            obj=self._obj.astype(dtype, **kwargs),  # type: ignore[arg-type]  # pyright: ignore[reportUnknownMemberType, reportCallIssue, reportArgumentType]  # pyrefly: ignore [no-matching-overload]
+            obj=self._obj.astype(dtype, **kwargs),  # type: ignore[arg-type]  # pyright: ignore[reportUnknownMemberType, reportCallIssue, reportArgumentType]  # pyrefly: ignore [no-matching-overload]  # ty: ignore[invalid-argument-type, no-matching-overload]
         )
 
     @docfiller.decorate
@@ -589,7 +589,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         )
 
         if _reorder and hasattr(self, "mom_dims"):
-            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]  # pylint: disable=no-member
+            values = values.transpose(..., *self.mom_dims)  # pyright: ignore[reportUnknownMemberType,reportAttributeAccessIssue]  # pylint: disable=no-member  # ty: ignore[not-iterable]
 
         return self.new_like(
             obj=values,
@@ -647,7 +647,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             dest_dim=dest_dim,
             mom_params=self._mom_params,
             axes_to_end=axes_to_end,
-        )
+        )  # ty: ignore[no-matching-overload]
 
         return self.new_like(
             obj=obj,
@@ -701,7 +701,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             squeeze=squeeze,
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
-        )
+        )  # ty: ignore[no-matching-overload]
 
     @docfiller.decorate
     def assign_moment(
@@ -757,7 +757,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
             **moment_kwargs,
-        )
+        )  # ty: ignore[no-matching-overload]
         return self._new_like(obj=obj)  # pyrefly: ignore [bad-argument-type]
 
     # *** .convert ---------------------------------------------------------------------
@@ -817,7 +817,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             parallel=parallel,
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
-        )
+        )  # ty: ignore[invalid-return-type]
 
     @docfiller.decorate
     def moments_to_comoments(
@@ -867,8 +867,8 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
                 order=order,
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
-            ),
-            mom_params=mom_params_out,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            ),  # ty: ignore[invalid-argument-type]
+            mom_params=mom_params_out,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # ty: ignore[invalid-argument-type]
         )
 
     # *** .resample --------------------------------------------------------------------
@@ -971,7 +971,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
                 parallel=parallel,
                 keep_attrs=keep_attrs,
                 apply_ufunc_kwargs=apply_ufunc_kwargs,
-            ),
+            ),  # ty: ignore[invalid-argument-type]
         )
 
     @docfiller.decorate
@@ -1042,7 +1042,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             parallel=parallel,
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
-        )
+        )  # ty: ignore[no-matching-overload]
         return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]  # pyrefly: ignore [bad-argument-type]
 
     # *** .reduction -------------------------------------------------------------------
@@ -1156,7 +1156,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             {"weight": 1, "ave": 0},
             mom_params=self._mom_params,
             copy=True,
-        )
+        )  # ty: ignore[no-matching-overload]
 
     def to_raw(self, *, weight: ArrayLike | None = None) -> GenArrayT:
         r"""
@@ -1191,7 +1191,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             out = assign_moment(
                 out, weight=weight, mom_params=self._mom_params, copy=False
             )
-        return out  # pyrefly: ignore [bad-return]
+        return out  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
 
     def rmom(self) -> GenArrayT:
         r"""
