@@ -3,15 +3,9 @@
 
 import sys
 from types import EllipsisType
-from typing import TypeAlias, TypeGuard
+from typing import Required, Self, TypeAlias, TypeGuard, Unpack
 
 from typing_extensions import TypedDict
-
-if sys.version_info >= (3, 11):
-    from typing import Required, Self, Unpack
-else:
-    from typing_extensions import Required, Self, Unpack
-
 
 if sys.version_info >= (3, 12):
     from typing import override

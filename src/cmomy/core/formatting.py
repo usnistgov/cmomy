@@ -2,7 +2,7 @@
 # pylint: disable=file-ignored
 # pylint: skip-file
 # pyright: standard, reportPrivateImportUsage=false
-# ruff:file-ignore[private-member-access,missing-type-function-argument,missing-return-type-undocumented-public-function,missing-type-args,undocumented-public-function,missing-type-kwargs]
+# ruff:file-ignore[private-member-access,missing-type-function-argument,missing-return-type-public-function,missing-type-args,undocumented-public-function,missing-type-kwargs]
 """pretty formatting for notebook."""
 
 from typing import TYPE_CHECKING
@@ -78,7 +78,7 @@ def repr_html_wrapper(x):
             v = getattr(x, k)
             if len(v) > 0:  # pragma: no cover
                 attrs[k] = tuple_to_str(v)
-        except Exception:  # ruff:ignore[blind-except, try-except-pass, try-except-in-loop]  # pylint: disable=broad-exception-caught
+        except Exception:  # ruff:ignore[blind-except, try-except-pass]  # pylint: disable=broad-exception-caught
             pass
 
     dims = {}

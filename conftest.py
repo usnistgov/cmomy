@@ -55,7 +55,7 @@ def pytest_configure(config) -> None:
         load_numba_modules()
 
 
-def pytest_runtest_setup(item):  # ruff: ignore[missing-return-type-undocumented-public-function]
+def pytest_runtest_setup(item):  # ruff: ignore[missing-return-type-public-function]
     if "slow" in item.keywords and not item.config.getoption("--run-slow"):
         pytest.skip("need --run-slow option to run")
 
@@ -64,7 +64,7 @@ def pytest_runtest_setup(item):  # ruff: ignore[missing-return-type-undocumented
 def _is_default_version() -> bool:
     import sys
 
-    return sys.version_info >= (3, 11)
+    return sys.version_info >= (3, 12)
 
 
 def pytest_ignore_collect(collection_path) -> bool:
