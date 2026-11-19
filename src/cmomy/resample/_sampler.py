@@ -436,7 +436,7 @@ def _randsamp_indices_dataarray_or_dataset(
     if len(out) == 1:
         # return just a dataarray in this case
         return next(iter(out.values()))
-    return xr.Dataset(out)  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+    return xr.Dataset(out)  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
 
 
 # * select ndat ------------------------------------------------------------------------

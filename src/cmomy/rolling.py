@@ -279,7 +279,7 @@ def construct_rolling_window_array(
 
         # for safety, move window_dim to front...
         # this avoids it being placed after any moment dimensions...
-        return xout.transpose(*window_dim, ...)  # pyrefly: ignore [bad-return]
+        return xout.transpose(*window_dim, ...)  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
 
     return construct_rolling_window_array(
         x=xr.DataArray(x),
@@ -486,7 +486,7 @@ def rolling_data(  # ruff:ignore[too-many-arguments]
         elif is_dataset(data):
             return xout.transpose(
                 ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-            )
+            )  # ty: ignore[invalid-return-type]
         return xout
 
     # Numpy
@@ -784,7 +784,7 @@ def rolling_vals(  # ruff:ignore[too-many-arguments]
         if is_dataset(x):
             return xout.transpose(
                 ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-            )
+            )  # ty: ignore[invalid-return-type]
         return xout
 
     # Numpy
@@ -1086,7 +1086,7 @@ def rolling_exp_data(  # ruff:ignore[too-many-arguments]
         elif is_dataset(data):
             return xout.transpose(
                 ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-            )
+            )  # ty: ignore[invalid-return-type]
 
         return xout
 
@@ -1421,7 +1421,7 @@ def rolling_exp_vals(  # ruff:ignore[too-many-arguments]
         if is_dataset(x):
             return xout.transpose(
                 ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-            )
+            )  # ty: ignore[invalid-return-type]
 
         return xout
 

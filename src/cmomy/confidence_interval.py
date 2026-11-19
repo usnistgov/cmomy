@@ -220,7 +220,7 @@ def bootstrap_confidence_interval(
             theta_jack = np.moveaxis(np.asarray(theta_jack, dtype=dtype), axis, -1)
 
         def _func(*args: NDArrayAny, **kwargs: Any) -> NDArrayAny:
-            out = _bootstrap_confidence_interval(*args, **kwargs)  # ty: ignore[missing-argument]
+            out = _bootstrap_confidence_interval(*args, **kwargs)
             # move axis to end for apply_ufunc
             return np.moveaxis(out, 0, -1)
 
@@ -306,7 +306,7 @@ def _bootstrap_confidence_interval(
         theta_jack = np.asarray(theta_jack, dtype=dtype)
 
         a = _compute_a(theta_jack, axis)
-        z0 = _compute_z0(theta_hat_, theta_boot, axis)  # pyright: ignore[reportPossiblyUnboundVariable]  # pyrefly: ignore [unbound-name]
+        z0 = _compute_z0(theta_hat_, theta_boot, axis)  # pyright: ignore[reportPossiblyUnboundVariable]  # pyrefly: ignore [unbound-name]  # ty: ignore[possibly-unresolved-reference]
 
         z0_expanded = np.expand_dims(z0, -1)
         a_expanded = np.expand_dims(a, -1)
@@ -317,7 +317,7 @@ def _bootstrap_confidence_interval(
     else:
         ci = np.quantile(theta_boot, alphas, axis=axis).astype(dtype, copy=False)
         if method_ == "basic":
-            ci = 2 * np.squeeze(theta_hat_, axis=axis) - ci[-1::-1, ...]  # pyright: ignore[reportAssignmentType, reportPossiblyUnboundVariable]  # pyrefly: ignore [unbound-name]
+            ci = 2 * np.squeeze(theta_hat_, axis=axis) - ci[-1::-1, ...]  # pyright: ignore[reportAssignmentType, reportPossiblyUnboundVariable]  # pyrefly: ignore [unbound-name]  # ty: ignore[possibly-unresolved-reference]
 
     return ci
 

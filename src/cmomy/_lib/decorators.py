@@ -37,7 +37,7 @@ def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
         from numba.np.ufunc import (  # type: ignore[attr-defined] # pylint: disable=unused-import
-            tbbpool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[unresolved-import]  # pyrefly: ignore [missing-module-attribute]
+            tbbpool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # pyrefly: ignore [missing-module-attribute]  # ty: ignore[import-not-found]
         )
     except ImportError:
         pass
@@ -46,7 +46,7 @@ def _thread_backend() -> str | None:
 
     try:
         from numba.np.ufunc import (  # type: ignore[attr-defined] # pylint: disable=unused-import
-            omppool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[unresolved-import]  # pyrefly: ignore [missing-module-attribute]
+            omppool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # pyrefly: ignore [missing-module-attribute]  # ty: ignore[import-not-found]
         )
     except ImportError:
         pass
@@ -108,7 +108,7 @@ def myguvectorize(
             cache=cache,
             **kwargs,
         ),
-    )
+    )  # ty: ignore[invalid-return-type]
 
 
 def myjit(
@@ -137,7 +137,7 @@ def myjit(
     return cast(
         "Callable[[FuncT], FuncT]",
         njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),  # type: ignore[call-overload]  # pyright: ignore[reportCallIssue, reportArgumentType]
-    )
+    )  # ty: ignore[invalid-return-type]
 
 
 def _get_target(parallel: bool) -> str:

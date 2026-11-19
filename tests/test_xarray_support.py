@@ -99,7 +99,7 @@ func_params_data_common = [
     (do_reduce_data_grouped, None),
     (do_reduce_data_indexed, None),  # default coords_policy="first"
     (
-        partial(cmomy.resample_data, sampler={"nrep": 20, "rng": 0, "paired": True}),
+        partial(cmomy.resample_data, sampler={"nrep": 20, "rng": 0, "paired": True}),  # ty: ignore[invalid-argument-type]
         None,
     ),
     (cmomy.resample.jackknife_data, None),
@@ -155,7 +155,7 @@ func_params_data_dataset = [
 # ** Vals
 func_params_vals_common = [
     (cmomy.reduce_vals, None),
-    (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),
+    (partial(cmomy.resample_vals, sampler={"nrep": 20, "rng": 0}), None),  # ty: ignore[invalid-argument-type]
     (do_reduce_vals_grouped, None),
     (do_reduce_vals_indexed, None),
     (cmomy.resample.jackknife_vals, None),
@@ -811,13 +811,15 @@ def test_func_vals_chunking(fixture_vals, func, kwargs_callback):
         (partial(do_reduce_data_indexed, coords_policy=None), None),
         (
             partial(
-                cmomy.resample_data, sampler={"rng": 0, "nrep": 20, "paired": True}
+                cmomy.resample_data,
+                sampler={"rng": 0, "nrep": 20, "paired": True},  # ty: ignore[invalid-argument-type]
             ),
             None,
         ),
         (
             partial(
-                cmomy.resample_data, sampler={"rng": 0, "nrep": 20, "paired": False}
+                cmomy.resample_data,
+                sampler={"rng": 0, "nrep": 20, "paired": False},  # ty: ignore[invalid-argument-type]
             ),
             None,
         ),
@@ -865,13 +867,15 @@ def test_func_data_chunking_out_parameter(
         (cmomy.reduce_vals, None),
         (
             partial(
-                cmomy.resample_vals, sampler={"rng": 0, "nrep": 20, "paired": True}
+                cmomy.resample_vals,
+                sampler={"rng": 0, "nrep": 20, "paired": True},  # ty: ignore[invalid-argument-type]
             ),
             None,
         ),
         (
             partial(
-                cmomy.resample_vals, sampler={"rng": 0, "nrep": 20, "paired": False}
+                cmomy.resample_vals,
+                sampler={"rng": 0, "nrep": 20, "paired": False},  # ty: ignore[invalid-argument-type]
             ),
             None,
         ),

@@ -202,7 +202,7 @@ def test_rolling_data_vals_missing(  # ruff:ignore[too-many-locals]
     mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]  # ty: ignore[invalid-assignment]
 
     kws: RollingDict = {"window": window, "min_periods": min_periods, "center": center}
 
@@ -416,7 +416,7 @@ def test_rolling_exp_data_vals_missing(  # ruff:ignore[too-many-locals]
     mom_ndim: MomNDim,
 ) -> None:
     shape = (100, 3)
-    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
+    mom: tuple[int] | tuple[int, int] = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]  # ty: ignore[invalid-assignment]
 
     kws: RollingExpDict = {"alpha": alpha, "adjust": adjust, "min_periods": min_periods}
 
@@ -446,15 +446,15 @@ def test_rolling_exp_data_vals_missing(  # ruff:ignore[too-many-locals]
 
     np.testing.assert_allclose(out, outd, atol=1e-14)
 
-    rx = pd.DataFrame(x).ewm(**kws)
-    rw = pd.DataFrame(w).replace(0.0, np.nan).ewm(**kws)
+    rx = pd.DataFrame(x).ewm(**kws)  # ty: ignore[invalid-argument-type]
+    rw = pd.DataFrame(w).replace(0.0, np.nan).ewm(**kws)  # ty: ignore[invalid-argument-type]
 
     tests = [("weight", rw.sum().fillna(0.0))] if adjust else []
     tests += [("xave", rx.mean()), ("xvar", rx.var(bias=True))]
 
     if mom_ndim == 2:
         dfy = pd.DataFrame(y)
-        ry = dfy.ewm(**kws)
+        ry = dfy.ewm(**kws)  # ty: ignore[invalid-argument-type]
         tests += [
             ("yave", ry.mean()),
             ("yvar", ry.var(bias=True)),
@@ -561,7 +561,7 @@ def test_rolling_exp_weight(
 ) -> None:
     axis = 0
     shape = (50, 2, 3)
-    mom: MomentsStrict = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
+    mom: MomentsStrict = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]  # ty: ignore[invalid-assignment]
 
     weight = rng.random(shape)
     xy = tuple(rng.random(shape) for _ in range(mom_ndim))
@@ -617,7 +617,7 @@ def test_rolling_exp_multiple_alpha(
 ) -> None:
     axis = 0
     shape = (50, 2)
-    mom: MomentsStrict = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]
+    mom: MomentsStrict = (3,) * mom_ndim  # pyright: ignore[reportAssignmentType]  # ty: ignore[invalid-assignment]
 
     alphas = rng.random(shape)
     weight = rng.random(shape)

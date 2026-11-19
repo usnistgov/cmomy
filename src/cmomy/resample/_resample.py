@@ -274,7 +274,7 @@ def resample_data(  # ruff:ignore[too-many-arguments]
 
         if not axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index]
-            return xout.transpose(*dims_order)
+            return xout.transpose(*dims_order)  # ty: ignore[invalid-return-type]
         return xout
 
     # Numpy
@@ -563,7 +563,7 @@ def resample_vals(  # ruff:ignore[too-many-arguments]
                 rep_dim,
                 *prep.mom_params.dims,
                 missing_dims="ignore",
-            )
+            )  # ty: ignore[invalid-return-type]
         return xout
 
     # numpy
@@ -902,7 +902,7 @@ def jackknife_data(  # ruff:ignore[too-many-arguments]
             xout = xout.transpose(..., dim, *mom_params.dims, missing_dims="ignore")
 
         if rep_dim is not None:
-            xout = xout.rename({dim: rep_dim})
+            xout = xout.rename({dim: rep_dim})  # ty: ignore[invalid-assignment]
         return xout
 
     # numpy
@@ -1212,7 +1212,7 @@ def jackknife_vals(  # ruff:ignore[too-many-arguments]
         elif is_dataset(x):
             xout = xout.transpose(
                 ..., dim, *prep.mom_params.dims, missing_dims="ignore"
-            )
+            )  # ty: ignore[invalid-assignment]
 
         if rep_dim is not None:
             return xout.rename({dim: rep_dim})

@@ -145,7 +145,7 @@ class _SupportsArray(Protocol[_DTypeT_co]):
 
 ArrayLikeArg: TypeAlias = (
     _SupportsArray[np.dtype[_ScalarT]]
-    | "_NestedSequence[_SupportsArray[np.dtype[_ScalarT]]]"
+    | "_NestedSequence[_SupportsArray[np.dtype[_ScalarT]]]"  # ty: ignore[unsupported-operator]
 )
 
 

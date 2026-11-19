@@ -228,7 +228,7 @@ class CentralMomentsArray(
     # Reimplement to get dtype correct
     @property
     @override
-    @docfiller_array_abc()
+    @docfiller_array_abc()  # ty: ignore[invalid-argument-type]
     def dtype(self) -> np.dtype[FloatT]:
         return self._obj.dtype
 
@@ -301,7 +301,7 @@ class CentralMomentsArray(
     ) -> CentralMomentsArrayAny: ...
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def new_like(
         self,
         obj: ArrayLike | None = None,
@@ -388,7 +388,7 @@ class CentralMomentsArray(
     ) -> CentralMomentsArrayAny: ...
 
     @override
-    @docfiller_array_abc()
+    @docfiller_array_abc()  # ty: ignore[invalid-argument-type]
     def astype(
         self,
         dtype: DTypeLike,
@@ -409,7 +409,7 @@ class CentralMomentsArray(
 
     # ** Pushing -----------------------------------------------------------------------
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_data(
         self,
         data: ArrayLike,
@@ -461,7 +461,7 @@ class CentralMomentsArray(
         return self
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_datas(
         self,
         datas: ArrayLike,
@@ -512,7 +512,7 @@ class CentralMomentsArray(
         return self
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_val(
         self,
         x: ArrayLike,
@@ -570,7 +570,7 @@ class CentralMomentsArray(
         return self
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_vals(
         self,
         x: ArrayLike,
@@ -666,7 +666,7 @@ class CentralMomentsArray(
     ) -> NDArrayAny: ...
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def cumulative(  # pyright: ignore[reportIncompatibleMethodOverride]  # pylint: disable=arguments-differ
         self,
         *,
@@ -677,7 +677,7 @@ class CentralMomentsArray(
         casting: Casting = "same_kind",
         order: ArrayOrderKACF = None,
         parallel: bool | None = None,
-    ) -> NDArrayAny:
+    ) -> NDArrayAny:  # ty: ignore[incompatible-method-override]
         return super().cumulative(
             axis=axis,
             axes_to_end=axes_to_end,
@@ -714,14 +714,14 @@ class CentralMomentsArray(
     ) -> CentralMomentsArrayAny: ...
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def moments_to_comoments(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         *,
         mom: tuple[int, int],
         dtype: DTypeLike = None,
         order: ArrayOrderCF = None,
-    ) -> Self | CentralMomentsArrayAny:
+    ) -> Self | CentralMomentsArrayAny:  # ty: ignore[incompatible-method-override]
         return super().moments_to_comoments(
             mom=mom,
             dtype=dtype,
@@ -767,7 +767,7 @@ class CentralMomentsArray(
     ) -> CentralMomentsArrayAny: ...
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def resample_and_reduce(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         *,
@@ -779,7 +779,7 @@ class CentralMomentsArray(
         casting: Casting = "same_kind",
         order: ArrayOrderKACF = None,
         parallel: bool | None = None,
-    ) -> Self | CentralMomentsArrayAny:
+    ) -> Self | CentralMomentsArrayAny:  # ty: ignore[incompatible-method-override]
         """
         See Also
         --------
@@ -853,7 +853,7 @@ class CentralMomentsArray(
     ) -> CentralMomentsArrayAny: ...
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def jackknife_and_reduce(  # pyright: ignore[reportIncompatibleMethodOverride]
         self,
         *,
@@ -865,9 +865,9 @@ class CentralMomentsArray(
         casting: Casting = "same_kind",
         order: ArrayOrderKACF = None,
         parallel: bool | None = None,
-    ) -> Self | CentralMomentsArrayAny:
+    ) -> Self | CentralMomentsArrayAny:  # ty: ignore[incompatible-method-override]
         return super().jackknife_and_reduce(
-            data_reduced=data_reduced,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+            data_reduced=data_reduced,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
             axis=axis,
             axes_to_end=axes_to_end,
             out=out,
@@ -912,7 +912,7 @@ class CentralMomentsArray(
     ) -> CentralMomentsArrayAny: ...
 
     @override
-    @docfiller_array_inherit_abc()
+    @docfiller_array_inherit_abc()  # ty: ignore[invalid-argument-type]
     def reduce(
         self,
         axis: AxisReduce | MissingType = MISSING,
@@ -995,7 +995,7 @@ class CentralMomentsArray(
 
     @override
     @classmethod
-    @docfiller_array_abc()
+    @docfiller_array_abc()  # ty: ignore[invalid-argument-type]
     def zeros(
         cls,
         *,
@@ -1089,7 +1089,7 @@ class CentralMomentsArray(
         shape = (shape,) if isinstance(shape, int) else shape
         new_shape = (*shape, *self.mom_shape)  # type: ignore[misc]
         obj = self._obj.reshape(new_shape, order=order)
-        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
 
     @docfiller_array.decorate
     def resample(
@@ -1138,7 +1138,7 @@ class CentralMomentsArray(
         indices = np.asarray(indices, dtype=np.int64)
         obj = np.take(obj, indices, axis=axis)
 
-        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
 
     def fill(self, value: Any = 0) -> Self:
         """
@@ -1270,7 +1270,7 @@ class CentralMomentsArray(
                     mom_dims = (mom_dims,)
                 else:
                     # try to convert to tuple
-                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+                    mom_dims = tuple(mom_dims)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
 
                 raise_if_wrong_value(
                     len(mom_dims),
@@ -1386,13 +1386,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             self._raise_not_implemented("dict view")
         return {  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]
             k: type(self)(  # type: ignore[misc]
-                obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+                obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
                 mom_params=self._mom_params,
                 fastpath=True,
             )
             for k, obj in self._obj.items()
             if contains_dims(obj, *self.mom_dims)
-        }
+        }  # ty: ignore[invalid-return-type]
 
     def items(
         self: CentralMomentsDataset,
@@ -1483,7 +1483,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         return cast(
             "CentralMomentsDataArray | CentralMomentsDataset",
             type(self)(
-                obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+                obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # ty: ignore[invalid-argument-type]
                 mom_params=self._mom_params,
                 fastpath=True,
             ),
@@ -1491,7 +1491,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
 
     # ** Create/copy/new ---------------------------------------------------------------
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def new_like(  # type: ignore[override]  # pylint: disable=arguments-differ  # pyright: ignore[reportIncompatibleMethodOverride]  # pyrefly: ignore [bad-override]
         self,
         obj: ArrayLike | DataT | Mapping[Any, Any] | None = None,
@@ -1519,14 +1519,14 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             # TODO(wpk): different type for dtype in xarray (can be a mapping...)
             # Also can probably speed this up by validating dtype here...
             return type(self)(
-                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue, reportArgumentType, reportUnknownArgumentType]  # pyrefly: ignore [no-matching-overload]
+                obj=xr.zeros_like(self._obj, dtype=dtype),  # type: ignore[arg-type]  # pyright: ignore[reportCallIssue, reportArgumentType, reportUnknownArgumentType]  # pyrefly: ignore [no-matching-overload]  # ty: ignore[no-matching-overload]
                 mom_params=self._mom_params,
                 fastpath=fastpath,
             )
 
         # TODO(wpk): edge case of passing in new xarray data with different moment dimensions.
         # For now, this will raise an error.
-        obj_ = obj if isinstance(obj, type(self._obj)) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+        obj_ = obj if isinstance(obj, type(self._obj)) else self._obj.copy(data=obj)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
 
         # minimal check on shape and that mom_dims are present....
         if not contains_dims(obj_, *self.mom_dims):
@@ -1546,13 +1546,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
                 obj_ = obj_.copy(deep=deep)
 
         return type(self)(
-            obj=obj_,
+            obj=obj_,  # ty: ignore[invalid-argument-type]
             mom_params=self._mom_params,
             fastpath=fastpath,
         )
 
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def copy(self, deep: bool = True) -> Self:
         """
         Parameters
@@ -1561,13 +1561,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             Parameters to :meth:`xarray.DataArray.copy` or `xarray.Dataset.copy`
         """
         return type(self)(
-            obj=self._obj.copy(deep=deep),
+            obj=self._obj.copy(deep=deep),  # ty: ignore[invalid-argument-type]
             mom_params=self._mom_params,
             fastpath=True,
         )
 
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def astype(
         self,
         dtype: DTypeLike | Mapping[Hashable, DTypeLike],
@@ -1610,7 +1610,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         return None
 
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_data(
         self,
         data: DataT | ArrayLike,
@@ -1667,7 +1667,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         return self
 
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_datas(
         self,
         datas: DataT | ArrayLike,
@@ -1733,7 +1733,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         return self
 
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_val(
         self,
         x: ArrayLike | DataT,
@@ -1784,7 +1784,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         return self
 
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def push_vals(
         self,
         x: ArrayLike | DataT,
@@ -1862,7 +1862,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
     # ** Interface to modules ----------------------------------------------------------
     # *** .reduction -------------------------------------------------------------------
     @override
-    @docfiller_data_inherit_abc()
+    @docfiller_data_inherit_abc()  # ty: ignore[invalid-argument-type]
     def reduce(  # ruff:ignore[too-many-arguments]
         self,
         dim: DimsReduce | MissingType = MISSING,
@@ -2089,7 +2089,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
         coords: CoordsType = None,
         name: NameType = None,
         template: xr.DataArray | None = None,
-    ) -> CentralMomentsDataArray:
+    ) -> CentralMomentsDataArray:  # ty: ignore[incompatible-method-override]
         """
         Create a new object with specified sizes.
 
@@ -2209,10 +2209,10 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
 
         obj = self._obj.to_array(dim=dim, name=name).transpose(..., *self.mom_dims)
         return type(self)(  # type: ignore[return-value]  # pyright: ignore[reportReturnType]
-            obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]
+            obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # ty: ignore[invalid-argument-type]
             mom_params=self._mom_params,
             fastpath=True,
-        )
+        )  # ty: ignore[invalid-return-type]
 
     @property
     def attrs(self) -> dict[Any, Any]:
@@ -2258,15 +2258,15 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
 
     def compute(self, **kwargs: Any) -> Self:
         """Interface to :meth:`xarray.DataArray.compute` and :meth:`xarray.Dataset.compute`"""
-        return self._new_like(self._obj.compute(**kwargs))  # pyright: ignore[reportUnknownMemberType]
+        return self._new_like(self._obj.compute(**kwargs))  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-argument-type]
 
     def chunk(self, *args: Any, **kwargs: Any) -> Self:
         """Interface to :meth:`xarray.DataArray.chunk` and :meth:`xarray.Dataset.chunk`"""
-        return self._new_like(self._obj.chunk(*args, **kwargs))  # pyright: ignore[reportUnknownMemberType]
+        return self._new_like(self._obj.chunk(*args, **kwargs))  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-argument-type]
 
     def as_numpy(self) -> Self:
         """Coerces wrapped data and coordinates into numpy arrays."""
-        return self._new_like(self._obj.as_numpy())
+        return self._new_like(self._obj.as_numpy())  # ty: ignore[invalid-argument-type]
 
     def assign(
         self, variables: Mapping[Any, Any] | None = None, **variables_kwargs: Any
@@ -2279,13 +2279,13 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
     def assign_coords(self, coords: CoordsType = None, **coords_kwargs: Any) -> Self:
         """Assign coordinates to data and return new object."""
         return self._new_like(
-            self._obj.assign_coords(coords, **coords_kwargs),  # pyright: ignore[reportUnknownMemberType]
+            self._obj.assign_coords(coords, **coords_kwargs),  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-argument-type]
         )
 
     def assign_attrs(self, *args: Any, **kwargs: Any) -> Self:
         """Assign attributes to data and return new object."""
         return self._new_like(
-            self._obj.assign_attrs(*args, **kwargs),
+            self._obj.assign_attrs(*args, **kwargs),  # ty: ignore[invalid-argument-type]
         )
 
     def rename(
@@ -2295,7 +2295,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
     ) -> Self:
         """Rename object."""
         return self._new_like(
-            self._obj.rename(new_name_or_name_dict, **names)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+            self._obj.rename(new_name_or_name_dict, **names)  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
         )
 
     def stack(

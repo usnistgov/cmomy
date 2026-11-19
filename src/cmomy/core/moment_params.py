@@ -250,7 +250,7 @@ class MomParamsArrayOptional(MomParamsBase):
         elif len(axes) != ndim:
             msg = f"{len(axes)=} != {ndim=}"
             raise ValueError(msg)
-        return cls(ndim=cast("MomNDim", ndim), axes=axes)
+        return cls(ndim=cast("MomNDim", ndim), axes=axes)  # ty: ignore[redundant-cast]
 
     def raise_if_in_mom_axes(self, *axes: int) -> None:
         """Raise ``ValueError`` if any ``axes`` in ``self.axes``."""

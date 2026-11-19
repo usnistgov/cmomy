@@ -37,7 +37,7 @@ def test_init_error() -> None:
 
     with pytest.raises(TypeError):
         # pyrefly: ignore [bad-specialization]
-        cmomy.CentralMomentsData(np.zeros(3))  # type: ignore[type-var]
+        cmomy.CentralMomentsData(np.zeros(3))  # type: ignore[type-var]  # ty: ignore[invalid-argument-type]
 
 
 @pytest.mark.parametrize("method", ["dtype", "shape", "val_shape", "ndim", "val_ndim"])
@@ -103,7 +103,7 @@ def test_as_dict(c_dataset) -> None:
 
     c = get_first(c_dataset)
     with pytest.raises(NotImplementedError):
-        c.as_dict()  # type: ignore[misc]  # pyright: ignore[reportAttributeAccessIssue]
+        c.as_dict()  # type: ignore[misc]  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[invalid-argument-type]
 
 
 def test_getitem(c_dataset) -> None:
@@ -124,7 +124,7 @@ def test_iter(c_dataset) -> None:
 
     ca = get_first(c_dataset)
     for c, expected in zip(ca, ca.obj, strict=True):
-        xr.testing.assert_allclose(c.obj, expected)
+        xr.testing.assert_allclose(c.obj, expected)  # ty: ignore[missing-union-attribute]
 
     c = cmomy.wrap(xr.DataArray(np.zeros(3)))
     with pytest.raises(ValueError, match=r".*Can only iterate.*"):
@@ -227,7 +227,7 @@ def test_reduce_data_grouped(rng, policy) -> None:
     dim = "rec"
     kws = {"dim": dim, "coords_policy": policy}
 
-    expected = cmomy.reduce_data_grouped(data, **kws, by=by, groups=[0, 1])
+    expected = cmomy.reduce_data_grouped(data, **kws, by=by, groups=[0, 1])  # ty: ignore[no-matching-overload]
 
     a = cmomy.wrap(data).reduce(by=by, **kws, groups=[0, 1])
     b = cmomy.wrap(data).reduce(by="by", **kws)

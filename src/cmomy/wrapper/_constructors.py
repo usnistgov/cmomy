@@ -186,12 +186,12 @@ def wrap(
         if not fastpath:
             copy = copy_if_needed(copy)
             if dtype is not None:
-                obj = obj.astype(dtype, copy=copy)  # pyright: ignore[reportUnknownMemberType]
+                obj = obj.astype(dtype, copy=copy)  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-assignment]
             elif copy:
-                obj = obj.copy(deep=True)
+                obj = obj.copy(deep=True)  # ty: ignore[invalid-assignment]
 
         return CentralMomentsData(
-            obj=obj,
+            obj=obj,  # ty: ignore[invalid-argument-type]
             mom_params=mom_params,
             fastpath=fastpath,
         )
@@ -303,7 +303,7 @@ def zeros_like(
                 from_array_kwargs=from_array_kwargs,
             ),
             mom_params=c.mom_params,
-        )
+        )  # ty: ignore[invalid-return-type]
 
     assert not isinstance(dtype, Mapping)  # ruff:ignore[assert]
     out: CentralMomentsArrayAny = wrap(

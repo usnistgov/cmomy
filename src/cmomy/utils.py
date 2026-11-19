@@ -524,7 +524,7 @@ def select_moment(
         if coords_combined is not None and dim_combined in xout.dims:
             xout = xout.assign_coords(  # pyright: ignore[reportUnknownMemberType]
                 {dim_combined: (dim_combined, list(coords_combined))}
-            )
+            )  # ty: ignore[invalid-assignment]
         return xout
 
     assert isinstance(data, np.ndarray)  # ruff:ignore[assert]
@@ -753,7 +753,7 @@ def assign_moment(
     return _assign_moment(
         data,
         *moment_kwargs.values(),
-        names=moment_kwargs.keys(),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]
+        names=moment_kwargs.keys(),  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # pyrefly: ignore [bad-argument-type]  # ty: ignore[invalid-argument-type]
         mom_params=MomParamsArray.factory(
             mom_params=mom_params, ndim=mom_ndim, axes=mom_axes, default_ndim=1
         ),
@@ -1009,7 +1009,7 @@ def vals_to_data(
         out=out,
         dtype=dtype,
         fastpath=True,
-    )
+    )  # ty: ignore[invalid-return-type]
 
 
 def _vals_to_data(
