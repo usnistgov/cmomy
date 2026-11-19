@@ -33,7 +33,7 @@ if TYPE_CHECKING:
 def test__optional_zero_missing_weights(mom_ndim) -> None:
     data = np.ones((2, 3, 4))
 
-    data[(..., *(0,) * mom_ndim)] = np.nan
+    data[..., *(0,) * mom_ndim] = np.nan
 
     # no change
     out = cmomy.rolling._optional_zero_missing_weight(
@@ -43,7 +43,7 @@ def test__optional_zero_missing_weights(mom_ndim) -> None:
 
     # change
     check = data.copy()
-    check[(..., *(0,) * mom_ndim)] = 0.0
+    check[..., *(0,) * mom_ndim] = 0.0
     out = cmomy.rolling._optional_zero_missing_weight(
         data.copy(), range(-mom_ndim, 0), True
     )
@@ -300,7 +300,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
         idx = [0, *range(5, 5 + window + 1), *list(idx)]
 
         data[idx, ...] = np.nan
-        data[(idx, ..., *(0,) * mom_ndim)] = 0.0
+        data[idx, ..., *(0,) * mom_ndim] = 0.0
 
     out = cmomy.rolling.rolling_data(data, **kws, axis=0, mom_ndim=mom_ndim)
     data_rolling = cmomy.rolling.construct_rolling_window_array(
@@ -340,7 +340,7 @@ def test_rolling_weights(rng, mom_ndim, window, min_periods, center, missing) ->
     count = (wr != 0.0).sum(axis=0)  # ruff:ignore[float-equality-comparison]
 
     outc = np.where(
-        count[(..., *((None,) * mom_ndim))]
+        count[..., *((None,) * mom_ndim)]
         >= (window if min_periods is None else min_periods),
         outc,
         np.nan,
