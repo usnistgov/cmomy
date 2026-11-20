@@ -1009,7 +1009,7 @@ def vals_to_data(
         out=out,
         dtype=dtype,
         fastpath=True,
-    )  # ty: ignore[invalid-return-type]
+    )  # ty: ignore[invalid-explicit-return]
 
 
 def _vals_to_data(

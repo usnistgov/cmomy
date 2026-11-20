@@ -1089,7 +1089,7 @@ class CentralMomentsArray(
         shape = (shape,) if isinstance(shape, int) else shape
         new_shape = (*shape, *self.mom_shape)  # type: ignore[misc]
         obj = self._obj.reshape(new_shape, order=order)
-        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-explicit-return]
 
     @docfiller_array.decorate
     def resample(
@@ -1138,7 +1138,7 @@ class CentralMomentsArray(
         indices = np.asarray(indices, dtype=np.int64)
         obj = np.take(obj, indices, axis=axis)
 
-        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
+        return self.new_like(obj)  # type: ignore[return-value]  # pyright: ignore[reportReturnType]  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-explicit-return]
 
     def fill(self, value: Any = 0) -> Self:
         """
@@ -1392,7 +1392,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             )
             for k, obj in self._obj.items()
             if contains_dims(obj, *self.mom_dims)
-        }  # ty: ignore[invalid-return-type]
+        }  # ty: ignore[invalid-explicit-return]
 
     def items(
         self: CentralMomentsDataset,
@@ -2212,7 +2212,7 @@ class CentralMomentsData(CentralMomentsABC[DataT, MomParamsXArray], Generic[Data
             obj=obj,  # type: ignore[arg-type]  # pyright: ignore[reportArgumentType]  # ty: ignore[invalid-argument-type]
             mom_params=self._mom_params,
             fastpath=True,
-        )  # ty: ignore[invalid-return-type]
+        )  # ty: ignore[invalid-explicit-return]
 
     @property
     def attrs(self) -> dict[Any, Any]:

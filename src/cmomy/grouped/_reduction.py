@@ -100,7 +100,7 @@ def _apply_coords_policy_indexed(
             drop=False,
         )
     if coords_policy == "group" and groups is not None:
-        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-return-type]
+        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-explicit-return]
     return selected
 
 
@@ -114,7 +114,7 @@ def _apply_coords_policy_grouped(
     groups: Groups | None,
 ) -> DataT:
     if coords_policy == "group" and groups is not None:
-        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-return-type]
+        return selected.assign_coords({dim: groups})  # pyright: ignore[reportUnknownMemberType]  # ty: ignore[invalid-explicit-return]
 
     from ._factorize import factor_by_to_index
 
@@ -136,7 +136,7 @@ def _optional_group_dim(
     data: DataT, dim: Hashable, group_dim: str | None = None
 ) -> DataT:
     if group_dim:
-        return data.rename({dim: group_dim})  # ty: ignore[invalid-return-type]
+        return data.rename({dim: group_dim})  # ty: ignore[invalid-explicit-return]
     return data
 
 
