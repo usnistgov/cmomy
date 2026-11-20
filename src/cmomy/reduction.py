@@ -551,7 +551,7 @@ def reduce_data(  # ruff:ignore[too-many-arguments]  # ruff: ignore[complex-stru
             order_: tuple[Hashable, ...] = (
                 prep.mom_params.core_dims(*dim) if keepdims else prep.mom_params.dims
             )
-            return xout.transpose(..., *order_, missing_dims="ignore")  # ty: ignore[invalid-return-type]
+            return xout.transpose(..., *order_, missing_dims="ignore")  # ty: ignore[invalid-explicit-return]
 
         return xout
 

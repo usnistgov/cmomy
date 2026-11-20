@@ -165,8 +165,8 @@ def transpose_like(
     )
 
     if mom_params_axes is not None:
-        return mom_params_axes.maybe_reorder_dataarray(out)  # ty: ignore[invalid-return-type]
-    return out  # ty: ignore[invalid-return-type]
+        return mom_params_axes.maybe_reorder_dataarray(out)  # ty: ignore[invalid-explicit-return]
+    return out  # ty: ignore[invalid-explicit-return]
 
 
 def _transpose_like(
@@ -192,7 +192,7 @@ def _transpose_like(
     if (order := [*prepend, *order, *append]) != list(
         data_out.dims
     ):  # pragma: no cover
-        return data_out.transpose(*order, missing_dims="ignore")  # ty: ignore[invalid-return-type]
+        return data_out.transpose(*order, missing_dims="ignore")  # ty: ignore[invalid-explicit-return]
     return data_out
 
 
@@ -309,10 +309,10 @@ def replace_coords_from_isel(
     if is_dataset(template) and is_dataset(selected):  # type: ignore[redundant-expr]
         return _replace_coords_from_isel_dataset(  # pyrefly: ignore [bad-return]  # pyright: ignore[reportReturnType]
             template=template, selected=selected, indexers=indexers, drop=drop
-        )  # ty: ignore[invalid-return-type]
+        )  # ty: ignore[invalid-explicit-return]
     if is_dataarray(template) and is_dataarray(selected):  # type: ignore[redundant-expr]
         return _replace_coords_from_isel_dataarray(  # pyrefly: ignore [bad-return]  # pyright: ignore[reportReturnType]
             template=template, selected=selected, indexers=indexers, drop=drop
-        )  # ty: ignore[invalid-return-type]
+        )  # ty: ignore[invalid-explicit-return]
     msg = "template and selected must have same type."
     raise TypeError(msg)

@@ -274,7 +274,7 @@ def resample_data(  # ruff:ignore[too-many-arguments]
 
         if not axes_to_end and is_dataarray(data):
             dims_order = (*data.dims[:axis], rep_dim, *data.dims[axis + 1 :])  # type: ignore[union-attr,misc,operator,index]
-            return xout.transpose(*dims_order)  # ty: ignore[invalid-return-type]
+            return xout.transpose(*dims_order)  # ty: ignore[invalid-explicit-return]
         return xout
 
     # Numpy
@@ -563,7 +563,7 @@ def resample_vals(  # ruff:ignore[too-many-arguments]
                 rep_dim,
                 *prep.mom_params.dims,
                 missing_dims="ignore",
-            )  # ty: ignore[invalid-return-type]
+            )  # ty: ignore[invalid-explicit-return]
         return xout
 
     # numpy

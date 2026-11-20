@@ -108,7 +108,7 @@ def myguvectorize(
             cache=cache,
             **kwargs,
         ),
-    )  # ty: ignore[invalid-return-type]
+    )  # ty: ignore[invalid-explicit-return]
 
 
 def myjit(
@@ -137,7 +137,7 @@ def myjit(
     return cast(
         "Callable[[FuncT], FuncT]",
         njit(*args, fastmath=fastmath, cache=cache, parallel=parallel, **kwargs),  # type: ignore[call-overload]  # pyright: ignore[reportCallIssue, reportArgumentType]
-    )  # ty: ignore[invalid-return-type]
+    )  # ty: ignore[invalid-explicit-return]
 
 
 def _get_target(parallel: bool) -> str:

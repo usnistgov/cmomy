@@ -817,7 +817,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             parallel=parallel,
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
-        )  # ty: ignore[invalid-return-type]
+        )  # ty: ignore[invalid-explicit-return]
 
     @docfiller.decorate
     def moments_to_comoments(
@@ -1191,7 +1191,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             out = assign_moment(
                 out, weight=weight, mom_params=self._mom_params, copy=False
             )
-        return out  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-return-type]
+        return out  # pyrefly: ignore [bad-return]  # ty: ignore[invalid-explicit-return]
 
     def rmom(self) -> GenArrayT:
         r"""

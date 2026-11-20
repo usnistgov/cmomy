@@ -303,7 +303,7 @@ def zeros_like(
                 from_array_kwargs=from_array_kwargs,
             ),
             mom_params=c.mom_params,
-        )  # ty: ignore[invalid-return-type]
+        )  # ty: ignore[invalid-explicit-return]
 
     assert not isinstance(dtype, Mapping)  # ruff:ignore[assert]
     out: CentralMomentsArrayAny = wrap(
