@@ -858,7 +858,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         mom_params_out = factory_mom_params(target=self._obj, ndim=2, dims=mom_dims_out)
 
         return type(self)(
-            convert.moments_to_comoments(
+            convert.moments_to_comoments(  # pyrefly: ignore[bad-argument-type]
                 self._obj,
                 mom=mom,
                 mom_params=self._mom_params,
@@ -1027,7 +1027,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
 
         from cmomy.resample import jackknife_data
 
-        obj = jackknife_data(  # pyright: ignore[reportCallIssue, reportUnknownVariableType]
+        obj = jackknife_data(  # pyright: ignore[reportCallIssue, reportUnknownVariableType]  # pyrefly: ignore[no-matching-overload]
             self._obj,  # pyright: ignore[reportArgumentType]
             mom_params=self._mom_params,
             axis=axis,
@@ -1043,7 +1043,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
             keep_attrs=keep_attrs,
             apply_ufunc_kwargs=apply_ufunc_kwargs,
         )  # ty: ignore[no-matching-overload]
-        return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]  # pyrefly: ignore [bad-argument-type]
+        return self._new_like(obj=obj)  # pyright: ignore[reportUnknownArgumentType]
 
     # *** .reduction -------------------------------------------------------------------
     def _block_by(
@@ -1125,7 +1125,7 @@ class CentralMomentsABC(ABC, Generic[GenArrayT, MomParamsT]):
         """Standard deviation (ddof=0)."""
         if is_dataset(self._obj):
             self._raise_notimplemented_for_dataset()
-        return np.sqrt(self.var(squeeze=squeeze))  # type: ignore[return-value]  # pyrefly: ignore [bad-return]
+        return np.sqrt(self.var(squeeze=squeeze))  # type: ignore[return-value]
 
     def cov(self) -> GenArrayT:
         """Covariance (or variance if ``mom_ndim==1``)."""

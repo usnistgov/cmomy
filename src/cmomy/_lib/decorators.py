@@ -37,7 +37,7 @@ def _thread_backend() -> str | None:
     # Note that `importlib.util.find_spec` doesn't work for these; it will falsely return True
     try:
         from numba.np.ufunc import (  # type: ignore[attr-defined] # pylint: disable=unused-import
-            tbbpool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # pyrefly: ignore [missing-module-attribute]  # ty: ignore[import-not-found]
+            tbbpool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # pyrefly: ignore [missing-module-attribute]  # ty: ignore[missing-module-member]
         )
     except ImportError:
         pass
@@ -46,7 +46,7 @@ def _thread_backend() -> str | None:
 
     try:
         from numba.np.ufunc import (  # type: ignore[attr-defined] # pylint: disable=unused-import
-            omppool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # pyrefly: ignore [missing-module-attribute]  # ty: ignore[import-not-found]
+            omppool,  # ruff:ignore[unused-import]  # pyright: ignore[reportAttributeAccessIssue]  # ty: ignore[missing-module-member]
         )
     except ImportError:
         pass

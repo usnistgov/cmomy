@@ -92,7 +92,7 @@ if TYPE_CHECKING:
 # * Resample data
 # ** overloads
 @overload
-def resample_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
+def resample_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -137,7 +137,7 @@ def resample_data(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def resample_data(
+def resample_data(  # pyrefly: ignore[inconsistent-overload]
     data: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -356,7 +356,7 @@ def _resample_data(
 # * Resample vals
 # ** overloads
 @overload
-def resample_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
+def resample_vals(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -406,7 +406,7 @@ def resample_vals(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def resample_vals(
+def resample_vals(  # pyrefly: ignore[inconsistent-overload]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -651,7 +651,7 @@ def _resample_vals(
 # * Jackknife data
 # ** overloads
 @overload
-def jackknife_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
+def jackknife_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     data: DataT,
     data_reduced: ArrayLike | DataT | None = ...,
     *,
@@ -701,7 +701,7 @@ def jackknife_data(
 ) -> NDArrayAny: ...
 # arraylike or DataT
 @overload
-def jackknife_data(
+def jackknife_data(  # pyrefly: ignore[inconsistent-overload]
     data: ArrayLike | DataT,
     data_reduced: ArrayLike | None = ...,
     *,
@@ -834,7 +834,7 @@ def jackknife_data(  # ruff:ignore[too-many-arguments]
     if data_reduced is None:
         from cmomy.reduction import reduce_data
 
-        data_reduced = reduce_data(
+        data_reduced = reduce_data(  # pyrefly: ignore[bad-assignment]
             data=data,
             mom_params=mom_params,
             dim=dim,
@@ -1123,7 +1123,7 @@ def jackknife_vals(  # ruff:ignore[too-many-arguments]
     if data_reduced is None:
         from cmomy.reduction import reduce_vals
 
-        data_reduced = reduce_vals(
+        data_reduced = reduce_vals(  # pyrefly: ignore[bad-assignment]
             x,
             *y,
             mom=mom,

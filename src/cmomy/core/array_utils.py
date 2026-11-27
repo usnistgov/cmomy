@@ -229,7 +229,7 @@ def select_dtype(
     """
     if fastpath:
         assert dtype in _ALLOWED_FLOAT_DTYPES  # ruff:ignore[assert]
-        return dtype  # type: ignore[return-value] # pyright: ignore[reportReturnType]  # ty: ignore[invalid-explicit-return]
+        return cast("np.dtype[np.float32] | np.dtype[np.float64] | None", dtype)
 
     if is_dataset(x):
         if dtype is None:
