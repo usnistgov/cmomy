@@ -515,7 +515,7 @@ def select_ndat(
 
 # * Convert ----------------------------------------------------------------------------
 @overload
-def freq_to_indices(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
+def freq_to_indices(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     freq: SamplerArrayT,
     *,
     shuffle: bool = ...,
@@ -594,7 +594,7 @@ def freq_to_indices(
 
 
 @overload
-def indices_to_freq(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
+def indices_to_freq(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     indices: SamplerArrayT,
     *,
     ndat: int | None = ...,

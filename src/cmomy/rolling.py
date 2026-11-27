@@ -323,7 +323,7 @@ def _optional_zero_missing_weight(
 
 # ** Data
 @overload
-def rolling_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]
+def rolling_data(  # type: ignore[overload-overlap]  # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -367,7 +367,7 @@ def rolling_data(
     **kwargs: Unpack[RollingDataKwargs],
 ) -> NDArrayAny: ...
 @overload
-def rolling_data(
+def rolling_data(  # pyrefly: ignore[inconsistent-overload]
     data: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -587,7 +587,7 @@ def _rolling_data(
 
 # * Vals
 @overload
-def rolling_vals(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]
+def rolling_vals(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -636,7 +636,7 @@ def rolling_vals(
     **kwargs: Unpack[RollingValsKwargs],
 ) -> NDArrayAny: ...
 @overload
-def rolling_vals(
+def rolling_vals(  # pyrefly: ignore[inconsistent-overload]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -893,7 +893,7 @@ def _rolling_vals(
 # * Move Exponential
 # ** Data
 @overload
-def rolling_exp_data(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]
+def rolling_exp_data(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     data: DataT,
     alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
@@ -942,7 +942,7 @@ def rolling_exp_data(
     **kwargs: Unpack[RollingExpDataKwargs],
 ) -> NDArrayAny: ...
 @overload
-def rolling_exp_data(
+def rolling_exp_data(  # pyrefly: ignore[inconsistent-overload]
     data: ArrayLike | DataT,
     alpha: ArrayLike | xr.DataArray | xr.Dataset,
     *,
@@ -1216,7 +1216,7 @@ def _rolling_exp_data(
 
 # ** Vals
 @overload
-def rolling_exp_vals(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]
+def rolling_exp_vals(  # type: ignore[overload-overlap]# pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     alpha: ArrayLike | xr.DataArray | DataT,
@@ -1270,7 +1270,7 @@ def rolling_exp_vals(
     **kwargs: Unpack[RollingExpValsKwargs],
 ) -> NDArrayAny: ...
 @overload
-def rolling_exp_vals(
+def rolling_exp_vals(  # pyrefly: ignore[inconsistent-overload]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     alpha: ArrayLike | xr.DataArray | DataT,

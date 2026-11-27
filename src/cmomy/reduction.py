@@ -83,7 +83,7 @@ if TYPE_CHECKING:
 # * Reduce vals ------------------------------------------------------------------------
 # ** overloads
 @overload
-def reduce_vals(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
+def reduce_vals(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     x: DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -133,7 +133,7 @@ def reduce_vals(
 ) -> NDArrayAny: ...
 # super fallback
 @overload
-def reduce_vals(
+def reduce_vals(  # pyrefly: ignore[inconsistent-overload]
     x: ArrayLike | DataT,
     *y: ArrayLike | xr.DataArray | DataT,
     weight: ArrayLike | xr.DataArray | DataT | None = ...,
@@ -340,7 +340,7 @@ def _reduce_vals(
 # * Reduce data ------------------------------------------------------------------------
 # ** overload
 @overload
-def reduce_data(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]
+def reduce_data(  # type: ignore[overload-overlap] # pyright: ignore[reportOverlappingOverload]  # pyrefly: ignore[inconsistent-overload]
     data: DataT,
     *,
     out: NDArrayAny | None = ...,
@@ -383,7 +383,7 @@ def reduce_data(
     **kwargs: Unpack[ReduceDataKwargs],
 ) -> NDArrayAny: ...
 @overload
-def reduce_data(
+def reduce_data(  # pyrefly: ignore[inconsistent-overload]
     data: ArrayLike | DataT,
     *,
     out: NDArrayAny | None = ...,
